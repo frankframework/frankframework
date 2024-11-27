@@ -31,7 +31,7 @@ import org.apache.logging.log4j.Logger;
 public class TransformerErrorListener implements ErrorListener {
 	static Logger log = LogUtil.getLogger(TransformerErrorListener.class);
 
-	private boolean throwException;
+	private final boolean throwException;
 	private TransformerException fatalTransformerException;
 	private IOException fatalIOException;
 
@@ -48,12 +48,12 @@ public class TransformerErrorListener implements ErrorListener {
 		if (throwException) {
 			throw transformerException;
 		}
-		log.warn("Nonfatal transformation error: " + transformerException.getMessageAndLocation());
+		log.warn("Nonfatal transformation error: {}", transformerException.getMessageAndLocation());
 	}
 
 	@Override
 	public void fatalError(TransformerException transformerException) throws TransformerException {
-		log.warn("Fatal transformation error: " + transformerException.getMessageAndLocation());
+		log.warn("Fatal transformation error: {}", transformerException.getMessageAndLocation());
 		this.setFatalTransformerException(transformerException);
 		if (throwException) {
 			throw transformerException;
@@ -62,7 +62,7 @@ public class TransformerErrorListener implements ErrorListener {
 
 	@Override
 	public void warning(TransformerException transformerException) throws TransformerException {
-		log.warn("Nonfatal transformation warning: " + transformerException.getMessageAndLocation());
+		log.warn("Nonfatal transformation warning: {}", transformerException.getMessageAndLocation());
 	}
 
 	public void setFatalTransformerException(TransformerException fatalTransformerException) {

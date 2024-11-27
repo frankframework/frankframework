@@ -19,22 +19,20 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 
-import org.frankframework.dbms.JdbcException;
-
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.PipeLineSession;
-
 import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.dbms.JdbcException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.util.AppConstants;
-
 import org.frankframework.util.StringUtil;
 
-public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
+public class JdbcTableMessageBrowser<M> extends AbstractJdbcMessageBrowser<M> {
 
 	private @Getter String tableName="IBISSTORE";
 	private @Getter String indexName="IX_IBISSTORE";
@@ -42,7 +40,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 	private String tableAlias;
 
 	private JdbcFacade parent=null;
-	private JdbcTableListener<M> tableListener;
+	private final JdbcTableListener<M> tableListener;
 
 	private static final String PROPERTY_USE_INDEX_HINT=CONTROL_PROPERTY_PREFIX+"useIndexHint";
 	private static final String PROPERTY_USE_FIRST_ROWS_HINT=CONTROL_PROPERTY_PREFIX+"useFirstRowsHint";
@@ -70,11 +68,6 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		if (StringUtils.isNotEmpty(tableListener.getSelectCondition())) {
 			selectCondition += " AND ("+tableListener.getSelectCondition()+")";
 		}
-	}
-
-	@Override
-	protected String getLogPrefix() {
-		return "JdbcTableMessageBrowser ["+getName()+"] ";
 	}
 
 	@Override
@@ -154,9 +147,9 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		}
 		if(order == SortOrder.NONE) { //If no order has been set, use the default (DESC for messages and ASC for errors)
 			order = getOrder();
-			if (order == null) {
-				order = SortOrder.ASC;
-			}
+		}
+		if (order == null) {
+			order = SortOrder.ASC;
 		}
 		return "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport)+provideFirstRowsHintAfterFirstKeyword(dbmsSupport)+ getListClause(false)+ getWhereClause(whereClause,false)+
 				(StringUtils.isNotEmpty(getDateField())? " ORDER BY "+getDateField()+ " "+order.name():"")+provideTrailingFirstRowsHint(dbmsSupport);

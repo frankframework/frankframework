@@ -3,10 +3,11 @@ package org.frankframework.pipes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.util.TransformerPoolNamespaceUnawarenessTest;
-import org.junit.jupiter.api.Test;
 
 public class XmlSwitchNamespaceUnawarenessTest extends PipeTestBase<XmlSwitch> {
 
@@ -43,8 +44,8 @@ public class XmlSwitchNamespaceUnawarenessTest extends PipeTestBase<XmlSwitch> {
 
 
 	public void testNamespaceAwarenessWithStylesheet(int xsltVersion, boolean namespaceAware, String expectedForwardName) throws Exception {
-		pipe.registerForward(new PipeForward("1","FixedResult1"));
-		pipe.registerForward(new PipeForward("NF","FixedResultNF"));
+		pipe.addForward(new PipeForward("1","FixedResult1"));
+		pipe.addForward(new PipeForward("NF","FixedResultNF"));
 		pipe.setServiceSelectionStylesheetFilename(TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_STYLESHEET);
 		pipe.setNotFoundForwardName("NF");
 		pipe.setXsltVersion(xsltVersion);
@@ -54,8 +55,8 @@ public class XmlSwitchNamespaceUnawarenessTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	public void testNamespaceAwarenessWithXpath(int xsltVersion, boolean namespaceAware, String expectedForwardName) throws Exception {
-		pipe.registerForward(new PipeForward("1","FixedResult1"));
-		pipe.registerForward(new PipeForward("NF","FixedResultNF"));
+		pipe.addForward(new PipeForward("1","FixedResult1"));
+		pipe.addForward(new PipeForward("NF","FixedResultNF"));
 		pipe.setXpathExpression("/root/sub");
 		pipe.setNotFoundForwardName("NF");
 		pipe.setXsltVersion(xsltVersion);

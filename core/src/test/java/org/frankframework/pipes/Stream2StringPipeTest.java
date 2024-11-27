@@ -5,9 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
-import org.junit.jupiter.api.Test;
 
 /**
  * Stream2StringPipe Tester.

@@ -28,7 +28,7 @@ import org.frankframework.stream.Message;
  * @author  Tom van der Heijden
  * @deprecated not necessary when using Messages.
  */
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.6.0")
 public class Stream2StringPipe extends FixedForwardPipe {
 
 	@Override

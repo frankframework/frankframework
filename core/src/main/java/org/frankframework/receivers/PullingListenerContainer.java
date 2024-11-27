@@ -21,11 +21,20 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.SchedulingAwareRunnable;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.INamedObject;
 import org.frankframework.core.IPeekableListener;
@@ -35,16 +44,12 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
 import org.frankframework.core.TransactionAttribute;
+import org.frankframework.statistics.FrankMeterType;
+import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.RunState;
 import org.frankframework.util.StringUtil;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.SchedulingAwareRunnable;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 
 /**
@@ -57,6 +62,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransactionDefinition txNew = null;
+
+	private @Setter MetricsInitializer metricsInitializer;
+	private DistributionSummary messagePeekingStatistics;
+	private DistributionSummary messageReceivingStatistics;
 
 	private @Getter @Setter Receiver<M> receiver;
 	private @Getter @Setter PlatformTransactionManager txManager;
@@ -72,10 +81,6 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	 */
 	private @Getter @Setter TaskExecutor taskExecutor;
 
-	private PullingListenerContainer() {
-		super();
-	}
-
 	public void configure() {
 		if (receiver.getNumThreadsPolling() > 0 && receiver.getNumThreadsPolling() < receiver.getNumThreads()) {
 			pollToken = new ResourceLimiter(receiver.getNumThreadsPolling());
@@ -89,6 +94,12 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			}
 			txNew = txDef;
 		}
+
+		if (receiver.getListener() instanceof IPeekableListener<M>) {
+			messagePeekingStatistics = metricsInitializer.createSubDistributionSummary(receiver, receiver.getListener(), FrankMeterType.LISTENER_MESSAGE_PEEKING);
+		}
+
+		messageReceivingStatistics = metricsInitializer.createSubDistributionSummary(receiver, receiver.getListener(), FrankMeterType.LISTENER_MESSAGE_RECEIVING);
 	}
 
 	public void start() {
@@ -209,16 +220,18 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					threadContext = listener.openThread();
 					RawMessageWrapper<M> rawMessage = null;
 					TransactionStatus txStatus = null;
-					int deliveryCount=0;
 					boolean messageHandled = false;
-					String messageId = null;
 					try { //  doesn't catch anything, rolls back transaction in finally clause when required
 						try {
 							try {
 								boolean messageAvailable = true;
 								if (isIdle() && listener instanceof IPeekableListener peekableListener) {
 									if (peekableListener.isPeekUntransacted()) {
+										long start = System.currentTimeMillis();
 										messageAvailable = peekableListener.hasRawMessageAvailable();
+										long end = System.currentTimeMillis();
+
+										messagePeekingStatistics.record((double) end - start);
 									}
 								}
 								if (messageAvailable) {
@@ -228,7 +241,12 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 										txStatus = txManager.getTransaction(txNew);
 										log.trace("Transaction Started, Get Message from Listener");
 									}
+
+									long start = System.currentTimeMillis();
 									rawMessage = listener.getRawMessage(threadContext);
+									long end = System.currentTimeMillis();
+
+									messageReceivingStatistics.record((double) end - start);
 								}
 								resetRetryInterval();
 								setIdle(rawMessage==null);
@@ -263,7 +281,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								}
 								// If inProcess-state is used, we'll commit the transaction that set the message state to the inProcess.
 								// This releases the lock on the record being processed.
-								// This is necessary for dbmses like MariaDB, that have no 'SKIP LOCKED' functionality, and for pipelines that do not support roll back
+								// This is necessary for dbmses like older MariaDB, that have no 'SKIP LOCKED' functionality, and for pipelines that do not support roll back.
+								// This also is needed for when processing multiple listener threads.
 								if (txStatus!=null) {
 									txManager.commit(txStatus);
 									if (receiver.isTransacted()) {
@@ -287,20 +306,16 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						}
 
 						try {
-							messageId = rawMessage.getId();
-							if (receiver.getMaxRetries()>=0) {
-								deliveryCount = receiver.getDeliveryCount(rawMessage);
-							}
-							if (receiver.getMaxRetries()<0 || deliveryCount <= receiver.getMaxRetries()+1 || receiver.isSupportProgrammaticRetry()) {
-								try (PipeLineSession session = new PipeLineSession()) {
-									session.putAll(threadContext);
+							try (PipeLineSession session = new PipeLineSession()) {
+								session.putAll(threadContext);
+								receiver.updateMessageReceiveCount(rawMessage);
+								if (receiver.isSupportProgrammaticRetry() || !receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, session, false)) {
 									receiver.processRawMessage(listener, rawMessage, session, true);
+								} else {
+									Instant receivedDate = Instant.now();
+									String errorMessage = StringUtil.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(rawMessage));
+									receiver.moveInProcessToError(rawMessage, session, receivedDate, errorMessage, Receiver.TXREQUIRED);
 								}
-							} else {
-								Instant receivedDate = Instant.now();
-								String errorMessage = StringUtil.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(messageId));
-								receiver.moveInProcessToError(rawMessage, threadContext, receivedDate, errorMessage, Receiver.TXREQUIRED);
-								receiver.cacheProcessResult(messageId, errorMessage, receivedDate); // required here to increase delivery count
 							}
 							messageHandled = true;
 							if (txStatus != null) {
@@ -344,11 +359,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 					if (!messageHandled && inProcessStateManager != null) {
 						txStatus = receiver.isTransacted() || receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED ? txManager.getTransaction(txNew) : null;
-						boolean noMoreRetries = receiver.getMaxRetries()>=0 && deliveryCount>receiver.getMaxRetries();
+						boolean noMoreRetries = receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(rawMessage);
 						ProcessState targetState = noMoreRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;
-						log.debug("noMoreRetries [{}] deliveryCount [{}] targetState [{}]", noMoreRetries, deliveryCount, targetState);
-						String errorMessage = StringUtil.concatStrings(noMoreRetries ? "too many retries" : null, "; ", receiver.getCachedErrorMessage(messageId));
-						((IHasProcessState<M>)listener).changeProcessState(rawMessage, targetState, errorMessage!=null ? errorMessage : "processing not successful");
+						String errorMessage = StringUtil.concatStrings(noMoreRetries ? "too many retries" : null, "; ", receiver.getCachedErrorMessage(rawMessage));
+						inProcessStateManager.changeProcessState(rawMessage, targetState, errorMessage!=null ? errorMessage : "processing not successful");
 						if (txStatus!=null) {
 							txManager.commit(txStatus);
 							txStatus = null;
@@ -384,6 +398,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			try {
 				txManager.rollback(txStatus);
 			} finally {
+				// TODO: Check if we do, or do not, need the change in process state below or if it will always be done in other part of the PullingListenerContainer code anyway
 				if (inProcessStateManager!=null) {
 					TransactionStatus txStatusRevert = txManager.getTransaction(txNew);
 					try {
@@ -438,5 +453,4 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	public boolean isIdle() {
 		return idle.get();
 	}
-
 }

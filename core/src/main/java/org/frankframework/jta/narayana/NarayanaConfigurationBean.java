@@ -68,7 +68,7 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 			try (InputStream is = NarayanaConfigurationBean.class.getClassLoader().getResourceAsStream(propertyFileName)) {
 				loadFromXML(tempProperties, is);
 			} catch (IOException e) {
-				log.error("unable to read XML file ["+propertyFileName+"]", e);
+				log.error("unable to read XML file [{}]", propertyFileName, e);
 			}
 			tempProperties.forEach((k, v) -> outputProperties.put(k, ((String)v).trim()));
 			return outputProperties;

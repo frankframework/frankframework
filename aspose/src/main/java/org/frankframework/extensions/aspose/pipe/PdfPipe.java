@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,14 +18,15 @@ package org.frankframework.extensions.aspose.pipe;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -43,10 +44,8 @@ import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.EnumUtils;
-import org.frankframework.util.FileUtils;
+import org.frankframework.util.TemporaryDirectoryUtils;
 import org.frankframework.util.XmlBuilder;
-
-import lombok.Getter;
 
 
 /**
@@ -68,7 +67,6 @@ public class PdfPipe extends FixedForwardPipe {
 	private @Getter String conversionResultDocumentSessionKey = "documents";
 	private @Getter String conversionResultFilesSessionKey = "pdfConversionResultFiles";
 	private @Getter String charset = null;
-	private AsposeFontManager fontManager;
 	private @Getter boolean unpackDefaultFonts = false;
 	private @Getter boolean loadExternalResources = false;
 
@@ -76,7 +74,7 @@ public class PdfPipe extends FixedForwardPipe {
 
 	public enum DocumentAction {
 		CONVERT,
-		COMBINE;
+		COMBINE
 	}
 
 	@Override
@@ -96,13 +94,9 @@ public class PdfPipe extends FixedForwardPipe {
 			}
 		} else {
 			try {
-				String ibisTempDir = FileUtils.getTempDirectory();
-				if(StringUtils.isNotEmpty(ibisTempDir)) {
-					setPdfOutputLocation(Files.createTempDirectory(Paths.get(ibisTempDir),"Pdf").toString());
-				} else {
-					setPdfOutputLocation(Files.createTempDirectory("Pdf").toString());
-				}
-				log.info("Temporary directory path : [{}]", getPdfOutputLocation());
+				Path ibisTempDir = TemporaryDirectoryUtils.getTempDirectory("Pdf");
+				setPdfOutputLocation(ibisTempDir.toString());
+				log.info("temporary directory path [{}]", ibisTempDir);
 			} catch (IOException e) {
 				throw new ConfigurationException(e);
 			}
@@ -122,8 +116,9 @@ public class PdfPipe extends FixedForwardPipe {
 			}
 		}
 
-		fontManager = new AsposeFontManager(getFontsDirectory());
+		AsposeFontManager fontManager;
 		try {
+			fontManager = new AsposeFontManager(getFontsDirectory());
 			fontManager.load(isUnpackDefaultFonts());
 		} catch (IOException e) {
 			throw new ConfigurationException("an error occurred while loading fonts", e);
@@ -161,7 +156,8 @@ public class PdfPipe extends FixedForwardPipe {
 
 					XmlBuilder main = new XmlBuilder("main");
 					cisConversionResult.buildXmlFromResult(main, true);
-					Message message = new Message(main.toXML());
+
+					Message message = main.asMessage();
 					session.put(getConversionResultDocumentSessionKey(), message);
 
 					return new PipeRunResult(getSuccessForward(), message);
@@ -237,12 +233,6 @@ public class PdfPipe extends FixedForwardPipe {
 	 */
 	public void setConversionResultFilesSessionKey(String conversionResultFilesSessionKey) {
 		this.conversionResultFilesSessionKey = conversionResultFilesSessionKey;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("attribute 'fileNameToAttachSessionKey' is replaced with 'filenameToAttachSessionKey'")
-	public void setFileNameToAttachSessionKey(String filenameToAttachSessionKey) {
-		this.filenameToAttachSessionKey = filenameToAttachSessionKey;
 	}
 
 	/**

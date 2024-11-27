@@ -19,30 +19,27 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TemporaryQueue;
 import javax.naming.Context;
 
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSException;
+import jakarta.jms.Queue;
+import jakarta.jms.Session;
+import jakarta.jms.TemporaryQueue;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.IbisException;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
-
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.StringUtil;
 import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
 import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Generic Source for JMS connection, to be shared for JMS Objects that can use the same.
@@ -67,8 +64,8 @@ public class MessagingSource  {
 
 	private final @Getter String id;
 
-	private Context context = null;
-	private ConnectionFactory connectionFactory = null;
+	private Context context;
+	private ConnectionFactory connectionFactory;
 	private Connection globalConnection=null; // only used when connections are not pooled
 
 	private final Map<String,MessagingSource> siblingMap;
@@ -89,25 +86,25 @@ public class MessagingSource  {
 		if (connectionsArePooled()) {
 			connectionTable = new Hashtable<>();
 		}
-		log.debug(getLogPrefix()+"set id ["+id+"] context ["+context+"] connectionFactory ["+connectionFactory+"] authAlias ["+authAlias+"]");
+		log.debug("{}set id [{}] context [{}] connectionFactory [{}] authAlias [{}]", getLogPrefix(), id, context, connectionFactory, authAlias);
 	}
 
 	public synchronized boolean close() throws IbisException {
 		if (--referenceCount<=0 && cleanUpOnClose()) {
-			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], cleaning up global objects");
+			log.debug("{}reference count [{}], cleaning up global objects", this::getLogPrefix, () -> referenceCount);
 			siblingMap.remove(getId());
 			try {
 				deleteDynamicQueue(globalDynamicReplyQueue);
 				if (globalConnection != null) {
-					log.debug(getLogPrefix()+"closing global Connection");
+					log.debug("{}closing global Connection", this::getLogPrefix);
 					globalConnection.close();
 					openConnectionCount.decrementAndGet();
 				}
 				if (openSessionCount.get()!=0) {
-					log.warn(getLogPrefix()+"open session count after closing ["+openSessionCount.get()+"]");
+					log.warn("{}open session count after closing [{}]", this::getLogPrefix, openSessionCount::get);
 				}
 				if (openConnectionCount.get()!=0) {
-					log.warn(getLogPrefix()+"open connection count after closing ["+openConnectionCount.get()+"]");
+					log.warn("{}open connection count after closing [{}]", this::getLogPrefix, openConnectionCount::get);
 				}
 				if (context != null) {
 					context.close();
@@ -122,7 +119,7 @@ public class MessagingSource  {
 			}
 			return true;
 		}
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"reference count ["+referenceCount+"], no cleanup");
+		log.debug("{}reference count [{}], no cleanup", this::getLogPrefix, () -> referenceCount);
 		return false;
 	}
 
@@ -143,7 +140,7 @@ public class MessagingSource  {
 	}
 
 	/** The QCF is wrapped in a Spring TransactionAwareConnectionFactoryProxy, this should always be the most outer wrapped QCF. */
-	private ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+	private ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, NoSuchFieldException {
 		if(getConnectionFactory() instanceof TransactionAwareConnectionFactoryProxy) {
 			return (ConnectionFactory)ClassUtils.getDeclaredFieldValue(getConnectionFactory(), "targetConnectionFactory");
 		}
@@ -166,7 +163,7 @@ public class MessagingSource  {
 			if (qcf != null) {
 				return qcf;
 			}
-			log.warn(getLogPrefix() + "could not determine managed connection factory", e);
+			log.warn("{}could not determine managed connection factory", getLogPrefix(), e);
 			return null;
 		}
 	}
@@ -178,7 +175,7 @@ public class MessagingSource  {
 		try {
 			managedConnectionFactory = getManagedConnectionFactory();
 			if (managedConnectionFactory != null) {
-				result.append(ToStringBuilder.reflectionToString(managedConnectionFactory, ToStringStyle.SHORT_PREFIX_STYLE));
+				result.append(StringUtil.reflectionToString(managedConnectionFactory));
 			}
 		} catch (Exception | NoClassDefFoundError e) {
 			result.append(" ").append(ClassUtils.nameOf(connectionFactory)).append(".getManagedConnectionFactory() (").append(ClassUtils.nameOf(e)).append("): ").append(e.getMessage());
@@ -206,7 +203,7 @@ public class MessagingSource  {
 			result.append("block if session pool is full [").append(poolcf.isBlockIfSessionPoolIsFull()).append(CLOSE);
 			result.append("block if session pool is full timeout [").append(poolcf.getBlockIfSessionPoolIsFullTimeout()).append(CLOSE);
 			result.append("connection check interval (ms) [").append(poolcf.getConnectionCheckInterval()).append(CLOSE);
-			result.append("connection idle timeout (s) [").append(poolcf.getConnectionIdleTimeout() / 1000).append(CLOSE);
+			result.append("connection idle timeout (s) [").append(poolcf.getConnectionIdleTimeout() / 1000).append("]");
 		}
 		return result;
 	}
@@ -214,7 +211,7 @@ public class MessagingSource  {
 	protected Connection createConnection() throws JMSException {
 		if (StringUtils.isNotEmpty(authAlias)) {
 			CredentialFactory cf = new CredentialFactory(authAlias);
-			if (log.isDebugEnabled()) log.debug("using userId ["+cf.getUsername()+"] to create Connection");
+			log.debug("using userId [{}] to create Connection", cf::getUsername);
 			return connectionFactory.createConnection(cf.getUsername(),cf.getPassword());
 		}
 		return connectionFactory.createConnection();
@@ -248,7 +245,7 @@ public class MessagingSource  {
 				connection.close();
 				openConnectionCount.decrementAndGet();
 			} catch (JMSException e) {
-				log.error(getLogPrefix()+"Exception closing Connection", e);
+				log.error("{}Exception closing Connection", getLogPrefix(), e);
 			}
 		}
 	}
@@ -284,7 +281,7 @@ public class MessagingSource  {
 				session.close();
 				openSessionCount.decrementAndGet();
 			} catch (JMSException e) {
-				log.error(getLogPrefix() + "Exception closing Session", e);
+				log.error("{}Exception closing Session", getLogPrefix(), e);
 			} finally {
 				releaseConnection(connection);
 			}
@@ -292,10 +289,10 @@ public class MessagingSource  {
 		}
 
 		try {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "closing Session");
+			log.debug("{}closing Session", this::getLogPrefix);
 			session.close();
 		} catch (JMSException e) {
-			log.error(getLogPrefix() + "Exception closing Session", e);
+			log.error("{}Exception closing Session", getLogPrefix(), e);
 		}
 	}
 
@@ -325,10 +322,9 @@ public class MessagingSource  {
 	private void deleteDynamicQueue(Queue queue) throws JmsException {
 		if (queue!=null) {
 			try {
-				if (!(queue instanceof TemporaryQueue)) {
+				if (!(queue instanceof TemporaryQueue tqueue)) {
 					throw new JmsException("Queue ["+queue.getQueueName()+"] is not a TemporaryQueue");
 				}
-				TemporaryQueue tqueue = (TemporaryQueue)queue;
 				tqueue.delete();
 			} catch (JMSException e) {
 				throw new JmsException("cannot delete temporary queue",e);
@@ -343,7 +339,8 @@ public class MessagingSource  {
 			synchronized (this) {
 				if (globalDynamicReplyQueue==null) {
 					globalDynamicReplyQueue=session.createTemporaryQueue();
-					log.info(getLogPrefix()+"{} created dynamic replyQueue ["+globalDynamicReplyQueue.getQueueName()+"]");
+					if(log.isInfoEnabled())
+						log.info("{}created dynamic replyQueue [{}]", getLogPrefix(), globalDynamicReplyQueue.getQueueName());
 				}
 			}
 			log.trace("Got global dynamic reply queue, lock released on {}", this);

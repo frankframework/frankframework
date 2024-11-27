@@ -32,7 +32,7 @@ import org.frankframework.util.StreamUtil;
  * @author Gerrit van Brakel
  *
  */
-public class PropertyFileCredentialFactory extends MapCredentialFactory {
+public class PropertyFileCredentialFactory extends AbstractMapCredentialFactory {
 
 	public static final String PROPERTY_BASE="credentialFactory.map";
 

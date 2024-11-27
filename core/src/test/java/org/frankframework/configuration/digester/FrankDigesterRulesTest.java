@@ -21,14 +21,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.frankframework.core.Resource;
-import org.frankframework.util.XmlUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.xml.sax.SAXException;
 
+import org.frankframework.core.Resource;
+import org.frankframework.util.XmlUtils;
+
 public class FrankDigesterRulesTest extends Mockito {
-	private class DummyDigesterRulesParser extends DigesterRulesHandler {
+	private class DummyDigesterRulesParser extends AbstractDigesterRulesHandler {
 		private List<DigesterRule> rules = new ArrayList<>();
 
 		@Override

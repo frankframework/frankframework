@@ -2,14 +2,22 @@ package org.frankframework.pipes;
 
 import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.net.URL;
+
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.pipes.CsvParserPipe.HeaderCase;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
+import org.frankframework.stream.UrlMessage;
+import org.frankframework.testutil.TestFileUtils;
 
 public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 
@@ -42,6 +50,23 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 	}
 
 	@Test
+	public void test2CharFieldSeparator() {
+		pipe.setFieldSeparator("; ");
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
+		assertThat(e.getMessage(), Matchers.endsWith("], can only be a single character"));
+	}
+
+	@Test
+	public void testFieldSeparatorAndControlCodes() {
+		pipe.setFieldSeparator(";");
+		pipe.setUseControlCodes(true);
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
+		assertThat(e.getMessage(), Matchers.endsWith("cannot use fieldSeparator in combination with useControlCodes"));
+	}
+
+	@Test
 	public void testFieldNames() throws Exception {
 		pipe.setFieldNames("p,q,r");
 		configureAndStartPipe();
@@ -50,6 +75,18 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 
 		PipeRunResult prr = doPipe(csv);
 		assertXmlEquals(expected,prr.getResult().asString());
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"naam,woonplaats+postcode,land", "naam,woonplaats postcode,land"})
+	public void testFieldNamesWithInvalidElementName(String fieldNames) throws Exception {
+		pipe.setFieldNames(fieldNames);
+		configureAndStartPipe();
+		String csv = "Frank,Rotterdam+3014GT,Frankland\nFrank2,Rotterdam+1234AB,Nederland";
+		String expected = "<csv><record><naam>Frank</naam><woonplaats_postcode>Rotterdam+3014GT</woonplaats_postcode><land>Frankland</land></record><record><naam>Frank2</naam><woonplaats_postcode>Rotterdam+1234AB</woonplaats_postcode><land>Nederland</land></record></csv>";
+
+		PipeRunResult prr = doPipe(csv);
+		assertXmlEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
@@ -146,5 +183,33 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 
 		PipeRunResult prr = doPipe(csv);
 		assertXmlEquals(expected,prr.getResult().asString());
+	}
+
+	@Test
+	public void testCsvFile() throws Exception {
+		pipe.setFieldSeparator(";");
+		pipe.setPrettyPrint(true);
+		configureAndStartPipe();
+
+		URL input = TestFileUtils.getTestFileURL("/CsvParser/codes.csv");
+		assertNotNull(input, "cannot find test file");
+
+		PipeRunResult prr = doPipe(new UrlMessage(input));
+		String expected = TestFileUtils.getTestFile("/CsvParser/codes.xml");
+		assertXmlEquals(expected, prr.getResult().asString());
+	}
+
+	@Test
+	public void test0x1fCsvFile() throws Exception {
+		pipe.setUseControlCodes(true);
+		pipe.setPrettyPrint(true);
+		configureAndStartPipe();
+
+		URL input = TestFileUtils.getTestFileURL("/CsvParser/0x1f_example.csv");
+		assertNotNull(input, "cannot find test file");
+
+		PipeRunResult prr = doPipe(new UrlMessage(input));
+		String expected = TestFileUtils.getTestFile("/CsvParser/0x1f_example.xml");
+		assertXmlEquals(expected, prr.getResult().asString());
 	}
 }

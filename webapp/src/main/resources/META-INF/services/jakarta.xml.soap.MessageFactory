@@ -1,0 +1,2 @@
+# This file is required to run on JBoss (and potentially WildFly), even though it's also present in 'core/META-INF/services'
+com.sun.xml.messaging.saaj.soap.dynamic.SOAPMessageFactoryDynamicImpl

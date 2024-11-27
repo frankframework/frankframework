@@ -17,6 +17,7 @@ package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -25,8 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.springframework.http.MediaType;
 
 import com.aspose.imaging.extensions.ImageExtensions;
@@ -39,6 +38,8 @@ import com.aspose.pdf.LoadOptions;
 import com.aspose.pdf.Page;
 import com.aspose.pdf.SaveFormat;
 
+import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
+import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 
@@ -87,33 +88,37 @@ public class PdfImageConvertor extends AbstractConvertor {
 
 		File tmpImageFile = null;
 		com.aspose.imaging.Image image = null;
-		Document doc = new Document();
-		try {
+		try (Document doc = new Document()) {
+			Page page = doc.getPages().add();
 			// Set borders on 0.5cm.
 			float marginInCm = 0.0f;
-			Page page = doc.getPages().add();
 			page.getPageInfo().getMargin().setTop(PageConvertUtil.convertCmToPoints(marginInCm));
 			page.getPageInfo().getMargin().setBottom(PageConvertUtil.convertCmToPoints(marginInCm));
 			page.getPageInfo().getMargin().setLeft(PageConvertUtil.convertCmToPoints(marginInCm));
 			page.getPageInfo().getMargin().setRight(PageConvertUtil.convertCmToPoints(marginInCm));
 
 			// Temporary file (because first we need to get image information (the size) and than load it into
-			// the pdf. The image itself can not be loaded into the pdf because it will be blured with orange.
+			// the pdf. The image itself can not be loaded into the pdf because it will be blurred with orange.
 			tmpImageFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), mediaType.getSubtype());
-			image = com.aspose.imaging.Image.load(message.asInputStream());
+			try(InputStream is = message.asInputStream()) {
+				image = com.aspose.imaging.Image.load(is);
+			}
 			if(mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
 				TiffFrame[] frames = ((TiffImage)image).getFrames();
-				PngOptions pngOptions = new PngOptions();
-				for(int i=0; i<frames.length;i++) {
-					Image pdfImage = new Image();
-					frames[i].save(tmpImageFile.getAbsolutePath()+i, pngOptions);
-					pdfImage.setFile(tmpImageFile.getAbsolutePath()+i);
-					page.getParagraphs().add(pdfImage);
+				try(PngOptions pngOptions = new PngOptions()) {
+					for(int i=0; i<frames.length;i++) {
+						Image pdfImage = new Image();
+						frames[i].save(tmpImageFile.getAbsolutePath()+i, pngOptions);
+						pdfImage.setFile(tmpImageFile.getAbsolutePath()+i);
+						page.getParagraphs().add(pdfImage);
+					}
 				}
 			} else {
-				Files.copy(message.asInputStream(), tmpImageFile.toPath());
+				try(InputStream is = message.asInputStream()) {
+					Files.copy(is, tmpImageFile.toPath());
+				}
 				BufferedImage bufferedImage = ImageExtensions.toJava(image);
-				LOGGER.debug("Image info height:" + bufferedImage.getHeight() + " width:" + bufferedImage.getWidth());
+				LOGGER.debug("Image info height:{} width:{}", bufferedImage::getHeight, bufferedImage::getWidth);
 
 				float maxImageWidthInPoints = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - NUMBER_OF_MARGINS * marginInCm);
 				float maxImageHeightInPoints = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - NUMBER_OF_MARGINS * marginInCm);
@@ -139,16 +144,11 @@ public class PdfImageConvertor extends AbstractConvertor {
 			long startTime = new Date().getTime();
 			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.Pdf);
 			long endTime = new Date().getTime();
-			LOGGER.info("Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
+			LOGGER.info("Conversion(save operation in convert method) takes  ::: {} ms", () -> (endTime - startTime));
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 
 		} finally {
-			doc.freeMemory();
-			doc.dispose();
-			doc.close();
-
 			// Delete always the temporary file.
-
 			if(mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
 				int length = ((TiffImage)image).getFrames().length;
 				for(int i=0; i<length; i++) {

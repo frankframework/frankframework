@@ -15,31 +15,25 @@
 */
 package org.frankframework.lifecycle.servlets;
 
-import java.util.EnumSet;
-
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterRegistration.Dynamic;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.web.WebApplicationInitializer;
-import org.springframework.web.filter.DelegatingFilterProxy;
+import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
+
+import jakarta.servlet.ServletContext;
 
 /**
  * Add the SpringSecurity filter to enable authentication.
  * Has a high precedence so it's loaded before the EnvironmentInitializer starts.
  * 
+ * Spring Security provides a base class which provides all initialization.
+ * 
  * @author Niels Meijer
  */
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class SecurityFilterChainConfigurer implements WebApplicationInitializer {
+public class SecurityFilterChainConfigurer extends AbstractSecurityWebApplicationInitializer {
 
 	@Override
-	public void onStartup(ServletContext servletContext) throws ServletException {
-		Dynamic filter = servletContext.addFilter("springSecurityFilterChain", DelegatingFilterProxy.class);
-		filter.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
+	public void afterSpringSecurityFilterChain(ServletContext servletContext) {
 		servletContext.log("registered SpringSecurityFilter");
 	}
 }

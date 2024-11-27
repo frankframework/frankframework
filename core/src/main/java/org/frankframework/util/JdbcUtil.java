@@ -44,34 +44,35 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipException;
 
-import javax.jms.BytesMessage;
-import javax.jms.JMSException;
-import javax.jms.TextMessage;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.jms.BytesMessage;
+import jakarta.jms.JMSException;
+import jakarta.jms.TextMessage;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.SAXException;
+
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.documentbuilder.ArrayBuilder;
+import org.frankframework.documentbuilder.INodeBuilder;
+import org.frankframework.documentbuilder.ObjectBuilder;
 import org.frankframework.jms.BytesMessageInputStream;
 import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.Parameter.ParameterType;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.parameters.ParameterType;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.Base64Pipe.Direction;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.document.ArrayBuilder;
-import org.frankframework.stream.document.INodeBuilder;
-import org.frankframework.stream.document.ObjectBuilder;
 import org.frankframework.xml.SaxElementBuilder;
-import org.xml.sax.SAXException;
-
-import lombok.extern.log4j.Log4j2;
 
 /**
  * Database-oriented utility functions.
@@ -89,7 +90,7 @@ public class JdbcUtil {
 	public static String warningsToString(SQLWarning warnings) {
 		XmlBuilder warningsElem = warningsToXmlBuilder(warnings);
 		if (warningsElem != null) {
-			return warningsElem.toXML();
+			return warningsElem.asXmlString();
 		}
 		return null;
 	}
@@ -187,16 +188,17 @@ public class JdbcUtil {
 		}
 	}
 
-
 	public static String getValue(final IDbmsSupport dbmsSupport, final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart, boolean encodeBlobBase64) throws IOException, SQLException {
 		if (dbmsSupport.isBlobType(rsmeta, colNum)) {
+			if (dbmsSupport.isRowVersionTimestamp(rsmeta, colNum)) {
+				return rs.getString(colNum);
+			}
 			try {
 				return JdbcUtil.getBlobAsString(dbmsSupport, rs, colNum, blobCharset, decompressBlobs, getBlobSmart, encodeBlobBase64);
 			} catch (JdbcException e) {
 				log.debug("Caught JdbcException, assuming no blob found", e);
 				return nullValue;
 			}
-
 		}
 		if (dbmsSupport.isClobType(rsmeta, colNum)) {
 			try {
@@ -232,10 +234,10 @@ public class JdbcUtil {
 					else if (columnType == Types.DATE && !DATEFORMAT.isEmpty())
 						return new SimpleDateFormat(DATEFORMAT).format(rs.getDate(colNum));
 				} catch (Exception e) {
-					//Do nothing, the default: will handle it
+					// Do nothing, the default: will handle it
 				}
 			}
-			//$FALL-THROUGH$
+			// $FALL-THROUGH$
 			default: {
 				Object value = rs.getObject(colNum);
 				if (value == null) {
@@ -389,7 +391,7 @@ public class JdbcUtil {
 
 	private static String getBlobAsString(final InputStream blobInputStream, String column, String charset, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException {
 		if (blobInputStream == null) {
-			log.debug("no blob found in column [" + column + "]");
+			log.debug("no blob found in column [{}]", column);
 			return null;
 		}
 		if (encodeBlobBase64) {
@@ -403,14 +405,14 @@ public class JdbcUtil {
 				try (ObjectInputStream ois = new RenamingObjectInputStream(bis)) {
 					result = ois.readObject();
 				} catch (Exception e) {
-					log.debug("message in column [" + column + "] is probably not a serialized object: " + e.getClass().getName());
+					log.debug("message in column [{}] is probably not a serialized object: {}", column, e.getClass().getName());
 					objectOK = false;
 				}
 			}
 			String rawMessage;
 			if (objectOK) {
 				// TODO: Direct handling of JMS messages in here should be removed. I do not expect any current instances to actually store unwrapped JMS Messages?
-				if (result instanceof MessageWrapper wrapper) {
+				if (result instanceof MessageWrapper<?> wrapper) {
 					rawMessage = wrapper.getMessage().asString();
 				} else if (result instanceof TextMessage message) {
 					try {
@@ -426,7 +428,7 @@ public class JdbcUtil {
 						throw new JdbcException(e);
 					}
 				} else {
-					rawMessage = Message.asString(result);
+					rawMessage = MessageUtils.asString(result);
 				}
 			} else {
 				rawMessage = new String(bytes, charset);
@@ -579,7 +581,7 @@ public class JdbcUtil {
 		ParameterType paramType = pv.getDefinition().getType();
 		Object value = pv.getValue();
 		if (log.isDebugEnabled())
-			log.debug("jdbc parameter [" + parameterIndex + "] applying parameter [" + paramName + "] type [" + paramType + "] value [" + value + "]");
+			log.debug("jdbc parameter [{}] applying parameter [{}] type [{}] value [{}]", parameterIndex, paramName, paramType, value);
 		switch (paramType) {
 			case DATE:
 				if (value == null) {
@@ -625,7 +627,7 @@ public class JdbcUtil {
 					statement.setBoolean(parameterIndex, (Boolean) value);
 				}
 				break;
-			//noinspection deprecation
+			// noinspection deprecation
 			case INPUTSTREAM:
 			case BINARY: {
 				Message message = Message.asMessage(value);
@@ -647,10 +649,14 @@ public class JdbcUtil {
 				}
 				break;
 			}
-			//noinspection deprecation
-			case BYTES:
-				statement.setBytes(parameterIndex, Message.asByteArray(value));
+			// noinspection deprecation
+			case BYTES: {
+				Message message = Message.asMessage(value);
+				message.closeOnCloseOf(session, "JDBC BYTES Parameter");
+
+				statement.setBytes(parameterIndex, message.asByteArray());
 				break;
+			}
 			default:
 				Message message = Message.asMessage(value);
 				message.closeOnCloseOf(session, "JDBC Parameter");
@@ -687,8 +693,8 @@ public class JdbcUtil {
 					statement.setTimestamp(parameterIndex, new Timestamp(DateFormatUtils.parseAnyDate(value).getTime()));
 					break;
 				default:
-					log.warn("parameter type [{}] handled as String", ()-> JDBCType.valueOf(sqlTYpe).getName());
-					//$FALL-THROUGH$
+					log.warn("parameter type [{}] handled as String", () -> JDBCType.valueOf(sqlTYpe).getName());
+					// $FALL-THROUGH$
 				case Types.CHAR:
 				case Types.VARCHAR:
 					statement.setString(parameterIndex, value);

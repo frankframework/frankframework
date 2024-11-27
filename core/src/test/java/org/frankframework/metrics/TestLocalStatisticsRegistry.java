@@ -8,6 +8,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
+import jakarta.json.JsonWriter;
+import jakarta.json.stream.JsonGenerator;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLine;
@@ -19,13 +27,6 @@ import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import jakarta.json.Json;
-import jakarta.json.JsonStructure;
-import jakarta.json.JsonWriter;
-import jakarta.json.stream.JsonGenerator;
 
 public class TestLocalStatisticsRegistry {
 	private TestConfiguration configuration;
@@ -66,9 +67,9 @@ public class TestLocalStatisticsRegistry {
 		receiver.setName("myReceiver");
 		JavaListener<M> listener = configuration.createBean(JavaListener.class);
 		receiver.setListener(listener);
-		adapter.registerReceiver(receiver);
+		adapter.addReceiver(receiver);
 
-		configuration.registerAdapter(adapter);
+		configuration.addAdapter(adapter);
 	}
 
 	private static String jsonStructureToString(JsonStructure payload) {

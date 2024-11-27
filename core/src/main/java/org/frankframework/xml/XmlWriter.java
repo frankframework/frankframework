@@ -51,7 +51,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	private @Setter boolean newlineAfterXmlDeclaration=false;
 	private @Setter boolean includeComments=true;
 	private @Setter boolean textMode=false;
-	private @Setter boolean closeWriterOnEndDocument=false;
+	private boolean closeWriterOnEndDocument=false;
 
 	private boolean outputEscaping=true;
 	private int elementLevel=0;
@@ -71,10 +71,12 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 		}
 	}
 
+	/** When the implicit {@link StringWriter} is used, it's automatically closed on endDocument. */
 	public XmlWriter() {
-		this(new StringWriter());
+		this(new StringWriter(), true);
 	}
 
+	/** When you supply a {@link Writer} you will have to close it. */
 	public XmlWriter(Writer writer) {
 		this(writer, false);
 	}

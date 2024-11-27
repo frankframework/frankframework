@@ -15,7 +15,6 @@
 */
 package org.frankframework.util;
 
-import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.FilterWriter;
 import java.io.IOException;
@@ -23,8 +22,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.function.Function;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.input.TeeInputStream;
 import org.apache.commons.io.input.TeeReader;
@@ -32,106 +31,11 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.io.output.TeeWriter;
 import org.apache.commons.io.output.ThresholdingOutputStream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import org.frankframework.functional.ThrowingSupplier;
 
+@Log4j2
 public class StreamCaptureUtils {
-	protected static Logger log = LogManager.getLogger(StreamCaptureUtils.class);
-
-	public static final int DEFAULT_STREAM_CAPTURE_LIMIT=10000;
-
-	public static InputStream watch(InputStream stream, Runnable onClose, Runnable onException) {
-		return watch(stream, onClose, e -> { if (onException!=null) onException.run(); return e; });
-	}
-
-	public static InputStream watch(InputStream stream, Runnable onClose, Function<IOException,IOException> onException) {
-		class WatchedInputStream extends FilterInputStream {
-			public WatchedInputStream(InputStream in) {
-				super(in);
-			}
-
-			private IOException handleException(IOException e) {
-				if (onException!=null) {
-					IOException r = onException.apply(e);
-					if (r!=null) {
-						return r;
-					}
-				}
-				return e;
-			}
-
-			@Override
-			public void close() throws IOException {
-				try {
-					super.close();
-				} catch (IOException e) {
-					throw handleException(e);
-				}
-				if (onClose!=null) {
-					onClose.run();
-				}
-			}
-
-			@Override
-			public int read() throws IOException {
-				try {
-					return super.read();
-				} catch (IOException e) {
-					throw handleException(e);
-				}
-			}
-
-			@Override
-			public int read(byte[] b) throws IOException {
-				try {
-					return super.read(b);
-				} catch (IOException e) {
-					throw handleException(e);
-				}
-			}
-
-			@Override
-			public int read(byte[] b, int off, int len) throws IOException {
-				try {
-					return super.read(b, off, len);
-				} catch (IOException e) {
-					throw handleException(e);
-				}
-			}
-
-			@Override
-			public long skip(long n) throws IOException {
-				try {
-					return super.skip(n);
-				} catch (IOException e) {
-					throw handleException(e);
-				}
-			}
-
-			@Override
-			public int available() throws IOException {
-				try {
-					return super.available();
-				} catch (IOException e) {
-					throw handleException(e);
-				}
-			}
-
-			@Override
-			public synchronized void reset() throws IOException {
-				try {
-					super.reset();
-				} catch (IOException e) {
-					throw handleException(e);
-				}
-			}
-
-		}
-
-		return new WatchedInputStream(stream);
-	}
+	public static final int DEFAULT_STREAM_CAPTURE_LIMIT = 10_000;
 
 	/**
 	 * Triggers the next byte after the threshold has been reached.
@@ -148,7 +52,7 @@ public class StreamCaptureUtils {
 			@Override
 			protected OutputStream getStream() {
 				if (isThresholdExceeded()) {
-					return NullOutputStream.NULL_OUTPUT_STREAM;
+					return NullOutputStream.INSTANCE;
 				}
 				return stream;
 			}
@@ -185,12 +89,7 @@ public class StreamCaptureUtils {
 		};
 	}
 
-	public static InputStream captureInputStream(InputStream in, OutputStream capture) {
-		return captureInputStream(in, capture, 10000, true);
-	}
-
-	public static InputStream captureInputStream(InputStream in, OutputStream capture, int maxSize, boolean captureRemainingOnClose) {
-
+	public static InputStream captureInputStream(InputStream in, OutputStream capture, int maxSize) {
 		CountingInputStream counter = new CountingInputStream(in);
 		MarkCompensatingOutputStream markCompensatingOutputStream = new MarkCompensatingOutputStream(limitSize(capture, maxSize));
 		return new TeeInputStream(counter, markCompensatingOutputStream, true) {
@@ -226,19 +125,11 @@ public class StreamCaptureUtils {
 
 	}
 
-	public static OutputStream captureOutputStream(OutputStream stream, OutputStream capture) {
-		return captureOutputStream(stream, capture, DEFAULT_STREAM_CAPTURE_LIMIT);
-	}
-
 	public static OutputStream captureOutputStream(OutputStream stream, OutputStream capture, int maxSize) {
 		return new TeeOutputStream(stream, limitSize(capture,maxSize));
 	}
 
-	public static Reader captureReader(Reader in, Writer capture) {
-		return captureReader(in, capture, 10000, true);
-	}
-
-	public static Reader captureReader(Reader in, Writer capture, int maxSize, boolean captureRemainingOnClose) {
+	public static Reader captureReader(Reader in, Writer capture, int maxSize) {
 		MarkCompensatingWriter markCompensatingWriter =  new MarkCompensatingWriter(limitSize(capture, maxSize));
 
 		return new TeeReader(in, markCompensatingWriter, true) {
@@ -301,10 +192,6 @@ public class StreamCaptureUtils {
 			}
 
 		};
-	}
-
-	public static Writer captureWriter(Writer writer, Writer capture) {
-		return captureWriter(writer, capture, DEFAULT_STREAM_CAPTURE_LIMIT);
 	}
 
 	public static Writer captureWriter(Writer writer, Writer capture, int maxSize) {

@@ -1,9 +1,16 @@
 package org.frankframework.xslt;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.Test;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.stream.ThreadConnector;
+import org.frankframework.threading.ThreadConnector;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlUtils;
@@ -12,10 +19,8 @@ import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.SaxException;
 import org.frankframework.xml.TransformerFilter;
 import org.frankframework.xml.XmlWriter;
-import org.junit.jupiter.api.Test;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 
+@Log4j2
 public class XsltExceptionTest {
 
 	public void testXsltException(boolean expectChildThreads, int tailCount) throws Exception {
@@ -39,29 +44,27 @@ public class XsltExceptionTest {
 		try (ThreadConnector threadConnector = expectChildThreads ? new ThreadConnector(null, null, null, null, (PipeLineSession)null) : null) {
 			TransformerFilter transformer = tp.getTransformerFilter(threadConnector, filter);
 
-			try {
-				try (SaxDocumentBuilder seb = new SaxDocumentBuilder("root", transformer, false)) {
+			try (SaxDocumentBuilder seb = new SaxDocumentBuilder("root", transformer, false)) {
+				seb.addElement("elem");
+				seb.addElement("error");
+				for(int i=0; i<tailCount; i++) {
 					seb.addElement("elem");
-					seb.addElement("error");
-					for(int i=0; i<tailCount; i++) {
-						seb.addElement("elem");
-					}
 				}
-				fail("Expected exception to be caught while processing");
-			} catch (Exception e) {
-				System.out.println("Expected exception: "+e.getMessage());
 			}
-			System.out.println(writer);
+		} catch (Exception e) {
+			log.debug(writer);
+			assertEquals("<elem/>", writer.toString());
+			throw e;
 		}
 	}
 
 	@Test
 	void testXsltException2000() throws Exception {
-		testXsltException(XmlUtils.isXsltStreamingByDefault(), 2000);
+		assertThrows(SaxException.class, () -> testXsltException(XmlUtils.isXsltStreamingByDefault(), 2000));
 	}
 
 	@Test
 	void testXsltException0() throws Exception {
-		testXsltException(XmlUtils.isXsltStreamingByDefault(), 0);
+		assertThrows(SaxException.class, () -> testXsltException(XmlUtils.isXsltStreamingByDefault(), 0));
 	}
 }

@@ -1,11 +1,7 @@
 <div class="wrapper wrapper-content animated fadeInRight">
-  <ngb-alert
-    *ngFor="let alert of state"
-    data-cy-test-pipeline="runResult"
-    [dismissible]="false"
-    [type]="alert.type"
-    >{{ alert.message }}</ngb-alert
-  >
+  <ngb-alert *ngFor="let alert of state" data-cy-test-pipeline="runResult" [dismissible]="false" [type]="alert.type">{{
+    alert.message
+  }}</ngb-alert>
   <div class="row">
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
@@ -22,23 +18,19 @@
                   autocomplete="off"
                   data-cy-test-pipeline="selectConfig"
                   [(ngModel)]="selectedConfiguration"
+                  (ngModelChange)="form.adapter = ''"
                   name="configuration"
                   class="form-control"
                 />
                 <datalist id="configurations">
-                  <option
-                    *ngFor="let config of configurations"
-                    [value]="config.name"
-                  >
+                  <option *ngFor="let config of configurations" [value]="config.name">
                     {{ config.name }}
                   </option>
                 </datalist>
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30"
-                >Select an adapter</label
-              >
+              <label class="col-sm-3 control-label label-height-30">Select an adapter</label>
               <div class="col-sm-9">
                 <input
                   list="adapters"
@@ -51,18 +43,11 @@
                 />
                 <datalist id="adapters">
                   <option
-                    *ngFor="
-                      let adapter of adapters
-                        | configurationFilter: selectedConfiguration
-                        | keyvalue
-                    "
+                    *ngFor="let adapter of adapters | configurationFilter: selectedConfiguration | keyvalue"
                     [value]="adapter.value.name"
                   >
                     {{
-                      adapter.value.name +
-                        (adapter.value.description !== null
-                          ? ' - ' + adapter.value.description
-                          : '')
+                      adapter.value.name + (adapter.value.description !== null ? ' - ' + adapter.value.description : '')
                     }}
                   </option>
                 </datalist>
@@ -79,7 +64,7 @@
                 <input
                   data-cy-test-pipeline="sessionKeyName"
                   (blur)="updateSessionKeys(test)"
-                  [(ngModel)]="test.name"
+                  [(ngModel)]="test.key"
                   class="form-control"
                   name="sessionKey{{ $index }}"
                   placeholder="Name"
@@ -99,24 +84,15 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30"
-                >Upload File</label
-              >
+              <label class="col-sm-3 control-label label-height-30">Upload File</label>
               <div class="col-sm-9 col-md-4">
                 <app-input-file-upload (fileUpdated)="updateFile($event)" />
               </div>
               <div class="hidden-xs hidden-sm col-md-1">
-                <label class="control-label label-height-30 pull-right"
-                  >Encoding</label
-                >
+                <label class="control-label label-height-30 pull-right">Encoding</label>
               </div>
               <div class="hidden-xs hidden-sm col-md-4">
-                <input
-                  [(ngModel)]="form.encoding"
-                  class="form-control"
-                  name="encoding"
-                  type="text"
-                />
+                <input [(ngModel)]="form.encoding" class="form-control" name="encoding" type="text" />
               </div>
             </div>
             <div class="row form-group hidden-md hidden-lg">
@@ -124,27 +100,19 @@
                 <label class="control-label label-height-30">Encoding</label>
               </div>
               <div class="col-sm-9">
-                <input
-                  [(ngModel)]="form.encoding"
-                  class="form-control"
-                  name="encoding"
-                  type="text"
-                />
+                <input [(ngModel)]="form.encoding" class="form-control" name="encoding" type="text" />
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30"
-                >Message</label
-              >
-              <div class="col-sm-9">
-                <textarea
+              <label class="col-sm-3 control-label label-height-30">Message</label>
+              <div class="col-sm-9" style="height: 200px">
+                <app-monaco-editor
                   data-cy-test-pipeline="message"
-                  [(ngModel)]="form.message"
                   class="form-control"
-                  name="message"
-                  rows="5"
-                  style="resize: none"
-                ></textarea>
+                  [(value)]="form.message"
+                  [options]="{ language: 'text' }"
+                  [actions]="editorActions"
+                ></app-monaco-editor>
               </div>
             </div>
             <div class="row form-group">

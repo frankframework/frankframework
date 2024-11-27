@@ -17,24 +17,38 @@ package org.frankframework.core;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
+
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
+
+import org.springframework.context.ApplicationContext;
+
 import org.frankframework.cache.ICache;
 import org.frankframework.cache.ICacheEnabled;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.doc.Category;
+import org.frankframework.doc.Mandatory;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.processors.PipeLineProcessor;
@@ -45,11 +59,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.Locker;
 import org.frankframework.util.Misc;
-import org.springframework.context.ApplicationContext;
-
-import io.micrometer.core.instrument.DistributionSummary;
-import lombok.Getter;
-import lombok.Setter;
+import org.frankframework.util.StringUtil;
 
 /**
  * Required in each {@link Adapter} to transform incoming messages. A pipeline
@@ -89,7 +99,8 @@ import lombok.Setter;
  *
  * @author  Johan Verrips
  */
-@Category("Basic")
+@Category(Category.Type.BASIC)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics, IConfigurationAware {
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter final ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
@@ -142,6 +153,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private boolean configurationSucceeded = false;
 	private boolean inputMessageConsumedMultipleTimes=false;
 
+	private @Getter String expectsSessionKeys;
+	private Set<String> expectsSessionKeysSet;
+
 	public enum ExitState {
 		SUCCESS,
 		ERROR,
@@ -159,7 +173,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	public void registerExitHandler(IPipeLineExitHandler exitHandler) {
 		exitHandlers.add(exitHandler);
-		log.info("registered exithandler ["+exitHandler.getName()+"]");
+		log.info("registered exithandler [{}]", exitHandler.getName());
 	}
 
 	/**
@@ -178,8 +192,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			PipeLineExit defaultExit = new PipeLineExit();
 			defaultExit.setName(DEFAULT_SUCCESS_EXIT_NAME);
 			defaultExit.setState(ExitState.SUCCESS);
-			registerPipeLineExit(defaultExit);
-			log.debug("Created default Exit named ["+defaultExit.getName()+"], state ["+defaultExit.getState()+"]");
+			addPipeLineExit(defaultExit);
+			log.debug("Created default Exit named [{}], state [{}]", defaultExit.getName(), defaultExit.getState());
 		}
 		for (int i=0; i < pipes.size(); i++) {
 			IPipe pipe = getPipe(i);
@@ -187,7 +201,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			log.debug("configuring Pipe [{}]", pipe::getName);
 			if (pipe instanceof FixedForwardPipe ffPipe) {
 				// getSuccessForward will return null if it has not been set. See below configure(pipe)
-				if (ffPipe.findForward(PipeForward.SUCCESS_FORWARD_NAME) == null) {
+				if (!ffPipe.hasRegisteredForward(PipeForward.SUCCESS_FORWARD_NAME)) {
 					int i2 = i + 1;
 					if (i2 < pipes.size()) {
 						// Forward to Next Pipe
@@ -195,7 +209,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 						PipeForward pf = new PipeForward();
 						pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 						pf.setPath(nextPipeName);
-						pipe.registerForward(pf);
+						pipe.addForward(pf);
 					} else {
 						// This is the last pipe, so forwards to a PipeLineExit
 						PipeLineExit plExit = findExitByState(ExitState.SUCCESS)
@@ -206,7 +220,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 						PipeForward pf = new PipeForward();
 						pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 						pf.setPath(plExit.getName());
-						pipe.registerForward(pf);
+						pipe.addForward(pf);
 					}
 				}
 			}
@@ -217,7 +231,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			}
 		}
 		if (pipes.isEmpty()) {
-			throw new ConfigurationException("no Pipes in PipeLine");
+			throw new ConfigurationException("no Pipes in Pipeline");
 		}
 		if (this.firstPipe == null) {
 			firstPipe=pipes.get(0).getName();
@@ -265,6 +279,12 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		inputMessageConsumedMultipleTimes |= pipes.stream()
 				.anyMatch(p -> p.consumesSessionVariable(PipeLineSession.ORIGINAL_MESSAGE_KEY));
 
+		if (StringUtils.isNotBlank(expectsSessionKeys)) {
+			expectsSessionKeysSet = StringUtil.splitToStream(expectsSessionKeys).collect(Collectors.toUnmodifiableSet());
+		} else {
+			expectsSessionKeysSet = Collections.emptySet();
+		}
+
 		super.configure();
 		log.debug("successfully configured");
 		configurationSucceeded = true;
@@ -277,7 +297,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private ConfigurationException configureSpecialPipe(@Nonnull final IPipe pipe, @Nonnull final String name, @Nullable final ConfigurationException configurationException) throws ConfigurationException {
 		PipeForward pf = new PipeForward();
 		pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
-		pipe.registerForward(pf);
+		pipe.addForward(pf);
 		pipe.setName(name);
 
 		try {
@@ -300,7 +320,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	public void configure(IPipe pipe) throws ConfigurationException {
 		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
-			pipe.setPipeLine(this); //Temporary here because of validators and wrappers
+			pipe.setPipeLine(this); // Temporary here because of validators and wrappers
 
 			if (pipe.getDurationThreshold() >= 0) {
 				pipe.registerEvent(IPipe.LONG_DURATION_MONITORING_EVENT);
@@ -388,7 +408,18 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 				}
 			}
 		}
+		if (!expectsSessionKeysSet.isEmpty()) {
+			verifyExpectedSessionKeysPresent(pipeLineSession);
+		}
 		return pipeLineProcessor.processPipeLine(this, messageId, message, pipeLineSession, firstPipe);
+	}
+
+	private void verifyExpectedSessionKeysPresent(PipeLineSession session) throws PipeRunException {
+		Set<String> missing = new HashSet<>(expectsSessionKeysSet);
+		missing.removeAll(session.keySet());
+		if (!missing.isEmpty()) {
+			throw new PipeRunException(null, "Adapter [" + getAdapter().getName() + "] called without expected session keys " + missing);
+		}
 	}
 
 
@@ -546,7 +577,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	/** PipeLine exits. If no exits are specified, a default one is created with name={@value #DEFAULT_SUCCESS_EXIT_NAME} and state={@value PipeLine.ExitState#SUCCESS_EXIT_STATE} */
 	public void setPipeLineExits(PipeLineExits exits) {
 		for(PipeLineExit exit:exits.getExits()) {
-			registerPipeLineExit(exit);
+			addPipeLineExit(exit);
 		}
 	}
 
@@ -554,7 +585,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * PipeLine exits.
 	 */
 	@Deprecated
-	public void registerPipeLineExit(PipeLineExit exit) {
+	public void addPipeLineExit(PipeLineExit exit) {
 		if (pipeLineExits.containsKey(exit.getName())) {
 			ConfigurationWarnings.add(this, log, "exit named ["+exit.getName()+"] already exists");
 		}
@@ -571,16 +602,16 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	/**
 	 * Optional global forwards that will be added to every pipe, when the forward name has not been explicitly set.
-	 * For example the <code>&lt;forward name="exception" path="error_exception" /&gt;</code>, which will add the <code>'exception'</code> forward to every pipe in the pipeline.
+	 * For example the <code>&lt;forward name="exception" path="error_exception" /&gt;</code>, which will add the <code>exception</code> forward to every pipe in the pipeline.
 	 */
 	public void setGlobalForwards(PipeForwards forwards){
 		for(PipeForward forward: forwards.getForwards()) {
-			registerForward(forward);
+			addForward(forward);
 		}
 	}
 
 	@Deprecated
-	public void registerForward(PipeForward forward) {
+	public void addForward(PipeForward forward) {
 		globalForwards.put(forward.getName(), forward);
 		log.debug("registered global PipeForward {}", forward);
 	}
@@ -609,9 +640,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * exists under that name, the pipe is NOT added, allowing globalForwards
 	 * to prevail.
 	 *
-	 * @ff.mandatory
 	 * @see AbstractPipe
 	 **/
+	@Mandatory
 	public void addPipe(IPipe pipe) throws ConfigurationException {
 		if (pipe == null) {
 			throw new ConfigurationException("pipe to be added is null, pipelineTable size [" + pipesByName.size() + "]");
@@ -620,13 +651,12 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		if (StringUtils.isEmpty(name)) {
 			throw new ConfigurationException("pipe [" + ClassUtils.nameOf(pipe) + "] to be added has no name, pipelineTable size [" + pipesByName.size() + "]");
 		}
-		IPipe current = getPipe(name);
-		if (current != null) {
+		if (getPipe(name) != null) {
 			throw new ConfigurationException("pipe [" + name + "] defined more then once");
 		}
 		pipesByName.put(name, pipe);
 		pipes.add(pipe);
-		log.debug("added pipe [" + pipe + "]");
+		log.debug("added pipe [{}]", pipe);
 	}
 
 	/**
@@ -674,6 +704,17 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	@ConfigurationWarning("Please use an XmlIf-pipe and call a sub-adapter to retrieve a new/different response")
 	public void setAdapterToRunBeforeOnEmptyInput(String s) {
 		adapterToRunBeforeOnEmptyInput = s;
+	}
+
+	/**
+	 * The pipeline of this adapter expects to use the following session keys to be set on call. This
+	 * is for adapters that are called as sub-adapters from other adapters. This serves both for documentation,
+	 * so callers can see what session keys to set on call, and for verification that those session keys are present.
+	 *
+	 * @param expectsSessionKeys Session keys to set on call of the pipeline, comma-separated.
+	 */
+	public void setExpectsSessionKeys(String expectsSessionKeys) {
+		this.expectsSessionKeys = expectsSessionKeys;
 	}
 
 }

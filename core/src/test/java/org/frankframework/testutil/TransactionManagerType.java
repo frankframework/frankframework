@@ -12,13 +12,15 @@ import javax.sql.DataSource;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
-import org.frankframework.jdbc.IDataSourceFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.jdbc.IDataSourceFactory;
+import org.frankframework.jdbc.datasource.DataSourceFactory;
 
 @Log4j2
 public enum TransactionManagerType {
@@ -101,9 +103,9 @@ public enum TransactionManagerType {
 		// If we need to create a new TestConfiguration, always created it with autoStart=true
 		// because that makes it more consistent between new and cached configuration.
 		if(this == TransactionManagerType.DATASOURCE) {
-			return datasourceConfigurations.computeIfAbsent(productKey, ignored-> this.create(true));
+			return datasourceConfigurations.computeIfAbsent(productKey, ignored-> this.create(true, ignored));
 		}
-		return transactionManagerConfigurations.computeIfAbsent(this, ignored -> this.create(true));
+		return transactionManagerConfigurations.computeIfAbsent(this, ignored -> this.create(true, productKey));
 	}
 
 	public synchronized void closeConfigurationContext() {

@@ -18,6 +18,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.DeflaterInputStream;
 
+import jakarta.annotation.Nonnull;
+
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
@@ -34,11 +38,10 @@ import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.StreamUtil;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
 
 @WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = ResultSetIteratingPipeTest.TEST_TABLE)
 public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSetIteratingPipe> {
-	static final String TEST_TABLE = "TEMP";
+	static final String TEST_TABLE = "temp";
 	private static final int PARALLEL_DELAY = 200;
 
 	@Override
@@ -195,7 +198,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		}
 
 		@Override
-		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 			if(delay > 0) {
 				try {
 					Thread.sleep(delay);

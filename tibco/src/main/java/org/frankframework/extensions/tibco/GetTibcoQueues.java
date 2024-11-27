@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2016, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013-2016, 2020 Nationale-Nederlanden, 2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,25 +15,27 @@
  */
 package org.frankframework.extensions.tibco;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.QueueBrowser;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSException;
+import jakarta.jms.Queue;
+import jakarta.jms.QueueBrowser;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -45,7 +47,6 @@ import com.tibco.tibjms.admin.QueueInfo;
 import com.tibco.tibjms.admin.ServerInfo;
 import com.tibco.tibjms.admin.TibjmsAdmin;
 import com.tibco.tibjms.admin.TibjmsAdminException;
-import com.tibco.tibjms.admin.TibjmsAdminInvalidNameException;
 import com.tibco.tibjms.admin.UserInfo;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -61,7 +62,6 @@ import org.frankframework.pipes.TimeoutGuardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CredentialFactory;
-
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.XmlBuilder;
@@ -97,11 +97,23 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	private boolean skipTemporaryQueues = false;
 	private boolean hideMessage = false;
 	private String queueRegex;
+	private String emsPropertiesFile;
+	private Map<String, Object> emsProperties;
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (getParameterList() != null && getParameterList().findParameter("userName") != null) {
+		if (getParameterList() != null && getParameterList().hasParameter("userName")) {
 			ConfigurationWarnings.add(this, log, "parameter [userName] has been replaced with [username]");
+		}
+
+		if(StringUtils.isNotEmpty(emsPropertiesFile)) {
+			try {
+				emsProperties = new TibcoEmsProperties(this, emsPropertiesFile);
+			} catch (IOException e) {
+				throw new ConfigurationException("unable to find/load the EMS properties file", e);
+			}
+		} else {
+			emsProperties = Collections.emptyMap();
 		}
 
 		super.configure();
@@ -145,10 +157,10 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		CredentialFactory cf = new CredentialFactory(authAlias_work, userName_work, password_work);
 
 		Connection connection = null;
-		Session jSession = null;
+		Session jSession;
 		TibjmsAdmin admin = null;
 		try {
-			admin = TibcoUtils.getActiveServerAdmin(url_work, cf);
+			admin = TibcoUtils.getActiveServerAdmin(url_work, cf, emsProperties);
 			if (admin == null) {
 				throw new PipeRunException(this, "could not find an active server");
 			}
@@ -168,7 +180,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				}
 			}
 
-			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(url_work);
+			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(url_work, null, emsProperties);
 			connection = factory.createConnection(cf.getUsername(), cf.getPassword());
 			jSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -269,7 +281,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				if (count == queueItem) {
 					qNameXml.addAttribute("item", count);
 					Object o = enm.nextElement();
-					if (o instanceof javax.jms.Message msg) {
+					if (o instanceof jakarta.jms.Message msg) {
 						XmlBuilder qMessageId = new XmlBuilder("qMessageId");
 						qMessageId.setCdataValue(msg.getJMSMessageID());
 						qMessageXml.addSubElement(qMessageId);
@@ -277,12 +289,12 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 						qTimestamp.setCdataValue(DateFormatUtils.format(msg.getJMSTimestamp()));
 						qMessageXml.addSubElement(qTimestamp);
 
-						StringBuilder sb = new StringBuilder("");
+						StringBuilder sb = new StringBuilder();
 						Enumeration<?> propertyNames = msg.getPropertyNames();
 						while (propertyNames.hasMoreElements()) {
 							String propertyName = (String) propertyNames .nextElement();
 							Object object = msg.getObjectProperty(propertyName);
-							if (sb.length() > 0) {
+							if (!sb.isEmpty()) {
 								sb.append("; ");
 							}
 							sb.append(propertyName);
@@ -342,24 +354,24 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		qInfoXml.addSubElement(aclXml);
 		qMessageXml.addSubElement(qInfoXml);
 
-		Map<String, LinkedList<String>> consumersMap = getConnectedConsumersMap(admin);
+		Map<String, List<String>> consumersMap = getConnectedConsumersMap(admin);
 		XmlBuilder consumerXml = new XmlBuilder("connectedConsumers");
 		if (consumersMap.containsKey(qInfo.getName())) {
-			LinkedList<String> consumers = consumersMap.get(qInfo.getName());
-			String consumersString = listToString(consumers);
-			if (consumersString != null) {
+			List<String> consumers = consumersMap.get(qInfo.getName());
+			if (consumers != null) {
+				String consumersString = String.join("; ", consumers);
 				consumerXml.setCdataValue(consumersString);
 			}
 		}
 		qInfoXml.addSubElement(consumerXml);
 
-		return qMessageXml.toXML();
+		return qMessageXml.asXmlString();
 	}
 
-	private String getQueueMessageCountOnly(TibjmsAdmin admin, String queueName) throws TibjmsAdminInvalidNameException, TibjmsAdminException {
+	private String getQueueMessageCountOnly(TibjmsAdmin admin, String queueName) throws TibjmsAdminException {
 		QueueInfo queueInfo = admin.getQueue(queueName);
 		long pendingMessageCount = queueInfo.getPendingMessageCount();
-		return "<qCount>" + String.valueOf(pendingMessageCount) + "</qCount>";
+		return "<qCount>" + pendingMessageCount + "</qCount>";
 	}
 
 	private String getQueuesInfo(Session jSession, TibjmsAdmin admin, boolean showAge, LdapSender ldapSender) throws TibjmsAdminException {
@@ -378,7 +390,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		qInfosXml.addAttribute("age", Misc.getAge(startTime));
 
 		Map<String, String> aclMap = getAclMap(admin, ldapSender);
-		Map<String, LinkedList<String>> consumersMap = getConnectedConsumersMap(admin);
+		Map<String, List<String>> consumersMap = getConnectedConsumersMap(admin);
 		QueueInfo[] qInfos = admin.getQueues();
 		for (int i = 0; i < qInfos.length; i++) {
 			QueueInfo qInfo = qInfos[i];
@@ -388,13 +400,13 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				XmlBuilder qInfoXml = qInfoToXml(qInfo);
 				qInfosXml.addSubElement(qInfoXml);
 				XmlBuilder aclXml = new XmlBuilder("acl");
-				aclXml.setValue((String) aclMap.get(qInfo.getName()));
+				aclXml.setValue(aclMap.get(qInfo.getName()));
 				qInfoXml.addSubElement(aclXml);
 				XmlBuilder consumerXml = new XmlBuilder("connectedConsumers");
 				if (consumersMap.containsKey(qInfo.getName())) {
-					LinkedList<String> consumers = consumersMap.get(qInfo.getName());
-					String consumersString = listToString(consumers);
-					if (consumersString != null) {
+					List<String> consumers = consumersMap.get(qInfo.getName());
+					if (consumers != null) {
+						String consumersString = String.join("; ", consumers);
 						consumerXml.setCdataValue(consumersString);
 					}
 				}
@@ -417,7 +429,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				}
 			}
 		}
-		return qInfosXml.toXML();
+		return qInfosXml.asXmlString();
 	}
 
 	private XmlBuilder qInfoToXml(QueueInfo qInfo) {
@@ -481,20 +493,6 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return qInfoXml;
 	}
 
-	private String listToString(LinkedList<String> list) {
-		String string = null;
-		if (list != null) {
-			for (Iterator<String> it = list.iterator(); it.hasNext();) {
-				if (string == null) {
-					string = it.next();
-				} else {
-					string = string + "; " + it.next();
-				}
-			}
-		}
-		return string;
-	}
-
 	private Map<String, String> getAclMap(TibjmsAdmin admin, LdapSender ldapSender) throws TibjmsAdminException {
 		Map<String, String> userMap = new HashMap<>();
 		Map<String, String> aclMap = new HashMap<>();
@@ -545,40 +543,41 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	private String getLdapPrincipalDescription(String principal, LdapSender ldapSender) {
 		String principalDescription = null;
 		Message ldapRequest = new Message("<req>" + principal + "</req>");
-		try (Message message = ldapSender.sendMessageOrThrow(ldapRequest, null)) {
+		try (PipeLineSession session = new PipeLineSession();
+			Message message = ldapSender.sendMessageOrThrow(ldapRequest, session)) {
 			String ldapResult = message.asString();
 			if (ldapResult != null) {
 				Collection<String> c = XmlUtils.evaluateXPathNodeSet(ldapResult,"attributes/attribute[@name='description']/@value");
-				if (c != null && c.size() > 0) {
+				if (c != null && !c.isEmpty()) {
 					principalDescription = c.iterator().next();
 				}
 			}
 		} catch (Exception e) {
-			log.debug("Caught exception retrieving description for principal [" + principal + "]", e);
+			log.debug("Caught exception retrieving description for principal [{}]", principal, e);
 			return null;
 		}
 		return principalDescription;
 	}
 
 	private String getResolvedUrl(String url) {
-		URI uri = null;
+		URI uri;
 		try {
 			uri = new URI(url);
 		} catch (URISyntaxException e) {
-			log.debug("Caught URISyntaxException while resolving url [" + url + "]", e);
+			log.debug("Caught URISyntaxException while resolving url [{}]", url, e);
 			return null;
 		}
-		InetAddress inetAddress = null;
+		InetAddress inetAddress;
 		try {
 			inetAddress = InetAddress.getByName(uri.getHost());
 		} catch (UnknownHostException e) {
-			log.debug("Caught UnknownHostException while resolving url [" + url + "]", e);
+			log.debug("Caught UnknownHostException while resolving url [{}]", url, e);
 			return null;
 		}
 		return inetAddress.getCanonicalHostName();
 	}
 
-	private Map<String, LinkedList<String>> getConnectedConsumersMap(TibjmsAdmin admin) throws TibjmsAdminException {
+	private Map<String, List<String>> getConnectedConsumersMap(TibjmsAdmin admin) throws TibjmsAdminException {
 		Map<Long, String> connectionMap = new HashMap<>();
 		ConnectionInfo[] connectionInfos = admin.getConnections();
 		for (int i = 0; i < connectionInfos.length; i++) {
@@ -590,25 +589,15 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 			}
 		}
 
-		Map<String, LinkedList<String>> consumerMap = new HashMap<>();
+		Map<String, List<String>> consumerMap = new HashMap<>();
 		ConsumerInfo[] consumerInfos = admin.getConsumers();
-		for (int i = 0; i < consumerInfos.length; i++) {
-			ConsumerInfo consumerInfo = consumerInfos[i];
+		for (ConsumerInfo consumerInfo : consumerInfos) {
 			String destinationName = consumerInfo.getDestinationName();
 			long connectionId = consumerInfo.getConnectionID();
 			if (connectionMap.containsKey(connectionId)) {
 				String ci = connectionMap.get(connectionId);
-				if (consumerMap.containsKey(destinationName)) {
-					LinkedList<String> consumers = consumerMap.get(destinationName);
-					if (!consumers.contains(ci)) {
-						consumers.add(ci);
-						consumerMap.put(destinationName, consumers);
-					}
-				} else {
-					LinkedList<String> consumers = new LinkedList<>();
-					consumers.add(ci);
-					consumerMap.put(destinationName, consumers);
-				}
+				List<String> consumers = consumerMap.computeIfAbsent(destinationName, k -> new ArrayList<>());
+				consumers.add(ci);
 			}
 		}
 		return consumerMap;
@@ -678,5 +667,10 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 
 	public void setQueueRegex(String string) {
 		queueRegex = string;
+	}
+
+	/** Location to a <code>jndi.properties</code> file for additional EMS (SSL) properties */
+	public void setEmsPropertiesFile(String propertyFile) {
+		emsPropertiesFile = propertyFile;
 	}
 }

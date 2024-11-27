@@ -11,14 +11,15 @@ import java.nio.charset.Charset;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.MessageTestUtils.MessageType;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 
 public class MultipartEntityTest {
 	private static final String FORMDATA_BOUNDARY = "multipart/form-data; boundary=test-boundary";
@@ -133,7 +134,7 @@ public class MultipartEntityTest {
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.setBoundary("test-boundary");
 
-		Message repeatable = Message.asMessage(new Message("dummy-content-here").asByteArray());
+		Message repeatable = new Message(new Message("dummy-content-here").asByteArray());
 
 		builder.addPart("part1", repeatable);
 		builder.addPart("part2", repeatable);
@@ -153,8 +154,8 @@ public class MultipartEntityTest {
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.setBoundary("test-boundary");
 
-		Message repeatable = Message.asMessage(new Message("dummy-content-here").asByteArray());
-		Message nonRepeatable = Message.asMessage(new FilterInputStream(repeatable.asInputStream()) {});
+		Message repeatable = new Message(new Message("dummy-content-here").asByteArray());
+		Message nonRepeatable = new Message(new FilterInputStream(repeatable.asInputStream()) {});
 
 		builder.addPart("part1", repeatable);
 		builder.addPart("part2", nonRepeatable);

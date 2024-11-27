@@ -21,15 +21,12 @@
                 <tr *ngFor="let service of services; index as index">
                   <td>{{ index }}</td>
                   <td>{{ service.name }}</td>
-                  <td>{{ service.method }}</td>
+                  <td>{{ service.methods }}</td>
                   <td>{{ service.view }}</td>
                   <td>
-                    <a
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      href="{{ rootURL }}rest/{{ service.uriPattern }}"
-                      >{{ service.uriPattern }}</a
-                    >
+                    <a target="_blank" rel="noopener noreferrer" href="{{ rootURL }}rest/{{ service.uriPattern }}">{{
+                      service.uriPattern
+                    }}</a>
                   </td>
                 </tr>
               </tbody>
@@ -49,19 +46,26 @@
             href="{{ rootURL }}iaf/api/webservices/openapi.json"
             class="btn btn-info btn-xs pull-right"
             type="button"
-            ><i aria-hidden="true" class="fa fa-external-link"></i
-            ><span> Full OpenAPI 3.0</span></a
+            ><i aria-hidden="true" class="fa fa-external-link"></i><span> Full OpenAPI 3.0</span></a
           >
           <h4>Available ApiListeners</h4>
         </div>
         <div class="ibox-content">
           <div class="col-md-12">
             <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>&nbsp;</th>
+                  <th>URI pattern</th>
+                  <th>Method(s)</th>
+                  <th>&nbsp;</th>
+                </tr>
+              </thead>
               <tbody>
                 <tr *ngFor="let apiListener of apiListeners; index as index">
                   <td>{{ index }}</td>
                   <td>{{ apiListener.uriPattern }}</td>
-                  <td>{{ apiListener.method }}</td>
+                  <td>{{ apiListener.methods.join(', ') }}</td>
                   <td *ngIf="apiListener.error">{{ apiListener.error }}</td>
                   <td class="hideBtn1170">
                     <a
@@ -70,11 +74,7 @@
                       href="{{ compileURL(apiListener) }}"
                       class="btn btn-xs pull-right default"
                       type="button"
-                      ><i
-                        class="fa fa-arrow-circle-o-down"
-                        aria-hidden="true"
-                      ></i>
-                      <span> OpenAPI 3.0</span></a
+                      ><i class="fa fa-arrow-circle-o-down" aria-hidden="true"></i> <span> OpenAPI 3.0</span></a
                     >
                   </td>
                 </tr>
@@ -103,23 +103,15 @@
                     <a
                       target="_blank"
                       rel="noopener noreferrer"
-                      href="{{ rootURL }}iaf/api/webservices/{{
-                        wsdl.configuration
-                      }}/{{ wsdl.adapter }}.zip"
+                      href="{{ rootURL }}iaf/api/webservices/{{ wsdl.configuration }}/{{ wsdl.adapter }}.zip"
                       class="btn btn-xs pull-right default"
                       type="button"
-                      ><i
-                        aria-hidden="true"
-                        class="fa fa-arrow-circle-o-down"
-                      ></i>
-                      <span> Download</span></a
+                      ><i aria-hidden="true" class="fa fa-arrow-circle-o-down"></i> <span> Download</span></a
                     >
                     <a
                       target="_blank"
                       rel="noopener noreferrer"
-                      href="{{ rootURL }}iaf/api/webservices/{{
-                        wsdl.configuration
-                      }}/{{ wsdl.adapter }}.wsdl"
+                      href="{{ rootURL }}iaf/api/webservices/{{ wsdl.configuration }}/{{ wsdl.adapter }}.wsdl"
                       class="btn btn-xs pull-right default"
                       type="button"
                       ><i aria-hidden="true" class="fa fa-file-archive-o"></i>
@@ -128,13 +120,12 @@
                     <a
                       target="_blank"
                       rel="noopener noreferrer"
-                      href="{{ rootURL }}iaf/api/webservices/{{
-                        wsdl.configuration
-                      }}/{{ wsdl.adapter }}.wsdl?useIncludes=true"
+                      href="{{ rootURL }}iaf/api/webservices/{{ wsdl.configuration }}/{{
+                        wsdl.adapter
+                      }}.wsdl?useIncludes=true"
                       class="btn btn-xs pull-right default"
                       type="button"
-                      ><i aria-hidden="true" class="fa fa-file-code-o"></i>
-                      <span> WSDL</span></a
+                      ><i aria-hidden="true" class="fa fa-file-code-o"></i> <span> WSDL</span></a
                     >
                   </td>
                 </tr>

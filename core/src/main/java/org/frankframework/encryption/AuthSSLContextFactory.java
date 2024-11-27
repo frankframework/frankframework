@@ -32,12 +32,11 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.util.KeyManagerUtils;
 import org.apache.logging.log4j.Logger;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -64,7 +63,7 @@ public class AuthSSLContextFactory {
 			if (keystoreUrl == null) {
 				throw new ConfigurationException("cannot find URL for keystore resource [" + keystoreOwner.getKeystore() + "]");
 			}
-			log.debug("resolved keystore-URL to [" + keystoreUrl.toString() + "]");
+			log.debug("resolved keystore-URL to [{}]", keystoreUrl);
 
 			if (keystoreOwner.getKeystoreType() == KeystoreType.PKCS12 && (StringUtils.isNotEmpty(keystoreOwner.getKeystoreAliasPassword()) || StringUtils.isNotEmpty(keystoreOwner.getKeystoreAliasAuthAlias()))) {
 				ConfigurationWarnings.add(keystoreOwner, log, "KeystoreType [" + KeystoreType.PKCS12 + "] does not guarantee to support using different passwords for the keys and the keystore.", SuppressKeys.MULTIPASSWORD_KEYSTORE_SUPPRESS_KEY);
@@ -75,7 +74,7 @@ public class AuthSSLContextFactory {
 			if (truststoreUrl == null) {
 				throw new ConfigurationException("cannot find URL for truststore resource [" + truststoreOwner.getTruststore() + "]");
 			}
-			log.debug("resolved truststore-URL to [" + truststoreUrl.toString() + "]");
+			log.debug("resolved truststore-URL to [{}]", truststoreUrl);
 		}
 	}
 
@@ -224,7 +223,7 @@ public class AuthSSLContextFactory {
 				}
 			} catch (CertificateException e) {
 				if (truststoreOwner != null && truststoreOwner.isIgnoreCertificateExpiredException()) {
-					log.warn("error occurred during checking trusted server: " + e.getMessage());
+					log.warn("error occurred during checking trusted server: {}", e.getMessage());
 				} else {
 					throw e;
 				}

@@ -1,5 +1,5 @@
 /*
-Copyright 2017 - 2019 Integration Partners B.V.
+Copyright 2017 - 2019 Integration Partners B.V., 2024 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,14 +15,14 @@ limitations under the License.
 */
 package org.frankframework.http.rest;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-
+import lombok.Setter;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.Status;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.cache.IbisCacheManager;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
@@ -30,25 +30,25 @@ import org.frankframework.util.LogUtil;
 public class ApiEhcache implements IApiCache {
 	private final Logger log = LogUtil.getLogger(this);
 
-	private final String KEY_CACHE_NAME="etagCacheReceiver";
-	private final String KEY_PREFIX="etag.ehcache.";
-	private final String KEY_MAX_ELEMENTS_IN_MEMORY=KEY_PREFIX+"maxElementsInMemory";
-	private final String KEY_MEMORYSTORE_EVICTION_POLICY=KEY_PREFIX+"memoryStoreEvictionPolicy";
-	private final String KEY_ETERNAL=KEY_PREFIX+"eternal";
-	private final String KEY_OVERFLOW_TO_DISK=KEY_PREFIX+"overflowToDisk";
-	private final String KEY_MAX_ELEMENTS_ON_DISK=KEY_PREFIX+"maxElementsOnDisk";
-	private final String KEY_DISK_PERSISTENT=KEY_PREFIX+"diskPersistent";
-	private final String KEY_DISK_EXPIRY_THREAD_INTERVAL_SECONDS=KEY_PREFIX+"diskExpiryThreadIntervalSeconds";
+	private static final String KEY_CACHE_NAME = "etagCacheReceiver";
+	private static final String KEY_PREFIX="etag.ehcache.";
+	private static final String KEY_MAX_ELEMENTS_IN_MEMORY=KEY_PREFIX+"maxElementsInMemory";
+	private static final String KEY_MEMORYSTORE_EVICTION_POLICY=KEY_PREFIX+"memoryStoreEvictionPolicy";
+	private static final String KEY_ETERNAL=KEY_PREFIX+"eternal";
+	private static final String KEY_OVERFLOW_TO_DISK=KEY_PREFIX+"overflowToDisk";
+	private static final String KEY_MAX_ELEMENTS_ON_DISK=KEY_PREFIX+"maxElementsOnDisk";
+	private static final String KEY_DISK_PERSISTENT=KEY_PREFIX+"diskPersistent";
+	private static final String KEY_DISK_EXPIRY_THREAD_INTERVAL_SECONDS=KEY_PREFIX+"diskExpiryThreadIntervalSeconds";
 
 	private int maxElementsInMemory=512;
 	private String memoryStoreEvictionPolicy="LRU";
-	private boolean eternal=true;
-	private boolean overflowToDisk=false;
-	private int maxElementsOnDisk=10000;
-	private boolean diskPersistent=false;
+	@Setter private boolean eternal = true;
+	@Setter private boolean overflowToDisk = false;
+	@Setter private int maxElementsOnDisk = 10000;
+	@Setter private boolean diskPersistent = false;
 	private int diskExpiryThreadIntervalSeconds=600;
 
-	private Ehcache cache=null;
+	private Ehcache cache;
 	private IbisCacheManager cacheManager=null;
 
 	public ApiEhcache() {
@@ -70,38 +70,38 @@ public class ApiEhcache implements IApiCache {
 	}
 
 	private void createCache(AppConstants ac) {
-		if (isDiskPersistent() && !isOverflowToDisk()) {
+		if (diskPersistent && !overflowToDisk) {
 			log.info("setting overflowToDisk true, to support diskPersistent=true");
 			setOverflowToDisk(true);
 		}
 
-		String DiskStorePath = null;
+		String diskStorePath = null;
 		String cacheDir = ac.getProperty("etag.ehcache.dir");
 		if (StringUtils.isNotEmpty(cacheDir)) {
-			DiskStorePath = cacheDir;
+			diskStorePath = cacheDir;
 		}
 
 		Cache configCache = new Cache(
 				KEY_CACHE_NAME,
 				maxElementsInMemory,
 				MemoryStoreEvictionPolicy.fromString(memoryStoreEvictionPolicy),
-				isOverflowToDisk(),
-				DiskStorePath,
-				isEternal(),
+				overflowToDisk,
+				diskStorePath,
+				eternal,
 				0,
 				0,
-				isDiskPersistent(),
+				diskPersistent,
 				diskExpiryThreadIntervalSeconds,
 				null,
 				null,
-				getMaxElementsOnDisk()
+				maxElementsOnDisk
 			);
 		cache = cacheManager.addCache(configCache);
 	}
 
 	@Override
 	public void destroy() {
-		if (isDiskPersistent()) {
+		if (diskPersistent) {
 			log.debug("cache ["+KEY_CACHE_NAME+"] flushing to disk");
 			cache.flush();
 		} else {
@@ -188,31 +188,4 @@ public class ApiEhcache implements IApiCache {
 		cache.removeAll();
 	}
 
-	private boolean isEternal() {
-		return eternal;
-	}
-	public void setEternal(boolean eternal) {
-		this.eternal = eternal;
-	}
-
-	private boolean isOverflowToDisk() {
-		return overflowToDisk;
-	}
-	public void setOverflowToDisk(boolean overflowToDisk) {
-		this.overflowToDisk = overflowToDisk;
-	}
-
-	private int getMaxElementsOnDisk() {
-		return maxElementsOnDisk;
-	}
-	public void setMaxElementsOnDisk(int maxElementsOnDisk) {
-		this.maxElementsOnDisk = maxElementsOnDisk;
-	}
-
-	private boolean isDiskPersistent() {
-		return diskPersistent;
-	}
-	public void setDiskPersistent(boolean diskPersistent) {
-		this.diskPersistent = diskPersistent;
-	}
 }

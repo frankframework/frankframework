@@ -23,7 +23,7 @@ import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.util.AppConstants;
 
-public class DirectoryClassLoader extends ClassLoaderBase {
+public class DirectoryClassLoader extends AbstractClassLoader {
 	private File directory = null;
 
 	public DirectoryClassLoader(ClassLoader parent) {
@@ -45,7 +45,7 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 		}
 
 		if(getBasePath() != null) { //Append BasePath, because legacy
-			log.debug("appending basepath ["+getBasePath()+"] to directory ["+directory+"]");
+			log.debug("appending basepath [{}] to directory [{}]", getBasePath(), directory);
 			directory = new File(directory, getBasePath()); //Append BasePath, because legacy
 		}
 
@@ -66,7 +66,7 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 		this.directory = dir;
 	}
 
-	protected File getDirectory() {
+	public File getDirectory() {
 		return this.directory;
 	}
 
@@ -77,7 +77,7 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 			try {
 				return file.toURI().toURL();
 			} catch (MalformedURLException e) {
-				log.error("Could not create url for '" + name + "'", e);
+				log.error("could not create url for [{}]", name, e);
 			}
 		}
 
@@ -87,7 +87,7 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(super.toString());
-		if(getDirectory() != null) builder.append(" directory ["+getDirectory()+"]");
+		if(getDirectory() != null) builder.append(" directory [").append(getDirectory()).append("]");
 		return builder.toString();
 	}
 }

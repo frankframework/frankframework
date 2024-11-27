@@ -15,10 +15,8 @@
 */
 package org.frankframework.pipes;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -26,19 +24,23 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import javax.annotation.Nonnull;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.ValidatorHandler;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
+import org.springframework.beans.factory.InitializingBean;
+import org.xml.sax.helpers.XMLFilterImpl;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.HasSpecialDefaultValues;
+import org.frankframework.core.AbstractResponseValidatorWrapper;
 import org.frankframework.core.IValidator;
 import org.frankframework.core.IXmlValidator;
 import org.frankframework.core.PipeForward;
-import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -50,7 +52,6 @@ import org.frankframework.soap.SoapVersion;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
@@ -63,35 +64,22 @@ import org.frankframework.validation.RootValidations;
 import org.frankframework.validation.Schema;
 import org.frankframework.validation.SchemaUtils;
 import org.frankframework.validation.SchemasProvider;
-import org.frankframework.validation.ValidationContext;
-import org.frankframework.validation.XSD;
+import org.frankframework.validation.AbstractValidationContext;
+import org.frankframework.validation.AbstractXSD;
 import org.frankframework.validation.XercesXmlValidator;
 import org.frankframework.validation.XmlValidatorException;
 import org.frankframework.validation.xsd.ResourceXsd;
 import org.frankframework.xml.RootElementToSessionKeyFilter;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.xml.sax.helpers.XMLFilterImpl;
-
-import lombok.Getter;
-import lombok.Setter;
 
 
 /**
  * Pipe that validates the input message against an XML Schema.
  *
- * @ff.forward parserError a parser exception occurred, probably caused by non-well-formed XML. If not specified, <code>failure</code> is used in such a case.
- * @ff.forward failure The document is not valid according to the configured schema.
- * @ff.forward warnings warnings occurred. If not specified, <code>success</code> is used.
- * @ff.forward outputParserError a <code>parserError</code> when validating a response. If not specified, <code>parserError</code> is used.
- * @ff.forward outputFailure a <code>failure</code> when validating a response. If not specified, <code>failure</code> is used.
- * @ff.forward outputWarnings warnings occurred when validating a response. If not specified, <code>warnings</code> is used.
- *
  * @author Johan Verrips IOS
  * @author Jaco de Groot
  */
-@Category("Basic")
-public class XmlValidator extends ValidatorBase implements SchemasProvider, HasSpecialDefaultValues, IXmlValidator, InitializingBean {
+@Category(Category.Type.BASIC)
+public class XmlValidator extends AbstractValidator implements SchemasProvider, HasSpecialDefaultValues, IXmlValidator, InitializingBean {
 
 	private @Getter String schemaLocation;
 	private @Getter String noNamespaceSchemaLocation;
@@ -159,6 +147,10 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 
 			if (!isForwardFailureToSuccess() && !isThrowException() && findForward("failure") == null) {
 				throw new ConfigurationException("must either set throwException=true or have a forward with name [failure]");
+			}
+
+			if (isThrowException () && findForward("failure") != null) {
+				ConfigurationWarnings.add(this, log, "throwException=true, so the failure forward will be ignored");
 			}
 
 			// Different default value for ignoreUnknownNamespaces when using
@@ -239,7 +231,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 
 	@Override
 	protected PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws XmlValidatorException, PipeRunException, ConfigurationException {
-		ValidationContext context;
+		AbstractValidationContext context;
 		if(StringUtils.isNotEmpty(messageRoot)) {
 			context = validator.createValidationContext(session, createRootValidation(messageRoot), getInvalidRootNamespaces());
 		} else {
@@ -277,16 +269,10 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	}
 
 	private Message getMessageToValidate(Message message) throws PipeRunException {
-		String input;
-		try {
-			input = message.asString();
-		} catch (IOException e) {
-			throw new PipeRunException(this, "cannot open stream", e);
-		}
-		if (XmlUtils.isWellFormed(input, "Envelope")) {
+		if (XmlUtils.isWellFormed(message, "Envelope")) {
 			String inputRootNs;
 			try {
-				inputRootNs = transformerPoolGetRootNamespace.transform(input, null);
+				inputRootNs = transformerPoolGetRootNamespace.transform(message);
 			} catch (Exception e) {
 				throw new PipeRunException(this, "cannot extract root namespace", e);
 			}
@@ -303,8 +289,11 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 				}
 				if (extractSoapBody) {
 					log.debug("extract SOAP body for validation");
+					String input;
+
 					try {
-						input = transformerPoolExtractSoapBody.transform(input, null, true);
+						SAXSource source = XmlUtils.inputSourceToSAXSource(message.asInputSource(), true, null);
+						input = transformerPoolExtractSoapBody.transform(source);
 					} catch (Exception e) {
 						throw new PipeRunException(this, "cannot extract SOAP body", e);
 					}
@@ -321,10 +310,11 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 							throw new PipeRunException(this, "cannot remove namespaces", e);
 						}
 					}
+					return new Message(input);
 				}
 			}
 		}
-		return new Message(input);
+		return message;
 	}
 
 	@Override
@@ -393,20 +383,20 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 			// mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes, in case of
 			// noNamespaceSchemaLocation the WSDL generator doesn't use
 			// XmlValidator.getXsds(). See comment in Wsdl.getXsds() too.
-			Set<IXSD> tempXsds = XSD.getXsdsRecursive(xsds, true);
+			Set<IXSD> tempXsds = AbstractXSD.getXsdsRecursive(xsds, true);
 			if (checkRootValidations) {
 				checkInputRootValidations(tempXsds);
 				checkOutputRootValidations(tempXsds);
 			}
 		} else {
-			xsds = XSD.getXsdsRecursive(xsds);
+			xsds = AbstractXSD.getXsdsRecursive(xsds);
 			if (checkRootValidations) {
 				checkInputRootValidations(xsds);
 				checkOutputRootValidations(xsds);
 			}
 			try {
-				Map<String, Set<IXSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
-				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(this, xsdsGroupedByNamespace, null); // also handles addNamespaceToSchema
+				Map<String, Set<IXSD>> xsdsGroupedByNamespace = SchemaUtils.groupXsdsByNamespace(xsds, false);
+				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(this, xsdsGroupedByNamespace); // also handles addNamespaceToSchema
 			} catch(Exception e) {
 				throw new ConfigurationException("could not merge schema's", e);
 			}
@@ -425,25 +415,12 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	}
 
 	/**
-	 * Wrapper for the response validator. It has its own name and forwards, but delegates the actual work to the original validator.
-	 * It overrides the stop and start method to prevent the original validator from being started and stopped.
+	 * Wrapper for the XML response validator.
 	 */
-	public static class ResponseValidatorWrapper implements IXmlValidator {
-
-		private @Getter @Setter String name;
-
-		private final Map<String, PipeForward> forwards = new HashMap<>();
-
-		protected XmlValidator owner;
+	public static class ResponseValidatorWrapper extends AbstractResponseValidatorWrapper<XmlValidator> implements IXmlValidator {
 
 		public ResponseValidatorWrapper(XmlValidator owner) {
-			super();
-			this.owner = owner;
-			name = "ResponseValidator of " + owner.getName();
-		}
-
-		@Override
-		public void configure() throws ConfigurationException {
+			super(owner);
 		}
 
 		@Override
@@ -452,41 +429,8 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		}
 
 		@Override
-		public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-			return owner.doPipe(message, session, true, null);
-		}
-
-		@Override
-		public PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException {
-			return owner.doPipe(message, session, true, messageRoot);
-		}
-
-		@Override
 		public String getMessageRoot() {
 			return owner.getResponseRoot();
-		}
-
-		@Override
-		public int getMaxThreads() {
-			return 0;
-		}
-
-		@Override
-		public Map<String, PipeForward> getForwards() {
-			return forwards;
-		}
-
-		@Override
-		public void registerForward(PipeForward forward) {
-			forwards.put(forward.getName(), forward);
-		}
-
-		@Override
-		public void start() throws PipeStartException {
-		}
-
-		@Override
-		public void stop() {
 		}
 
 		@Override
@@ -507,196 +451,6 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		@Override
 		public String getDocumentation() {
 			return null;
-		}
-
-		@Override
-		public ApplicationContext getApplicationContext() {
-			return owner.getApplicationContext();
-		}
-
-		@Override
-		public ClassLoader getConfigurationClassLoader() {
-			return owner.getConfigurationClassLoader();
-		}
-
-		@Override
-		public void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
-			//Can ignore this as it's not set through Spring
-		}
-
-		@Override
-		public boolean consumesSessionVariable(String sessionKey) {
-			return owner.consumesSessionVariable(sessionKey);
-		}
-
-		@Override
-		public void setPipeLine(PipeLine pipeline) {
-			owner.setPipeLine(pipeline);
-		}
-
-		@Override
-		public void setGetInputFromSessionKey(String string) {
-			owner.setGetInputFromSessionKey(string);
-		}
-
-		@Override
-		public String getGetInputFromSessionKey() {
-			return owner.getGetInputFromSessionKey();
-		}
-
-		@Override
-		public void setGetInputFromFixedValue(String string) {
-			owner.setGetInputFromFixedValue(string);
-		}
-
-		@Override
-		public String getGetInputFromFixedValue() {
-			return owner.getGetInputFromFixedValue();
-		}
-
-		@Override
-		public void setEmptyInputReplacement(String string) {
-			owner.setEmptyInputReplacement(string);
-		}
-
-		@Override
-		public String getEmptyInputReplacement() {
-			return owner.getEmptyInputReplacement();
-		}
-
-		@Override
-		public void setPreserveInput(boolean preserveInput) {
-			owner.setPreserveInput(preserveInput);
-		}
-
-		@Override
-		public boolean isPreserveInput() {
-			return owner.isPreserveInput();
-		}
-
-		@Override
-		public void setStoreResultInSessionKey(String string) {
-			owner.setStoreResultInSessionKey(string);
-		}
-
-		@Override
-		public String getStoreResultInSessionKey() {
-			return owner.getStoreResultInSessionKey();
-		}
-
-		@Override
-		public void setChompCharSize(String string) {
-			owner.setChompCharSize(string);
-		}
-
-		@Override
-		public String getChompCharSize() {
-			return owner.getChompCharSize();
-		}
-
-		@Override
-		public void setElementToMove(String string) {
-			owner.setElementToMove(string);
-		}
-
-		@Override
-		public String getElementToMove() {
-			return owner.getElementToMove();
-		}
-
-		@Override
-		public void setElementToMoveSessionKey(String string) {
-			owner.setElementToMoveSessionKey(string);
-		}
-
-		@Override
-		public String getElementToMoveSessionKey() {
-			return owner.getElementToMoveSessionKey();
-		}
-
-		@Override
-		public void setElementToMoveChain(String string) {
-			owner.setElementToMoveChain(string);
-		}
-
-		@Override
-		public String getElementToMoveChain() {
-			return owner.getElementToMoveChain();
-		}
-
-		@Override
-		public void setRemoveCompactMsgNamespaces(boolean b) {
-			owner.setRemoveCompactMsgNamespaces(b);
-		}
-
-		@Override
-		public boolean isRemoveCompactMsgNamespaces() {
-			return owner.isRemoveCompactMsgNamespaces();
-		}
-
-		@Override
-		public void setRestoreMovedElements(boolean restoreMovedElements) {
-			owner.setRestoreMovedElements(restoreMovedElements);
-		}
-
-		@Override
-		public boolean isRestoreMovedElements() {
-			return owner.isRestoreMovedElements();
-		}
-
-		@Override
-		public void setDurationThreshold(long maxDuration) {
-			owner.setDurationThreshold(maxDuration);
-		}
-
-		@Override
-		public long getDurationThreshold() {
-			return owner.getDurationThreshold();
-		}
-
-		@Override
-		public void setLocker(Locker locker) {
-			owner.setLocker(locker);
-		}
-
-		@Override
-		public Locker getLocker() {
-			return owner.getLocker();
-		}
-
-		@Override
-		public void setWriteToSecLog(boolean b) {
-			owner.setWriteToSecLog(b);
-		}
-
-		@Override
-		public boolean isWriteToSecLog() {
-			return owner.isWriteToSecLog();
-		}
-
-		@Override
-		public void setSecLogSessionKeys(String string) {
-			owner.setSecLogSessionKeys(string);
-		}
-
-		@Override
-		public String getSecLogSessionKeys() {
-			return owner.getSecLogSessionKeys();
-		}
-
-		@Override
-		public void registerEvent(String description) {
-			owner.registerEvent(description);
-		}
-
-		@Override
-		public void throwEvent(String event, Message eventMessage) {
-			owner.throwEvent(event, eventMessage);
-		}
-
-		@Override
-		public boolean sizeStatisticsEnabled() {
-			return owner.sizeStatisticsEnabled();
 		}
 	}
 

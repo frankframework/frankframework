@@ -12,7 +12,6 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.util.LogUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -21,6 +20,8 @@ import org.junit.jupiter.api.io.TempDir;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.util.StreamUtils;
 
+import org.frankframework.util.LogUtil;
+
 /**
  * Test timeout of 3 minutes is likely more than ever needed but some of these tests can
  * be very slow, so I'm being extra generous here.
@@ -28,7 +29,7 @@ import org.springframework.util.StreamUtils;
 @Tag("slow")
 @Tag("unstable")
 @Timeout(value = 180, unit = TimeUnit.SECONDS)
-public abstract class StatusRecordingTransactionManagerTestBase<S extends StatusRecordingTransactionManager> {
+public abstract class StatusRecordingTransactionManagerTestBase<S extends AbstractStatusRecordingTransactionManager> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	public String STATUS_FILE = "status.txt";

@@ -33,7 +33,7 @@ public class NonResolvingURIResolver implements URIResolver {
 
 	@Override
 	public Source resolve(String href, String base) throws TransformerException {
-		log.warn("resolving entity with href [" + href + "] base [" + base + "] to NULL");
+		log.warn("resolving entity with href [{}] base [{}] to NULL", href, base);
 
 		return null;
 	}

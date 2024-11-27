@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,49 +16,49 @@
 package org.frankframework.util;
 
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.stream.document.DocumentBuilderFactory;
-import org.frankframework.stream.document.IDocumentBuilder;
+import org.frankframework.documentbuilder.DocumentBuilderFactory;
+import org.frankframework.documentbuilder.IDocumentBuilder;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
+import org.frankframework.xml.PrettyPrintFilter;
+import org.frankframework.xml.SaxDocumentBuilder;
+import org.frankframework.xml.XmlWriter;
+import org.springframework.http.MediaType;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
 
-import org.frankframework.xml.PrettyPrintFilter;
-import org.frankframework.xml.SaxDocumentBuilder;
-import org.frankframework.xml.XmlWriter;
-
 /**
- * Builds a XML-element with attributes and sub-elements. Attributes can be
+ * Builds an XML-element with attributes and sub-elements. Attributes can be
  * added with the addAttribute method, the content can be set with the setValue
- * method. Subelements can be added with the addSubElement method. the toXML
- * function returns the node and subnodes as an indented xml string.
+ * method. Sub elements can be added with the addSubElement method. the toXML
+ * function returns the node and sub nodes as an indented xml string.
  * <p/>
  *
- * @deprecated Please replace with {@link SaxDocumentBuilder} or {@link IDocumentBuilder} (from {@link DocumentBuilderFactory})
+ * If possible, use {@link SaxDocumentBuilder} or {@link IDocumentBuilder} (from {@link DocumentBuilderFactory})
  *
  * @author Johan Verrips
  * @author Peter Leeuwenburgh
- *
- **/
-@Deprecated
+ */
 public class XmlBuilder {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private final String CDATA_END="]]>";
+	private static final String CDATA_END = "]]>";
 
-	private String root;
-	private AttributesImpl attributes = new AttributesImpl();
+	private final String root;
+	private final AttributesImpl attributes = new AttributesImpl();
 	private List<XmlBuilder> subElements;
 	private String text;
 	private boolean parseText;
 	private List<String> cdata;
 
 	public XmlBuilder(String tagName) {
-		root = tagName;
+		root = XmlUtils.cleanseElementName(tagName);
 	}
 
 	public static XmlBuilder create(String tagName) {
@@ -86,26 +86,26 @@ public class XmlBuilder {
 	}
 
 	public void addSubElement(XmlBuilder newElement) {
-		if (subElements==null) {
-			if (text!=null) {
-				throw new IllegalStateException("XmlBuilder cannot have mixed content, text already set to ["+text+"] when trying to add element");
+		if (subElements == null) {
+			if (text != null) {
+				throw new IllegalStateException("XmlBuilder cannot have mixed content, text already set to [" + text + "] when trying to add element");
 			}
-			if (cdata!=null) {
+			if (cdata != null) {
 				throw new IllegalStateException("XmlBuilder cannot have mixed content, cdata already set when trying to add element");
 			}
-			subElements = new LinkedList<>();
+			subElements = new ArrayList<>();
 		}
 		subElements.add(newElement);
 	}
 
 	public void setCdataValue(String value) {
-		text=null;
-		cdata=new LinkedList<>();
-		if (value!=null) {
+		text = null;
+		cdata = new ArrayList<>();
+		if (value != null) {
 			int cdata_end_pos;
-			while ((cdata_end_pos=value.indexOf(CDATA_END))>=0) {
-				cdata.add(value.substring(0, cdata_end_pos+1));
-				value = value.substring(cdata_end_pos+1);
+			while ((cdata_end_pos = value.indexOf(CDATA_END)) >= 0) {
+				cdata.add(value.substring(0, cdata_end_pos + 1));
+				value = value.substring(cdata_end_pos + 1);
 			}
 			cdata.add(value);
 		}
@@ -123,15 +123,20 @@ public class XmlBuilder {
 		parseText = !encode && XmlUtils.isWellFormed(value);
 	}
 
-	public String toXML() {
-		return toXML(false);
+	public Message asMessage() {
+		return new Message(asXmlString(), new MessageContext().withMimeType(MediaType.APPLICATION_XML));
 	}
 
-	public String toXML(boolean xmlHeader) {
+	public String asXmlString() {
 		XmlWriter writer = new XmlWriter();
-		PrettyPrintFilter ppf = new PrettyPrintFilter(writer);
+		PrettyPrintFilter handler = new PrettyPrintFilter(writer);
 		try {
-			toXML(ppf);
+			handler.startDocument();
+			try {
+				handleElement(handler);
+			} finally {
+				handler.endDocument();
+			}
 		} catch (SAXException | IOException e) {
 			log.warn("cannot write XML", e);
 			return e.getMessage();
@@ -139,52 +144,40 @@ public class XmlBuilder {
 		return writer.toString();
 	}
 
-	public void toXML(ContentHandler handler) throws SAXException, IOException {
-		toXML(handler, true);
-	}
-
-	public void toXML(ContentHandler handler, boolean asDocument) throws SAXException, IOException {
-		if (asDocument) {
-			handler.startDocument();
-		}
+	private void handleElement(ContentHandler handler) throws SAXException, IOException {
+		handler.startElement("", root, root, attributes);
 		try {
-			handler.startElement("", root, root, attributes);
-			try {
-				if (subElements!=null) {
-					for(XmlBuilder subElement:subElements) {
-						subElement.toXML(handler, false);
-					}
+			//Write sub-element
+			if (subElements != null) {
+				for (XmlBuilder subElement : subElements) {
+					subElement.handleElement(handler);
 				}
-				if (text!=null) {
-					if (parseText) {
-						XmlUtils.parseNodeSet(text, handler);
-					} else {
-						handler.characters(text.toCharArray(), 0, text.length());
-					}
-				}
-				if (cdata!=null) {
-					for(String part:cdata) {
-						if (handler instanceof LexicalHandler lexicalHandler) {
-							lexicalHandler.startCDATA();
-						}
-						handler.characters(part.toCharArray(), 0, part.length());
-						if (handler instanceof LexicalHandler lexicalHandler) {
-							lexicalHandler.endCDATA();
-						}
-					}
-				}
-			} finally {
-				handler.endElement(root, text, root);
 			}
+
+			writeContent(handler);
 		} finally {
-			if (asDocument) {
-				handler.endDocument();
-			}
+			handler.endElement(root, text, root);
 		}
 	}
 
-	@Override
-	public String toString() {
-		return toXML();
+	private void writeContent(ContentHandler handler) throws IOException, SAXException {
+		if (text != null) {
+			if (parseText) {
+				XmlUtils.parseNodeSet(text, handler);
+			} else {
+				handler.characters(text.toCharArray(), 0, text.length());
+			}
+		}
+		if (cdata != null) {
+			for (String part : cdata) {
+				if (handler instanceof LexicalHandler lexicalHandler) {
+					lexicalHandler.startCDATA();
+				}
+				handler.characters(part.toCharArray(), 0, part.length());
+				if (handler instanceof LexicalHandler lexicalHandler) {
+					lexicalHandler.endCDATA();
+				}
+			}
+		}
 	}
 }

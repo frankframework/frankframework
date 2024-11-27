@@ -68,16 +68,17 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 		XSTypeDefinition typeDefinition=aligner.getTypeDefinition();
 		if (!localName.equals(topElement)) {
 			if (topElement!=null) {
-				if (log.isTraceEnabled()) log.trace("endElementGroup ["+topElement+"]");
+				if (log.isTraceEnabled()) log.trace("endElementGroup [{}]", topElement);
 				documentContainer.endElementGroup(topElement);
 			}
-			if (log.isTraceEnabled()) log.trace("startElementGroup ["+localName+"]");
+			if (log.isTraceEnabled()) log.trace("startElementGroup [{}]", localName);
 			documentContainer.startElementGroup(localName, xmlArrayContainer, repeatedElement, typeDefinition);
 			topElement=localName;
 		}
 		element.push(topElement);
 		topElement=null;
-		if (log.isTraceEnabled()) log.trace("startElement ["+localName+"] xml array container ["+aligner.isParentOfSingleMultipleOccurringChildElement()+"] repeated element ["+aligner.isMultipleOccurringChildInParentElement(localName)+"]");
+		if (log.isTraceEnabled())
+			log.trace("startElement [{}] xml array container [{}] repeated element [{}]", localName, aligner.isParentOfSingleMultipleOccurringChildElement(), aligner.isMultipleOccurringChildInParentElement(localName));
 		documentContainer.startElement(localName,xmlArrayContainer,repeatedElement, typeDefinition);
 		super.startElement(uri, localName, qName, atts);
 		if (aligner.isNil(atts)) {
@@ -88,7 +89,7 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 				XSWildcard wildcard = typeDefinition instanceof XSComplexTypeDefinition xsctd ? xsctd.getAttributeWildcard():null;
 				if (attributeUses==null && wildcard==null) {
 					if (atts.getLength()>0) {
-						log.warn("found ["+atts.getLength()+"] attributes, but no declared AttributeUses");
+						log.warn("found [{}] attributes, but no declared AttributeUses", atts.getLength());
 					}
 				} else {
 					if (wildcard!=null) {
@@ -98,7 +99,7 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 							String namespace=atts.getURI(i);
 							String value=atts.getValue(i);
 							XSSimpleTypeDefinition attTypeDefinition = findAttributeTypeDefinition(attributeUses, namespace, name);
-							if (log.isTraceEnabled()) log.trace("startElement ["+localName+"] attribute ["+namespace+":"+name+"] value ["+value+"]");
+							if (log.isTraceEnabled()) log.trace("startElement [{}] attribute [{}:{}] value [{}]", localName, namespace, name, value);
 							if (StringUtils.isNotEmpty(value)) {
 								documentContainer.setAttribute(name, value, attTypeDefinition);
 							}
@@ -111,11 +112,11 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 							XSSimpleTypeDefinition attTypeDefinition=attributeDeclaration.getTypeDefinition();
 							String attName=attributeDeclaration.getName();
 							String attNS=attributeDeclaration.getNamespace();
-							if (log.isTraceEnabled()) log.trace("startElement ["+localName+"] searching attribute ["+attNS+":"+attName+"]");
+							if (log.isTraceEnabled()) log.trace("startElement [{}] searching attribute [{}:{}]", localName, attNS, attName);
 							int attIndex=attNS!=null? atts.getIndex(attNS, attName):atts.getIndex(attName);
 							if (attIndex>=0) {
 								String value=atts.getValue(attIndex);
-								if (log.isTraceEnabled()) log.trace("startElement ["+localName+"] attribute ["+attNS+":"+attName+"] value ["+value+"]");
+								if (log.isTraceEnabled()) log.trace("startElement [{}] attribute [{}:{}] value [{}]", localName, attNS, attName, value);
 								if (StringUtils.isNotEmpty(value)) {
 									documentContainer.setAttribute(attName, value, attTypeDefinition);
 								}
@@ -146,15 +147,15 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		if (topElement!=null) {
-			if (log.isTraceEnabled()) log.trace("endElementGroup ["+topElement+"]");
+			if (log.isTraceEnabled()) log.trace("endElementGroup [{}]", topElement);
 			documentContainer.endElementGroup(topElement);
 		}
 		topElement=element.pop();
-		if (log.isTraceEnabled()) log.trace("endElement ["+localName+"]");
+		if (log.isTraceEnabled()) log.trace("endElement [{}]", localName);
 		documentContainer.endElement(localName);
 		super.endElement(uri, localName, qName);
 		if (element.isEmpty()) {
-			if (log.isTraceEnabled()) log.trace("endElementGroup ["+localName+"]");
+			if (log.isTraceEnabled()) log.trace("endElementGroup [{}]", localName);
 			documentContainer.endElementGroup(localName);
 		}
 	}
@@ -164,7 +165,7 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 		XSSimpleType simpleType=aligner.getElementType();
 		ScalarType scalarType=ScalarType.findType(simpleType);
 		if (log.isTraceEnabled() && simpleType!=null) {
-			log.trace("SimpleType ["+simpleType+"] ScalarType ["+scalarType+"] characters ["+new String(ch,start,length)+"]");
+			log.trace("SimpleType [{}] ScalarType [{}] characters [{}]", simpleType, scalarType, new String(ch, start, length));
 		}
 		documentContainer.characters(ch, start, length);
 		super.characters(ch, start, length);

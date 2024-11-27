@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,44 +15,27 @@
 */
 package org.frankframework.aws;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.Protocol;
-import com.amazonaws.regions.Regions;
 
 import lombok.Getter;
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.LogUtil;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+
+import org.frankframework.util.CredentialFactory;
 
 public class AwsBase {
-	protected Logger log = LogUtil.getLogger(this);
-
-	private static final List<String> AVAILABLE_REGIONS = getAvailableRegions();
 
 	private @Getter String accessKey;
 	private @Getter String secretKey;
 	private @Getter String authAlias;
 
-	private String clientRegion = Regions.EU_WEST_1.getName();
+	private @Getter Region clientRegion = Region.EU_WEST_1;
 
 	private @Getter String proxyHost = null;
 	private @Getter Integer proxyPort = null;
 
-	public String getClientRegion() {
-		if (StringUtils.isEmpty(clientRegion) || !AVAILABLE_REGIONS.contains(clientRegion)) {
-			throw new IllegalStateException("invalid region [" + clientRegion + "] please use one of the following supported regions " + AVAILABLE_REGIONS.toString());
-		}
-		return clientRegion;
-	}
-
 	public AwsCredentialsProvider getAwsCredentialsProvider() {
-		if((StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isEmpty(getSecretKey())) || (StringUtils.isEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
+		if ((StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isEmpty(getSecretKey())) || (StringUtils.isEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
 			throw new IllegalStateException("invalid credential fields, please provide AWS credentials (accessKey and secretKey)");
 		}
 
@@ -60,28 +43,8 @@ public class AwsBase {
 		if (StringUtils.isNotEmpty(getAuthAlias()) || (StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
 			cf = new CredentialFactory(getAuthAlias(), getAccessKey(), getSecretKey());
 		}
-		return AwsUtil.getAwsCredentialsProvider(cf);
+		return AwsUtil.createCredentialProviderChain(cf);
 	}
-
-	public static List<String> getAvailableRegions() {
-		List<String> availableRegions = new ArrayList<>(Regions.values().length);
-		for (Regions region : Regions.values())
-			availableRegions.add(region.getName());
-
-		return availableRegions;
-	}
-
-	protected ClientConfiguration getProxyConfig() {
-		ClientConfiguration proxyConfig = null;
-		if (this.getProxyHost() != null && this.getProxyPort() != null) {
-			proxyConfig = new ClientConfiguration();
-			proxyConfig.setProtocol(Protocol.HTTPS);
-			proxyConfig.setProxyHost(this.getProxyHost());
-			proxyConfig.setProxyPort(this.getProxyPort());
-		}
-		return proxyConfig;
-	}
-
 
 	/** AWS accessKey */
 	public void setAccessKey(String accessKey) {
@@ -98,10 +61,11 @@ public class AwsBase {
 		this.authAlias = authAlias;
 	}
 
-	/** AWS Client region
+	/**
+	 * AWS Client region
 	 * @ff.default eu-west-1
 	 */
-	public void setClientRegion(String clientRegion) {
+	public void setClientRegion(Region clientRegion) {
 		this.clientRegion = clientRegion;
 	}
 

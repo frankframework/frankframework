@@ -21,7 +21,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -33,11 +32,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.core.IForwardTarget;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
+import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.stream.Message;
@@ -45,12 +47,11 @@ import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  * QuerySender that transforms the input message to a query.
- * <br/><code><pre>
+ * <br/>
+ * <pre>{@code
  *  select
  *  delete
  *  insert
@@ -63,15 +64,17 @@ import org.w3c.dom.Node;
  *                                          - formatString [0..1] only applicable for type=datetime, yyyy-MM-dd HH:mm:ss.SSS by default
  *         - where [0..1]
  *         - order [0..1]
- * <br/>
+ *
  *  alter - sequenceName
  *        - startWith
- * <br/>
+ *
  *  sql   - type [0..1] one of {select;ddl;other}, other by default
  *        - query
- * <br/>
- * </pre></code><br/>
  *
+ * }</pre>
+ * <br/>
+ *
+ * @ff.info Please note that the default value of {@code trimSpaces} is {@literal true}
  * @author  Peter Leeuwenburgh
  */
 public class XmlQuerySender extends DirectQuerySender {
@@ -87,7 +90,8 @@ public class XmlQuerySender extends DirectQuerySender {
 	public static final String TYPE_DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
 	public static final String TYPE_XMLDATETIME = "xmldatetime";
 
-	public class Column {
+	@Getter
+	private class Column {
 		private String name = null;
 		private String value = null;
 		private String type = TYPE_STRING;
@@ -116,11 +120,9 @@ public class XmlQuerySender extends DirectQuerySender {
 			if (formatString != null) {
 				this.formatString = formatString;
 			}
-
 			if (value != null) {
 				fillParameter();
 			}
-
 			fillQueryValue();
 		}
 
@@ -131,7 +133,7 @@ public class XmlQuerySender extends DirectQuerySender {
 				try {
 					n = df.parse(value);
 				} catch (ParseException e) {
-					throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] to Integer", e);
+					throw new SenderException("got exception parsing value [" + value + "] to Integer", e);
 				}
 				parameter = n.intValue();
 			} else if (type.equalsIgnoreCase(TYPE_BOOLEAN)) {
@@ -150,7 +152,7 @@ public class XmlQuerySender extends DirectQuerySender {
 				try {
 					n = df.parse(value);
 				} catch (ParseException e) {
-					throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] to Number using decimalSeparator [" + decimalSeparator + "] and groupingSeparator [" + groupingSeparator + "]", e);
+					throw new SenderException("got exception parsing value [" + value + "] to Number using decimalSeparator [" + decimalSeparator + "] and groupingSeparator [" + groupingSeparator + "]", e);
 				}
 				if (value.indexOf('.') >= 0) {
 					parameter = n.doubleValue();
@@ -163,7 +165,7 @@ public class XmlQuerySender extends DirectQuerySender {
 				try {
 					nDate = df.parse(value);
 				} catch (ParseException e) {
-					throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] to Date using formatString [" + formatString + "]", e);
+					throw new SenderException("got exception parsing value [" + value + "] to Date using formatString [" + formatString + "]", e);
 				}
 				parameter = new Timestamp(nDate.getTime());
 			} else if (type.equalsIgnoreCase(TYPE_XMLDATETIME)) {
@@ -171,117 +173,76 @@ public class XmlQuerySender extends DirectQuerySender {
 				try {
 					nDate = XmlUtils.parseXmlDateTime(value);
 				} catch (Exception e) {
-					throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] from xml dateTime to Date", e);
+					throw new SenderException("got exception parsing value [" + value + "] from xml dateTime to Date", e);
 				}
 				parameter = new Timestamp(nDate.getTime());
 			} else if (type.equalsIgnoreCase(TYPE_BLOB)) {
-				if (!getDbmsSupport().mustInsertEmptyBlobBeforeData()) {
-					parameter = value.getBytes();
-				}
+				parameter = value.getBytes();
 			} else {
-				if (!(type.equalsIgnoreCase(TYPE_CLOB) && getDbmsSupport().mustInsertEmptyClobBeforeData()) && !type.equalsIgnoreCase(TYPE_FUNCTION)) {
+				if (!type.equalsIgnoreCase(TYPE_FUNCTION)) {
 					parameter = value;
 				}
 			}
 		}
 
 		private void fillQueryValue() {
-			if (type.equalsIgnoreCase(TYPE_BLOB) && getDbmsSupport().mustInsertEmptyBlobBeforeData()) {
-				queryValue = getDbmsSupport().emptyBlobValue();
-			} else if (type.equalsIgnoreCase(TYPE_CLOB) && getDbmsSupport().mustInsertEmptyClobBeforeData()) {
-				queryValue = getDbmsSupport().emptyClobValue();
-			} else if (type.equalsIgnoreCase(TYPE_FUNCTION)) {
+			if (type.equalsIgnoreCase(TYPE_FUNCTION)) {
 				queryValue = value;
 			} else {
 				queryValue = "?";
 			}
 		}
 
-		public String getName() {
-			return name;
-		}
-
-		public String getValue() {
-			return value;
-		}
-
-		public String getType() {
-			return type;
-		}
-
-		public String getDecimalSeparator() {
-			return decimalSeparator;
-		}
-
-		public String getGroupingSeparator() {
-			return groupingSeparator;
-		}
-
-		public String getFormatString() {
-			return formatString;
-		}
-
-		public Object getParameter() {
-			return parameter;
-		}
-
-		public String getQueryValue() {
-			return queryValue;
-		}
 	}
 
 	@Override
-	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
-		Element queryElement;
-		String tableName;
-		List<Column> columns;
-		String where;
-		String order;
-		PipeRunResult result;
+	public SenderResult sendMessage(Connection blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		Message result;
 		try {
-			queryElement = XmlUtils.buildElement(message.asString());
+			Element queryElement = XmlUtils.buildElement(message.asString());
 			String root = queryElement.getTagName();
-			tableName = XmlUtils.getChildTagAsString(queryElement, "tableName");
+			String tableName = XmlUtils.getChildTagAsString(queryElement, "tableName");
 			Element columnsElement = XmlUtils.getFirstChildTag(queryElement, "columns");
+			List<Column> columns;
 			if (columnsElement != null) {
 				columns = getColumns(columnsElement);
 			} else {
 				columns = Collections.emptyList();
 			}
-			where = XmlUtils.getChildTagAsString(queryElement, "where");
-			order = XmlUtils.getChildTagAsString(queryElement, "order");
+			String where = XmlUtils.getChildTagAsString(queryElement, "where");
+			String order = XmlUtils.getChildTagAsString(queryElement, "order");
 
 			if ("select".equalsIgnoreCase(root)) {
-				result = selectQuery(connection, tableName, columns, where, order, session, next);
+				result = selectQuery(blockHandle, tableName, columns, where, order).getResult();
 			} else if ("insert".equalsIgnoreCase(root)) {
-				result = new PipeRunResult(null, insertQuery(connection, tableName, columns));
+				result = insertQuery(blockHandle, tableName, columns);
 			} else if ("delete".equalsIgnoreCase(root)) {
-				result = new PipeRunResult(null, deleteQuery(connection, tableName, where));
+				result = deleteQuery(blockHandle, tableName, where);
 			} else if ("update".equalsIgnoreCase(root)) {
-				result = new PipeRunResult(null, updateQuery(connection, tableName, columns, where));
+				result = updateQuery(blockHandle, tableName, columns, where);
 			} else if ("alter".equalsIgnoreCase(root)) {
 				String sequenceName = XmlUtils.getChildTagAsString(queryElement, "sequenceName");
 				int startWith = Integer.parseInt(XmlUtils.getChildTagAsString(queryElement, "startWith"));
-				result = new PipeRunResult(null, alterQuery(connection, sequenceName, startWith));
+				result = alterQuery(blockHandle, sequenceName, startWith);
 			} else if ("sql".equalsIgnoreCase(root)) {
 				String type = XmlUtils.getChildTagAsString(queryElement, "type");
 				String query = XmlUtils.getChildTagAsString(queryElement, "query");
-				result = new PipeRunResult(null, sql(connection, query, type));
+				result = sql(blockHandle, query, type);
 			} else {
-				throw new SenderException(getLogPrefix() + "unknown root element [" + root + "]");
+				throw new SenderException("unknown root element [" + root + "]");
 			}
 		} catch (DomBuilderException e) {
-			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
+			throw new SenderException("got exception parsing [" + message + "]", e);
 		} catch (JdbcException e) {
-			throw new SenderException(getLogPrefix() + "got exception preparing [" + message + "]", e);
+			throw new SenderException("got exception preparing [" + message + "]", e);
 		} catch (IOException e) {
-			throw new SenderException(getLogPrefix() + "got exception creating [" + message + "]", e);
+			throw new SenderException("got exception creating [" + message + "]", e);
 		}
 
-		return result;
+		return new SenderResult(result);
 	}
 
-	private PipeRunResult selectQuery(Connection connection, String tableName, List<Column> columns, String where, String order, PipeLineSession session, IForwardTarget next) throws SenderException, JdbcException {
+	private SenderResult selectQuery(Connection connection, String tableName, List<Column> columns, String where, String order) throws SenderException, JdbcException {
 		StringBuilder queryBuilder = new StringBuilder("SELECT ");
 		if (columns != null && !columns.isEmpty()) {
 			String columnSelection = columns.stream()
@@ -302,9 +263,9 @@ public class XmlQuerySender extends DirectQuerySender {
 			String query = queryBuilder.toString();
 			PreparedStatement statement = getStatement(connection, query, QueryType.SELECT);
 			setBlobSmartGet(true);
-			return executeSelectQuery(statement,null,null, session, next);
+			return executeSelectQuery(statement,null,null);
 		} catch (SQLException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command ["+ queryBuilder +"]", e);
+			throw new SenderException("got exception executing a SELECT SQL command ["+ queryBuilder +"]", e);
 		}
 	}
 
@@ -319,9 +280,9 @@ public class XmlQuerySender extends DirectQuerySender {
 		String query ="INSERT INTO " + tableName + " (" + queryColumns + ") VALUES (" + queryValues + ")";
 
 		try {
-			return executeUpdate(connection, tableName, query, columns);
+			return executeUpdate(connection, query, columns);
 		} catch (SenderException t) {
-			throw new SenderException(getLogPrefix() + "got exception executing an INSERT SQL command [" + query + "]", t);
+			throw new SenderException("got exception executing an INSERT SQL command [" + query + "]", t);
 		}
 	}
 
@@ -334,7 +295,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
 			return executeOtherQuery(connection, statement, query, null, null, null, null, null);
 		} catch (SQLException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a DELETE SQL command [" + query + "]", e);
+			throw new SenderException("got exception executing a DELETE SQL command [" + query + "]", e);
 		}
 	}
 
@@ -350,9 +311,9 @@ public class XmlQuerySender extends DirectQuerySender {
 		}
 		try {
 			String query = queryBuilder.toString();
-			return executeUpdate(connection, tableName, query, columns);
+			return executeUpdate(connection, query, columns);
 		} catch (SenderException t) {
-			throw new SenderException(getLogPrefix() + "got exception executing an UPDATE SQL command [" + queryBuilder + "]", t);
+			throw new SenderException("got exception executing an UPDATE SQL command [" + queryBuilder + "]", t);
 		}
 	}
 
@@ -361,14 +322,14 @@ public class XmlQuerySender extends DirectQuerySender {
 			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
 			setBlobSmartGet(true);
 			if (StringUtils.isNotEmpty(type) && "select".equalsIgnoreCase(type)) {
-				return executeSelectQuery(statement,null,null, null, null).getResult();
+				return executeSelectQuery(statement,null,null).getResult();
 			} else if (StringUtils.isNotEmpty(type) && "ddl".equalsIgnoreCase(type)) {
 				//TODO: Strip SQL comments, everything between -- and newline
 				StringBuilder result = new StringBuilder();
 				for (String q : StringUtil.split(query, ";")) {
 					statement = getStatement(connection, q, QueryType.OTHER);
 					if (q.trim().toLowerCase().startsWith("select")) {
-						result.append(executeSelectQuery(statement,null,null, null, null).getResult().asString());
+						result.append(executeSelectQuery(statement,null,null).getResult().asString());
 					} else {
 						result.append(executeOtherQuery(connection, statement, q, null, null, null, null, null).asString());
 					}
@@ -378,41 +339,12 @@ public class XmlQuerySender extends DirectQuerySender {
 				return executeOtherQuery(connection, statement, query, null, null, null, null, null);
 			}
 		} catch (SQLException | IOException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a SQL command ["+query+"]", e);
+			throw new SenderException("got exception executing a SQL command ["+query+"]", e);
 		}
 	}
 
-	private Message executeUpdate(Connection connection, String tableName, String query, List<Column> columns) throws SenderException {
+	private Message executeUpdate(Connection connection, String query, List<Column> columns) throws SenderException {
 		try {
-			if ((existBlob(columns) && getDbmsSupport().mustInsertEmptyBlobBeforeData()) || (existClob(columns) && getDbmsSupport().mustInsertEmptyClobBeforeData())) {
-				CallableStatement callableStatement = getCallWithRowIdReturned(connection, query);
-				applyParameters(callableStatement, columns);
-				int ri = 1 + countParameters(columns);
-				callableStatement.registerOutParameter(ri, Types.VARCHAR);
-				int numRowsAffected = callableStatement.executeUpdate();
-				String rowId = callableStatement.getString(ri);
-				log.debug(getLogPrefix() + "returning ROWID [" + rowId + "]");
-
-				for (Column column : columns) {
-					if (column.getType().equalsIgnoreCase(TYPE_BLOB) || column.getType().equalsIgnoreCase(TYPE_CLOB)) {
-						query = "SELECT " + column.getName() + " FROM " + tableName + " WHERE ROWID=?" + " FOR UPDATE";
-						QueryType queryType;
-						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
-							queryType = QueryType.UPDATEBLOB;
-						} else {
-							queryType = QueryType.UPDATECLOB;
-						}
-						PreparedStatement statement = getStatement(connection, query, queryType);
-						statement.setString(1, rowId);
-						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
-							executeUpdateBlobQuery(statement, new Message(column.getValue()));
-						} else {
-							executeUpdateClobQuery(statement, new Message(column.getValue()));
-						}
-					}
-				}
-				return new Message("<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>");
-			}
 			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
 			applyParameters(statement, columns);
 			return executeOtherQuery(connection, statement, query, null, null, null, null, null);
@@ -421,37 +353,9 @@ public class XmlQuerySender extends DirectQuerySender {
 		}
 	}
 
-	private boolean existBlob(List<Column> columns) {
-		for (Column column : columns) {
-			if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private boolean existClob(List<Column> columns) {
-		for (Column column : columns) {
-			if (column.getType().equalsIgnoreCase(TYPE_CLOB)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private int countParameters(List<Column> columns) {
-		int parameterCount = 0;
-		for (Column column : columns) {
-			if (column.getParameter() != null) {
-				parameterCount++;
-			}
-		}
-		return parameterCount;
-	}
-
 	private Message alterQuery(Connection connection, String sequenceName, int startWith) throws SenderException {
 		String callQuery = "declare" + " pragma autonomous_transaction;" + " ln_increment number;" + " ln_curr_val number;" + " ln_reset_increment number;" + " ln_reset_val number;" + "begin" + " select increment_by into ln_increment from user_sequences where sequence_name = '" + sequenceName + "';" + " select " + (startWith - 2) + " - " + sequenceName + ".nextval into ln_reset_increment from dual;" + " select " + sequenceName + ".nextval into ln_curr_val from dual;" + " EXECUTE IMMEDIATE 'alter sequence " + sequenceName + " increment by '|| ln_reset_increment ||' minvalue 0';" + " select " + sequenceName + ".nextval into ln_reset_val from dual;" + " EXECUTE IMMEDIATE 'alter sequence " + sequenceName + " increment by '|| ln_increment;" + "end;";
-		log.debug("{} preparing procedure for query [{}]", this::getLogPrefix, ()-> callQuery);
+		log.debug("preparing procedure for query [{}]", ()-> callQuery);
 		try (CallableStatement callableStatement = connection.prepareCall(callQuery)){
 			callableStatement.setQueryTimeout(getTimeout());
 			int numRowsAffected = callableStatement.executeUpdate();
@@ -510,32 +414,32 @@ public class XmlQuerySender extends DirectQuerySender {
 		for (Column column : columns) {
 			if (column.getParameter() != null) {
 				if (column.getParameter() instanceof Integer) {
-					log.debug("parm [" + var + "] is an Integer with value [" + column.getParameter().toString() + "]");
+					log.debug("parm [{}] is an Integer with value [{}]", var, column.getParameter());
 					statement.setInt(var, Integer.parseInt(column.getParameter().toString()));
 					var++;
 				} else if (column.getParameter() instanceof Boolean) {
-					log.debug("parm [" + var + "] is an Boolean with value [" + column.getParameter().toString() + "]");
+					log.debug("parm [{}] is an Boolean with value [{}]", var, column.getParameter());
 					statement.setBoolean(var, Boolean.parseBoolean(column.getParameter().toString()));
 					var++;
 				} else if (column.getParameter() instanceof Double) {
-					log.debug("parm [" + var + "] is a Double with value [" + column.getParameter().toString() + "]");
+					log.debug("parm [{}] is a Double with value [{}]", var, column.getParameter());
 					statement.setDouble(var, Double.parseDouble(column.getParameter().toString()));
 					var++;
 				} else if (column.getParameter() instanceof Float) {
-					log.debug("parm [" + var + "] is a Float with value [" + column.getParameter().toString() + "]");
+					log.debug("parm [{}] is a Float with value [{}]", var, column.getParameter());
 					statement.setFloat(var, Float.parseFloat(column.getParameter().toString()));
 					var++;
 				} else if (column.getParameter() instanceof Timestamp) {
-					log.debug("parm [" + var + "] is a Timestamp with value [" + column.getParameter().toString() + "]");
+					log.debug("parm [{}] is a Timestamp with value [{}]", var, column.getParameter());
 					statement.setTimestamp(var, (Timestamp) column.getParameter());
 					var++;
 				} else if (column.getParameter() instanceof byte[]) {
-					log.debug("parm [" + var + "] is a byte array with value [" + column.getParameter().toString() + "] = [" + new String((byte[]) column.getParameter()) + "]");
+					log.debug("parm [{}] is a byte array with value [{}] = [{}]", var, column.getParameter(), new String((byte[]) column.getParameter()));
 					statement.setBytes(var, (byte[]) column.getParameter());
 					var++;
 				} else {
 					//if (column.getParameter() instanceof String)
-					log.debug("parm [" + var + "] is a String with value [" + column.getParameter().toString() + "]");
+					log.debug("parm [{}] is a String with value [{}]", var, column.getParameter());
 					JdbcUtil.setParameter(statement, var, (String) column.getParameter(), getDbmsSupport().isParameterTypeMatchRequired());
 					var++;
 				}

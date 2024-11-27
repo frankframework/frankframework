@@ -26,37 +26,33 @@ import org.frankframework.core.INamedObject;
  */
 public interface ISapSystem extends INamedObject, org.frankframework.configuration.extensions.ISapSystem {
 
+	void setGwhost(String string);
+	void setMandant(String string);
+	void setAuthAlias(String string);
+	void setUserid(String string);
+	void setPasswd(String string);
+	void setLanguage(String string);
+	void setUnicode(boolean b);
+	void setMaxConnections(int i);
+	void setTraceLevel(int i);
+	void setServiceOffset(int i);
+	void setSystemnr(String string);
 
-	@Override
-	public void registerItem(Object dummyParent);
+	void setHost(String string);
+	void setAshost(String string);
+	void setGroup(String string);
+	void setR3name(String string);
+	void setMshost(String string);
+	void setMsservOffset(int i);
+	void setGwservOffset(int i);
 
-	public void setGwhost(String string);
-	public void setMandant(String string);
-	public void setAuthAlias(String string);
-	public void setUserid(String string);
-	public void setPasswd(String string);
-	public void setLanguage(String string);
-	public void setUnicode(boolean b);
-	public void setMaxConnections(int i);
-	public void setTraceLevel(int i);
-	public void setServiceOffset(int i);
-	public void setSystemnr(String string);
+	void setSncEnabled(boolean sncEnabled);
+	void setSncLibrary(String sncLibPath);
+	void setSncQop(int qop) throws ConfigurationException;
 
-	public void setHost(String string);
-	public void setAshost(String string);
-	public void setGroup(String string);
-	public void setR3name(String string);
-	public void setMshost(String string);
-	public void setMsservOffset(int i);
-	public void setGwservOffset(int i);
-
-	public void setSncEnabled(boolean sncEnabled);
-	public void setSncLibrary(String sncLibPath);
-	public void setSncQop(int qop) throws ConfigurationException;
-
-	public void setMyName(String myName);
-	public void setPartnerName(String partnerName);
-	public void setSncAuthMethod(String sncAuthMethod);
-	public void setSncSSO2(String sncSSO2);
+	void setMyName(String myName);
+	void setPartnerName(String partnerName);
+	void setSncAuthMethod(String sncAuthMethod);
+	void setSncSSO2(String sncSSO2);
 
 }

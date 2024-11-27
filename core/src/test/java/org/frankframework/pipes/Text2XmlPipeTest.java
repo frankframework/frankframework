@@ -5,15 +5,16 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.testutil.MatchUtils;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
 
 public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 
@@ -220,7 +221,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		pipe.setSplitLines(true);
 		configureAndStartPipe();
 
-		PipeRunResult res = doPipe(Message.asMessage(""));
+		PipeRunResult res = doPipe(new Message(""));
 		MatchUtils.assertXmlEquals("<tests/>", res.getResult().asString());
 	}
 
@@ -229,7 +230,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		pipe.setXmlTag("tests");
 		configureAndStartPipe();
 
-		PipeRunResult res = doPipe(Message.asMessage(""));
+		PipeRunResult res = doPipe(new Message(""));
 		assertEquals("<tests><![CDATA[]]></tests>", res.getResult().asString());
 	}
 

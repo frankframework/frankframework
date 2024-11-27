@@ -22,14 +22,15 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
 import org.frankframework.util.StreamUtil;
-import org.frankframework.validation.XSD;
+import org.frankframework.validation.IXSD;
+import org.frankframework.validation.AbstractXSD;
 
 /**
  * XSD based on a reference to a resource on the classPath.
  *
  * @author Gerrit van Brakel
  */
-public class ResourceXsd extends XSD {
+public class ResourceXsd extends AbstractXSD {
 
 	private String resourceRef;
 	private Resource resource;
@@ -67,10 +68,10 @@ public class ResourceXsd extends XSD {
 	}
 
 	@Override
-	public int compareToByReferenceOrContents(XSD x) {
-		if (x instanceof ResourceXsd) {
-			return getSystemId().compareTo(x.getSystemId());
+	public int compareToByReferenceOrContents(IXSD other) {
+		if (other instanceof ResourceXsd) {
+			return getSystemId().compareTo(other.getSystemId());
 		}
-		return compareToByContents(x);
+		return compareToByContents(other);
 	}
 }

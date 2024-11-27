@@ -1,8 +1,8 @@
 <monitoring>
 	<destination/>
-	<monitor type="TECHNICAL" destinations="dummy destination">
-		<trigger className="org.frankframework.monitoring.Alarm" severity="CRITICAL">
-			<event>dummy code</event>
-		</trigger>
-	</monitor>
+	<Monitor type="TECHNICAL" destinations="dummy destination">
+		<AlarmTrigger severity="CRITICAL">
+			<Event>dummy code</Event>
+		</AlarmTrigger>
+	</Monitor>
 </monitoring>

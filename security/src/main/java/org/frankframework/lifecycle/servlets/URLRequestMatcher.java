@@ -18,7 +18,7 @@ package org.frankframework.lifecycle.servlets;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -39,6 +39,9 @@ public class URLRequestMatcher implements RequestMatcher {
 			}
 			if(endpoint.charAt(endpoint.length()-1) == '*') {
 				wildcardEndpoints.add(endpoint.substring(0, endpoint.length()-1));
+				if (endpoint.charAt(endpoint.length() - 2) == '/') { // Add endpoint(s) without `/*` to absolute path (ApiListenerServlet, IAF-API etc)
+					absoluteEndpoints.add(endpoint.substring(0, endpoint.length() - 2));
+				}
 			} else {
 				absoluteEndpoints.add(endpoint);
 			}
@@ -53,13 +56,13 @@ public class URLRequestMatcher implements RequestMatcher {
 	public boolean matches(HttpServletRequest request) {
 		String path = getRequestPath(request);
 
-		if(absoluteEndpoints.contains(path)) { //absolute match
+		if (absoluteEndpoints.contains(path)) { // absolute match
 			log.trace("absolute match with path [{}]", path);
 			return true;
 		}
 
 		for(String url : wildcardEndpoints) {
-			if(path.startsWith(url)) { //wildcard match
+			if (path.startsWith(url)) { // wildcard match
 				log.trace("relative match with url [{}] and path [{}]", url, path);
 				return true;
 			}
@@ -79,9 +82,7 @@ public class URLRequestMatcher implements RequestMatcher {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("Absolute RequestPatterns ").append(this.absoluteEndpoints);
-		sb.append(" Wildcard RequestPatterns ").append(this.wildcardEndpoints);
-		return sb.toString();
+		return "Absolute RequestPatterns " + absoluteEndpoints +
+				" Wildcard RequestPatterns " + wildcardEndpoints;
 	}
 }

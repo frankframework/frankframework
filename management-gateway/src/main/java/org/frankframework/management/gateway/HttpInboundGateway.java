@@ -20,19 +20,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.Filter;
-import javax.servlet.HttpConstraintElement;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletSecurityElement;
-import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
+import jakarta.servlet.Filter;
+import jakarta.servlet.HttpConstraintElement;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.ServletSecurityElement;
+import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
 
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.security.JwtSecurityFilter;
-import org.frankframework.util.SpringUtils;
-import org.frankframework.util.StreamUtil;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
@@ -58,6 +52,8 @@ import org.springframework.messaging.SubscribableChannel;
 import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
@@ -70,6 +66,13 @@ import org.springframework.web.filter.RequestContextFilter;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.security.JwtSecurityFilter;
+import org.frankframework.util.SpringUtils;
+import org.frankframework.util.StreamUtil;
 
 @Log4j2
 @Order(Ordered.LOWEST_PRECEDENCE-1)
@@ -147,7 +150,7 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 		List<String> headers = new ArrayList<>();
 		headers.add(BusAction.ACTION_HEADER_NAME);
 		headers.add(BusTopic.TOPIC_HEADER_NAME);
-		headers.add(BusMessageUtils.HEADER_HOSTNAME_KEY);
+		headers.add(BusMessageUtils.HEADER_TARGET_KEY);
 		headers.add(BusMessageUtils.HEADER_PREFIX_PATTERN);
 		return headers.toArray(new String[0]);
 	}
@@ -207,14 +210,14 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 	private SecurityFilterChain configureHttpSecurity(HttpSecurity http) {
 		try {
 			//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
-			http.headers().frameOptions().sameOrigin(); //Allow same origin iframe request
-			http.csrf().disable();
+			http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); //Allow same origin iframe request
+			http.csrf(AbstractHttpConfigurer::disable);
 			http.securityMatcher(new AntPathRequestMatcher(httpPath));
-			http.formLogin().disable(); //Disable the form login filter
-			http.anonymous().disable(); //Disable the default anonymous filter
-			http.logout().disable(); //Disable the logout endpoint on every filter
-			http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
-			http.authorizeHttpRequests().anyRequest().authenticated();
+			http.formLogin(AbstractHttpConfigurer::disable); //Disable the form login filter
+			http.anonymous(AbstractHttpConfigurer::disable); //Disable the default anonymous filter
+			http.logout(AbstractHttpConfigurer::disable); //Disable the logout endpoint on every filter
+			http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+			http.authorizeHttpRequests(requests -> requests.anyRequest().authenticated());
 
 			Filter requestDispatcher = SpringUtils.createBean(applicationContext, RequestContextFilter.class);
 			http.addFilterAfter(requestDispatcher, AuthorizationFilter.class);

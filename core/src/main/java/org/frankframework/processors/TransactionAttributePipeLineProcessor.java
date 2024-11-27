@@ -32,7 +32,7 @@ import org.frankframework.util.ClassUtils;
 /**
  * @author Jaco de Groot
  */
-public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase {
+public class TransactionAttributePipeLineProcessor extends AbstractPipeLineProcessor {
 
 	private @Getter @Setter PlatformTransactionManager txManager;
 
@@ -52,11 +52,11 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 
 					if (pipeLineResult==null) {
 						mustRollback=true;
-						log.warn("Pipeline received null result for messageId ["+messageId+"], transaction (when present and active) will be rolled back");
+						log.warn("Pipeline received null result for messageId [{}], transaction (when present and active) will be rolled back", messageId);
 					} else {
 						if (!pipeLineResult.isSuccessful()) {
 							mustRollback=true;
-							log.warn("Pipeline result state ["+pipeLineResult.getState()+"] for messageId ["+messageId+"] is not equal to ["+ExitState.SUCCESS+"], transaction (when present and active) will be rolled back");
+							log.warn("Pipeline result state [{}] for messageId [{}] is not equal to [{}], transaction (when present and active) will be rolled back", pipeLineResult.getState(), messageId, ExitState.SUCCESS);
 						}
 					}
 					if (mustRollback) {
@@ -76,7 +76,7 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 						if (tCaught==null) {
 							throw new InterruptedException(tg.getDescription()+" was interrupted");
 						}
-						log.warn("Thread interrupted, but propagating other caught exception of type ["+ClassUtils.nameOf(tCaught)+"]");
+						log.warn("Thread interrupted, but propagating other caught exception of type [{}]", ClassUtils.nameOf(tCaught));
 					}
 				}
 			} catch (Throwable t) {

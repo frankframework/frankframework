@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><AcquirerTrxReq xmlns="http://www.betaalvereniging.nl/iDx/messages/Merchant-Acquirer/1.0.0" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" productID="NL:BVN:BankID:1.0" version="1.0.0">
+    <createDateTimestamp/>
+    <Issuer>
+        <issuerID>BANKNL2Y</issuerID>
+    </Issuer>
+    <Merchant>
+        <merchantID>1234567890</merchantID>
+        <subID>2</subID>
+        <merchantReturnURL>http://localhost:8080</merchantReturnURL>
+    </Merchant>
+    <Transaction>
+        <language>nl</language>
+        <entranceCode>abc4ef7ons</entranceCode>
+        <container><ns3:AuthnRequest xmlns:ns3="http://dummy" signature="here">
+    <Issuer>1234567890</Issuer>
+    <Conditions/>
+    <ns3:RequestedAuthnContext Comparison="minimum">
+        <AuthnContextClassRef>nl:bvn:bankid:1.0:loa3</AuthnContextClassRef>
+    </ns3:RequestedAuthnContext>
+    <ns3:Scoping/>
+</ns3:AuthnRequest></container>
+    </Transaction>
+</AcquirerTrxReq>

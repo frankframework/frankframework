@@ -11,11 +11,7 @@
 		"
 	>
 <!-- 	<integration:control-bus dispatcher-pool-size="25" auto-create-channels="true"/> -->
-	<integration:publish-subscribe-channel id="frank-management-bus">
-		<integration:interceptors>
-			<bean class="org.springframework.integration.security.channel.SecurityContextPropagationChannelInterceptor"/>
-		</integration:interceptors>
-	</integration:publish-subscribe-channel>
+	<integration:publish-subscribe-channel id="frank-management-bus" />
 
 	<context:property-placeholder />
 
@@ -25,24 +21,22 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/>
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
+
+		<!-- Ignore all Spring annotations from the Ladybug module, they should be wired in their own context -->
 		<context:exclude-filter type="regex" expression="org\.frankframework\.ibistesttool\..*"/>
+		<context:exclude-filter type="regex" expression="org\.frankframework\.web\..*"/>
+		<context:exclude-filter type="regex" expression="org\.frankframework\.console\..*"/>
 	</context:component-scan>
 
 	<bean id="cxf" class="org.frankframework.http.cxf.SpringSoapBus">
 		<property name="id" value="ff-soap-bus"/>
 	</bean>
 
-	<bean id="httpFirewall" class="org.springframework.security.web.firewall.StrictHttpFirewall">
-		<property name="allowSemicolon" value="true"/>
-		<property name="allowUrlEncodedPercent" value="true"/>
-		<property name="allowUrlEncodedSlash" value="true"/>
-	</bean>
+	<bean id="NoopSecurityFilterChain" class="org.frankframework.lifecycle.servlets.NoopSecurityFilterChain" />
 
 	<bean id="inboundGatewayFactory" class="org.frankframework.management.bus.InboundGatewayFactory">
 		<property name="gatewayClassnames" value="${management.gateway.inbound.class}" />
 	</bean>
-	<!-- The LocalGateway is required for internal traffic as well as the Frank!Console -->
-	<alias name="org.frankframework.management.bus.LocalGateway" alias="outboundGateway"/>
 
 	<bean id="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor" class="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor"/>
 	<bean id="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor" class="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor"/>

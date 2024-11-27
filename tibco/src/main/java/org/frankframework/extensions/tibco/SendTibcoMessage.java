@@ -17,17 +17,19 @@ package org.frankframework.extensions.tibco;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.Map;
 
-import javax.jms.BytesMessage;
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import jakarta.jms.BytesMessage;
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.DeliveryMode;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageConsumer;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -42,17 +44,14 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.Resource;
-
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
 import org.frankframework.jms.BytesMessageInputStream;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.TimeoutGuardPipe;
 import org.frankframework.stream.Message;
-
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
-
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TransformerPool;
@@ -81,18 +80,30 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 	private MessageProtocol messageProtocol;
 	private int replyTimeout = 5000;
 	private String soapAction;
+	private String emsPropertiesFile;
+	private Map<String, Object> emsProperties;
 
 	public enum MessageProtocol implements DocumentedEnum {
 		/** Request-Reply */
 		@EnumLabel("RR") REQUEST_REPLY,
 		/** Fire & Forget */
-		@EnumLabel("FF") FIRE_AND_FORGET;
+		@EnumLabel("FF") FIRE_AND_FORGET
 	}
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (getParameterList() != null && getParameterList().findParameter("userName") != null) {
+		if (getParameterList() != null && getParameterList().hasParameter("userName")) {
 			ConfigurationWarnings.add(this, log, "parameter [userName] has been replaced with [username]");
+		}
+
+		if(StringUtils.isNotEmpty(emsPropertiesFile)) {
+			try {
+				emsProperties = new TibcoEmsProperties(this, emsPropertiesFile);
+			} catch (IOException e) {
+				throw new ConfigurationException("unable to find/load the EMS properties file", e);
+			}
+		} else {
+			emsProperties = Collections.emptyMap();
 		}
 
 		super.configure();
@@ -195,7 +206,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		try {
 			TibjmsAdmin admin;
 			try {
-				admin = TibcoUtils.getActiveServerAdmin(url_work, cf);
+				admin = TibcoUtils.getActiveServerAdmin(url_work, cf, emsProperties);
 			} catch (TibjmsAdminException e) {
 				log.debug("caught exception", e);
 				admin = null;
@@ -218,7 +229,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 				}
 			}
 
-			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(url_work);
+			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(url_work, null, emsProperties); //url, clientid, properties
 			connection = factory.createConnection(cf.getUsername(), cf.getPassword());
 			jSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 			destination = jSession.createQueue(queueName_work);
@@ -238,24 +249,24 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 				msgProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
 			}
 			if (StringUtils.isNotEmpty(soapAction_work)) {
-				log.debug("setting [SoapAction] property to value [" + soapAction_work + "]");
+				log.debug("setting [SoapAction] property to value [{}]", soapAction_work);
 				msg.setStringProperty("SoapAction", soapAction_work);
 			}
 			msgProducer.send(msg);
 			if (log.isDebugEnabled()) {
-				log.debug("sent message ["+ msg.getText() + "] " + "to ["+ msgProducer.getDestination() + "] " + "msgID ["+ msg.getJMSMessageID() + "] " + "correlationID ["+ msg.getJMSCorrelationID() + "] " + "replyTo ["+ msg.getJMSReplyTo() + "]");
+				log.debug("sent message [{}] to [{}] msgID [{}] correlationID [{}] replyTo [{}]", msg.getText(), msgProducer.getDestination(), msg.getJMSMessageID(), msg.getJMSCorrelationID(), msg.getJMSReplyTo());
 			} else {
 				if (log.isInfoEnabled()) {
-					log.info("sent message to ["+ msgProducer.getDestination() + "] " + "msgID ["+ msg.getJMSMessageID() + "] " + "correlationID ["+ msg.getJMSCorrelationID() + "] " + "replyTo ["+ msg.getJMSReplyTo() + "]");
+					log.info("sent message to [{}] msgID [{}] correlationID [{}] replyTo [{}]", msgProducer.getDestination(), msg.getJMSMessageID(), msg.getJMSCorrelationID(), msg.getJMSReplyTo());
 				}
 			}
 			if (protocol == MessageProtocol.REQUEST_REPLY) {
 				String replyCorrelationId = msg.getJMSMessageID();
 				MessageConsumer msgConsumer = jSession.createConsumer(replyQueue, "JMSCorrelationID='" + replyCorrelationId+ "'");
-				log.debug("start waiting for reply on [" + replyQueue+ "] selector [" + replyCorrelationId + "] for ["+ replyTimeout_work + "] ms");
+				log.debug("start waiting for reply on [{}] selector [{}] for [{}] ms", replyQueue, replyCorrelationId, replyTimeout_work);
 
 				connection.start();
-				javax.jms.Message rawReplyMsg = msgConsumer.receive(replyTimeout_work);
+				jakarta.jms.Message rawReplyMsg = msgConsumer.receive(replyTimeout_work);
 				if (rawReplyMsg == null) {
 					throw new PipeRunException(this, "did not receive reply on [" + replyQueue+ "] replyCorrelationId [" + replyCorrelationId+ "] within [" + replyTimeout_work + "] ms");
 				}
@@ -357,5 +368,10 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 
 	public String getSoapAction() {
 		return soapAction;
+	}
+
+	/** Location to a <code>jndi.properties</code> file for additional EMS (SSL) properties */
+	public void setEmsPropertiesFile(String propertyFile) {
+		emsPropertiesFile = propertyFile;
 	}
 }

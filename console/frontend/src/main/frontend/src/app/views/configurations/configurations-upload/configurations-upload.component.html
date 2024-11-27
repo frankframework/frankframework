@@ -1,6 +1,3 @@
-<!-- Angular ui-router hack-->
-<div ui-view></div>
-
 <div class="wrapper wrapper-content animated fadeInRight">
   <div class="alert alert-danger" role="alert" type="danger" *ngIf="error">
     <span class="ng-binding ng-scope" [innerHTML]="error"></span>
@@ -13,11 +10,7 @@
       <div class="ibox float-e-margins">
         <div class="ibox-title">
           <div class="pull-right">
-            <button
-              routerLink="/configurations/manage"
-              class="btn btn-xs pull-right btn-info"
-              type="button"
-            >
+            <button routerLink="/configurations/manage" class="btn btn-xs pull-right btn-info" type="button">
               <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
               <span> Back</span>
             </button>
@@ -29,11 +22,7 @@
             <div class="row form-group">
               <label class="col-sm-3 control-label">Datasource</label>
               <div class="col-sm-9">
-                <select
-                  class="form-control"
-                  name="datasource"
-                  [(ngModel)]="form.datasource"
-                >
+                <select class="form-control" name="datasource" [(ngModel)]="form.datasource">
                   <option *ngFor="let datasource of datasources">
                     {{ datasource }}
                   </option>
@@ -41,98 +30,50 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30"
-                >Upload File</label
-              >
+              <label class="col-sm-3 control-label label-height-30">Upload File</label>
               <div class="col-sm-5">
-                <app-input-file-upload
-                  (fileUpdated)="updateFile($event)"
-                  accept=".zip,.jar"
-                />
+                <app-input-file-upload (fileUpdated)="updateFile($event)" accept=".zip,.jar" />
               </div>
               <div class="col-sm-1">
-                <label class="control-label label-height-30 pull-right"
-                  >Encoding</label
-                >
+                <label class="control-label label-height-30 pull-right">Encoding</label>
               </div>
               <div class="col-sm-3">
-                <input
-                  class="form-control"
-                  name="encoding"
-                  type="text"
-                  [(ngModel)]="form.encoding"
-                />
+                <input class="form-control" name="encoding" type="text" [(ngModel)]="form.encoding" />
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label"
-                >Multiple Configurations</label
-              >
+              <label class="col-sm-3 control-label">Multiple Configurations</label>
               <div class="col-sm-9">
-                <input
-                  icheck
-                  type="checkbox"
-                  name="multiple_configs"
-                  [(ngModel)]="form.multiple_configs"
-                />
-                <small class="m-l-sm"
-                  >To upload multiple configurations compressed in 1
-                  zip-archive.</small
-                >
+                <input icheck type="checkbox" name="multiple_configs" [(ngModel)]="form.multiple_configs" />
+                <small class="m-l-sm">To upload multiple configurations compressed in 1 zip-archive.</small>
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label"
-                >Startup Configuration</label
-              >
+              <label class="col-sm-3 control-label">Startup Configuration</label>
               <div class="col-sm-9">
-                <input
-                  icheck
-                  type="checkbox"
-                  name="activate_config"
-                  [(ngModel)]="form.activate_config"
-                />
+                <input icheck type="checkbox" name="activate_config" [(ngModel)]="form.activate_config" />
                 <small class="m-l-sm"
-                  >Load this version of the configuration on application startup
-                  or by manually reloading the configuration. Resets this flag
-                  for other versions of this configuration.</small
+                  >Load this version of the configuration on application startup or by manually reloading the
+                  configuration. Resets this flag for other versions of this configuration.</small
                 >
               </div>
             </div>
             <div class="row form-group">
               <label class="col-sm-3 control-label">Reload Automatically</label>
               <div class="col-sm-9">
-                <input
-                  icheck
-                  type="checkbox"
-                  name="automatic_reload"
-                  [(ngModel)]="form.automatic_reload"
-                />
+                <input icheck type="checkbox" name="automatic_reload" [(ngModel)]="form.automatic_reload" />
                 <small class="m-l-sm"
-                  >Load this version of the configuration at the next reload
-                  event if it has also been selected as 'Startup
-                  Configuration'.</small
+                  >Load this version of the configuration at the next reload event if it has also been selected as
+                  'Startup Configuration'.</small
                 >
               </div>
             </div>
             <div class="row form-group">
               <div class="col-sm-3 m-t-md">
-                <button
-                  class="btn btn-info btn-w-m font-bold"
-                  type="button"
-                  (click)="reset()"
-                >
-                  Reset
-                </button>
+                <button class="btn btn-info btn-w-m font-bold" type="button" (click)="reset()">Reset</button>
               </div>
               <div class="col-sm-3 m-t-md">
-                <button
-                  class="btn btn-primary btn-w-m font-bold"
-                  type="submit"
-                  (click)="submit()"
-                >
-                  Send
-                </button>
+                <button class="btn btn-primary btn-w-m font-bold" type="submit" (click)="submit()">Send</button>
               </div>
             </div>
           </form>

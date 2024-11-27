@@ -1,0 +1,73 @@
+name: Update nightly release
+
+on:
+  workflow_dispatch:
+    inputs:
+      revision:
+        description: The version in the title of the release.
+        required: true
+
+jobs:
+  nightly-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: bluwy/substitute-string-action@v3
+        name: Get branch name
+        id: branch
+        with:
+          _input-text: "${{ github.ref_name }}"
+          -release: ''
+      - name: Set tag name
+        run: echo "TAG=${{ steps.branch.outputs.result }}-nightly" >> $GITHUB_ENV
+      - name: Update nightly release
+        uses: andelf/nightly-release@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "${{ env.TAG }}"
+          name: "v${{ github.event.inputs.revision }} (nightly)"
+          draft: false
+          prerelease: true
+          body: |
+            The Frank!Framework nightly (snapshot) build provides a daily compilation of the latest code changes and developments, allowing users to access cutting-edge features and updates before they are officially released.
+            
+            ## Copy version
+            
+            ```
+            ${{ github.event.inputs.revision }}
+            ```
+
+            <details>
+            <summary><h2>Download instructions</h2></summary>
+            
+            ### Get the Webapp
+            
+            Add it to the `pom.xml`:
+            ```xml pom.xml
+            <dependencies>
+              <dependency>
+                <groupId>org.frankframework</groupId>
+                <artifactId>frankframework-webapp</artifactId>
+                <version>${{ github.event.inputs.revision }}</version>
+              </dependency>
+            </dependencies>
+
+            <repositories>
+              <repository>
+                <id>frankframework</id>
+                <name>Frank!Framework</name>
+                <url>https://nexus.frankframework.org/content/repositories/public</url>
+              </repository>
+            </repositories>
+            ```
+            Or [download it from Nexus](https://nexus.frankframework.org/repository/releases/org/frankframework/frankframework-webapp/${{ github.event.inputs.revision }}/frankframework-webapp-${{ github.event.inputs.revision }}.war)
+
+            ### Get the Docker image
+            
+            Pull the Docker image:
+            ```shell
+            docker pull frankframework/frankframework:${{ github.event.inputs.revision }}
+            ```
+            Or [visit the image on DockerHub](https://hub.docker.com/r/frankframework/frankframework/tags?page=&page_size=&ordering=&name=${{ github.event.inputs.revision }})
+            
+            </details>

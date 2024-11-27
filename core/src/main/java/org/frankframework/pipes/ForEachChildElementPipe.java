@@ -37,20 +37,18 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
 import org.frankframework.jta.IThreadConnectableTransactionManager;
-import org.frankframework.parameters.Parameter;
-import org.frankframework.stream.IThreadCreator;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.SaxAbortException;
-import org.frankframework.stream.SaxTimeoutException;
-import org.frankframework.stream.ThreadConnector;
-import org.frankframework.stream.ThreadLifeCycleEventListener;
+import org.frankframework.threading.IThreadCreator;
+import org.frankframework.threading.ThreadConnector;
+import org.frankframework.threading.ThreadLifeCycleEventListener;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerErrorListener;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
-import org.frankframework.xml.ExceptionCatchingFilter;
+import org.frankframework.xml.AbstractExceptionCatchingFilter;
 import org.frankframework.xml.FullXmlFilter;
 import org.frankframework.xml.IXmlDebugger;
 import org.frankframework.xml.NamespaceRemovingFilter;
@@ -72,7 +70,7 @@ import org.xml.sax.SAXException;
  * @author Gerrit van Brakel
  * @since 4.6.1
  */
-@Category("Basic")
+@Category(Category.Type.BASIC)
 public class ForEachChildElementPipe extends StringIteratorPipe implements IThreadCreator {
 
 	public static final int DEFAULT_XSLT_VERSION = 1; // currently only Xalan supports XSLT Streaming
@@ -138,7 +136,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	protected String makeEncapsulatingXslt(String rootElementname, String xpathExpression, int xsltVersion, String namespaceDefs) {
 		StringBuilder paramsString = new StringBuilder();
 		if (getParameterList() != null) {
-			for (Parameter param: getParameterList()) {
+			for (IParameter param: getParameterList()) {
 				paramsString.append("<xsl:param name=\"").append(param.getName()).append("\"/>");
 			}
 		}
@@ -336,7 +334,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 		result.inputHandler = new StopSensor(result.itemHandler, result.inputHandler);
 
-		result.inputHandler = new ExceptionCatchingFilter(result.inputHandler) {
+		result.inputHandler = new AbstractExceptionCatchingFilter(result.inputHandler) {
 			@Override
 			protected void handleException(Exception e) throws SAXException {
 				if (e instanceof SaxTimeoutException exception) {
@@ -428,7 +426,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	 * When set <code>true</code>, the input is assumed to be the name of a file to be processed. Otherwise, the input itself is transformed. The character encoding will be read from the XML declaration
 	 * @ff.default false
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	@ConfigurationWarning("Please add a LocalFileSystemPipe with action=read in front of this pipe instead")
 	public void setProcessFile(boolean b) {
 		processFile = b;
@@ -471,4 +469,24 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		removeNamespaces = b;
 	}
 
+	/**
+	 * SAXException thrown to signal that the consumer of a stream does not want to receive more of it.
+	 */
+	public static class SaxAbortException extends SaxException {
+		public SaxAbortException(String message) {
+			super(message);
+		}
+		public SaxAbortException(Exception cause) {
+			super(cause);
+		}
+	}
+
+	/**
+	 * SAXException thrown to signal that a timeout occurred in consuming the stream.
+	 */
+	public static class SaxTimeoutException extends SaxException {
+		public SaxTimeoutException(Exception cause) {
+			super(cause);
+		}
+	}
 }

@@ -25,10 +25,9 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 
+import lombok.Getter;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
@@ -36,8 +35,8 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.Forward;
 import org.frankframework.encryption.AuthSSLContextFactory;
 import org.frankframework.encryption.EncryptionException;
 import org.frankframework.encryption.HasKeystore;
@@ -49,9 +48,9 @@ import org.frankframework.stream.Message;
 /**
  *
  * @ff.parameter signature the signature to verify
- * @ff.forward failure used when verification fails
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@Forward(name = "failure", description = "verification has failed")
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 
 	public static final String PARAMETER_SIGNATURE="signature";
@@ -81,7 +80,7 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 		/** signs the input */
 		SIGN,
 		/** verifies a signature */
-		VERIFY;
+		VERIFY
 	}
 
 	@Override
@@ -96,12 +95,12 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, null);
 		if (getAction() == Action.VERIFY) {
-			if (getParameterList().findParameter(PARAMETER_SIGNATURE)==null) {
+			if (!getParameterList().hasParameter(PARAMETER_SIGNATURE)) {
 				throw new ConfigurationException("Parameter [" + PARAMETER_SIGNATURE + "] must be specfied for action [" + action + "]");
 			}
 			failureForward = findForward("failure");
 			if (failureForward==null)  {
-				throw new ConfigurationException("Forward [failure] must be specfied for action [" + action + "]");
+				throw new ConfigurationException("Forward [failure] must be specified for action [" + action + "]");
 			}
 		}
 	}
@@ -157,7 +156,7 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 					return new PipeRunResult(getSuccessForward(), isSignatureBase64() ? Base64.encodeBase64String(dsa.sign()):dsa.sign());
 				case VERIFY:
 					ParameterValueList pvl = getParameterList().getValues(message, session);
-					Message signatureMsg = Message.asMessage(pvl.getValueMap().get(PARAMETER_SIGNATURE));
+					Message signatureMsg = pvl.get(PARAMETER_SIGNATURE).asMessage();
 					byte[] signature = isSignatureBase64() ? Base64.decodeBase64(signatureMsg.asString()):signatureMsg.asByteArray();
 
 					boolean verified = dsa.verify(signature);

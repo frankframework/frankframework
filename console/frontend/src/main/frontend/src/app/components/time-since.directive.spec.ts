@@ -29,9 +29,7 @@ describe('TimeSinceDirective', () => {
 
     fixture.detectChanges(); // initial binding
 
-    directiveElements = fixture.debugElement.queryAll(
-      By.directive(TimeSinceDirective),
-    );
+    directiveElements = fixture.debugElement.queryAll(By.directive(TimeSinceDirective));
   });
 
   it('get time since 5 minutes ago', () => {

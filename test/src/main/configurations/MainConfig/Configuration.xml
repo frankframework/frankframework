@@ -5,12 +5,15 @@
 	<Include ref="ConfigurationChecksum.xml"/>
 	<Include ref="ConfigurationZip.xml"/>
 	<Include ref="ConfigurationEcho.xml"/>
+	<Include ref="ConfigurationForPipe.xml"/>
 	<Include ref="ConfigurationErrorMessageFormatter.xml"/>
 	<Include ref="ConfigurationExceptionPipe.xml"/>
 	<Include ref="ConfigurationExchangeMail.xml"/>
 	<Include ref="ConfigurationExits.xml"/>
+	<Include ref="ConfigurationExpectedSessionKeys.xml"/>
 	<Include ref="ConfigurationReplacerPipe.xml"/>
 	<Include ref="ConfigurationReplaceInputAndPreserve.xml"/>
+	<Include ref="ConfigurationRegExPipe.xml"/>
 	<Include ref="ConfigurationForwardNameProvidingSenders.xml"/>
 	<Include ref="ConfigurationCompareStringPipe.xml"/>
 	<Include ref="ConfigurationCompareXmlStringPipe.xml"/>
@@ -25,7 +28,7 @@
 	<Include ref="ConfigurationSenders.xml"/>
 	<Include ref="ConfigurationBase64Pipe.xml"/>
 	<Include ref="ConfigurationFilePipe.xml"/>
-	<Include ref="ConfigurationMoveFilePipe.xml"/>
+	<Include ref="ConfigurationMoveFiles.xml"/>
 	<Include ref="ConfigurationStringResolver.xml"/>
 	<Include ref="ConfigurationCorrelationMessageId.xml"/>
 	<Include ref="ConfigurationXmlBuilderThreadSafety.xml"/>
@@ -61,4 +64,5 @@
 	<Include ref="ConfigurationStreaming.xml"/>
 	<Include ref="ConfigurationApiWsdlGenerator.xml"/>
 	<Include ref="ConfigurationUnzip.xml"/>
+	<Include ref="ConfigurationFrankSender.xml"/>
 </Configuration>

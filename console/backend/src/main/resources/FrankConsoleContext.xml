@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	">
+
+	<context:property-placeholder />
+
+	<context:component-scan base-package="org.frankframework.console">
+		<!-- disable package scanning in this package as it attempts to load this XML file, again. -->
+		<context:exclude-filter type="regex" expression="org\.frankframework\.console\.runner\..*"/>
+	</context:component-scan>
+
+	<bean id="httpFirewall" class="org.springframework.security.web.firewall.StrictHttpFirewall">
+		<property name="allowSemicolon" value="true"/>
+		<property name="allowUrlEncodedPercent" value="true"/>
+		<property name="allowUrlEncodedSlash" value="true"/>
+	</bean>
+
+	<bean id="JwtKeyGenerator" class="org.frankframework.management.security.JwtKeyGenerator"/>
+	<bean id="messageBuilderFactory" class="org.springframework.integration.support.DefaultMessageBuilderFactory" />
+
+	<mvc:interceptors>
+		<bean id="deprecationInterceptor" class="org.frankframework.console.configuration.DeprecationInterceptor" />
+	</mvc:interceptors>
+
+	<bean id="handlerMapping" class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" />
+	<bean id="integrationConversionService" class="org.springframework.core.convert.support.DefaultConversionService" />
+
+</beans>

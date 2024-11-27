@@ -1,58 +1,46 @@
 version: 2
+
 updates:
   - package-ecosystem: "maven"
     directory: "/"
     schedule:
       interval: "daily"
-    open-pull-requests-limit: 5
     labels:
       - "Dependencies"
+      - "Java"
+    reviewers:
+      - frankframework/maintainers
     ignore:
-      - dependency-name: "org.ibissource:ibis-ladybug"
-      - dependency-name: "com.aspose:*"
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
+      - dependency-name: "org.ibissource:ibis-ladybug"
+      - dependency-name: "com.aspose:*"
+      - dependency-name: "com.sap.jco3:sapidoc"
+      - dependency-name: "org.frankframework:frankframework-ear"
+      - dependency-name: "org.filesys:jfileserver-enterprise"
+      - dependency-name: "org.eclipse.m2e:lifecycle-mapping"
 
-  - package-ecosystem: "maven"
-    directory: "/"
+  - package-ecosystem: "npm"
+    directory: "/console/frontend/src/main/frontend"
     schedule:
       interval: "daily"
-    open-pull-requests-limit: 0
     labels:
       - "Dependencies"
-      - "Backport"
-      - "7.8"
-    target-branch: "7.8-release"
+      - "JavaScript"
+    reviewers:
+      - frankframework/maintainers
     ignore:
-      - dependency-name: "org.ibissource:ibis-ladybug"
-      - dependency-name: "com.aspose:*"
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
-      # The following versions are not available for JDK 8, see https://github.com/frankframework/frankframework/issues/3503
-      - dependency-name: "org.apache.activemq:activemq-*"
-        versions: ["[5.17.0,)"]
-      - dependency-name: "org.apache.activemq:artemis-*"
-        versions: ["[2.20.0,)"]
-      # End of versions not available for JDK 8
-
-  - package-ecosystem: "maven"
-    directory: "/"
-    schedule:
+      
+  - package-ecosystem: "docker"
+    directories:
+      # Globstar only works like this: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#directories
+      - "/docker/**/*"
+    schedule: 
       interval: "daily"
-    open-pull-requests-limit: 0
     labels:
       - "Dependencies"
-      - "Backport"
-      - "7.9"
-    target-branch: "7.9-release"
-    ignore:
-      - dependency-name: "org.ibissource:ibis-ladybug"
-      - dependency-name: "com.aspose:*"
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
-      # The following versions are not available for JDK 8, see https://github.com/frankframework/frankframework/issues/3503
-      - dependency-name: "org.apache.activemq:activemq-*"
-        versions: ["[5.17.0,)"]
-      - dependency-name: "org.apache.activemq:artemis-*"
-        versions: ["[2.20.0,)"]
-      # End of versions not available for JDK 8
+      - "Docker"
+    reviewers:
+      - frankframework/maintainers

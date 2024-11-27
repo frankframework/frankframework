@@ -26,7 +26,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -38,22 +38,23 @@ import org.apache.kafka.clients.consumer.OffsetResetStrategy;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
-import org.frankframework.core.IListener;
-import org.frankframework.core.IPullingListener;
-import org.frankframework.core.ListenerException;
-import org.frankframework.core.PipeLineResult;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.receivers.RawMessageWrapper;
-import org.frankframework.stream.Message;
-import org.frankframework.stream.MessageContext;
-import org.frankframework.util.StringUtil;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.core.IListener;
+import org.frankframework.core.IPullingListener;
+import org.frankframework.core.PipeLineResult;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.receivers.RawMessageWrapper;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
+import org.frankframework.util.StringUtil;
 
 /**
  * Experimental {@link IListener} for listening to a topic in
@@ -64,7 +65,7 @@ import lombok.extern.log4j.Log4j2;
 @Deprecated(forRemoval = false)
 @ConfigurationWarning("Experimental and under development. Do not use unless you wish to participate in this development.")
 @Log4j2
-public class KafkaListener extends KafkaFacade implements IPullingListener<ConsumerRecord<String, byte[]>> {
+public class KafkaListener extends AbstractKafkaFacade implements IPullingListener<ConsumerRecord<String, byte[]>> {
 
 	private static final Predicate<String> TOPIC_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9._\\-*]*$").asPredicate();
 
@@ -118,18 +119,25 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 	}
 
 	@Override
-	public void open() throws ListenerException {
+	public void start() {
 		lock.lock();
 		try {
 			consumer = buildConsumer();
 			consumer.subscribe(topicPattern);
 			waiting = consumer.poll(Duration.ofMillis(100)).iterator();
-			if (waiting.hasNext()) return; //TODO implement IPeekableListener. We shouldn't this logic in open.. it should only open/create the connection. The subscribe method will throw a Runtime (KafkaException) if it cannot connect!
+			if (waiting.hasNext()) {
+				return; //TODO implement IPeekableListener. We shouldn't this logic in open.. it should only open/create the connection. The subscribe method will throw a Runtime (KafkaException) if it cannot connect!
+			}
 
-			Double metric = (Double) consumer.metrics().values().stream().filter(item -> "response-total".equals(item.metricName().name())).findFirst().orElseThrow(() -> new ListenerException("Failed to get response-total metric.")).metricValue();
-			if (metric.intValue() == 0) throw new ListenerException("Didn't get a response from Kafka while connecting for Listening.");
-		} catch (RuntimeException e) {
-			throw new ListenerException(e);
+			Double metric = (Double) consumer.metrics().values().stream()
+					.filter(item -> "response-total".equals(item.metricName().name()))
+					.findFirst()
+					.orElseThrow(() -> new LifecycleException("Failed to get response-total metric."))
+					.metricValue();
+
+			if (metric.intValue() == 0) {
+				throw new LifecycleException("Didn't get a response from Kafka while connecting for Listening.");
+			}
 		} finally {
 			lock.unlock();
 		}
@@ -140,7 +148,7 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		lock.lock();
 		try {
 			consumer.close();

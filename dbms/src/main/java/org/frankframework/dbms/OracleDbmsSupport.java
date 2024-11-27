@@ -47,11 +47,6 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String getNumericKeyFieldType() {
-		return "NUMBER(10)";
-	}
-
-	@Override
 	public String getFromForTablelessSelect() {
 		return "FROM DUAL";
 	}
@@ -74,26 +69,6 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	@Override
 	public boolean autoIncrementUsesSequenceObject() {
 		return true;
-	}
-
-	@Override
-	public String getInsertedAutoIncrementValueQuery(String sequenceName) {
-		return "SELECT " + sequenceName + ".CURRVAL FROM DUAL";
-	}
-
-	@Override
-	public boolean mustInsertEmptyBlobBeforeData() {
-		return true;
-	}
-
-	@Override
-	public String getUpdateBlobQuery(String table, String blobField, String keyField) {
-		return "SELECT " + blobField + " FROM " + table + " WHERE " + keyField + "=?" + " FOR UPDATE";
-	}
-
-	@Override
-	public String emptyBlobValue() {
-		return "empty_blob()";
 	}
 
 	@Override
@@ -121,11 +96,6 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		}
 	}
 
-
-	@Override
-	public String getFirstRecordQuery(String tableName) {
-		return "select * from " + tableName + " where ROWNUM=1";
-	}
 
 	@Override
 	public String provideIndexHintAfterFirstKeyword(String tableName, String indexName) {
@@ -167,21 +137,6 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String getRowNumber(String order, String sort) {
-		return "row_number() over (order by " + order + (sort == null ? "" : " " + sort) + ") " + getRowNumberShortName();
-	}
-
-	@Override
-	public String getRowNumberShortName() {
-		return "rn";
-	}
-
-	@Override
-	public String getBooleanFieldType() {
-		return "NUMBER(1)";
-	}
-
-	@Override
 	public String getBooleanValue(boolean value) {
 		return value ? "1" : "0";
 	}
@@ -199,17 +154,6 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	@Override
 	public boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws DbmsException {
 		return super.isColumnPresent(conn, schemaName, tableName.toUpperCase(), columnName.toUpperCase());
-	}
-
-	@Override
-	public boolean isIndexPresent(Connection conn, String schemaOwner, String tableName, String indexName) {
-		String query = "select count(*) from all_indexes where owner='" + schemaOwner.toUpperCase() + "' and table_name='" + tableName.toUpperCase() + "' and index_name='" + indexName.toUpperCase() + "'";
-		try {
-			return DbmsUtil.executeIntQuery(conn, query) >= 1;
-		} catch (Exception e) {
-			log.warn("could not determine presence of index [{}] on table [{}]", indexName, tableName, e);
-			return false;
-		}
 	}
 
 	@Override

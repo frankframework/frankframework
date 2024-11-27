@@ -8,13 +8,14 @@ import static org.mockito.Mockito.when;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.stubbing.Answer;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
@@ -25,15 +26,9 @@ import org.frankframework.pipes.XmlValidator;
 import org.frankframework.pipes.XmlValidatorPipelineTest;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.util.XmlUtils;
 import org.frankframework.validation.AbstractXmlValidator;
 import org.frankframework.validation.JavaxXmlValidator;
 import org.frankframework.validation.XercesXmlValidator;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 
 /**
@@ -242,13 +237,13 @@ public class WsdlTest {
 		wsdl.setDocumentation("test");
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		wsdl.wsdl(out, "Test");
-		String result = new String(out.toByteArray());
+		String result = out.toString();
 
 		String expected = TestFileUtils.getTestFile("/"+testWsdl);
 		assertXmlEquals(expected, result);
 	}
 
-	protected void zip(WsdlGenerator wsdl) throws IOException, Exception {
+	protected void zip(WsdlGenerator wsdl) throws Exception {
 		File dir = new File(System.getProperty("java.io.tmpdir") + File.separator + "zipfiles");
 		File zipFile = new File(dir, wsdl.getName() + ".zip");
 		zipFile.getParentFile().mkdirs();
@@ -284,24 +279,11 @@ public class WsdlTest {
 		WebServiceListener listener = new WebServiceListener();
 		listener.setServiceNamespaceURI(targetNamespace);
 		when(receiverBase.getListener()).thenReturn(listener);
-		when(adp.getReceivers()).thenAnswer(new Answer<Iterable<Receiver>>() {
-			public Iterable<Receiver> answer(InvocationOnMock invocation) throws Throwable {
-				return Arrays.asList(receiverBase);
-			}
-		});
+		when(adp.getReceivers()).thenAnswer((Answer<Iterable<Receiver>>) invocation -> List.of(receiverBase));
 		when(adp.getName()).thenReturn(adapterName);
 		when(cfg.getClassLoader()).thenReturn(this.getClass().getClassLoader());
 		when(adp.getConfigurationClassLoader()).thenReturn(this.getClass().getClassLoader());
 		when(simple.getConfigurationClassLoader()).thenReturn(this.getClass().getClassLoader());
 		return simple;
 	}
-
-	static DocumentBuilder createDocumentBuilder() throws ParserConfigurationException {
-		DocumentBuilderFactory docBuilderFactory = XmlUtils.getDocumentBuilderFactory();
-		docBuilderFactory.setNamespaceAware(true);
-		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-		return docBuilder;
-	}
-
-
 }

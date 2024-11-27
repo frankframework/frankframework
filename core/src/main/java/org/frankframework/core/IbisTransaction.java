@@ -15,10 +15,10 @@
 */
 package org.frankframework.core;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.transaction.TransactionManager;
+import jakarta.transaction.TransactionManager;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;

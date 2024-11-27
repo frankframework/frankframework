@@ -15,22 +15,21 @@
 */
 package org.frankframework.pipes;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.springframework.beans.factory.InitializingBean;
 
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
-import org.frankframework.core.SenderException;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.doc.ReferTo;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.senders.XsltSender;
 import org.frankframework.stream.Message;
@@ -45,13 +44,13 @@ import org.frankframework.util.TransformerPool.OutputType;
  *
  * @author Johan Verrips
  */
-@Category("Basic")
-@ElementType(ElementTypes.TRANSLATOR)
+@Category(Category.Type.BASIC)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 
 	private String sessionKey=null;
 
-	private @Getter XsltSender sender = createXsltSender();
+	private final @Getter XsltSender sender = createXsltSender();
 
 	{
 		setSizeStatistics(true);
@@ -81,8 +80,8 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 	public void start() throws PipeStartException {
 		super.start();
 		try {
-			sender.open();
-		} catch (SenderException e) {
+			sender.start();
+		} catch (LifecycleException e) {
 			throw new PipeStartException(e);
 		}
 	}
@@ -90,8 +89,8 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 	@Override
 	public void stop() {
 		try {
-			sender.close();
-		} catch (SenderException e) {
+			sender.stop();
+		} catch (LifecycleException e) {
 			log.warn("exception closing XsltSender",e);
 		}
 		super.stop();
@@ -131,7 +130,7 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 	}
 
 	@Override
-	public void addParameter(Parameter rhs) {
+	public void addParameter(IParameter rhs) {
 		sender.addParameter(rhs);
 	}
 
@@ -206,15 +205,14 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 		sender.setXsltVersion(xsltVersion);
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	@ConfigurationWarning("Please use 'storeResultInSessionKey' with preserveInput=true")
 	/** If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result */
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
 
-	@Deprecated
-	public String getSessionKey() {
+	private String getSessionKey() {
 		return sessionKey;
 	}
 

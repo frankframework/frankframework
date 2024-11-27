@@ -7,15 +7,13 @@ import { BaseIframeComponent } from '../iframe.base';
   templateUrl: '../iframe.component.html',
   styleUrls: ['../iframe.component.scss'],
 })
-export class IframeLarvaComponent
-  extends BaseIframeComponent
-  implements OnInit
-{
+export class IframeLarvaComponent extends BaseIframeComponent implements OnInit {
   constructor(sanitizer: DomSanitizer, appService: AppService) {
     super(sanitizer, appService);
   }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
+    super.ngOnInit();
     this.setIframeSource('larva');
   }
 }

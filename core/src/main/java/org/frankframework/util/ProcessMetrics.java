@@ -50,7 +50,7 @@ public class ProcessMetrics {
 		addNumberProperty(props, "heapSize", totalMem-freeMem);
 		addNumberProperty(props, "maxMemory", maxMemory);
 		addProperty(props, "currentTime", DateFormatUtils.now());
-		return xmlh.toXML();
+		return xmlh.asXmlString();
 	}
 
 	public static Map<String, String> toMap() {

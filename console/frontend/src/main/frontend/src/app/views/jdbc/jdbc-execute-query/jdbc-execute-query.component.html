@@ -1,6 +1,3 @@
-<!-- Angular ui-router hack-->
-<div ui-view></div>
-
 <div class="wrapper wrapper-content animated fadeInRight">
   <div class="alert alert-warning" role="alert" type="warning" *ngIf="error">
     <span class="ng-binding ng-scope" [innerText]="error"></span>
@@ -14,15 +11,9 @@
         <div class="ibox-content">
           <form role="form">
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30"
-                >Datasource</label
-              >
+              <label class="col-sm-3 control-label label-height-30">Datasource</label>
               <div class="col-sm-9">
-                <select
-                  class="form-control"
-                  name="datasource"
-                  [(ngModel)]="form['datasource']"
-                >
+                <select class="form-control" name="datasource" [(ngModel)]="form.datasource">
                   <option *ngFor="let datasource of datasources">
                     {{ datasource }}
                   </option>
@@ -30,15 +21,9 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30"
-                >Query Type</label
-              >
+              <label class="col-sm-3 control-label label-height-30">Query Type</label>
               <div class="col-sm-9">
-                <select
-                  class="form-control"
-                  name="queryType"
-                  [(ngModel)]="form['queryType']"
-                >
+                <select class="form-control" name="queryType" [(ngModel)]="form.queryType">
                   <option *ngFor="let queryType of queryTypes">
                     {{ queryType }}
                   </option>
@@ -46,75 +31,45 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30"
-                >Result format</label
-              >
+              <label class="col-sm-3 control-label label-height-30">Result format</label>
               <div class="col-sm-9">
-                <select
-                  class="form-control"
-                  name="resultType"
-                  [(ngModel)]="form['resultType']"
-                >
-                  <option
-                    *ngFor="let resultType of resultTypes; let first = first"
-                    [selected]="first"
-                  >
+                <select class="form-control" name="resultType" [(ngModel)]="form.resultType">
+                  <option *ngFor="let resultType of resultTypes; let first = first" [selected]="first">
                     {{ resultType }}
                   </option>
                 </select>
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30"
-                >Avoid Locking</label
-              >
+              <label class="col-sm-3 control-label label-height-30">Avoid Locking</label>
               <div class="col-sm-9">
                 <span class="form-control" style="border: none"
-                  ><input
-                    type="checkbox"
-                    name="avoidLocking"
-                    [(ngModel)]="form['avoidLocking']"
+                  ><input type="checkbox" name="avoidLocking" [(ngModel)]="form.avoidLocking"
                 /></span>
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30"
-                >Trim Spaces</label
-              >
+              <label class="col-sm-3 control-label label-height-30">Trim Spaces</label>
               <div class="col-sm-9">
                 <span class="form-control" style="border: none"
-                  ><input
-                    type="checkbox"
-                    name="trimSpaces"
-                    [(ngModel)]="form['trimSpaces']"
+                  ><input type="checkbox" name="trimSpaces" [(ngModel)]="form.trimSpaces"
                 /></span>
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30"
-                >Query</label
-              >
-              <div class="col-sm-9">
-                <textarea
+              <label class="col-sm-3 control-label label-height-30">Query</label>
+              <div class="col-sm-9" style="height: 200px">
+                <app-monaco-editor
                   class="form-control"
-                  name="query"
-                  rows="5"
-                  appQuickSubmitForm
-                  (quickSubmit)="submit(form)"
-                  style="resize: none"
-                  [(ngModel)]="form['query']"
-                ></textarea>
+                  [(value)]="form.query"
+                  [options]="{ language: 'sql' }"
+                  [actions]="editorActions"
+                ></app-monaco-editor>
               </div>
             </div>
             <div class="row form-group">
               <div class="col-sm-3 m-t-md">
-                <button
-                  class="btn btn-info btn-w-m font-bold"
-                  type="button"
-                  (click)="reset()"
-                >
-                  Reset
-                </button>
+                <button class="btn btn-info btn-w-m font-bold" type="button" (click)="reset()">Reset</button>
               </div>
               <div class="col-sm-3 m-t-md">
                 <button
@@ -137,7 +92,7 @@
           <h4>Result</h4>
         </div>
         <div class="ibox-content">
-          <pre class="ng-binding" contenteditable="true">{{ result }}</pre>
+          <pre contenteditable="true">{{ result }}</pre>
         </div>
       </div>
     </div>

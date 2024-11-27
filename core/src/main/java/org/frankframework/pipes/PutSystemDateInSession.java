@@ -27,8 +27,7 @@ import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DateFormatUtils;
@@ -40,7 +39,7 @@ import org.frankframework.util.DateFormatUtils;
  * @author  Jaco de Groot (***@dynasol.nl)
  * @since   4.2c
  */
-@ElementType(ElementTypes.SESSION)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.SESSION)
 public class PutSystemDateInSession extends FixedForwardPipe {
 	public static final Object OBJECT = new Object();
 	public static final String FIXEDDATETIME  ="2001-12-17 09:30:47";
@@ -172,7 +171,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 
 	/**
 	 * Set to a time <i>in milliseconds</i> to create a value that is different to the previous returned value by a PutSystemDateInSession pipe in
-	 * this virtual machine or <code>-1 to disable</code>. The thread will sleep for the specified time before recalculating a new value. Set the
+	 * this virtual machine or <code>-1</code> to disable. The thread will sleep for the specified time before recalculating a new value. Set the
 	 * timezone to a value without Daylight Saving Time (like GMT+1) to prevent this pipe to generate two equal value's when the clock is set back.
 	 * <b>note:</b> When you're looking for a GUID parameter for your XSLT it might be better to use
 	 * &lt;param name=&quot;guid&quot; pattern=&quot;{hostname}_{uid}&quot;/&gt;, see {@link Parameter}.

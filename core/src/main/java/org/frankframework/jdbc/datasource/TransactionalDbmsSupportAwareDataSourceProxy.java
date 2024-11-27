@@ -21,7 +21,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import javax.sql.DataSource;
 
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
@@ -45,8 +45,8 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 
 	public Map<String, String> getMetaData() throws SQLException {
 		if (metadata == null) {
-			log.debug("populating metadata from getMetaData");
-			try (Connection connection = getConnection()) {
+			try (Connection connection = super.getConnection()) {
+				log.trace("populating metadata from getMetaData");
 				populateMetadata(connection);
 			}
 		}
@@ -92,7 +92,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 	public Connection getConnection() throws SQLException {
 		Connection conn = super.getConnection();
 		if (metadata == null) {
-			log.debug("populating metadata from getConnection");
+			log.trace("populating metadata from getConnection");
 			populateMetadata(conn);
 		}
 		return conn;

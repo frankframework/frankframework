@@ -1,0 +1,23 @@
+pre {
+  margin: 10px 0;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  max-height: 600px;
+  white-space: pre-wrap;
+  font-size: 12px;
+  font-family: Consolas, 'Courier New', monospace;
+}
+
+form {
+  display: flex;
+
+  input {
+    flex: 1 1 0;
+  }
+
+  button {
+    height: 30px;
+    width: 100px;
+    margin-left: 10px;
+  }
+}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,15 +39,11 @@ import java.io.InputStream;
 
 class FrankJ2V8LibraryLoader {
 
-	static final String SEPARATOR;
-	static final String DELIMITER;
+	private static final String SEPARATOR = System.getProperty("file.separator");
+	private static final String DELIMITER = System.getProperty("line.separator");
+	private static final String OS_NAME = System.getProperty("os.name") + System.getProperty("java.specification.vendor");
 
 	static final String SWT_LIB_DIR = ".j2v8";
-
-	static {
-		DELIMITER = System.getProperty("line.separator"); //$NON-NLS-1$
-		SEPARATOR = System.getProperty("file.separator"); //$NON-NLS-1$
-	}
 
 	private static String computeLibraryShortName() {
 		String base = "j2v8";
@@ -60,11 +56,7 @@ class FrankJ2V8LibraryLoader {
 		return "lib" + computeLibraryShortName() + "." + getOSFileExtension();
 	}
 
-	static void loadLibrary(final String tempDirectory) {
-		if ( isAndroid() ) {
-			System.loadLibrary("j2v8");
-			return;
-		}
+	public static void loadLibrary(final String tempDirectory) {
 		StringBuilder message = new StringBuilder();
 		String libShortName = computeLibraryShortName();
 		String libFullName = computeLibraryFullName();
@@ -94,10 +86,10 @@ class FrankJ2V8LibraryLoader {
 		}
 
 		/* Failed to find the library */
-		throw new UnsatisfiedLinkError("Could not load J2V8 library. Reasons: " + message.toString()); //$NON-NLS-1$
+		throw new UnsatisfiedLinkError("Could not load J2V8 library. Reasons: " + message); //$NON-NLS-1$
 	}
 
-	static boolean load(final String libName, final StringBuilder message) {
+	private static boolean load(final String libName, final StringBuilder message) {
 		try {
 			if (libName.indexOf(SEPARATOR) != -1) {
 				System.load(libName);
@@ -116,7 +108,7 @@ class FrankJ2V8LibraryLoader {
 		return false;
 	}
 
-	static boolean extract(final String fileName, final String mappedName, final StringBuilder message) {
+	private static boolean extract(final String fileName, final String mappedName, final StringBuilder message) {
 		FileOutputStream os = null;
 		InputStream is = null;
 		File file = new File(fileName);
@@ -136,8 +128,7 @@ class FrankJ2V8LibraryLoader {
 				}
 				os.close();
 				is.close();
-				// commented out call to chmod(), as it appears to be unnecessary, and causes <<ALL FILES>> execute permission exceptions
-				//chmod("755", fileName);
+				// removed call to chmod(), as it appears to be unnecessary, and causes <<ALL FILES>> execute permission exceptions
 				if (load(fileName, message)) {
 					return true;
 				}
@@ -162,41 +153,23 @@ class FrankJ2V8LibraryLoader {
 		return false;
 	}
 
-	static void chmod(final String permision, final String path) {
-		if (isWindows()) {
-			return;
-		}
-		try {
-			Runtime.getRuntime().exec(new String[] { "chmod", permision, path }).waitFor(); //$NON-NLS-1$
-		} catch (Throwable e) {
-		}
+	private static boolean isWindows() {
+		return OS_NAME.startsWith("Windows");
 	}
 
-	static String getOsName() {
-		return System.getProperty("os.name") + System.getProperty("java.specification.vendor");
+	private static boolean isMac() {
+		return OS_NAME.startsWith("Mac");
 	}
 
-	static boolean isWindows() {
-		return getOsName().startsWith("Windows");
+	private static boolean isLinux() {
+		return OS_NAME.startsWith("Linux");
 	}
 
-	static boolean isMac() {
-		return getOsName().startsWith("Mac");
+	private static boolean isNativeClient() {
+		return OS_NAME.startsWith("nacl");
 	}
 
-	static boolean isLinux() {
-		return getOsName().startsWith("Linux");
-	}
-
-	static boolean isNativeClient() {
-		return getOsName().startsWith("nacl");
-	}
-
-	static boolean isAndroid() {
-		return getOsName().contains("Android");
-	}
-
-	static String getArchSuffix() {
+	private static String getArchSuffix() {
 		String arch = System.getProperty("os.arch");
 		if ("i686".equals(arch)) {
 			return "x86";
@@ -210,7 +183,7 @@ class FrankJ2V8LibraryLoader {
 		return arch;
 	}
 
-	static String getOSFileExtension() {
+	private static String getOSFileExtension() {
 		if (isWindows()) {
 			return "dll";
 		} else if (isMac()) {
@@ -220,20 +193,18 @@ class FrankJ2V8LibraryLoader {
 		} else if (isNativeClient()) {
 			return "so";
 		}
-		throw new UnsatisfiedLinkError("Unsupported platform: " + getOsName());
+		throw new UnsatisfiedLinkError("Unsupported platform: " + OS_NAME);
 	}
 
-	static String getOS() {
+	private static String getOS() {
 		if (isWindows()) {
 			return "win32";
 		} else if (isMac()) {
 			return "macosx";
-		} else if (isLinux() && !isAndroid()) {
+		} else if (isLinux()) {
 			return "linux";
-		} else if (isAndroid()) {
-			return "android";
 		}
-		throw new UnsatisfiedLinkError("Unsupported platform: " + getOsName());
+		throw new UnsatisfiedLinkError("Unsupported platform: " + OS_NAME);
 	}
 
 }

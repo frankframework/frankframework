@@ -5,6 +5,7 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.util.LogUtil;
 
 public class XaResourceObserver implements XAResource {

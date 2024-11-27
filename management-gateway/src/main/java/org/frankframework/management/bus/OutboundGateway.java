@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,21 +15,54 @@
 */
 package org.frankframework.management.bus;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import jakarta.annotation.Nonnull;
+
 import org.springframework.integration.IntegrationPattern;
+import org.springframework.integration.IntegrationPatternType;
 import org.springframework.messaging.Message;
 
-public interface OutboundGateway<T> extends IntegrationPattern {
+import lombok.Getter;
+import lombok.Setter;
+
+public interface OutboundGateway extends IntegrationPattern {
+
+	@Override
+	default IntegrationPatternType getIntegrationPatternType() {
+		return IntegrationPatternType.outbound_gateway;
+	}
+
+	@Nonnull
+	default List<ClusterMember> getMembers() {
+		return Collections.emptyList();
+	}
+
+	@Setter
+	@Getter
+	class ClusterMember {
+		private UUID id;
+		private String address;
+		private boolean localMember;
+		private boolean selectedMember;
+		private String type;
+		private Map<String, String> attributes;
+	}
 
 	/**
-	 * T in T out.
+	 * I in O out. May not be null.
 	 * @param in Message to send
 	 * @return Response message
 	 */
-	public Message<T> sendSyncMessage(Message<T> in);
+	@Nonnull
+	<I, O> Message<O> sendSyncMessage(Message<I> in);
 
 	/**
-	 * T in, no reply
+	 * I in, no reply
 	 * @param in Message to send
 	 */
-	public void sendAsyncMessage(Message<T> in);
+	<I> void sendAsyncMessage(Message<I> in);
 }

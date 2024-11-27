@@ -23,13 +23,13 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import lombok.Setter;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-
 import org.frankframework.stream.Message;
 
 public class LargeBlockTester extends FixedForwardPipe {
@@ -122,7 +122,7 @@ public class LargeBlockTester extends FixedForwardPipe {
 						break;
 					}
 					bytesRead += len;
-					log.debug("read block [" + (block++) + "] of size [" + len + "]: " + new String(buf, 0, len < displaylen ? len : displaylen));
+					log.debug("read block [{}] of size [{}]: {}", block++, len, new String(buf, 0, len < displaylen ? len : displaylen));
 				}
 				int blocksServedAtEndOfReading = totalBlocksServed.get();
 

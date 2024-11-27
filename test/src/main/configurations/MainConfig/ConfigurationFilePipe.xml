@@ -6,10 +6,11 @@
 		<pipeline firstPipe="setFilename">
 			<exits>
 				<exit path="EXIT" state="success" />
+				<exit path="EXCEPTION" state="error" />
 			</exits>
 
 			<!-- Set FileName -->
-			<pipe name="setFilename" className="org.frankframework.pipes.PutInSession" sessionKey="filename" value="${testdata.dir}/test.txt" >
+			<pipe name="setFilename" className="org.frankframework.pipes.PutInSession" sessionKey="filename" value="${testdata.dir}/test1.txt" >
  			 <forward name="success" path="setFileData"/>
 			</pipe>
 
@@ -21,11 +22,13 @@
 			<!-- Write file -->
 			<pipe
 				name="write file"
-	        	className="org.frankframework.pipes.FilePipe"
-	        	actions="write"
-	        	filenameSessionKey="filename"
-	        	createDirectory="true">
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+	        	action="write"
+				overwrite="true"
+	        	createFolder="true">
+				<param name="filename" sessionKey="filename" />
 	        	<forward name="success" path="switchAction"/>
+				<forward name="exception" path="EXCEPTION"/>
 	        </pipe>
 
 			<!-- choose which action should be done -->
@@ -34,29 +37,26 @@
 			<!-- Read file / getInputFromSessionKey -->
 			<pipe
 				name="read file via getInputFromSessionKey"
-	        	className="org.frankframework.pipes.FilePipe"
-	        	actions="read"
-	        	getInputFromSessionKey="filename"
-	        	>
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+	        	action="read"
+	        	getInputFromSessionKey="filename">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
 
 			<!-- Read file / filenameSessionKey -->
 			<pipe
 				name="read file via filenameSessionKey"
-	        	className="org.frankframework.pipes.FilePipe"
-	        	actions="read"
-	        	filenameSessionKey="filename">
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+	        	action="read">
+				<param name="filename" sessionKey="filename" />
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
 
 			<!-- Read file at classpath -->
 			<pipe
 				name="read file at classpath"
-	        	className="org.frankframework.pipes.FilePipe"
-	        	actions="read"
-	        	getInputFromFixedValue="FilePipe/sample.txt"
-	        	fileSource="classpath">
+				className="org.frankframework.pipes.FixedResultPipe"
+	        	filename="FilePipe/sample.txt">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
 
@@ -97,79 +97,73 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<!-- Delete file with use of directory and fileNam e-->
+			<!-- Delete file with use of directory and filename -->
 			<pipe
 				name="delete file"
-	        	className="org.frankframework.pipes.FilePipe"
-	        	actions="delete"
-	        	filename="test.txt"
-	        	directory="${testdata.dir}"
-	        	createDirectory="true"
-	        	testExists="false"
-	        	deleteEmptyDirectory="true">
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+	        	action="delete"
+	        	filename="${testdata.dir}/test1.txt"
+	        	deleteEmptyFolder="true">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
 
-			<!-- Delete file without use of directory and filename (filenameSessionKey) -->
+			<!-- Delete file by using a sessionKey -->
 			<pipe
-				name="delete file no directory specified"
-	        	className="org.frankframework.pipes.FilePipe"
-	        	actions="delete"
-	        	filenameSessionKey="filename"
-	        >
+				name="delete file by using a sessionKey"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+	        	action="delete">
+				<param name="filename" sessionKey="filename" />
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
 
 	        <!-- Delete file no directory no filename (input) -->
 			<pipe
 				name="delete file no directory no filename"
-	        	className="org.frankframework.pipes.FilePipe"
-	        	actions="delete"
-	        	getInputFromFixedValue="${testdata.dir}/test.txt">
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+	        	action="delete"
+	        	filename="${testdata.dir}/test1.txt">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
 
-
 			<!-- Delete file that does not exist with use of directory -->
 			<pipe
-				name="delete file that does not exists"
-	        	className="org.frankframework.pipes.FilePipe"
-	        	actions="delete"
-	        	filename="none_existing_file.txt"
-	        	testExists="false"
-	        	directory="${testdata.dir}">
+				name="delete file that does not exist"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+	        	action="delete"
+	        	filename="${testdata.dir}/none_existing_file.txt">
 	        	<forward name="success" path="EXIT"/>
+				<forward name="exception" path="EXCEPTION"/>
 	        </pipe>
 
 			<!-- List files -->
 			<pipe
-				name="list files"
-	        	className="org.frankframework.pipes.FilePipe"
-	        	actions="list"
-	        	filename="dummy*.txt"
-	        	testExists="false"
-	        	directory="${testdata.dir}">
+				name="list files1"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+	        	action="list"
+	        	wildcard="dummy1*.txt"
+				inputFolder="${testdata.dir}">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
-
-			<!-- List files without use of directory -->
 			<pipe
-				name="list files no directory specified"
-	        	className="org.frankframework.pipes.FilePipe"
-	        	actions="list"
-	        	filename="${testdata.dir}/dummy*.txt">
-	        	<forward name="success" path="EXIT"/>
-	        </pipe>
+				name="list files2"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				action="list"
+				wildcard="dummy2*.txt"
+				inputFolder="${testdata.dir}">
+				<forward name="success" path="EXIT"/>
+			</pipe>
 
 			<!-- Create file and info -->
-			<pipe name="create file" className="org.frankframework.pipes.FilePipe"
-				actions="create" directory="${testdata.dir}" writeSuffix=".abc">
-				<param name="writeSuffix" value=".txt" />
+			<pipe name="create file" className="org.frankframework.pipes.LocalFileSystemPipe"
+				action="create"
+				overwrite="true">
+				<param name="filename" pattern="${testdata.dir}/{UUID}.txt"/>
 				<forward name="success" path="info file" />
 			</pipe>
 
-			<pipe name="info file" className="org.frankframework.pipes.FilePipe"
-				actions="info">
+			<pipe name="info file" className="org.frankframework.pipes.LocalFileSystemPipe"
+				action="info">
+				<param name="filename" xpathExpression="concat('${testdata.dir}/', /file/@name)"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

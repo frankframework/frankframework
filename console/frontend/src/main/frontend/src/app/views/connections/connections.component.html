@@ -5,52 +5,12 @@
         <h4>Connections</h4>
       </div>
       <div class="ibox-content">
-        <!-- <label>
-          Min truncate length:
-          <select [(ngModel)]="minimalTruncateLength" name="minimalTruncateLength" (ngModelChange)="updateTable()">
-            <option *ngFor="let option of truncateLengthOptions" [ngValue]="option">{{option}}</option>
-          </select>
-        </label> -->
-        <table
-          id="datatable"
-          style="width: 100%"
-          datatable
-          class="table table-striped table-hover"
-          [dtOptions]="dtOptions"
-        >
-          <!-- dt-disable-deep-watchers="true" !-->
-          <thead>
-            <tr>
-              <th>
-                <div>Adapter Name</div>
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  name="adapter-name"
-                />
-              </th>
-              <th>
-                <div>Listener/Sender Name</div>
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  name="listener-sender-name"
-                />
-              </th>
-              <th>
-                <div>Domain</div>
-              </th>
-              <th>
-                <div>Destination</div>
-                <input type="text" placeholder="Search..." name="destination" />
-              </th>
-              <th>
-                <div>Direction</div>
-              </th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+        <app-datatable
+          [datasource]="datasource"
+          [displayColumns]="displayedColumns"
+          [truncate]="true"
+          [truncateLength]="minimalTruncateLength"
+        ></app-datatable>
       </div>
     </div>
   </div>

@@ -21,10 +21,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
-org.frankframework.core.ConfiguredTestBase;
+import org.frankframework.core.ConfiguredTestBase;
 import org.frankframework.stream.Message;
-
-import org.frankframework.util.DateUtils;
+import org.frankframework.util.CloseUtils;
+import org.frankframework.util.DateFormatUtils;
 
 public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>> extends ConfiguredTestBase {
 
@@ -38,6 +38,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 	protected abstract FS createFileSystem() throws ConfigurationException;
 
 
+	@Override
 	@BeforeEach
 	public void setUp() throws IOException, ConfigurationException, FileSystemException {
 		log.debug("setUp start");
@@ -50,11 +51,11 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 		log.debug("setUp finished");
 	}
 
+	@Override
 	@AfterEach
 	public void tearDown() {
-		log.debug("tearDown start");
-		fileSystem.close();
-		log.debug("tearDown finished");
+		CloseUtils.closeSilently(fileSystem);
+		super.tearDown();
 	}
 
 	@Test
@@ -62,8 +63,8 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 		// just perform the setup()
 	}
 
-	protected F getFirstFileFromFolder(String folder) {
-		try (DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
+	protected F getFirstFileFromFolder(String folder) throws Exception {
+		try (DirectoryStream<F> ds = fileSystem.list(folder, TypeFilter.FILES_ONLY)) {
 			Iterator<F> it = ds.iterator();
 			if (it == null) {
 				return null;
@@ -78,11 +79,11 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 	/**
 	 * asserts a number of files to be present in folder.
 	 */
-	public void fileSystemTestListFile(int numFilesExpected, String folder) {
+	public void fileSystemTestListFile(int numFilesExpected, String folder) throws Exception {
 		Set<F> files = new HashSet<>();
 		Set<String> filenames = new HashSet<>();
 		int count = 0;
-		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
+		try(DirectoryStream<F> ds = fileSystem.list(folder, TypeFilter.FILES_ONLY)) {
 			Iterator<F> it = ds.iterator();
 			// Count files
 			while (it.hasNext()) {
@@ -115,7 +116,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 				String canonicalname=fileSystem.getCanonicalName(f);
 				log.debug("canonicalname ["+canonicalname+"]");
 				Date modificationTime=fileSystem.getModificationTime(f);
-				log.debug("modificationTime ["+(modificationTime==null?null:DateUtils.format(modificationTime))+"]");
+				log.debug("modificationTime ["+(modificationTime==null?null: DateFormatUtils.format(modificationTime))+"]");
 
 				Map<String,Object> properties=fileSystem.getAdditionalFileProperties(f);
 				for (Entry<String,Object>entry:properties.entrySet()) {
@@ -156,7 +157,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 
 	}
 
-	public void fileSystemTestRandomFileShouldNotExist(String randomFileName) {
+	public void fileSystemTestRandomFileShouldNotExist(String randomFileName) throws Exception {
 		F f=fileSystem.toFile(randomFileName);
 		assertFalse(fileSystem.exists(f), "RandomFileShouldNotExist");
 	}

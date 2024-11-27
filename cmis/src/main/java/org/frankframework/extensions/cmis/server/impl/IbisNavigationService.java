@@ -18,12 +18,6 @@ package org.frankframework.extensions.cmis.server.impl;
 import java.math.BigInteger;
 import java.util.List;
 
-import org.frankframework.extensions.cmis.CmisUtils;
-import org.frankframework.extensions.cmis.server.CmisEvent;
-import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
-import org.frankframework.util.XmlBuilder;
-import org.frankframework.util.XmlUtils;
-
 import org.apache.chemistry.opencmis.commons.data.ExtensionsData;
 import org.apache.chemistry.opencmis.commons.data.ObjectData;
 import org.apache.chemistry.opencmis.commons.data.ObjectInFolderContainer;
@@ -34,6 +28,12 @@ import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.spi.NavigationService;
 import org.w3c.dom.Element;
+
+import org.frankframework.extensions.cmis.CmisUtils;
+import org.frankframework.extensions.cmis.server.CmisEvent;
+import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
+import org.frankframework.util.XmlBuilder;
+import org.frankframework.util.XmlUtils;
 
 /**
  * Wrapper that delegates when a matching CmisEvent is present.
@@ -83,7 +83,7 @@ public class IbisNavigationService implements NavigationService {
 			cmisXml.addSubElement(buildXml("maxItems", maxItems));
 			cmisXml.addSubElement(buildXml("skipCount", skipCount));
 
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_CHILDREN, cmisXml.toXML(), callContext);
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_CHILDREN, cmisXml.asXmlString(), callContext);
 			Element typesXml = XmlUtils.getFirstChildTag(cmisResult, "objectInFolderList");
 
 			return CmisUtils.xml2ObjectsInFolderList(typesXml);

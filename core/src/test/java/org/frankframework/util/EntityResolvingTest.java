@@ -7,14 +7,6 @@ import java.io.StringReader;
 
 import javax.xml.validation.ValidatorHandler;
 
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.validation.AbstractXmlValidator;
-import org.frankframework.validation.DummySchemasProviderImpl;
-import org.frankframework.validation.JavaxXmlValidator;
-import org.frankframework.validation.ValidationContext;
-import org.frankframework.validation.XercesXmlValidator;
-import org.frankframework.validation.XmlValidatorErrorHandler;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -24,6 +16,15 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.validation.AbstractXmlValidator;
+import org.frankframework.validation.DummySchemasProviderImpl;
+import org.frankframework.validation.JavaxXmlValidator;
+import org.frankframework.validation.AbstractValidationContext;
+import org.frankframework.validation.XercesXmlValidator;
+import org.frankframework.validation.XmlValidatorErrorHandler;
 
 public class EntityResolvingTest {
 
@@ -126,7 +127,7 @@ public class EntityResolvingTest {
 		instance.start();
 
 		PipeLineSession session = new PipeLineSession();
-		ValidationContext context = instance.createValidationContext(session, null, null);
+		AbstractValidationContext context = instance.createValidationContext(session, null, null);
 		ValidatorHandler validatorHandler = instance.getValidatorHandler(session, context);
 		StringReader sr = new StringReader(xmlIn);
 		InputSource is = new InputSource(sr);
@@ -147,7 +148,7 @@ public class EntityResolvingTest {
 
 			@Override
 			public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-				sb.append("<"+localName);
+				sb.append("<").append(localName);
 				sb.append(" xmlns=\"").append(uri).append("\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"");
 				for (int i=0;i<atts.getLength();i++) {
 					sb.append(' ').append(atts.getLocalName(i)).append("=\"").append(atts.getValue(i)).append('"');
@@ -161,7 +162,7 @@ public class EntityResolvingTest {
 					sb.append("/>");
 					elementOpen=false;
 				} else {
-					sb.append("</"+localName+">");
+					sb.append("</").append(localName).append(">");
 				}
 			}
 

@@ -4,11 +4,7 @@
       <div class="ibox float-e-margins">
         <div class="ibox-title">
           <div class="pull-right">
-            <button
-              routerLink=".."
-              class="btn btn-xs pull-right btn-info"
-              type="button"
-            >
+            <button routerLink=".." class="btn btn-xs pull-right btn-info" type="button">
               <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
               <span> Back</span>
             </button>
@@ -17,36 +13,46 @@
         </div>
         <div class="ibox-content">
           <h2>Version History</h2>
+          <div class="ibox-stretch">
+            <div class="input-group" id="searchbar">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Search ... (Ctrl + Shift + F)"
+                [(ngModel)]="search"
+                name="search"
+              />
+              <i
+                (click)="search = ''"
+                class="fa fa-times input-group-closeSearch{{ search.length < 1 ? ' hidden' : '' }}"
+                aria-hidden="true"
+              ></i>
+              <span class="input-group-addon">
+                <i class="fa fa-search" aria-hidden="true"></i>
+              </span>
+            </div>
+          </div>
           <table class="table table-hover">
             <thead>
               <tr>
-                <th>Version</th>
-                <th>Filename</th>
-                <th>Created At</th>
-                <th>User</th>
-                <th title="The configuration that's loaded upon IBIS startup">
-                  Startup Config
-                </th>
-                <th
-                  title="The configuration will be loaded on the next scheduled interval"
-                >
-                  Auto Reload
-                </th>
-                <th title="The configuration that's currently in use">
-                  Running Config
-                </th>
+                <th sortable="version" (sorted)="onSort($event)">Version</th>
+                <th sortable="filename" (sorted)="onSort($event)">Filename</th>
+                <th sortable="created" (sorted)="onSort($event)">Created At</th>
+                <th sortable="user" (sorted)="onSort($event)">User</th>
+                <th title="The configuration that's loaded upon IBIS startup">Startup Config</th>
+                <th title="The configuration will be loaded on the next scheduled interval">Auto Reload</th>
+                <th title="The configuration that's currently in use">Running Config</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let config of versions">
+              <tr *ngFor="let config of versionsSorted | searchFilter: search">
                 <td>{{ config.version }}</td>
                 <td>{{ config.filename }}</td>
                 <td>{{ config.created }}</td>
                 <td>{{ config.user }}</td>
                 <td>
                   <input
-                    icheck-radius
                     type="checkbox"
                     (ngModelChange)="activate(config)"
                     name="activated"
@@ -55,7 +61,6 @@
                 </td>
                 <td>
                   <input
-                    icheck
                     type="checkbox"
                     (ngModelChange)="scheduleReload(config)"
                     name="autoreload"
@@ -63,11 +68,7 @@
                   />
                 </td>
                 <td>
-                  <i
-                    class="fa fa-check btn-xs"
-                    *ngIf="config.loaded"
-                    aria-hidden="true"
-                  ></i>
+                  <i class="fa fa-check btn-xs" *ngIf="config.loaded" aria-hidden="true"></i>
                 </td>
                 <td class="hideBtn1170 minw180px">
                   <button

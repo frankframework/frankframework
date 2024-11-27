@@ -10,6 +10,8 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.IDbmsSupport;
@@ -17,8 +19,6 @@ import org.frankframework.dbms.JdbcException;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.util.DB2XMLWriter;
 import org.frankframework.util.JdbcUtil;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class JdbcTestUtil {

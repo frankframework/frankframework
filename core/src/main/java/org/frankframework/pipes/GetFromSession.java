@@ -20,13 +20,12 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
-import org.frankframework.parameters.Parameter.ParameterType;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
+import org.frankframework.parameters.ParameterType;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlBuilder;
 
@@ -38,7 +37,7 @@ import org.frankframework.util.XmlBuilder;
  *
  * @see PipeLineSession
  */
-@ElementType(ElementTypes.SESSION)
+@EnterpriseIntegrationPattern(Type.SESSION)
 public class GetFromSession  extends FixedForwardPipe {
 
 	private String sessionKey;
@@ -59,7 +58,7 @@ public class GetFromSession  extends FixedForwardPipe {
 
 		if (result == null) {
 			//why is null returned when nothing can be found?
-			log.warn("got null value from session under key ["+getSessionKey()+"]");
+			log.warn("got null value from session under key [{}]", getSessionKey());
 		}
 		else {
 			if (getType()==ParameterType.MAP && result instanceof Map) {
@@ -72,9 +71,9 @@ public class GetFromSession  extends FixedForwardPipe {
 					itemXml.setValue(items.get(item));
 					itemsXml.addSubElement(itemXml);
 				}
-				result = itemsXml.toXML();
+				result = itemsXml.asMessage();
 			}
-			log.debug("got [" + result.toString() + "] from pipeLineSession under key [" + getSessionKey() + "]");
+			log.debug("got [{}] from pipeLineSession under key [{}]", result, getSessionKey());
 		}
 
 		return new PipeRunResult(getSuccessForward(), result);

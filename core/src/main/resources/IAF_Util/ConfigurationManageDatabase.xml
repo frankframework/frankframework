@@ -30,8 +30,13 @@
 				<param name="returnResults" sessionKey="originalMessage" xpathExpression="/manageDatabaseREQ/@returnResults" />
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<!-- ERRORS -->
-			<pipe className="org.frankframework.pipes.FixedResultPipe" name="InputValidateError" filename="/ManageDatabase/xml/ErrorMessage.xml" replaceFrom="%reasonCode" replaceTo="NOT_WELL_FORMED_XML">
+
+			<pipe className="org.frankframework.pipes.FixedResultPipe" name="InputValidateError" filename="/ManageDatabase/xml/ErrorMessage.xml">
+				<forward name="success" path="replaceReasonCode" />
+			</pipe>
+			<pipe className="org.frankframework.pipes.ReplacerPipe" name="replaceReasonCode"
+				find="%reasonCode"
+				replace="NOT_WELL_FORMED_XML">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe className="org.frankframework.pipes.XsltPipe" name="InputValidateFailure" styleSheetName="/ManageDatabase/xsl/ErrorMessage.xsl" getInputFromFixedValue="&lt;dummy/&gt;">

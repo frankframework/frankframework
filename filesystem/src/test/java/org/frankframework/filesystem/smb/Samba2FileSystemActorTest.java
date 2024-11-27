@@ -1,5 +1,9 @@
 package org.frankframework.filesystem.smb;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.filesystem.FileSystemActorTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.filesystem.LocalFileSystemTestHelper;
@@ -7,9 +11,6 @@ import org.frankframework.filesystem.smb.Samba2FileSystem.Samba2AuthType;
 import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileServer.FileSystemType;
 import org.frankframework.testutil.junit.LocalFileSystemMock;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
 public class Samba2FileSystemActorTest extends FileSystemActorTest<SmbFileRef, Samba2FileSystem> {
 
@@ -64,21 +65,21 @@ public class Samba2FileSystemActorTest extends FileSystemActorTest<SmbFileRef, S
 	@Test
 	@Disabled("does not work for SMB2")
 	@Override
-	public void fileSystemActorCopyActionTestRootToFolder() throws Exception {
+	public void fileSystemActorCopyActionTestRootToFolder() {
 		//Ignore this test
 	}
 
 	@Override
 	@Test
 	@Disabled("does not work for SMB2")
-	public void fileSystemActorCopyActionTestWithExcludeWildCard() throws Exception {
+	public void fileSystemActorCopyActionTestWithExcludeWildCard() {
 		//Ignore this test
 	}
 
 	@Test
 	@Disabled("does not work for SMB2")
 	@Override
-	public void fileSystemActorCopyActionTestWithWildCard() throws Exception {
+	public void fileSystemActorCopyActionTestWithWildCard() {
 		//Ignore this test
 	}
 }

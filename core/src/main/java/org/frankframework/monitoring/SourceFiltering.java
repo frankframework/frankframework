@@ -20,5 +20,5 @@ package org.frankframework.monitoring;
  * @author Niels Meijer
  */
 public enum SourceFiltering {
-	NONE, ADAPTER, SOURCE;
+	NONE, ADAPTER, SOURCE
 }

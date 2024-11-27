@@ -16,6 +16,8 @@
 package org.frankframework.util.flow.graphviz;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -27,8 +29,8 @@ class FormatTest {
 	void svgTest() {
 		Format format = Format.SVG;
 		assertEquals("svg", format.fileExtension);
-		assertEquals(false, format.image);
-		assertEquals(true, format.svg);
+		assertFalse(format.image);
+		assertTrue(format.svg);
 		assertEquals("svg", format.vizName);
 	}
 

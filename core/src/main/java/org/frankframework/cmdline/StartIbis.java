@@ -26,6 +26,7 @@ import org.frankframework.configuration.IbisContext;
  */
 public class StartIbis {
 
+	@SuppressWarnings({"resource", "java:S2095"})
 	public static void main(String[] args) {
 		IbisContext ibisContext = new IbisContext();
 		ibisContext.init();

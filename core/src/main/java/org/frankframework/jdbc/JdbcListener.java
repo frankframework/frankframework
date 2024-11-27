@@ -24,12 +24,17 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.IPeekableListener;
@@ -39,14 +44,12 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.JdbcUtil;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * JdbcListener base class.
@@ -111,33 +114,33 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 	@Override
-	public void open() throws ListenerException {
+	public void start() {
 		if (!isConnectionsArePooled()) {
 			try {
 				connection = getConnection();
 			} catch (JdbcException e) {
-				throw new ListenerException(e);
+				throw new LifecycleException(e);
 			}
 		} else {
 			try (Connection c = getConnection()) {
 				//do nothing, eat a connection from the pool to validate connectivity
-			} catch (JdbcException|SQLException e) {
-				throw new ListenerException(e);
+			} catch (JdbcException | SQLException e) {
+				throw new LifecycleException(e);
 			}
 		}
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		try {
 			if (connection != null) {
 				connection.close();
 			}
 		} catch (SQLException e) {
-			log.warn(getLogPrefix() + "caught exception stopping listener", e);
+			log.warn("{}caught exception stopping listener", getLogPrefix(), e);
 		} finally {
 			connection = null;
-			super.close();
+			super.stop();
 		}
 	}
 
@@ -195,7 +198,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		String query = preparedSelectQuery;
 		try (Statement stmt = conn.createStatement()) {
 			stmt.setFetchSize(1);
-			if (trace && log.isDebugEnabled()) log.debug("executing query for ["+query+"]");
+			if (trace && log.isDebugEnabled()) log.debug("executing query for [{}]", query);
 			try (ResultSet rs=stmt.executeQuery(query)) {
 				if (!rs.next()) {
 					return null;
@@ -205,7 +208,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 				if (!getDbmsSupport().hasSkipLockedFunctionality()) {
 					String errorMessage = e.getMessage();
 					if (errorMessage.toLowerCase().contains("timeout") && errorMessage.toLowerCase().contains("lock")) {
-						log.debug(getLogPrefix()+"caught lock timeout exception, returning null: ("+e.getClass().getName()+")"+e.getMessage());
+						log.debug("{}caught lock timeout exception, returning null: ({}){}", getLogPrefix(), e.getClass().getName(), e.getMessage());
 						return null; // resolve locking conflict for dbmses that do not support SKIP LOCKED
 					}
 				}
@@ -252,7 +255,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	 * Otherwise the message is loaded from the {@code rs} parameter and returned wrapped in a {@link MessageWrapper}.
 	 * @throws JdbcException If loading the message resulted in a database exception.
 	 */
-	protected MessageWrapper<M> extractRawMessage(ResultSet rs) throws JdbcException {
+	protected RawMessageWrapper<M> extractRawMessage(ResultSet rs) throws JdbcException {
 		// TODO: This needs to be reviewed, if all complications are needed. Some branches are never touched in tests.
 		try {
 			String key = rs.getString(getKeyField());
@@ -320,6 +323,9 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	@Override
 	public Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+		if (rawMessage.getRawMessage() instanceof MessageWrapper<?> messageWrapper) {
+			return messageWrapper.getMessage();
+		}
 		return Message.asMessage(rawMessage.getRawMessage());
 	}
 
@@ -358,17 +364,17 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	protected RawMessageWrapper<M> changeProcessState(Connection connection, RawMessageWrapper<M> rawMessage, ProcessState toState, String reason) throws ListenerException {
 		String query = getUpdateStatusQuery(toState);
 		String key=getKeyFromRawMessage(rawMessage);
-		return execute(connection, query, key) ? rawMessage : null;
+		return execute(connection, query, List.of(key)) ? rawMessage : null;
 	}
 
-	protected boolean execute(Connection conn, String query, String... parameters) throws ListenerException {
+	protected boolean execute(Connection conn, String query, List<String> parameters) throws ListenerException {
 		if (StringUtils.isNotEmpty(query)) {
-			if (trace && log.isDebugEnabled()) log.debug("executing statement ["+query+"]");
+			if (trace && log.isDebugEnabled()) log.debug("executing statement [{}]", query);
 			try (PreparedStatement stmt=conn.prepareStatement(query)) {
 				stmt.clearParameters();
-				int i=1;
-				for(String parameter:parameters) {
-					log.debug("setting parameter "+i+" to ["+parameter+"]");
+				int i = 1;
+				for (String parameter : parameters) {
+					log.debug("setting parameter {} to [{}]", i, parameter);
 					JdbcUtil.setParameter(stmt, i++, parameter, getDbmsSupport().isParameterTypeMatchRequired());
 				}
 
@@ -472,7 +478,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 	/** Charset used to read BLOB. When specified, then the BLOB will be converted into a string */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.6.0")
 	public void setBlobCharset(String string) {
 		blobCharset = string;
 	}

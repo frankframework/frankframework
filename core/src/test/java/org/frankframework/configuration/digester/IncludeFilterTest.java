@@ -5,12 +5,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXParseException;
+
 import org.frankframework.core.Resource;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.XmlWriter;
-import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXParseException;
 
 public class IncludeFilterTest {
 

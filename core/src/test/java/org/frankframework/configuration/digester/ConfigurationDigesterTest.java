@@ -4,11 +4,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 import java.io.StringWriter;
 import java.net.URL;
 
 import javax.xml.validation.ValidatorHandler;
+
+import org.junit.jupiter.api.Test;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationDigester;
@@ -19,15 +30,11 @@ import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.PropertyLoader;
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.XmlWriter;
-import org.junit.jupiter.api.Test;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
+@Log4j2
 public class ConfigurationDigesterTest {
 	private static final String FRANK_CONFIG_XSD = "/xml/xsd/FrankConfig-compatibility.xsd";
 
@@ -168,14 +175,72 @@ public class ConfigurationDigesterTest {
 
 		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/original.xml");
 
-		ConfigurationDigester digester = new ConfigurationDigester();
-		ContentHandler filter = digester.getStub4TesttoolContentHandler(xmlWriter, properties);
+		Configuration configuration = new TestConfiguration();
+		ConfigurationDigester digester = SpringUtils.createBean(configuration, ConfigurationDigester.class);
+		ContentHandler filter = digester.getStub4TesttoolContentHandler(xmlWriter, configuration, properties);
 
 		XmlUtils.parseXml(originalConfiguration, filter);
 
 		String actual = target.toString();
 
 		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/expected.xml");
+		MatchUtils.assertXmlEquals(expectedConfiguration, actual);
+	}
+
+	@Test
+	public void customStub4testtoolTest() throws Exception {
+		String baseDirectory = "/ConfigurationUtils/stub4testtool/FullAdapter";
+
+		StringWriter target = new StringWriter();
+		XmlWriter xmlWriter = new XmlWriter(target);
+
+		PropertyLoader properties = new PropertyLoader("Digester/ConfigurationDigesterTest.properties");
+		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_XSLT_KEY, "ConfigurationUtils/custom-stub.xsl");
+		properties.setProperty(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, Boolean.toString(false));
+
+		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/original.xml");
+
+		Configuration configuration = new TestConfiguration();
+		ConfigurationDigester digester = SpringUtils.createBean(configuration, ConfigurationDigester.class);
+		ContentHandler filter = digester.getStub4TesttoolContentHandler(xmlWriter, configuration, properties);
+
+		XmlUtils.parseXml(originalConfiguration, filter);
+
+		String actual = target.toString();
+
+		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/custom-stub.xml");
+		MatchUtils.assertXmlEquals(expectedConfiguration, actual);
+	}
+
+	@Test
+	public void customStub4testtoolTestInScope() throws Exception {
+		String baseDirectory = "/ConfigurationUtils/stub4testtool/FullAdapter";
+
+		StringWriter target = new StringWriter();
+		XmlWriter xmlWriter = new XmlWriter(target);
+
+		PropertyLoader properties = new PropertyLoader("Digester/ConfigurationDigesterTest.properties");
+		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_XSLT_KEY, ConfigurationUtils.STUB4TESTTOOL_XSLT_DEFAULT);
+		properties.setProperty(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, Boolean.toString(false));
+
+		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/original.xml");
+
+		ClassLoader classLoader = mock(ClassLoader.class);
+		URL url = ConfigurationDigesterTest.class.getResource("/ConfigurationUtils/custom-scope.xsl");
+		assertNotNull(url, "cannot find custom stub file");
+		doReturn(url).when(classLoader).getResource("xml/xsl/stub4testtool.xsl");
+
+		Configuration configuration = new TestConfiguration();
+		ConfigurationDigester digester = SpringUtils.createBean(configuration, ConfigurationDigester.class);
+		ContentHandler filter = digester.getStub4TesttoolContentHandler(xmlWriter, () -> classLoader, properties);
+
+		XmlUtils.parseXml(originalConfiguration, filter);
+
+		String actual = target.toString();
+
+		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/custom-scope.xml");
 		MatchUtils.assertXmlEquals(expectedConfiguration, actual);
 	}
 
@@ -210,8 +275,9 @@ public class ConfigurationDigesterTest {
 
 		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/original.xml");
 
-		ConfigurationDigester digester = new ConfigurationDigester();
-		ContentHandler filter = digester.getStub4TesttoolContentHandler(xmlWriter, properties);
+		Configuration configuration = new TestConfiguration();
+		ConfigurationDigester digester = SpringUtils.createBean(configuration, ConfigurationDigester.class);
+		ContentHandler filter = digester.getStub4TesttoolContentHandler(xmlWriter, configuration, properties);
 
 		XmlUtils.parseXml(originalConfiguration, filter);
 
@@ -224,15 +290,15 @@ public class ConfigurationDigesterTest {
 	private static class XmlErrorHandler implements ErrorHandler {
 		@Override
 		public void warning(SAXParseException exception) {
-			System.err.println("Warning at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			log.error("Warning at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 		@Override
 		public void error(SAXParseException exception) {
-			System.err.println("Error at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			log.error("Error at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 		@Override
 		public void fatalError(SAXParseException exception) {
-			System.err.println("FatalError at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			log.error("FatalError at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 	}
 }

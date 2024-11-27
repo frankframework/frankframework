@@ -17,16 +17,20 @@ package org.frankframework.management.bus.dto;
 
 import java.time.Instant;
 
+import org.apache.commons.io.FilenameUtils;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.classloaders.DatabaseClassLoader;
-import org.frankframework.jdbc.migration.DatabaseMigratorBase;
+import org.frankframework.configuration.classloaders.DirectoryClassLoader;
+import org.frankframework.jdbc.migration.AbstractDatabaseMigrator;
+import org.frankframework.util.AbstractNameComparator;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.NameComparatorBase;
 import org.frankframework.util.RunState;
 
 @JsonInclude(Include.NON_NULL)
@@ -41,6 +45,7 @@ public class ConfigurationDTO {
 	private @Getter String type;
 	private @Getter String exception = null;
 
+	private @Getter String directory;
 	private @Getter String filename;
 	private @Getter String created;
 	private @Getter String user;
@@ -68,10 +73,12 @@ public class ConfigurationDTO {
 		ClassLoader classLoader = configuration.getClassLoader();
 		if(classLoader instanceof DatabaseClassLoader loader) {
 			setDatabaseAttributes(loader);
+		} else if(classLoader instanceof DirectoryClassLoader loader) {
+			setDirectoryAttributes(loader);
 		}
 
 		if(configuration.isActive()) {
-			DatabaseMigratorBase databaseMigrator = configuration.getBean("jdbcMigrator", DatabaseMigratorBase.class);
+			AbstractDatabaseMigrator databaseMigrator = configuration.getBean("jdbcMigrator", AbstractDatabaseMigrator.class);
 			if(databaseMigrator.hasMigrationScript()) {
 				jdbcMigrator = true;
 			}
@@ -81,6 +88,11 @@ public class ConfigurationDTO {
 		if(parentConfig != null) {
 			parent = parentConfig;
 		}
+	}
+
+	private void setDirectoryAttributes(DirectoryClassLoader classLoader) {
+		String directory = classLoader.getDirectory().getAbsolutePath();
+		this.directory = FilenameUtils.normalize(directory, true);
 	}
 
 	private void setDatabaseAttributes(DatabaseClassLoader classLoader) {
@@ -101,7 +113,7 @@ public class ConfigurationDTO {
 		this.loaded = loaded;
 	}
 
-	public static class VersionComparator extends NameComparatorBase<ConfigurationDTO> {
+	public static class VersionComparator extends AbstractNameComparator<ConfigurationDTO> {
 		@Override
 		public int compare(ConfigurationDTO lhs, ConfigurationDTO rhs) {
 			String version1 = lhs.getVersion();
@@ -111,7 +123,7 @@ public class ConfigurationDTO {
 		}
 	}
 
-	public static class NameComparator extends NameComparatorBase<ConfigurationDTO> {
+	public static class NameComparator extends AbstractNameComparator<ConfigurationDTO> {
 		@Override
 		public int compare(ConfigurationDTO lhs, ConfigurationDTO rhs) {
 			String name1 = lhs.getName();

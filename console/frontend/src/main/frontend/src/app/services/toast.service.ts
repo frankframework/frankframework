@@ -21,19 +21,11 @@ export class ToastService {
 
   constructor() {}
 
-  error = (title: string, body?: string, options?: ToastOptions): void =>
-    this.show('error', title, body, options);
-  success = (title: string, body?: string, options?: ToastOptions): void =>
-    this.show('success', title, body, options);
-  warning = (title: string, body?: string, options?: ToastOptions): void =>
-    this.show('warning', title, body, options);
+  error = (title: string, body?: string, options?: ToastOptions): void => this.show('error', title, body, options);
+  success = (title: string, body?: string, options?: ToastOptions): void => this.show('success', title, body, options);
+  warning = (title: string, body?: string, options?: ToastOptions): void => this.show('warning', title, body, options);
 
-  show(
-    type: ToastType,
-    title: string,
-    body?: string,
-    options?: ToastOptions,
-  ): void {
+  show(type: ToastType, title: string, body?: string, options?: ToastOptions): void {
     this.toasts.push({ type, title, body, ...options });
   }
 

@@ -8,6 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.provider.Arguments;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.SenderPipe;
@@ -15,13 +21,9 @@ import org.frankframework.senders.ParallelSenders;
 import org.frankframework.senders.SenderSeries;
 import org.frankframework.senders.XsltSender;
 import org.frankframework.testutil.ParameterBuilder;
+import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.util.TransformerPool.OutputType;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.provider.Arguments;
 
 public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 
@@ -64,7 +66,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 			sender.addParameter(ParameterBuilder.create().withName("sessionKey").withSessionKey("sessionKey"+i));
 
 			autowireByType(sender);
-			psenders.registerSender(sender);
+			psenders.addSender(sender);
 			xsltSenders.add(sender);
 		}
 		session.put("sessionKeyGlobal","sessionKeyGlobalValue");
@@ -75,7 +77,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 
 	@AfterEach
 	@Override
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		xsltSenders = null;
 		super.tearDown();
 	}
@@ -109,7 +111,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 		combinedExpected.append("</results>");
 
 		/* Parallel sender uses toXml method which escapes the new line char. In the comparison we need unescaped char.*/
-		actual = actual.replace("&#xA;", "&#10;").replace("WindowsPath", "IGNORE").replace("UnixPath", "IGNORE");
+		actual = actual.replace("&#xA;", "&#10;").replace("WindowsPath", "IGNORE").replace("UnixPath", "IGNORE").replace("byte[]", "IGNORE");
 		if (stripAllWhitespace) {
 			super.assertResultsAreCorrect(combinedExpected.toString().replaceAll("\\s",""), actual.replaceAll("\\s",""), session);
 		} else {
@@ -118,9 +120,9 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 	}
 
 	@Override
-	protected void checkTestAppender(int expectedSize, String expectedString) {
-		super.checkTestAppender(expectedSize+(expectExtraParamWarning?1:0),expectedString);
-		if (expectExtraParamWarning) assertThat(testAppender.toString(),containsString("are not available for use by nested Senders"));
+	protected void checkTestAppender(int expectedSize, String expectedString, TestAppender appender) {
+		super.checkTestAppender(expectedSize+(expectExtraParamWarning?1:0),expectedString, appender);
+		if (expectExtraParamWarning) assertThat(appender.toString(),containsString("are not available for use by nested Senders"));
 	}
 
 	@Override

@@ -37,6 +37,7 @@ import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Setter;
+
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.SpringUtils;
@@ -49,9 +50,9 @@ import org.frankframework.util.StringUtil;
  *
  * <p>
  * Default redirect url is as follows:
- * <code><pre>
+ * <pre>{@code
  * {baseUrl}/-servlet-name-/oauth2/code/{registrationId}
- * </pre></code>
+ * }</pre>
  * <p>
  * The redirect url has been modified to match the servlet path and is deduced from the default
  * {@link OAuth2LoginAuthenticationFilter#DEFAULT_FILTER_PROCESSES_URI}.
@@ -60,7 +61,7 @@ import org.frankframework.util.StringUtil;
  * @author Niels Meijer
  *
  */
-public class OAuth2Authenticator extends ServletAuthenticatorBase {
+public class OAuth2Authenticator extends AbstractServletAuthenticator {
 
 	/** eg. openid, profile, email */
 	private @Setter String scopes;
@@ -99,15 +100,14 @@ public class OAuth2Authenticator extends ServletAuthenticatorBase {
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
 		configure();
 
-		http.oauth2Login()
-			.clientRegistrationRepository(clientRepository) //explicitly set, but can also be implicitly implied.
-			.authorizedClientService(new InMemoryOAuth2AuthorizedClientService(clientRepository))
-			.failureUrl(oauthBaseUrl + "/oauth2/failure/")
-			.authorizationEndpoint()
-				.baseUri(oauthBaseUrl + OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI).and()
-			.userInfoEndpoint()
-				.userAuthoritiesMapper(new AuthorityMapper(roleMappingURL, getSecurityRoles(), getEnvironmentProperties())).and()
-			.loginProcessingUrl(oauthBaseUrl + "/oauth2/code/*");
+		AuthorityMapper authorityMapper = new AuthorityMapper(roleMappingURL, getSecurityRoles(), getEnvironmentProperties());
+		http.oauth2Login(login -> login
+				.clientRegistrationRepository(clientRepository) // Explicitly set, but can also be implicitly implied.
+				.authorizedClientService(new InMemoryOAuth2AuthorizedClientService(clientRepository))
+				.failureUrl(oauthBaseUrl + "/oauth2/failure/")
+				.authorizationEndpoint(endpoint -> endpoint.baseUri(oauthBaseUrl + OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI))
+				.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(authorityMapper))
+				.loginProcessingUrl(oauthBaseUrl + "/oauth2/code/*"));
 
 		return http.build();
 	}
@@ -180,10 +180,10 @@ public class OAuth2Authenticator extends ServletAuthenticatorBase {
 
 	private String computeBaseUrl() {
 		String baseUrl = getPrivateEndpoints().stream().findFirst().orElse("");
-		if(baseUrl.endsWith("*")) { //Strip the '*' if the url ends with it
+		if(baseUrl.endsWith("*")) { // Strip the '*' if the url ends with it
 			baseUrl = baseUrl.substring(0, baseUrl.length()-1);
 		}
-		if(baseUrl.endsWith("/")) { //Ensure the url does not end with a slash
+		if(baseUrl.endsWith("/")) { // Ensure the url does not end with a slash
 			baseUrl = baseUrl.substring(0, baseUrl.length()-1);
 		}
 

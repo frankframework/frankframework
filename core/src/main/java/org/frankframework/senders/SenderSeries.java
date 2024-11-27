@@ -15,12 +15,16 @@
 */
 package org.frankframework.senders;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
+
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.AdapterAware;
@@ -32,19 +36,15 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.stream.Message;
 
-import io.micrometer.core.instrument.DistributionSummary;
-import lombok.Getter;
-import lombok.Setter;
-
 /**
  * Series of Senders, that are executed one after another.
  *
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class SenderSeries extends SenderWrapperBase {
+public class SenderSeries extends AbstractSenderWrapper {
 
-	private final List<ISender> senderList = new LinkedList<>();
+	private final List<ISender> senderList = new ArrayList<>();
 	private final Map<ISender, DistributionSummary> statisticsMap = new ConcurrentHashMap<>();
 	private @Getter @Setter boolean synchronous=true;
 
@@ -64,29 +64,28 @@ public class SenderSeries extends SenderWrapperBase {
 		super.configure();
 	}
 
+	@Override
+	public void start() {
+		getSenders().forEach(ISender::start);
+
+		super.start();
+	}
 
 	@Override
-	public void open() throws SenderException {
-		for (ISender sender: getSenders()) {
-			sender.open();
-		}
-		super.open();
-	}
-	@Override
-	public void close() throws SenderException {
-		for (ISender sender: getSenders()) {
-			sender.close();
-		}
-		super.close();
+	public void stop() {
+		getSenders().forEach(ISender::stop);
+
+		super.stop();
 	}
 
 	@Override
 	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		String correlationID = session==null ? null : session.getCorrelationId();
+		String correlationID = session.getCorrelationId();
 		SenderResult result=null;
 		long t1 = System.currentTimeMillis();
 		for (ISender sender: getSenders()) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"sending correlationID ["+correlationID+"] message ["+message+"] to sender ["+sender.getName()+"]");
+			if (log.isDebugEnabled())
+				log.debug("sending correlationID [{}] message [{}] to sender [{}]", correlationID, message, sender.getName());
 			result = sender.sendMessage(message, session);
 			if (!result.isSuccess()) {
 				return result;
@@ -115,16 +114,16 @@ public class SenderSeries extends SenderWrapperBase {
 
 
 
-	@Deprecated // replaced by registerSender, to allow for multiple senders in XSD. Method must be present, as it is used by Digester
+	@Deprecated // replaced by setSender, to allow for multiple senders in XSD. Method must be present, as it is used by Digester
 	public final void setSender(ISender sender) {
-		registerSender(sender);
+		addSender(sender);
 	}
 
 	/**
 	 * one or more specifications of senders that will be executed one after another. Each sender will get the result of the preceding one as input.
 	 * @ff.mandatory
 	 */
-	public void registerSender(ISender sender) {
+	public void addSender(ISender sender) {
 		senderList.add(sender);
 		setSynchronous(sender.isSynchronous()); // set synchronous to isSynchronous of the last Sender added
 	}

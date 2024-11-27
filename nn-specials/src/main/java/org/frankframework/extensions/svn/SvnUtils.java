@@ -21,10 +21,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.http.HttpSender;
-import org.frankframework.http.HttpSenderBase.HttpMethod;
+import org.frankframework.http.AbstractHttpSender.HttpMethod;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.XmlException;
@@ -63,12 +64,13 @@ public class SvnUtils {
 			httpSender.setXhtml(true);
 			httpSender.setMethodType(HttpMethod.HEAD);
 			httpSender.configure();
-			httpSender.open();
-			try (Message result = httpSender.sendMessageOrThrow(Message.nullMessage(), null)) {
+			httpSender.start();
+			try (PipeLineSession session = new PipeLineSession();
+				Message result = httpSender.sendMessageOrThrow(Message.nullMessage(), session)) {
 				return result.asString();
 			}
 		} finally {
-			httpSender.close();
+			httpSender.stop();
 		}
 	}
 
@@ -82,7 +84,7 @@ public class SvnUtils {
 			httpSender.setXhtml(true);
 			httpSender.setMethodType(HttpMethod.REPORT);
 			httpSender.configure();
-			httpSender.open();
+			httpSender.start();
 
 			String logReportRequest = "<S:log-report xmlns:S=\"svn:\">"
 					+ "<S:start-revision>" + revision + "</S:start-revision>"
@@ -90,11 +92,12 @@ public class SvnUtils {
 					+ "<S:limit>1</S:limit>" + "<S:path>" + path + "</S:path>"
 					+ "</S:log-report>";
 
-			try (Message result = httpSender.sendMessageOrThrow(new Message(logReportRequest), null)) {
+			try (PipeLineSession session = new PipeLineSession();
+				Message result = httpSender.sendMessageOrThrow(new Message(logReportRequest), session)) {
 				return result.asString();
 			}
 		} finally {
-			httpSender.close();
+			httpSender.stop();
 		}
 	}
 

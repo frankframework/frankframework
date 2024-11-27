@@ -15,8 +15,8 @@
 */
 package org.frankframework.align.content;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -114,11 +114,11 @@ public class JsonElementContainer implements ElementContainer {
 	 * Sets the Text content of the current object
 	 */
 	public void setContent(String content) {
-		if (log.isTraceEnabled()) log.trace("setContent() name ["+getName()+"] content ["+content+"]");
+		if (log.isTraceEnabled()) log.trace("setContent() name [{}] content [{}]", getName(), content);
 		if (content!=null) {
 			boolean whitespace=content.trim().isEmpty();
 			if (whitespace && stringContent==null) {
-				if (log.isTraceEnabled()) log.trace("setContent() ignoring empty content for name ["+getName()+"]");
+				if (log.isTraceEnabled()) log.trace("setContent() ignoring empty content for name [{}]", getName());
 				return;
 			}
 		}
@@ -162,14 +162,21 @@ public class JsonElementContainer implements ElementContainer {
 	 * connects child to parent
 	 */
 	public void addContent(JsonElementContainer content) {
-		String childName=content.getName();
-		if (log.isTraceEnabled()) log.trace("addContent for parent ["+getName()+"] name ["+childName+"] array container ["+isXmlArrayContainer()+"] content.isRepeatedElement ["+content.isRepeatedElement()+"] skipArrayElementContainers ["+skipArrayElementContainers+"] content ["+content+"]");
-		if (stringContent!=null) {
-			throw new IllegalStateException("content already set as String for element ["+getName()+"]");
+		String childName = content.getName();
+		if (log.isTraceEnabled()) {
+			log.trace("addContent for parent [{}] name [{}] array container [{}] content.isRepeatedElement [{}] skipArrayElementContainers [{}] content [{}]", getName(), childName, isXmlArrayContainer(), content.isRepeatedElement(), skipArrayElementContainers, content);
 		}
+
+		if (stringContent != null) {
+			String error = String.format("Could not add child element '%s' to element '%s' because it already has text content (%s). You might have an " +
+							"unrecognized element in your input which was added as text content", childName, this.name, stringContent.trim());
+
+			throw new IllegalStateException(error);
+		}
+
 		if (isXmlArrayContainer() && content.isRepeatedElement() && skipArrayElementContainers) {
 			if (array==null) {
-				array=new LinkedList<>();
+				array=new ArrayList<>();
 				setType(content.getType());
 			}
 			array.add(content.getContent());
@@ -184,13 +191,14 @@ public class JsonElementContainer implements ElementContainer {
 		Object current=contentMap.get(childName);
 		if (content.isRepeatedElement()) {
 			if (current==null) {
-				current=new LinkedList<Object>();
+				current=new ArrayList<>();
 				contentMap.put(childName,current);
 			} else {
 				if (!(current instanceof List)) {
 					throw new IllegalArgumentException("element ["+childName+"] is not an array");
 				}
 			}
+			// noinspection unchecked
 			((List)current).add(content.getContent());
 		} else {
 			if (current!=null) {
@@ -225,7 +233,7 @@ public class JsonElementContainer implements ElementContainer {
 			case NUMERIC:
 				return stripLeadingZeroes(stringContent);
 			default:
-				if(log.isTraceEnabled()) log.trace("getContent quoted stringContent [" + stringContent + "]");
+				if(log.isTraceEnabled()) log.trace("getContent quoted stringContent [{}]", stringContent);
 //				String result=StringEscapeUtils.escapeJson(stringContent); // this also converts diacritics into unicode escape sequences
 				String result = ESCAPE_JSON.translate(stringContent);
 				return '"' + result + '"';
@@ -252,7 +260,6 @@ public class JsonElementContainer implements ElementContainer {
 		return content == null ? "<null>" : content.toString();
 	}
 
-
 	public String getName() {
 		return name;
 	}
@@ -269,5 +276,4 @@ public class JsonElementContainer implements ElementContainer {
 	public void setType(ScalarType type) {
 		this.type = type;
 	}
-
 }

@@ -19,22 +19,35 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.Forward;
 import org.frankframework.stream.Message;
 
 /**
  * Pipe that throws an exception, based on the input message.
+ * <br/>
+ * The {@literal success} forward is only used when the (deprecated) attribute {@literal throwException} has been set to {@literal false}, otherwise the (default) {@literal exception} forward will be used.
  *
- * @author  Gerrit van Brakel
+ * @ff.warning The attribute {@literal throwException} has been deprecated and thus the {@literal success} forward will be removed along with the {@literal throwException} attribute.
  */
-@ElementType(ElementTypes.ERRORHANDLING)
-public class ExceptionPipe extends FixedForwardPipe {
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ERRORHANDLING)
+@Forward(name = "success", description = "success Forward is deprecated and will be removed. Invoked when {@literal throwException} is false")
+public class ExceptionPipe extends AbstractPipe {
 
 	private boolean throwException = true;
+	private PipeForward successForward;
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		successForward = findForward(PipeForward.SUCCESS_FORWARD_NAME);
+	}
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
@@ -52,7 +65,8 @@ public class ExceptionPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, errorMessage);
 		}
 		log.error(errorMessage);
-		return new PipeRunResult(getSuccessForward(), errorMessage);
+
+		return new PipeRunResult(successForward, errorMessage);
 	}
 
 
@@ -60,6 +74,8 @@ public class ExceptionPipe extends FixedForwardPipe {
 	 * When <code>true</code>, a PipeRunException is thrown. Otherwise, the output is only logged as an error (and no rollback is performed).
 	 * @ff.default true
 	 */
+	@Deprecated(forRemoval = true, since = "9.0")
+	@ConfigurationWarning(value = "The {@literal success} forward and {@literal throwException} attribute should not be used anymore")
 	public void setThrowException(boolean b) {
 		throwException = b;
 	}

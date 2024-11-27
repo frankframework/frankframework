@@ -15,9 +15,9 @@
 */
 package org.frankframework.larva;
 
-import org.frankframework.core.PipeLineSession;
-
 import lombok.Getter;
+
+import org.frankframework.core.PipeLineSession;
 
 /**
  * @author Jaco de Groot

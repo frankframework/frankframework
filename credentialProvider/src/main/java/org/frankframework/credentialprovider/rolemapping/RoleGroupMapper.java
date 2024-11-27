@@ -16,5 +16,5 @@
 package org.frankframework.credentialprovider.rolemapping;
 
 public interface RoleGroupMapper {
-	public void addRoleGroupMapping(String role, String group);
+	void addRoleGroupMapping(String role, String group);
 }

@@ -1,5 +1,8 @@
 package org.frankframework.jdbc;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.Adapter;
@@ -13,8 +16,6 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 
 public abstract class JdbcEnabledPipeTestBase<P extends IPipe> {
 
@@ -32,14 +33,14 @@ public abstract class JdbcEnabledPipeTestBase<P extends IPipe> {
 		this.env = env;
 		pipe = createPipe();
 		env.autowire(pipe);
-		pipe.registerForward(new PipeForward("success", "exit"));
+		pipe.addForward(new PipeForward("success", "exit"));
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
 		pipeline = env.createBean(PipeLine.class);
 		pipeline.addPipe(pipe);
 		PipeLineExit exit = new PipeLineExit();
 		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
-		pipeline.registerPipeLineExit(exit);
+		pipeline.addPipeLineExit(exit);
 		adapter = env.createBean(Adapter.class);
 		adapter.setName("TestAdapter-for-".concat(pipe.getClass().getSimpleName()));
 		adapter.setPipeLine(pipeline);

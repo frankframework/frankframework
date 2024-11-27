@@ -17,17 +17,13 @@ package org.frankframework.pipes;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-import org.leadpony.justify.api.JsonSchema;
-import org.leadpony.justify.api.JsonValidationService;
-import org.leadpony.justify.api.ProblemHandler;
 
 import jakarta.json.stream.JsonParser;
 import jakarta.json.stream.JsonParsingException;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -37,6 +33,9 @@ import org.frankframework.core.Resource;
 import org.frankframework.doc.Category;
 import org.frankframework.stream.Message;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
+import org.leadpony.justify.api.JsonSchema;
+import org.leadpony.justify.api.JsonValidationService;
+import org.leadpony.justify.api.ProblemHandler;
 
 
 /**
@@ -44,15 +43,15 @@ import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
  *
  * @author Gerrit van Brakel
  */
-@Category("Basic")
-public class JsonValidator extends ValidatorBase {
+@Category(Category.Type.BASIC)
+public class JsonValidator extends AbstractValidator {
 
 	private @Getter String schema;
 	//private @Getter String jsonSchemaVersion=null;
 	private @Getter String subSchemaPrefix="/definitions/";
 	private @Getter String reasonSessionKey = "failureReason";
 
-	private JsonValidationService service = JsonValidationService.newInstance();
+	private final JsonValidationService service = JsonValidationService.newInstance();
 	private JsonSchema jsonSchema;
 
 	@Override
@@ -75,7 +74,7 @@ public class JsonValidator extends ValidatorBase {
 
 	@Override
 	protected PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
-		final List<String> problems = new LinkedList<>();
+		final List<String> problems = new ArrayList<>();
 		// Problem handler which will print problems found.
 		ProblemHandler handler = service.createProblemPrinter(problems::add);
 		ValidationResult resultEvent;
@@ -90,7 +89,7 @@ public class JsonValidator extends ValidatorBase {
 				messageRoot = responseMode ? getResponseRoot() : getRoot();
 			}
 			if (StringUtils.isNotEmpty(messageRoot)) {
-				log.debug("validation to messageRoot ["+messageRoot+"]");
+				log.debug("validation to messageRoot [{}]", messageRoot);
 				curSchema = jsonSchema.getSubschemaAt(getSubSchemaPrefix()+messageRoot);
 				if (curSchema==null) {
 					throw new PipeRunException(this, "No schema found for ["+getSubSchemaPrefix()+messageRoot+"]");

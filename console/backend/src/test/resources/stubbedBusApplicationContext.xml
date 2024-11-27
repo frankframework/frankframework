@@ -16,9 +16,7 @@
 	<context:component-scan base-package="random.package">
 	</context:component-scan>
 
-	<bean name="outboundGateway" class="org.frankframework.management.bus.LocalGateway" scope="singleton">
-		<property name="requestChannel" ref="stubbed-frank-management-bus" />
-	</bean>
+	<bean name="outboundGateway" class="org.frankframework.console.controllers.SpringUnitTestLocalGateway" />
 
 	<context:property-placeholder />
 </beans>

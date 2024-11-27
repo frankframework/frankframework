@@ -20,8 +20,7 @@ import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
-
-import org.frankframework.core.IAdapter;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.INamedObject;
 import org.frankframework.core.PipeLineSession;
 
@@ -61,7 +60,7 @@ public class LogUtil {
 	/**
 	 * Must be called during configure after setName has been set!
 	 */
-	public static Logger getMsgLogger(IAdapter adapter) {
+	public static Logger getMsgLogger(Adapter adapter) {
 		if(StringUtils.isEmpty(adapter.getName())) {
 			return getLogger(MESSAGE_LOGGER);
 		}
@@ -72,7 +71,7 @@ public class LogUtil {
 	/**
 	 * Must be called during configure after setName has been set!
 	 */
-	public static Logger getMsgLogger(IAdapter adapter, INamedObject object) {
+	public static Logger getMsgLogger(Adapter adapter, INamedObject object) {
 		if(adapter == null || StringUtils.isEmpty(adapter.getName()) || StringUtils.isEmpty(object.getName())) {
 			return getLogger(MESSAGE_LOGGER);
 		}
@@ -80,8 +79,8 @@ public class LogUtil {
 		return LogManager.getLogger("%s.%S.%S".formatted(MESSAGE_LOGGER, adapter.getName(), object.getName()));
 	}
 
-	public static CloseableThreadContext.Instance getThreadContext(IAdapter adapter, String messageId, PipeLineSession session) {
-		String lastAdapter= ThreadContext.get(MDC_ADAPTER_KEY);
+	public static CloseableThreadContext.Instance getThreadContext(Adapter adapter, String messageId, PipeLineSession session) {
+		String lastAdapter = ThreadContext.get(MDC_ADAPTER_KEY);
 		String currentAdapter= adapter.getName();
 		CloseableThreadContext.Instance ctc = CloseableThreadContext.put(MDC_ADAPTER_KEY, currentAdapter);
 		if (lastAdapter!=null && !lastAdapter.equals(currentAdapter)) {

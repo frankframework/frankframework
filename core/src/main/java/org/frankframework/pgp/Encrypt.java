@@ -24,11 +24,11 @@ import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BouncyGPG;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BuildEncryptionOutputStreamAPI;
 import org.frankframework.configuration.ConfigurationException;
 
-public class Encrypt extends PGPAction {
+public class Encrypt extends AbstractPGPAction {
 	private final String[] recipients;
 
 	public Encrypt(String[] publicKey, String[] recipients) throws ConfigurationException {
-		super(publicKey, null, null, recipients);
+		super(publicKey, null, null, new Object[]{recipients});
 
 		if (publicKey == null || publicKey.length != 1)
 			throw new ConfigurationException("With encryption action, there should be only one public key.");

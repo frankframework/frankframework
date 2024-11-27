@@ -18,7 +18,7 @@ package org.frankframework.extensions.sap.jco3;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -31,7 +31,6 @@ import com.sap.conn.idoc.jco.JCoIDocHandler;
 import com.sap.conn.idoc.jco.JCoIDocHandlerFactory;
 import com.sap.conn.idoc.jco.JCoIDocServer;
 import com.sap.conn.idoc.jco.JCoIDocServerContext;
-import com.sap.conn.jco.AbapClassException;
 import com.sap.conn.jco.AbapException;
 import com.sap.conn.jco.JCoException;
 import com.sap.conn.jco.JCoFunction;
@@ -47,6 +46,7 @@ import com.sap.conn.jco.server.JCoServerFunctionHandler;
 import com.sap.conn.jco.server.JCoServerTIDHandler;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
@@ -57,6 +57,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.extensions.sap.ISapListener;
 import org.frankframework.extensions.sap.SapException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
@@ -74,12 +75,13 @@ import org.frankframework.stream.Message;
  * @since 5.0
  * @see "http://help.sap.com/saphelp_nw04/helpdata/en/09/c88442a07b0e53e10000000a155106/frameset.htm"
  */
-public abstract class SapListenerImpl extends SapFunctionFacade implements ISapListener<JCoFunction>, JCoServerFunctionHandler, JCoServerTIDHandler, JCoIDocHandlerFactory, JCoIDocHandler, JCoServerExceptionListener, JCoServerErrorListener {
+// <M> is either a JCOFunction or a String
+public abstract class SapListenerImpl<M> extends SapFunctionFacade implements ISapListener<M>, JCoServerFunctionHandler, JCoServerTIDHandler, JCoIDocHandlerFactory, JCoIDocHandler, JCoServerExceptionListener, JCoServerErrorListener {
 
 	private @Getter String progid;	 // progid of the RFC-destination
 	private @Getter String connectionCount = "2"; // used in SAP examples
 
-	private IMessageHandler<JCoFunction> handler;
+	private IMessageHandler<M> handler;
 	private IbisExceptionListener exceptionListener;
 
 	private DefaultServerHandlerFactory.FunctionHandlerFactory functionHandlerFactory;
@@ -98,11 +100,11 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	}
 
 	@Override
-	public void open() throws ListenerException {
+	public void start() {
 		try {
 			openFacade();
 			SapServerDataProvider serverDataProvider = SapServerDataProvider.getInstance();
-			log.debug(getLogPrefix()+"start server");
+			log.debug("{}start server", getLogPrefix());
 			serverDataProvider.registerListener(this);
 			JCoIDocServer server = JCoIDoc.getServer(getName());
 			server.setCallHandlerFactory(functionHandlerFactory);
@@ -114,30 +116,32 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 			serverDataProvider.getServerDataEventListener().updated(getName());
 		} catch (Exception e) {
 			try {
-				close();
+				stop();
 			} catch (Exception e2) {
 				e.addSuppressed(e2);
 			}
-			throw new ListenerException(getLogPrefix()+"could not start", e);
+
+			throw new LifecycleException(getLogPrefix()+"could not start", e);
 		}
 	}
 
 	@Override
-	public void close() throws ListenerException {
+	public void stop() {
 		try {
-			log.debug(getLogPrefix()+"stop server");
+			log.debug("{}stop server", getLogPrefix());
 			SapServerDataProvider.getInstance().getServerDataEventListener().deleted(getName());
 
 			JCoServer server = JCoServerFactory.getServer(getName());
 			server.stop();
 
 		} catch (Exception e) {
-			throw new ListenerException(getLogPrefix()+"could not stop", e);
+			throw new LifecycleException(getLogPrefix()+"could not stop", e);
 		} finally {
 			closeFacade();
 		}
 	}
 
+	//JCoIDocHandlerFactory
 	@Override
 	public JCoIDocHandler getIDocHandler(JCoIDocServerContext serverCtx) {
 		return this;
@@ -149,51 +153,76 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	}
 
 	@Override
-	public RawMessageWrapper<JCoFunction> wrapRawMessage(JCoFunction jcoFunction, PipeLineSession session) {
-		return new RawMessageWrapper<>(jcoFunction, getCorrelationIdFromField(jcoFunction), null);
+	public RawMessageWrapper<M> wrapRawMessage(M message, PipeLineSession session) {
+		if(message instanceof JCoFunction jcoFunction) {
+			return wrapAsJcoFunction(jcoFunction);
+		}
+		return new RawMessageWrapper<>(message); //String
+	}
+
+	private RawMessageWrapper<M> wrapAsJcoFunction(JCoFunction jcoFunction) {
+		return new RawMessageWrapper(jcoFunction, getCorrelationIdFromField(jcoFunction), null);
+	}
+
+	/**
+	 * Called by handler.processRawMessage, NEVER by handler.processRequest.
+	 * M == ALWAYS JCoFunction
+	 */
+	@Override
+	public Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessageWrapper, @Nonnull Map<String,Object> context) {
+		if(rawMessageWrapper.getRawMessage() instanceof JCoFunction jcoFunction) {
+			return functionCall2message(jcoFunction);
+		}
+
+		throw new IllegalStateException("message of type ["+rawMessageWrapper.getRawMessage()+"] expected JCoFunction");
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<JCoFunction> rawMessageWrapper, @Nonnull Map<String,Object> context) {
-		return functionCall2message(rawMessageWrapper.getRawMessage());
-	}
-
-	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<JCoFunction> rawMessageWrapper, PipeLineSession pipeLineSession) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<M> rawMessageWrapper, PipeLineSession pipeLineSession) throws ListenerException {
 		try {
-			if (rawMessageWrapper.getRawMessage() != null) {
-				message2FunctionResult(rawMessageWrapper.getRawMessage(), processResult.getResult().asString());
+			if (rawMessageWrapper.getRawMessage() instanceof JCoFunction jcoFunction) {
+				message2FunctionResult(jcoFunction, processResult.getResult().asString());
 			}
 		} catch (SapException | IOException e) {
 			throw new ListenerException(e);
 		}
 	}
 
+	/**
+	 * JCoServerFunctionHandler
+	 *
+	 * M == JCoFunction
+	 */
 	@Override
-	public void handleRequest(JCoServerContext jcoServerContext, JCoFunction jcoFunction) throws AbapException, AbapClassException {
+	public void handleRequest(JCoServerContext jcoServerContext, JCoFunction jcoFunction) throws AbapException {
 		try (PipeLineSession session = new PipeLineSession()) {
-			handler.processRawMessage(this, wrapRawMessage(jcoFunction, session), session, false);
+			handler.processRawMessage(this, wrapAsJcoFunction(jcoFunction), session, false);
 		} catch (Throwable t) {
-			log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
+			log.warn("{}Exception caught and handed to SAP", getLogPrefix(), t);
 			throw new AbapException("IbisException", t.getMessage());
 		}
 	}
 
+	/**
+	 * JCoIDocHandler
+	 *
+	 * M == String
+	 */
 	@Override
 	public void handleRequest(JCoServerContext serverCtx, IDocDocumentList documentList) {
-		if(log.isDebugEnabled()) log.debug(getLogPrefix()+"Incoming IDoc list request containing " + documentList.getNumDocuments() + " documents...");
-		IDocXMLProcessor xmlProcessor = JCoIDoc.getIDocFactory().getIDocXMLProcessor();
+		if(log.isDebugEnabled()) log.debug("{}Incoming IDoc list request containing {} documents...", getLogPrefix(), documentList.getNumDocuments());
+		IDocXMLProcessor xmlProcessor = getIDocXMLProcessor();
 		IDocDocumentIterator iterator = documentList.iterator();
 		while (iterator.hasNext()) {
 			IDocDocument doc = iterator.next();
-			if(log.isTraceEnabled()) log.trace(getLogPrefix()+"Processing document no. [" + doc.getIDocNumber() + "] of type ["+doc.getIDocType()+"]");
+			if(log.isTraceEnabled()) log.trace("{}Processing document no. [{}] of type [{}]", getLogPrefix(), doc.getIDocNumber(), doc.getIDocType());
 			try (PipeLineSession session = new PipeLineSession()) {
 				String rawMessage = xmlProcessor.render(doc);
 				RawMessageWrapper rawMessageWrapper = new RawMessageWrapper<>(rawMessage, doc.getIDocNumber(), null);
 				//noinspection unchecked
 				handler.processRequest(this, rawMessageWrapper, new Message(rawMessage), session);
 			} catch (Throwable t) {
-				log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
+				log.warn("{}Exception caught and handed to SAP", getLogPrefix(), t);
 				throw new JCoRuntimeException(JCoException.JCO_ERROR_APPLICATION_EXCEPTION, "IbisException", t.getMessage());
 			}
 		}
@@ -223,7 +252,7 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	}
 
 	@Override
-	public void setHandler(IMessageHandler<JCoFunction> handler) {
+	public void setHandler(IMessageHandler<M> handler) {
 		this.handler=handler;
 	}
 
@@ -232,6 +261,9 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 		exceptionListener = listener;
 	}
 
+	/**
+	 * JCoServerExceptionListener
+	 */
 	@Override
 	public void serverExceptionOccurred(JCoServer server, String connectionID, JCoServerContextInfo serverCtx, Exception e) {
 		if (exceptionListener!=null) {
@@ -239,6 +271,9 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 		}
 	}
 
+	/**
+	 * JCoServerErrorListener
+	 */
 	@Override
 	public void serverErrorOccurred(JCoServer server, String connectionID, JCoServerContextInfo serverCtx, Error e) {
 		if (exceptionListener!=null) {
@@ -260,7 +295,7 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	@Override
 	public boolean checkTID(JCoServerContext serverCtx, String tid) {
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+"is requested to check TID ["+tid+"]; (currently ignored)");
+			log.debug("{}is requested to check TID [{}]; (currently ignored)", getLogPrefix(), tid);
 		}
 		return true;
 	}
@@ -275,7 +310,7 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	@Override
 	public void confirmTID(JCoServerContext serverCtx, String tid) {
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+"is requested to confirm TID ["+tid+"]; (currently ignored)");
+			log.debug("{}is requested to confirm TID [{}]; (currently ignored)", getLogPrefix(), tid);
 		}
 	}
 
@@ -289,7 +324,7 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	@Override
 	public void commit(JCoServerContext serverCtx, String tid) {
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+"is requested to commit TID ["+tid+"]; (currently ignored)");
+			log.debug("{}is requested to commit TID [{}]; (currently ignored)", getLogPrefix(), tid);
 		}
 	}
 
@@ -303,7 +338,7 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	@Override
 	public void rollback(JCoServerContext serverCtx, String tid) {
 		if (log.isDebugEnabled()) {
-			log.warn(getLogPrefix()+"is requested to rollback TID ["+tid+"]; (currently ignored)");
+			log.warn("{}is requested to rollback TID [{}]; (currently ignored)", getLogPrefix(), tid);
 		}
 	}
 
@@ -314,4 +349,10 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	protected String getFunctionName() {
 		return null;
 	}
+
+	// So the IDocXMLProcessor can be mocked during testing.
+	protected IDocXMLProcessor getIDocXMLProcessor() {
+		return JCoIDoc.getIDocFactory().getIDocXMLProcessor();
+	}
+
 }

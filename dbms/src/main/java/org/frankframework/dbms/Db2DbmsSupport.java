@@ -17,7 +17,7 @@ package org.frankframework.dbms;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,16 +48,6 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String emptyBlobValue() {
-		return "EMPTY_BLOB";
-	}
-
-	@Override
-	public String emptyClobValue() {
-		return "EMPTY_CLOB";
-	}
-
-	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws DbmsException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
 			throw new DbmsException("query [" + selectQuery + "] must start with keyword [" + KEYWORD_SELECT + "]");
@@ -68,11 +58,6 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 	@Override
 	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws DbmsException {
 		return selectQuery + " SKIP LOCKED DATA";
-	}
-
-	@Override
-	public String getFirstRecordQuery(String tableName) throws DbmsException {
-		return "select * from " + tableName + " fetch first 1 rows only";
 	}
 
 	@Override
@@ -96,9 +81,7 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	public boolean hasIndexOnColumn(Connection conn, String schemaName, String tableName, String columnName) throws DbmsException {
-		List<String> columns = new LinkedList<>();
-		columns.add(columnName);
-		return hasIndexOnColumns(conn, schemaName, tableName, columns);
+		return hasIndexOnColumns(conn, schemaName, tableName, Collections.singletonList(columnName));
 	}
 
 	@Override

@@ -22,9 +22,10 @@ import java.net.URISyntaxException;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.extensions.akamai.NetStorageSender.Action;
 import org.frankframework.extensions.akamai.NetStorageUtils.KeyedHashAlgorithm;
-import org.junit.jupiter.api.Test;
 
 public class NetStorageCmsSignerTest {
 

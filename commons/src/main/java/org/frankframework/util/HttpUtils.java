@@ -18,11 +18,11 @@ package org.frankframework.util;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Enumeration;
-import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -34,48 +34,35 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class HttpUtils {
 
-	public static String getCommandIssuedBy(HttpServletRequest request) {
+	private static String getCommandIssuedBy(HttpServletRequest request) {
 		String commandIssuedBy = " remoteHost [" + request.getRemoteHost() + "]";
 		commandIssuedBy += " remoteAddress [" + request.getRemoteAddr() + "]";
-		commandIssuedBy += " remoteUser [" + request.getRemoteUser() + "]";
+		commandIssuedBy += " remoteUser [" + StringEscapeUtils.escapeJava(request.getRemoteUser()) + "]";
 		return commandIssuedBy;
 	}
 
 	public static String getExtendedCommandIssuedBy(HttpServletRequest request) {
-		return getExtendedCommandIssuedBy(request, null);
-	}
-
-	public static String getExtendedCommandIssuedBy(HttpServletRequest request, List<String> secLogParamNames) {
-		return getExtendedCommandIssuedBy(request, secLogParamNames, null);
-	}
-
-	public static String getExtendedCommandIssuedBy(HttpServletRequest request, List<String> secLogParamNames, String message) {
 		String contextPath = request.getContextPath();
 		String requestUri = request.getRequestURI();
 		String reqUri = StringUtils.substringAfter(requestUri, contextPath);
 		if (StringUtils.isEmpty(reqUri)) {
 			reqUri = requestUri;
 		}
-		return ("requestUri [" + reqUri + "] params ["
-				+ getParametersAsString(request, secLogParamNames)
-				+ "] method [" + request.getMethod() + "]" + getCommandIssuedBy(request))
-				+ (message == null ? "" : System.getProperty("line.separator")
-						+ message);
+		return ("requestUri [" + reqUri + "] params [" + getParametersAsString(request)
+				+ "] method [" + request.getMethod() + "]" + getCommandIssuedBy(request));
 	}
 
-	private static String getParametersAsString(HttpServletRequest request, List<String> secLogParamNames) {
+	private static String getParametersAsString(HttpServletRequest request) {
 		String result = "";
 		Enumeration<String> paramnames = request.getParameterNames();
 		while (paramnames.hasMoreElements()) {
-			String paramname = paramnames.nextElement();
-			if (secLogParamNames == null || secLogParamNames.contains(paramname)) {
-				String paramvalue = request.getParameter(paramname);
-				if (StringUtils.isNotEmpty(paramvalue)) {
-					if (result.length() > 0) {
-						result = result + ",";
-					}
-					result = result + paramname + "=" + paramvalue;
+			String paramname = StringEscapeUtils.escapeJava(paramnames.nextElement());
+			String paramvalue = StringEscapeUtils.escapeJava(request.getParameter(paramname));
+			if (StringUtils.isNotEmpty(paramvalue)) {
+				if (result.length() > 0) {
+					result = result + ",";
 				}
+				result = result + paramname + "=" + paramvalue;
 			}
 		}
 		return result;

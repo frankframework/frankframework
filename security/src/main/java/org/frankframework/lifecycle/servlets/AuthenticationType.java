@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,20 +17,23 @@ package org.frankframework.lifecycle.servlets;
 
 import lombok.Getter;
 
-//LdapAuthenticationProvider
+// LdapAuthenticationProvider
 public enum AuthenticationType {
 	AD(ActiveDirectoryAuthenticator.class),
 	CONTAINER(JeeAuthenticator.class),
 	IN_MEMORY(InMemoryAuthenticator.class),
 	OAUTH2(OAuth2Authenticator.class),
-	NONE(NoOpAuthenticator.class);
+	YML(YmlFileAuthenticator.class),
+	YAML(YmlFileAuthenticator.class),
+	NONE(NoOpAuthenticator.class),
+	SEALED(SealedAuthenticator.class);
 
 	/**
 	 * NB. Should be initialized with a Spring AutoWired /Value enabled PostProcessor.
 	 */
 	private final @Getter Class<? extends IAuthenticator> authenticator;
 
-	private AuthenticationType(Class<? extends IAuthenticator> clazz) {
+	AuthenticationType(Class<? extends IAuthenticator> clazz) {
 		authenticator = clazz;
 	}
 }

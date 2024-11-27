@@ -41,7 +41,7 @@ public class YamlParser {
 		Yaml yaml = new Yaml();
 
 		Map<String, Object> obj = yaml.loadAs(reader, Map.class);
-		obj.entrySet().forEach(entry -> handleRawValue(entry.getKey(), entry.getValue()) );
+		obj.entrySet().forEach(entry -> handleRawValue(entry.getKey(), entry.getValue()));
 
 		return properties;
 	}
@@ -68,8 +68,8 @@ public class YamlParser {
 
 		// Threat as a single value and store it in the properties.
 		else {
-			if(value != null) {
-				String valueToString = value.toString(); //String / Integer
+			if (value != null) {
+				String valueToString = value.toString(); // String / Integer
 				properties.setProperty(key, valueToString);
 			}
 		}
@@ -78,15 +78,15 @@ public class YamlParser {
 	/**
 	 * This translates an object-array to multiple properties using the name value as key.
 	 * <p>
-	 *     Example:
-	 *     <pre>
+	 * Example:
+	 * <pre>
 	 *     array:
 	 *       - name: Sergi
 	 *         value: 100
 	 *       - name: Niels
 	 *         value: 50
 	 *     </pre>
-	 *     Will result in the properties: <br/>
+	 * Will result in the properties: <br/>
 	 *     <ul>
 	 *       <li>array.Sergi.value = 100</li>
 	 *       <li>array.Niels.value = 50</li>
@@ -97,27 +97,26 @@ public class YamlParser {
 		String name = (String) map.remove("name");
 		String updatedKey = StringUtils.isNotEmpty(name) ? (key + "." + name) : key;
 
-		map.entrySet().forEach(entry -> handleRawValue(updatedKey + "." + entry.getKey(), entry.getValue()) );
+		map.entrySet().forEach(entry -> handleRawValue(updatedKey + "." + entry.getKey(), entry.getValue()));
 	}
 
 	/**
 	 * Not all entries have to be of the same type.
-	 *
+	 * <p>
 	 * Collect non-map entries and add those as a 'list' property
 	 * Delegate the map to {@link #handleMapValue(String, Map)}.
 	 */
 	@SuppressWarnings("unchecked")
 	private void handleListValue(String key, ArrayList<Object> list) {
 		List<String> listProperty = new ArrayList<>();
-		for(Object object : list) {
-			if(object instanceof Map) {
+		for (Object object : list) {
+			if (object instanceof Map) {
 				handleMapValue(key, (Map<String, Object>) object);
-			}
-			else {
+			} else {
 				listProperty.add(object.toString()); // String or Integer
 			}
 		}
-		if(!listProperty.isEmpty()) {
+		if (!listProperty.isEmpty()) {
 			properties.setProperty(key, listProperty.stream().collect(Collectors.joining(",")));
 		}
 	}

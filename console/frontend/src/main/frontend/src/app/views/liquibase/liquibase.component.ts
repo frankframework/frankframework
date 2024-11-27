@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { AppService, Configuration } from 'src/app/app.service';
+import { AppService, Configuration, ServerErrorResponse } from 'src/app/app.service';
 import { JdbcService } from '../jdbc/jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -14,16 +14,16 @@ interface Form {
   styleUrls: ['./liquibase.component.scss'],
 })
 export class LiquibaseComponent implements OnInit, OnDestroy {
-  form: Form = {
+  protected form: Form = {
     configuration: '',
   };
-  file: File | null = null;
-  generateSql: boolean = false;
-  error: string = '';
-  result: string = '';
-  configurations: Configuration[] = [];
-  filteredConfigurations: Configuration[] = [];
+  protected file: File | null = null;
+  protected generateSql: boolean = false;
+  protected error: string | null = null;
+  protected result: string | null = null;
+  protected filteredConfigurations: Configuration[] = [];
 
+  private configurations: Configuration[] = [];
   private _subscriptions = new Subscription();
 
   constructor(
@@ -32,10 +32,9 @@ export class LiquibaseComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    const configurationsSubscription =
-      this.appService.configurations$.subscribe(() =>
-        this.findFirstAvailabeConfiguration(),
-      );
+    const configurationsSubscription = this.appService.configurations$.subscribe(() =>
+      this.findFirstAvailabeConfiguration(),
+    );
     this._subscriptions.add(configurationsSubscription);
     this.findFirstAvailabeConfiguration();
   }
@@ -45,7 +44,7 @@ export class LiquibaseComponent implements OnInit, OnDestroy {
   }
 
   download(): void {
-    window.open(`${this.appService.getServerPath()}iaf/api/jdbc/liquibase/`);
+    window.open(`${this.appService.getServerPath()}iaf/api/jdbc/liquibase`);
   }
 
   submit(formData: Form): void {
@@ -53,7 +52,7 @@ export class LiquibaseComponent implements OnInit, OnDestroy {
     const fd = new FormData();
     this.generateSql = true;
 
-    if (this.file != null) {
+    if (this.file) {
       fd.append('file', this.file as unknown as string);
     }
 
@@ -61,31 +60,32 @@ export class LiquibaseComponent implements OnInit, OnDestroy {
 
     this.jdbcService.postJdbcLiquibase(fd).subscribe({
       next: (returnData) => {
-        this.error = '';
+        this.error = null;
         this.generateSql = false;
         this.result = returnData.result;
       },
       error: (errorData: HttpErrorResponse) => {
         this.generateSql = false;
-        const error =
-          errorData && errorData.error ? errorData.error : 'An error occured!';
-        this.error = typeof error === 'object' ? error.error : error;
-        this.result = '';
+        try {
+          const errorResponse = JSON.parse(errorData.error) as ServerErrorResponse | undefined;
+          this.error = errorResponse ? errorResponse.error : errorData.message;
+        } catch {
+          this.error = errorData.message;
+        }
+        this.result = null;
       },
     }); // TODO no intercept
   }
 
   private findFirstAvailabeConfiguration(): void {
     this.configurations = this.appService.configurations;
-    this.filteredConfigurations = this.configurations.filter(
-      (item) => item.jdbcMigrator === true,
-    );
+    this.filteredConfigurations = this.configurations.filter((item) => item.jdbcMigrator);
 
     for (const index in this.filteredConfigurations) {
       const configuration = this.configurations[index];
 
       if (configuration.jdbcMigrator) {
-        this.form['configuration'] = configuration.name;
+        this.form.configuration = configuration.name;
         break;
       }
     }

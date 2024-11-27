@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,26 +22,22 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.lifecycle.DynamicRegistration;
-import org.frankframework.util.ClassUtils;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.EnvironmentAware;
-import org.springframework.context.annotation.Scope;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
-import org.springframework.util.ResourceUtils;
+import jakarta.annotation.Nullable;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.Environment;
+import org.springframework.util.ResourceUtils;
+
+import org.frankframework.util.ClassUtils;
 
 /**
  * Contains the component annotation so it will be picked up by the core (SpringEnvironmentContext.xml).
@@ -52,9 +48,7 @@ import lombok.extern.log4j.Log4j2;
  * @author Niels Meijer
  */
 @Log4j2
-@Component
-@Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.Servlet, EnvironmentAware, InitializingBean {
+public class ConsoleFrontend extends HttpServlet implements EnvironmentAware, InitializingBean {
 
 	private static final long serialVersionUID = 1L;
 	private static final String WELCOME_FILE = "index.html";
@@ -144,20 +138,5 @@ public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.
 			log.warn("exception while locating file [{}]", path, e);
 			return null;
 		}
-	}
-
-	@Override
-	public String getName() {
-		return "Console";
-	}
-
-	@Override
-	public String[] getAccessGrantingRoles() {
-		return ALL_IBIS_USER_ROLES;
-	}
-
-	@Override
-	public String getUrlMapping() {
-		return "iaf/gui/*";
 	}
 }

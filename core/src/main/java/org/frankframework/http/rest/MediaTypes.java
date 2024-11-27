@@ -19,8 +19,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.function.Predicate;
 
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.InvalidMimeTypeException;
 import org.springframework.util.MimeType;
@@ -31,8 +30,9 @@ import org.frankframework.util.StreamUtil;
 
 public enum MediaTypes {
 
+	// common types
 	ANY("*/*", null),
-	/** (Only for produces) Attempts to detect the MimeType as well as charset when not known */
+	/* (Only for produces) Attempts to detect the MimeType as well as charset when not known */
 	DETECT("*/*"),
 	TEXT("text/plain"),
 	XML("application/xml"),
@@ -41,7 +41,56 @@ public enum MediaTypes {
 	OCTET("application/octet-stream", null), // raw binary formats do not have a charset
 	MULTIPART_RELATED("multipart/related"),
 	MULTIPART_FORMDATA("multipart/form-data"),
-	MULTIPART("multipart/*");
+	MULTIPART("multipart/*"),
+
+	// less but still common types
+	TXT("text/plain"),
+	CSS("text/css"),
+	CSV("text/csv"),
+	MJS("text/javascript"),
+	HTML("text/html"),
+	JAR("application/java-archive"),
+
+	DOC("application/msword"),
+	EPUB("application/epub+zip"),
+	VSD("application/vnd.visio"),
+	AZW("application/vnd.amazon.ebook"),
+	PPT("application/vnd.ms-powerpoint"),
+	XLS("application/vnd.ms-excel"),
+	RAR("application/vnd.rar"),
+	RTF("application/rtf"),
+	ICO("image/vnd.microsoft.icon"),
+	ICS("text/calendar"),
+
+	BMP("image/bmp"),
+	GIF("image/gif"),
+	PNG("image/png"),
+	SVG("image/svg+xml"),
+	TIFF("image/tiff"),
+	JPG("image/jpeg"),
+
+	OTF("font/otf"),
+	TTF("font/ttf"),
+	WOFF("font/woff"),
+	WOFF2("font/woff2"),
+
+	MPEG("video/mpeg"),
+	MP3("audio/mpeg"),
+	MP4("video/mp4"),
+	MIDI("audio/midi"),
+	AAC("audio/aac"),
+	AVI("video/x-msvideo"),
+	TS("video/mp2t"),
+	WAV("audio/wav"),
+	WEBA("audio/webm"),
+	WEBM("video/webm"),
+	WEBP("image/webp"),
+
+	GZ("application/gzip"),
+	TAR("application/x-tar"),
+	BZ("application/x-bzip"),
+	BZ2("application/x-bzip2"),
+	ZIP("application/zip");
 
 	private final MimeType mimeType;
 	private final Charset defaultCharset;

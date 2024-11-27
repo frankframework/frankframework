@@ -21,13 +21,14 @@ import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.IWithParameters;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.util.LogUtil;
@@ -77,7 +78,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	}
 
 	@Override
-	public void addParameter(Parameter p) {
+	public void addParameter(IParameter p) {
 		if (paramList==null) {
 			paramList=new ParameterList();
 		}
@@ -116,7 +117,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	}
 
 	/**
-	 * if set <code>true</code>, this resulthandler is the default for all {@link RecordHandlingFlow flow}s that do not have a handler specified
+	 * if set to <code>true</code>, this resultHandler is the default for all {@link RecordHandlingFlow flow}s that do not have a handler specified
 	 * @ff.default false
 	 */
 	@Override
@@ -129,7 +130,9 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	}
 
 	/**
-	 * When set <code>true</code>(default), every group of records, as indicated by {@link IRecordHandler#isNewRecordType RecordHandler.newRecordType} is handled as a block.
+	 * When set to <code>true</code>(default), every group of records, as indicated by {@link IRecordHandler#isNewRecordType RecordHandler.newRecordType},
+	 * is handled as a block.
+	 *
 	 * @ff.default true
 	 */
 	public void setBlockByRecordType(boolean b) {

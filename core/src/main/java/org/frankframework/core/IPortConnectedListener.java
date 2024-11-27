@@ -15,7 +15,7 @@
 */
 package org.frankframework.core;
 
-import org.frankframework.receivers.Receiver;
+import org.frankframework.receivers.ReceiverAware;
 
 /**
  * Interface extending IPushingListener for listeners which connect to a
@@ -27,16 +27,11 @@ import org.frankframework.receivers.Receiver;
  * @author Tim van der Leeuw
  *
  */
-public interface IPortConnectedListener<M> extends IPushingListener<M> {
+public interface IPortConnectedListener<M> extends IPushingListener<M>, ReceiverAware<M> {
 
 	IbisExceptionListener getExceptionListener();
 
 	IMessageHandler<M> getHandler();
-
-	void setReceiver(Receiver<M> receiver);
-	Receiver<M> getReceiver();
-
-	IListenerConnector<M> getListenerPortConnector();
 
 	default void checkTransactionManagerValidity() {
 	}

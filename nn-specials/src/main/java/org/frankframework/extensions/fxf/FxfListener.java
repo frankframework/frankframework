@@ -17,13 +17,14 @@ package org.frankframework.extensions.fxf;
 
 import java.io.File;
 
-import javax.jms.Message;
+import jakarta.jms.Message;
 
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IAdapter;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
@@ -100,18 +101,18 @@ public class FxfListener extends EsbJmsListener {
 			if (!dstFile.getParentFile().exists()) {
 				if (isCreateProcessedDirectory()) {
 					if (dstFile.getParentFile().mkdirs()) {
-						log.debug("Created directory [" + dstFile.getParent() + "]");
+						log.debug("Created directory [{}]", dstFile.getParent());
 					} else {
-						log.warn("Directory [" + dstFile.getParent() + "] could not be created");
+						log.warn("Directory [{}] could not be created", dstFile.getParent());
 					}
 				} else {
-					log.warn("Directory [" + dstFile.getParent() + "] does not exist");
+					log.warn("Directory [{}] does not exist", dstFile.getParent());
 				}
 			}
 			if (FileUtils.moveFile(srcFile, dstFile, 1, 0) == null) {
 				warn("Could not move file [" + srcFile.getAbsolutePath() + "] to file [" + dstFile.getAbsolutePath() + "]");
 			} else {
-				log.info("Moved file [" + srcFile.getAbsolutePath() + "] to file [" + dstFile.getAbsolutePath() + "]");
+				log.info("Moved file [{}] to file [{}]", srcFile.getAbsolutePath(), dstFile.getAbsolutePath());
 			}
 		} catch (Exception e) {
 			String sourcePath = srcFile != null ? srcFile.getAbsolutePath() : "<unknown>";
@@ -128,9 +129,9 @@ public class FxfListener extends EsbJmsListener {
 		log.warn(msg, t);
 		Receiver<Message> receiver = getReceiver();
 		if (receiver != null) {
-			IAdapter iAdapter = receiver.getAdapter();
-			if (iAdapter != null) {
-				iAdapter.getMessageKeeper().add("WARNING: " + msg + (t != null ? ": " + t.getMessage() : ""), MessageKeeperLevel.WARN);
+			Adapter adapter = receiver.getAdapter();
+			if (adapter != null) {
+				adapter.getMessageKeeper().add("WARNING: " + msg + (t != null ? ": " + t.getMessage() : ""), MessageKeeperLevel.WARN);
 			}
 		}
 	}

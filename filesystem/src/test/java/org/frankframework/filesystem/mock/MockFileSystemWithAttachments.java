@@ -5,11 +5,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.frankframework.filesystem.FileSystemException;
-import org.frankframework.filesystem.IWithAttachments;
-import org.frankframework.stream.Message;
+import org.xml.sax.SAXException;
 
-public class MockFileSystemWithAttachments extends MockFileSystem<MockFileWithAttachments> implements IWithAttachments<MockFileWithAttachments, MockAttachment> {
+import org.frankframework.filesystem.FileSystemException;
+import org.frankframework.filesystem.IMailFileSystem;
+import org.frankframework.stream.Message;
+import org.frankframework.xml.SaxElementBuilder;
+
+public class MockFileSystemWithAttachments extends MockFileSystem<MockFileWithAttachments> implements IMailFileSystem<MockFileWithAttachments, MockAttachment> {
 
 	@Override
 	public Iterator<MockAttachment> listAttachments(MockFileWithAttachments f) throws FileSystemException {
@@ -52,4 +55,33 @@ public class MockFileSystemWithAttachments extends MockFileSystem<MockFileWithAt
 		return null;
 	}
 
+	@Override
+	public String getSubject(MockFileWithAttachments emailMessage) throws FileSystemException {
+		return "";
+	}
+
+	@Override
+	public Message getMimeContent(MockFileWithAttachments emailMessage) throws FileSystemException {
+		return null;
+	}
+
+	@Override
+	public void forwardMail(MockFileWithAttachments emailMessage, String destination) throws FileSystemException {
+
+	}
+
+	@Override
+	public void extractEmail(MockFileWithAttachments emailMessage, SaxElementBuilder emailXml) throws FileSystemException, SAXException {
+
+	}
+
+	@Override
+	public void extractAttachment(MockAttachment attachment, SaxElementBuilder attachmentsXml) throws FileSystemException, SAXException {
+
+	}
+
+	@Override
+	public String getReplyAddressFields() {
+		return "";
+	}
 }

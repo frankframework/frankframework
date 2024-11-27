@@ -12,10 +12,7 @@ export class ConfigurationsService {
     private appService: AppService,
   ) {}
 
-  getConfiguration(
-    selectedConfiguration: string,
-    loadedConfiguration: boolean,
-  ): Observable<string> {
+  getConfiguration(selectedConfiguration: string, loadedConfiguration: boolean): Observable<string> {
     let uri = 'configurations';
 
     if (selectedConfiguration != 'All') uri += `/${selectedConfiguration}`;
@@ -27,24 +24,17 @@ export class ConfigurationsService {
   }
 
   getConfigurations(): Observable<Configuration[]> {
-    return this.http.get<Configuration[]>(
-      `${this.appService.absoluteApiPath}server/configurations`,
-    );
+    return this.http.get<Configuration[]>(`${this.appService.absoluteApiPath}server/configurations`);
   }
 
-  getConfigurationVersions(
-    configurationName: string,
-  ): Observable<Configuration[]> {
+  getConfigurationVersions(configurationName: string): Observable<Configuration[]> {
     return this.http.get<Configuration[]>(
       `${this.appService.absoluteApiPath}configurations/${configurationName}/versions`,
     );
   }
 
   postConfiguration(data: FormData): Observable<Record<string, string>> {
-    return this.http.post<Record<string, string>>(
-      `${this.appService.absoluteApiPath}configurations`,
-      data,
-    );
+    return this.http.post<Record<string, string>>(`${this.appService.absoluteApiPath}configurations`, data);
   }
 
   updateConfigurationVersion(
@@ -58,10 +48,7 @@ export class ConfigurationsService {
     );
   }
 
-  deleteConfigurationVersion(
-    configurationName: string,
-    configurationVersion: string,
-  ): Observable<object> {
+  deleteConfigurationVersion(configurationName: string, configurationVersion: string): Observable<object> {
     return this.http.delete(
       `${this.appService.absoluteApiPath}configurations/${configurationName}/versions/${configurationVersion}`,
     );

@@ -17,8 +17,8 @@
 				        <exit path="EXIT" state="success"/>
 			      </exits>
 			      <pipe name="GetPrincipalPipe"
-               className="org.frankframework.pipes.FixedResultPipe"
-               returnString="tst9">
+               className="org.frankframework.pipes.EchoPipe"
+               getInputFromFixedValue="tst9">
 				        <forward name="success" path="EXIT"/>
 			      </pipe>
 		    </pipeline>

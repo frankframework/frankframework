@@ -17,13 +17,14 @@ package org.frankframework.extensions.mqtt;
 
 import java.util.Map;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
@@ -31,6 +32,7 @@ import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ReceiverAware;
@@ -85,12 +87,12 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	}
 
 	@Override
-	public void open() throws ListenerException {
+	public void start() {
 		try {
-			super.open();
+			super.start();
 			client.subscribe(getTopic(), getQos());
 		} catch (Exception e) {
-			throw new ListenerException("Could not subscribe to topic", e);
+			throw new LifecycleException("Could not subscribe to topic", e);
 		}
 	}
 

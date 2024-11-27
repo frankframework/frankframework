@@ -11,53 +11,46 @@ type keyValueProperty = KeyValue<string, string>;
   styleUrls: ['./environment-variables.component.scss'],
 })
 export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
-  searchFilter: string = '';
-  selectedConfiguration: string = '';
-  configProperties: keyValueProperty[] = [];
-  environmentProperties: keyValueProperty[] = [];
-  systemProperties: keyValueProperty[] = [];
-  configurations: Configuration[] = [];
+  protected searchFilter: string = '';
+  protected selectedConfiguration: string = '';
+  protected configProperties: keyValueProperty[] = [];
+  protected environmentProperties: keyValueProperty[] = [];
+  protected systemProperties: keyValueProperty[] = [];
+  protected configurations: Configuration[] = [];
+  protected configurationNames: string[] = [];
 
   private _subscriptions = new Subscription();
-  private appConstants: AppConstants;
+  private appConstants: AppConstants = this.appService.APP_CONSTANTS;
 
-  constructor(private appService: AppService) {
-    this.appConstants = this.appService.APP_CONSTANTS;
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(
-      () => {
-        this.appConstants = this.appService.APP_CONSTANTS;
-      },
-    );
-    this._subscriptions.add(appConstantsSubscription);
-  }
+  constructor(private appService: AppService) {}
 
   ngOnInit(): void {
+    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
+      this.appConstants = this.appService.APP_CONSTANTS;
+    });
+    this._subscriptions.add(appConstantsSubscription);
+
     this.configurations = this.appService.configurations;
-    const configurationsSubscription =
-      this.appService.configurations$.subscribe(() => {
-        this.configurations = this.appService.configurations;
-      });
+    this.configurationNames = this.configurations.map((configuration) => configuration.name);
+    const configurationsSubscription = this.appService.configurations$.subscribe(() => {
+      this.configurations = this.appService.configurations;
+      this.configurationNames = this.configurations.map((configuration) => configuration.name);
+    });
     this._subscriptions.add(configurationsSubscription);
 
-    this.appService.getEnvironmentVariables().subscribe((data) => {
+    const environmentVariablesSubscription = this.appService.getEnvironmentVariables().subscribe((data) => {
       let instanceName = null;
       for (const configName in data['Application Constants']) {
-        this.appConstants[configName] = this.convertPropertiesToArray(
-          data['Application Constants'][configName],
-        );
+        this.appConstants[configName] = this.convertPropertiesToArray(data['Application Constants'][configName]);
         if (instanceName == null) {
-          instanceName =
-            data['Application Constants'][configName]['instance.name'];
+          instanceName = data['Application Constants'][configName]['instance.name'];
         }
       }
       this.changeConfiguration('All');
-      this.environmentProperties = this.convertPropertiesToArray(
-        data['Environment Variables'],
-      );
-      this.systemProperties = this.convertPropertiesToArray(
-        data['System Properties'],
-      );
+      this.environmentProperties = this.convertPropertiesToArray(data['Environment Variables']);
+      this.systemProperties = this.convertPropertiesToArray(data['System Properties']);
     });
+    this._subscriptions.add(environmentVariablesSubscription);
   }
 
   ngOnDestroy(): void {
@@ -69,16 +62,14 @@ export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
     this.configProperties = this.appConstants[name] as keyValueProperty[];
   }
 
-  private convertPropertiesToArray(
-    propertyList: Record<string, string>,
-  ): keyValueProperty[] {
-    const temporary: keyValueProperty[] = [];
+  private convertPropertiesToArray(propertyList: Record<string, string>): keyValueProperty[] {
+    const propertiesArray: keyValueProperty[] = [];
     for (const variableName in propertyList) {
-      temporary.push({
+      propertiesArray.push({
         key: variableName,
         value: propertyList[variableName],
       });
     }
-    return temporary;
+    return propertiesArray;
   }
 }

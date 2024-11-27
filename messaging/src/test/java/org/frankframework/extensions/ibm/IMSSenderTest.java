@@ -21,11 +21,11 @@ import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageConsumer;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Session;
 
 import org.junit.jupiter.api.Test;
 

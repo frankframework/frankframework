@@ -22,23 +22,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.MimeType;
-
 import jakarta.mail.BodyPart;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMultipart;
-
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.http.HttpSender;
+import org.frankframework.doc.Forward;
 import org.frankframework.http.InputStreamDataSource;
 import org.frankframework.http.PartMessage;
 import org.frankframework.http.mime.MultipartUtils;
@@ -47,6 +43,7 @@ import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.StreamUtil;
+import org.springframework.util.MimeType;
 
 /**
  * Stream an input stream to an output stream.
@@ -59,10 +56,9 @@ import org.frankframework.util.StreamUtil;
  * @ff.parameter contentDisposition	the Content-Disposition header to set in case httpResponse was specified
  * @ff.parameter redirectLocation	the redirect location to set in case httpResponse was specified
  *
- * @ff.forward antiVirusFailed the virus checking indicates a problem with the message
- *
  * @author Jaco de Groot
  */
+@Forward(name = "antiVirusFailed", description = "virus checking indicates a problem with the message")
 public class StreamPipe extends FixedForwardPipe {
 	public static final String ANTIVIRUS_FAILED_FORWARD = "antiVirusFailed";
 
@@ -76,9 +72,9 @@ public class StreamPipe extends FixedForwardPipe {
 	private String antiVirusFailureReasonSessionKey;
 
 	private class AntiVirusObject {
-		private String fileName;
-		private String status;
-		private String message;
+		private final String fileName;
+		private final String status;
+		private final String message;
 
 		public AntiVirusObject(String fileName, String status, String message) {
 			this.fileName = fileName;
@@ -146,7 +142,7 @@ public class StreamPipe extends FixedForwardPipe {
 				inputStream = message.asInputStream();
 			}
 			if (httpResponse != null) {
-				HttpSender.streamResponseBody(inputStream, contentType, contentDisposition, httpResponse, log, "", redirectLocation);
+				streamResponseBody(inputStream, contentType, contentDisposition, httpResponse, redirectLocation);
 			} else if (httpRequest != null) {
 				StringBuilder partsString = new StringBuilder("<parts>");
 				String firstStringPart = null;
@@ -182,7 +178,7 @@ public class StreamPipe extends FixedForwardPipe {
 								} else {
 									String sessionKeyName = "part_string" + (++stringCounter > 1 ? stringCounter : "");
 									addSessionKey(session, sessionKeyName, fieldValue);
-									partsString.append("<part type=\"string\" name=\"" + fieldName + "\" sessionKey=\"" + sessionKeyName + "\" size=\"" + fieldValue.length() + "\"/>");
+									partsString.append("<part type=\"string\" name=\"").append(fieldName).append("\" sessionKey=\"").append(sessionKeyName).append("\" size=\"").append(fieldValue.length()).append("\"/>");
 								}
 							}
 						} else {
@@ -203,8 +199,8 @@ public class StreamPipe extends FixedForwardPipe {
 							} else {
 								addSessionKey(session, sessionKeyName, null);
 							}
-							MimeType mimeType = (MimeType) bodyPartMessage.getContext().get(MessageContext.METADATA_MIMETYPE);
-							partsString.append("<part type=\"file\" name=\"" + fileName + "\" sessionKey=\"" + sessionKeyName + "\" size=\"" + size + "\" mimeType=\"" + mimeType + "\"/>");
+							MimeType mimeType = bodyPartMessage.getContext().getMimeType();
+							partsString.append("<part type=\"file\" name=\"").append(fileName).append("\" sessionKey=\"").append(sessionKeyName).append("\" size=\"").append(size).append("\" mimeType=\"").append(mimeType).append("\"/>");
 							lastFoundFileName = fileName;
 						}
 					}
@@ -249,6 +245,24 @@ public class StreamPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "MessagingException getting multiparts from httpServletRequest", e);
 		}
 		return new PipeRunResult(getSuccessForward(), result);
+	}
+
+	private void streamResponseBody(InputStream is, String contentType, String contentDisposition, HttpServletResponse response, String redirectLocation) throws IOException {
+		if (StringUtils.isNotEmpty(contentType)) {
+			response.setHeader("Content-Type", contentType);
+		}
+		if (StringUtils.isNotEmpty(contentDisposition)) {
+			response.setHeader("Content-Disposition", contentDisposition);
+		}
+		if (StringUtils.isNotEmpty(redirectLocation)) {
+			response.sendRedirect(redirectLocation);
+		}
+		if (is != null) {
+			try (OutputStream outputStream = response.getOutputStream()) {
+				StreamUtil.streamToStream(is, outputStream);
+				log.debug("copied response body input stream [{}] to output stream [{}]", is, outputStream);
+			}
+		}
 	}
 
 	protected String adjustFirstStringPart(String firstStringPart, PipeLineSession session) throws PipeRunException {

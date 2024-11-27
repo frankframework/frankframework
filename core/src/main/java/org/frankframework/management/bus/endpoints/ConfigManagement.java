@@ -15,21 +15,28 @@
 */
 package org.frankframework.management.bus.endpoints;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
-import javax.annotation.Nonnull;
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
+import org.springframework.messaging.Message;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
@@ -47,8 +54,6 @@ import org.frankframework.management.bus.message.BinaryMessage;
 import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.management.bus.message.StringMessage;
-import org.springframework.http.MediaType;
-import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.CONFIGURATION)
@@ -105,11 +110,11 @@ public class ConfigManagement extends BusEndpointBase {
 			return new JsonMessage(Collections.singletonList(new ConfigurationDTO(configuration)));
 		}
 
-		List<ConfigurationDTO> configs = new LinkedList<>();
-		for (Configuration configuration : getIbisManager().getConfigurations()) {
-			configs.add(new ConfigurationDTO(configuration));
-		}
-		configs.sort(new ConfigurationDTO.NameComparator());
+		List<ConfigurationDTO> configs = getIbisManager().getConfigurations()
+				.stream()
+				.map(ConfigurationDTO::new)
+				.sorted(new ConfigurationDTO.NameComparator())
+				.toList();
 		return new JsonMessage(configs);
 	}
 
@@ -183,8 +188,33 @@ public class ConfigManagement extends BusEndpointBase {
 	 */
 	@ActionSelector(BusAction.DOWNLOAD)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public BinaryMessage downloadConfiguration(Message<?> message) {
+	public BinaryMessage downloadConfiguration(Message<?> message) throws IOException {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		if (BusMessageUtils.ALL_CONFIGS_KEY.equals(configurationName)) {
+			String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+			List<Map<String, Object>> activeConfigsFromDb;
+			try {
+				activeConfigsFromDb = ConfigurationUtils.getActiveConfigsFromDatabase(getApplicationContext(), datasourceName);
+			} catch (ConfigurationException e) {
+				throw new BusException("unable to download configurations from database", e);
+			}
+
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			try (ZipOutputStream zos = new ZipOutputStream(out)) {
+				for (Map<String, Object> activeConfig : activeConfigsFromDb) {
+					byte[] configFile = (byte[]) activeConfig.get("CONFIG");
+					ZipEntry entry = new ZipEntry(""+activeConfig.get("FILENAME"));
+					zos.putNextEntry(entry);
+					zos.write(configFile);
+					zos.closeEntry();
+				}
+			}
+
+			BinaryMessage response = new BinaryMessage(out.toByteArray());
+			response.setFilename("active_configurations.zip");
+			return response;
+		}
+
 		getConfigurationByName(configurationName); //Validate the configuration exists
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
 		String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
@@ -223,14 +253,14 @@ public class ConfigManagement extends BusEndpointBase {
 	}
 
 	private List<ConfigurationDTO> getConfigsFromDatabase(String configurationName, @Nonnull final String dataSourceName) {
-		List<ConfigurationDTO> configurations = new LinkedList<>();
+		List<ConfigurationDTO> configurations = new ArrayList<>();
 
 		FixedQuerySender qs = createBean(FixedQuerySender.class);
 		qs.setDatasourceName(dataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		try {
 			qs.configure();
-			qs.open();
+			qs.start();
 			try (Connection conn = qs.getConnection()) {
 				String query = "SELECT NAME, VERSION, FILENAME, RUSER, ACTIVECONFIG, AUTORELOAD, CRE_TYDST FROM IBISCONFIG WHERE NAME=?";
 				try (PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -256,7 +286,7 @@ public class ConfigManagement extends BusEndpointBase {
 		} catch (Exception e) {
 			throw new BusException("unable to retrieve configuration from database", e);
 		} finally {
-			qs.close();
+			qs.stop();
 		}
 
 		configurations.sort(new ConfigurationDTO.VersionComparator());

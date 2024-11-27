@@ -25,6 +25,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+
 import org.frankframework.core.PipeLineSession;
 
 /**
@@ -57,14 +58,14 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		try (Writer ignored = openWriters.remove(streamId)) {
 			// just close the writer
 		} catch (IOException e) {
-			log.error("Exception closing ["+streamId+"]",e);
+			log.error("Exception closing [{}]", streamId, e);
 		}
 		super.closeDocument(session,streamId);
 	}
 
 	@Override
 	public String finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
-		log.debug("finalizeResult ["+streamId+"]");
+		log.debug("finalizeResult [{}]", streamId);
 		write(session,streamId,replacePattern(getOnCloseDocument(),streamId));
 		return null;
 	}

@@ -15,20 +15,20 @@
 */
 package org.frankframework.extensions.sap.jco3;
 
+import com.sap.conn.jco.JCoDestination;
+import com.sap.conn.jco.JCoException;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import com.sap.conn.jco.JCoDestination;
-import com.sap.conn.jco.JCoException;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.extensions.sap.SapException;
 import org.frankframework.extensions.sap.jco3.tx.DestinationFactoryUtils;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 
@@ -59,7 +59,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 			if (StringUtils.isEmpty(getSapSystemNameParam())) {
 				throw new ConfigurationException(getLogPrefix()+"if attribute sapSystemName is not specified, value of attribute sapSystemNameParam must indicate parameter to obtain name of sapSystem from");
 			}
-			if (paramList==null || paramList.findParameter(getSapSystemNameParam())==null) {
+			if (paramList==null || !paramList.hasParameter(getSapSystemNameParam())) {
 				throw new ConfigurationException(getLogPrefix()+"sapSystem must be specified, either in attribute sapSystemName, or via parameter ["+getSapSystemNameParam()+"]");
 			}
 		}
@@ -69,18 +69,18 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	}
 
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 		try {
 			openFacade();
 		} catch (SapException e) {
-			log.error(getLogPrefix() + "Exception on opening SapFunctionFacade", e);
-			close();
-			throw new SenderException(getLogPrefix()+"exception starting", e);
+			log.error("{}Exception on opening SapFunctionFacade", getLogPrefix(), e);
+			stop();
+			throw new LifecycleException(getLogPrefix()+"exception starting", e);
 		}
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		closeFacade();
 	}
 
@@ -96,9 +96,9 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 			throw new SapException("could not determine sapSystemName using parameter ["+getSapSystemNameParam()+"]");
 		}
 		SapSystemImpl result = getSapSystem(SapSystemName);
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"determined SapSystemName ["+SapSystemName+"]");
+		if (log.isDebugEnabled()) log.debug("{}determined SapSystemName [{}]", getLogPrefix(), SapSystemName);
 		if (result==null) {
-			log.warn(getLogPrefix()+"could not find a SapSystem ["+SapSystemName+"] from Parameter ["+getSapSystemNameParam()+"]");
+			log.warn("{}could not find a SapSystem [{}] from Parameter [{}]", getLogPrefix(), SapSystemName, getSapSystemNameParam());
 		}
 		return getSapSystem(SapSystemName);
 	}
@@ -135,7 +135,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	}
 
 	@Override
-	public void addParameter(Parameter p) {
+	public void addParameter(IParameter p) {
 		if (paramList==null) {
 			paramList=new ParameterList();
 		}

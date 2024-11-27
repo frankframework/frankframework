@@ -17,26 +17,28 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.ConnectionMetaData;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.QueueBrowser;
-import javax.jms.Session;
-import javax.jms.TextMessage;
 import javax.naming.NamingException;
 
-import org.frankframework.jms.IConnectionFactoryFactory;
-import org.frankframework.jms.JmsTransactionalStorage;
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.ConnectionMetaData;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageConsumer;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Queue;
+import jakarta.jms.QueueBrowser;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
+
 import org.mockito.Mockito;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import org.frankframework.jms.IConnectionFactoryFactory;
+import org.frankframework.jms.JmsTransactionalStorage;
 
 public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 	private final Map<String, ConnectionFactory> objects = new ConcurrentHashMap<>();
@@ -134,7 +136,7 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 
 	//Use this to 'send' and 'receive' messages
 	public abstract static class MessageHandler extends Mockito implements MessageProducer, MessageConsumer {
-		private javax.jms.Message payload = null;
+		private jakarta.jms.Message payload = null;
 		public static MessageHandler newInstance() {
 			return mock(MessageHandler.class, CALLS_REAL_METHODS);
 		}

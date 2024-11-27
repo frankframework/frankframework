@@ -1,7 +1,7 @@
 <results>
-  <result senderClass="SenderWrapper" type="SenderException" success="false">IbisLocalSender exception calling JavaListener [SendersExceptionInSubAdapter]: Pipe [Call ExceptionPipe] caught exception: IbisLocalSender [Call ExceptionPipe-sender] exception calling JavaListener [ExceptionPipe]: Pipe [Generate exception] &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+  <result senderClass="SenderWrapper" type="SenderException" success="false">exception calling JavaListener [SendersExceptionInSubAdapter]: Pipe [Call ExceptionPipe] caught exception: exception calling JavaListener [ExceptionPipe]: Pipe [Generate exception] &lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;test/&gt;</result>
-  <result senderClass="SenderWrapper" success="true" forwardName="0" errorMessage="exitState=SUCCESS" type="String">[LESS_THAN]</result>
+  <result senderClass="SenderWrapper" success="true" errorMessage="exitState=SUCCESS" type="String">[LESS_THAN]</result>
   <result senderClass="SenderWrapper" success="true" type="String">
     <email>
       <recipients>

@@ -22,6 +22,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.ISenderWithParameters;
@@ -67,13 +68,13 @@ public class ResultBlock2Sender extends Result2StringWriter {
 	@Override
 	public void open() throws SenderException {
 		super.open();
-		sender.open();
+		sender.start();
 	}
 
 	@Override
 	public void close() throws SenderException {
 		super.close();
-		sender.close();
+		sender.stop();
 		counters.clear();
 		levels.clear();
 	}
@@ -152,7 +153,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 			StringWriter writer=(StringWriter)getWriter(session,streamId,false);
 			if (writer!=null) {
 				Message message=new Message(writer.getBuffer().toString());
-				log.debug("sending block ["+message+"] to sender ["+sender.getName()+"]");
+				log.debug("sending block [{}] to sender [{}]", message, sender.getName());
 				writer.getBuffer().setLength(0);
 				getSender().sendMessageOrThrow(message, session).close();
 			}

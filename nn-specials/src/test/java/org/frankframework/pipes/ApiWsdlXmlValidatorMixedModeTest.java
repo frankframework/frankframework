@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 
-import org.frankframework.core.IDualModeValidator;
-
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.core.IDualModeValidator;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -41,7 +41,7 @@ public class ApiWsdlXmlValidatorMixedModeTest {
 		val.setSoapBody(REQUEST_SOAP_BODY);
 		val.setThrowException(true);
 		val.setSchemaLocation("http://frankframework.org/XSD/Generic/MessageHeader/2 schema1 http://api.frankframework.org/GetPolicyDetails schema2");
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 		return val;
@@ -52,7 +52,7 @@ public class ApiWsdlXmlValidatorMixedModeTest {
 		val.setSoapBody(RESPONSE_SOAP_BODY);
 		val.setThrowException(true);
 		val.setSchemaLocation("http://frankframework.org/XSD/Generic/MessageHeader/2 schema1 http://api.frankframework.org/GetPolicyDetails schema2");
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 		return val;
@@ -64,7 +64,7 @@ public class ApiWsdlXmlValidatorMixedModeTest {
 		val.setOutputSoapBody(RESPONSE_SOAP_BODY);
 		val.setThrowException(true);
 		val.setSchemaLocation("http://frankframework.org/XSD/Generic/MessageHeader/2 schema1 http://api.frankframework.org/GetPolicyDetails schema2");
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.getResponseValidator().configure();
 		val.start();

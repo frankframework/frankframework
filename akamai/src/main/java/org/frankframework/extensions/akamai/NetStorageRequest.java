@@ -29,16 +29,17 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.logging.log4j.Logger;
+
+import lombok.Setter;
+
 import org.frankframework.core.SenderException;
 import org.frankframework.extensions.akamai.NetStorageSender.Action;
+import org.frankframework.http.AbstractHttpSender.HttpMethod;
 import org.frankframework.http.HttpMessageEntity;
-import org.frankframework.http.HttpSenderBase.HttpMethod;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.LogUtil;
-
-import lombok.Setter;
 
 /**
  * Translates the request, adds required headers per action, creates a hash and signs the message.
@@ -46,14 +47,14 @@ import lombok.Setter;
  * @author Niels Meijer
  */
 public class NetStorageRequest {
-	private Logger log = LogUtil.getLogger(NetStorageRequest.class);
+	private final Logger log = LogUtil.getLogger(NetStorageRequest.class);
 
 	private int version = 1;
 	private Message file = null;
 	private Action action = null;
 	private @Setter HashAlgorithm hashAlgorithm = null;
-	private Map<String, String> actionHeader = new HashMap<>();
-	private HttpRequestBase method;
+	private final Map<String, String> actionHeader = new HashMap<>();
+	private final HttpRequestBase method;
 
 	protected NetStorageRequest(Action action) {
 		this(null, action);
@@ -163,7 +164,7 @@ public class NetStorageRequest {
 		Map<String, String> headers = signer.computeHeaders(this);
 
 		for (Map.Entry<String, String> entry : headers.entrySet()) {
-			if(log.isDebugEnabled()) log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
+			if(log.isDebugEnabled()) log.debug("append header [{}] with value [{}]", entry.getKey(), entry.getValue());
 
 			method.setHeader(entry.getKey(), entry.getValue());
 		}

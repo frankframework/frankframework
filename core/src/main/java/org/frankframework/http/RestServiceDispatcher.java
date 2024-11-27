@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2018, 2020 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2013-2018, 2020 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,9 +26,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -121,7 +120,7 @@ public class RestServiceDispatcher {
 	 * @param request the <code>String</code> with the request/input
 	 * @return String with the result of processing the <code>request</code> through the <code>serviceName</code>
 	 */
-	public Message dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, PipeLineSession context, HttpServletResponse httpServletResponse, ServletContext servletContext) throws ListenerException {
+	public Message dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, PipeLineSession context, HttpServletResponse httpServletResponse) throws ListenerException {
 		String method = httpServletRequest.getMethod();
 		log.trace("searching listener for uri [{}] method [{}]", uri, method);
 
@@ -213,7 +212,6 @@ public class RestServiceDispatcher {
 			log.trace("dispatching request, uri [{}] listener pattern [{}] method [{}] etag [{}] contentType [{}]", uri, matchingPattern, method, etag, contentType);
 			context.put(PipeLineSession.HTTP_REQUEST_KEY, httpServletRequest);
 			if (httpServletResponse!=null) context.put(PipeLineSession.HTTP_RESPONSE_KEY, httpServletResponse);
-			if (servletContext!=null) context.put(PipeLineSession.SERVLET_CONTEXT_KEY, servletContext);
 
 			if (writeToSecLog) {
 				secLog.info(HttpUtils.getExtendedCommandIssuedBy(httpServletRequest));

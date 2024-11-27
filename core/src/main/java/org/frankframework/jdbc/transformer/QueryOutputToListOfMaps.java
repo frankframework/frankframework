@@ -41,7 +41,9 @@ public class QueryOutputToListOfMaps extends AbstractQueryOutputTransformer {
 	}
 
 	public List<Map<String, String>> parseString(String message) throws IOException, SAXException, NullPointerException {
-		return parseMessage(new Message(message));
+		try (Message closeable = new Message(message)) {
+			return parseMessage(closeable);
+		}
 	}
 
 	public List<Map<String, String>> parseMessage(Message message) throws IOException, SAXException, NullPointerException {

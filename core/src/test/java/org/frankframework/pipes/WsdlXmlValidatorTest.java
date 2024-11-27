@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeForward;
@@ -23,10 +26,6 @@ import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.validation.ValidatorTestBase;
 import org.frankframework.validation.XmlValidatorContentHandler;
 import org.frankframework.validation.XmlValidatorException;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
 
 /**
@@ -44,18 +43,6 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 	private static final String SIVTRX					= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/StartIncomingValueTransferProcess_1x.wsdl";
 	private static final String MULTIPLE_OPERATIONS		= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/multipleOperations.wsdl";
 
-	TestAppender testAppender;
-	@BeforeEach
-	void before() {
-		testAppender = TestAppender.newBuilder().build();
-		TestAppender.addToRootLogger(testAppender);
-	}
-
-	@AfterEach
-	void after() {
-		TestAppender.removeAppender(testAppender);
-	}
-
 	@Override
 	public WsdlXmlValidator createPipe() {
 		return new WsdlXmlValidator();
@@ -67,7 +54,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.setWsdl(SIMPLE);
 		val.setSoapBody("TradePriceRequest");
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 		val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
@@ -79,7 +66,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.setWsdl(SIMPLE_WITH_INCLUDE);
 		val.setSoapBody("TradePriceRequest");
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 		val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
@@ -94,7 +81,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		validator.setSoapVersion(SoapVersion.AUTO);
 		validator.setIgnoreUnknownNamespaces(true);
 		validator.setThrowException(true);
-		validator.registerForward(new PipeForward("success", null));
+		validator.addForward(new PipeForward("success", null));
 
 		// Act
 		validator.configure();
@@ -106,35 +93,39 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 
 	@Test
 	public void wsdlValidateWithMultiImportOfXsdDifferentPaths() throws Exception {
-		// Arrange
-		WsdlXmlValidator validator = pipe;
-		validator.setWsdl("/Validation/WsdlValidatorMultipleImportFromDifferentRoots/root-import-not-ok.wsdl");
-		validator.setSoapBody("A");
-		validator.setSoapVersion(SoapVersion.AUTO);
-		validator.setIgnoreUnknownNamespaces(true);
-		validator.setThrowException(true);
-		validator.registerForward(new PipeForward("success", null));
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
+			// Arrange
+			WsdlXmlValidator validator = pipe;
+			validator.setWsdl("/Validation/WsdlValidatorMultipleImportFromDifferentRoots/root-import-not-ok.wsdl");
+			validator.setSoapBody("A");
+			validator.setSoapVersion(SoapVersion.AUTO);
+			validator.setIgnoreUnknownNamespaces(true);
+			validator.setThrowException(true);
+			validator.addForward(new PipeForward("success", null));
 
-		int nrOfWarningsBefore = getConfigurationWarnings().size();
+			int nrOfWarningsBefore = getConfigurationWarnings().size();
 
-		// Act
-		validator.configure();
+			// Act
+			validator.configure();
 
-		// Assert
-		assertTrue(testAppender.getLogLines()
-				.stream().anyMatch(w -> w.contains("Multiple XSDs for namespace 'http://xmlns/overlappendeNamespace'")), "Expected configuration warning not found");
-		assertTrue(getConfigurationWarnings().getWarnings()
-				.stream().anyMatch(w -> w.contains("Identical XSDs with different source path imported for same namespace. This is likely an error.\n Namespace: 'http://xmlns/overlappendeNamespace'")), "Expected configuration warning not found");
+			// Assert
+			assertTrue(appender.getLogLines()
+					.stream()
+					.anyMatch(w -> w.contains("Multiple XSDs for namespace 'http://xmlns/overlappendeNamespace'")), "Expected configuration warning not found");
+			assertTrue(getConfigurationWarnings().getWarnings()
+					.stream()
+					.anyMatch(w -> w.contains("Identical XSDs with different source path imported for same namespace. This is likely an error.\n Namespace: 'http://xmlns/overlappendeNamespace'")), "Expected configuration warning not found");
 
-		// Act pt2
-		validator.start();
-		Message soapMessage = MessageTestUtils.getMessage("/Validation/WsdlValidatorMultipleImportFromDifferentRoots/soapInput.xml");
-		PipeRunResult prr = validator.doPipe(soapMessage, session);
+			// Act pt2
+			validator.start();
+			Message soapMessage = MessageTestUtils.getMessage("/Validation/WsdlValidatorMultipleImportFromDifferentRoots/soapInput.xml");
+			PipeRunResult prr = validator.doPipe(soapMessage, session);
 
-		// Assert
-		assertTrue(prr.isSuccessful());
-		// TODO: This test should get more explicit configuration warnings
-		assertEquals(nrOfWarningsBefore + 2, getConfigurationWarnings().size(), "Unexpected configuration warnings, got: " + collectionToString(getConfigurationWarnings()));
+			// Assert
+			assertTrue(prr.isSuccessful());
+			// TODO: This test should get more explicit configuration warnings
+			assertEquals(nrOfWarningsBefore + 2, getConfigurationWarnings().size(), "Unexpected configuration warnings, got: " + collectionToString(getConfigurationWarnings()));
+		}
 	}
 
 	private String collectionToString(ConfigurationWarnings c) {
@@ -158,7 +149,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.setSoapBody("TradePriceRequest,TradePrice,Fault");
 		val.setTargetNamespace("");
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 
@@ -191,7 +182,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(MULTIPLE_OPERATIONS);
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		session.put("SOAPAction", "add");
 		val.configure();
 		val.start();
@@ -226,11 +217,11 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(MULTIPLE_OPERATIONS);
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		session.put("SOAPAction", "add");
 		val.configure();
 		val.start();
-		val.validate(Message.asMessage("""
+		val.validate(new Message("""
 				<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
 					<s:Header/>
 					<s:Body>
@@ -242,7 +233,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 				"""), session, true, null);
 
 		session.put("SOAPAction", "sub");
-		val.validate(Message.asMessage("""
+		val.validate(new Message("""
 				<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
 					<s:Header/>
 					<s:Body>
@@ -253,7 +244,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 				</s:Envelope>\
 				"""), session, true, null);
 
-		val.validate(Message.asMessage("""
+		val.validate(new Message("""
 				<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
 					<s:Header/>
 					<s:Body>
@@ -270,7 +261,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(MULTIPLE_OPERATIONS);
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 		assertThrows(XmlValidatorException.class, () ->
@@ -293,7 +284,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.setWsdl(SIMPLE_WITH_REFERENCE);
 		val.setSoapBody("TradePriceRequest");
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 		val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
@@ -304,7 +295,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(SIMPLE_WITH_REFERENCE);
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 		assertThrows(XmlValidatorException.class, () ->
@@ -319,7 +310,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.setSoapHeader("MessageHeader");
 		val.setSoapBody("Request");
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 		val.validate("""
@@ -357,7 +348,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(TIBCO);
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 		assertThrows(XmlValidatorException.class, () ->
@@ -396,7 +387,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(TIBCO);
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 		assertThrows(XmlValidatorException.class, () ->
@@ -437,7 +428,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.setWsdl(SIMPLE);
 		val.setSoapBody("TradePriceRequest");
 		val.setForwardFailureToSuccess(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
 		PipeLineSession pls = new PipeLineSession();
@@ -461,7 +452,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.setSoapBodyNamespace("http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1");
 		val.setAddNamespaceToSchema(true);
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		assertThrows(ConfigurationException.class, val::configure
 		);
 	}
@@ -474,7 +465,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		pipe.setAddNamespaceToSchema(true);
 		pipe.setSchemaLocation("http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2 http://frankframework.org/XSD/Generic/MessageHeader/2 schema1 ");
 		pipe.setThrowException(true);
-		pipe.registerForward(new PipeForward("success", null));
+		pipe.addForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
 		assertEquals(1, getConfigurationWarnings().size());
@@ -492,7 +483,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		pipe.setAddNamespaceToSchema(true);
 		pipe.setSchemaLocation("http://frankframework.org/XSD/Generic/MessageHeader/2 schema1 http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/2 schema2");
 		pipe.setThrowException(true);
-		pipe.registerForward(new PipeForward("success", null));
+		pipe.addForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
 		assertEquals(1, getConfigurationWarnings().size());
@@ -508,7 +499,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		pipe.setSoapBody("TradePriceRequest");
 		pipe.setSchemaLocation("dummy schema1");
 		pipe.setThrowException(true);
-		pipe.registerForward(new PipeForward("success", null));
+		pipe.addForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
 		assertEquals(1, getConfigurationWarnings().size());
@@ -527,7 +518,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		pipe.setSoapBody("StartIncomingValueTransferRequest");
 		pipe.setImportedNamespacesToIgnore("http://nn.nl/XSD/PensionsSMB/ValueTransfer/ValueTransferLegacy/1/StartIncomingValueTransferProcess/1");
 		pipe.setThrowException(true);
-		pipe.registerForward(new PipeForward("success", null));
+		pipe.addForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
 		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/in-ok.xml");
@@ -543,7 +534,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		pipe.setSoapBody("StartIncomingValueTransferRequest");
 		pipe.setImportedNamespacesToIgnore("http://nn.nl/XSD/PensionsSMB/ValueTransfer/ValueTransferLegacy/1/StartIncomingValueTransferProcess/1");
 		pipe.setThrowException(true);
-		pipe.registerForward(new PipeForward("success", null));
+		pipe.addForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
 		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/in-err.xml");
@@ -560,7 +551,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		pipe.setSoapBody("StartIncomingValueTransferRequest");
 		pipe.setImportedSchemaLocationsToIgnore("schema1.xsd");
 		pipe.setThrowException(true);
-		pipe.registerForward(new PipeForward("success", null));
+		pipe.addForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
 		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/in-ok.xml");
@@ -576,7 +567,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		pipe.setSoapBody("StartIncomingValueTransferRequest");
 		pipe.setImportedSchemaLocationsToIgnore("schema1.xsd");
 		pipe.setThrowException(true);
-		pipe.registerForward(new PipeForward("success", null));
+		pipe.addForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
 		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/in-err.xml");

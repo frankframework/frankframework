@@ -20,16 +20,17 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IConfigurable;
-import org.frankframework.core.ListenerException;
-import org.frankframework.core.Resource;
-import org.frankframework.util.TransformerPool;
 import org.springframework.context.ApplicationContext;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.IConfigurable;
+import org.frankframework.core.ListenerException;
+import org.frankframework.core.Resource;
+import org.frankframework.util.TransformerPool;
 
 /**
  * XSLT provider listener for the Test Tool.
@@ -37,7 +38,7 @@ import lombok.Setter;
  * @author Jaco de Groot
  */
 public class XsltProviderListener implements IConfigurable, AutoCloseable {
-	private @Getter final ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter String name;
 

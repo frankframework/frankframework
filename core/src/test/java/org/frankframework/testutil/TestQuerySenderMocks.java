@@ -6,10 +6,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.testutil.mock.FixedQuerySenderMock;
 import org.frankframework.util.SpringUtils;
-import org.junit.jupiter.api.Test;
 
 /**
  * Test mocked/stubbed ResultSets
@@ -33,7 +34,7 @@ public class TestQuerySenderMocks {
 		FixedQuerySender qs = SpringUtils.createBean(configuration, FixedQuerySender.class);
 		qs.setQuery("SELECT COUNT(*) FROM FAKE_DATABASE_TABLE");
 		qs.configure();
-		qs.open();
+		qs.start();
 		try (Connection conn = qs.getConnection()) {
 			try (PreparedStatement stmt = conn.prepareStatement("SELECT JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY FROM IBISSCHEDULES")) {
 				try (ResultSet rs = stmt.executeQuery()) {

@@ -3,16 +3,20 @@ package org.frankframework.stream.document;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import org.frankframework.stream.json.JsonUtils;
-import org.frankframework.testutil.MatchUtils;
-import org.frankframework.xml.XmlWriter;
-import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
-
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
+
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
+
+import org.frankframework.documentbuilder.DocumentUtils;
+import org.frankframework.documentbuilder.Json2XmlHandler;
+import org.frankframework.documentbuilder.XmlDocumentBuilder;
+import org.frankframework.documentbuilder.json.JsonUtils;
+import org.frankframework.testutil.MatchUtils;
+import org.frankframework.xml.XmlWriter;
 
 public class DocumentUtilsTest {
 
@@ -30,7 +34,7 @@ public class DocumentUtilsTest {
 
 	protected void testBuild(JsonValue jValue, String expected) throws SAXException {
 		StringWriter writer = new StringWriter();
-		try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("root",writer, false)) {
+		try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("root", writer)) {
 			DocumentUtils.jsonValue2Document(jValue, documentBuilder);
 		}
 		MatchUtils.assertXmlEquals(expected, writer.toString());

@@ -4,10 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.pipes.EtagHandlerPipe.EtagAction;
-import org.junit.jupiter.api.Test;
 
 public class EtagHandlerPipeTest extends PipeTestBase<EtagHandlerPipe> {
 

@@ -17,7 +17,7 @@ package org.frankframework.configuration;
 
 import java.util.List;
 
-import javax.annotation.Priority;
+import jakarta.annotation.Priority;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -29,7 +29,7 @@ import org.frankframework.util.LogUtil;
 @IbisInitializer
 @Priority(Integer.MAX_VALUE)
 @Scope(scopeName = ConfigurableBeanFactory.SCOPE_SINGLETON)
-public class ApplicationWarnings extends ApplicationWarningsBase {
+public class ApplicationWarnings extends AbstractApplicationWarnings {
 	private static final Logger LOG = LogUtil.getLogger(ApplicationWarnings.class);
 
 	//Only allow static references to this class to ensure no objects are stored elsewhere
@@ -40,18 +40,18 @@ public class ApplicationWarnings extends ApplicationWarningsBase {
 	}
 
 	private ApplicationWarnings(boolean springInstantiated) {
-		LOG.debug("ApplicationWarnings instantiated "+(springInstantiated?"through Spring":"manually"));
+		LOG.debug("ApplicationWarnings instantiated {}", springInstantiated ? "through Spring" : "manually");
 	}
 
 	/**
-	 * Add an AppplicationWarning
+	 * Add an ApplicationWarning
 	 */
 	public static void add(Logger log, String message) {
 		add(log, message, null);
 	}
 
 	/**
-	 * Add an AppplicationWarning and log the exception stack
+	 * Add an ApplicationWarning and log the exception stack
 	 */
 	public static void add(Logger log, String message, Throwable t) {
 		getInstance().doAdd(null, log, message, t);
@@ -75,7 +75,7 @@ public class ApplicationWarnings extends ApplicationWarningsBase {
 			List<String> warnings = instance.getWarnings();
 			springInstance.addWarnings(warnings);
 			if(!warnings.isEmpty()) {
-				LOG.debug("appending ["+warnings.size()+"] warning(s)");
+				LOG.debug("appending [{}] warning(s)", warnings.size());
 			}
 		}
 		instance = springInstance;

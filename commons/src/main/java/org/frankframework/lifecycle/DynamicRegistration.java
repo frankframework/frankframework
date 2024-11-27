@@ -17,13 +17,13 @@ package org.frankframework.lifecycle;
 
 import java.util.Map;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextListener;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextListener;
 
 import org.springframework.stereotype.Component;
 
 /**
- * A Servlet registration wrapper to register {@link javax.servlet.Servlet}s in a Servlet 3.0+
+ * A Servlet registration wrapper to register {@link jakarta.servlet.Servlet}s in a Servlet 3.0+
  * container. Similar to the {@link ServletContext#addServlet(String, Class)}
  * registration} features provided by {@link ServletContext} but with a friendly design allowing
  * users to change servlet settings before they are initialized by the {@link ServletContextListener} (starting the application).
@@ -32,48 +32,21 @@ import org.springframework.stereotype.Component;
  * Classes that implement the annotation are automatically picked up by Spring,
  * and in combination with the ServletRegisteringPostProcessor the servlets are
  * automatically registered with the ServletManager.
- *
+ * <p>
  * The servlet name will be deduced if not specified.
  *
  * @author Niels Meijer
  */
 public interface DynamicRegistration {
 
-	public static final String[] ALL_IBIS_ROLES = {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"};
-	public static final String[] ALL_IBIS_USER_ROLES = {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester"};
-	public static final String[] IBIS_FULL_SERVICE_ACCESS_ROLES = {"IbisTester", "IbisWebService"};
-
-	public interface Servlet extends DynamicRegistration, javax.servlet.Servlet {
-
-		/**
-		 * The URL the {@link javax.servlet.http.HttpServlet Servlet} should be mapped to.
-		 * This value may be overridden by setting property <code>servlet.servlet-name.urlMapping</code> to change path the servlet listens to
-		 */
-		public String getUrlMapping();
-
-		/**
-		 * The default authorization roles giving access to the {@link javax.servlet.http.HttpServlet Servlet}, or <code>null</code> to disable.
-		 * This value may be overridden by setting property <code>servlet.servlet-name.securityRoles</code> to the roles that should be granted access.
-		 * see ServletManager for more information.
-		 */
-		public String[] getAccessGrantingRoles();
-
-		public default boolean isEnabled() {
-			return true;
-		}
-	}
-
-	public interface ServletWithParameters extends Servlet {
-		/**
-		 * {@link javax.servlet.http.HttpServlet Servlet} specific init parameters
-		 */
-		public Map<String, String> getParameters();
-	}
+	String[] ALL_IBIS_ROLES = {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"};
+	String[] ALL_IBIS_USER_ROLES = {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester"};
+	String[] IBIS_FULL_SERVICE_ACCESS_ROLES = {"IbisTester", "IbisWebService"};
 
 	/**
 	 * Name of the to-be implemented class
 	 */
-	public default String getName() {
+	default String getName() {
 		return this.getClass().getSimpleName();
 	}
 
@@ -82,7 +55,34 @@ public interface DynamicRegistration {
 	 * <code>0</code> to let the application server determine, <code>-1</code> to disable
 	 * This value may be overridden by setting property <code>servlet.servlet-name.loadOnStartup</code>
 	 */
-	public default int loadOnStartUp() {
+	default int loadOnStartUp() {
 		return -1;
+	}
+
+	interface Servlet extends DynamicRegistration, jakarta.servlet.Servlet {
+
+		/**
+		 * The URL the {@link jakarta.servlet.http.HttpServlet Servlet} should be mapped to.
+		 * This value may be overridden by setting property <code>servlet.servlet-name.urlMapping</code> to change path the servlet listens to
+		 */
+		String getUrlMapping();
+
+		/**
+		 * The default authorization roles giving access to the {@link jakarta.servlet.http.HttpServlet Servlet}, or <code>null</code> to disable.
+		 * This value may be overridden by setting property <code>servlet.servlet-name.securityRoles</code> to the roles that should be granted access.
+		 * see ServletManager for more information.
+		 */
+		String[] getAccessGrantingRoles();
+
+		default boolean isEnabled() {
+			return true;
+		}
+	}
+
+	interface ServletWithParameters extends Servlet {
+		/**
+		 * {@link jakarta.servlet.http.HttpServlet Servlet} specific init parameters
+		 */
+		Map<String, String> getParameters();
 	}
 }

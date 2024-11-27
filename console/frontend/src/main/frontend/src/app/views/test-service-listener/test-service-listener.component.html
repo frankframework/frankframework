@@ -1,10 +1,5 @@
 <div class="wrapper wrapper-content animated fadeInRight">
-  <ngb-alert
-    *ngFor="let alert of state"
-    [type]="alert.type"
-    [dismissible]="false"
-    >{{ alert.message }}</ngb-alert
-  >
+  <ngb-alert *ngFor="let alert of state" [type]="alert.type" [dismissible]="false">{{ alert.message }}</ngb-alert>
   <div class="row">
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
@@ -14,9 +9,7 @@
         <div class="ibox-content">
           <form role="form" (submit)="submit($event)">
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30"
-                >Select a service</label
-              >
+              <label class="col-sm-3 control-label label-height-30">Select a service</label>
               <div class="col-sm-9">
                 <input
                   list="services"
@@ -33,24 +26,15 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30"
-                >Upload File</label
-              >
+              <label class="col-sm-3 control-label label-height-30">Upload File</label>
               <div class="col-sm-9 col-md-4">
                 <app-input-file-upload (fileUpdated)="updateFile($event)" />
               </div>
               <div class="hidden-xs hidden-sm col-md-1">
-                <label class="control-label label-height-30 pull-right"
-                  >Encoding</label
-                >
+                <label class="control-label label-height-30 pull-right">Encoding</label>
               </div>
               <div class="hidden-xs hidden-sm col-md-4">
-                <input
-                  class="form-control"
-                  name="encoding"
-                  type="text"
-                  [(ngModel)]="form.encoding"
-                />
+                <input class="form-control" name="encoding" type="text" [(ngModel)]="form.encoding" />
               </div>
             </div>
             <div class="row form-group hidden-md hidden-lg">
@@ -58,35 +42,23 @@
                 <label class="control-label label-height-30">Encoding</label>
               </div>
               <div class="col-sm-9">
-                <input
-                  class="form-control"
-                  name="encoding"
-                  type="text"
-                  [(ngModel)]="form.encoding"
-                />
+                <input class="form-control" name="encoding" type="text" [(ngModel)]="form.encoding" />
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30"
-                >Message</label
-              >
-              <div class="col-sm-9">
-                <textarea
+              <label class="col-sm-3 control-label label-height-30">Message</label>
+              <div class="col-sm-9" style="height: 200px">
+                <app-monaco-editor
                   class="form-control"
-                  name="message"
-                  rows="5"
-                  style="resize: none"
-                  [(ngModel)]="form.message"
-                ></textarea>
+                  [(value)]="form.message"
+                  [options]="{ language: 'text' }"
+                  [actions]="editorActions"
+                ></app-monaco-editor>
               </div>
             </div>
             <div class="row form-group">
               <div class="col-sm-offset-3 col-sm-9 m-t-md">
-                <button
-                  [ladda]="processingMessage"
-                  class="btn btn-primary btn-w-m font-bold"
-                  type="submit"
-                >
+                <button [ladda]="processingMessage" class="btn btn-primary btn-w-m font-bold" type="submit">
                   Send
                 </button>
               </div>

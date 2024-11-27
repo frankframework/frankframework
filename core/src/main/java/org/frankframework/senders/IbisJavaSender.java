@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
 */
 package org.frankframework.senders;
 
-import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
+import java.util.Objects;
 
+import jakarta.annotation.Nonnull;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
@@ -28,22 +30,25 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
-import org.frankframework.http.HttpSender;
+import org.frankframework.doc.Forward;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.stream.Message;
 
-import lombok.Getter;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 
 /**
- * Posts a message to another IBIS-adapter or application in the same JVM using IbisServiceDispatcher.
- *
+ * Posts a message to another Frank!Framework-adapter or an application in the same JVM using IbisServiceDispatcher.
+ * <p>
  * An IbisJavaSender makes a call to a Receiver with a {@link JavaListener}
  * or any other application in the same JVM that has registered a <code>RequestProcessor</code> with the IbisServiceDispatcher.
- *
+ * </p>
+ * The IbisJavaSender is now considered to be legacy. The new way to call another adapter or java application from your own
+ * adapter is by using the {@link FrankSender}.
+ * </p>
  * <h4>configuring IbisJavaSender and JavaListener</h4>
  * <ul>
- *   <li>Define a SenderPipe with an IbisJavaSender</li>
+ *   <li><em>NB:</em> Using IbisJavaSender to call another adapter is inefficient and therefore not recommended. It is much more efficient to use for this a {@link FrankSender} or {@link IbisLocalSender}.</li>
+ *   <li>Define a {@link org.frankframework.pipes.SenderPipe} with an IbisJavaSender</li>
  *   <li>Set the attribute <code>serviceName</code> to <i>yourExternalServiceName</i></li>
  * </ul>
  * In the Adapter to be called:
@@ -51,33 +56,30 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  *   <li>Define a Receiver with a JavaListener</li>
  *   <li>Set the attribute <code>serviceName</code> to <i>yourExternalServiceName</i></li>
  * </ul>
- * N.B. Please make sure that the IbisServiceDispatcher-1.4.jar or newer is present on the class path of the server.
+ * N.B. Please make sure that the IbisServiceDispatcher-1.4.jar or newer is present on the class path of the server. For more information, see:
+ *  <a href="https://github.com/frankframework/servicedispatcher">https://github.com/frankframework/servicedispatcher</a>
  *
  * @ff.parameters All parameters are copied to the PipeLineSession of the service called.
- * @ff.forward "&lt;Exit.code&gt;" default
  *
  * @author  Gerrit van Brakel
  * @since   4.4.5
  */
-@Category("Advanced")
-public class IbisJavaSender extends SenderWithParametersBase implements HasPhysicalDestination {
-
-	private static final String MULTIPART_RESPONSE_CONTENT_TYPE = "application/octet-stream";
-	private static final String MULTIPART_RESPONSE_CHARSET = "UTF-8";
+@Forward(name = "*", description = "Exit code")
+@Category(Category.Type.ADVANCED)
+public class IbisJavaSender extends AbstractSenderWithParameters implements HasPhysicalDestination {
 
 	private final @Getter String domain = "JVM";
 
 	private @Getter String serviceName;
 	private @Getter String serviceNameSessionKey;
 	private @Getter String returnedSessionKeys = ""; // do not initialize with null, returned session keys must be set explicitly
-	private @Getter boolean multipartResponse = false;
 	private @Getter String dispatchType = "default";
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getServiceName()) && StringUtils.isEmpty(getServiceNameSessionKey())) {
-			throw new ConfigurationException(getLogPrefix()+"must specify serviceName or serviceNameSessionKey");
+			throw new ConfigurationException("must specify serviceName or serviceNameSessionKey");
 		}
 	}
 
@@ -95,7 +97,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		String result;
 		try (PipeLineSession subAdapterSession = new PipeLineSession()) {
 			subAdapterSession.put(PipeLineSession.MANUAL_RETRY_KEY, session.get(PipeLineSession.MANUAL_RETRY_KEY, false));
@@ -127,22 +129,19 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 
 				String correlationID = session.getCorrelationId();
 				result = dm.processRequest(serviceName, correlationID, message.asString(), subAdapterSession);
-				if (isMultipartResponse()) {
-					return new SenderResult(HttpSender.handleMultipartResponse(MULTIPART_RESPONSE_CONTENT_TYPE, new ByteArrayInputStream(result.getBytes(MULTIPART_RESPONSE_CHARSET)), session));
-				}
 			} catch (ParameterException e) {
-				throw new SenderException(getLogPrefix() + "exception evaluating parameters", e);
+				throw new SenderException("exception evaluating parameters", e);
 			} catch (Exception e) {
-				throw new SenderException(getLogPrefix() + "exception processing message using request processor [" + serviceName + "]", e);
+				throw new SenderException("exception processing message using request processor [" + serviceName + "]", e);
 			} finally {
 				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-					log.debug("returning values of session keys [" + getReturnedSessionKeys() + "]");
+					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
 				}
 				subAdapterSession.mergeToParentSession(getReturnedSessionKeys(), session);
 			}
 			ExitState exitState = (ExitState) subAdapterSession.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
 			Object exitCode = subAdapterSession.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
-			String forwardName = exitCode != null ? exitCode.toString() : null;
+			String forwardName = Objects.toString(exitCode, null);
 			return new SenderResult(exitState == null || exitState == ExitState.SUCCESS, new Message(result), "exitState=" + exitState, forwardName);
 		}
 	}
@@ -170,14 +169,6 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	}
 
 	/**
-	 * Currently used to mimic the HttpSender when it is stubbed locally. It could be useful in other situations too although currently the response string is used which isn't streamed, it would be better to pass the multipart as an input stream in the context map in which case content type and charset could also be passed
-	 * @ff.default false
-	 */
-	public void setMultipartResponse(boolean b) {
-		multipartResponse = b;
-	}
-
-	/**
 	 * Set to 'DLL' to make the dispatcher communicate with a DLL set on the classpath
 	 */
 	public void setDispatchType(String type) throws ConfigurationException {
@@ -185,7 +176,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 			if("DLL".equalsIgnoreCase(type)) {
 				dispatchType = type;
 			} else {
-				throw new ConfigurationException(getLogPrefix()+"the attribute 'setDispatchType' only supports the value 'DLL'");
+				throw new ConfigurationException("the attribute 'setDispatchType' only supports the value 'DLL'");
 			}
 		}
 	}

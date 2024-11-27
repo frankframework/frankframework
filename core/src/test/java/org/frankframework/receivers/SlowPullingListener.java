@@ -18,12 +18,12 @@ package org.frankframework.receivers;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-import javax.jms.Message;
+import jakarta.annotation.Nonnull;
+import jakarta.jms.Message;
 
 import org.frankframework.core.IPullingListener;
 
-public class SlowPullingListener extends SlowListenerBase implements IPullingListener<javax.jms.Message> {
+public class SlowPullingListener extends SlowListenerBase implements IPullingListener<jakarta.jms.Message> {
 
 	@Nonnull
 	@Override

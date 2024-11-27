@@ -1,0 +1,81 @@
+<Module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="../xsd/FrankConfig.xsd">
+	<Adapter name="FrankSender-MainAdapter">
+		<Pipeline firstPipe="select sender to test">
+
+			<Exits>
+				<Exit name="SUCCESS" state="SUCCESS"/>
+			</Exits>
+
+			<!-- Selects pipe based on root element of the XML -->
+			<XmlSwitchPipe name="select sender to test"/>
+
+			<SenderPipe name="CallAdapter1">
+				<FrankSender scope="ADAPTER" target="SubAdapter1" returnedSessionKeys="resultKey"/>
+				<Forward name="success" path="Get Result From Session"/>
+			</SenderPipe>
+			<SenderPipe name="CallAdapter2">
+				<FrankSender scope="DLL" target="NoSuchConfig/NoSuchAdapter" returnedSessionKeys="resultKey">
+					<Param name="scope" value="ADAPTER"/>
+					<Param name="target" value="MainConfig/SubAdapter2"/>
+				</FrankSender>
+				<Forward name="success" path="Get Result From Session"/>
+			</SenderPipe>
+			<SenderPipe name="CallAdapterWithParam">
+				<FrankSender scope="ADAPTER" target="MainConfig/SubAdapter3" returnedSessionKeys="resultKey">
+					<Param name="input1" value="fromInput"/>
+				</FrankSender>
+				<Forward name="success" path="Get Result From Session"/>
+			</SenderPipe>
+			<SenderPipe name="CallViaJvmDispatcher">
+				<FrankSender scope="JVM" target="iaf_test_FrankSenderCallViaJvmTest" returnedSessionKeys="resultKey"/>
+				<Forward name="success" path="Get Result From Session"/>
+			</SenderPipe>
+			<SenderPipe name="CallViaFrankListener">
+				<FrankSender scope="LISTENER" target="TestFrankListenerWithException" returnedSessionKeys="resultKey" synchronous="false"/>
+				<Forward name="success" path="Get Result From Session"/>
+			</SenderPipe>
+
+			<GetFromSessionPipe name="Get Result From Session" sessionKey="resultKey"/>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="SubAdapter1">
+		<Pipeline>
+			<PutInSessionPipe name="value to return" value="sub1" sessionKey="resultKey"/>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="SubAdapter2">
+		<Pipeline>
+			<PutInSessionPipe name="value to return" value="sub2" sessionKey="resultKey"/>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="SubAdapter3">
+		<Pipeline>
+			<PutInSessionPipe name="parameterized return">
+				<Param name="resultKey" sessionKey="input1"/>
+			</PutInSessionPipe>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="SubAdapter4">
+		<Receiver>
+			<JavaListener serviceName="iaf_test_FrankSenderCallViaJvmTest" name="FrankSenderCallViaJvmTest"/>
+		</Receiver>
+		<Pipeline>
+			<PutInSessionPipe name="value to return" value="sub4" sessionKey="resultKey"/>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="SubAdapter5">
+		<Receiver maxRetries="0" transactionAttribute="NotSupported">
+			<FrankListener name="TestFrankListenerWithException"/>
+			<JdbcErrorStorage slotId="FrankSenderListenerTestErrors" />
+		</Receiver>
+		<Pipeline>
+			<ExceptionPipe name="Forced Error" />
+		</Pipeline>
+	</Adapter>
+</Module>

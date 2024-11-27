@@ -15,24 +15,10 @@
 */
 package org.frankframework.xml;
 
-import java.io.Writer;
-
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 public class SaxDocumentBuilder extends SaxElementBuilder {
-
-	public SaxDocumentBuilder(String elementName) throws SAXException {
-		this(elementName, new XmlWriter(), true);
-	}
-
-	public SaxDocumentBuilder(String elementName, Writer writer) throws SAXException {
-		this(elementName, writer, true);
-	}
-
-	public SaxDocumentBuilder(String elementName, Writer writer, boolean prettyPrint) throws SAXException {
-		this(elementName, new XmlWriter(writer), prettyPrint);
-	}
 
 	public SaxDocumentBuilder(String elementName, ContentHandler handler, boolean prettyPrint) throws SAXException {
 		super(elementName, prettyPrint ? new PrettyPrintFilter(handler) : handler);

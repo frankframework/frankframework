@@ -3,9 +3,9 @@
            xmlns:b="http://xmlns/b" 
            targetNamespace="http://www.ing.com/testxmlns" xmlns="http://www.ing.com/testxmlns"
     >
-  <!-- targetNamespace is missing, this is added by the validator configuration -->
 
-  <xs:import namespace="http://xmlns/b" schemaLocation="B.xsd" />
+  <xs:import namespace="http://xmlns/b"/>
+  <!-- targetNamespace is missing, this is added by the validator configuration -->
   <xs:element name="A">
     <xs:complexType>
       <xs:sequence>

@@ -1,6 +1,3 @@
-<!-- Angular ui-router hack-->
-<div ui-view></div>
-
 <div class="wrapper wrapper-content animated fadeInRight">
   <div class="alert alert-warning" role="alert" type="warning" *ngIf="error">
     <span class="ng-binding ng-scope" [innerHTML]="error"></span>
@@ -14,15 +11,9 @@
         <div class="ibox-content">
           <form role="form">
             <div class="row form-group">
-              <label class="col-sm-5 col-md-3 control-label label-height-30"
-                >Select a Connection Factory</label
-              >
+              <label class="col-sm-5 col-md-3 control-label label-height-30">Select a Connection Factory</label>
               <div class="col-sm-7 col-md-9">
-                <select
-                  class="form-control"
-                  name="connectionFactory"
-                  [(ngModel)]="form['connectionFactory']"
-                >
+                <select class="form-control" name="connectionFactory" [(ngModel)]="form.connectionFactory">
                   <option *ngFor="let connectionFactory of connectionFactories">
                     {{ connectionFactory }}
                   </option>
@@ -30,28 +21,15 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-5 col-md-3 control-label label-height-30"
-                >Destination Name</label
-              >
+              <label class="col-sm-5 col-md-3 control-label label-height-30">Destination Name</label>
               <div class="col-sm-7 col-md-9">
-                <input
-                  class="form-control"
-                  name="destination"
-                  type="text"
-                  [(ngModel)]="form['destination']"
-                />
+                <input class="form-control" name="destination" type="text" [(ngModel)]="form.destination" />
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-5 col-md-3 control-label label-height-30"
-                >Destination Type</label
-              >
+              <label class="col-sm-5 col-md-3 control-label label-height-30">Destination Type</label>
               <div class="col-sm-7 col-md-9">
-                <select
-                  class="form-control"
-                  name="type"
-                  [(ngModel)]="form['type']"
-                >
+                <select class="form-control" name="type" [(ngModel)]="form.type">
                   <option *ngFor="let type of destinationTypes">
                     {{ type }}
                   </option>
@@ -59,53 +37,32 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-5 col-md-3 control-label label-height-30"
-                >Number of messages only</label
-              >
+              <label class="col-sm-5 col-md-3 control-label label-height-30">Number of messages only</label>
               <div class="col-sm-7 col-md-9">
                 <span class="form-control" style="border: none"
-                  ><input
-                    type="checkbox"
-                    name="rowNumbersOnly"
-                    [(ngModel)]="form['rowNumbersOnly']"
+                  ><input type="checkbox" name="rowNumbersOnly" [(ngModel)]="form.rowNumbersOnly"
                 /></span>
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-5 col-md-3 control-label label-height-30"
-                >Show message payload</label
-              >
+              <label class="col-sm-5 col-md-3 control-label label-height-30">Show message payload</label>
               <div class="col-sm-7 col-md-9">
                 <span class="form-control" style="border: none"
-                  ><input
-                    type="checkbox"
-                    name="payload"
-                    [(ngModel)]="form['payload']"
+                  ><input type="checkbox" name="payload" [(ngModel)]="form.payload"
                 /></span>
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-5 col-md-3 control-label label-height-30"
-                >Lookup Destination</label
-              >
+              <label class="col-sm-5 col-md-3 control-label label-height-30">Lookup Destination</label>
               <div class="col-sm-7 col-md-9">
                 <span class="form-control" style="border: none"
-                  ><input
-                    type="checkbox"
-                    name="lookupDestination"
-                    [(ngModel)]="form['lookupDestination']"
+                  ><input type="checkbox" name="lookupDestination" [(ngModel)]="form.lookupDestination"
                 /></span>
               </div>
             </div>
             <div class="row form-group">
               <div class="col-xs-5 col-md-3 m-t-md">
-                <button
-                  class="btn btn-info btn-w-m font-bold"
-                  type="button"
-                  (click)="reset()"
-                >
-                  Reset
-                </button>
+                <button class="btn btn-info btn-w-m font-bold" type="button" (click)="reset()">Reset</button>
               </div>
               <div class="col-xs-5 col-md-3 m-t-md">
                 <button
@@ -125,15 +82,9 @@
     <div class="col-lg-12" *ngIf="numberOfMessages > -1">
       <div class="ibox float-e-margins">
         <div class="ibox-title">
-          <h4>
-            Queue '{{ form['destination'] }}' contains
-            {{ numberOfMessages }} message(s)
-          </h4>
+          <h4>Queue '{{ form.destination }}' contains {{ numberOfMessages }} message(s)</h4>
         </div>
-        <div
-          class="ibox-content"
-          *ngIf="numberOfMessages > 0 && messages.length > 0"
-        >
+        <div class="ibox-content" *ngIf="numberOfMessages > 0 && messages.length > 0">
           <table class="table">
             <thead>
               <tr>
@@ -141,16 +92,16 @@
                 <th>Date/Time</th>
                 <th>MessageId</th>
                 <th>CorrelationID</th>
-                <th *ngIf="messages[0]['text']">Payload</th>
+                <th *ngIf="messages[0].text">Payload</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let message of messages; let i = index">
                 <td>{{ i + 1 }}</td>
-                <td appToDate [time]="message['insertDate']"></td>
-                <td>{{ message['id'] }}</td>
-                <td>{{ message['correlationId'] }}</td>
-                <td *ngIf="message['text']">{{ message['text'] }}</td>
+                <td appToDate [time]="message.insertDate"></td>
+                <td>{{ message.id }}</td>
+                <td>{{ message.correlationId }}</td>
+                <td *ngIf="message.text">{{ message.text }}</td>
               </tr>
             </tbody>
           </table>

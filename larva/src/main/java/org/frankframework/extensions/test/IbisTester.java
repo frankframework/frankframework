@@ -18,8 +18,9 @@ package org.frankframework.extensions.test;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.security.AccessControlException;
+import java.net.URLDecoder;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -32,6 +33,12 @@ import java.util.concurrent.TimeoutException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockServletContext;
+
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.Adapter;
@@ -43,29 +50,21 @@ import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.Misc;
 import org.frankframework.util.RunState;
+import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockServletContext;
 
+@Log4j2
 public class IbisTester {
-	private AppConstants appConstants;
 	String webAppPath;
-	IbisContext ibisContext;
+	@Getter IbisContext ibisContext;
 	MockServletContext application;
 
-	private class Result {
-		private String resultString;
-		private long duration;
-
-		public Result(String resultString, long duration) {
-			this.resultString = resultString;
-			this.duration = duration;
-		}
+	private record Result(String resultString, long duration) {
 	}
 
 	private class ScenarioRunner implements Callable<String> {
-		private String scenariosRootDir;
-		private String scenario;
+		private final String scenariosRootDir;
+		private final String scenario;
 
 		public ScenarioRunner(String scenariosRootDir, String scenario) {
 			this.scenariosRootDir = scenariosRootDir;
@@ -90,10 +89,12 @@ public class IbisTester {
 				request.setParameter("scenariosrootdirectory", scenariosRootDir);
 			}
 			Writer writer = new StringWriter();
-			LarvaTool.runScenarios(ibisContext, request, writer, silent, webAppPath);
+			LarvaTool.runScenarios(ibisContext, request, writer, silent);
 			if (scenario == null) {
-				String htmlString = "<html><head/><body>" + writer.toString() + "</body></html>";
-				return XmlUtils.toXhtml(Message.asMessage(htmlString));
+				String htmlString = "<html><head/><body>" + writer + "</body></html>";
+				try (Message message = new Message(htmlString)) {
+					return XmlUtils.toXhtml(message);
+				}
 			} else {
 				return writer.toString();
 			}
@@ -113,8 +114,7 @@ public class IbisTester {
 		}
 	}
 
-	// all called methods in doTest must be public so they can also be called
-	// from outside
+	// all called methods in doTest must be public, so they can also be called from outside
 
 	public void initTest() {
 		try {
@@ -124,14 +124,14 @@ public class IbisTester {
 			canonicalPath = canonicalPath.replace("\\", "/");
 			System.setProperty("log.dir", canonicalPath);
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.warn("Could not set log.dir property", e);
 			System.setProperty("log.dir", "target/log");
 		}
 		System.setProperty("log.level", "INFO");
 		System.setProperty("dtap.stage", "LOC");
 
 		/*
-		 * By default the ladybug AOP config is included. This gives the following error:
+		 * By default, the ladybug AOP config is included. This gives the following error:
 		 * LinkageError: loader 'app' attempted duplicate class definition for XYZ
 		 *
 		 * Current default SPRING.CONFIG.LOCATIONS = spring${application.server.type}${application.server.type.custom}.xml,springIbisDebuggerAdvice.xml,springCustom.xml
@@ -159,7 +159,6 @@ public class IbisTester {
 		Configurator.setLevel(LogUtil.getRootLogger().getName(), Level.INFO);
 		// remove AppConstants because it can be present from another JUnit test
 		AppConstants.removeInstance();
-		appConstants = AppConstants.getInstance();
 		webAppPath = getWebContentDirectory();
 
 		System.setProperty("jdbc.migrator.active", "true");
@@ -195,7 +194,6 @@ public class IbisTester {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
-						e.printStackTrace();
 						Thread.currentThread().interrupt();
 					}
 					runState = adapter.getRunState();
@@ -231,7 +229,7 @@ public class IbisTester {
 		try {
 			result = runScenario(null, null, null);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.warn("Error running larva", e);
 			result = null;
 		}
 
@@ -239,7 +237,7 @@ public class IbisTester {
 			return error("First call to get scenarios failed");
 		} else {
 			Double countScenariosRootDirs = evaluateXPathNumber(result.resultString, "count(html/body//select[@name='scenariosrootdirectory']/option)");
-			if (countScenariosRootDirs == 0) {
+			if (countScenariosRootDirs == null || countScenariosRootDirs == 0) {
 				return error("No scenarios root directories found");
 			}
 
@@ -249,14 +247,13 @@ public class IbisTester {
 			if (runScenariosResult!=null) {
 				return runScenariosResult;
 			}
-			if (scenariosRootDirsUnselected != null
-					&& scenariosRootDirsUnselected.size() > 0) {
+			if (scenariosRootDirsUnselected != null && !scenariosRootDirsUnselected.isEmpty()) {
 				for (String scenariosRootDirUnselected : scenariosRootDirsUnselected) {
 					try {
 						result = runScenario(scenariosRootDirUnselected, null,
 								null);
 					} catch (Exception e) {
-						e.printStackTrace();
+						log.warn("Error running larva", e);
 						result = null;
 					}
 
@@ -278,7 +275,7 @@ public class IbisTester {
 		Collection<String> scenarios = evaluateXPath(
 				xhtml,
 				"(html/body//select[@name='execute'])[1]/option/@value[ends-with(.,'.properties')]");
-		if (scenarios == null || scenarios.size() == 0) {
+		if (scenarios == null || scenarios.isEmpty()) {
 			return error("No scenarios found");
 		} else {
 			String scenariosRootDir = evaluateXPathFirst(
@@ -311,11 +308,9 @@ public class IbisTester {
 						+ scenariosTotal + "] [" + scenarioShortName + "]";
 
 				try {
-					result = runScenario(scenariosRootDir, scenario,
-							scenarioInfo);
+					result = runScenario(scenariosRootDir, scenario, scenarioInfo);
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					log.warn("Error running scenario {}", scenarioShortName, e);
 					result = null;
 				}
 
@@ -362,7 +357,6 @@ public class IbisTester {
 				} catch (TimeoutException e) {
 					debug(scenarioInfo + " timed out, retries left [" + count + "]");
 				} catch (Exception e) {
-					e.printStackTrace();
 					debug(scenarioInfo + " got error, retries left [" + count + "]");
 				}
 			} finally {
@@ -397,8 +391,7 @@ public class IbisTester {
 		try {
 			return XmlUtils.evaluateXPathNodeSetFirstElement(xhtml, xpath);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.warn("Error evaluating xpath [{}]", xpath, e);
 			return null;
 		}
 	}
@@ -407,8 +400,7 @@ public class IbisTester {
 		try {
 			return XmlUtils.evaluateXPathNodeSet(xhtml, xpath);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.warn("Error evaluating xpath [{}]", xpath, e);
 			return null;
 		}
 	}
@@ -417,14 +409,13 @@ public class IbisTester {
 		try {
 			return XmlUtils.evaluateXPathNumber(xhtml, xpath);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.warn("Error evaluating xpath [{}]", xpath, e);
 			return null;
 		}
 	}
 
 	private static String getWebContentDirectory() {
-		String buildOutputDirectory = Misc.getBuildOutputDirectory();
+		String buildOutputDirectory = getBuildOutputDirectory();
 		if (buildOutputDirectory != null && buildOutputDirectory.endsWith("classes")) {
 			String wcDirectory = null;
 			File file = new File(buildOutputDirectory);
@@ -444,7 +435,7 @@ public class IbisTester {
 							}
 						}
 					}
-				} catch (AccessControlException e) {
+				} catch (SecurityException e) {
 					error(e.getMessage());
 					return null;
 				}
@@ -455,7 +446,16 @@ public class IbisTester {
 		}
 	}
 
-	public IbisContext getIbisContext() {
-		return ibisContext;
+	private static String getBuildOutputDirectory() {
+		// TODO: Warning from Sonarlint of Potential NPE?
+		String path = new File(AppConstants.class.getClassLoader().getResource("").getPath()).getPath();
+
+		try {
+			return URLDecoder.decode(path, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		} catch (UnsupportedEncodingException e) {
+			log.warn("unable to parse build-output-directory using charset [{}]", StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, e);
+			return null;
+		}
 	}
+
 }

@@ -15,9 +15,9 @@
 */
 package org.frankframework.unmanaged;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.jms.Message;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.Destination;
+import jakarta.jms.Message;
 
 import org.apache.logging.log4j.Logger;
 

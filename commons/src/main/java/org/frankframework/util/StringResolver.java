@@ -32,29 +32,27 @@ import org.apache.commons.lang3.StringUtils;
  * @author Johan Verrips
  */
 public class StringResolver {
+	public static final String DELIM_START = "${";
+	// Not allowed to use a static reference to the logger in this class.
+	// Log4j2 uses StringResolver during instantiation.
+	public static final String DELIM_STOP = "}";
 	/**
 	 * Static field to access all instances via the {@link ServiceLoader}.
 	 */
 	private static final ServiceLoader<AdditionalStringResolver> serviceLoader = ServiceLoader.load(AdditionalStringResolver.class);
-	// Not allowed to use a static reference to the logger in this class.
-	// Log4j2 uses StringResolver during instantiation.
-
-	private static final String VALUE_SEPARATOR=":-";
-
-	public static final String DELIM_START = "${";
-	public static final String DELIM_STOP = "}";
-
+	private static final String VALUE_SEPARATOR = ":-";
 	private static Collection<AdditionalStringResolver> additionalStringResolvers = null;
 
 	/**
 	 * Do variable substitution on a string to resolve ${x2} to the value of the
 	 * property x2. This is done recursive, so that <br/>
-	 * <code><pre>
+	 * <pre>{@code
 	 * Properties prop = new Properties();
 	 * prop.put("test.name", "this is a name with ${test.xx}");
 	 * prop.put("test.xx", "again");
 	 * System.out.println(prop.get("test.name"));
-	 * </pre></code> will print <code>this is a name with again</code>
+	 * }</pre>
+	 * will print <code>this is a name with again</code>
 	 * <p>
 	 * First it looks in the System environment and System properties, if none is found
 	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
@@ -62,12 +60,11 @@ public class StringResolver {
 	 * object. If two {@link Map} or {@link Properties} objects are supplied, it looks first in the first and if none found
 	 * then in the second object.
 	 *
-	 * @param val Value in which to provide string substitutions
-	 * @param props1 First property object in which to find substitutions
-	 * @param props2 Second property object in which to find substitutions
+	 * @param val         Value in which to provide string substitutions
+	 * @param props1      First property object in which to find substitutions
+	 * @param props2      Second property object in which to find substitutions
 	 * @param propsToHide Optional collection of property names to hide from the output. If not null, then
 	 *                    all credentials will also be hidden, in addition to properties named in the collection.
-	 *
 	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
 	 * @throws IllegalArgumentException if there were invalid input arguments.
 	 */
@@ -78,12 +75,13 @@ public class StringResolver {
 	/**
 	 * Do variable substitution on a string to resolve ${x2} to the value of the
 	 * property x2. This is done recursive, so that <br/>
-	 * <code><pre>
+	 * <pre>{@code
 	 * Properties prop = new Properties();
 	 * prop.put("test.name", "this is a name with ${test.xx}");
 	 * prop.put("test.xx", "again");
 	 * System.out.println(prop.get("test.name"));
-	 * </pre></code> will print <code>this is a name with again</code>
+	 * }</pre>
+	 * will print <code>this is a name with again</code>
 	 * <p>
 	 * First it looks in the System environment and System properties, if none is found
 	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
@@ -91,13 +89,13 @@ public class StringResolver {
 	 * object. If two {@link Map} or {@link Properties} objects are supplied, it looks first in the first and if none found
 	 * then in the second object.
 	 *
-	 * @param val Value in which to provide string substitutions
-	 * @param props1 First property object in which to find substitutions
-	 * @param props2 Second property object in which to find substitutions
+	 * @param val         Value in which to provide string substitutions
+	 * @param props1      First property object in which to find substitutions
+	 * @param props2      Second property object in which to find substitutions
 	 * @param propsToHide Optional collection of property names to hide from the output. If not null, then
 	 *                    all credentials will also be hidden, in addition to properties named in the collection.
-	 * @param delimStart Start of substitution pattern delimiter
-	 * @param delimStop End of substitution pattern delimiter
+	 * @param delimStart  Start of substitution pattern delimiter
+	 * @param delimStop   End of substitution pattern delimiter
 	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
 	 * @throws IllegalArgumentException if there were invalid input arguments.
 	 */
@@ -108,12 +106,13 @@ public class StringResolver {
 	/**
 	 * Do variable substitution on a string to resolve ${x2} to the value of the
 	 * property x2. This is done recursive, so that <br/>
-	 * <code><pre>
+	 * <pre>{@code
 	 * Properties prop = new Properties();
 	 * prop.put("test.name", "this is a name with ${test.xx}");
 	 * prop.put("test.xx", "again");
 	 * System.out.println(prop.get("test.name"));
-	 * </pre></code> will print <code>this is a name with again</code>
+	 * }</pre>
+	 * will print <code>this is a name with again</code>
 	 * <p>
 	 * First it looks in the System environment and System properties, if none is found
 	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
@@ -121,13 +120,13 @@ public class StringResolver {
 	 * object. If two {@link Map} or {@link Properties} objects are supplied, it looks first in the first and if none found
 	 * then in the second object.
 	 *
-	 * @param val Value in which to provide string substitutions
-	 * @param props1 First property object in which to find substitutions
-	 * @param props2 Second property object in which to find substitutions
-	 * @param propsToHide Optional collection of property names to hide from the output. If not null, then
-	 *                    all credentials will also be hidden, in addition to properties named in the collection.
-	 * @param delimStart Start of substitution pattern delimiter
-	 * @param delimStop End of substitution pattern delimiter
+	 * @param val                     Value in which to provide string substitutions
+	 * @param props1                  First property object in which to find substitutions
+	 * @param props2                  Second property object in which to find substitutions
+	 * @param propsToHide             Optional collection of property names to hide from the output. If not null, then
+	 *                                all credentials will also be hidden, in addition to properties named in the collection.
+	 * @param delimStart              Start of substitution pattern delimiter
+	 * @param delimStop               End of substitution pattern delimiter
 	 * @param resolveWithPropertyName Flag indicating if property names should also be part of the output, for debugging of
 	 *                                configurations.
 	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
@@ -136,7 +135,7 @@ public class StringResolver {
 	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2, Set<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) throws IllegalArgumentException {
 		if (delimStart.equals(delimStop)) {
 			throw new IllegalArgumentException("Start and End delimiters of substitution variables cannot be the same: both are '" +
-				delimStart + "'");
+					delimStart + "'");
 		}
 
 		StringBuilder sb = new StringBuilder();
@@ -162,7 +161,7 @@ public class StringResolver {
 		ctx.propertyComposer = key;
 		if (key.contains(ctx.delimStart)) {
 			key = substVars(key, props1, props2, ctx.resolveWithPropertyName);
-			if(key.contains(VALUE_SEPARATOR) && ctx.resolveWithPropertyName) {
+			if (key.contains(VALUE_SEPARATOR) && ctx.resolveWithPropertyName) {
 				ctx.propertyComposer = key;
 				key = extractKeyValue(key, ctx);
 			}
@@ -171,10 +170,11 @@ public class StringResolver {
 	}
 
 	private static String extractNextExpression(String val, SubstitutionContext ctx) {
-		if(val.contains(VALUE_SEPARATOR)) {
-			ctx.tail = val.indexOf(VALUE_SEPARATOR);
-			ctx.providedDefaultValue = val.substring(ctx.tail+VALUE_SEPARATOR.length(), indexOfDelimStop(val, ctx.pointer, ctx.delimStart, ctx.delimStop));
-			ctx.containsDefault=true;
+		int nextSeparatorPos = val.indexOf(VALUE_SEPARATOR, ctx.pointer);
+		if (nextSeparatorPos >= 0) {
+			ctx.tail = nextSeparatorPos;
+			ctx.providedDefaultValue = val.substring(ctx.tail + VALUE_SEPARATOR.length(), indexOfDelimStop(val, ctx.pointer, ctx.delimStart, ctx.delimStop));
+			ctx.containsDefault = true;
 		} else {
 			ctx.tail = indexOfDelimStop(val, ctx.pointer, ctx.delimStart, ctx.delimStop);
 		}
@@ -202,7 +202,7 @@ public class StringResolver {
 
 	private static void findNextVariable(String val, SubstitutionContext ctx) {
 		if (ctx.tail > 0) { // Not the first variable, so move head & tail beyond previous tail.
-			if(ctx.containsDefault) { // tail points to index of ':-' update tail to point delimStop
+			if (ctx.containsDefault) { // tail points to index of ':-' update tail to point delimStop
 				ctx.tail = indexOfDelimStop(val, ctx.pointer, ctx.delimStart, ctx.delimStop);
 			}
 			ctx.head = ctx.tail + ctx.delimStop.length();
@@ -211,7 +211,7 @@ public class StringResolver {
 	}
 
 	private static void appendReplacement(StringBuilder sb, String key, Optional<String> replacement, Map<?, ?> props1, Map<?, ?> props2, String expression, SubstitutionContext ctx) {
-		if(ctx.resolveWithPropertyName) {
+		if (ctx.resolveWithPropertyName) {
 			sb.append(ctx.propertyComposer).append(VALUE_SEPARATOR);
 		}
 
@@ -234,11 +234,11 @@ public class StringResolver {
 				sb.append(replacementValue);
 			}
 		} else {
-			if(ctx.providedDefaultValue != null) { // use default value of property if missing actual
+			if (ctx.providedDefaultValue != null) { // use default value of property if missing actual
 				sb.append(ctx.providedDefaultValue);
 			}
 		}
-		if(ctx.resolveWithPropertyName) {
+		if (ctx.resolveWithPropertyName) {
 			sb.append(ctx.delimStop);
 		}
 	}
@@ -247,18 +247,15 @@ public class StringResolver {
 		return Environment.getSystemProperty(key, null)
 				.or(() -> findInAdditionalResolvers(key, props1, props2, ctx))
 				.or(() -> getReplacementFromProps(key, props1))
-				.or(() -> getReplacementFromProps(key, props2))
-				;
+				.or(() -> getReplacementFromProps(key, props2));
 	}
 
 	private static Optional<String> findInAdditionalResolvers(String key, Map<?, ?> props1, Map<?, ?> props2, SubstitutionContext ctx) {
-		Optional<String> replacement;
-		replacement = getAdditionalStringResolvers().stream()
+		return getAdditionalStringResolvers().stream()
 				.map(resolver -> resolver.resolve(key, props1, props2, ctx.propsToHide, ctx.delimStart, ctx.delimStop, ctx.resolveWithPropertyName))
 				.filter(Optional::isPresent)
 				.findFirst()
 				.orElse(Optional.empty());
-		return replacement;
 	}
 
 	private static Optional<String> getReplacementFromProps(String key, Map<?, ?> props) {
@@ -283,13 +280,13 @@ public class StringResolver {
 		StringBuilder sb = new StringBuilder();
 		int pointer = 0;
 		int delimStartIndex = key.indexOf(ctx.delimStart, pointer);
-		if(delimStartIndex != -1) {
+		if (delimStartIndex != -1) {
 			sb.append(key, pointer, delimStartIndex);
 			int valueSeparator = key.indexOf(VALUE_SEPARATOR, delimStartIndex);
-			if(valueSeparator != -1) {
+			if (valueSeparator != -1) {
 				int delimStopIndex = indexOfDelimStop(key, delimStartIndex, ctx.delimStart, ctx.delimStop);
-				String valueOfKey = key.substring(valueSeparator+VALUE_SEPARATOR.length(), delimStopIndex);
-				if(valueOfKey.contains(ctx.delimStart)) {
+				String valueOfKey = key.substring(valueSeparator + VALUE_SEPARATOR.length(), delimStopIndex);
+				if (valueOfKey.contains(ctx.delimStart)) {
 					sb.append(extractKeyValue(valueOfKey, ctx));
 				} else {
 					sb.append(valueOfKey);
@@ -302,12 +299,13 @@ public class StringResolver {
 	/**
 	 * Do variable substitution on a string to resolve ${x2} to the value of the
 	 * property x2. This is done recursive, so that <br/>
-	 * <code><pre>
+	 * <pre>{@code
 	 * Properties prop = new Properties();
 	 * prop.put("test.name", "this is a name with ${test.xx}");
 	 * prop.put("test.xx", "again");
 	 * System.out.println(prop.get("test.name"));
-	 * </pre></code> will print <code>this is a name with again</code>
+	 * }</pre>
+	 * will print <code>this is a name with again</code>
 	 * <p>
 	 * First it looks in the System environment and System properties, if none is found
 	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
@@ -315,7 +313,7 @@ public class StringResolver {
 	 * object. If two {@link Map} or {@link Properties} objects are supplied, it looks first in the first and if none found
 	 * then in the second object.
 	 *
-	 * @param val Value in which to provide string substitutions
+	 * @param val    Value in which to provide string substitutions
 	 * @param props1 First property object in which to find substitutions
 	 * @param props2 Second property object in which to find substitutions
 	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
@@ -328,19 +326,20 @@ public class StringResolver {
 	/**
 	 * Do variable substitution on a string to resolve ${x2} to the value of the
 	 * property x2. This is done recursive, so that <br/>
-	 * <code><pre>
+	 * <pre>{@code
 	 * Properties prop = new Properties();
 	 * prop.put("test.name", "this is a name with ${test.xx}");
 	 * prop.put("test.xx", "again");
 	 * System.out.println(prop.get("test.name"));
-	 * </pre></code> will print <code>this is a name with again</code>
+	 * }</pre>
+	 * will print <code>this is a name with again</code>
 	 * <p>
 	 * First it looks in the System environment and System properties, if none is found
 	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
 	 * If no replacement is found still and a {@link Map} (or {@link Properties}) object is specified, it looks in the specified
 	 * object.
 	 *
-	 * @param val Value in which to provide string substitutions
+	 * @param val   Value in which to provide string substitutions
 	 * @param props Property object in which to find substitutions
 	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
 	 * @throws IllegalArgumentException if there were invalid input arguments.
@@ -352,23 +351,24 @@ public class StringResolver {
 	/**
 	 * Do variable substitution on a string to resolve ${x2} to the value of the
 	 * property x2. This is done recursive, so that <br/>
-	 * <code><pre>
+	 * <pre>{@code
 	 * Properties prop = new Properties();
 	 * prop.put("test.name", "this is a name with ${test.xx}");
 	 * prop.put("test.xx", "again");
 	 * System.out.println(prop.get("test.name"));
-	 * </pre></code> will print <code>this is a name with again</code>
+	 * }</pre>
+	 * will print <code>this is a name with again</code>
 	 * <p>
 	 * First it looks in the System environment and System properties, if none is found
 	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
 	 * If no replacement is found still and a {@link Map} (or {@link Properties}) object is specified, it looks in the specified
 	 * object.
 	 *
-	 * @param val Value in which to provide string substitutions
-	 * @param props Property object in which to find substitutions
+	 * @param val                     Value in which to provide string substitutions
+	 * @param props                   Property object in which to find substitutions
 	 * @param resolveWithPropertyName Flag indicating if property names should also be part of the output, for debugging of
 	 *                                configurations.
-	 * 	@return Input string with all property reference patterns resolved to either a property value, or empty.
+	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
 	 * @throws IllegalArgumentException if there were invalid input arguments.
 	 */
 	public static String substVars(String val, Map<?, ?> props, boolean resolveWithPropertyName) {
@@ -378,12 +378,13 @@ public class StringResolver {
 	/**
 	 * Do variable substitution on a string to resolve ${x2} to the value of the
 	 * property x2. This is done recursive, so that <br/>
-	 * <code><pre>
+	 * <pre>{@code
 	 * Properties prop = new Properties();
 	 * prop.put("test.name", "this is a name with ${test.xx}");
 	 * prop.put("test.xx", "again");
 	 * System.out.println(prop.get("test.name"));
-	 * </pre></code> will print <code>this is a name with again</code>
+	 * }</pre>
+	 * will print <code>this is a name with again</code>
 	 * <p>
 	 * First it looks in the System environment and System properties, if none is found
 	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
@@ -391,9 +392,9 @@ public class StringResolver {
 	 * object. If two {@link Map} or {@link Properties} objects are supplied, it looks first in the first and if none found
 	 * then in the second object.
 	 *
-	 * @param val Value in which to provide string substitutions
-	 * @param props1 First property object in which to find substitutions
-	 * @param props2 Second property object in which to find substitutions
+	 * @param val                     Value in which to provide string substitutions
+	 * @param props1                  First property object in which to find substitutions
+	 * @param props2                  Second property object in which to find substitutions
 	 * @param resolveWithPropertyName Flag indicating if property names should also be part of the output, for debugging of
 	 *                                configurations.
 	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
@@ -406,12 +407,13 @@ public class StringResolver {
 	/**
 	 * Do variable substitution on a string to resolve ${x2} to the value of the
 	 * property x2. This is done recursive, so that <br/>
-	 * <code><pre>
+	 * <pre>{@code
 	 * Properties prop = new Properties();
 	 * prop.put("test.name", "this is a name with ${test.xx}");
 	 * prop.put("test.xx", "again");
 	 * System.out.println(prop.get("test.name"));
-	 * </pre></code> will print <code>this is a name with again</code>
+	 * }</pre>
+	 * will print <code>this is a name with again</code>
 	 * <p>
 	 * First it looks in the System environment and System properties, if none is found
 	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
@@ -419,11 +421,11 @@ public class StringResolver {
 	 * object. If two {@link Map} or {@link Properties} objects are supplied, it looks first in the first and if none found
 	 * then in the second object.
 	 *
-	 * @param val Value in which to provide string substitutions
-	 * @param props1 First property object in which to find substitutions
-	 * @param props2 Second property object in which to find substitutions
-	 * @param propsToHide Optional collection of property names to hide from the output. If not null, then
-	 *                    all credentials will also be hidden, in addition to properties named in the collection.
+	 * @param val                     Value in which to provide string substitutions
+	 * @param props1                  First property object in which to find substitutions
+	 * @param props2                  Second property object in which to find substitutions
+	 * @param propsToHide             Optional collection of property names to hide from the output. If not null, then
+	 *                                all credentials will also be hidden, in addition to properties named in the collection.
 	 * @param resolveWithPropertyName Flag indicating if property names should also be part of the output, for debugging of
 	 *                                configurations.
 	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
@@ -435,14 +437,15 @@ public class StringResolver {
 
 	/**
 	 * Check if the input string needs property substitution applied.
+	 *
 	 * @param string String to check
 	 * @return {@code true} if the input string contains the default start and end delimiters in consecutive
-	 * order, otherwise {@code false}.
-	 * The default delimiters are <pre>"${"</pre> and <pre>"}"</pre> respectively.
+	 * 		order, otherwise {@code false}.
+	 * 		The default delimiters are <pre>"${"</pre> and <pre>"}"</pre> respectively.
 	 */
 	public static boolean needsResolution(String string) {
 		int j = string.indexOf(DELIM_START);
-		return j>=0 && string.indexOf(DELIM_STOP, j) > j;
+		return j >= 0 && string.indexOf(DELIM_STOP, j) > j;
 	}
 
 	private static int indexOfDelimStop(String val, int startPos, String delimStart, String delimStop) {
@@ -479,7 +482,7 @@ public class StringResolver {
 		final String delimStart;
 		final String delimStop;
 		final boolean resolveWithPropertyName;
-		String providedDefaultValue=null;
+		String providedDefaultValue = null;
 		boolean containsDefault = false;
 		int head = 0;
 		int pointer;

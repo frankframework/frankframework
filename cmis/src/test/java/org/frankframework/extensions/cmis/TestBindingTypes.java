@@ -5,7 +5,7 @@ import static org.mockito.Mockito.mock;
 
 import java.util.stream.Stream;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -98,7 +98,7 @@ public class TestBindingTypes extends CmisSenderTestBase {
 		sender.setBindingType(bindingType);
 		sender.setAction(action);
 		sender.configure();
-		sender.open();
+		sender.start();
 	}
 
 	@ParameterizedTest(name = "{0} - {1}")
@@ -116,7 +116,7 @@ public class TestBindingTypes extends CmisSenderTestBase {
 		}
 		configure(bindingType, action);
 
-		String actualResult = sender.sendMessageOrThrow(Message.asMessage(input), session).asString();
+		String actualResult = sender.sendMessageOrThrow(new Message(input), session).asString();
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
 
@@ -126,7 +126,7 @@ public class TestBindingTypes extends CmisSenderTestBase {
 		if (action != CmisSender.CmisAction.GET) return;
 		configure(bindingType, action);
 
-		assertTrue(Message.isEmpty(sender.sendMessageOrThrow(Message.asMessage(input), session)));
+		assertTrue(Message.isEmpty(sender.sendMessageOrThrow(new Message(input), session)));
 		Message message = (Message) session.get("fileContent");
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, message.asString());
 	}

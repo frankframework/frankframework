@@ -17,16 +17,14 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
@@ -36,12 +34,10 @@ import org.frankframework.stream.Message;
  * Puts the input or the <code>{@link #setValue(String) value}</code> in the PipeLineSession, under the key specified by
  * <code>{@link #setSessionKey(String) sessionKey}</code>. Additionally, stores parameter values in the PipeLineSession.
  *
- *
- * @ff.parameters the result of each parameter defined will be we stored in the PipeLineSession, under the key specified by the parameter name
- *
  * @author Johan Verrips
+ * @ff.parameters the result of each parameter defined will be we stored in the PipeLineSession, under the key specified by the parameter name
  */
-@ElementType(ElementTypes.SESSION)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.SESSION)
 public class PutInSession extends FixedForwardPipe {
 
 	private @Getter String sessionKey;
@@ -55,17 +51,17 @@ public class PutInSession extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		if(StringUtils.isNotEmpty(getSessionKey())) {
+		if (StringUtils.isNotEmpty(getSessionKey())) {
 			Message v;
 			if (getValue() == null) {
 				try {
 					message.preserve();
 				} catch (IOException e) {
-					throw new PipeRunException(this,"cannot preserve message", e);
+					throw new PipeRunException(this, "cannot preserve message", e);
 				}
 				v = message;
 			} else {
-				v = Message.asMessage(getValue());
+				v = new Message(getValue());
 			}
 			session.put(getSessionKey(), v);
 			log.debug("stored [{}] in pipeLineSession under key [{}]", v, getSessionKey());
@@ -75,13 +71,11 @@ public class PutInSession extends FixedForwardPipe {
 		if (!parameterList.isEmpty()) {
 			try {
 				ParameterValueList pvl = parameterList.getValues(message, session);
-				if (pvl != null) {
-					for(ParameterValue pv : pvl) {
-						String name  = pv.getName();
-						Object value = pv.getValue();
-						session.put(name, value);
-						log.debug("stored [{}] in pipeLineSession under key [{}]", value, name);
-					}
+				for (ParameterValue pv : pvl) {
+					String name = pv.getName();
+					Object paramValue = pv.getValue();
+					session.put(name, paramValue);
+					log.debug("stored [{}] in pipeLineSession under key [{}]", paramValue, name);
 				}
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, "exception extracting parameters", e);
@@ -100,5 +94,4 @@ public class PutInSession extends FixedForwardPipe {
 	public void setValue(String value) {
 		this.value = value;
 	}
-
 }

@@ -5,6 +5,7 @@ html {
 #wrapper {
   display: flex;
   overflow-x: initial;
+  min-height: 100%;
 }
 
 app-pages-navigation {
@@ -45,6 +46,7 @@ app-pages-navigation {
 }
 
 .minimalize {
+  cursor: pointer;
   font-size: 13px;
 }
 
@@ -65,6 +67,10 @@ body.mini-navbar .navbar-static-side {
   overflow: initial;
 }
 
+body.no-scroll {
+  overflow-y: hidden;
+}
+
 .navbar-static-side::-webkit-scrollbar {
   /* display: none; */
   width: 8px;
@@ -81,6 +87,7 @@ body.mini-navbar .navbar-static-side {
 #page-wrapper {
   margin: 0 !important;
   flex: 1 1 auto;
+  min-height: 100vh;
 }
 
 .fade {
@@ -247,4 +254,12 @@ div.dataTables_wrapper div.dataTables_paginate {
   cursor: not-allowed;
   background-color: #fff;
   border-color: #ddd;
+}
+
+.monaco-editor .line-numbers {
+    cursor: pointer!important;
+}
+
+.monaco-editor__line--highlighted {
+  background: #fdc30055;
 }

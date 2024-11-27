@@ -20,17 +20,20 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.CompressPipe.FileFormat;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.StreamUtil;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	private static final String DUMMY_STRING = "dummyString";
@@ -48,6 +51,28 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	public void testUnzippingAndCollectingResult() throws Exception {
 		pipe.setResultIsContent(true);
 		pipe.setZipEntryPattern("filebb.log");
+		configureAndStartPipe();
+		PipeRunResult prr = doPipe(TestFileUtils.getTestFilePath("/Unzip/ab.zip"));
+		assertTrue(prr.getResult().isBinary());
+		assertEquals("bbb", prr.getResult().asString());
+	}
+
+	@Test
+	public void testUnzippingAndCollectingResultWithPatternFromSession() throws Exception {
+		pipe.setResultIsContent(true);
+		session.put("file", "filebb");
+		session.put("ext", "log");
+		pipe.setZipEntryPattern("{file}.{ext}");
+		configureAndStartPipe();
+		PipeRunResult prr = doPipe(TestFileUtils.getTestFilePath("/Unzip/ab.zip"));
+		assertTrue(prr.getResult().isBinary());
+		assertEquals("bbb", prr.getResult().asString());
+	}
+
+	@Test
+	public void testUnzippingAndCollectingResultWithPattermFromParameter() throws Exception {
+		pipe.setResultIsContent(true);
+		pipe.addParameter(new Parameter("zipEntryPattern", "filebb.log"));
 		configureAndStartPipe();
 		PipeRunResult prr = doPipe(TestFileUtils.getTestFilePath("/Unzip/ab.zip"));
 		assertTrue(prr.getResult().isBinary());
@@ -83,8 +108,8 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 		GregorianCalendar cal = new GregorianCalendar();
 		String path = prr.getResult().asString();
-		String expectedName = "blaat-"+cal.get(Calendar.YEAR)+".zip";
-		assertTrue(path.endsWith(expectedName), "path ["+path+"] does not end with ["+expectedName+"]");
+		String expectedName = "blaat-" + cal.get(Calendar.YEAR) + ".zip";
+		assertTrue(path.endsWith(expectedName), "path [" + path + "] does not end with [" + expectedName + "]");
 
 		try (ZipInputStream zipin = new ZipInputStream(new FileInputStream(path))) {
 			ZipEntry entry = zipin.getNextEntry();
@@ -107,7 +132,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	public void testExceptionForward() throws Exception {
 		pipe.setMessageIsContent(true);
 		pipe.setResultIsContent(true);
-		pipe.registerForward(new PipeForward(PipeForward.EXCEPTION_FORWARD_NAME, "dummy"));
+		pipe.addForward(new PipeForward(PipeForward.EXCEPTION_FORWARD_NAME, "dummy"));
 
 		configureAndStartPipe();
 		PipeRunResult prr = doPipe(pipe, DUMMY_STRING_SEMI_COLON, session);
@@ -163,14 +188,16 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		PipeRunResult prr = doPipe(input);
 		assertEquals("success", prr.getPipeForward().getName());
 
-		try (ZipInputStream zipin = new ZipInputStream(prr.getResult().asInputStream())) {
+		try (prr; ZipInputStream zipin = new ZipInputStream(prr.getResult().asInputStream())) {
 			ZipEntry entry = zipin.getNextEntry();
 			assertNotNull(entry);
 			assertEquals("copyFile.txt", entry.getName());
 
 			URL url = TestFileUtils.getTestFileURL("/Pipes/CompressPipe/" + entry.getName());
 			assertNotNull(url);
-			assertEquals(Message.asString(url), StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
+			UrlMessage urlMessage = new UrlMessage(url);
+			assertEquals(urlMessage.asString(), StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
+			urlMessage.close();
 
 			entry = zipin.getNextEntry();
 			assertNotNull(entry);
@@ -178,7 +205,9 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 			URL url2 = TestFileUtils.getTestFileURL("/Pipes/CompressPipe/" + entry.getName());
 			assertNotNull(url2);
-			assertEquals(Message.asString(url2), StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
+			UrlMessage urlMessage2 = new UrlMessage(url2);
+			assertEquals(urlMessage2.asString(), StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
+			urlMessage2.close();
 		}
 	}
 
@@ -195,13 +224,13 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 	@Test
 	public void testGetterSetterResultIsContent() {
+		assertFalse(pipe.isResultIsContent()); //Default NULL
+
 		pipe.setResultIsContent(true);
-		boolean checkBoolean = pipe.isResultIsContent();
-		assertTrue(checkBoolean);
+		assertTrue(pipe.isResultIsContent());
 
 		pipe.setResultIsContent(false);
-		checkBoolean = pipe.isResultIsContent();
-		assertFalse(checkBoolean);
+		assertFalse(pipe.isResultIsContent());
 	}
 
 	@Test
@@ -238,7 +267,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 	@Test
 	public void testCaptureFakeFilePath() {
-		pipe.setMessageIsContent(false);
+		pipe.setResultIsContent(false);
 		pipe.setCompress(true);
 
 		assertThrows(ConfigurationException.class, this::configureAndStartPipe);
@@ -246,7 +275,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 	@Test
 	public void testCaptureUncompressedLegitimateFilePath() {
-		pipe.setMessageIsContent(false);
+		pipe.setResultIsContent(false);
 		pipe.setCompress(false);
 		pipe.setFileFormat(FileFormat.GZ);
 
@@ -339,7 +368,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 	@Test
 	public void testCaptureIllegitimateFilePath() {
-		pipe.setMessageIsContent(false);
+		pipe.setResultIsContent(false);
 		pipe.setCompress(true);
 
 		assertThrows(ConfigurationException.class, this::configureAndStartPipe);
@@ -350,7 +379,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setMessageIsContent(true);
 
 		configureAndStartPipe();
-		assertThrows(PipeRunException.class, ()->doPipe(Message.asMessage(DUMMY_STRING.getBytes())));
+		assertThrows(PipeRunException.class, () -> doPipe(new Message(DUMMY_STRING.getBytes())));
 	}
 
 	@Test
@@ -358,6 +387,6 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setMessageIsContent(true);
 
 		configureAndStartPipe();
-		assertThrows(PipeRunException.class, ()->doPipe(DUMMY_STRING));
+		assertThrows(PipeRunException.class, () -> doPipe(DUMMY_STRING));
 	}
 }

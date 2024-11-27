@@ -7,8 +7,10 @@ import java.io.ByteArrayOutputStream;
 import java.net.URL;
 import java.util.Arrays;
 
-import org.frankframework.stream.Message;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.stream.Message;
+import org.frankframework.stream.UrlMessage;
 
 class StreamCaptureUtilsTest {
 
@@ -49,6 +51,6 @@ class StreamCaptureUtilsTest {
 
 		byte[] capture = Arrays.copyOf(boas.toByteArray(), bufferSize); //it is possible more characters have been written to the captured stream
 		assertEquals(new String(magic), new String(capture));
-		assertEquals(message.asString(), Message.asMessage(input).asString()); //verify that the message output, after reading the magic, has not changed
+		assertEquals(message.asString(), new UrlMessage(input).asString()); //verify that the message output, after reading the magic, has not changed
 	}
 }

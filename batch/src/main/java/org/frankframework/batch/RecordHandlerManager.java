@@ -15,13 +15,13 @@
 */
 package org.frankframework.batch;
 
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.util.LogUtil;
@@ -66,10 +66,6 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 		if (handlers.getNextRecordHandlerManager() == null) {
 			handlers.setNextRecordHandlerManager(this);
 		}
-	}
-
-	public Collection<RecordHandlingFlow> getRecordHandlers() {
-		return flowMap.values();
 	}
 
 	protected Map<String,RecordHandlingFlow> getFlowMap() {

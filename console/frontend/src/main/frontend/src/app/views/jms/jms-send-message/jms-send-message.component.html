@@ -11,20 +11,11 @@
         <div class="ibox-content">
           <form role="form">
             <div class="row form-group">
-              <label class="col-sm-5 col-md-3 control-label label-height-30"
-                >Select a Connection Factory</label
-              >
+              <label class="col-sm-5 col-md-3 control-label label-height-30">Select a Connection Factory</label>
               <div class="col-sm-7 col-md-9">
-                <select
-                  class="form-control"
-                  name="connectionFactory"
-                  [(ngModel)]="form['connectionFactory']"
-                >
+                <select class="form-control" name="connectionFactory" [(ngModel)]="form.connectionFactory">
                   <option
-                    *ngFor="
-                      let connectionFactory of connectionFactories;
-                      let first = first
-                    "
+                    *ngFor="let connectionFactory of connectionFactories; let first = first"
                     [attr.selected]="first ? 'selected' : null"
                   >
                     {{ connectionFactory }}
@@ -33,60 +24,32 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-5 col-md-3 control-label label-height-30"
-                >Destination Name</label
-              >
+              <label class="col-sm-5 col-md-3 control-label label-height-30">Destination Name</label>
               <div class="col-sm-7 col-md-9">
-                <input
-                  class="form-control"
-                  name="destination"
-                  type="text"
-                  [(ngModel)]="form['destination']"
-                />
+                <input class="form-control" name="destination" type="text" [(ngModel)]="form.destination" />
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-5 col-md-3 control-label label-height-30"
-                >Destination Type</label
-              >
+              <label class="col-sm-5 col-md-3 control-label label-height-30">Destination Type</label>
               <div class="col-sm-7 col-md-9">
-                <select
-                  class="form-control"
-                  name="type"
-                  [(ngModel)]="form['type']"
-                >
+                <select class="form-control" name="type" [(ngModel)]="form.type">
                   <option *ngFor="let type of destinationTypes">
                     {{ type }}
                   </option>
                 </select>
               </div>
             </div>
-            <div
-              class="row form-group"
-              title="Name of the queue the reply is expected on."
-            >
-              <label class="col-sm-5 col-md-3 control-label label-height-30"
-                >Reply To</label
-              >
+            <div class="row form-group" title="Name of the queue the reply is expected on.">
+              <label class="col-sm-5 col-md-3 control-label label-height-30">Reply To</label>
               <div class="col-sm-7 col-md-9">
-                <input
-                  class="form-control"
-                  name="replyTo"
-                  type="text"
-                  [(ngModel)]="form['replyTo']"
-                />
+                <input class="form-control" name="replyTo" type="text" [(ngModel)]="form.replyTo" />
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-5 col-md-3 control-label label-height-30"
-                >Persistent</label
-              >
+              <label class="col-sm-5 col-md-3 control-label label-height-30">Persistent</label>
               <div class="col-sm-7 col-md-9">
                 <span class="form-control" style="border: none"
-                  ><input
-                    type="checkbox"
-                    name="persistent"
-                    [(ngModel)]="form['persistent']"
+                  ><input type="checkbox" name="persistent" [(ngModel)]="form.persistent"
                 /></span>
               </div>
             </div>
@@ -94,55 +57,31 @@
               class="row form-group"
               title="In case it is checked, it will operate in rr mode. Expected reply will be created either on the queue specified in 'Reply To', or on a dynamically generated temporary queue"
             >
-              <label class="col-sm-5 col-md-3 control-label label-height-30"
-                >Synchronous</label
-              >
+              <label class="col-sm-5 col-md-3 control-label label-height-30">Synchronous</label>
               <div class="col-sm-7 col-md-9">
                 <span class="form-control" style="border: none"
-                  ><input
-                    type="checkbox"
-                    name="synchronous"
-                    [(ngModel)]="form['synchronous']"
+                  ><input type="checkbox" name="synchronous" [(ngModel)]="form.synchronous"
                 /></span>
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-5 col-md-3 control-label label-height-30"
-                >Lookup Destination</label
-              >
+              <label class="col-sm-5 col-md-3 control-label label-height-30">Lookup Destination</label>
               <div class="col-sm-7 col-md-9">
                 <span class="form-control" style="border: none"
-                  ><input
-                    type="checkbox"
-                    name="lookupDestination"
-                    [(ngModel)]="form['lookupDestination']"
+                  ><input type="checkbox" name="lookupDestination" [(ngModel)]="form.lookupDestination"
                 /></span>
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-5 col-md-3 control-label label-height-30"
-                >Message Property</label
-              >
+              <label class="col-sm-5 col-md-3 control-label label-height-30">Message Property</label>
               <div class="col-sm-7 col-md-3">
-                <input
-                  class="form-control"
-                  name="propertyKey"
-                  type="text"
-                  [(ngModel)]="form['propertyKey']"
-                />
+                <input class="form-control" name="propertyKey" type="text" [(ngModel)]="form.propertyKey" />
               </div>
               <div class="hidden-xs hidden-sm col-md-1">
-                <label class="control-label label-height-30 pull-right"
-                  >Value</label
-                >
+                <label class="control-label label-height-30 pull-right">Value</label>
               </div>
               <div class="hidden-xs hidden-sm col-md-5">
-                <input
-                  class="form-control"
-                  name="propertyValue"
-                  type="text"
-                  [(ngModel)]="form['propertyValue']"
-                />
+                <input class="form-control" name="propertyValue" type="text" [(ngModel)]="form.propertyValue" />
               </div>
             </div>
             <div class="row form-group hidden-md hidden-lg">
@@ -150,47 +89,30 @@
                 <label class="control-label label-height-30">Value</label>
               </div>
               <div class="col-sm-7">
-                <input
-                  class="form-control"
-                  name="propertyValue"
-                  type="text"
-                  [(ngModel)]="form['propertyValue']"
-                />
+                <input class="form-control" name="propertyValue" type="text" [(ngModel)]="form.propertyValue" />
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-5 col-md-3 control-label label-height-30"
-                >Message</label
-              >
-              <div class="col-sm-7 col-md-9">
-                <textarea
+              <label class="col-sm-5 col-md-3 control-label label-height-30">Message</label>
+              <div class="col-sm-9" style="height: 200px">
+                <app-monaco-editor
                   class="form-control"
-                  name="message"
-                  rows="5"
-                  style="resize: none"
-                  [(ngModel)]="form['message']"
-                ></textarea>
+                  [(value)]="form.message"
+                  [options]="{ language: 'text' }"
+                  [actions]="editorActions"
+                ></app-monaco-editor>
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-5 col-md-3 control-label label-height-30"
-                >Upload File</label
-              >
+              <label class="col-sm-5 col-md-3 control-label label-height-30">Upload File</label>
               <div class="col-sm-7 col-md-5">
                 <app-input-file-upload (fileUpdated)="file = $event" />
               </div>
               <div class="hidden-xs hidden-sm col-md-1">
-                <label class="control-label label-height-30 pull-right"
-                  >Encoding</label
-                >
+                <label class="control-label label-height-30 pull-right">Encoding</label>
               </div>
               <div class="hidden-xs hidden-sm col-md-3">
-                <input
-                  class="form-control"
-                  name="encoding"
-                  type="text"
-                  [(ngModel)]="form['encoding']"
-                />
+                <input class="form-control" name="encoding" type="text" [(ngModel)]="form.encoding" />
               </div>
             </div>
             <div class="row form-group hidden-md hidden-lg">
@@ -198,23 +120,12 @@
                 <label class="control-label label-height-30">Encoding</label>
               </div>
               <div class="col-sm-7">
-                <input
-                  class="form-control"
-                  name="encoding"
-                  type="text"
-                  [(ngModel)]="form['encoding']"
-                />
+                <input class="form-control" name="encoding" type="text" [(ngModel)]="form.encoding" />
               </div>
             </div>
             <div class="row form-group">
               <div class="col-xs-5 col-md-3 m-t-md">
-                <button
-                  class="btn btn-info btn-w-m font-bold"
-                  type="button"
-                  (click)="reset()"
-                >
-                  Reset
-                </button>
+                <button class="btn btn-info btn-w-m font-bold" type="button" (click)="reset()">Reset</button>
               </div>
               <div class="col-xs-5 col-md-3 m-t-md">
                 <button

@@ -17,8 +17,9 @@ package org.frankframework.jdbc.datasource;
 
 import java.sql.Connection;
 
-import org.apache.commons.dbcp2.PoolingDataSource;
-import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.tomcat.dbcp.dbcp2.PoolingDataSource;
+import org.apache.tomcat.dbcp.pool2.impl.GenericObjectPool;
+
 
 /**
  * Extension of {@link PoolingDataSource} that exposes an extra method to fetch pool statistics.

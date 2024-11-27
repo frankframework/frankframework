@@ -9,6 +9,8 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import lombok.Getter;
+
 public class MockFile {
 
 	private String name;
@@ -16,11 +18,13 @@ public class MockFile {
 	private byte[] contents;
 	private Date lastModified = new Date();
 	private Map<String,Object> additionalProperties;
+	private final @Getter Map<String,String> customAttributes;
 
 	public MockFile(String name, MockFolder owner) {
 		super();
 		this.name = name;
 		this.owner=owner;
+		customAttributes = new LinkedHashMap<>();
 		additionalProperties = new LinkedHashMap<>();
 		additionalProperties.put("id", "[id:"+getName()+"]");
 	}
@@ -76,6 +80,7 @@ public class MockFile {
 	public Date getLastModified() {
 		return lastModified;
 	}
+
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
 	}
@@ -101,6 +106,5 @@ public class MockFile {
 	public void setAdditionalProperties(Map<String, Object> additionalProperties) {
 		this.additionalProperties = additionalProperties;
 	}
-
 
 }

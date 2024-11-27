@@ -18,7 +18,8 @@ package org.frankframework.management.gateway;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.frankframework.management.bus.BusException;
+import jakarta.annotation.Nonnull;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.EvaluationException;
@@ -37,6 +38,7 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
 import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.security.JwtKeyGenerator;
@@ -93,7 +95,7 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 		List<String> headers = new ArrayList<>();
 		headers.add(BusAction.ACTION_HEADER_NAME);
 		headers.add(BusTopic.TOPIC_HEADER_NAME);
-		headers.add(BusMessageUtils.HEADER_HOSTNAME_KEY);
+		headers.add(BusMessageUtils.HEADER_TARGET_KEY);
 		headers.add(BusMessageUtils.HEADER_PREFIX_PATTERN);
 		return headers.toArray(new String[0]);
 	}
@@ -125,6 +127,7 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 	}
 
 	@Override
+	@Nonnull
 	@SuppressWarnings("rawtypes")
 	public Message handleRequestMessage(Message<?> requestMessage) {
 		Object response = super.handleRequestMessage(requestMessage);

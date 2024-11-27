@@ -19,7 +19,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 
 import lombok.Getter;
-import org.frankframework.jdbc.JdbcQuerySenderBase.QueryType;
+
+import org.frankframework.jdbc.AbstractJdbcQuerySender.QueryType;
 import org.frankframework.parameters.ParameterList;
 
 public class QueryExecutionContext {

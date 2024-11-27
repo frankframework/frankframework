@@ -20,7 +20,6 @@ import java.io.Writer;
 
 import org.frankframework.core.PipeLineSession;
 
-
 /**
  * Resulthandler that writes the transformed record to a String, that is passed to the next Pipe literally.
  *

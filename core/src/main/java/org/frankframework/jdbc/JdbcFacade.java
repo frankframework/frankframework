@@ -99,6 +99,10 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	protected DataSource getDatasource() throws JdbcException {
 		if (datasource==null) {
 			String dsName = getDatasourceName();
+			if(StringUtils.isBlank(dsName)) { //for getPhysicalDestinationName (console) when not yet configured.
+				throw new JdbcException("No datasourceName specified");
+			}
+
 			try {
 				datasource = getDataSourceFactory().getDataSource(dsName, getJndiEnv());
 			} catch (NamingException | IllegalStateException e) {
@@ -176,7 +180,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	}
 
 	@Override
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	@ConfigurationWarning("We discourage the use of jmsRealms for datasources. To specify a datasource other then the default, use the datasourceName attribute directly, instead of referring to a realm")
 	public void setJmsRealm(String jmsRealmName) {
 		super.setJmsRealm(jmsRealmName); //super.setJmsRealm(...) sets the jmsRealmName only when a realm is found
@@ -200,7 +204,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 				String dName = proxy.getDestinationName();
 				if(dName != null) return dName;
 			}
-		} catch (Exception e) {
+		} catch (JdbcException e) {
 			return "no datasource found for datasourceName ["+getDatasourceName()+"]";
 		}
 		return "unknown";

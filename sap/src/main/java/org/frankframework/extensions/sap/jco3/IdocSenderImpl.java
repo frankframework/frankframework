@@ -21,6 +21,7 @@ import com.sap.conn.idoc.IDocFactory;
 import com.sap.conn.idoc.jco.JCoIDoc;
 import com.sap.conn.jco.JCoDestination;
 
+import jakarta.annotation.Nonnull;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -40,14 +41,14 @@ import org.frankframework.util.XmlUtils;
  */
 public abstract class IdocSenderImpl extends SapSenderBase {
 
-	protected IDocDocument parseIdoc(SapSystemImpl sapSystem, Message message) throws SenderException {
+	public IDocDocument parseIdoc(SapSystemImpl sapSystem, Message message) throws SenderException {
 
 		IdocXmlHandler handler = new IdocXmlHandler(sapSystem);
 
 		try {
-			log.debug(getLogPrefix()+"start parsing Idoc");
+			log.debug("{}start parsing Idoc", getLogPrefix());
 			XmlUtils.parseXml(message.asInputSource(), handler);
-			log.debug(getLogPrefix()+"finished parsing Idoc");
+			log.debug("{}finished parsing Idoc", getLogPrefix());
 			return handler.getIdoc();
 		} catch (Exception e) {
 			throw new SenderException(e);
@@ -55,8 +56,8 @@ public abstract class IdocSenderImpl extends SapSenderBase {
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		String tid=null;
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+		String tid;
 		try {
 			ParameterValueList pvl = null;
 			if (paramList!=null) {
@@ -67,14 +68,14 @@ public abstract class IdocSenderImpl extends SapSenderBase {
 			IDocDocument idoc = parseIdoc(sapSystem,message);
 
 			try {
-				log.trace(getLogPrefix()+"checking syntax");
+				log.trace("{}checking syntax", getLogPrefix());
 				idoc.checkSyntax();
 			}
 			catch ( IDocException e ) {
 				throw new SenderException("Syntax error in idoc", e);
 			}
 
-			if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"parsed idoc ["+JCoIDoc.getIDocFactory().getIDocXMLProcessor().render(idoc)+"]"); }
+			if (log.isDebugEnabled()) {log.debug("{}parsed idoc [{}]", getLogPrefix(), JCoIDoc.getIDocFactory().getIDocXMLProcessor().render(idoc)); }
 
 
 			JCoDestination destination = getDestination(session, sapSystem);

@@ -19,10 +19,10 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import lombok.Getter;
+
 import org.frankframework.stream.Message;
 import org.frankframework.util.UUIDUtil;
-
-import lombok.Getter;
 
 /**
  * An enum of the hash algorithms. Currently supported hashes include MD5; SHA1; SHA256
@@ -39,7 +39,7 @@ public enum HashAlgorithm {
 	 */
 	private final @Getter String algorithm;
 
-	private HashAlgorithm(final String algorithm) {
+	HashAlgorithm(final String algorithm) {
 		this.algorithm = algorithm;
 	}
 

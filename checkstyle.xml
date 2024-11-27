@@ -10,7 +10,7 @@
 		<property name="file" value="${config_loc}/checkstyle-suppressions.xml"/>
 	</module>
 
-	<property name="severity" value="warning" />
+	<property name="severity" value="error" />
 	<module name="TreeWalker">
 		<property name="fileExtensions" value="java" />
 		<property name="severity" value="error" />
@@ -23,10 +23,38 @@
 			junit.framework,
 			org.apache.commons.lang,
 			software.amazon.awssdk.utils,
+			javax.activation
+			javax.annotation,
+			javax.jms,
+			javax.servlet,
+			javax.ws,
 			" />
 			<property name="illegalClasses" value="
 			org.apache.commons.codec.Charsets,
 			org.apache.cxf.helpers.FileUtils"/>
+		</module>
+		<module name="IllegalImport">
+			<property name="illegalPkgs" value="
+			org.jetbrains.annotations,
+			org.wildfly.common.annotation,
+			reactor.util.annotation,
+			org.springframework.lang,
+			com.mongodb.lang,
+			io.micrometer.common.lang,
+			org.checkerframework.checker.nullness.qual,
+			org.testcontainers.shaded.org.checkerframework.framework.qual,
+			" />
+			<property name="illegalClasses" value="
+			com.sun.istack.Nullable,
+			com.sun.istack.NotNull,
+			com.unboundid.util.Nullable,
+			com.unboundid.util.NotNull,
+			" />
+		</module>
+		<module name="IllegalImport">
+			<property name="regexp" value="true" />
+			<!-- Reject any org.junit import that's not also org.junit.jupiter or org.junit.platform (junit extensions) -->
+			<property name="illegalClasses" value="^org\.junit\.(?!(jupiter)|(platform)\.).+" />
 		</module>
 		<module name="RegexpSinglelineJava">
 			<property name="format" value="\.deleteOnExit()" />
@@ -83,6 +111,13 @@
 			<property name="format" value="^.*System\.(out|err).*$"/>
 			<property name="message" value="Don't use System.out/err, use LOG4J2 instead."/>
 			<property name="ignoreComments" value="true" />
+		</module>
+		<module name="MatchXpath">
+			<property name="id" value="singleLineCommentStartWithSpace"/>
+			<property name="query"
+				value="//SINGLE_LINE_COMMENT[./COMMENT_CONTENT[not(starts-with(@text, ' '))
+                       and not(@text = '\n') and not(ends-with(@text, '//\n')) ]]"/>
+			<message key="matchxpath.match" value="Single line comment text should start with space."/>
 		</module>
 	</module>
 </module>

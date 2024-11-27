@@ -20,8 +20,8 @@ import java.io.Reader;
 
 import javax.wsdl.WSDLException;
 
+import org.frankframework.validation.IXSD;
 import org.frankframework.validation.SchemaUtils;
-import org.frankframework.validation.XSD;
 
 /**
  * Extension of ResourceXsd, where the schema is retrieved from a WSDL.
@@ -48,13 +48,13 @@ public class WsdlXsd extends ResourceXsd {
 	}
 
 	@Override
-	public int compareToByReferenceOrContents(XSD x) {
+	public int compareToByReferenceOrContents(IXSD other) {
 		// Compare XSD content to prevent copies of the same XSD showing up
 		// more than once in the WSDL. For example the
 		// CommonMessageHeader.xsd used by the EsbSoapValidator will
 		// normally also be imported by the XSD for the business response
 		// message (for the Result part).
-		return compareToByContents(x);
+		return compareToByContents(other);
 	}
 
 }

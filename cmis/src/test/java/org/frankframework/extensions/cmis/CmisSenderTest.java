@@ -6,7 +6,7 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.SenderException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.senders.SenderTestBase;
 
 public class CmisSenderTest extends SenderTestBase<CmisSender> {
@@ -36,7 +36,7 @@ public class CmisSenderTest extends SenderTestBase<CmisSender> {
 		sender.setAction(CmisSender.CmisAction.DYNAMIC);
 		sender.configure();
 
-		assertThrows(SenderException.class, sender::open);
+		assertThrows(LifecycleException.class, sender::start);
 	}
 
 	@Test
@@ -71,6 +71,6 @@ public class CmisSenderTest extends SenderTestBase<CmisSender> {
 		sender.configure();
 
 		//Should configure and open just fine, but fail trying to connect to an endpoint.
-		assertThrows(CmisConnectionException.class, sender::open);
+		assertThrows(CmisConnectionException.class, sender::start);
 	}
 }

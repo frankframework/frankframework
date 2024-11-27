@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2023 WeAreFrank!
+   Copyright 2021, 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,15 +22,14 @@ import org.bson.BSONException;
 import org.bson.BsonInvalidOperationException;
 import org.bson.json.StrictCharacterStreamJsonWriterSettings;
 import org.bson.json.StrictJsonWriter;
+import org.frankframework.documentbuilder.IArrayBuilder;
+import org.frankframework.documentbuilder.INodeBuilder;
+import org.frankframework.documentbuilder.IObjectBuilder;
 import org.xml.sax.SAXException;
-
-import org.frankframework.stream.document.IArrayBuilder;
-import org.frankframework.stream.document.INodeBuilder;
-import org.frankframework.stream.document.IObjectBuilder;
 
 /**
  * StrictJsonWriter to write to FF DocumentBuilder, to generate JSON or XML.
- *
+ * <p>
  * Based on org.bson.json.StrictCharacterStreamJsonWriter.
  *
  * @author Gerrit van Brakel
@@ -104,7 +103,8 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 			throw new BsonInvalidOperationException("Invalid state " + state);
 		}
 		try {
-			INodeBuilder nodeBuilder = context.contextType == JsonContextType.ARRAY ? ((IArrayBuilder)stack.peek()).addElement() : (INodeBuilder)stack.peek();
+			INodeBuilder nodeBuilder = context.contextType == JsonContextType.ARRAY ? ((IArrayBuilder)stack.peek()).addElement() : (INodeBuilder)stack.pop();
+			stack.push(nodeBuilder);
 			stack.push(nodeBuilder.startObject());
 		} catch (SAXException e) {
 			throwBSONException(e);
@@ -123,7 +123,7 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 		checkState(State.NAME);
 
 		try {
-			((IObjectBuilder)stack.pop()).close();
+			((IObjectBuilder) stack.pop()).close();
 			((INodeBuilder)stack.pop()).close();
 		} catch (SAXException e) {
 			throwBSONException(e);
@@ -136,7 +136,6 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 		}
 	}
 
-
 	@Override
 	public void writeStartArray() {
 		try {
@@ -147,12 +146,12 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 		context = new StrictJsonContext(context, JsonContextType.ARRAY, settings.getIndentCharacters());
 		state = State.VALUE;
 	}
+
 	@Override
 	public void writeStartArray(final String name) {
 		writeName(name);
 		writeStartArray();
 	}
-
 
 	@Override
 	public void writeEndArray() {
@@ -175,7 +174,6 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 			setNextState();
 		}
 	}
-
 
 
 	@Override
@@ -302,70 +300,6 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 			state = State.NAME;
 		}
 	}
-
-//	private void writeStringHelper(final String str) {
-//		write('"');
-//		for (int i = 0; i < str.length(); i++) {
-//			char c = str.charAt(i);
-//			switch (c) {
-//			case '"':
-//				write("\\\"");
-//				break;
-//			case '\\':
-//				write("\\\\");
-//				break;
-//			case '\b':
-//				write("\\b");
-//				break;
-//			case '\f':
-//				write("\\f");
-//				break;
-//			case '\n':
-//				write("\\n");
-//				break;
-//			case '\r':
-//				write("\\r");
-//				break;
-//			case '\t':
-//				write("\\t");
-//				break;
-//			default:
-//				switch (Character.getType(c)) {
-//				case Character.UPPERCASE_LETTER:
-//				case Character.LOWERCASE_LETTER:
-//				case Character.TITLECASE_LETTER:
-//				case Character.OTHER_LETTER:
-//				case Character.DECIMAL_DIGIT_NUMBER:
-//				case Character.LETTER_NUMBER:
-//				case Character.OTHER_NUMBER:
-//				case Character.SPACE_SEPARATOR:
-//				case Character.CONNECTOR_PUNCTUATION:
-//				case Character.DASH_PUNCTUATION:
-//				case Character.START_PUNCTUATION:
-//				case Character.END_PUNCTUATION:
-//				case Character.INITIAL_QUOTE_PUNCTUATION:
-//				case Character.FINAL_QUOTE_PUNCTUATION:
-//				case Character.OTHER_PUNCTUATION:
-//				case Character.MATH_SYMBOL:
-//				case Character.CURRENCY_SYMBOL:
-//				case Character.MODIFIER_SYMBOL:
-//				case Character.OTHER_SYMBOL:
-//					write(c);
-//					break;
-//				default:
-//					write("\\u");
-//					write(Integer.toHexString((c & 0xf000) >> 12));
-//					write(Integer.toHexString((c & 0x0f00) >> 8));
-//					write(Integer.toHexString((c & 0x00f0) >> 4));
-//					write(Integer.toHexString(c & 0x000f));
-//					break;
-//				}
-//				break;
-//			}
-//		}
-//		write('"');
-//	}
-
 
 	private void checkState(final State requiredState) {
 		if (state != requiredState) {

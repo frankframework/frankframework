@@ -9,9 +9,10 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Properties;
 
-import org.frankframework.util.StringResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.util.StringResolver;
 
 
 class CredentialResolverTest {

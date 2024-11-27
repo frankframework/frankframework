@@ -17,7 +17,11 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.HashMap;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
@@ -34,10 +38,8 @@ import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.processors.PipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class JavaListenerTest {
 	private TestConfiguration configuration;
@@ -49,20 +51,17 @@ public class JavaListenerTest {
 	@BeforeEach
 	public void setUp() throws Exception {
 		configuration = new TestConfiguration(false);
-
 		listener = setupJavaListener();
 		receiver = setupReceiver(listener);
 		adapter = setupAdapter(receiver);
+		configuration.configure();
 		session = new PipeLineSession();
 	}
 
 	@AfterEach
 	public void tearDown() throws Exception {
-		session.close();
-
-		configuration.stop();
+		CloseUtils.closeSilently(session, configuration);
 	}
-
 
 	Receiver<String> setupReceiver(JavaListener<String> listener) {
 		Receiver<String> receiver = configuration.createBean(Receiver.class);
@@ -110,11 +109,11 @@ public class JavaListenerTest {
 		PipeLineExit ple = new PipeLineExit();
 		ple.setName("success");
 		ple.setState(PipeLine.ExitState.SUCCESS);
-		pl.registerPipeLineExit(ple);
+		pl.addPipeLineExit(ple);
 		adapter.setPipeLine(pl);
 
-		adapter.registerReceiver(receiver);
-		configuration.registerAdapter(adapter);
+		adapter.addReceiver(receiver);
+		configuration.addAdapter(adapter);
 		return adapter;
 	}
 
@@ -146,7 +145,7 @@ public class JavaListenerTest {
 	public void testProcessRequestMessage() throws Exception {
 		// Arrange
 		String rawTestMessage = "TEST";
-		Message testMessage = Message.asMessage(new StringReader(rawTestMessage));
+		Message testMessage = new Message(new StringReader(rawTestMessage));
 		listener.setThrowException(true);
 
 		// start adapter
@@ -166,7 +165,7 @@ public class JavaListenerTest {
 	public void testProcessRequestMessageWithHttpRequest() throws Exception {
 		// Arrange
 		String rawTestMessage = "TEST";
-		Message testMessage = Message.asMessage(new StringReader(rawTestMessage));
+		Message testMessage = new Message(new StringReader(rawTestMessage));
 		listener.setThrowException(true);
 
 		HttpServletRequest servletRequest = mock(HttpServletRequest.class);
@@ -188,7 +187,7 @@ public class JavaListenerTest {
 	@Test
 	public void testProcessRequestMessageWithException() throws Exception {
 		// Arrange 1
-		Message testMessage = Message.asMessage(new StringReader("TEST"));
+		Message testMessage = new Message(new StringReader("TEST"));
 		listener.setThrowException(true);
 		assertSame(Receiver.OnError.CONTINUE, receiver.getOnError()); // Validate default setting: in state CONTINUE after an error occurs
 
@@ -214,7 +213,7 @@ public class JavaListenerTest {
 	public void testProcessRequestMessageWithExceptionDoNotThrow() throws Exception {
 		// Arrange
 		String rawTestMessage = "TEST";
-		Message testMessage = Message.asMessage(new StringReader(rawTestMessage));
+		Message testMessage = new Message(new StringReader(rawTestMessage));
 		listener.setThrowException(false);
 
 		PipeLine pipeLine = adapter.getPipeLine();
@@ -238,7 +237,7 @@ public class JavaListenerTest {
 	public void testProcessRequestWithReturnSessionKeys() throws Exception {
 		// Arrange
 		String rawTestMessage = "TEST";
-		Message testMessage = Message.asMessage(new StringReader(rawTestMessage));
+		Message testMessage = new Message(new StringReader(rawTestMessage));
 		session.put("copy-this", "original-value");
 
 		// start adapter
@@ -261,7 +260,7 @@ public class JavaListenerTest {
 	public void testProcessRequestWithReturnSessionKeysWhenNoneConfigured() throws Exception {
 		// Arrange
 		String rawTestMessage = "TEST";
-		Message testMessage = Message.asMessage(new StringReader(rawTestMessage));
+		Message testMessage = new Message(new StringReader(rawTestMessage));
 		listener.setReturnedSessionKeys(null);
 		session.put("copy-this", "original-value");
 

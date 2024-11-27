@@ -45,7 +45,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.ListenerException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
@@ -114,7 +114,7 @@ public class KafkaReceiverTest {
 	@ParameterizedTest
 	@MethodSource
 	public void test(String topic) throws Exception {
-		listener.open();
+		listener.start();
 		HashMap<TopicPartition, Long> startOffsets = new HashMap<>();
 		TopicPartition topicPartition = new TopicPartition(topic, 0);
 		startOffsets.put(topicPartition, 0L);
@@ -144,7 +144,7 @@ public class KafkaReceiverTest {
 		Assertions.assertNull(listener.getRawMessage(new HashMap<>()));
 
 		Assertions.assertEquals(1L, mockListener.committed(Set.of(topicPartition)).get(topicPartition).offset());
-		listener.close();
+		listener.stop();
 	}
 
 	static Stream<Arguments> test() {
@@ -156,8 +156,8 @@ public class KafkaReceiverTest {
 
 	@Test
 	void throwsErrorOnBadConnection() {
-		Assertions.assertDoesNotThrow(listener::open, "shouldn't throw on valid connection");
+		Assertions.assertDoesNotThrow(listener::start, "shouldn't throw on valid connection");
 		Mockito.when(mockListener.metrics()).thenReturn(new HashMap<>());
-		Assertions.assertThrows(ListenerException.class, listener::open, "should throw on (simulated) bad connection");
+		Assertions.assertThrows(LifecycleException.class, listener::start, "should throw on (simulated) bad connection");
 	}
 }

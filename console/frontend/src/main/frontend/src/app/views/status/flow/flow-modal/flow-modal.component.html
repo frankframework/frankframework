@@ -3,25 +3,15 @@
     <h4 class="modal-title">Flow Diagram for [{{ flowName }}]</h4>
   </div>
   <div class="modal-body text-center">
-    <ng-mermaid
-      [nmModel]="flow"
-      [nmRefreshInterval]="500"
-      (nmInitCallback)="mermaidLoaded()"
-    ></ng-mermaid>
+    <ng-mermaid [nmModel]="flow" [nmRefreshInterval]="500" (nmInitCallback)="mermaidLoaded()"></ng-mermaid>
   </div>
 
   <div class="modal-footer">
     <ng-container *ngIf="showActionButtons">
-      <span class="error-message" *ngIf="errorActionMessage">{{
-        errorActionMessage
-      }}</span>
+      <span class="error-message" *ngIf="errorActionMessage">{{ errorActionMessage }}</span>
       <button type="button" class="btn" (click)="openNewTab()">New tab</button>
-      <button type="button" class="btn" (click)="copyToClipboard($event)">
-        Copy
-      </button>
-      <button type="button" class="btn" (click)="downloadAsPng($event)">
-        Download
-      </button>
+      <button type="button" class="btn" (click)="copyToClipboard($event)">Copy</button>
+      <button type="button" class="btn" (click)="downloadAsPng($event)">Download</button>
     </ng-container>
     <button type="button" class="btn btn-white" (click)="close()">Close</button>
   </div>

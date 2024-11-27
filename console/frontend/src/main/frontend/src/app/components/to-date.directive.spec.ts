@@ -24,9 +24,7 @@ describe('ToDateDirective', () => {
 
     fixture.detectChanges(); // initial binding
 
-    directiveElements = fixture.debugElement.queryAll(
-      By.directive(ToDateDirective),
-    );
+    directiveElements = fixture.debugElement.queryAll(By.directive(ToDateDirective));
   });
 
   it('convert time number to formatted date string', () => {

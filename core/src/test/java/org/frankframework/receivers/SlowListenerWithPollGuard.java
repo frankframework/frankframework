@@ -6,19 +6,19 @@ import static org.mockito.Mockito.when;
 import java.util.Timer;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.jms.Message;
+import jakarta.jms.Message;
+
+import org.springframework.jms.listener.DefaultMessageListenerContainer;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IListenerConnector;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPortConnectedListener;
 import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.unmanaged.PollGuard;
 import org.frankframework.unmanaged.SpringJmsConnector;
-import org.springframework.jms.listener.DefaultMessageListenerContainer;
-
-import lombok.Getter;
-import lombok.Setter;
 
 public class SlowListenerWithPollGuard extends SlowPushingListener implements IPortConnectedListener<Message> {
 
@@ -42,8 +42,8 @@ public class SlowListenerWithPollGuard extends SlowPushingListener implements IP
 	}
 
 	@Override
-    public void open() {
-        super.open();
+    public void start() {
+        super.start();
 
         if (pollGuardInterval > 0) {
             log.debug("Creating poll-guard timer with interval [" + pollGuardInterval + "ms] while starting SpringJmsConnector");
@@ -55,13 +55,13 @@ public class SlowListenerWithPollGuard extends SlowPushingListener implements IP
     }
 
     @Override
-    public void close() {
+    public void stop() {
         if (pollGuardTimer != null) {
             log.debug("Cancelling previous poll-guard timer while stopping SpringJmsConnector");
             pollGuardTimer.cancel();
             pollGuardTimer = null;
         }
-        super.close();
+        super.stop();
     }
 
     @Override
@@ -77,10 +77,5 @@ public class SlowListenerWithPollGuard extends SlowPushingListener implements IP
     @Override
     public Receiver<Message> getReceiver() {
         return receiver;
-    }
-
-    @Override
-    public IListenerConnector<Message> getListenerPortConnector() {
-        return null;
     }
 }

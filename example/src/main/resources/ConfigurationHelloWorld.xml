@@ -21,8 +21,8 @@
 			</exits>
 			<pipe
 				name="HelloWorld"
-				className="org.frankframework.pipes.FixedResultPipe"
-				returnString="Hello World"
+				className="org.frankframework.pipes.EchoPipe"
+				getInputFromFixedValue="Hello World"
 				>
 				<forward name="success" path="EXIT"/>
 			</pipe>

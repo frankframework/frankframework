@@ -42,7 +42,7 @@ public enum AuthenticationScheme {
 		try {
 			return ClassUtils.newInstance(schemeClass);
 		} catch (ReflectiveOperationException | SecurityException e) {
-			log.warn("Cannot Instantiate object from class "+schemeClass.getName(), e);
+			log.warn("Cannot Instantiate object from class {}", schemeClass.getName(), e);
 			return null;
 		}
 	}

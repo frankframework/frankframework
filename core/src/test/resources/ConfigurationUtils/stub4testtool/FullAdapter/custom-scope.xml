@@ -1,0 +1,5 @@
+<configuration>
+	<adapter name="FullAdapter">
+		<stub xmlns:stub="http://frankframework.org/stub" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
+	</adapter>
+</configuration>

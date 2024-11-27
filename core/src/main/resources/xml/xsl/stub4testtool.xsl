@@ -302,8 +302,8 @@
 	<xsl:template match="pipe[@className='org.frankframework.pipes.GetPrincipalPipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*" />
-			<xsl:attribute name="className">org.frankframework.pipes.FixedResultPipe</xsl:attribute>
-			<xsl:attribute name="returnString">tst9</xsl:attribute>
+			<xsl:attribute name="className">org.frankframework.pipes.EchoPipe</xsl:attribute>
+			<xsl:attribute name="getInputFromFixedValue">tst9</xsl:attribute>
 			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 		</xsl:element>
 	</xsl:template>
@@ -319,13 +319,13 @@
 	<xsl:template match="pipe[@className='org.frankframework.pipes.UUIDGeneratorPipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*[name()!='type']" />
-			<xsl:attribute name="className">org.frankframework.pipes.FixedResultPipe</xsl:attribute>
+			<xsl:attribute name="className">org.frankframework.pipes.EchoPipe</xsl:attribute>
 			<xsl:choose>
 				<xsl:when test="@type='numeric'">
-					<xsl:attribute name="returnString">1234567890123456789012345678901</xsl:attribute>
+					<xsl:attribute name="getInputFromFixedValue">1234567890123456789012345678901</xsl:attribute>
 				</xsl:when>
 				<xsl:otherwise>
-					<xsl:attribute name="returnString">0a4544b6-37489ec0_15ad0f006ae_-7ff3</xsl:attribute>
+					<xsl:attribute name="getInputFromFixedValue">0a4544b6-37489ec0_15ad0f006ae_-7ff3</xsl:attribute>
 				</xsl:otherwise>
 			</xsl:choose>
 			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />

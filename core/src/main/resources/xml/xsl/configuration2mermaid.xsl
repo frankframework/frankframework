@@ -31,10 +31,12 @@
 		<xsl:text>	classDef sender8 fill:#fff,stroke-width:4px,stroke:#8bc34a;&#10;</xsl:text><!--Other      --><!--Frank aqua-->
 
 		<xsl:apply-templates select="$preproccessedConfiguration//forward" mode="convertForwards"/>
-		<xsl:text>	linkStyle </xsl:text>
-		<xsl:value-of select="$preproccessedConfiguration//forward/(position() - 1)" separator=","/>
-		<xsl:text> stroke:#8bc34a,stroke-width:3px,fill:none;</xsl:text>
-		<xsl:text>&#10;</xsl:text>
+		<xsl:if test="$preproccessedConfiguration//forward">
+			<xsl:text>	linkStyle </xsl:text>
+			<xsl:value-of select="$preproccessedConfiguration//forward/(position() - 1)" separator=","/>
+			<xsl:text> stroke:#8bc34a,stroke-width:3px,fill:none;</xsl:text>
+			<xsl:text>&#10;</xsl:text>
+		</xsl:if>
 		<!-- The code below gives back the preprocessed configuration
 				This is for testing purposes. To test, also change method(line 3) to xml instead of text-->
 <!--				<xsl:copy-of select="$preproccessedConfiguration"/>-->

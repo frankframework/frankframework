@@ -1,10 +1,4 @@
-import {
-  HttpErrorResponse,
-  HttpEvent,
-  HttpHandler,
-  HttpInterceptor,
-  HttpRequest,
-} from '@angular/common/http';
+import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { AppService } from '../app.service';
@@ -21,15 +15,11 @@ export class ConnectionInterceptor implements HttpInterceptor {
     private toastsService: ToastService,
   ) {}
 
-  intercept(
-    request: HttpRequest<unknown>,
-    next: HttpHandler,
-  ): Observable<HttpEvent<unknown>> {
+  intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     return next.handle(request).pipe(
       tap({
         error: (error: HttpErrorResponse) => {
-          if (error.url && !error.url.includes(this.appService.absoluteApiPath))
-            return;
+          if (error.url && !error.url.includes(this.appService.absoluteApiPath)) return;
           switch (error.status) {
             case 0: {
               if (error.url) {
@@ -48,10 +38,7 @@ export class ConnectionInterceptor implements HttpInterceptor {
                 } else {
                   console.warn('Authorization error');
                 }
-              } else if (
-                this.appService.APP_CONSTANTS['init'] ==
-                2 /*  && rejection.config.poller */
-              ) {
+              } else if (this.appService.APP_CONSTANTS['init'] == 2 /*  && rejection.config.poller */) {
                 console.warn('Connection to the server was lost!');
                 this.errorCount++;
                 if (this.errorCount > 2) {
@@ -83,10 +70,7 @@ export class ConnectionInterceptor implements HttpInterceptor {
               break;
             }
             case 403: {
-              this.toastsService.error(
-                'Forbidden',
-                'You do not have the permissions to complete this operation.',
-              );
+              this.toastsService.error('Forbidden', 'You do not have the permissions to complete this operation.');
               break;
             }
             default: {

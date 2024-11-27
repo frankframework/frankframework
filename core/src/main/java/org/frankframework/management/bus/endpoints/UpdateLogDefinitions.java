@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,17 +17,25 @@ package org.frankframework.management.bus.endpoints;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import jakarta.annotation.security.RolesAllowed;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.spi.StandardLevel;
@@ -43,19 +51,10 @@ import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.util.LogUtil;
 import org.springframework.messaging.Message;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import lombok.Getter;
-import lombok.Setter;
-
-import javax.annotation.security.RolesAllowed;
-
+@Log4j2
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.LOG_DEFINITIONS)
 public class UpdateLogDefinitions {
-	private Logger log = LogUtil.getLogger(this);
-
 	private static final String FF_PACKAGE_PREFIX = "org.frankframework";
 
 	@ActionSelector(BusAction.GET)
@@ -73,7 +72,7 @@ public class UpdateLogDefinitions {
 		Map<String, StandardLevel> registeredLoggers = new TreeMap<>(); // A list with all Loggers that are logging to Log4j2
 		for (Logger logger : logContext.getLoggers()) {
 			String logName = logger.getName();
-			String packageName = null;
+			String packageName;
 			if(logName.contains(".")) {
 				packageName = logName.substring(0, logName.lastIndexOf("."));
 			} else {
@@ -109,11 +108,11 @@ public class UpdateLogDefinitions {
 			}
 		}
 
-		Collections.sort(defaultLoggers, (a,b) -> a.getName().compareTo(b.getName()));
+		defaultLoggers.sort(Comparator.comparing(LogDefinitionDAO::getName));
 		return defaultLoggers;
 	}
 
-	public class LogDefinitionDAO {
+	public static class LogDefinitionDAO {
 		private final @Getter String name;
 		private final @Getter String level;
 		private @Getter @Setter @JsonInclude(Include.NON_NULL) Set<String> appenders;
@@ -124,11 +123,12 @@ public class UpdateLogDefinitions {
 		}
 	}
 
+	@SuppressWarnings("java:S4792") // Changing the logger level is not a security-sensitive operation, because roles are checked
 	@ActionSelector(BusAction.MANAGE)
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> updateLogConfiguration(Message<?> message) {
-		String loglevelStr = BusMessageUtils.getHeader(message, "level", null);
-		Level level = Level.toLevel(loglevelStr, null);
+		String logLevelStr = BusMessageUtils.getHeader(message, "level", null);
+		Level level = Level.toLevel(logLevelStr, null);
 		String logPackage = BusMessageUtils.getHeader(message, "logPackage", null);
 		Boolean reconfigure = BusMessageUtils.getBooleanHeader(message, "reconfigure", null);
 
@@ -149,6 +149,23 @@ public class UpdateLogDefinitions {
 			return EmptyMessage.accepted();
 		}
 		throw new BusException("neither [reconfigure], [logPackage] or [level] provided");
+	}
+
+	@ActionSelector(BusAction.UPLOAD)
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public Message<?> createLogConfiguration(Message<?> message) {
+		String logLevelStr = BusMessageUtils.getHeader(message, "level", null);
+		Level level = Level.toLevel(logLevelStr, null);
+		String logPackage = BusMessageUtils.getHeader(message, "logPackage", null);
+
+		if(StringUtils.isNotEmpty(logPackage) && level != null) {
+			LoggerContext logContext = LoggerContext.getContext(false);
+			Configuration logConfiguration = logContext.getConfiguration();
+
+			logConfiguration.addLogger(logPackage, new LoggerConfig(logPackage, level, false));
+			return EmptyMessage.accepted();
+		}
+		throw new BusException("neither [logPackage] or [level] provided");
 	}
 
 	private void log2SecurityLog(String logMessage) {

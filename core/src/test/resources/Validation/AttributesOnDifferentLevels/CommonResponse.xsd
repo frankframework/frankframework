@@ -1,0 +1,29 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:complexType name="errors">
+		<xs:sequence>
+			<xs:element name="error" type="error" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="error">
+		<xs:sequence>
+			<xs:element name="type" type="xs:string" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="title" type="xs:string" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="status" type="xs:string" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="detail" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="instance" type="xs:anyURI" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="links">
+		<xs:sequence>
+			<xs:element name="link" type="link" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="link">
+		<xs:sequence>	
+			<xs:element name="rel" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="type" type="xs:string" minOccurs="1" maxOccurs="1"/> 
+			<xs:element name="title" type="xs:string" minOccurs="0"/>
+			<xs:element name="href" type="xs:anyURI" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

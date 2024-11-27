@@ -1,11 +1,14 @@
 package org.frankframework.filesystem;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.PropertyUtil;
@@ -26,12 +29,13 @@ import org.frankframework.xml.SaxElementBuilder;
  *
  * creates a number of fs_test... folders
  */
+@Log4j2
 public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A>> extends SelfContainedBasicFileSystemTest<M, FS>{
 
 	protected String PROPERTY_FILE = "ExchangeMail.properties";
 
-	protected String username    = PropertyUtil.getProperty(PROPERTY_FILE, "username");
-	protected String password    = PropertyUtil.getProperty(PROPERTY_FILE, "password");
+//	protected String username    = PropertyUtil.getProperty(PROPERTY_FILE, "username");
+//	protected String password    = PropertyUtil.getProperty(PROPERTY_FILE, "password");
 	protected String basefolder1 = PropertyUtil.getProperty(PROPERTY_FILE, "basefolder1");
 	protected String expectdBestReplyAddress = PropertyUtil.getProperty(PROPERTY_FILE, "bestReplyAddress");
 
@@ -105,7 +109,7 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 	public void testToAddress() throws Exception {
 		M emailMessage = getFirstFileFromFolder(null);
 		Map<String,Object> properties = fileSystem.getAdditionalFileProperties(emailMessage);
-		List<String> adresses = (List<String>)properties.get(IMailFileSystem.TO_RECEPIENTS_KEY);
+		List<String> adresses = (List<String>)properties.get(IMailFileSystem.TO_RECIPIENTS_KEY);
 		String address = adresses.get(0);
 		String expected = "frankframework/frankframework <iaf@noreply.github.com>";
 		assertEquals(expected, address);
@@ -224,14 +228,14 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 		MatchUtils.assertXmlEquals(expected,xml.toString());
 	}
 
-	protected M prepareFolderAndGetFirstMessage(String folderName, String sourceFolder) throws Exception {
+	protected M prepareFolderAndGetFirstMessage(String folderName) throws Exception {
 		if (!fileSystem.folderExists(folderName)) {
 			fileSystem.createFolder(folderName);
 		}
 		M orgItem = getFirstFileFromFolder(folderName);
 		if (orgItem == null) {
-			M seedItem = getFirstFileFromFolder(sourceFolder);
-			orgItem = fileSystem.copyFile(seedItem, folderName, false, true);
+			//TODO put message here!
+			throw new IllegalStateException("TODO, there is no message!");
 		}
 		return orgItem;
 	}
@@ -241,17 +245,17 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 		String folderName1 = "RaceFolder1";
 		String folderName2 = "RaceFolder2";
 
-		M orgItem = prepareFolderAndGetFirstMessage(folderName1, null);
+		M orgItem = prepareFolderAndGetFirstMessage(folderName1);
 		System.out.println("Item original ["+fileSystem.getName(orgItem));
 
 		System.out.println("moving item...");
-		M movedItem1 = fileSystem.moveFile(orgItem, folderName2, true, true);
+		M movedItem1 = fileSystem.moveFile(orgItem, folderName2, true);
 		System.out.println("Item original ["+fileSystem.getName(orgItem));
 		System.out.println("Item moved 1  ["+fileSystem.getName(movedItem1));
 
 		System.out.println("tring to move same item again...");
 		try {
-			M movedItem2 = fileSystem.moveFile(orgItem, folderName2, true, true);
+			M movedItem2 = fileSystem.moveFile(orgItem, folderName2, true);
 			System.out.println("Item original ["+fileSystem.getName(orgItem));
 			System.out.println("Item moved 1  ["+fileSystem.getName(movedItem1));
 			System.out.println("Item moved 1  ["+fileSystem.getName(movedItem2));

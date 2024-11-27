@@ -25,13 +25,13 @@ import org.frankframework.core.ISenderWithParameters;
  */
 public interface ISapSender extends ISenderWithParameters,ISapFunctionFacade {
 
-	public void setSynchronous(boolean b);
+	void setSynchronous(boolean b);
 
-	public void setFunctionName(String string);
-	public void setFunctionNameParam(String string);
-	public void setLuwHandleSessionKey(String string);
+	void setFunctionName(String string);
+	void setFunctionNameParam(String string);
+	void setLuwHandleSessionKey(String string);
 
-	public void setSapSystemNameParam(String string);
-	public String getRequestFieldName();
+	void setSapSystemNameParam(String string);
+	String getRequestFieldName();
 
 }

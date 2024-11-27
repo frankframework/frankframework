@@ -27,202 +27,28 @@
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-core</artifactId>
 		</dependency>
+
+		<!-- Tika library -->
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-parser-microsoft-module</artifactId>
+			<version>2.9.2</version>
+			<exclusions>
+				<exclusion>
+					<groupId>xerces</groupId>
+					<artifactId>xercesImpl</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
 
-		<!-- Tika library -->
 		<dependency>
-			<groupId>org.apache.tika</groupId>
-			<artifactId>tika-parsers</artifactId>
-			<version>1.28.5</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>json-simple</artifactId>
-					<groupId>com.googlecode.json-simple</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>cxf-rt-rs-client</artifactId>
-					<groupId>org.apache.cxf</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>geoapi</artifactId>
-					<groupId>org.opengis</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>jackcess-encrypt</artifactId>
-					<groupId>com.healthmarketscience.jackcess</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>xz</artifactId>
-					<groupId>org.tukaani</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>json</artifactId>
-					<groupId>org.json</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>pdfbox</artifactId>
-					<groupId>org.apache.pdfbox</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>sis-metadata</artifactId>
-					<groupId>org.apache.sis.core</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>jhighlight</artifactId>
-					<groupId>org.codelibs</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>sis-netcdf</artifactId>
-					<groupId>org.apache.sis.storage</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>apache-mime4j-core</artifactId>
-					<groupId>org.apache.james</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>jmatio</artifactId>
-					<groupId>net.sourceforge.jmatio</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>junrar</artifactId>
-					<groupId>com.github.junrar</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>juniversalchardet</artifactId>
-					<groupId>com.googlecode.juniversalchardet</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>java-libpst</artifactId>
-					<groupId>com.pff</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>vorbis-java-tika</artifactId>
-					<groupId>org.gagravarr</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>tagsoup</artifactId>
-					<groupId>org.ccil.cowan.tagsoup</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>httpservices</artifactId>
-					<groupId>edu.ucar</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>commons-exec</artifactId>
-					<groupId>org.apache.commons</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>commons-csv</artifactId>
-					<groupId>org.apache.commons</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>commons-codec</artifactId>
-					<groupId>commons-codec</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>apache-mime4j-dom</artifactId>
-					<groupId>org.apache.james</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>bcmail-jdk15on</artifactId>
-					<groupId>org.bouncycastle</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>asm</artifactId>
-					<groupId>org.ow2.asm</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>isoparser</artifactId>
-					<groupId>com.googlecode.mp4parser</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>sis-utility</artifactId>
-					<groupId>org.apache.sis.core</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>jackcess</artifactId>
-					<groupId>com.healthmarketscience.jackcess</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>bcprov-jdk15on</artifactId>
-					<groupId>org.bouncycastle</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>opennlp-tools</artifactId>
-					<groupId>org.apache.opennlp</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>rome</artifactId>
-					<groupId>rome</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>grib</artifactId>
-					<groupId>edu.ucar</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>boilerpipe</artifactId>
-					<groupId>de.l3s.boilerpipe</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>vorbis-java-core</artifactId>
-					<groupId>org.gagravarr</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>netcdf4</artifactId>
-					<groupId>edu.ucar</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>cdm</artifactId>
-					<groupId>edu.ucar</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>poi-scratchpad</artifactId>
-					<groupId>org.apache.poi</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>metadata-extractor</artifactId>
-					<groupId>com.drewnoakes</groupId>
-				</exclusion>
-				<exclusion>
-					<groupId>xerces</groupId>
-					<artifactId>xercesImpl</artifactId>
-				</exclusion>
-				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
-					<groupId>jakarta.activation</groupId>
-					<artifactId>jakarta.activation-api</artifactId>
-				</exclusion>
-				<!-- excluded to enforce the correct version of jackson is being used when the aspose dependency is declared before(!) the core dependency -->
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-annotations</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>net.jcip</groupId>
-					<artifactId>jcip-annotations</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<!-- Explicitly here because we want to force 'our' version and not the inherited version from DSN -->
-		<dependency>
-			<groupId>com.sun.mail</groupId>
-			<artifactId>jakarta.mail</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.mail</groupId>
-			<artifactId>dsn</artifactId>
-			<version>2.0.1</version>
+			<groupId>jakarta.mail</groupId>
+			<artifactId>jakarta.mail-api</artifactId>
 		</dependency>
 
 		<!-- LOG4J to SLF4J Bridge required for ehcache -->
@@ -267,17 +93,10 @@
 			<classifier>jdk16</classifier>
 		</dependency>
 
-		<!-- Upgrade commons-compress because of vulnerability; transitive dep of tika-parsers -->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-compress</artifactId>
-			<version>1.26.1</version>
-		</dependency>
-
 		<!-- test scoped dependencies -->
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -301,13 +120,13 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
-			<version>2.0.31</version>
+			<version>3.0.3</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox-tools</artifactId>
-			<version>2.0.31</version>
+			<version>2.0.32</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -324,7 +143,7 @@
 		<repository>
 			<id>AsposeJavaAPI</id>
 			<name>Aspose Java Repository</name>
-			<url>https://repository.aspose.com/repo/</url>
+			<url>https://releases.aspose.com/java/repo/</url>
 		</repository>
 	</repositories>
 </project>

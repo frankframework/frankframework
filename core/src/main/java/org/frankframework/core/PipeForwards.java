@@ -15,24 +15,28 @@
 */
 package org.frankframework.core;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Getter;
+
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 
 /**
  * Optional element in a pipeline. Global forwards that will be added to every pipe, when the forward name has not been explicitly set.
  * For example the <code>&lt;forward name="exception" path="error_exception" /&gt;</code>, which will add the '<code>exception</code>' forward to every pipe in the pipeline.
  */
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class PipeForwards {
 
-	private final @Getter List<PipeForward> forwards = new LinkedList<>();
+	private final @Getter List<PipeForward> forwards = new ArrayList<>();
 
 	/**
 	 * Defines what pipe or exit to execute next. When the execution of a pipe is done, the pipe looks up the next pipe or exit to execute.
 	 * See {@link PipeForward Forward} for more information.
 	 */
-	public void registerForward(PipeForward forward) {
+	public void addForward(PipeForward forward) {
 		forwards.add(forward);
 	}
 

@@ -15,15 +15,15 @@
 */
 package org.frankframework.util;
 
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Utility class to support run-state management.
  *
  * @author Gerrit van Brakel
  */
+@Log4j2
 public class RunStateManager implements RunStateEnquirer {
-	protected Logger log = LogUtil.getLogger(this);
 
 	private RunState runState = RunState.STOPPED;
 
@@ -34,8 +34,7 @@ public class RunStateManager implements RunStateEnquirer {
 
 	public synchronized void setRunState(RunState newRunState) {
 		if(runState != newRunState) {
-			if(log.isDebugEnabled())
-				log.debug("Runstate [" + this + "] set from " + runState + " to " + newRunState);
+			log.debug("Runstate [{}] set from {} to {}", super.toString(), runState, newRunState);
 
 			runState = newRunState;
 			notifyAll();

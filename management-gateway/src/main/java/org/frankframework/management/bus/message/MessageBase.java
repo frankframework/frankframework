@@ -18,12 +18,13 @@ package org.frankframework.management.bus.message;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.frankframework.management.bus.BusMessageUtils;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.util.MimeType;
 
-public abstract class MessageBase<T> implements Message<T> {
+import org.frankframework.management.bus.BusMessageUtils;
+
+public class MessageBase<T> implements Message<T> {
 	public static final String STATUS_KEY = "status";
 	public static final String MIMETYPE_KEY = "type";
 	public static final String CONTENT_DISPOSITION_KEY = "contentdisposition";

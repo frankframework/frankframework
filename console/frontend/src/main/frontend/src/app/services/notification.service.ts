@@ -26,12 +26,7 @@ export class NotificationService {
     });
   }
 
-  add(
-    icon: string,
-    title: string,
-    message?: string | boolean,
-    function_?: (notification: Notification) => void,
-  ): void {
+  add(icon: string, title: string, message?: string | boolean, function_?: (notification: Notification) => void): void {
     const object: Notification = {
       icon: icon,
       title: title,
@@ -53,8 +48,7 @@ export class NotificationService {
       if (notification.id == id) {
         if (notification.fn) {
           window.setTimeout(() => {
-            if (typeof notification.fn === 'function')
-              Reflect.apply(notification.fn, this, [notification]);
+            if (typeof notification.fn === 'function') Reflect.apply(notification.fn, this, [notification]);
           }, 50);
         }
         return notification;

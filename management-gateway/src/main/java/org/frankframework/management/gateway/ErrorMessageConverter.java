@@ -39,8 +39,7 @@ public class ErrorMessageConverter extends AbstractReplyProducingMessageHandler 
 
 	@Override
 	protected Object handleRequestMessage(Message<?> requestMessage) {
-		if(requestMessage.getPayload() instanceof Exception) {
-			Exception e = (Exception) requestMessage.getPayload();
+		if (requestMessage.getPayload() instanceof Exception e) {
 			log.error("an error occurred while handling frank-management-bus request", e);
 
 			if(e instanceof MessageDeliveryException) { //hide timeouts
@@ -49,8 +48,7 @@ public class ErrorMessageConverter extends AbstractReplyProducingMessageHandler 
 
 			// For the correct mapping the status code should match SpringBusExceptionHandler.BusException
 			// And to make the Exception more readable, return the cause's message.
-			if(e.getCause() instanceof BusException) {
-				BusException ex = (BusException) e.getCause();
+			if (e.getCause() instanceof BusException ex) {
 				return new ResponseEntity<>(ex.getMessage(), HttpStatus.valueOf(ex.getStatusCode()));
 			}
 

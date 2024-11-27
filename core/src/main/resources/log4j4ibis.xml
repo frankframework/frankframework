@@ -8,17 +8,25 @@
 				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X{mid,cid} %c{2} - %m%n%xEx{short}</Pattern>
 			</Layout>
 		</Appender>
-		<Appender name="systemout" type="Console">
+		<Appender name="application-log-appender" type="Console">
 			<Layout type="PatternLayout">
 				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} - %m%n%xEx{short}</Pattern>
 			</Layout>
+		</Appender>
+		<Appender name="leak-log-appender" createOnDemand="true" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-leaks.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-leaks.log.%i">
+			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n%xEx"/>
+			<Policies>
+				<SizeBasedTriggeringPolicy size="${ctx:log.maxFileSize}" />
+				<OnStartupTriggeringPolicy />
+			</Policies>
+			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
 		</Appender>
 		<Appender name="file" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}.log.%i">
 			<Filters>
 				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex:-}" />
 			</Filters>
 			<Layout type="IbisPatternLayout">
-				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X{mid,cid,adapter,pipe} %c{2} - %m%n%xEx{filters(${ctx:log.stacktrace.filters})}</Pattern>
+				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X{mid,cid,adapter,pipe,sender} %c{2} - %m%n%xEx{filters(${ctx:log.stacktrace.filters})}</Pattern>
 			</Layout>
 			<Policies>
 				<SizeBasedTriggeringPolicy size="${ctx:log.maxFileSize}" />
@@ -85,12 +93,13 @@
 		<Logger name="org.frankframework.larva" level="WARN" />
 		<Logger name="org.apache" level="INFO" />
 		<Logger name="org.apache.commons" level="WARN" />
+		<Logger name="org.springframework" level="WARN" />
+		<Logger name="org.springframework.aop.framework.CglibAopProxy" level="ERROR" />
 		<Logger name="org.apache.cxf" level="WARN" />
 		<Logger name="org.apache.cxf.interceptor" level="WARN" />
 		<Logger name="org.apache.http.headers" level="WARN" /> <!-- include a definition, enabling to increase the level in the console -->
 		<Logger name="org.apache.http.wire" level="WARN" /> <!-- include a definition, enabling to increase the level in the console -->
 		<Logger name="org.aspectj.weaver" level="WARN" />
-		<Logger name="bitronix.tm" level="INFO" />
 		<Logger name="com.arjuna" level="INFO" />
 		<Logger name="org.frankframework.jta.narayana.NarayanaJtaTransactionManager" level="WARN" />
 		<Logger name="org.frankframework.jta.ThreadConnectableDataSourceTransactionManager" level="INFO" />
@@ -101,9 +110,11 @@
 		<Logger name="microsoft.exchange" level="INFO" />
 		<Logger name="org.springframework.security.web" level="INFO" />
 		<Logger name="org.springframework.security.ldap" level="WARN" />
+		<Logger name="org.frankframework.management.gateway" level="INFO" />
+		<Logger name="com.hazelcast" level="WARN" />
 
 		<Logger name="liquibase.migrationLog" level="INFO">
-			<AppenderRef ref="systemout"/>
+			<AppenderRef ref="application-log-appender"/>
 		</Logger>
 
 		<Logger name="MSG" additivity="false" level="INFO">
@@ -120,7 +131,10 @@
 			<AppenderRef ref="config"/>
 		</Logger>
 		<Logger name="APPLICATION" additivity="true" level="DEBUG">
-			<AppenderRef ref="systemout"/>
+			<AppenderRef ref="application-log-appender"/>
+		</Logger>
+		<Logger name="LEAK_LOG" additivity="false" level="ERROR">
+			<AppenderRef ref="leak-log-appender"/>
 		</Logger>
 
 		<Logger name="nl.nn.testtool" additivity="false" level="INFO">

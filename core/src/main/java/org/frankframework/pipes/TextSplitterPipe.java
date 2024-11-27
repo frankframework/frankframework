@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,24 +15,20 @@
  */
 package org.frankframework.pipes;
 
-import java.io.File;
-import java.nio.file.Files;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.PathMessage;
-import org.frankframework.util.FileUtils;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.xml.SaxDocumentBuilder;
 
 /**
  * Breaks up the text input in blocks of a maximum length.
  * By default, the maximum block length is 160 characters, to enable them to be sent as SMS messages.
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class TextSplitterPipe extends FixedForwardPipe {
 
 	private int maxBlockLength=160;
@@ -41,7 +37,7 @@ public class TextSplitterPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (Message.isNull(message) || message.isEmpty()) {
-			return new PipeRunResult(getSuccessForward(), Message.asMessage("<text/>"));
+			return new PipeRunResult(getSuccessForward(), new Message("<text/>"));
 		}
 
 		try {
@@ -80,13 +76,13 @@ public class TextSplitterPipe extends FixedForwardPipe {
 				}
 			}
 
-			File tempFile = FileUtils.createTempFile();
-			try (SaxDocumentBuilder saxBuilder = new SaxDocumentBuilder("text", Files.newBufferedWriter(tempFile.toPath()), false)) {
+			MessageBuilder messageBuilder = new MessageBuilder();
+			try (SaxDocumentBuilder saxBuilder = new SaxDocumentBuilder("text", messageBuilder.asXmlWriter(), false)) {
 				for (int counter = 0; result[counter] != null; counter++) {
 					saxBuilder.addElement("block", result[counter]);
 				}
 			}
-			return new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath()));
+			return new PipeRunResult(getSuccessForward(), messageBuilder.build());
 
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Cannot create text blocks", e);

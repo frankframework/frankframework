@@ -39,8 +39,6 @@
             "messagesRejected": 0.0,
             "messagesRetried": 0.0,
             "processing": [
-            ],
-            "idle": [
             ]
         }
     ],
@@ -142,6 +140,16 @@
             "count": 0
         }
     ],
+    "http": {
+        "connections": {
+            "max": 0.0,
+            "available": 0.0,
+            "leased": 0.0,
+            "pending": 0.0
+        },
+        "requests": [
+        ]
+    },
     "totalMessageProccessingTime": {
         "name": "myAdapter",
         "count": 0,

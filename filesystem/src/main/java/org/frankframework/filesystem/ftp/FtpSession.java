@@ -27,20 +27,21 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.filesystem.FileSystemException;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
+import org.frankframework.doc.Unsafe;
 import org.frankframework.encryption.AuthSSLContextFactory;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
-
+import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
 
@@ -49,9 +50,9 @@ import org.frankframework.util.LogUtil;
  *
  * @author John Dekker
  */
-public abstract class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
+public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	private static final Logger LOG = LogUtil.getLogger(FtpSession.class);
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter FtpType ftpType = FtpType.FTP;
@@ -61,9 +62,9 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 		@EnumLabel("FTPSX(TLS)") FTPS_EXPLICIT_TLS("TLS", false),
 		@EnumLabel("FTPSX(SSL)") FTPS_EXPLICIT_SSL("SSL", false);
 
-		private @Getter boolean implicit;
-		private @Getter String protocol;
-		private FtpType(String protocol, boolean implicit) {
+		private final @Getter boolean implicit;
+		private final @Getter String protocol;
+		FtpType(String protocol, boolean implicit) {
 			this.protocol = protocol;
 			this.implicit = implicit;
 		}
@@ -86,9 +87,9 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 		ASCII(org.apache.commons.net.ftp.FTP.ASCII_FILE_TYPE),
 		BINARY(org.apache.commons.net.ftp.FTP.BINARY_FILE_TYPE);
 
-		int ftpFileType;
+		final int ftpFileType;
 
-		private FileType(int ftpFileType) {
+		FileType(int ftpFileType) {
 			this.ftpFileType=ftpFileType;
 		}
 	}
@@ -373,8 +374,6 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 		keystoreAliasPassword = string;
 	}
 
-
-
 	/** (ftps) Resource url to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used. */
 	@Override
 	public void setTruststore(String string) {
@@ -408,6 +407,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 	}
 
 	/** (ftps) If <code>true</code>, the hostname in the certificate will be checked against the actual hostname of the peer */
+	@Unsafe
 	@Override
 	public void setVerifyHostname(boolean b) {
 		verifyHostname = b;
@@ -416,6 +416,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 	/** (ftps) If <code>true</code>, self signed certificates are accepted
 	 * @ff.default false
 	 */
+	@Unsafe
 	@Override
 	public void setAllowSelfSignedCertificates(boolean b) {
 		allowSelfSignedCertificates = b;
@@ -425,6 +426,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 	 * (ftps) If <code>true</code>, CertificateExpiredExceptions are ignored
 	 * @ff.default false
 	 */
+	@Unsafe
 	@Override
 	public void setIgnoreCertificateExpiredException(boolean b) {
 		ignoreCertificateExpiredException = b;

@@ -29,6 +29,7 @@ import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.SenderException;

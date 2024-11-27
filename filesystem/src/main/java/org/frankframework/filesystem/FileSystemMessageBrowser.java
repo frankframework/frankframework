@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
@@ -121,7 +122,7 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 	@Override
 	public int getMessageCount() throws ListenerException {
 		int count = 0;
-		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
+		try(DirectoryStream<F> ds = fileSystem.list(folder, TypeFilter.FILES_ONLY)) {
 			if (ds==null) {
 				return -1;
 			}

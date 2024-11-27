@@ -32,6 +32,8 @@ import java.sql.Statement;
 import java.util.Date;
 import java.util.zip.DeflaterOutputStream;
 
+import org.junit.jupiter.api.BeforeEach;
+
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.IDbmsSupport;
@@ -40,7 +42,6 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
-import org.junit.jupiter.api.BeforeEach;
 
 @WithLiquibase(tableName = JdbcTransactionalStorageTest.tableName)
 public class JdbcTransactionalStorageTest {
@@ -252,7 +253,7 @@ public class JdbcTransactionalStorageTest {
 	@DatabaseTest
 	public void testGetContext() throws Exception {
 		storage.configure();
-		String key = null;
+		String key;
 
 		String message = createMessage();
 		try (Connection connection = env.getConnection()) {

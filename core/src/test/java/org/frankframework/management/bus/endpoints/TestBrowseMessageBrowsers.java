@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.frankframework.management.bus.endpoints;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,12 +27,22 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.util.Date;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.messaging.Message;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
@@ -60,20 +71,13 @@ import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.mock.TransactionManagerMock;
 import org.frankframework.util.SpringUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.springframework.messaging.Message;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 @WithMockUser(roles = { "IbisTester" })
 public class TestBrowseMessageBrowsers extends BusTestBase {
 	private static final String JSON_MESSAGE = "{\"dummy\":1}";
 	private static final String XML_MESSAGE = "<dummy>2</dummy>";
+
 	private Adapter adapter;
 
 	@BeforeEach
@@ -93,7 +97,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		receiver.setName("ReceiverName");
 		receiver.setListener(listener);
 		doAnswer(p -> { throw new ListenerException("testing message ->"+p.getArgument(0)); }).when(receiver).retryMessage(anyString()); //does not actually test the retry mechanism
-		adapter.registerReceiver(receiver);
+		adapter.addReceiver(receiver);
 		PipeLine pipeline = SpringUtils.createBean(configuration, PipeLine.class);
 		SenderPipe pipe = SpringUtils.createBean(configuration, SenderPipe.class);
 		pipe.setMessageLog(getTransactionalStorage());
@@ -103,7 +107,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		adapter.setPipeLine(pipeline);
 
 		adapter.configure();
-		getConfiguration().getAdapterManager().registerAdapter(adapter);
+		getConfiguration().getAdapterManager().addAdapter(adapter);
 
 		return adapter;
 	}
@@ -112,7 +116,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	@Override
 	public void tearDown() {
 		if(adapter != null) {
-			getConfiguration().getAdapterManager().unRegisterAdapter(adapter);
+			getConfiguration().getAdapterManager().removeAdapter(adapter);
 		}
 		super.tearDown();
 	}
@@ -127,7 +131,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		try {
 			callSyncGateway(request);
 		} catch (Exception e) {
-			assertTrue(e.getCause() instanceof BusException);
+			assertInstanceOf(BusException.class, e.getCause());
 			BusException be = (BusException) e.getCause();
 			assertEquals("no StorageSource provided", be.getMessage());
 		}
@@ -269,7 +273,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		try {
 			callAsyncGateway(request);
 		} catch (Exception e) {
-			assertTrue(e.getCause() instanceof BusException);
+			assertInstanceOf(BusException.class, e.getCause());
 			BusException be = (BusException) e.getCause();
 			assertEquals("unable to retry message with id [2]: testing message ->2", be.getMessage());
 		}
@@ -288,7 +292,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		try {
 			callAsyncGateway(request);
 		} catch (Exception e) {
-			assertTrue(e.getCause() instanceof BusException);
+			assertInstanceOf(BusException.class, e.getCause());
 			BusException be = (BusException) e.getCause();
 			assertEquals("unable to delete message with id [2]: testing message ->2", be.getMessage());
 
@@ -297,6 +301,45 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		}
 	}
 
+	/**
+	 * Method: cleanseMessage(String inputString, String hideRegex, String
+	 * hideMethod)
+	 */
+	@Test
+	public void testCleanseMessageHideAll() {
+		// Arrange
+		String s = "Donald Duck 23  Hey hey  14  Wooo";
+		String regex = "\\d";
+		IMessageBrowser<?> messageBrowser = mock(IMessageBrowser.class);
+		when(messageBrowser.getHideRegex()).thenReturn(regex);
+		when(messageBrowser.getHideMethod()).thenReturn(IMessageBrowser.HideMethod.ALL);
+
+		// Act
+		String res = BrowseMessageBrowsers.cleanseMessage(s, adapter, messageBrowser);
+
+		// Assert
+		assertEquals("Donald Duck **  Hey hey  **  Wooo", res);
+	}
+
+	/**
+	 * Method: cleanseMessage(String inputString, String hideRegex, String
+	 * hideMethod)
+	 */
+	@Test
+	public void testCleanseMessageHideFirstHalf() {
+		// Arrange
+		String s = "1 Donald Duck 123  Hey hey  45  Wooo  6789 and 12345";
+		String regex = "\\d+";
+		IMessageBrowser<?> messageBrowser = mock(IMessageBrowser.class);
+		when(messageBrowser.getHideRegex()).thenReturn(regex);
+		when(messageBrowser.getHideMethod()).thenReturn(IMessageBrowser.HideMethod.FIRSTHALF);
+
+		// Act
+		String res = BrowseMessageBrowsers.cleanseMessage(s, adapter, messageBrowser);
+
+		// Assert
+		assertEquals("* Donald Duck **3  Hey hey  *5  Wooo  **89 and ***45", res);
+	}
 
 	public class DummyListenerWithMessageBrowsers extends JavaListener implements IProvidesMessageBrowsers<String> {
 
@@ -333,6 +376,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	private ITransactionalStorage getTransactionalStorage() {
 		ITransactionalStorage<String> browser = mock(ITransactionalStorage.class);
 		try {
+			doReturn(IMessageBrowser.HideMethod.ALL).when(browser).getHideMethod();
 			doReturn("silly mock because the storage requires a name").when(browser).getName();
 			doAnswer(DummyMessageBrowsingIteratorItem.newMock()).when(browser).getContext(anyString());
 			DummyMessageBrowsingIterator iterator = new DummyMessageBrowsingIterator();
@@ -350,18 +394,15 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 	public RawMessageWrapper<String> messageMock(InvocationOnMock invocation) {
 		String id = (String) invocation.getArguments()[0];
-		switch (id) {
-		case "1":
-			return new RawMessageWrapper<>(JSON_MESSAGE, id, null);
-		case "2":
-			return new RawMessageWrapper<>(XML_MESSAGE, id, null);
-		default:
-			return new RawMessageWrapper<>("<xml>"+id+"</xml>", id, null);
-		}
+		return switch (id) {
+			case "1" -> new RawMessageWrapper<>(JSON_MESSAGE, id, null);
+			case "2" -> new RawMessageWrapper<>(XML_MESSAGE, id, null);
+			default -> new RawMessageWrapper<>("<xml>" + id + "</xml>", id, null);
+		};
 	}
 
 	public static class DummyMessageBrowsingIterator implements IMessageBrowsingIterator {
-		private Deque<IMessageBrowsingIteratorItem> items = new LinkedList<>();
+		private final Deque<IMessageBrowsingIteratorItem> items = new LinkedList<>();
 		public DummyMessageBrowsingIterator() {
 			items.add(DummyMessageBrowsingIteratorItem.newInstance("1"));
 			items.add(DummyMessageBrowsingIteratorItem.newInstance("2"));
@@ -406,13 +447,13 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		}
 
 		@Override
-		public String getId() throws ListenerException {
+		public String getId() {
 			return messageId;
 		}
 
 		@Override
-		public String getOriginalId() throws ListenerException {
-			return messageId;
+		public String getOriginalId() {
+			return getId();
 		}
 	}
 }

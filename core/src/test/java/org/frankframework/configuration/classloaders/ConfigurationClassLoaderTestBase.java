@@ -26,22 +26,23 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.LinkedList;
 
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader.ReportLevel;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.UUIDUtil;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
-public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase> extends Mockito {
+public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLoader> extends Mockito {
 
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 
-	private ClassLoaderBase classLoader = null;
+	private AbstractClassLoader classLoader = null;
 	protected IbisContext ibisContext = spy(new IbisContext());
 	protected String scheme = "file";
 	protected AppConstants appConstants;

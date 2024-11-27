@@ -22,32 +22,45 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
 import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
+
+import jakarta.annotation.Nonnull;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageConsumer;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.xml.sax.SAXException;
 
+import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.Adapter;
+import org.frankframework.core.AdapterAware;
+import org.frankframework.core.ICorrelatedSender;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.Parameter.ParameterType;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.parameters.ParameterType;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.soap.SoapWrapper;
+import org.frankframework.statistics.FrankMeterType;
+import org.frankframework.statistics.HasStatistics;
+import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
@@ -61,8 +74,7 @@ import org.frankframework.util.XmlException;
  *
  * @author Gerrit van Brakel
  */
-
-public class JmsSender extends JMSFacade implements ISenderWithParameters {
+public class JmsSender extends JMSFacade implements ISenderWithParameters, HasStatistics, AdapterAware, ICorrelatedSender {
 	private @Getter String replyToName = null;
 	private @Getter DeliveryMode deliveryMode = DeliveryMode.NOT_SET;
 	private @Getter String messageType = null;
@@ -77,11 +89,14 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	private @Getter String soapHeaderParam = "soapHeader";
 	private @Getter LinkMethod linkMethod = LinkMethod.MESSAGEID;
 	private @Getter String destinationParam = null;
+	private @Setter MetricsInitializer configurationMetrics;
 
 	protected ParameterList paramList = null;
 	private SoapWrapper soapWrapper = null;
 	private String responseHeaders = null;
 	private final @Getter List<String> responseHeadersList = new ArrayList<>();
+	private DistributionSummary sessionStatistics;
+	private @Getter @Setter Adapter adapter;
 
 	public enum LinkMethod {
 		/** use the generated messageId as the correlationId in the selector for response messages */
@@ -97,13 +112,16 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isNotEmpty(getSoapAction()) && (paramList==null || paramList.findParameter("SoapAction")==null)) {
+		if (StringUtils.isNotEmpty(getSoapAction()) && (paramList == null || !paramList.hasParameter("SoapAction"))) {
 			Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName("SoapAction");
 			p.setValue(getSoapAction());
 			addParameter(p);
 		}
-		if (paramList!=null) {
+
+		sessionStatistics = configurationMetrics.createSubDistributionSummary(this, "createSession", FrankMeterType.PIPE_DURATION);
+
+		if (paramList != null) {
 			paramList.configure();
 		}
 		super.configure();
@@ -111,7 +129,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			//ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 			//String msg = getLogPrefix()+"the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
 			//configWarnings.add(log, msg);
-			soapWrapper=SoapWrapper.getInstance();
+			soapWrapper = SoapWrapper.getInstance();
 		}
 
 		if (responseHeaders != null) {
@@ -119,21 +137,33 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		}
 	}
 
+	@Override
+	protected Session createSession() throws JmsException {
+		long start = System.currentTimeMillis();
+
+		Session session = super.createSession();
+
+		if (sessionStatistics != null) {
+			sessionStatistics.record((double) System.currentTimeMillis() - start);
+		}
+
+		return session;
+	}
+
 	/**
 	 * Starts the sender
 	 */
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 		try {
-			super.open();
-		}
-		catch (Exception e) {
-			throw new SenderException(e);
+			super.start();
+		} catch (Exception e) {
+			throw new LifecycleException(e);
 		}
 	}
 
 	@Override
-	public void addParameter(Parameter p) {
+	public void addParameter(IParameter p) {
 		if (paramList==null) {
 			paramList=new ParameterList();
 		}
@@ -146,11 +176,11 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		return new SenderResult(sendMessage(message, session, null));
 	}
 
-	public Message sendMessage(Message message, PipeLineSession pipeLineSession, String soapHeader) throws SenderException, TimeoutException {
+	public @Nonnull Message sendMessage(@Nonnull Message message, @Nonnull PipeLineSession pipeLineSession, String soapHeader) throws SenderException, TimeoutException {
 		Session jmsSession = null;
 		MessageProducer messageProducer = null;
 
@@ -160,29 +190,29 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			try {
 				pvl=paramList.getValues(message, pipeLineSession);
 			} catch (ParameterException e) {
-				throw new SenderException(getLogPrefix()+"cannot extract parameters",e);
+				throw new SenderException("cannot extract parameters",e);
 			}
 		}
 
 		try {
-			String correlationID = pipeLineSession == null ? null : pipeLineSession.getCorrelationId();
+			String correlationID = pipeLineSession.getCorrelationId();
 			if (isSoap()) {
 				if (soapHeader == null && pvl != null && StringUtils.isNotEmpty(getSoapHeaderParam())) {
 					ParameterValue soapHeaderParamValue = pvl.get(getSoapHeaderParam());
 					if (soapHeaderParamValue == null) {
-						log.warn("no SoapHeader found using parameter [" + getSoapHeaderParam() + "]");
+						log.warn("no SoapHeader found using parameter [{}]", getSoapHeaderParam());
 					} else {
 						soapHeader = soapHeaderParamValue.asStringValue("");
 					}
 				}
 				message = soapWrapper.putInEnvelope(message, getEncodingStyleURI(), getServiceNamespaceURI(), soapHeader);
-				if (log.isDebugEnabled()) log.debug("{} correlationId [{}] soap message [{}]", getLogPrefix(), correlationID, message);
+				if (log.isDebugEnabled()) log.debug("correlationId [{}] soap message [{}]", correlationID, message);
 			}
 			jmsSession = createSession();
 			messageProducer = getMessageProducer(jmsSession, getDestination(pipeLineSession, pvl));
 
 			// create message to send
-			javax.jms.Message messageToSend = createMessage(jmsSession, correlationID, message, getMessageClass());
+			jakarta.jms.Message messageToSend = createMessage(jmsSession, correlationID, message, getMessageClass());
 			enhanceMessage(messageToSend, messageProducer, pvl, jmsSession);
 			Destination replyQueue = messageToSend.getJMSReplyTo();
 
@@ -191,7 +221,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			if (isSynchronous()) {
 				return waitAndHandleResponseMessage(messageToSend, replyQueue, pipeLineSession, jmsSession);
 			}
-			return new Message(messageToSend.getJMSMessageID());
+			return new Message(messageToSend.getJMSMessageID(), getContext(messageToSend));
 		} catch (JMSException | IOException | NamingException | SAXException | TransformerException | JmsException | XmlException e) {
 			throw new SenderException(e);
 		} finally {
@@ -206,7 +236,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		}
 	}
 
-	private void enhanceMessage(javax.jms.Message msg, MessageProducer messageProducer, ParameterValueList pvl, Session s) throws JMSException, JmsException {
+	private void enhanceMessage(jakarta.jms.Message msg, MessageProducer messageProducer, ParameterValueList pvl, Session s) throws JMSException, JmsException {
 		if (getMessageType() != null) {
 			msg.setJMSType(getMessageType());
 		}
@@ -237,7 +267,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		}
 	}
 
-	private Message waitAndHandleResponseMessage(javax.jms.Message msg, Destination replyQueue, PipeLineSession session, Session s) throws JMSException, TimeoutException, IOException, TransformerException, SAXException, XmlException {
+	private Message waitAndHandleResponseMessage(jakarta.jms.Message msg, Destination replyQueue, PipeLineSession session, Session s) throws JMSException, TimeoutException, IOException, TransformerException, SAXException, XmlException {
 		String jmsMessageID = msg.getJMSMessageID();
 		String replyCorrelationId;
 		if (getReplyToName() == null) {
@@ -261,7 +291,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 				this::getName, logValue(replyQueue), logValue(jmsMessageID), logValue(replyCorrelationId), this::getReplyTimeout);
 		MessageConsumer mc = getMessageConsumerForCorrelationId(s, replyQueue, replyCorrelationId);
 		try {
-			javax.jms.Message rawReplyMsg = mc.receive(getReplyTimeout());
+			jakarta.jms.Message rawReplyMsg = mc.receive(getReplyTimeout());
 			if (rawReplyMsg == null) {
 				throw new TimeoutException("did not receive reply on [" + replyQueue + "] requestMsgId [" + jmsMessageID + "] replyCorrelationId [" + replyCorrelationId + "] within [" + getReplyTimeout() + "] ms");
 			}
@@ -305,13 +335,13 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	/**
 	 * Sets the JMS message properties as described in the msgProperties arraylist
 	 */
-	private void setProperties(javax.jms.Message msg, ParameterValueList pvl) throws JMSException {
+	private void setProperties(jakarta.jms.Message msg, ParameterValueList pvl) throws JMSException {
 		for(ParameterValue property : pvl) {
 			ParameterType type = property.getDefinition().getType();
 			String name = property.getDefinition().getName();
 
 			if (!isSoap() || !name.equals(getSoapHeaderParam()) && !name.equals(getDestinationParam())) {
-				log.debug("{} setting [{}] property from param [{}] to value [{}]", this::getLogPrefix, () -> type, () -> name, property::getValue);
+				log.debug("setting [{}] property from param [{}] to value [{}]", () -> type, () -> name, property::getValue);
 				switch(type) {
 					case BOOLEAN:
 						msg.setBooleanProperty(name, property.asBooleanValue(false));
@@ -364,7 +394,8 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	}
 
 	/**
-	 * (Only used when <code>synchronous</code>=<code>true</code> and <code>replyToName</code> is set). Indicates whether the server uses the correlationId from the pipeline, the correlationId from the message or the messageId in the correlationId field of the reply. This requires the sender to have set the correlationId at the time of sending.
+	 * (Only used when <code>synchronous=true</code> and <code>replyToName</code> is set). Indicates whether the server uses the correlationId from the pipeline,
+	 * the correlationId from the message or the messageId in the correlationId field of the reply. This requires the sender to have set the correlationId at the time of sending.
 	 * @ff.default MESSAGEID
 	 */
 	public void setLinkMethod(LinkMethod method) {
@@ -372,7 +403,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	}
 
 	/**
-	 * (Only for <code>synchronous</code>=<code>true</code>). Maximum time in ms to wait for a reply. 0 means no timeout.
+	 * (Only for <code>synchronous=true</code>). Maximum time in ms to wait for a reply. 0 means no timeout.
 	 * @ff.default 5000
 	 */
 	public void setReplyTimeout(int i) {

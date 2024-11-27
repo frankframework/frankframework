@@ -19,18 +19,17 @@ package org.frankframework.monitoring;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.DisposableBean;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.lifecycle.LazyLoadingEventListener;
 import org.frankframework.monitoring.events.FireMonitorEvent;
 import org.frankframework.util.XmlBuilder;
+import org.springframework.beans.factory.DisposableBean;
 
 @FrankDocGroup(FrankDocGroupValue.MONITORING)
 public interface ITrigger extends LazyLoadingEventListener<FireMonitorEvent>, DisposableBean {
-	public enum TriggerType {
+	enum TriggerType {
 		ALARM,
 		CLEARING
 	}
@@ -57,7 +56,7 @@ public interface ITrigger extends LazyLoadingEventListener<FireMonitorEvent>, Di
 	void setPeriod(int i);
 	int getPeriod();
 
-	void registerAdapterFilter(AdapterFilter af);
+	void addAdapterFilter(AdapterFilter af);
 	Map<String, AdapterFilter> getAdapterFilters();
 	void clearAdapterFilters();
 

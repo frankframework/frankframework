@@ -1,5 +1,3 @@
 <Configuration>
-	<Include ref="ConfigurationWebServiceListenerSender.xml"/>
-	<Include ref="ConfigurationWebServiceListenerSenderNoSoap.xml"/>
-	<Include ref="ConfigurationHttpListenerSender.xml"/>
+	<!-- empty configuration -->
 </Configuration>

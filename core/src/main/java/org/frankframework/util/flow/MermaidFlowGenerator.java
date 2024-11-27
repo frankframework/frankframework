@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,9 +27,10 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.Resource;
-import org.frankframework.doc.ElementType;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Protected;
 import org.frankframework.senders.IbisJavaSender;
 import org.frankframework.senders.IbisLocalSender;
@@ -38,6 +39,7 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.SaxElementBuilder;
+import org.frankframework.xml.XmlWriter;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -45,8 +47,6 @@ import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.core.type.classreading.MetadataReader;
-import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.http.MediaType;
@@ -54,8 +54,6 @@ import org.springframework.util.Assert;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import lombok.extern.log4j.Log4j2;
 
 /**
  * Flow generator to create MERMAID files
@@ -84,6 +82,7 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		String frankElementsList = compileFrankElementList();
+		log.trace("generated frankElementList [{}]", frankElementsList);
 		frankElements = XmlUtils.buildDomDocument(new InputSource(new StringReader(frankElementsList)), true);
 
 		Resource xsltSourceAdapter = Resource.getResource(ADAPTER2MERMAID_XSLT);
@@ -94,27 +93,27 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 	}
 
 	private String compileFrankElementList() throws SAXException {
-		try (SaxDocumentBuilder builder = new SaxDocumentBuilder("root")) {
+		XmlWriter writer = new XmlWriter();
+		try (SaxDocumentBuilder builder = new SaxDocumentBuilder("root", writer, true)) {
 			List<String> classNames = findAllFrankElements();
 			for (String className : classNames) {
 				addClassInfo(className, builder);
 			}
-			builder.endElement();
-			return builder.toString();
 		}
+		return writer.toString();
 	}
 
 	private void addClassInfo(String className, SaxDocumentBuilder builder) throws SAXException {
 		Class<?> clazz;
-		ElementType type;
+		EnterpriseIntegrationPattern type;
 		Method[] methods;
 		int modifier;
 		// Try first to extract all information from the class before adding it to the XML, so we add all or nothing about it.
 		try {
 			clazz = Class.forName(className);
-			type = AnnotationUtils.findAnnotation(clazz, ElementType.class);
+			type = AnnotationUtils.findAnnotation(clazz, EnterpriseIntegrationPattern.class);
 			if (type == null) {
-				log.debug("Skipping class [{}]", clazz);
+				log.trace("Skipping class [{}]", clazz);
 				return;
 			}
 			methods = clazz.getMethods();
@@ -180,7 +179,7 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 		scanner.setIncludeAnnotationConfig(false);
 		scanner.resetFilters(false);
 		scanner.addIncludeFilter(new AssignableTypeFilter(IConfigurable.class));
-		scanner.addIncludeFilter(new AnnotationTypeFilter(ElementType.class));
+		scanner.addIncludeFilter(new AnnotationTypeFilter(EnterpriseIntegrationPattern.class));
 		scanner.addExcludeFilter((i, e) -> i.getClassMetadata().getClassName().contains("$")); //Exclude inner classes
 		scanner.addExcludeFilter(new AnnotationTypeFilter(Protected.class)); //Exclude protected FrankElements
 
@@ -199,10 +198,6 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 
 		String[] bdn = scanner.getRegistry().getBeanDefinitionNames();
 		return Arrays.asList(bdn);
-	}
-
-	private boolean matchesTestClassPath(MetadataReader reader, MetadataReaderFactory factory) throws IOException {
-		return reader.getResource().getURI().toString().contains("/test-classes/");
 	}
 
 	@Override

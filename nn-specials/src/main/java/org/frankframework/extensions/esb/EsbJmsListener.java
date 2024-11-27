@@ -24,14 +24,18 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import javax.jms.BytesMessage;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.TextMessage;
 import javax.xml.transform.TransformerConfigurationException;
 
+import jakarta.jms.BytesMessage;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.TextMessage;
+
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -52,14 +56,12 @@ import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 
-import lombok.Getter;
-
 /**
  * ESB (Enterprise Service Bus) extension of JmsListener.
  *
  * @author  Peter Leeuwenburgh
  */
-@Category("NN-Special")
+@Category(Category.Type.NN_SPECIAL)
 public class EsbJmsListener extends JmsListener implements ITransactionRequirements {
 
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
@@ -78,7 +80,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		/** Fire & Forget protocol */
 		FF,
 		/** Request-Reply protocol */
-		RR;
+		RR
 	}
 
 	@Override
@@ -217,7 +219,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		if (getMessageProtocol() == MessageProtocol.RR) {
 			Destination replyTo = (Destination) pipeLineSession.get("replyTo");
 			if (replyTo == null) {
-				log.warn("no replyTo address found for messageProtocol [" + getMessageProtocol() + "], response is lost");
+				log.warn("no replyTo address found for messageProtocol [{}], response is lost", getMessageProtocol());
 			}
 		}
 	}

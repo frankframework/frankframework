@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?><DirectoryReq xmlns="http://www.betaalvereniging.nl/iDx/messages/Merchant-Acquirer/1.0.0" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" productID="NL:BVN:BankID:1.0" version="1.0.0">
+    <createDateTimestamp/>
+    <Merchant>
+        <merchantID>1234567891</merchantID>
+        <subID>1</subID>
+    </Merchant>
+</DirectoryReq>

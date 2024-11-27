@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,26 +15,29 @@
 */
 package org.frankframework.scheduler.job;
 
-import java.io.IOException;
+import lombok.Getter;
 
-import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.doc.Mandatory;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
-import org.frankframework.jdbc.JdbcQuerySenderBase;
-import org.frankframework.scheduler.JobDef;
+import org.frankframework.jdbc.AbstractJdbcQuerySender;
+import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.scheduler.AbstractJobDef;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
 
-import lombok.Getter;
-
-public class ExecuteQueryJob extends JobDef {
+/**
+ * Scheduled job to execute JDBC Queries using a {@link FixedQuerySender}.
+ * 
+ * {@inheritDoc}
+ */
+public class ExecuteQueryJob extends AbstractJobDef {
 	private FixedQuerySender qs = null;
 	private @Getter String query;
-	private @Getter String jmsRealm;
 	private @Getter String datasourceName;
 	private @Getter int queryTimeout;
 
@@ -45,12 +48,8 @@ public class ExecuteQueryJob extends JobDef {
 		qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
 		qs.setQuery(getQuery());
 		qs.setName("executeQueryJob");
-		if(StringUtils.isNotEmpty(getJmsRealm())) {
-			qs.setJmsRealm(getJmsRealm());
-		} else {
-			qs.setDatasourceName(getDatasourceName());
-		}
-		qs.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		qs.setDatasourceName(getDatasourceName());
+		qs.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 		qs.setTimeout(getQueryTimeout());
 		qs.configure();
 	}
@@ -58,28 +57,28 @@ public class ExecuteQueryJob extends JobDef {
 	@Override
 	public void execute() throws JobExecutionException, TimeoutException {
 		try(PipeLineSession session = new PipeLineSession()) {
-			qs.open();
+			qs.start();
+
 			try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), session)) {
 				log.info("result [{}]", result);
 			}
-		}
-		catch (SenderException | IOException e) {
+		} catch (LifecycleException | SenderException e) {
 			throw new JobExecutionException("unable to execute query [" + getQuery() + "]", e);
-		}
-		finally {
-			qs.close();
+		} finally {
+			qs.stop();
 		}
 	}
 
 	/**
-	 * The SQL query text to be executed
+	 * The SQL query text to be executed.
 	 */
+	@Mandatory
 	public void setQuery(String query) {
 		this.query = query;
 	}
 
 	/**
-	 * JNDI name of datasource to be used
+	 * JNDI name of datasource to be used.
 	 * @ff.default {@value IDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
 	 */
 	public void setDatasourceName(String datasourceName) {

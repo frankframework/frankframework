@@ -2,13 +2,16 @@ package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
@@ -17,9 +20,6 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StringUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 
 public class PgpPipeTest {
 
@@ -84,7 +84,7 @@ public class PgpPipeTest {
 			assertMessage(mid, MESSAGE);
 
 			// Decryption phase
-			Message decryptMessage = Message.asMessage(encryptionResult.getResult());
+			Message decryptMessage = encryptionResult.getResult();
 			PipeRunResult decryptionResult = decryptPipe.doPipe(decryptMessage, session);
 			byte[] result = decryptionResult.getResult().asByteArray();
 
@@ -111,10 +111,10 @@ public class PgpPipeTest {
 		encryptPipe = new PGPPipe();
 		decryptPipe = new PGPPipe();
 
-		encryptPipe.registerForward(new PipeForward("success", null));
+		encryptPipe.addForward(new PipeForward("success", null));
 		encryptPipe.setName(encryptPipe.getClass().getSimpleName() + " under test");
 
-		decryptPipe.registerForward(new PipeForward("success", null));
+		decryptPipe.addForward(new PipeForward("success", null));
 		decryptPipe.setName(decryptPipe.getClass().getSimpleName() + " under test");
 	}
 

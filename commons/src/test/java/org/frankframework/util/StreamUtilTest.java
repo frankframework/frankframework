@@ -28,13 +28,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-
 public class StreamUtilTest {
 
 	@TempDir
 	public static Path testFolder;
 
 	private static Path file;
+	private final String UTF8_EXPECTED = "ABC één euro: €1,00";
+	private final String OTHER_EXPECTED = "ABC néé hè";
 
 	@BeforeAll
 	public static void setUp() throws IOException {
@@ -47,9 +48,6 @@ public class StreamUtilTest {
 		f.delete();
 	}
 
-	private final String UTF8_EXPECTED = "ABC één euro: €1,00";
-	private final String OTHER_EXPECTED = "ABC néé hè";
-
 	public void testReader(String inputFile, String expected) throws IOException {
 		testReader(inputFile, expected, null);
 	}
@@ -59,12 +57,12 @@ public class StreamUtilTest {
 
 		int i;
 		InputStream inputStream = input.openStream();
-		while( (i=inputStream.read())>=0) {
-			System.out.print(Integer.toHexString(i)+" ");
+		while ((i = inputStream.read()) >= 0) {
+			System.out.print(Integer.toHexString(i) + " ");
 		}
 
 		Reader reader;
-		if (defaultCharset==null) {
+		if (defaultCharset == null) {
 			reader = StreamUtil.getCharsetDetectingInputStreamReader(input.openStream());
 		} else {
 			reader = StreamUtil.getCharsetDetectingInputStreamReader(input.openStream(), defaultCharset);
@@ -114,10 +112,10 @@ public class StreamUtilTest {
 
 		String actual;
 		if (expectBOM) {
-			assertEquals((byte)0xEF,byteArray[0]);
-			assertEquals((byte)0xBB,byteArray[1]);
-			assertEquals((byte)0xBF,byteArray[2]);
-			actual = new String(byteArray,3, byteArray.length-3, StandardCharsets.UTF_8);
+			assertEquals((byte) 0xEF, byteArray[0]);
+			assertEquals((byte) 0xBB, byteArray[1]);
+			assertEquals((byte) 0xBF, byteArray[2]);
+			actual = new String(byteArray, 3, byteArray.length - 3, StandardCharsets.UTF_8);
 		} else {
 			actual = new String(byteArray, StandardCharsets.UTF_8);
 		}
@@ -137,7 +135,6 @@ public class StreamUtilTest {
 		testStreamToByteArray("/StreamUtil/inUTF8withBOM.bin", false, UTF8_EXPECTED, true);
 	}
 
-
 	private void writeToTestFile() throws IOException {
 		Writer w = new FileWriter(file.toString());
 		w.write("inside the lebron file");
@@ -154,22 +151,6 @@ public class StreamUtilTest {
 
 		assertEquals(tekst, actual);
 		assertTrue(closeChecker.inputStreamClosed, "inputstream was not closed");
-	}
-
-	private class CloseChecker extends FilterInputStream {
-
-		boolean inputStreamClosed;
-
-		public CloseChecker(InputStream arg0) {
-			super(arg0);
-		}
-
-		@Override
-		public void close() throws IOException {
-			inputStreamClosed = true;
-
-			super.close();
-		}
 	}
 
 	/**
@@ -224,7 +205,7 @@ public class StreamUtilTest {
 		String line = buf.readLine();
 		StringBuilder sb = new StringBuilder();
 
-		while(line != null) {
+		while (line != null) {
 			sb.append(line).append("\n");
 			line = buf.readLine();
 		}
@@ -256,13 +237,6 @@ public class StreamUtilTest {
 		assertEquals("test", writer.toString());
 	}
 
-	@Test
-	public void testFileToStringFileNameEndLine() throws Exception {
-		// Misc.resourceToString()
-		writeToTestFile();
-		assertEquals("inside the lebron file", StreamUtil.fileToString(file.toString(), " the end"));
-	}
-
 	/**
 	 * Method: readerToString(Reader reader, String endOfLineString, boolean
 	 * xmlEncode)
@@ -283,5 +257,21 @@ public class StreamUtilTest {
 		Reader r = new StringReader("<root> \n" + "    <name>GeeksforGeeks</name> \n" + "    <address> \n" + "        <sector>142</sector> \n" + "        <location>Noida</location> \n" + "    </address> \n" + "</root> r");
 		String s = StreamUtil.readerToString(r, "23", true);
 		assertEquals("&lt;root&gt; 23    &lt;name&gt;GeeksforGeeks&lt;/name&gt; 23    &lt;address&gt; 23        &lt;sector&gt;142&lt;/sector&gt; 23        &lt;location&gt;Noida&lt;/location&gt; 23    &lt;/address&gt; 23&lt;/root&gt; r", s);
+	}
+
+	private class CloseChecker extends FilterInputStream {
+
+		boolean inputStreamClosed;
+
+		public CloseChecker(InputStream arg0) {
+			super(arg0);
+		}
+
+		@Override
+		public void close() throws IOException {
+			inputStreamClosed = true;
+
+			super.close();
+		}
 	}
 }

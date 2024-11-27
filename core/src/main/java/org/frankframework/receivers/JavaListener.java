@@ -21,11 +21,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Nonnull;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
+import nl.nn.adapterframework.dispatcher.RequestProcessor;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IMessageHandler;
@@ -38,16 +46,11 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.http.HttpSecurityHandler;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.senders.IbisJavaSender;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
-import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
-import nl.nn.adapterframework.dispatcher.RequestProcessor;
 
 
 // TODO: When anchors are supported by the Frank!Doc, link to https://github.com/frankframework/servicedispatcher
@@ -62,7 +65,7 @@ import nl.nn.adapterframework.dispatcher.RequestProcessor;
  *
  * @author  Gerrit van Brakel
  */
-@Category("Basic")
+@Category(Category.Type.BASIC)
 public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, HasPhysicalDestination, ServiceClient {
 
 	private final @Getter String domain = "JVM";
@@ -89,7 +92,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	}
 
 	@Override
-	public synchronized void open() throws ListenerException {
+	public synchronized void start() {
 		try {
 			// add myself to local list so that IbisLocalSenders can find me
 			registerListener();
@@ -99,25 +102,27 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 			if (StringUtils.isNotEmpty(getServiceName())) {
 				DispatcherManagerFactory.getDispatcherManager().register(getServiceName(), this);
 			}
-			open=true;
+
+			open = true;
 		} catch (Exception e) {
-			throw new ListenerException("error occurred while starting listener [" + getName() + "]", e);
+			throw new LifecycleException("error occurred while starting listener [" + getName() + "]", e);
 		}
 	}
 
 	@Override
-	public synchronized void close() throws ListenerException {
-		open=false;
+	public synchronized void stop() {
+		open = false;
+
 		try {
 			// unregister from local list
 			unregisterListener();
+
 			// unregister from global list
 			if (StringUtils.isNotEmpty(getServiceName())) {
 				DispatcherManagerFactory.getDispatcherManager().unregister(getServiceName());
 			}
-		}
-		catch (Exception e) {
-			throw new ListenerException("error occurred while stopping listener [" + getName() + "]", e);
+		} catch (Exception e) {
+			throw new LifecycleException("error occurred while stopping listener [" + getName() + "]", e);
 		}
 	}
 
@@ -132,7 +137,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 		try {
 			HashMap<String, Object> processContext = context != null ? context : new HashMap<>();
 			processContext.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-			try (Message message = Message.asMessage(rawMessage);
+			try (Message message = new Message(rawMessage);
 				Message result = processRequest(new MessageWrapper<>(message, null, correlationId), processContext)) {
 					return result.asString();
 			}
@@ -254,21 +259,21 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 		this.serviceName = jndiName;
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	public void setLocal(String name) {
 		throw new IllegalArgumentException("do not set attribute 'local=true', just leave serviceName empty!");
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	public void setIsolated(boolean b) {
 		throw new IllegalArgumentException("function of attribute 'isolated' is replaced by 'transactionAttribute' on PipeLine");
 	}
 
-	@Deprecated
 	/**
 	 * If set <code>false</code>, the request is executed asynchronously. N.B. be aware that there is no limit on the number of threads generated
 	 * @ff.default true
 	 */
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	public void setSynchronous(boolean b) {
 		synchronous = b;
 	}

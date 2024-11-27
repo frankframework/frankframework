@@ -1,11 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AppService } from 'src/app/app.service';
-import {
-  ApiListener,
-  Service,
-  WebservicesService,
-  Wsdl,
-} from './webservices.service';
+import { ApiListener, Service, WebservicesService, Wsdl } from './webservices.service';
 
 @Component({
   selector: 'app-webservices',
@@ -13,10 +8,10 @@ import {
   styleUrls: ['./webservices.component.scss'],
 })
 export class WebservicesComponent implements OnInit {
-  rootURL: string = this.appService.getServerPath();
-  services: Service[] = [];
-  apiListeners: ApiListener[] = [];
-  wsdls: Wsdl[] = [];
+  protected rootURL: string = this.appService.getServerPath();
+  protected services: Service[] = [];
+  protected apiListeners: ApiListener[] = [];
+  protected wsdls: Wsdl[] = [];
 
   constructor(
     private appService: AppService,
@@ -32,8 +27,6 @@ export class WebservicesComponent implements OnInit {
   }
 
   compileURL(apiListener: ApiListener): string {
-    return `${this.rootURL}iaf/api/webservices/openapi.json?uri=${encodeURI(
-      apiListener.uriPattern,
-    )}`;
+    return `${this.rootURL}iaf/api/webservices/openapi.json?uri=${encodeURI(apiListener.uriPattern)}`;
   }
 }

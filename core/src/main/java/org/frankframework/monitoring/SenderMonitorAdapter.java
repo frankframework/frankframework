@@ -15,14 +15,14 @@
 */
 package org.frankframework.monitoring;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlBuilder;
@@ -33,7 +33,7 @@ import org.frankframework.util.XmlBuilder;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class SenderMonitorAdapter extends MonitorDestinationBase {
+public class SenderMonitorAdapter extends AbstractMonitorDestination {
 
 	private @Getter @Setter ISender sender;
 	private boolean senderConfigured=false;
@@ -54,14 +54,14 @@ public class SenderMonitorAdapter extends MonitorDestinationBase {
 			senderConfigured=true;
 		} else {
 			try {
-				getSender().close();
-			} catch (SenderException e) {
+				getSender().stop();
+			} catch (LifecycleException e) {
 				log.error("cannot close sender",e);
 			}
 		}
 		try {
-			getSender().open();
-		} catch (SenderException e) {
+			getSender().start();
+		} catch (LifecycleException e) {
 			throw new ConfigurationException("cannot open sender",e);
 		}
 	}

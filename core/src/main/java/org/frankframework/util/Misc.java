@@ -15,24 +15,13 @@
 */
 package org.frankframework.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
-import java.net.URL;
-import java.net.URLDecoder;
 import java.net.UnknownHostException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
@@ -40,11 +29,8 @@ import jakarta.json.JsonStructure;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.core.IMessageBrowser.HideMethod;
-import org.xml.sax.InputSource;
 
 
 /**
@@ -61,35 +47,8 @@ public class Misc {
 	private static final String[] BYTE_UNITS_SI = new String[]{"kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
 	private static final String[] BYTE_UNITS_IEC = new String[]{"KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"};
 
-	public static String insertAuthorityInUrlString(String url, String authAlias, String username, String password) {
-		if (StringUtils.isNotEmpty(authAlias) || StringUtils.isNotEmpty(username) || StringUtils.isNotEmpty(password)) {
-			CredentialFactory cf = new CredentialFactory(authAlias, username, password);
-			int posPrefixEnd;
-			String prefix;
-			String tail;
-			if ((posPrefixEnd=url.indexOf("://"))>0) {
-				prefix=url.substring(0, posPrefixEnd+3);
-				tail=url.substring(posPrefixEnd+3);
-			} else {
-				prefix="";
-				tail=url;
-			}
-			int posTail2Start;
-			if ((posTail2Start=tail.indexOf("@"))>0) {
-				tail=tail.substring(posTail2Start+1);
-			}
-			url=prefix+cf.getUsername()+":"+cf.getPassword()+"@"+tail;
-		}
-		return url;
-	}
-
-	/**
-	 * Converts a byte array into a string, and adds a specified string to the end of the converted string.
-	 * @see StreamUtil#streamToString(InputStream, String, boolean)
-	 */
-	public static String byteArrayToString(byte[] input, String endOfLineString, boolean xmlEncode) throws IOException{
-		ByteArrayInputStream bis = new ByteArrayInputStream(input);
-		return StreamUtil.streamToString(bis, endOfLineString, xmlEncode);
+	private Misc() {
+		// Private constructor to make sure no instances will be created.
 	}
 
 	public static String getHostname() {
@@ -130,7 +89,7 @@ public class Misc {
 		try {
 			return Long.parseLong(s) * multiplier;
 		} catch (NumberFormatException e) {
-			log.error("[" + value + "] not in expected format", e);
+			log.error("[{}] not in expected format", value, e);
 		}
 		return defaultValue;
 	}
@@ -206,44 +165,6 @@ public class Misc {
 		return messageSizeWarnByDefault;
 	}
 
-	/**
-	 * Converts the list to a string.
-	 * {@code
-	 * <pre>
-	 *      List<String> list = new ArrayList<>();
-	 *      list.add("We Are");
-	 *      list.add(" Frank");
-	 *      String res = Misc.listToString(list); // res = "We Are Frank"
-	 * </pre>
-	 * }
-	 */
-	public static String listToString(List<String> list) {
-		return String.join("", list);
-	}
-
-	/**
-	 * Adds items on a string, added by comma separator (ex: "1,2,3"), into a list.
-	 * @param collectionDescription description of the list
-	 */
-	public static void addItemsToList(Collection<String> collection, String list, String collectionDescription, boolean lowercase) {
-		if (list==null) {
-			return;
-		}
-		StringTokenizer st = new StringTokenizer(list, ",");
-		while (st.hasMoreTokens()) {
-			String item = st.nextToken().trim();
-			if (lowercase) {
-				item=item.toLowerCase();
-			}
-			log.debug("adding item to "+collectionDescription+" ["+item+"]");
-			collection.add(item);
-		}
-		if (list.trim().endsWith(",")) {
-			log.debug("adding item to "+collectionDescription+" <empty string>");
-			collection.add("");
-		}
-	}
-
 	public static String getAge(long value) {
 		long currentTime = (new Date()).getTime();
 		long age = currentTime - value;
@@ -296,57 +217,9 @@ public class Misc {
 		try {
 			return Long.parseLong(s) * multiplier;
 		} catch (NumberFormatException e) {
-			log.error("[" + value + "] not in expected format", e);
+			log.error("[{}] not in expected format", value, e);
 		}
 		return defaultValue;
-	}
-
-	/**
-	 * Edits the input string according to the regex and the hide method specified.
-	 * @see StringUtil#hideFirstHalf(String, String)
-	 * @see StringUtil#hideAll(String, String)
-	 */
-	public static String cleanseMessage(String inputString, String regexForHiding, HideMethod hideMethod) {
-		if (StringUtils.isEmpty(regexForHiding)) {
-			return inputString;
-		}
-		if (hideMethod == HideMethod.FIRSTHALF) {
-			return StringUtil.hideFirstHalf(inputString, regexForHiding);
-		}
-		return StringUtil.hideAll(inputString, regexForHiding);
-	}
-
-	public static String getBuildOutputDirectory() {
-		// TODO: Warning from Sonarlint of Potential NPE?
-		String path = new File(AppConstants.class.getClassLoader().getResource("").getPath()).getPath();
-
-		try {
-			return URLDecoder.decode(path, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-		} catch (UnsupportedEncodingException e) {
-			log.warn("unable to parse build-output-directory using charset [{}]", StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, e);
-			return null;
-		}
-	}
-
-	public static <T> void addToSortedListUnique(List<T> list, T item) {
-		int index = Collections.binarySearch(list, item, null);
-		if (index < 0) {
-			list.add(Misc.binarySearchResultToInsertionPoint(index), item);
-		}
-	}
-
-	public static <T> void addToSortedListNonUnique(List<T> list, T item) {
-		int index = Misc.binarySearchResultToInsertionPoint(Collections.binarySearch(list, item, null));
-		list.add(index, item);
-	}
-
-	private static int binarySearchResultToInsertionPoint(int index) {
-		// See https://stackoverflow.com/questions/16764007/insert-into-an-already-sorted-list/16764413
-		// for more information.
-		if (index < 0) {
-			index = -index - 1;
-		}
-		return index;
 	}
 
 	public static String jsonPretty(String json) {
@@ -363,11 +236,5 @@ public class Misc {
 			}
 		}
 		return sw.toString().trim();
-	}
-
-	public static InputSource asInputSource(URL url) throws IOException {
-		InputSource inputSource = new InputSource(url.openStream());
-		inputSource.setSystemId(url.toExternalForm());
-		return inputSource;
 	}
 }

@@ -5,9 +5,9 @@
 		</Receiver>
 		<Pipeline firstPipe="HelloBeautifulWorld" elementRole="pipeline">
 			<Exit path="EXIT" state="success" elementRole="exit"/>
-			<FixedResultPipe name="HelloBeautifulWorld" returnString="Hello Beautiful World" elementRole="pipe" className="org.frankframework.pipes.FixedResultPipe">
+			<EchoPipe name="HelloBeautifulWorld" getInputFromFixedValue="Hello Beautiful World" elementRole="pipe" className="org.frankframework.pipes.EchoPipe">
 				<Forward name="success" path="EXIT" elementRole="forward"/>
-			</FixedResultPipe>
+			</EchoPipe>
 		</Pipeline>
 	</Adapter>
 </Configuration>

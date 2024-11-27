@@ -17,21 +17,6 @@ package org.frankframework.filesystem.smb;
 
 import static com.hierynomus.msfscc.FileAttributes.FILE_ATTRIBUTE_DIRECTORY;
 
-/**
- * This test class is created to test both Samba2FileSystem and Samba2FileSystemSender classes.
- *
- * Instructions to create a share on a windows system:
- * - First create a directory you want to share (location doesn't matter)
- * - Right click to that directory -> properties -> Sharing Tab -> Advanced Sharing Options -> Check Share this Folder option ->
- * Click Permissions -> Set users to be shared if necessary -> Set permissions(Full Control, read, write) -> Click Apply.
- * To verify share:
- * - open file explorer -> write \\localhost on address bar. You will see the share.
- *
- * @author alisihab
- *
- */
-
-
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -44,9 +29,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.filesystem.FileSystemException;
-import org.frankframework.filesystem.IFileSystemTestHelper;
-import org.frankframework.util.LogUtil;
 
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;
@@ -67,6 +49,12 @@ import com.hierynomus.smbj.connection.Connection;
 import com.hierynomus.smbj.session.Session;
 import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
+
+import org.frankframework.filesystem.FileSystemException;
+import org.frankframework.filesystem.FolderNotFoundException;
+import org.frankframework.filesystem.IFileSystemTestHelper;
+import org.frankframework.util.CloseUtils;
+import org.frankframework.util.LogUtil;
 
 /**
  *
@@ -131,27 +119,13 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 		}
 	}
 
-	private void close() throws FileSystemException {
-		try {
-			if(diskShare != null) {
-				diskShare.close();
-			}
-			if(session != null) {
-				session.close();
-			}
-			if(connection != null) {
-				connection.close();
-			}
-			if(client != null) {
-				client.close();
-			}
-			diskShare = null;
-			session = null;
-			connection = null;
-			client = null;
-		} catch (IOException e) {
-			throw new FileSystemException(e);
-		}
+	@Override
+	public void close() {
+		CloseUtils.closeSilently(diskShare, session, connection, client);
+		diskShare = null;
+		session = null;
+		connection = null;
+		client = null;
 	}
 
 	private void cleanFolder() throws Exception {
@@ -255,7 +229,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	public void _deleteFolder(String folderName) throws Exception {
 		if (folderName != null) {
 			if (!folderExists(folderName)) {
-				throw new FileSystemException("Remove directory for [" + folderName + "] has failed. Directory does not exist.");
+				throw new FolderNotFoundException("Remove directory for [" + folderName + "] has failed. Directory does not exist.");
 			} else {
 				diskShare.rmdir(folderName, true);
 			}

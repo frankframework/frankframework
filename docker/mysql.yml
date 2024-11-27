@@ -1,12 +1,12 @@
-version: '3.8'
+version: ''
 
 services:
-    ff-test:
-        environment:
-            jdbc.dbms.default: mysql
-            jdbc.hostname: mysql
+  ff-test:
+    environment:
+      jdbc.dbms.default: mysql
+      jdbc.hostname: mysql
 
-    mysql:
-        image: private.docker.nexus.frankframework.org/ff-test/dbms/mysql
-        ports:
-            - "3307:3307"
+  mysql:
+    image: private.docker.nexus.frankframework.org/ff-test/dbms/mysql
+    ports:
+      - "3307:3307"

@@ -15,8 +15,7 @@
 */
 package org.frankframework.management.bus.endpoints;
 
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -25,6 +24,7 @@ import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IPipe;
 import org.frankframework.management.bus.BusException;
+import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
@@ -111,7 +111,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 		if(StringUtils.isEmpty(adapterName)) {
 			throw new BusException("no adapter name specified");
 		}
-		if(IbisManager.ALL_CONFIGS_KEY.equals(configurationName)) {
+		if(BusMessageUtils.ALL_CONFIGS_KEY.equals(configurationName)) {
 			return getIbisManager().getRegisteredAdapter(adapterName);
 		}
 

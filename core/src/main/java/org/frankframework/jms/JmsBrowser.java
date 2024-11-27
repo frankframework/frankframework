@@ -22,7 +22,7 @@ import org.frankframework.receivers.RawMessageWrapper;
  * Basic browser of JMS Messages.
  * @author  Gerrit van Brakel
  */
-public class JmsBrowser<M extends javax.jms.Message> extends JmsMessageBrowser<M,M> {
+public class JmsBrowser<M extends jakarta.jms.Message> extends AbstractJmsMessageBrowser<M,M> {
 
 	public JmsBrowser() {
 		super();

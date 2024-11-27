@@ -23,6 +23,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.Adapter;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
+import org.frankframework.monitoring.events.Event;
+import org.frankframework.monitoring.events.RegisterMonitorEvent;
+import org.frankframework.util.XmlBuilder;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -30,31 +38,22 @@ import org.springframework.context.ApplicationListener;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.Adapter;
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
-import org.frankframework.lifecycle.ConfigurableLifecyleBase;
-import org.frankframework.monitoring.events.Event;
-import org.frankframework.monitoring.events.RegisterMonitorEvent;
-import org.frankframework.util.XmlBuilder;
 
 /**
  * Manager for Monitoring.
- *
- * @author  Gerrit van Brakel
- * @since   4.9
+ * <p>
+ * Configure/start/stop lifecycles are managed by Spring.
  *
  * @author Niels Meijer
  * @version 2.0
  */
 @FrankDocGroup(FrankDocGroupValue.MONITORING)
-public class MonitorManager extends ConfigurableLifecyleBase implements ApplicationContextAware, ApplicationListener<RegisterMonitorEvent> {
+public class MonitorManager extends AbstractConfigurableLifecyle implements ApplicationContextAware, ApplicationListener<RegisterMonitorEvent> {
 
 	private @Getter @Setter ApplicationContext applicationContext;
-	private List<Monitor> monitors = new ArrayList<>();							// All monitors managed by this MonitorManager
-	private Map<String, Event> events = new HashMap<>();						// All events that can be thrown
-	private Map<String, IMonitorDestination> destinations = new LinkedHashMap<>();	// All destinations (that can receive status messages) managed by this MonitorManager
+	private final List<Monitor> monitors = new ArrayList<>();                            // All monitors managed by this MonitorManager
+	private final Map<String, Event> events = new HashMap<>();                           // All events that can be thrown
+	private final Map<String, IMonitorDestination> destinations = new LinkedHashMap<>(); // All destinations (that can receive status messages) managed by this MonitorManager
 
 	/**
 	 * (re)configure all destinations and all monitors.
@@ -62,24 +61,29 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"configuring destinations");
+		if (log.isDebugEnabled()) log.debug("{}configuring destinations", getLogPrefix());
 		for(String name : destinations.keySet()) {
 			IMonitorDestination destination = getDestination(name);
 			destination.configure();
 		}
 
 		//Only configure Monitors if all destinations were able to configure successfully
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"configuring monitors");
+		if (log.isDebugEnabled()) log.debug("{}configuring monitors", getLogPrefix());
 		for(Monitor monitor : monitors) {
 			monitor.configure();
 		}
+	}
+
+	@Override
+	public int getPhase() {
+		return 300;
 	}
 
 	private String getLogPrefix() {
 		return "Manager@"+this.hashCode();
 	}
 
-	public void registerDestination(IMonitorDestination monitorAdapter) {
+	public void addDestination(IMonitorDestination monitorAdapter) {
 		destinations.put(monitorAdapter.getName(), monitorAdapter);
 	}
 	public IMonitorDestination getDestination(String name) {
@@ -95,7 +99,8 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		String eventCode = event.getEventCode();
 
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+" registerEvent ["+eventCode+"] for adapter ["+(thrower.getAdapter() == null ? null : thrower.getAdapter().getName())+"] object ["+thrower.getEventSourceName()+"]");
+			log.debug("{} registerEvent [{}] for adapter [{}] object [{}]", getLogPrefix(), eventCode, thrower.getAdapter() == null ? null : thrower.getAdapter()
+					.getName(), thrower.getEventSourceName());
 		}
 
 		registerEvent(thrower, eventCode);

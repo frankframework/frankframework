@@ -46,7 +46,7 @@ public class FTPFileRef extends FTPFile {
 
 	/**
 	 * @param name A canonical name might be provided, strip the path when present and only use the actual file name.
-	 * @param folder The directory the file. This always has presedence over the canonical path provided by the name.
+	 * @param folder The directory the file. This always has precedence over the canonical path provided by the name.
 	 */
 	public FTPFileRef(String name, String folder) {
 		this();
@@ -113,16 +113,8 @@ public class FTPFileRef extends FTPFile {
 	 */
 	public static FTPFileRef fromFTPFile(FTPFile ftpFile, String folder) {
 		FTPFileRef file = new FTPFileRef();
-		file.setGroup(ftpFile.getGroup());
-		file.setHardLinkCount(ftpFile.getHardLinkCount());
-		file.setLink(ftpFile.getLink());
-		file.setName(ftpFile.getName());
+		file.updateFTPFile(ftpFile);
 		file.setFolder(folder);
-		file.setRawListing(ftpFile.getRawListing());
-		file.setSize(ftpFile.getSize());
-		file.setTimestamp(ftpFile.getTimestamp());
-		file.setType(ftpFile.getType());
-		file.setUser(ftpFile.getUser());
 		return file;
 	}
 }

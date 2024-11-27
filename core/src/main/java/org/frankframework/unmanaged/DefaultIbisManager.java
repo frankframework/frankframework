@@ -19,11 +19,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.RunState;
 import org.springframework.context.ApplicationContext;
@@ -38,7 +38,7 @@ import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
-import org.frankframework.management.IbisAction;
+import org.frankframework.management.Action;
 import org.frankframework.receivers.Receiver;
 
 /**
@@ -120,14 +120,14 @@ public class DefaultIbisManager implements IbisManager {
 	}
 
 	@Override
-	public void handleAction(IbisAction action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin) {
+	public void handleAction(Action action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin) {
 		switch (action) {
 		case STOPADAPTER:
 			Assert.notNull(adapterName, "no adapterName provided");
 			Assert.notNull(configurationName, "no configurationName provided");
 
-			if (adapterName.equals(ALL_CONFIGS_KEY)) {
-				if (configurationName.equals(ALL_CONFIGS_KEY)) {
+			if (adapterName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
+				if (configurationName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
 					log.info("Stopping all adapters on request of [{}]", commandIssuedBy);
 					for (Configuration configuration : configurations) {
 						stopAdapters(configuration);
@@ -151,8 +151,8 @@ public class DefaultIbisManager implements IbisManager {
 			Assert.notNull(adapterName, "no adapterName provided");
 			Assert.notNull(configurationName, "no configurationName provided");
 
-			if (adapterName.equals(ALL_CONFIGS_KEY)) {
-				if (configurationName.equals(ALL_CONFIGS_KEY)) {
+			if (adapterName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
+				if (configurationName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
 					log.info("Starting all adapters on request of [{}]", commandIssuedBy);
 					for (Configuration configuration : configurations) {
 						startAdapters(configuration);
@@ -171,7 +171,7 @@ public class DefaultIbisManager implements IbisManager {
 					log.info("Starting adapter [{}] on request of [{}]", adapterName, commandIssuedBy);
 					configuration.getRegisteredAdapter(adapterName).startRunning();
 				} catch (Exception e) {
-					log.error("error in execution of command [" + action + "] for adapter [" + adapterName + "]", e);
+					log.error("error in execution of command [{}] for adapter [{}]", action, adapterName, e);
 				}
 			}
 			break;
@@ -198,7 +198,7 @@ public class DefaultIbisManager implements IbisManager {
 				secLog.info(msg2);
 				ibisContext.fullReload();
 			} else {
-				log.warn("Full reload not allowed for [" + commandIssuedBy+"]");
+				log.warn("Full reload not allowed for [{}]", commandIssuedBy);
 			}
 			break;
 

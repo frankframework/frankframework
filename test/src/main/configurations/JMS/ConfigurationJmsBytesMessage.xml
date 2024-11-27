@@ -17,14 +17,10 @@
 
 <!--			</pipe>-->
 			<!-- Read binary file as bytes -->
-			<!-- Should ideally use LocalFileSystemPipe but cannot seem to get that working with classpath resources -->
 			<pipe
 					name="read binary file as bytes"
-					className="org.frankframework.pipes.FilePipe"
-					actions="read"
-					outputType="bytes"
-					getInputFromFixedValue="BinaryData/test-data.zip"
-					fileSource="classpath">
+					className="org.frankframework.pipes.FixedResultPipe"
+					filename="BinaryData/test-data.zip">
 			</pipe>
 			<pipe name="Send Binary Message"
 				  className="org.frankframework.pipes.SenderPipe"

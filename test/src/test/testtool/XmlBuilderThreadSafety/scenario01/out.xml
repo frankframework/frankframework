@@ -1,5 +1,5 @@
 <results>
-  <result senderClass="DirectQuerySender" success="true" type="String">
+  <result senderClass="DirectQuerySender" success="true" type="byte[]">
     <result>
       <fielddefinition>
         <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
@@ -11,7 +11,7 @@
       </rowset>
     </result>
   </result>
-  <result senderClass="DirectQuerySender" success="true" type="String">
+  <result senderClass="DirectQuerySender" success="true" type="byte[]">
     <result>
       <fielddefinition>
         <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
@@ -23,7 +23,7 @@
       </rowset>
     </result>
   </result>
-  <result senderClass="DirectQuerySender" success="true" type="String">
+  <result senderClass="DirectQuerySender" success="true" type="byte[]">
     <result>
       <fielddefinition>
         <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
@@ -35,7 +35,7 @@
       </rowset>
     </result>
   </result>
-  <result senderClass="DirectQuerySender" success="true" type="String">
+  <result senderClass="DirectQuerySender" success="true" type="byte[]">
     <result>
       <fielddefinition>
         <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
@@ -47,7 +47,7 @@
       </rowset>
     </result>
   </result>
-  <result senderClass="DirectQuerySender" success="true" type="String">
+  <result senderClass="DirectQuerySender" success="true" type="byte[]">
     <result>
       <fielddefinition>
         <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
@@ -59,10 +59,10 @@
       </rowset>
     </result>
   </result>
-  <result senderClass="DirectQuerySender" success="true" type="String">
+  <result senderClass="DirectQuerySender" success="true" type="byte[]">
     <result>
       <fielddefinition>
-        <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+        <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
       </fielddefinition>
       <rowset>
         <row number="0">
@@ -71,10 +71,10 @@
       </rowset>
     </result>
   </result>
-  <result senderClass="DirectQuerySender" success="true" type="String">
+  <result senderClass="DirectQuerySender" success="true" type="byte[]">
     <result>
       <fielddefinition>
-        <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+        <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
       </fielddefinition>
       <rowset>
         <row number="0">
@@ -83,10 +83,10 @@
       </rowset>
     </result>
   </result>
-  <result senderClass="DirectQuerySender" success="true" type="String">
+  <result senderClass="DirectQuerySender" success="true" type="byte[]">
     <result>
       <fielddefinition>
-        <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+        <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
       </fielddefinition>
       <rowset>
         <row number="0">
@@ -95,10 +95,10 @@
       </rowset>
     </result>
   </result>
-  <result senderClass="DirectQuerySender" success="true" type="String">
+  <result senderClass="DirectQuerySender" success="true" type="byte[]">
     <result>
       <fielddefinition>
-        <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+        <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
       </fielddefinition>
       <rowset>
         <row number="0">
@@ -107,10 +107,10 @@
       </rowset>
     </result>
   </result>
-  <result senderClass="DirectQuerySender" success="true" type="String">
+  <result senderClass="DirectQuerySender" success="true" type="byte[]">
     <result>
       <fielddefinition>
-        <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+        <field name="DUMMY" type="VARCHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
       </fielddefinition>
       <rowset>
         <row number="0">

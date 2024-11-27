@@ -21,22 +21,19 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.Nonnull;
-import javax.annotation.security.RolesAllowed;
 import javax.xml.transform.Transformer;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.BinaryMessage;
-import org.frankframework.management.bus.message.MessageBase;
-import org.springframework.messaging.Message;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.security.RolesAllowed;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.springframework.messaging.Message;
 
-import org.frankframework.core.IAdapter;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.management.bus.ActionSelector;
@@ -45,6 +42,9 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.BinaryMessage;
+import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.UUIDUtil;
@@ -61,7 +61,6 @@ public class TestPipeline extends BusEndpointBase {
 
 	@Data
 	public static class PostedSessionKey {
-		int index;
 		String key;
 		String value;
 	}
@@ -71,7 +70,7 @@ public class TestPipeline extends BusEndpointBase {
 	public BinaryMessage runTestPipeline(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, "configuration");
 		String adapterName = BusMessageUtils.getHeader(message, "adapter");
-		IAdapter adapter = getAdapterByName(configurationName, adapterName);
+		Adapter adapter = getAdapterByName(configurationName, adapterName);
 
 		boolean expectsReply = message.getHeaders().containsKey("replyChannel");
 
@@ -92,13 +91,17 @@ public class TestPipeline extends BusEndpointBase {
 		return processMessage(adapter, payload, threadContext, expectsReply);
 	}
 
-	//Does not support async requests because receiver requests are synchronous
-	private BinaryMessage processMessage(IAdapter adapter, String payload, Map<String, String> threadContext, boolean expectsReply) {
+	// Does not support async requests because receiver requests are synchronous
+	private BinaryMessage processMessage(Adapter adapter, String payload, Map<String, String> threadContext, boolean expectsReply) {
 		String messageId = "testmessage" + UUIDUtil.createSimpleUUID();
-		String correlationId = "Test a Pipeline " + requestCount.incrementAndGet();
 		try (PipeLineSession pls = new PipeLineSession()) {
 			if(threadContext != null) {
 				pls.putAll(threadContext);
+			}
+
+			String correlationId = null;
+			if (!pls.containsKey(PipeLineSession.CORRELATION_ID_KEY)) {
+				correlationId = "Test a Pipeline " + requestCount.incrementAndGet();
 			}
 
 			PipeLineSession.updateListenerParameters(pls, messageId, correlationId);
@@ -106,10 +109,15 @@ public class TestPipeline extends BusEndpointBase {
 			secLog.info("testing pipeline of adapter [{}] {}", adapter.getName(), (writeSecurityLogMessage ? "message [" + payload + "]" : ""));
 
 			try {
-				PipeLineResult plr = adapter.processMessage(messageId, new org.frankframework.stream.Message(payload), pls);
+				org.frankframework.stream.Message message = org.frankframework.stream.Message.nullMessage();
+				if (!StringUtils.isEmpty(payload)){
+					message = new org.frankframework.stream.Message(payload);
+				}
+
+				PipeLineResult plr = adapter.processMessageDirect(messageId, message, pls);
 
 				if(!expectsReply) {
-					return null; //Abort here, we do not need a reply.
+					return null; // Abort here, we do not need a reply.
 				}
 
 				plr.getResult().unscheduleFromCloseOnExitOf(pls);

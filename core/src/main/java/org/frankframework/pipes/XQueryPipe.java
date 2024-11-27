@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.xml.namespace.QName;
@@ -30,19 +29,17 @@ import javax.xml.xquery.XQPreparedExpression;
 import javax.xml.xquery.XQResultSequence;
 
 import org.apache.commons.lang3.StringUtils;
-
-import com.saxonica.xqj.SaxonXQDataSource;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.StreamUtil;
+
+import com.saxonica.xqj.SaxonXQDataSource;
 
 /**
  * Perform an XQuery.
@@ -51,7 +48,7 @@ import org.frankframework.util.StreamUtil;
  *
  * @author Jaco de Groot
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class XQueryPipe extends FixedForwardPipe {
 	private String xquery;
 	private String xqueryName;
@@ -110,9 +107,7 @@ public class XQueryPipe extends FixedForwardPipe {
 			if (getParameterList() != null) {
 				Map<String,Object> parametervalues = null;
 				parametervalues = getParameterList().getValues(message, session).getValueMap();
-				Iterator<Parameter> iterator = getParameterList().iterator();
-				while (iterator.hasNext()) {
-					Parameter parameter = iterator.next();
+				for(IParameter parameter : getParameterList()) {
 					preparedExpression.bindObject(new QName(parameter.getName()), parametervalues.get(parameter.getName()), null);
 				}
 			}

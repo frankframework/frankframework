@@ -9,6 +9,7 @@ import java.io.OutputStream;
 
 import org.frankframework.core.ConfiguredTestBase;
 import org.frankframework.stream.Message;
+import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 
@@ -82,7 +83,7 @@ public abstract class FileSystemTestBase extends ConfiguredTestBase {
 
 	public String readFile(String folder, String filename) throws Exception {
 		try (InputStream in = _readFile(folder, filename)) {
-			return Message.asString(in);
+			return StreamUtil.streamToString(in);
 		}
 	}
 
@@ -114,10 +115,16 @@ public abstract class FileSystemTestBase extends ConfiguredTestBase {
 		assertFalse(_fileExists(folder, filename), filename+" should not exist");
 	}
 
-	protected void assertFileCountEquals(Object result, int expectedFileCount) throws Exception {
-		TransformerPool tp = TransformerPool.getXPathTransformerPool(null, "count(*/file)", OutputType.TEXT, false, null);
-		int resultCount = Integer.parseInt(tp.transform(Message.asMessage(result), null, false));
+	protected void assertFileCountEquals(Message result, int expectedFileCount) throws Exception {
+		TransformerPool tp = TransformerPool.getXPathTransformerPool(null, "count(*/file[@type='file'])", OutputType.TEXT, false, null);
+		int resultCount = Integer.parseInt(tp.transform(result, null, false));
 		assertEquals(expectedFileCount, resultCount, "file count mismatch");
+	}
+
+	protected void assertFolderCountEquals(Message result, int expectedFolderCount) throws Exception {
+		TransformerPool tp = TransformerPool.getXPathTransformerPool(null, "count(*/file[@type='folder']) ", OutputType.TEXT, false, null);
+		int resultCount = Integer.parseInt(tp.transform(result, null, false));
+		assertEquals(expectedFolderCount, resultCount, "folder count mismatch");
 	}
 
 	public void setWaitMillis(long waitMillis) {

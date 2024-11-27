@@ -1,14 +1,14 @@
-version: '3.8'
+version: ''
 
 services:
-    ff-test:
-        environment:
-            jms.provider.default: activemq
-            jms.destination.suffix: -activemq
-            jms.hostname: activemq
+  ff-test:
+    environment:
+      jms.provider.default: activemq
+      jms.destination.suffix: -activemq
+      jms.hostname: activemq
 
-    activemq:
-        image: private.docker.nexus.frankframework.org/ff-test/mq/activemq
-        ports:
-            - "61616:61616"
-            - "8161:8161"
+  activemq:
+    image: private.docker.nexus.frankframework.org/ff-test/mq/activemq
+    ports:
+      - "61616:61616"
+      - "8161:8161"

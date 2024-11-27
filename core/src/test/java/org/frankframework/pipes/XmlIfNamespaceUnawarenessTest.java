@@ -3,10 +3,11 @@ package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.util.TransformerPoolNamespaceUnawarenessTest;
-import org.junit.jupiter.api.Test;
 
 public class XmlIfNamespaceUnawarenessTest extends PipeTestBase<XmlIf>{
 
@@ -22,8 +23,8 @@ public class XmlIfNamespaceUnawarenessTest extends PipeTestBase<XmlIf>{
 
 		//Add default pipes
 		try {
-			xmlIf.registerForward(new PipeForward(pipeForwardThen, null));
-			xmlIf.registerForward(new PipeForward(pipeForwardElse, null));
+			xmlIf.addForward(new PipeForward(pipeForwardThen, null));
+			xmlIf.addForward(new PipeForward(pipeForwardElse, null));
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

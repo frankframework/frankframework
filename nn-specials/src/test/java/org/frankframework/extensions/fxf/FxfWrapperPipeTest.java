@@ -4,13 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.IWrapperPipe.Direction;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.PipeTestBase;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 

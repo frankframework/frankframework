@@ -15,6 +15,7 @@
 */
 package org.frankframework.senders;
 
+import jakarta.annotation.Nonnull;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -29,20 +30,20 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-@Category("Advanced")
-public class DelaySender extends SenderBase {
+@Category(Category.Type.ADVANCED)
+public class DelaySender extends AbstractSender {
 
 	private long delayTime=5000;
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		try {
-			log.info(getLogPrefix()+"starts waiting for " + getDelayTime() + " ms.");
+			log.info("starts waiting for {} ms.", getDelayTime());
 			Thread.sleep(getDelayTime());
 		} catch (InterruptedException e) {
-			throw new SenderException(getLogPrefix()+"delay interrupted", e);
+			throw new SenderException("delay interrupted", e);
 		}
-		log.info(getLogPrefix()+"ends waiting for " + getDelayTime() + " ms.");
+		log.info("ends waiting for {} ms.", getDelayTime());
 		return new SenderResult(message);
 	}
 

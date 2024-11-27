@@ -3,6 +3,12 @@ package org.frankframework.scheduler;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.apache.logging.log4j.Logger;
+import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
 import org.frankframework.core.Adapter;
 import org.frankframework.scheduler.job.LoadDatabaseSchedulesJob;
 import org.frankframework.testutil.TestConfiguration;
@@ -11,11 +17,6 @@ import org.frankframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.MessageKeeperMessage;
-import org.hamcrest.CoreMatchers;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 public class DatabaseSchedulerTest extends Mockito {
 
@@ -51,7 +52,7 @@ public class DatabaseSchedulerTest extends Mockito {
 		builder.setValue("MESSAGE", "dummy message");
 		Adapter adapter = configuration.createBean(Adapter.class);
 		adapter.setName("testAdapter");
-		configuration.registerAdapter(adapter);
+		configuration.addAdapter(adapter);
 
 		configuration.mockQuery("SELECT COUNT(*) FROM IBISSCHEDULES", builder.build());
 

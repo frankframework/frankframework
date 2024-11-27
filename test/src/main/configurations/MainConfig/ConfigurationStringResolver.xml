@@ -7,7 +7,10 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="ResolveString" className="org.frankframework.pipes.FixedResultPipe" filename="StringResolver/result.xml" substituteVars="true">
+			<pipe name="ResolveString" className="org.frankframework.pipes.FixedResultPipe" filename="StringResolver/result.xml">
+				<forward name="success" path="ReplaceValues" />
+			</pipe>
+			<pipe name="ReplaceValues" className="org.frankframework.pipes.ReplacerPipe" substituteVars="true">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

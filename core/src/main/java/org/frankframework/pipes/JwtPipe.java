@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,8 +22,20 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.annotation.Nonnull;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.KeyLengthException;
+import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.JWTClaimsSet.Builder;
+import com.nimbusds.jwt.SignedJWT;
 
+import jakarta.annotation.Nonnull;
+import lombok.AccessLevel;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
@@ -36,30 +48,17 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CredentialFactory;
-
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JOSEObjectType;
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSSigner;
-import com.nimbusds.jose.KeyLengthException;
-import com.nimbusds.jose.crypto.MACSigner;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.JWTClaimsSet.Builder;
-import com.nimbusds.jwt.SignedJWT;
-
-import lombok.AccessLevel;
-import lombok.Setter;
+import org.frankframework.util.MessageUtils;
 
 /**
  * Creates a JWT with a shared secret using the HmacSHA256 algorithm.
  *
- * @ff.parameter {@value #SHARED_SECRET_PARAMETER_NAME} overrides attribute <code>sharedSecret</code>. This parameter has worse performance, compared with the JwtPipe attribute.
- *
+ * @ff.parameter {@value #SHARED_SECRET_PARAMETER_NAME} overrides attribute <code>sharedSecret</code>. This parameter has worse performance, compared to this pipes attribute.
+ * 
  * @author Niels Meijer
  * @since 7.9
  */
-@Category("Basic")
+@Category(Category.Type.BASIC)
 public class JwtPipe extends FixedForwardPipe {
 	static final String SHARED_SECRET_PARAMETER_NAME = "sharedSecret";
 
@@ -79,7 +78,7 @@ public class JwtPipe extends FixedForwardPipe {
 
 		jwtHeader = new JWSHeader.Builder(JWSAlgorithm.HS256).type(JOSEObjectType.JWT).build();
 
-		if(StringUtils.isNotEmpty(sharedSecret) || StringUtils.isNotEmpty(authAlias)) {
+		if (StringUtils.isNotEmpty(sharedSecret) || StringUtils.isNotEmpty(authAlias)) {
 			try {
 				CredentialFactory credentialFactory = new CredentialFactory(authAlias, null, () -> sharedSecret);
 				String factoryPassword = credentialFactory.getPassword();
@@ -92,7 +91,7 @@ public class JwtPipe extends FixedForwardPipe {
 			}
 		}
 
-		if(globalSigner == null && getParameterList().findParameter(SHARED_SECRET_PARAMETER_NAME) == null) {
+		if (globalSigner == null && !getParameterList().hasParameter(SHARED_SECRET_PARAMETER_NAME)) {
 			throw new ConfigurationException("must either provide a [sharedSecret] (alias) or parameter");
 		}
 	}
@@ -105,7 +104,7 @@ public class JwtPipe extends FixedForwardPipe {
 		Object sharedSecretParam = parameterMap.remove(SHARED_SECRET_PARAMETER_NAME); //Remove the SharedKey, else it will be added as a JWT Claim
 		parameterMap.forEach(claimsSetBuilder::claim);
 
-		if(expirationTime > 0) {
+		if (expirationTime > 0) {
 			Date expirationDate = Date.from(Instant.now().plusSeconds(expirationTime));
 			claimsSetBuilder.expirationTime(expirationDate);
 		}
@@ -113,16 +112,16 @@ public class JwtPipe extends FixedForwardPipe {
 
 		final JWSSigner signer = getSigner(sharedSecretParam);
 		String jwtToken = createAndSignJwtToken(signer, claimsSetBuilder.build());
-		return new PipeRunResult(getSuccessForward(), Message.asMessage(jwtToken));
+		return new PipeRunResult(getSuccessForward(), new Message(jwtToken));
 	}
 
 	/**
 	 * Get Signer based on the SharedSecretKey parameter if it exists, else return the Global signer.
 	 */
 	private JWSSigner getSigner(Object sharedSecretParam) throws PipeRunException {
-		if(Objects.nonNull(sharedSecretParam)) {
+		if (Objects.nonNull(sharedSecretParam)) {
 			try {
-				String sharedSecretKey = Message.asString(sharedSecretParam);
+				String sharedSecretKey = MessageUtils.asString(sharedSecretParam);
 				if (jwtAllowWeakSecrets && StringUtils.isNotEmpty(sharedSecretKey)) {
 					sharedSecretKey = StringUtils.rightPad(sharedSecretKey, 32, "\0");
 				}
@@ -136,7 +135,7 @@ public class JwtPipe extends FixedForwardPipe {
 
 	private @Nonnull Map<String, Object> getParameterValueMap(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterList parameterList = getParameterList();
-		if(parameterList != null) {
+		if (parameterList != null) {
 			ParameterValueList pvl;
 			try {
 				pvl = parameterList.getValues(message, session);
@@ -174,6 +173,7 @@ public class JwtPipe extends FixedForwardPipe {
 
 	/**
 	 * JWT expirationTime in seconds, 0 to disable
+	 *
 	 * @ff.default 600
 	 */
 	public void setExpirationTime(int expirationTime) {

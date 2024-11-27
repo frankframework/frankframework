@@ -1,10 +1,10 @@
 package org.frankframework.dbms;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class GenericDbmsSupportTest {

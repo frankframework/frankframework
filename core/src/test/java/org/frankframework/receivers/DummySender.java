@@ -1,18 +1,21 @@
 package org.frankframework.receivers;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.ISender;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
-import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
-import org.frankframework.stream.Message;
+import jakarta.annotation.Nonnull;
+
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
 
-public class DummySender implements ISender {
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.ICorrelatedSender;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SenderException;
+import org.frankframework.core.SenderResult;
+import org.frankframework.core.TimeoutException;
+import org.frankframework.stream.Message;
+
+public class DummySender implements ICorrelatedSender {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter String name;
@@ -24,12 +27,12 @@ public class DummySender implements ISender {
 	}
 
 	@Override
-	public void open() {
+	public void start() {
 		closed = false;
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		closed = true;
 	}
 
@@ -39,7 +42,7 @@ public class DummySender implements ISender {
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		return new SenderResult(message);
 	}
 }

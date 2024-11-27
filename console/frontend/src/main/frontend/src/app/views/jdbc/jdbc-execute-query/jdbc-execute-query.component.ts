@@ -1,6 +1,8 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path="../../../../../node_modules/monaco-editor/monaco.d.ts" />
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { AppConstants, AppService } from 'src/app/app.service';
+import { AppConstants, AppService, ServerErrorResponse } from 'src/app/app.service';
 import { WebStorageService } from 'src/app/services/web-storage.service';
 import { JdbcQueryForm, JdbcService } from '../jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -11,12 +13,12 @@ import { HttpErrorResponse } from '@angular/common/http';
   styleUrls: ['./jdbc-execute-query.component.scss'],
 })
 export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
-  datasources: string[] = [];
-  resultTypes: string[] = [];
-  queryTypes: string[] = [];
-  error: string = '';
-  processingMessage: boolean = false;
-  form: JdbcQueryForm = {
+  protected datasources: string[] = [];
+  protected resultTypes: string[] = [];
+  protected queryTypes: string[] = [];
+  protected error: string | null = '';
+  protected processingMessage: boolean = false;
+  protected form: JdbcQueryForm = {
     query: '',
     queryType: '',
     datasource: '',
@@ -24,56 +26,52 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
     avoidLocking: false,
     trimSpaces: false,
   };
-  result: string = '';
+  protected result: string = '';
+
+  protected readonly editorActions = {
+    ctrlEnter: {
+      id: 'submit',
+      label: 'Submit Form',
+      run: (): void => this.submit(this.form),
+    },
+  };
 
   private _subscriptions = new Subscription();
-  private appConstants: AppConstants;
+  private appConstants: AppConstants = this.appService.APP_CONSTANTS;
 
   constructor(
     private webStorageService: WebStorageService,
     private appService: AppService,
     private jdbcService: JdbcService,
-  ) {
-    this.appConstants = this.appService.APP_CONSTANTS;
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(
-      () => {
-        this.appConstants = this.appService.APP_CONSTANTS;
-      },
-    );
-    this._subscriptions.add(appConstantsSubscription);
-  }
+  ) {}
 
   ngOnInit(): void {
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(
-      () => {
-        this.form['datasource'] = this.appConstants[
-          'jdbc.datasource.default'
-        ] as string;
-      },
-    );
+    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
+      this.appConstants = this.appService.APP_CONSTANTS;
+      this.form.datasource = this.appConstants['jdbc.datasource.default'] as string;
+    });
     this._subscriptions.add(appConstantsSubscription);
 
-    const executeQueryCookie =
-      this.webStorageService.get<JdbcQueryForm>('executeQuery');
+    const executeQueryCookie = this.webStorageService.get<JdbcQueryForm>('executeQuery');
 
     this.jdbcService.getJdbc().subscribe((data) => {
-      Object.assign(this, data);
+      this.datasources = data.datasources;
+      this.queryTypes = data.queryTypes;
+      this.resultTypes = data.resultTypes;
 
-      this.form['datasource'] =
+      this.form.datasource =
         this.appConstants['jdbc.datasource.default'] == undefined
           ? data.datasources[0]
           : (this.appConstants['jdbc.datasource.default'] as string);
-      this.form['queryType'] = data.queryTypes[0];
-      this.form['resultType'] = data.resultTypes[0];
+      this.form.queryType = data.queryTypes[0];
+      this.form.resultType = data.resultTypes[0];
 
       if (executeQueryCookie) {
-        this.form['query'] = executeQueryCookie.query;
-
+        this.form.query = executeQueryCookie.query;
+        this.form.resultType = executeQueryCookie.resultType;
         if (data.datasources.includes(executeQueryCookie.datasource)) {
-          this.form['datasource'] = executeQueryCookie.datasource;
+          this.form.datasource = executeQueryCookie.datasource;
         }
-
-        this.form['resultType'] = executeQueryCookie.resultType;
       }
     });
   }
@@ -85,20 +83,17 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
   submit(formData: JdbcQueryForm): void {
     this.processingMessage = true;
 
-    if (!formData || !formData.query) {
+    if (formData.query === '') {
       this.error = 'Please specify a datasource, resulttype and query!';
       this.processingMessage = false;
       return;
     }
 
-    if (!formData.datasource) formData.datasource = this.datasources[0] || '';
-    if (!formData.resultType) formData.resultType = this.resultTypes[0] || '';
-
     this.webStorageService.set('executeQuery', formData);
 
     this.jdbcService.postJdbcQuery(formData).subscribe({
       next: (returnData) => {
-        this.error = '';
+        this.error = null;
 
         if (!returnData) {
           returnData = 'Ok';
@@ -108,13 +103,11 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
         this.processingMessage = false;
       },
       error: (errorData: HttpErrorResponse) => {
-        const error =
-          errorData && errorData.error ? errorData.error : 'An error occured';
         try {
-          const errorMessage = JSON.parse(error);
-          this.error = `${errorMessage.status}: ${errorMessage.error}`;
+          const errorResponse = JSON.parse(errorData.error) as ServerErrorResponse | undefined;
+          this.error = errorResponse ? errorResponse.error : errorData.message;
         } catch {
-          this.error = error;
+          this.error = errorData.message;
         }
         this.result = '';
         this.processingMessage = false;
@@ -123,12 +116,16 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
   }
 
   reset(): void {
-    this.form['query'] = '';
+    this.error = null;
     this.result = '';
-    this.form['datasource'] = this.datasources[0];
-    this.form['resultType'] = this.resultTypes[0];
-    this.form['avoidLocking'] = false;
-    this.form['trimSpaces'] = false;
     this.webStorageService.remove('executeQuery');
+    this.form = {
+      query: '',
+      queryType: '',
+      datasource: this.datasources[0],
+      resultType: this.resultTypes[0],
+      avoidLocking: false,
+      trimSpaces: false,
+    };
   }
 }

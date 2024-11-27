@@ -36,23 +36,21 @@ import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlEncodingUtils;
 
 /**
- * This <code>ErrorMessageFormatter</code> wraps an error in an XML string.
- *
- * <br/>
+ * This class wraps an error in an XML string.
+ * <p>
  * Sample xml:
- * <br/>
- * <code><pre>
- * &lt;errorMessage&gt;
- *    &lt;message timestamp="Mon Oct 13 12:01:57 CEST 2003"
+ * <pre>{@code
+ * <errorMessage>
+ *    <message timestamp="Mon Oct 13 12:01:57 CEST 2003"
  *             originator="NN IOS AdapterFramework(set from 'application.name' and 'application.version')"
- *             message="<i>message describing the error that occurred</i>" &gt;
- *    &lt;location class="org.frankframework.pipes.XmlSwitch" name="ServiceSwitch"/&gt
- *    &lt;details&gt<i>detailed information of the error</i>&lt;/details&gt
- *    &lt;originalMessage messageId="..." receivedTime="Mon Oct 27 12:10:18 CET 2003" &gt;
- *        &lt;![CDATA[<i>contents of message for which the error occurred</i>]]&gt;
- *    &lt;/originalMessage&gt;
- * &lt;/errorMessage&gt;
- * </pre></code>
+ *             message="message describing the error that occurred">
+ *    <location class="org.frankframework.pipes.XmlSwitch" name="ServiceSwitch"/>
+ *    <details>detailed information of the error</details>
+ *    <originalMessage messageId="..." receivedTime="Mon Oct 27 12:10:18 CET 2003" >
+ *        <![CDATA[contents of message for which the error occurred]]>
+ *    </originalMessage>
+ * </errorMessage>
+ * }</pre>
  *
  * @author  Gerrit van Brakel
  */
@@ -109,12 +107,12 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		try {
 			originalMessageXml.setValue(originalMessage!=null ? originalMessage.asString(): null, true);
 		} catch (IOException e) {
-			log.warn("Could not convert originalMessage for messageId ["+messageId+"]",e);
+			log.warn("Could not convert originalMessage for messageId [{}]", messageId, e);
 			originalMessageXml.setValue(originalMessage.toString(), true);
 		}
 		errorXml.addSubElement(originalMessageXml);
 
-		return new Message(errorXml.toXML());
+		return errorXml.asMessage();
 	}
 
 	protected String getErrorMessage(String message, Throwable t) {

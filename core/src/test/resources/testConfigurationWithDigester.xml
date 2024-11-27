@@ -17,9 +17,10 @@
 		Mocked classes should contain the primary attribute to ensure they are used!
 	-->
 
-	<bean primary="true" name="jdbcMigrator" class="org.frankframework.testutil.mock.DatabaseMigratorMock" scope="prototype" lazy-init="true" />
-
 	<bean primary="true" name="eventPublisher" class="org.frankframework.testutil.mock.EventPublisherMock" />
+
+	<!-- bean just needs to be here to override the 'default' specified in SpringConfigurationContext.xml -->
+	<bean primary="true" name="configFlowGenerator" class="java.lang.Object" />
 
 	<bean id="ConfigurationMessageListener" class="org.frankframework.testutil.ConfigurationMessageEventListener" />
 </beans>

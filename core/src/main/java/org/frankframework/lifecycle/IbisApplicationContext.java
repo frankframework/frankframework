@@ -28,6 +28,10 @@ import java.util.stream.Collectors;
 
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.Environment;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.SpringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -36,11 +40,6 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.ResourceUtils;
-
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.Environment;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.SpringUtils;
 
 /**
  * Creates and maintains the (Spring) Application Context. If the context is loaded through a {@link FrankApplicationInitializer servlet}
@@ -61,7 +60,7 @@ import org.frankframework.util.SpringUtils;
 public class IbisApplicationContext implements Closeable {
 
 	public enum BootState {
-		FIRST_START, STARTING, STARTED, STOPPING, STOPPED, ERROR;
+		FIRST_START, STARTING, STARTED, STOPPING, STOPPED, ERROR
 	}
 
 	private AbstractApplicationContext applicationContext;
@@ -255,7 +254,8 @@ public class IbisApplicationContext implements Closeable {
 		modulesToScanFor.add("frankframework-dbms");
 		modulesToScanFor.add("frankframework-filesystem");
 		modulesToScanFor.add("frankframework-idin");
-		modulesToScanFor.add("frankframework-ladybug");
+		modulesToScanFor.add("frankframework-ladybug-common");
+		modulesToScanFor.add("frankframework-ladybug-debugger");
 		modulesToScanFor.add("frankframework-larva");
 		modulesToScanFor.add("frankframework-management-gateway");
 		modulesToScanFor.add("frankframework-messaging");

@@ -19,9 +19,7 @@ import java.io.Writer;
 import java.sql.ResultSet;
 
 import org.frankframework.batch.IResultHandler;
-
 import org.frankframework.core.SenderException;
-
 import org.frankframework.dbms.IDbmsSupport;
 
 

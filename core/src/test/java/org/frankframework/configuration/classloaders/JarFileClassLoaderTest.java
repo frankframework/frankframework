@@ -24,10 +24,11 @@ import java.net.URL;
 import java.util.List;
 import java.util.jar.JarFile;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.testutil.JunitTestClassLoaderWrapper;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.util.ClassUtils;
-import org.junit.jupiter.api.Test;
 
 public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<JarFileClassLoader> {
 
@@ -84,10 +85,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 
 	@Test
 	public void testMyConfig() throws Exception {
-		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
-		TestAppender.addToRootLogger(appender);
-
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build()) {
 			JarFileClassLoader classLoader = createClassLoader(null, "/ClassLoader/zip/myConfig.zip");
 
 			appConstants.put("configurations.myConfig.classLoaderType", classLoader.getClass().getSimpleName());
@@ -100,14 +98,12 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 			assertEquals(8, logEvents.size(), "Should find 8 log messages");
 			long warnMsgs = logEvents.stream().filter(k -> k.startsWith("WARN")).count();
 			assertEquals(1, warnMsgs, "Should find one warning message");
-		} finally {
-			TestAppender.removeAppender(appender);
 		}
 	}
 
 	@Test
 	public void loadCustomClassUsingForName() throws Exception {
-		ClassLoaderBase classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
+		AbstractClassLoader classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
 		classLoader.setBasePath(".");
 		classLoader.configure(ibisContext, "myConfig");
 
@@ -116,7 +112,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 		Class<?> clazz = Class.forName("org.frankframework.pipes.LargeBlockTester", true, classLoader); //With inner-class
 		ClassUtils.newInstance(clazz);
 
-		Field loadedClassesField = ClassLoaderBase.class.getDeclaredField("loadedCustomClasses");
+		Field loadedClassesField = AbstractClassLoader.class.getDeclaredField("loadedCustomClasses");
 		loadedClassesField.setAccessible(true);
 		List<String> loadedCustomClasses = (List<String>) loadedClassesField.get(classLoader);
 		assertEquals(3, loadedCustomClasses.size(), "too many classes: "+loadedCustomClasses.toString()); // base + 2 inner classes
@@ -125,7 +121,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 
 	@Test
 	public void loadCustomClassUsingLoadClass() throws Exception {
-		ClassLoaderBase classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
+		AbstractClassLoader classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
 		classLoader.setBasePath(".");
 		classLoader.configure(ibisContext, "myConfig");
 
@@ -134,7 +130,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 		Class<?> clazz = classLoader.loadClass("org.frankframework.pipes.LargeBlockTester"); //With inner-class
 		ClassUtils.newInstance(clazz);
 
-		Field loadedClassesField = ClassLoaderBase.class.getDeclaredField("loadedCustomClasses");
+		Field loadedClassesField = AbstractClassLoader.class.getDeclaredField("loadedCustomClasses");
 		loadedClassesField.setAccessible(true);
 		List<String> loadedCustomClasses = (List<String>) loadedClassesField.get(classLoader);
 		assertEquals(3, loadedCustomClasses.size(), "too many classes: "+loadedCustomClasses.toString()); // base + 2 inner classes

@@ -42,7 +42,7 @@
 						<field name="MESSAGEID">ID:LPZWNL000019314-61775-1594817770290-3:27:14:1:1</field>
 						<field name="CORRELATIONID">Test Tool correlation id</field>
 						<field name="MESSAGEDATE">2020-07-15 15:43:40</field>
-						<field name="COMMENTS">too many redeliveries or retries; Pipe [subcall_local_exception] caught exception: IbisLocalSender [subcall_local_exception-sender] exception calling JavaListener [JmsFFListener_subcall]: Pipe [subcall_local_exception] ERROR</field>
+						<field name="COMMENTS">too many redeliveries or retries; Pipe [subcall_local_exception] caught exception: exception calling JavaListener [JmsFFListener_subcall]: Pipe [subcall_local_exception] ERROR</field>
 						<field name="MESSAGE">&lt;request action="subcall_local_exception"&gt;
 	&lt;value&gt;test&lt;/value&gt;
 &lt;/request&gt;</field>

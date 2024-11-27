@@ -23,6 +23,10 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
@@ -39,9 +43,6 @@ import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 /**
  * Pipe to wrap or unwrap a message conformable to the BIS (Business Integration Services) standard.
@@ -317,7 +318,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 					if (StringUtils.isNotEmpty(getOutputNamespace())) {
 						outputElement.addAttribute("xmlns", getOutputNamespace());
 					}
-					payload = prepareReply(outputElement.toXML(), isBisMessageHeaderInSoapBody() ? messageHeader : null, bisResult, isBisResultInPayload());
+					payload = prepareReply(outputElement.asXmlString(), isBisMessageHeaderInSoapBody() ? messageHeader : null, bisResult, isBisResultInPayload());
 				}
 
 				result = wrapMessage(new Message(payload), isBisMessageHeaderInSoapBody() ? null : messageHeader, session);
@@ -389,7 +390,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		timestampElement.setValue(DateFormatUtils.now(DateFormatUtils.FULL_ISO_FORMATTER));
 		headerFieldsElement.addSubElement(timestampElement);
 		messageHeaderElement.addSubElement(headerFieldsElement);
-		return messageHeaderElement.toXML();
+		return messageHeaderElement.asXmlString();
 	}
 
 	private String prepareResult(String errorCode, String errorText, String serviceName, String actionName, String detailText) {
@@ -439,7 +440,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			errorListElement.addSubElement(errorElement);
 			resultElement.addSubElement(errorListElement);
 		}
-		return resultElement.toXML();
+		return resultElement.asXmlString();
 	}
 
 	private String errorCodeToText(String errorCode) {
@@ -460,10 +461,10 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 
 		String payload = null;
 		if (result == null) {
-			payload = Misc.listToString(messages);
+			payload = BisUtils.listToString(messages);
 		} else {
 			if (resultInPayload) {
-				String message = Misc.listToString(messages);
+				String message = BisUtils.listToString(messages);
 				Document messageDoc = XmlUtils.buildDomDocument(message);
 				Node messageRootNode = messageDoc.getFirstChild();
 				Node resultNode = messageDoc.importNode(XmlUtils.buildNode(result), true);
@@ -471,7 +472,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 				payload = XmlUtils.nodeToString(messageDoc);
 			} else {
 				messages.add(result);
-				payload = Misc.listToString(messages);
+				payload = BisUtils.listToString(messages);
 			}
 		}
 		return payload;

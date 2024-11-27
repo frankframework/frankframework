@@ -21,12 +21,11 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
-import org.frankframework.task.TimeoutGuard;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.task.TimeoutGuard;
 
 /**
  * Process execution utilities.
@@ -56,7 +55,7 @@ public class ProcessUtil {
 		if (command==null || command.isEmpty()) {
 			return "";
 		}
-		StringBuilder result = new StringBuilder((String) command.get(0));
+		StringBuilder result = new StringBuilder(command.get(0));
 		for (int i = 1; i < command.size(); i++) {
 			result.append(" ").append(command.get(i));
 		}
@@ -128,7 +127,7 @@ public class ProcessUtil {
 			throw new SenderException("Nonzero exit value [" + exitValue + "] for command  ["+getCommandLine(command)+"], process output was [" + output + "], error output was [" + errors + "]");
 		}
 		if (StringUtils.isNotEmpty(errors)) {
-			log.warn("command ["+getCommandLine(command)+"] had error output [" + errors + "]");
+			log.warn("command [{}] had error output [{}]", getCommandLine(command), errors);
 		}
 		return output;
 	}

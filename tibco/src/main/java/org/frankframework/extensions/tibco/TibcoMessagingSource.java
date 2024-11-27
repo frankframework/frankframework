@@ -17,13 +17,14 @@ package org.frankframework.extensions.tibco;
 
 import java.util.Map;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Session;
-import javax.jms.TopicSession;
 import javax.naming.Context;
+
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.Session;
+import jakarta.jms.TopicSession;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -65,7 +66,7 @@ public class TibcoMessagingSource extends JmsMessagingSource {
 		Session session=null;
 		try {
 			session = createSession(false,Session.AUTO_ACKNOWLEDGE);
-			log.debug("Session class ["+session.getClass().getName()+"]");
+			log.debug("Session class [{}]", session.getClass().getName());
 			Destination destination;
 
 			/* create the destination */

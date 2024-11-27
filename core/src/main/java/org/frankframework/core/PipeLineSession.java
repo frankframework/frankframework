@@ -18,6 +18,7 @@ package org.frankframework.core;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -25,20 +26,22 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.util.Supplier;
-import org.frankframework.stream.Message;
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.DateFormatUtils;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
+
+import org.frankframework.stream.Message;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.CleanerProvider;
+import org.frankframework.util.CloseUtils;
+import org.frankframework.util.DateFormatUtils;
 
 
 /**
@@ -65,7 +68,6 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	public static final String HTTP_METHOD_KEY 	   = "HttpMethod";
 	public static final String HTTP_REQUEST_KEY    = "servletRequest";
 	public static final String HTTP_RESPONSE_KEY   = "servletResponse";
-	public static final String SERVLET_CONTEXT_KEY = "servletContext";
 
 	public static final String API_PRINCIPAL_KEY   = "apiPrincipal";
 	public static final String EXIT_STATE_CONTEXT_KEY="exitState";
@@ -73,19 +75,14 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	private ISecurityHandler securityHandler = null;
 
+	private transient PipeLineSessionCloseAction closeAction;
+
 	// closeables.keySet is a List of wrapped resources. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
 	// Values are labels to help debugging
 	private final @Getter Map<AutoCloseable, String> closeables = new ConcurrentHashMap<>(); // needs to be concurrent, closes may happen from other threads
 	public PipeLineSession() {
 		super();
-	}
-
-	public PipeLineSession(int initialCapacity) {
-		super(initialCapacity);
-	}
-
-	public PipeLineSession(int initialCapacity, float loadFactor) {
-		super(initialCapacity, loadFactor);
+		createCloseAction();
 	}
 
 	/**
@@ -95,6 +92,23 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 */
 	public PipeLineSession(@Nonnull Map<String, Object> t) {
 		super(t);
+		createCloseAction();
+	}
+
+	private void createCloseAction() {
+		closeAction = new PipeLineSessionCloseAction(this.closeables);
+		CleanerProvider.register(this, closeAction);
+	}
+
+	public void setExitState(PipeLine.ExitState state, Integer code) {
+		put(EXIT_STATE_CONTEXT_KEY, state);
+		if(code != null) {
+			put(EXIT_CODE_CONTEXT_KEY, Integer.toString(code));
+		}
+	}
+
+	public void setExitState(PipeLineResult pipeLineResult) {
+		setExitState(pipeLineResult.getState(), pipeLineResult.getExitCode());
 	}
 
 	/**
@@ -195,8 +209,13 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	@Nonnull
 	public Message getMessage(String key) {
 		Object obj = get(key);
+		if (obj instanceof Message message) {
+			return message;
+		}
 		if(obj != null) {
-			return Message.asMessage(obj);
+			Message message = Message.asMessage(obj);
+			message.closeOnCloseOf(this, "Message for key [" + key + "]");
+			return message;
 		}
 		return Message.nullMessage();
 	}
@@ -294,6 +313,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			return obj.toString();
 		} else if (obj instanceof Message message) {
 			// Existing messages returned directly so they are not closed
+			message.assertNotClosed();
 			return message.asString();
 		} else {
 			// Other types are wrapped into a message, which is closed after converting to String.
@@ -433,17 +453,22 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	@Override
 	public void close() {
 		LOG.debug("Closing PipeLineSession");
-		// We create a copy of the instance variable so that we are protected from changes done in other methods.
-		Map<AutoCloseable, String> copy = new HashMap<>(closeables);
-		closeables.clear();
-		for (Entry<AutoCloseable, String> entry : copy.entrySet()) {
-			AutoCloseable closeable = entry.getKey();
-			try {
-				LOG.debug("messageId [{}] auto closing resource [{}]", this::getMessageId, entry::getValue);
-				closeable.close();
-			} catch (Exception e) {
-				LOG.warn("Exception closing resource, messageId [{}], resource [{}] {}", (Supplier<?>) this::getMessageId, (Supplier<?>) entry::getKey, (Supplier<?>) entry::getValue, e);
-			}
+		CleanerProvider.clean(closeAction);
+	}
+
+	private static class PipeLineSessionCloseAction implements Runnable {
+		private final Map<AutoCloseable, String> closeables;
+
+		private PipeLineSessionCloseAction(Map<AutoCloseable, String> closeables) {
+			this.closeables = closeables;
+		}
+
+		@Override
+		public void run() {
+			// Create a copy to safeguard against side-effects
+			Set<AutoCloseable> closeableItems = new LinkedHashSet<>(closeables.keySet());
+			closeables.clear();
+			CloseUtils.closeSilently(closeableItems);
 		}
 	}
 }

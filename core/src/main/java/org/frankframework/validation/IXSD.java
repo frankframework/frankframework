@@ -15,17 +15,19 @@
 */
 package org.frankframework.validation;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.frankframework.core.IScopeProvider;
 
 /**
  * The representation of a XSD.
  */
-public interface IXSD extends Schema {
+public interface IXSD extends Schema, Comparable<IXSD> {
 
 	String getResourceTarget();
 	String getNamespace();			// the externally configured targetNamespace
@@ -33,6 +35,10 @@ public interface IXSD extends Schema {
 	boolean isAddNamespaceToSchema();
 	List<String> getRootTags();
 	Set<String> getImportedNamespaces();
+
+	@Nonnull
+	String asString() throws IOException;
+
 	@Nullable
 	IXSD getImportParent();
 
@@ -58,5 +64,5 @@ public interface IXSD extends Schema {
 
 	IScopeProvider getScopeProvider();
 
-	int compareToByContents(IXSD x);
+	int compareToByContents(IXSD other);
 }

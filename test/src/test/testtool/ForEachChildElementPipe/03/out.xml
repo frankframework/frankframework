@@ -1,6 +1,6 @@
 <throwable>
   <class>org.frankframework.core.SenderException</class>
-  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-ForEachChildElementPipe]: (RequestProcessorException) RequestProcessor [ibis4test-ForEachChildElementPipe] caught exception: Pipe [ForEachChildElementPipe_Record] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): exitState=ERROR</message>
+  <message>exception processing message using request processor [ibis4test-ForEachChildElementPipe]: (RequestProcessorException) RequestProcessor [ibis4test-ForEachChildElementPipe] caught exception: Pipe [ForEachChildElementPipe_Record] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): exitState=ERROR</message>
   <cause>
     <throwable>
       <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>

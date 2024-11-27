@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2023 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2023 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,39 +19,44 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Iterator;
-import java.util.Properties;
 
-import javax.activation.DataHandler;
-import javax.xml.soap.AttachmentPart;
-import javax.xml.soap.MessageFactory;
-import javax.xml.soap.MimeHeader;
-import javax.xml.soap.SOAPConstants;
-import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.Source;
-import javax.xml.ws.WebServiceContext;
+
+import jakarta.activation.DataHandler;
+import jakarta.xml.soap.AttachmentPart;
+import jakarta.xml.soap.MessageFactory;
+import jakarta.xml.soap.MimeHeader;
+import jakarta.xml.soap.SOAPConstants;
+import jakarta.xml.soap.SOAPMessage;
+import jakarta.xml.ws.WebServiceContext;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.w3c.dom.Element;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.InputStreamDataSource;
+import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.w3c.dom.Element;
 
 public class SoapProviderTest {
 
+	private static final String BASEDIR = "/Soap/";
+
 	private final WebServiceContext webServiceContext = new WebServiceContextStub();
-	private final SoapProviderStub SOAPProvider = new SoapProviderStub(webServiceContext);
+	private SoapProviderStub SOAPProvider;
 
 	private static final String ATTACHMENT_CONTENT = "<dummy/>";
 	private static final String ATTACHMENT_MIMETYPE = "plain/text";
@@ -64,40 +69,12 @@ public class SoapProviderTest {
 			+ "sessionKey=\"part_file\" size=\"72833\" "
 			+ "mimeType=\""+ATTACHMENT2_MIMETYPE+"\"/></parts>";
 
-	private static final String BASEDIR = "/Soap/";
-
-	@BeforeAll
-	public static void setUp() {
-		Properties prop = System.getProperties();
-		String vendor = prop.getProperty("java.vendor");
-		assumeFalse(vendor.contains("IBM Corporation"));
-
-	/*
-	 * The above exclusion of IBM JDK to work around the below error, seen when executing these tests with an IBM JDK:
-	 *
-		java.lang.VerifyError: JVMVRFY012 stack shape inconsistent; class=com/sun/xml/messaging/saaj/soap/SOAPDocumentImpl, method=createDocumentFragment()Lorg/w3c/dom/DocumentFragment;, pc=5; Type Mismatch, argument 0 in signature com/sun/xml/messaging/saaj/soap/SOAPDocumentFragment.<init>:(Lcom/sun/org/apache/xerces/internal/dom/CoreDocumentImpl;)V does not match
-		Exception Details:
-		  Location:
-		    com/sun/xml/messaging/saaj/soap/SOAPDocumentImpl.createDocumentFragment()Lorg/w3c/dom/DocumentFragment; @5: JBinvokespecial
-		  Reason:
-		    Type 'com/sun/xml/messaging/saaj/soap/SOAPDocumentImpl' (current frame, stack[2]) is not assignable to 'com/sun/org/apache/xerces/internal/dom/CoreDocumentImpl'
-		  Current Frame:
-		    bci: @5
-		    flags: { }
-		    locals: { 'com/sun/xml/messaging/saaj/soap/SOAPDocumentImpl' }
-		    stack: { 'uninitialized', 'uninitialized', 'com/sun/xml/messaging/saaj/soap/SOAPDocumentImpl' }
-			at com.sun.xml.messaging.saaj.soap.SOAPPartImpl.<init>(SOAPPartImpl.java:106)
-			at com.sun.xml.messaging.saaj.soap.ver1_1.SOAPPart1_1Impl.<init>(SOAPPart1_1Impl.java:70)
-			at com.sun.xml.messaging.saaj.soap.ver1_1.Message1_1Impl.getSOAPPart(Message1_1Impl.java:90)
-			at org.frankframework.extensions.cxf.SoapProviderTest.createMessage(SoapProviderTest.java:109)
-			at org.frankframework.extensions.cxf.SoapProviderTest.createMessage(SoapProviderTest.java:98)
-			at org.frankframework.extensions.cxf.SoapProviderTest.createMessage(SoapProviderTest.java:94)
-			at org.frankframework.extensions.cxf.SoapProviderTest.sendMessageWithInputStreamAttachmentsTest(SoapProviderTest.java:228)
-	*/
-
+	@BeforeEach
+	public void setup() {
+		SOAPProvider = new SoapProviderStub(webServiceContext);
 	}
 
-	protected Message getFile(String file) throws IOException {
+	private Message getFile(String file) throws IOException {
 		URL url = this.getClass().getResource(BASEDIR+file);
 		if (url == null) {
 			throw new IOException("file not found");
@@ -120,12 +97,33 @@ public class SoapProviderTest {
 			DataHandler dataHandler = new DataHandler(new InputStreamDataSource(ATTACHMENT_MIMETYPE, fis));
 
 			AttachmentPart part = soapMessage.createAttachmentPart(dataHandler);
+			part.setContentId(filename);
 			soapMessage.addAttachmentPart(part);
 		}
 		return soapMessage;
 	}
 
-	private void assertAttachmentInSession(PipeLineSession session) throws Exception {
+	private void assertAttachmentInSession(PipeLineSession session, boolean legacyAttachmentNotation) throws Exception {
+		if(legacyAttachmentNotation) {
+			assertLegacyAttachmentInSession(session);
+		} else {
+			assertNotNull(session.get(MultipartUtils.MULTIPART_ATTACHMENTS_SESSION_KEY));
+			Element xml = XmlUtils.buildElement(session.getMessage(MultipartUtils.MULTIPART_ATTACHMENTS_SESSION_KEY));
+			Element attachment = XmlUtils.getFirstChildTag(xml, "part");
+			assertNotNull(attachment);
+
+			//Retrieve sessionkey the attachment was stored in
+			String sessionKey = attachment.getAttribute("sessionKey");
+			assertNotNull(sessionKey);
+			Message attachmentMessage = session.getMessage(sessionKey);
+
+			//Verify that the attachment sent, was received properly
+			assertEquals(ATTACHMENT_CONTENT, attachmentMessage.asString());
+			assertEquals(ATTACHMENT_MIMETYPE, attachmentMessage.getContext().get(MessageContext.METADATA_MIMETYPE).toString());
+		}
+	}
+
+	private void assertLegacyAttachmentInSession(PipeLineSession session) throws Exception {
 		assertNotNull(session.get("mimeHeaders"));
 
 		assertNotNull(session.get("attachments"));
@@ -136,7 +134,7 @@ public class SoapProviderTest {
 		//Retrieve sessionkey the attachment was stored in
 		String sessionKey = XmlUtils.getChildTagAsString(attachment, "sessionKey");
 		assertNotNull(sessionKey);
-		Message attachmentMessage = SOAPProvider.getMessageFromSessionCopy(sessionKey);
+		Message attachmentMessage = session.getMessage(sessionKey);
 
 		//Verify that the attachment sent, was received properly
 		assertEquals(ATTACHMENT_CONTENT, attachmentMessage.asString());
@@ -183,6 +181,7 @@ public class SoapProviderTest {
 	@Test
 	public void simpleMessageTest() throws Throwable {
 		SOAPMessage request = createMessage("correct-soapmsg.xml");
+		SOAPProvider.setMultipartBackwardsCompatibilityMode(true);
 
 		SOAPMessage message = SOAPProvider.invoke(request);
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
@@ -212,9 +211,11 @@ public class SoapProviderTest {
 	 * Reply SOAP message without attachment
 	 * @throws Throwable
 	 */
-	@Test
-	public void receiveMessageWithAttachmentsTest() throws Throwable {
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void receiveMessageWithAttachmentsTest(boolean legacyAttachmentNotation) throws Throwable {
 		SOAPMessage request = createMessage("correct-soapmsg.xml", true, false);
+		SOAPProvider.setMultipartBackwardsCompatibilityMode(legacyAttachmentNotation);
 
 		SOAPMessage message = SOAPProvider.invoke(request);
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
@@ -222,7 +223,7 @@ public class SoapProviderTest {
 		assertEquals(expected.replace("\r", ""), result.replace("\r", ""));
 
 		PipeLineSession session = SOAPProvider.getSession();
-		assertAttachmentInSession(session);
+		assertAttachmentInSession(session, legacyAttachmentNotation);
 	}
 
 	/**
@@ -305,7 +306,7 @@ public class SoapProviderTest {
 		PipeLineSession session = new PipeLineSession();
 
 		session.put("attachmentXmlSessionKey", "<parts><part sessionKey=\"part_file\"/></parts>");
-		session.put("part_file", Message.asMessage(getFile(attachmentFile).asString())); //as String message / no message context
+		session.put("part_file", new Message(getFile(attachmentFile).asString())); //as String message / no message context
 
 		SOAPProvider.setAttachmentXmlSessionKey("attachmentXmlSessionKey");
 		SOAPProvider.setSession(session);
@@ -368,14 +369,17 @@ public class SoapProviderTest {
 		}
 	}
 
-	@Test
 	/**
 	 * Receive SOAP message with attachment
 	 * Reply SOAP message with attachment
 	 * @throws Throwable
 	 */
-	public void receiveAndSendMessageWithAttachmentsTest() throws Throwable {
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void receiveAndSendMessageWithAttachmentsTest(boolean legacyAttachmentNotation) throws Throwable {
 		SOAPMessage request = createMessage("correct-soapmsg.xml", true, false);
+		SOAPProvider.setMultipartBackwardsCompatibilityMode(legacyAttachmentNotation);
+
 		PipeLineSession session = new PipeLineSession();
 
 		session.put("attachmentXmlSessionKey", MULTIPART_XML);
@@ -391,7 +395,7 @@ public class SoapProviderTest {
 		assertEquals(expected.replace("\r", ""), result.replace("\r", ""));
 
 		//Validate an attachment was sent to the listener
-		assertAttachmentInSession(SOAPProvider.getSession());
+		assertAttachmentInSession(SOAPProvider.getSession(), legacyAttachmentNotation);
 
 		//Validate the listener returned an attachment back
 		assertAttachmentInReceivedMessage(message);

@@ -8,22 +8,26 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.URL;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.mockito.Mockito;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.util.MimeType;
+
+import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.mockito.Mockito;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.util.MimeType;
 
 public class MessageUtilsTest {
 
@@ -171,7 +175,7 @@ public class MessageUtilsTest {
 		URL url = TestFileUtils.getTestFileURL("/file.xml");
 		assertNotNull(url);
 		try (Message message = new UrlMessage(url)) {
-			MessageDataSource ds = new MessageDataSource(Message.asMessage(message.asString()));
+			MessageDataSource ds = new MessageDataSource(new Message(message.asString()));
 			assertEquals(null, ds.getName(), "filename is unknown");
 			assertEquals("application/octet-stream", ds.getContentType(), "content-type cannot be determined");
 			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "contents should be the same");
@@ -184,7 +188,7 @@ public class MessageUtilsTest {
 		URL url = TestFileUtils.getTestFileURL("/log4j4ibis.xml");
 		assertNotNull(url);
 		try (Message message = new UrlMessage(url)) {
-			MessageDataSource ds = new MessageDataSource(Message.asMessage(message.asString()));
+			MessageDataSource ds = new MessageDataSource(new Message(message.asString()));
 			assertEquals(null, ds.getName(), "filename is unknown");
 			assertEquals("application/xml", ds.getContentType(), "content-type cannot be determined");
 			assertEquals(StreamUtil.streamToString(ds.getInputStream()), StreamUtil.streamToString(url.openStream()), "contents should be the same");
@@ -194,7 +198,7 @@ public class MessageUtilsTest {
 
 	@Test
 	public void testJsonMessage() {
-		Message json = Message.asMessage("{\"GUID\": \"ABC\"}");
+		Message json = new Message("{\"GUID\": \"ABC\"}");
 		MimeType mimeType = MessageUtils.computeMimeType(json);
 		assertNotNull(mimeType);
 		assertEquals("application/octet-stream", mimeType.toString()); //mime-type cannot be determined
@@ -267,5 +271,47 @@ public class MessageUtilsTest {
 		assertEquals("", message.asString());
 		assertEquals(0L, message.size());
 		assertEquals("[Header.Transfer-Encoding, Header.User-Agent]", getMessageHeaders(message));
+	}
+
+	@Test
+	void testMessageAsStringDoesNotCloseMessage() throws IOException {
+		// Arrange: make it an object, so method can do instanceof check
+		Object msg = new Message(new StringReader("text"));
+
+		// Act
+		String content = MessageUtils.asString(msg);
+
+		// Assert
+		Message message = (Message) msg;
+		assertEquals("text", message.asString());
+		assertEquals("text", content);
+		message.close();
+	}
+
+	@Test
+	void testMessageAsStringDoesNotCloseMessageWrapper() throws IOException {
+		// Arrange: make it an object, so method can do instanceof check
+		Message msg = new Message(new StringReader("text"));
+		Object wrapper = new MessageWrapper<Message>(msg, null, null);
+
+		// Act
+		String content = MessageUtils.asString(wrapper);
+
+		// Assert
+		MessageWrapper<Message> messageWrapper = (MessageWrapper) wrapper;
+		assertEquals("text", messageWrapper.getMessage().asString());
+		assertEquals("text", content);
+		msg.close();
+	}
+
+	@Test
+	void testAsString() throws IOException {
+		assertNull(MessageUtils.asString(null));
+
+		String expected = "testString";
+		assertEquals(expected, MessageUtils.asString(expected));
+
+		assertEquals(expected, MessageUtils.asString(new StringReader(expected)));
+
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,9 @@
 */
 package org.frankframework.util;
 
-import java.util.Date;
+import java.time.Instant;
 
-import org.apache.logging.log4j.Logger;
-
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.core.INamedObject;
 
 /**
@@ -27,8 +26,8 @@ import org.frankframework.core.INamedObject;
  * @author  Johan Verrips IOS
  * @see MessageKeeperMessage
  */
+@Log4j2
 public class MessageKeeper extends SizeLimitedVector<MessageKeeperMessage> {
-	protected Logger log = LogUtil.getLogger(this);
 
 	public enum MessageKeeperLevel {
 		INFO, WARN, ERROR
@@ -48,10 +47,10 @@ public class MessageKeeper extends SizeLimitedVector<MessageKeeperMessage> {
 	public synchronized void add(String message, MessageKeeperLevel level) {
 		super.add(new MessageKeeperMessage(message, level));
 	}
-	public synchronized void add(String message, Date date) {
+	public synchronized void add(String message, Instant date) {
 		add(message, date, MessageKeeperLevel.INFO);
 	}
-	public synchronized void add(String message, Date date, MessageKeeperLevel level) {
+	public synchronized void add(String message, Instant date, MessageKeeperLevel level) {
 		super.add(new MessageKeeperMessage(message, date, level));
 	}
 

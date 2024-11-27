@@ -22,12 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.configuration.classloaders.ClassLoaderBase;
-import org.frankframework.core.Resource;
-import org.frankframework.dbms.JdbcException;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
 
 import liquibase.Contexts;
 import liquibase.LabelExpression;
@@ -51,6 +45,13 @@ import liquibase.lockservice.LockService;
 import liquibase.lockservice.LockServiceFactory;
 import liquibase.resource.ResourceAccessor;
 
+import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.classloaders.AbstractClassLoader;
+import org.frankframework.core.Resource;
+import org.frankframework.dbms.JdbcException;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
+
 /**
  * LiquiBase implementation for IAF
  *
@@ -58,7 +59,7 @@ import liquibase.resource.ResourceAccessor;
  * @since	7.0-B4
  *
  */
-public class LiquibaseMigrator extends DatabaseMigratorBase {
+public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 
 	protected Logger migrationLog = LogUtil.getLogger("liquibase.migrationLog");
 	private Contexts contexts;
@@ -70,7 +71,7 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
 
 		ClassLoader classLoader = getConfigurationClassLoader();
-		if (classLoader instanceof ClassLoaderBase base) {
+		if (classLoader instanceof AbstractClassLoader base) {
 			URL url = base.getLocalResource(changeLogFile);
 			if (url==null) {
 				log.debug("database changelog file [{}] not found as local resource of classLoader [{}]", changeLogFile, classLoader);
@@ -139,7 +140,7 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 			for(RanChangeSet ranChangeSet : alreadyExecutedChangeSets) {
 				CheckSum checkSum = ranChangeSet.getLastCheckSum();
 				if(checkSum != null && checkSum.getVersion() < CheckSum.getCurrentVersion()) {
-					migrationLog.warn("checksum ["+checkSum+"] for changeset ["+ranChangeSet+"] is outdated and will be updated");
+					migrationLog.warn("checksum [{}] for changeset [{}] is outdated and will be updated", checkSum, ranChangeSet);
 				}
 			}
 

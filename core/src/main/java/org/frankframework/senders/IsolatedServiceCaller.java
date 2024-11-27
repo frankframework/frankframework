@@ -26,7 +26,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderResult;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.ThreadLifeCycleEventListener;
+import org.frankframework.threading.ThreadLifeCycleEventListener;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.springframework.core.task.TaskExecutor;
@@ -45,14 +45,14 @@ public class IsolatedServiceCaller {
 	 */
 	@Setter @Getter private TaskExecutor taskExecutor;
 
-	public void callServiceAsynchronous(ServiceClient service, Message message, PipeLineSession session, ThreadLifeCycleEventListener threadLifeCycleEventListener) throws IOException {
-		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(service, message, session, null, threadLifeCycleEventListener);
+	public void callServiceAsynchronous(ServiceClient service, Message message, PipeLineSession session, ThreadLifeCycleEventListener<?> threadLifeCycleEventListener) throws IOException {
+		IsolatedServiceExecutor ise = new IsolatedServiceExecutor(service, message, session, null, threadLifeCycleEventListener, true);
 		getTaskExecutor().execute(ise);
 	}
 
-	public SenderResult callServiceIsolated(ServiceClient service, Message message, PipeLineSession session, ThreadLifeCycleEventListener threadLifeCycleEventListener) throws ListenerException, IOException {
+	public SenderResult callServiceIsolated(ServiceClient service, Message message, PipeLineSession session, ThreadLifeCycleEventListener<?> threadLifeCycleEventListener) throws ListenerException, IOException {
 		CountDownLatch guard = new CountDownLatch(1);
-		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(service, message, session, guard, threadLifeCycleEventListener);
+		IsolatedServiceExecutor ise = new IsolatedServiceExecutor(service, message, session, guard, threadLifeCycleEventListener, false);
 		getTaskExecutor().execute(ise);
 		try {
 			guard.await();
@@ -60,11 +60,12 @@ public class IsolatedServiceCaller {
 			Thread.currentThread().interrupt();
 			throw new ListenerException(ClassUtils.nameOf(this)+" was interrupted",e);
 		}
-		if (ise.getThrowable() != null) {
-			if (ise.getThrowable() instanceof ListenerException) {
-				throw (ListenerException)ise.getThrowable();
+		Throwable throwable = ise.getThrowable();
+		if (throwable != null) {
+			if (throwable instanceof ListenerException listenerException) {
+				throw listenerException;
 			}
-			throw new ListenerException(ise.getThrowable());
+			throw new ListenerException(throwable);
 		}
 		return ise.getReply();
 	}

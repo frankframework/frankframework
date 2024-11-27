@@ -83,9 +83,7 @@ public class OAuthAuthenticationScheme extends BasicScheme {
 
 	@Override
 	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append(getSchemeName()+" [complete=").append(isComplete()).append("]");
-		return builder.toString();
+		return getSchemeName() + " [complete=" + isComplete() + "]";
 	}
 
 }

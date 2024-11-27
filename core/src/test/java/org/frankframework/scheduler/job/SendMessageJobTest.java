@@ -8,13 +8,14 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 class SendMessageJobTest {
 
@@ -34,7 +35,7 @@ class SendMessageJobTest {
 		jobDef.execute();
 
 		verify(localSenderMock).sendMessageOrThrow(any(), any());
-		verify(localSenderMock).close();
+		verify(localSenderMock).stop();
 		verify(messageMock).close();
 	}
 
@@ -44,7 +45,7 @@ class SendMessageJobTest {
 		jobDef.setLocalSender(localSenderMock);
 		assertThrows(JobExecutionException.class, jobDef::execute);
 
-		verify(localSenderMock).close();
+		verify(localSenderMock).stop();
 		verify(localSenderMock).sendMessageOrThrow(any(), any());
 	}
 

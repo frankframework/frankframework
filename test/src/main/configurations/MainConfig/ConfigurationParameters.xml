@@ -42,11 +42,15 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<pipe name="HiddenParam" className="org.frankframework.pipes.FixedResultPipe" returnString="result [param]" replaceFixedParams="true">
+			<pipe name="HiddenParam" className="org.frankframework.pipes.ReplacerPipe" getInputFromFixedValue="result [?{param}]">
 				<param name="param" hidden="true" value="xyz" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 
+			<pipe name="ParamSubstitution" className="org.frankframework.pipes.ReplacerPipe" getInputFromFixedValue="result [?{param}]">
+				<param name="param" value="xyz" />
+				<forward name="success" path="EXIT" />
+			</pipe>
 		</pipeline>
 	</adapter>
 </module>

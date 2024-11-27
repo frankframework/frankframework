@@ -11,6 +11,15 @@ import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandlingException;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLine;
@@ -33,14 +42,6 @@ import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHandlingException;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 @WithMockUser(roles = { "IbisTester" })
@@ -74,7 +75,7 @@ public class TestWebServices extends BusTestBase {
 		receiver.setName("ReceiverName2");
 		listener.setReceiver(receiver);
 		receiver.setAdapter(adapter);
-		adapter.registerReceiver(receiver);
+		adapter.addReceiver(receiver);
 		PipeLine pipeline = new PipeLine();
 		EchoPipe pipe = SpringUtils.createBean(configuration, EchoPipe.class);
 		pipe.setName("EchoPipe");
@@ -95,7 +96,7 @@ public class TestWebServices extends BusTestBase {
 		Receiver receiver = new Receiver<>();
 		receiver.setName("ReceiverName1");
 		receiver.setListener(listener);
-		adapter.registerReceiver(receiver);
+		adapter.addReceiver(receiver);
 		receiver.setAdapter(adapter);
 		PipeLine pipeline = new PipeLine();
 		EchoPipe pipe = SpringUtils.createBean(configuration, EchoPipe.class);
@@ -103,7 +104,7 @@ public class TestWebServices extends BusTestBase {
 		pipeline.addPipe(pipe);
 		adapter.setPipeLine(pipeline);
 
-		getConfiguration().registerAdapter(adapter);
+		getConfiguration().addAdapter(adapter);
 		return adapter;
 	}
 
@@ -117,7 +118,7 @@ public class TestWebServices extends BusTestBase {
 		Receiver receiver = new Receiver<>();
 		receiver.setName("ReceiverName3");
 		receiver.setListener(listener);
-		adapter.registerReceiver(receiver);
+		adapter.addReceiver(receiver);
 		receiver.setAdapter(adapter);
 		PipeLine pipeline = new PipeLine();
 		XmlValidator validator = new XmlValidator();
@@ -128,7 +129,7 @@ public class TestWebServices extends BusTestBase {
 		pipeline.addPipe(pipe);
 		adapter.setPipeLine(pipeline);
 
-		getConfiguration().registerAdapter(adapter);
+		getConfiguration().addAdapter(adapter);
 		return adapter;
 	}
 
@@ -136,10 +137,10 @@ public class TestWebServices extends BusTestBase {
 	@Override
 	public void tearDown() {
 		if(adapterWithRestListener != null) {
-			getConfiguration().getAdapterManager().unRegisterAdapter(adapterWithRestListener);
+			getConfiguration().getAdapterManager().removeAdapter(adapterWithRestListener);
 		}
 		if(adapterWithWebServiceListener != null) {
-			getConfiguration().getAdapterManager().unRegisterAdapter(adapterWithWebServiceListener);
+			getConfiguration().getAdapterManager().removeAdapter(adapterWithWebServiceListener);
 		}
 		if(apiListener != null) {
 			ApiServiceDispatcher.getInstance().unregisterServiceClient(apiListener);

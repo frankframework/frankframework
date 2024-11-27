@@ -83,7 +83,7 @@ public class Dir2Xml {
 			dirXml.addAttribute("count", count - numberOfDirectories);
 		}
 
-		return dirXml.toXML();
+		return dirXml.asXmlString();
 	}
 
 	public String getRecursiveDirList() {
@@ -101,7 +101,7 @@ public class Dir2Xml {
 			File file = files[i];
 			dirXml.addSubElement(getFileAsXmlBuilder(file,file.getName()));
 		}
-		return dirXml.toXML();
+		return dirXml.asXmlString();
 	}
 
 	public static XmlBuilder getFileAsXmlBuilder(File file, String nameShown) {

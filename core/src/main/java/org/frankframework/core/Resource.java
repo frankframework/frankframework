@@ -19,23 +19,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.xml.transform.Source;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.xerces.xni.parser.XMLInputSource;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.XmlUtils;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * Reference to a resource, for instance on the classpath. Can be accessed multiple times.
  *
  * @author Gerrit van Brakel
- *
  */
 public abstract class Resource implements IScopeProvider {
 	protected IScopeProvider scopeProvider;

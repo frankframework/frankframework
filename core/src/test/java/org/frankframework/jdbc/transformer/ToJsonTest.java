@@ -6,14 +6,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.stream.Stream;
 
-import org.frankframework.stream.FileMessage;
-import org.frankframework.testutil.TestFileUtils;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xml.sax.SAXException;
 
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.stream.FileMessage;
+import org.frankframework.testutil.TestFileUtils;
 
 @Log4j2
 class ToJsonTest {

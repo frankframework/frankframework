@@ -2,11 +2,10 @@ package org.frankframework.filesystem;
 
 import jakarta.mail.Message;
 import jakarta.mail.internet.MimeBodyPart;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.testutil.PropertyUtil;
 
-public class ImapFileSystemTest  extends MailFileSystemTestBase<Message, MimeBodyPart, ImapFileSystem>{
+public class ImapFileSystemTest extends MailFileSystemTestBase<Message, MimeBodyPart, ImapFileSystem>{
 
 	private final String PROPERTY_FILE = "ExchangeMail.properties";
 	private final int port = 993;

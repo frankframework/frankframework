@@ -1,14 +1,15 @@
 package org.frankframework.filesystem;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Test;
 
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
-org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.receivers.ExchangeMailListener;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.testutil.PropertyUtil;
@@ -45,17 +46,19 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<ExchangeMessa
 		fileSystemTestRandomFileShouldNotExist(nonExistingFileName);
 	}
 
-
-	public ExchangeMailListener getConfiguredListener(String sourceFolder, String inProcessFolder) {
+	public ExchangeMailListener getConfiguredListener(String sourceFolder, String inProcessFolder) throws ConfigurationException {
 		ExchangeMailListener listener = new ExchangeMailListener();
 		autowireByName(listener);
 		if (StringUtils.isNotEmpty(url)) listener.setUrl(url);
+		listener.setClientId(client_id);
+		listener.setClientSecret(client_secr);
+		listener.setTenantId(tenantId);
 		listener.setMailAddress(mailaddress);
 		listener.setBaseFolder(basefolder1);
 		listener.setInputFolder(sourceFolder);
 		if (inProcessFolder!=null) listener.setInProcessFolder(inProcessFolder);
 		listener.configure();
-		listener.open();
+		listener.start();
 		return listener;
 	}
 
@@ -64,7 +67,7 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<ExchangeMessa
 		String sourceFolder = "SourceFolder";
 		String inProcessFolder = "InProcessFolder";
 
-		ExchangeMessageReference orgMsg = prepareFolderAndGetFirstMessage(sourceFolder, null);
+		ExchangeMessageReference orgMsg = prepareFolderAndGetFirstMessage(sourceFolder);
 		if (!fileSystem.folderExists(inProcessFolder)) {
 			fileSystem.createFolder(inProcessFolder);
 		}
@@ -77,15 +80,16 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<ExchangeMessa
 		Map<String,Object> threadContext2 = new HashMap<>();
 
 		RawMessageWrapper<ExchangeMessageReference> msg1 = listener1.getRawMessage(threadContext1);
-		Map<String,Object> messageContext1 = listener1.populateContextFromMessage(msg1.getRawMessage(), threadContext1);
+		String originalFilename = (String) threadContext1.get("originalFilename");
+		Map<String,Object> messageContext1 = listener1.extractMessageProperties(msg1.getRawMessage(), originalFilename);
 		String msgId1 = (String) messageContext1.get(PipeLineSession.MESSAGE_ID_KEY);
-		System.out.println("1st msgid ["+msgId1+"], filename ["+fileSystem.getName(msg1)+"]");
+		System.out.println("1st msgid ["+msgId1+"], filename ["+fileSystem.getName(msg1.getRawMessage())+"]");
 
 
 		RawMessageWrapper<ExchangeMessageReference> msg2 = listener2.getRawMessage(threadContext2);
-		Map<String,Object> messageContext2 = listener2.populateContextFromMessage(msg2.getRawMessage(), threadContext2);
+		Map<String,Object> messageContext2 = listener2.extractMessageProperties(msg2.getRawMessage(), originalFilename);
 		String msgId2 = (String) messageContext2.get(PipeLineSession.MESSAGE_ID_KEY);
-		System.out.println("2nd msgid ["+msgId2+"], filename ["+fileSystem.getName(msg2)+"]");
+		System.out.println("2nd msgid ["+msgId2+"], filename ["+fileSystem.getName(msg2.getRawMessage())+"]");
 
 		assertEquals(msgId1, msgId2);
 		assertEquals(msg1.getId(), msgId1);

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Root Schema 2 for testing merges -->
+<xsd:schema
+	targetNamespace="http://www.frankframework.org/test"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:imp1="http://www.frankframework.org/test/imported1"
+	elementFormDefault="qualified"
+>
+	<xsd:import namespace="http://www.frankframework.org/test/imported1"  schemaLocation="imported_schema1.xsd"/>
+	<xsd:element name="r2a">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element  ref="imp1:c"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>

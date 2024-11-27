@@ -1,6 +1,6 @@
 <throwable>
 	<class>org.frankframework.core.SenderException</class>
-	<message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-ForEachChildElementPipe]: (RequestProcessorException) RequestProcessor [ibis4test-ForEachChildElementPipe] caught exception: Pipe [ForEachChildElementPipe_Record] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] cannot find forward or pipe named [notFound]</message>
+	<message>exception processing message using request processor [ibis4test-ForEachChildElementPipe]: (RequestProcessorException) RequestProcessor [ibis4test-ForEachChildElementPipe] caught exception: Pipe [ForEachChildElementPipe_Record] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] cannot find forward or pipe named [notFound]</message>
 	<cause>
 		<throwable>
 			<class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>
@@ -8,15 +8,15 @@
 			<cause>
 				<throwable>
 					<class>org.frankframework.core.ListenerException</class>
-					<message>Pipe [ForEachChildElementPipe_Record] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] cannot find forward or pipe named [notFound]</message>
+					<message>Pipe [ForEachChildElementPipe_Record] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] cannot find forward or pipe named [notFound]</message>
 					<cause>
 						<throwable>
 							<class>org.frankframework.core.PipeRunException</class>
-							<message>Pipe [ForEachChildElementPipe_Record] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] cannot find forward or pipe named [notFound]</message>
+							<message>Pipe [ForEachChildElementPipe_Record] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] cannot find forward or pipe named [notFound]</message>
 							<cause>
 								<throwable>
 									<class>org.frankframework.core.SenderException</class>
-									<message>(SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] cannot find forward or pipe named [notFound]</message>
+									<message>(SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] cannot find forward or pipe named [notFound]</message>
 									<cause>
 										<throwable>
 											<class>org.frankframework.xml.SaxException</class>
@@ -24,15 +24,15 @@
 											<cause>
 												<throwable>
 													<class>javax.xml.transform.TransformerException</class>
-													<message>org.frankframework.xml.SaxException: IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] cannot find forward or pipe named [notFound]</message>
+													<message>org.frankframework.xml.SaxException: exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] cannot find forward or pipe named [notFound]</message>
 													<cause>
 														<throwable>
 															<class>org.frankframework.xml.SaxException</class>
-															<message>IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] cannot find forward or pipe named [notFound]</message>
+															<message>exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] cannot find forward or pipe named [notFound]</message>
 															<cause>
 																<throwable>
 																	<class>org.frankframework.core.SenderException</class>
-																	<message>IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] cannot find forward or pipe named [notFound]</message>
+																	<message>exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [switch] cannot find forward or pipe named [notFound]</message>
 																	<cause>
 																		<throwable>
 																			<class>org.frankframework.core.ListenerException</class>

@@ -98,12 +98,12 @@
 			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="org.frankframework.http.WebServiceSender"
-					firstBodyPartName="file"
+					firstBodyPartName="im-the-first-part"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments"
 					postType="MTOM"
 					sharedResourceRef="SharedHttpSession"
 				/>
-				<param name='file' value="&lt;xml&gt;I just sent some text! :)&lt;/xml&gt;"/>
+				<param name='my-name-is-not-relevant-to-firstpart' value="&lt;xml&gt;I just sent some text! :)&lt;/xml&gt;"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

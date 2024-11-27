@@ -6,11 +6,12 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import org.apache.xerces.xni.XNIException;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeStartException;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeStartException;
 
 /**
  * @author Gerrit van Brakel / Michiel Meeuwissen

@@ -1,12 +1,12 @@
-version: '3.8'
+version: ''
 
 services:
-    ff-test:
-        environment:
-            jdbc.dbms.default: oracle-xa
-            jdbc.hostname: oracle
+  ff-test:
+    environment:
+      jdbc.dbms.default: oracle-xa
+      jdbc.hostname: oracle
 
-    oracle:
-        image: private.docker.nexus.frankframework.org/ff-test/dbms/oracle
-        ports:
-            - "1521:1521"
+  oracle:
+    image: private.docker.nexus.frankframework.org/ff-test/dbms/oracle
+    ports:
+      - "1521:1521"

@@ -20,9 +20,10 @@ import java.lang.reflect.Method;
 import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.INamedObject;
-import org.frankframework.http.HttpSenderBase;
+import org.frankframework.http.AbstractHttpSender;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
@@ -61,7 +62,7 @@ public class QueueUtils {
 				object.setName("Test Tool "+clazz.getSimpleName());
 			}
 
-			if(obj instanceof HttpSenderBase base) { //Disable SSL capabilities
+			if(obj instanceof AbstractHttpSender base) { //Disable SSL capabilities
 				base.setAllowSelfSignedCertificates(true);
 				base.setVerifyHostname(false);
 			}

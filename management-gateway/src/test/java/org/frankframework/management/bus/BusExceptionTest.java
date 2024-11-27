@@ -6,9 +6,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.logging.log4j.Level;
-import org.frankframework.core.IbisException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import org.frankframework.core.IbisException;
 
 public class BusExceptionTest {
 

@@ -22,20 +22,20 @@ public interface DocumentedEnum {
 	/**
 	 * @return Optional 'FieldName' or label that's used to parse the Enum, should never be null but return <code>name()</code> instead!
 	 */
-	public default String getLabel() {
+	default String getLabel() {
 		Field enumConstant;
 		try {
 			enumConstant = getClass().getField(name());
-		} catch(NoSuchFieldException e) {
+		} catch (NoSuchFieldException e) {
 			return name();
 		}
-		if(enumConstant.isAnnotationPresent(EnumLabel.class)) {
+		if (enumConstant.isAnnotationPresent(EnumLabel.class)) {
 			EnumLabel enumLabel = enumConstant.getAnnotation(EnumLabel.class);
 			return enumLabel.value();
 		}
 		return name();
 	}
 
-	// returns the fieldname of the enum.
-	public String name();
+	// returns the fieldName of the enum.
+	String name();
 }

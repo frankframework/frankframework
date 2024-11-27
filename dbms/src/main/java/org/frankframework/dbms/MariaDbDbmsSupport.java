@@ -28,20 +28,15 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 
 	private Boolean dbmsHasSkipLockedFunctionality;
-	private String productVersion;
+	private final String productVersion;
 
 	public MariaDbDbmsSupport() {
-		this(false);
+		throw new IllegalStateException("MariaDbDbmsSupport should be instantiated with product-version to determine supported featureset. Calling this constructor is a code-bug.");
 	}
 
 	public MariaDbDbmsSupport(String productVersion) {
 		this.productVersion = productVersion;
 	}
-
-	public MariaDbDbmsSupport(boolean dbmsHasSkipLockedFunctionality) {
-		this.dbmsHasSkipLockedFunctionality = dbmsHasSkipLockedFunctionality;
-	}
-
 
 	@Override
 	public Dbms getDbms() {
@@ -62,7 +57,10 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 
 	private boolean determineSkipLockedCapability(String productVersion) {
 		String[] productVersionArr = productVersion.split("-");
-		String strippedProductVersion = productVersionArr.length > 1 ? productVersionArr[1] : productVersion;
+		// The part of productVersion to use depends on whether the MariaDB or MySQL driver is used.
+		// MySQL driver prepends its own version and so we have to take the 2nd entry in the array.
+		// When MariaDB driver is used, take the 1st entry.
+		String strippedProductVersion = productVersionArr.length == 1 || productVersionArr[1].toLowerCase().contains("maria") ? productVersionArr[0] : productVersionArr[1];
 		DefaultArtifactVersion thisVersion = new DefaultArtifactVersion(strippedProductVersion);
 		DefaultArtifactVersion targetVersion = new DefaultArtifactVersion("10.6.0");
 		boolean result = thisVersion.compareTo(targetVersion) >= 0;
@@ -107,17 +105,7 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 	}
 
 	@Override
-	public Object getClobHandle(ResultSet rs, String column) throws SQLException, DbmsException {
-		return rs.getStatement().getConnection().createClob();
-	}
-
-	@Override
 	public Object getBlobHandle(ResultSet rs, int column) throws SQLException, DbmsException {
-		return rs.getStatement().getConnection().createBlob();
-	}
-
-	@Override
-	public Object getBlobHandle(ResultSet rs, String column) throws SQLException, DbmsException {
 		return rs.getStatement().getConnection().createBlob();
 	}
 

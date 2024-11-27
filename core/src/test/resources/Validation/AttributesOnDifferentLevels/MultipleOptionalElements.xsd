@@ -1,0 +1,52 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="unqualified" attributeFormDefault="unqualified">
+	<xs:include schemaLocation="CommonResponse.xsd"/>
+	<xs:element name="Root">
+		<xs:complexType>
+			<xs:all>
+				<xs:element name="attributes" minOccurs="0">
+					<xs:complexType>
+						<xs:all>
+							<xs:element name="type" type="xs:string" minOccurs="0"/>
+							<xs:element name="url" type="xs:string" minOccurs="0"/>
+						</xs:all>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="Origin" type="xs:string" minOccurs="0"/>
+				<xs:element name="Portefeuillenummer_LK__r" minOccurs="0">
+					<xs:complexType>
+						<xs:all>
+							<xs:element name="attributes" minOccurs="0">
+								<xs:complexType>
+									<xs:all>
+										<xs:element name="type" type="xs:string" minOccurs="0"/>
+										<xs:element name="url" type="xs:string" minOccurs="0"/>
+									</xs:all>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="Id" type="xs:string" minOccurs="0"/>
+							<xs:element name="Portefeuillenummer__c" type="xs:string" minOccurs="0"/>
+						</xs:all>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="Polissen__c" type="xs:string" minOccurs="0"/>
+				<xs:element name="RecordType" minOccurs="0">
+					<xs:complexType>
+						<xs:all>
+							<xs:element name="attributes" minOccurs="0">
+								<xs:complexType>
+									<xs:all>
+										<xs:element name="type" type="xs:string" minOccurs="0"/>
+										<xs:element name="url" type="xs:string" minOccurs="0"/>
+									</xs:all>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="Name" type="xs:string" minOccurs="0"/>
+							<xs:element name="Id" type="xs:string" minOccurs="0"/>
+						</xs:all>
+					</xs:complexType>
+				</xs:element>
+			</xs:all>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="errors" type="errors"/>
+</xs:schema>

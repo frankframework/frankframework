@@ -2,6 +2,11 @@ package org.frankframework.management.bus.endpoints;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.messaging.Message;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLine;
@@ -12,10 +17,6 @@ import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.SpringUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.messaging.Message;
 
 public class TestHealth extends BusTestBase {
 	private Adapter adapter;
@@ -36,14 +37,14 @@ public class TestHealth extends BusTestBase {
 		Receiver<String> receiver = new Receiver<>();
 		receiver.setName("ReceiverName");
 		receiver.setListener(listener);
-		adapter.registerReceiver(receiver);
+		adapter.addReceiver(receiver);
 		PipeLine pipeline = new PipeLine();
 		EchoPipe pipe = SpringUtils.createBean(configuration, EchoPipe.class);
 		pipe.setName("EchoPipe");
 		pipeline.addPipe(pipe);
 		adapter.setPipeLine(pipeline);
 
-		getConfiguration().registerAdapter(adapter);
+		getConfiguration().addAdapter(adapter);
 		return adapter;
 	}
 
@@ -51,7 +52,7 @@ public class TestHealth extends BusTestBase {
 	@Override
 	public void tearDown() {
 		if(adapter != null) {
-			getConfiguration().getAdapterManager().unRegisterAdapter(adapter);
+			getConfiguration().getAdapterManager().removeAdapter(adapter);
 		}
 		super.tearDown();
 	}
@@ -62,7 +63,7 @@ public class TestHealth extends BusTestBase {
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();
-		assertEquals("{\"errors\":[\"configuration[TestConfiguration] is in state[STARTING]\",\"adapter[TestAdapter] is in state[STOPPED]\"],\"status\":\"SERVICE_UNAVAILABLE\"}", result);
+		assertEquals("{\"errors\":[\"configuration[TestConfiguration] is in state[STARTING]\"],\"status\":\"SERVICE_UNAVAILABLE\"}", result);
 	}
 
 	@Test

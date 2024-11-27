@@ -1,18 +1,19 @@
 package org.frankframework.ldap;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.IOException;
 import java.util.Set;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import org.frankframework.cache.EhCache;
 import org.frankframework.configuration.ConfigurationException;
-org.frankframework.core.PipeForward;
-		org.frankframework.core.PipeRunException;
-		org.frankframework.core.PipeRunResult;
-		org.frankframework.core.PipeStartException;
-import org.frankframework.stream.Message;
+import org.frankframework.core.PipeForward;
+import org.frankframework.core.PipeRunException;
+import org.frankframework.core.PipeRunResult;
+import org.frankframework.core.PipeStartException;
 import org.frankframework.testutil.PropertyUtil;
 
 public class LdapFindMembershipsPipeTest {
@@ -31,10 +32,10 @@ public class LdapFindMembershipsPipeTest {
 
 	private LdapFindGroupMembershipsPipe pipe;
 
-	@Before
+	@BeforeAll
 	public void setUp() throws ConfigurationException {
 		pipe = new LdapFindGroupMembershipsPipe();
-		pipe.registerForward(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME,null));
+		pipe.addForward(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME,null));
 		pipe.setLdapProviderURL(ldapProviderUrl);
 		pipe.setHost(host);
 		pipe.setPort(port);
@@ -74,7 +75,7 @@ public class LdapFindMembershipsPipeTest {
 	}
 
 	@Test
-	public void findMembershipsRecursivelyWithCache() {
+	public void findMembershipsRecursivelyWithCache() throws IOException {
 		pipe.setBaseDN(baseDN);
 		pipe.setRecursiveSearch(true);
 

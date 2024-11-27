@@ -10,16 +10,17 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.testutil.MatchUtils;
-import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.xml.XmlWriter;
-import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
-
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonStructure;
+
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
+
+import org.frankframework.testutil.MatchUtils;
+import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.xml.XmlWriter;
 
 public class TestJson2Xml extends AlignTestBase {
 

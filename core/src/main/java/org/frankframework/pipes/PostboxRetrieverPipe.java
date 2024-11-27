@@ -47,8 +47,8 @@ import org.frankframework.stream.Message;
   *
  * @author  John Dekker
  */
-@Deprecated
-public class PostboxRetrieverPipe  extends FixedForwardPipe {
+@Deprecated(forRemoval = true, since = "7.7.0")
+public class PostboxRetrieverPipe extends FixedForwardPipe {
 
 	private IPostboxListener listener = null;
 	private String resultOnEmptyPostbox = "empty postbox";
@@ -73,7 +73,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 	@Override
 	public void start() throws PipeStartException {
 		try {
-			getListener().open();
+			getListener().start();
 		}
 		catch (Exception e) {
 			throw new PipeStartException(e);
@@ -83,7 +83,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 	@Override
 	public void stop() {
 		try {
-			getListener().close();
+			getListener().stop();
 		}
 		catch (Exception e) {
 			log.warn("exception closing sender", e);

@@ -11,20 +11,21 @@ import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-import com.amazonaws.services.s3.model.S3Object;
+import com.adobe.testing.s3mock.testcontainers.S3MockContainer;
 
 import org.frankframework.filesystem.AmazonS3FileSystem;
 import org.frankframework.filesystem.AmazonS3FileSystemTestHelper;
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.filesystem.FileSystemSenderTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
+import org.frankframework.filesystem.S3FileRef;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
-
 import org.frankframework.testutil.PropertyUtil;
 import org.frankframework.util.StreamUtil;
-
 
 /**
  * AmazonS3Sender tests.
@@ -32,21 +33,24 @@ import org.frankframework.util.StreamUtil;
  * @author alisihab
  *
  */
-public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3Object, AmazonS3FileSystem> {
+@Testcontainers(disabledWithoutDocker = true)
+public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3FileRef, AmazonS3FileSystem> {
 
-	private final int waitMilis = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
+	@Container
+	private static final S3MockContainer s3Mock = new S3MockContainer("latest");
+
+	private final int waitMillis = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
 
 	{
-		setWaitMillis(waitMilis);
+		setWaitMillis(waitMillis);
 	}
 
 	@TempDir
 	private Path tempdir;
 
-
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new AmazonS3FileSystemTestHelper(tempdir);
+		return new AmazonS3FileSystemTestHelper(tempdir, s3Mock.getHttpEndpoint());
 	}
 
 	@Override
@@ -57,7 +61,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 
 		AmazonS3Sender sender = new AmazonS3Sender();
 		sender.setFileSystem(s3);
-		sender.setBucketName(awsHelper.getBucketName());
+		sender.setBucketName(awsHelper.getDefaultBucketName());
 		return sender;
 	}
 
@@ -73,7 +77,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		assertEquals("456", fileSystemSender.getFileSystem().getSecretKey());
 
 		fileSystemSender.setClientRegion("dummy-region");
-		assertEquals("dummy-region", fileSystemSender.getFileSystem().getClientRegion());
+		assertEquals("dummy-region", fileSystemSender.getFileSystem().getClientRegion().toString());
 
 		fileSystemSender.setChunkedEncodingDisabled(true);
 		assertTrue(fileSystemSender.getFileSystem().isChunkedEncodingDisabled());
@@ -100,7 +104,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		fileSystemSender.addParameter(ParameterBuilder.create("filename", inputFolder +"/"+ filename));
 		fileSystemSender.setAction(FileSystemAction.READ);
 		fileSystemSender.configure();
-		fileSystemSender.open();
+		fileSystemSender.start();
 
 		// Act
 		assertTrue(_fileExists(inputFolder, filename), "File ["+filename+"] expected to be present");
@@ -115,70 +119,4 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		IOException e = assertThrows(IOException.class, result::preserve); // read binary stream twice
 		assertEquals("Attempted read on closed stream.", e.getMessage());
 	}
-
-//	@Test
-//	public void amazonS3SenderTestCreateBucket() throws SenderException, ConfigurationException, TimeOutException, IOException, FileSystemException {
-//		fileSystemSender.setAction("createBucket");
-//
-//		fileSystemSender.setBucketName(bucketNameTobeCreatedAndDeleted);
-//		fileSystemSender.configure();
-//		fileSystemSender.getFileSystem().open();
-//		String result = fileSystemSender.sendMessage(new Message(bucketNameTobeCreatedAndDeleted), null).asString();
-//
-//		boolean exists = ((AmazonS3FileSystemTestHelper)helper).getS3Client().doesBucketExistV2(bucketNameTobeCreatedAndDeleted);
-//		assertTrue(exists);
-//		assertEquals(result, bucketNameTobeCreatedAndDeleted);
-//	}
-
-//	@Test
-//	public void amazonS3SenderTestRemoveBucket() throws SenderException, ConfigurationException, TimeOutException, IOException, FileSystemException {
-//		fileSystemSender.setAction("deleteBucket");
-//
-//		fileSystemSender.setBucketName(bucketNameTobeCreatedAndDeleted);
-//		fileSystemSender.configure();
-//		fileSystemSender.getFileSystem().open();
-//		String result = fileSystemSender.sendMessage(new Message(bucketNameTobeCreatedAndDeleted), null).asString();
-//
-//		boolean exists = ((AmazonS3FileSystemTestHelper)helper).getS3Client().doesBucketExistV2(bucketNameTobeCreatedAndDeleted);
-//		assertFalse(exists);
-//		assertEquals(bucketNameTobeCreatedAndDeleted, result);
-//
-//	}
-
-//	@Test
-//	public void amazonS3SenderTestCopyObjectSuccess() throws Exception {
-//
-//		fileSystemSender.setBucketName(bucketName);
-//		fileSystemSender.setDestinationBucketName(bucketName);
-//
-//		fileSystemSender.setAction(FileSystemAction.COPY.toString());
-//		fileSystemSender.setForceGlobalBucketAccessEnabled(true);
-//		PipeLineSession session = new PipeLineSession();
-//		String dest = "copiedObject.txt";
-//		session.put("destinationFileName", dest);
-//
-////		Parameter p = new Parameter();
-////		p.setName("destinationFileName");
-////		p.setSessionKey("destinationFileName");
-//
-//		if (_fileExists(dest)) {
-//			_deleteFile(null, dest);
-//		}
-//		String fileName = "testcopy/testCopy.txt";
-//
-//		Parameter param = new Parameter();
-//		param.setName("destinationFileName");
-//		param.setValue(dest);
-//		fileSystemSender.addParameter(param);
-//
-//		fileSystemSender.configure();
-//		fileSystemSender.getFileSystem().open();
-//		S3Object objectTobeCopied = new S3Object();
-//		objectTobeCopied.setKey(fileName);
-//		OutputStream out = fileSystemSender.getFileSystem().createFile(objectTobeCopied);
-//		out.close();
-//		String result = fileSystemSender.sendMessage(new Message(fileName), session).asString();
-//		assertEquals(dest, result);
-//	}
-
 }

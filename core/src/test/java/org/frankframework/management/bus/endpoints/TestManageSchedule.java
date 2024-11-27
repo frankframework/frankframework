@@ -3,6 +3,13 @@ package org.frankframework.management.bus.endpoints;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.messaging.Message;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLine;
@@ -19,12 +26,6 @@ import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.SpringUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.messaging.Message;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 @WithMockUser(roles = { "IbisTester" })
@@ -46,14 +47,14 @@ public class TestManageSchedule extends BusTestBase {
 		Receiver<String> receiver = new Receiver<>();
 		receiver.setName("ReceiverName");
 		receiver.setListener(listener);
-		adapter.registerReceiver(receiver);
+		adapter.addReceiver(receiver);
 		PipeLine pipeline = new PipeLine();
 		EchoPipe pipe = SpringUtils.createBean(configuration, EchoPipe.class);
 		pipe.setName("EchoPipe");
 		pipeline.addPipe(pipe);
 		adapter.setPipeLine(pipeline);
 
-		getConfiguration().registerAdapter(adapter);
+		getConfiguration().addAdapter(adapter);
 		return adapter;
 	}
 
@@ -61,7 +62,7 @@ public class TestManageSchedule extends BusTestBase {
 	@Override
 	public void tearDown() {
 		if(adapter != null) {
-			getConfiguration().getAdapterManager().unRegisterAdapter(adapter);
+			getConfiguration().getAdapterManager().removeAdapter(adapter);
 		}
 		super.tearDown();
 	}

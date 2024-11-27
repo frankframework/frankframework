@@ -15,12 +15,12 @@
 */
 package org.frankframework.extensions.sap.jco3;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.sap.conn.jco.JCoDestination;
 import com.sap.conn.jco.JCoFunction;
 
+import jakarta.annotation.Nonnull;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -64,11 +64,11 @@ public abstract class SapSenderImpl extends SapSenderBase implements ISapSender 
 			if (StringUtils.isEmpty(getFunctionNameParam())) {
 				throw new ConfigurationException(getLogPrefix()+"if attribute functionName is not specified, value of attribute functionNameParam must indicate parameter to obtain functionName from");
 			}
-			if (paramList==null || paramList.findParameter(getFunctionNameParam())==null) {
+			if (paramList==null || !paramList.hasParameter(getFunctionNameParam())) {
 				throw new ConfigurationException(getLogPrefix()+"functionName must be specified, either in attribute functionName, or via parameter ["+getFunctionNameParam()+"]");
 			}
 		} else {
-			if (StringUtils.isNotEmpty(getFunctionNameParam()) && paramList!=null && paramList.findParameter(getFunctionNameParam())!=null) {
+			if (StringUtils.isNotEmpty(getFunctionNameParam()) && paramList!=null && paramList.hasParameter(getFunctionNameParam())) {
 				throw new ConfigurationException(getLogPrefix()+"functionName cannot be specified both in attribute functionName ["+getFunctionName()+"] and via parameter ["+getFunctionNameParam()+"]");
 			}
 		}
@@ -96,8 +96,8 @@ public abstract class SapSenderImpl extends SapSenderBase implements ISapSender 
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		String tid=null;
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+		String tid;
 		try {
 			ParameterValueList pvl = null;
 			if (paramList!=null) {
@@ -115,7 +115,7 @@ public abstract class SapSenderImpl extends SapSenderBase implements ISapSender 
 			}
 			String correlationID = session==null ? null : session.getCorrelationId();
 			message2FunctionCall(function, message.asString(), correlationID, pvl);
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+" function call ["+functionCall2message(function)+"]");
+			if (log.isDebugEnabled()) log.debug("{} function call [{}]", getLogPrefix(), functionCall2message(function));
 
 			JCoDestination destination = getDestination(session, sapSystem);
 			tid = getTid(destination,sapSystem);

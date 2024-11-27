@@ -15,8 +15,8 @@
 */
 package org.frankframework.lifecycle.servlets;
 
-import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.BeanInstantiationException;
@@ -43,7 +43,7 @@ import org.frankframework.util.SpringUtils;
  * https://stackoverflow.com/questions/9831268/how-to-use-j2eepreauthenticatedprocessingfilter-and-a-custom-authentication-prov
  * https://docs.spring.io/spring-security/site/docs/3.0.x/reference/authz-arch.html
  */
-public class JeeAuthenticator extends ServletAuthenticatorBase {
+public class JeeAuthenticator extends AbstractServletAuthenticator {
 
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
@@ -53,10 +53,10 @@ public class JeeAuthenticator extends ServletAuthenticatorBase {
 		return http.build();
 	}
 
-	//see AuthenticationManagerFactoryBean
+	// See AuthenticationManagerFactoryBean
 	private AuthenticationManager getAuthenticationManager(HttpSecurity http) {
 		AuthenticationProvider provider = getAuthenticationProvider(http);
-		return new ProviderManager(Arrays.asList(provider));
+		return new ProviderManager(List.of(provider));
 	}
 
 	/**
@@ -70,7 +70,7 @@ public class JeeAuthenticator extends ServletAuthenticatorBase {
 		return authenticationProvider;
 	}
 
-	//When using JEE the container authenticates clients (401) we therefore only have to authorize them. If not authorized, return a 403.
+	// When using JEE the container authenticates clients (401) we therefore only have to authorize them. If not authorized, return a 403.
 	private AuthenticationEntryPoint getEntryPoint() {
 		return new Http403ForbiddenEntryPoint();
 	}
@@ -105,7 +105,7 @@ public class JeeAuthenticator extends ServletAuthenticatorBase {
 
 	public static class DelegatedMappableAttributesRetriever implements MappableAttributesRetriever {
 
-		private Set<String> mappableAttributes = new HashSet<>();
+		private final Set<String> mappableAttributes = new HashSet<>();
 
 		@Override
 		public Set<String> getMappableAttributes() {

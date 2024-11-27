@@ -18,13 +18,11 @@ package org.frankframework.http.rest;
 
 import java.io.IOException;
 import java.rmi.server.UID;
-import java.security.SecureRandom;
 import java.util.List;
 
-import javax.servlet.annotation.ServletSecurity;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-
+import jakarta.servlet.annotation.ServletSecurity;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -34,6 +32,7 @@ import org.frankframework.lifecycle.ServletManager;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.UUIDUtil;
 
 /**
 * Pipe to manage the ApiPrincipal handling
@@ -96,8 +95,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 		if("create".equals(getAction())) {
 			//TODO type of token? (jwt, saml)
 			String uidString = (new UID()).toString();
-			SecureRandom random = new SecureRandom();
-			String token = random.nextInt() + uidString + Integer.toHexString(uidString.hashCode()) + random.nextInt(8);
+			String token = UUIDUtil.RANDOM.nextInt() + uidString + Integer.toHexString(uidString.hashCode()) + UUIDUtil.RANDOM.nextInt(8);
 
 			ApiPrincipal userPrincipal = new ApiPrincipal(authTTL);
 			userPrincipal.setData(input);

@@ -15,7 +15,7 @@
 */
 package org.frankframework.http.authentication;
 
-import java.util.LinkedList;
+import java.util.ArrayDeque;
 import java.util.Map;
 import java.util.Queue;
 
@@ -31,7 +31,6 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.TargetAuthenticationStrategy;
 import org.apache.http.protocol.HttpContext;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.util.LogUtil;
 
 /**
@@ -49,7 +48,7 @@ public class OAuthPreferringAuthenticationStrategy extends TargetAuthenticationS
 	public Queue<AuthOption> select(Map<String, Header> challenges, HttpHost authhost, HttpResponse response, HttpContext context) throws MalformedChallengeException {
 		final HttpClientContext clientContext = HttpClientContext.adapt(context);
 
-		final Queue<AuthOption> options = new LinkedList<>();
+		final Queue<AuthOption> options = new ArrayDeque<>();
 
 		final CredentialsProvider credsProvider = clientContext.getCredentialsProvider();
 		if (credsProvider == null) {

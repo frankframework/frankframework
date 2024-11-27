@@ -1,0 +1,16 @@
+.collapse {
+  display: block;
+  height: 0;
+  z-index: -1;
+  overflow: hidden;
+  //transition: height .15s ease;
+
+  &.in {
+    height: auto;
+    z-index: auto;
+  }
+}
+
+li > a {
+  cursor: pointer;
+}

@@ -21,16 +21,15 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 
+import lombok.Getter;
+import org.frankframework.threading.ThreadConnector;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ext.LexicalHandler;
-
-import lombok.Getter;
-import org.frankframework.stream.ThreadConnector;
 
 public class TransformerFilter extends FullXmlFilter {
 
 	private final TransformerHandler transformerHandler;
-	private @Getter ErrorListener errorListener;
+	private final @Getter ErrorListener errorListener;
 	private ThreadConnectingFilter threadConnectingFilter;
 
 	public TransformerFilter(ThreadConnector threadConnector, TransformerHandler transformerHandler, ContentHandler handler, boolean removeNamespacesFromInput, boolean handleLexicalEvents) {

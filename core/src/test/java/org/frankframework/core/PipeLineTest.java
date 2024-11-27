@@ -1,24 +1,35 @@
 package org.frankframework.core;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeLine.ExitState;
-import org.frankframework.pipes.AbstractPipe;
-import org.frankframework.pipes.EchoPipe;
-import org.frankframework.stream.Message;
-import org.frankframework.testutil.TestConfiguration;
+import jakarta.annotation.Nonnull;
+
 import org.hamcrest.core.StringEndsWith;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLine.ExitState;
+import org.frankframework.pipes.AbstractPipe;
+import org.frankframework.pipes.EchoPipe;
+import org.frankframework.processors.CorePipeLineProcessor;
+import org.frankframework.processors.CorePipeProcessor;
+import org.frankframework.statistics.MetricsInitializer;
+import org.frankframework.stream.Message;
+import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.util.RunState;
+
 @SuppressWarnings("deprecation") //Part of the tests!
 public class PipeLineTest {
+	private int pipeNr = 0;
 
 	TestConfiguration configuration;
 
@@ -38,10 +49,10 @@ public class PipeLineTest {
 		PipeLine pipeline = new PipeLine();
 		pipeline.setApplicationContext(configuration);
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("success");
+		exit.setName("success");
 		exit.setState(ExitState.SUCCESS);
-		pipeline.registerPipeLineExit(exit);
-		pipeline.registerPipeLineExit(exit);
+		pipeline.addPipeLineExit(exit);
+		pipeline.addPipeLineExit(exit);
 		adapter.setPipeLine(pipeline);
 
 		List<String> warnings = configuration.getConfigurationWarnings().getWarnings();
@@ -66,9 +77,9 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("exit");
+		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
-		pipeline.registerPipeLineExit(exit);
+		pipeline.addPipeLineExit(exit);
 		pipeline.configure();
 
 		assertTrue(configuration.getConfigurationWarnings().getWarnings().isEmpty(), "pipe should not cause any configuration warnings");
@@ -96,17 +107,17 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit errorExit = new PipeLineExit();
-		errorExit.setPath("error");
+		errorExit.setName("error");
 		errorExit.setState(ExitState.ERROR);
-		pipeline.registerPipeLineExit(errorExit);
+		pipeline.addPipeLineExit(errorExit);
 		PipeLineExit successExit = new PipeLineExit();
-		successExit.setPath("exit");
+		successExit.setName("exit");
 		successExit.setState(ExitState.SUCCESS);
-		pipeline.registerPipeLineExit(successExit);
+		pipeline.addPipeLineExit(successExit);
 		PipeLineExit successExit2 = new PipeLineExit();
-		successExit2.setPath("exit2");
+		successExit2.setName("exit2");
 		successExit2.setState(ExitState.SUCCESS);
-		pipeline.registerPipeLineExit(successExit2);
+		pipeline.addPipeLineExit(successExit2);
 
 		// Act
 		pipeline.configure();
@@ -127,20 +138,20 @@ public class PipeLineTest {
 
 		IPipe pipe = configuration.createBean(EchoPipe.class);
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
-		pipe.registerForward(new PipeForward("success", pipeForwardName));
+		pipe.addForward(new PipeForward("success", pipeForwardName));
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
 
 		IPipe pipe2 = configuration.createBean(EchoPipe.class);
 		pipe2.setName(pipeForwardName);
-		pipe.registerForward(new PipeForward("success", "exit"));
+		pipe.addForward(new PipeForward("success", "exit"));
 		pipe2.setPipeLine(pipeline);
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("exit");
+		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
-		pipeline.registerPipeLineExit(exit);
+		pipeline.addPipeLineExit(exit);
 		pipeline.configure();
 
 		assertTrue(configuration.getConfigurationWarnings().getWarnings().isEmpty(), "pipe should not cause any configuration warnings");
@@ -158,28 +169,28 @@ public class PipeLineTest {
 
 		EchoPipe pipe = configuration.createBean(EchoPipe.class);
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
-		pipe.registerForward(new PipeForward("success", pipeForwardName));
-		pipe.registerForward(new PipeForward("success", pipeForwardName));
+		pipe.addForward(new PipeForward("success", pipeForwardName));
+		pipe.addForward(new PipeForward("success", pipeForwardName));
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
 
 		EchoPipe pipe2 = configuration.createBean(EchoPipe.class);
 		pipe2.setName(pipeForwardName);
-		pipe.registerForward(new PipeForward("success", "exit"));
-		pipe.registerForward(new PipeForward("success", "exit"));
-		pipe.registerForward(new PipeForward("success", "exit"));
-		pipe.registerForward(new PipeForward("success", "exit"));//Surprisingly this doesn't cause any warnings
+		pipe.addForward(new PipeForward("success", "exit"));
+		pipe.addForward(new PipeForward("success", "exit"));
+		pipe.addForward(new PipeForward("success", "exit"));
+		pipe.addForward(new PipeForward("success", "exit")); // Surprisingly this doesn't cause any warnings
 		pipe2.setPipeLine(pipeline);
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("exit");
+		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
-		pipeline.registerPipeLineExit(exit);
+		pipeline.addPipeLineExit(exit);
 		pipeline.configure();
 
 		assertEquals(1, configuration.getConfigurationWarnings().getWarnings().size(), "pipes should cause a configuration warning");
-		assertThat(configuration.getConfigWarning(0), StringEndsWith.endsWith("] forward [success] is already registered"));
+		assertThat(configuration.getConfigWarning(0), StringEndsWith.endsWith("] the forward [success] is already registered on this pipe"));
 		assertEquals(1, pipe.getForwards().size(), "pipe1 should only have 1 pipe-forward");
 		assertEquals(pipeForwardName, pipe.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should default to next pipe");
 
@@ -194,7 +205,7 @@ public class PipeLineTest {
 
 		EchoPipe pipe = configuration.createBean(EchoPipe.class);
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
-		pipe.registerForward(new PipeForward("success", "the next pipe"));
+		pipe.addForward(new PipeForward("success", "the next pipe"));
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
 
@@ -204,9 +215,9 @@ public class PipeLineTest {
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("special exit name");
+		exit.setName("special exit name");
 		exit.setState(ExitState.SUCCESS);
-		pipeline.registerPipeLineExit(exit);
+		pipeline.addPipeLineExit(exit);
 		pipeline.configure();
 
 		assertEquals(1, configuration.getConfigurationWarnings().getWarnings().size(), "pipes should cause a configuration warning");
@@ -220,7 +231,7 @@ public class PipeLineTest {
 
 	private static class NonFixedForwardPipe extends AbstractPipe {
 		@Override
-		public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		public PipeRunResult doPipe(Message message, PipeLineSession session) {
 			return new PipeRunResult(findForward(PipeForward.SUCCESS_FORWARD_NAME), message);
 		}
 	}
@@ -232,26 +243,94 @@ public class PipeLineTest {
 
 		IPipe pipe = configuration.createBean(NonFixedForwardPipe.class);
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
-		pipe.registerForward(new PipeForward("success", pipeForwardName));
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
 
 		IPipe pipe2 = configuration.createBean(NonFixedForwardPipe.class);
 		pipe2.setName(pipeForwardName);
-		pipe.registerForward(new PipeForward("success", "exit"));
 		pipe2.setPipeLine(pipeline);
 		pipeline.addPipe(pipe2);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("exit");
+		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
-		pipeline.registerPipeLineExit(exit);
+		pipeline.addPipeLineExit(exit);
 		pipeline.configure();
 
 		assertTrue(configuration.getConfigurationWarnings().getWarnings().isEmpty(), "pipe should not cause any configuration warnings");
-		assertEquals(1, pipe.getForwards().size(), "pipe1 should only have 1 pipe-forward");
-		assertEquals(pipeForwardName, pipe.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should default to next pipe");
 
+		assertTrue(pipe.getForwards().isEmpty(), "pipe1 should have no forwards");
 		assertTrue(pipe2.getForwards().isEmpty(), "pipe2 should not have a pipe-forward");
+	}
+
+	@Test
+	public void testAdapterExpectedSessionKeysAllPresent() throws ConfigurationException {
+		// Arrange
+		Adapter adapter = buildTestAdapter();
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("k1", "v1");
+		session.put("k2", "v2");
+		session.put("k3", "v3");
+
+		// Act // Assert
+		try (Message message = Message.nullMessage()) {
+			assertDoesNotThrow(() -> adapter.processMessageWithExceptions("m1", message, session));
+			assertFalse(message.isClosed());
+		}
+	}
+
+	@Test
+	public void testAdapterExpectedSessionKeysMissingKey() throws ConfigurationException {
+		// Arrange
+		Adapter adapter = buildTestAdapter();
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("k1", "v1");
+
+		// Act // Assert
+		try (Message message = Message.nullMessage()) {
+			ListenerException e = assertThrows(ListenerException.class, () -> adapter.processMessageWithExceptions("m1", message, session));
+
+			// Assert
+			assertEquals("Adapter [Adapter] called without expected session keys [k2, k3]", e.getMessage());
+			assertFalse(message.isClosed());
+		}
+	}
+
+	private @Nonnull Adapter buildTestAdapter() throws ConfigurationException {
+		Adapter adapter = new Adapter() {
+			@Override
+			public RunState getRunState() {
+				return RunState.STARTED;
+			}
+		};
+		adapter.setName("Adapter");
+		buildDummyPipeLine(adapter);
+		adapter.setConfiguration(configuration);
+		adapter.setApplicationContext(configuration);
+		adapter.setConfigurationMetrics(configuration.getBean(MetricsInitializer.class));
+		adapter.configure();
+		return adapter;
+	}
+
+	private void buildDummyPipeLine(Adapter adapter) throws ConfigurationException {
+		PipeLine pipeLine = new PipeLine();
+		pipeLine.setApplicationContext(configuration);
+		pipeLine.setConfigurationMetrics(configuration.getBean(MetricsInitializer.class));
+		CorePipeLineProcessor pipeLineProcessor = configuration.createBean(CorePipeLineProcessor.class);
+		pipeLineProcessor.setPipeProcessor(configuration.createBean(CorePipeProcessor.class));
+		pipeLine.setPipeLineProcessor(pipeLineProcessor);
+		EchoPipe pipe = buildTestPipe(pipeLine);
+		pipeLine.setFirstPipe(pipe.getName());
+		pipeLine.setExpectsSessionKeys("k1, k2,k3");
+		adapter.setPipeLine(pipeLine);
+	}
+
+	private @Nonnull EchoPipe buildTestPipe(@Nonnull PipeLine pipeLine) throws ConfigurationException {
+		EchoPipe pipe = new EchoPipe();
+		pipe.setName("Pipe" + ++pipeNr);
+		pipeLine.addPipe(pipe);
+		return pipe;
 	}
 }

@@ -13,20 +13,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
 
+import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
+
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.testutil.TestConfiguration;
-import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
 
 /**
  * Enables the ability to provide a mockable FixedQuerySender. In some places a new QuerySender is created to execute (custom) statements.
  * This allows the result to be mocked.
  *
- * @See {@link TestConfiguration#mockQuery(String, ResultSet)}
- *
+ * @see TestConfiguration#mockQuery(String, ResultSet)
  * @author Niels Meijer
  */
 public class FixedQuerySenderMock extends FixedQuerySender {

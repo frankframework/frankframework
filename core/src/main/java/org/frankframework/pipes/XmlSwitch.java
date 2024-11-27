@@ -29,8 +29,8 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.Forward;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.TransformerPool;
@@ -42,13 +42,12 @@ import org.frankframework.util.XmlUtils;
  * Selects an exitState, based on either the content of the input message, by means
  * of a XSLT-stylesheet, the content of a session variable or, by default, by returning the name of the root-element.
  *
- * @ff.forward "&lt;name of the root-element&gt;" default
- * @ff.forward "&lt;result of transformation&gt;" when <code>styleSheetName</code> or <code>xpathExpression</code> is specified
- *
  * @author Johan Verrips
  */
-@Category("Basic")
-@ElementType(ElementTypes.ROUTER)
+@Forward(name = "*", description = "name of the root-element")
+@Forward(name = "*", description = "result of transformation, when <code>styleSheetName</code> or <code>xpathExpression</code> is specified")
+@Category(Category.Type.BASIC)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ROUTER)
 public class XmlSwitch extends AbstractPipe {
 
 	public static final String XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT = "Switch: Forward Found";
@@ -118,8 +117,8 @@ public class XmlSwitch extends AbstractPipe {
 	/**
 	 * This is where the action takes place, the switching is done. Pipes may only throw a PipeRunException,
 	 * to be handled by the caller of this object.<br/>
-	 * As WebLogic has the problem that when an non-well formed XML stream is given to
-	 * weblogic.xerces the transformer gets corrupt, on an exception the configuration is done again, so that the
+	 * As WebLogic has the problem that when a not well-formed XML stream is given to
+	 * `weblogic.xerces` the transformer gets corrupt, on an exception the configuration is done again, so that the
 	 * transformer is re-initialized.
 	 */
 	@Override
@@ -193,7 +192,7 @@ public class XmlSwitch extends AbstractPipe {
 	 * stylesheet may return a string representing the forward to look up
 	 * @ff.default <i>a stylesheet that returns the name of the root-element</i>
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.6.0")
 	@ConfigurationWarning("Please use the attribute styleSheetName.")
 	public void setServiceSelectionStylesheetFilename(String newServiceSelectionStylesheetFilename) {
 		setStyleSheetName(newServiceSelectionStylesheetFilename);
@@ -209,17 +208,16 @@ public class XmlSwitch extends AbstractPipe {
 		this.namespaceDefs = namespaceDefs;
 	}
 
-	@Deprecated
-	@ConfigurationWarning("Please use 'getInputFromSessionKey' or 'forwardNameSessionKey' attribute instead.")
 	/**
 	 * Name of the key in the <code>PipeLineSession</code> to retrieve the input message from, if a styleSheetName or a xpathExpression is specified.
 	 * If no styleSheetName or xpathExpression is specified, the value of the session variable is used as the name of the forward.
 	 * If none of sessionKey, styleSheetName or xpathExpression are specified, the element name of the root node of the input message is taken as the name of forward.
 	 */
+	@Deprecated(forRemoval = true, since = "7.7.0")
+	@ConfigurationWarning("Please use 'getInputFromSessionKey' or 'forwardNameSessionKey' attribute instead.")
 	public void setSessionKey(String sessionKey){
 		this.sessionKey = sessionKey;
 	}
-	@Deprecated
 	public String getSessionKey() {
 		return this.sessionKey;
 	}

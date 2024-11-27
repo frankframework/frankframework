@@ -18,9 +18,10 @@ package org.frankframework.jms;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.annotation.Nonnull;
-import javax.jms.BytesMessage;
-import javax.jms.JMSException;
+import jakarta.jms.BytesMessage;
+import jakarta.jms.JMSException;
+
+import jakarta.annotation.Nonnull;
 
 public class BytesMessageInputStream extends InputStream {
 

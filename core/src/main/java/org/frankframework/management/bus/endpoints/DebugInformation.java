@@ -17,20 +17,18 @@ package org.frankframework.management.bus.endpoints;
 
 import java.util.List;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.JsonMessage;
-import org.springframework.messaging.Message;
-
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.util.ClassUtils;
-
-import javax.annotation.security.RolesAllowed;
+import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 public class DebugInformation extends BusEndpointBase {
@@ -58,11 +56,8 @@ public class DebugInformation extends BusEndpointBase {
 				baseClass = this.getClass();
 			}
 			ClassLoader classLoader = baseClass.getClassLoader();
-
 			Class<?> clazz = classLoader.loadClass(className);
-
 			List<?> result = ClassUtils.getClassInfoList(clazz);
-
 			return new JsonMessage(result);
 		} catch (Exception e) {
 			throw new BusException("Could not determine classInfo for class ["+className+"]", e);

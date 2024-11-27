@@ -17,11 +17,11 @@ package org.frankframework.http.cxf;
 
 import java.util.Iterator;
 
-import javax.xml.soap.SOAPBody;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPMessage;
-import javax.xml.ws.BindingType;
-import javax.xml.ws.ServiceMode;
+import jakarta.xml.soap.SOAPBody;
+import jakarta.xml.soap.SOAPException;
+import jakarta.xml.soap.SOAPMessage;
+import jakarta.xml.ws.BindingType;
+import jakarta.xml.ws.ServiceMode;
 
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
@@ -37,9 +37,9 @@ import org.frankframework.stream.Message;
  * @author Niels Meijer
  */
 
-@ServiceMode(value=javax.xml.ws.Service.Mode.MESSAGE)
-@BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
-public class NamespaceUriProvider extends SOAPProviderBase {
+@ServiceMode(value=jakarta.xml.ws.Service.Mode.MESSAGE)
+@BindingType(jakarta.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
+public class NamespaceUriProvider extends AbstractSOAPProvider {
 
 	private ServiceDispatcher sd = ServiceDispatcher.getInstance();
 
@@ -58,12 +58,12 @@ public class NamespaceUriProvider extends SOAPProviderBase {
 	@Override
 	Message processRequest(Message message, PipeLineSession pipelineSession) throws ListenerException {
 		String serviceName = findNamespaceUri();
-		log.debug("found namespace["+serviceName+"]");
+		log.debug("found namespace[{}]", serviceName);
 		return sd.dispatchRequest(serviceName, message, pipelineSession);
 	}
 
 	public String findNamespaceUri() throws ListenerException {
-		log.debug("trying to find serviceName from soapMessage["+soapMessage+"]");
+		log.debug("trying to find serviceName from soapMessage[{}]", soapMessage);
 
 		try {
 			SOAPBody body = soapMessage.getSOAPBody();
@@ -72,7 +72,7 @@ public class NamespaceUriProvider extends SOAPProviderBase {
 				while (it.hasNext()) {
 					Node node = (Node) it.next();
 
-					//Found first namespaceURI
+					// Found first namespaceURI
 					if(StringUtils.isNotEmpty(node.getNamespaceURI()))
 						return node.getNamespaceURI();
 				}

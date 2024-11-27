@@ -4,10 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.frankframework.core.Adapter;
-import org.frankframework.scheduler.job.IJob;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.core.Adapter;
+import org.frankframework.scheduler.job.IJob;
 
 class ConfigurationTest {
 

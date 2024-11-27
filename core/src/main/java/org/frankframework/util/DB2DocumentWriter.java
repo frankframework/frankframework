@@ -1,5 +1,5 @@
 /*
-   Copyright 2022, 2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,19 +21,16 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.frankframework.stream.document.ArrayBuilder;
-import org.frankframework.stream.document.DocumentBuilderFactory;
-import org.frankframework.stream.document.INodeBuilder;
 import org.apache.logging.log4j.Logger;
-import org.xml.sax.SAXException;
-
 import org.frankframework.core.SenderException;
-
 import org.frankframework.dbms.IDbmsSupport;
-import org.frankframework.stream.MessageOutputStream;
-import org.frankframework.stream.StreamingException;
-import org.frankframework.stream.document.DocumentFormat;
-import org.frankframework.stream.document.ObjectBuilder;
+import org.frankframework.documentbuilder.ArrayBuilder;
+import org.frankframework.documentbuilder.DocumentBuilderFactory;
+import org.frankframework.documentbuilder.DocumentFormat;
+import org.frankframework.documentbuilder.INodeBuilder;
+import org.frankframework.documentbuilder.ObjectBuilder;
+import org.frankframework.stream.MessageBuilder;
+import org.xml.sax.SAXException;
 
 public class DB2DocumentWriter {
 	protected static Logger log = LogUtil.getLogger(DB2DocumentWriter.class);
@@ -51,8 +48,8 @@ public class DB2DocumentWriter {
 		return JDBCType.valueOf(type).getName();
 	}
 
-	public void writeDocument(DocumentFormat format, IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition, MessageOutputStream target, boolean prettyPrint) throws StreamingException, SAXException {
-		try (ObjectBuilder documentBuilder = DocumentBuilderFactory.startObjectDocument(format, docname, target, prettyPrint)) {
+	public void writeDocument(DocumentFormat format, IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition, MessageBuilder messageBuilder, boolean prettyPrint) throws SAXException {
+		try (ObjectBuilder documentBuilder = DocumentBuilderFactory.startObjectDocument(format, docname, messageBuilder, prettyPrint)) {
 			writeDocument(dbmsSupport, rs, maxlength, includeFieldDefinition, documentBuilder);
 		}
 	}
@@ -92,7 +89,7 @@ public class DB2DocumentWriter {
 				}
 			}
 		} catch (Exception e) {
-			log.error("Error occurred at row [" + rowCounter+"]", e);
+			log.error("Error occurred at row [{}]", rowCounter, e);
 		}
 	}
 
@@ -131,7 +128,7 @@ public class DB2DocumentWriter {
 					} catch (SQLException e) {
 						log.warn("Could not determine precision",e);
 					} catch (NumberFormatException e2) {
-						if (log.isDebugEnabled()) log.debug("Could not determine precision: "+e2.getMessage());
+						if (log.isDebugEnabled()) log.debug("Could not determine precision: {}", e2.getMessage());
 					}
 					try {
 						field.addAttribute("scale", rsmeta.getScale(j));
@@ -165,7 +162,7 @@ public class DB2DocumentWriter {
 		try (INodeBuilder nodeBuilder = rows.addElement()) {
 			try (ObjectBuilder row=nodeBuilder.startObject()) {
 				for (int i = 1; i <= rsmeta.getColumnCount(); i++) {
-					String columnName = "" + rsmeta.getColumnName(i);
+					String columnName = rsmeta.getColumnName(i);
 					if(convertFieldnamesToUppercase) {
 						columnName = columnName.toUpperCase();
 					}

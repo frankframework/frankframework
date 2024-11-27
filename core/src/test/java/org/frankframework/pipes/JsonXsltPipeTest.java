@@ -6,6 +6,11 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
+
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -13,10 +18,6 @@ import org.frankframework.core.PipeStartException;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool.OutputType;
-import org.junit.jupiter.api.Test;
-
-import jakarta.json.Json;
-import jakarta.json.JsonStructure;
 
 public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 
@@ -90,7 +91,7 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 		Message input = new Message(url.openStream());
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = Message.asMessage(prr.getResult()).asString();
+		String result = prr.getResult().asString();
 		assertEquals("onSample Konfabulator Widgetmain_window500500Images/Sun.pngsun1250250centerClick Here36boldtext1250100centersun1.opacity = (sun1.opacity / 100) * 90;", result.trim());
 	}
 }

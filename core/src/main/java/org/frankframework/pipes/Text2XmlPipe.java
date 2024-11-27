@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
 package org.frankframework.pipes;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
-import java.nio.file.Files;
 
 import org.apache.commons.lang3.StringUtils;
+
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
@@ -32,22 +33,19 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.PathMessage;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.EncapsulatingReader;
-import org.frankframework.util.FileUtils;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
-import org.frankframework.xml.XmlWriter;
 
 /**
  * Pipe for converting TEXT to XML.
  *
  * @author J. Dekker
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(Type.TRANSLATOR)
 public class Text2XmlPipe extends FixedForwardPipe {
 	private @Getter String xmlTag;
 	private @Getter boolean splitLines = false;
@@ -73,21 +71,16 @@ public class Text2XmlPipe extends FixedForwardPipe {
 			return new PipeRunResult(getSuccessForward(), new Message("<" + getXmlTag() + "><![CDATA[]]></" + getXmlTag() + ">"));
 		}
 
-		File tempFile = null;
 		try {
-			tempFile = FileUtils.createTempFile();
-			ContentHandler handler = new XmlWriter(Files.newBufferedWriter(tempFile.toPath()));
+			MessageBuilder messageBuilder = new MessageBuilder();
+			ContentHandler handler = messageBuilder.asXmlWriter();
 			if (!isSplitLines()) {
 				processNonSplittingLines(message, handler);
 			} else {
 				processSplittingLines(message, handler);
 			}
-			return new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath()));
+			return new PipeRunResult(getSuccessForward(), messageBuilder.build());
 		} catch (Exception e) {
-			try {
-				if (tempFile != null) Files.deleteIfExists(tempFile.toPath());
-			} catch (IOException ignored) {
-			}
 			throw new PipeRunException(this, "Unexpected exception during splitting", e);
 		}
 	}
@@ -144,8 +137,9 @@ public class Text2XmlPipe extends FixedForwardPipe {
 			}
 
 		} : new EncapsulatingReader(message.asReader(), prefix, suffix);
-		Message encapsulatedMessage = new Message(encapsulatingReader);
-		XmlUtils.parseXml(encapsulatedMessage.asInputSource(), handler);
+		try (Message encapsulatedMessage = new Message(encapsulatingReader)) {
+			XmlUtils.parseXml(encapsulatedMessage.asInputSource(), handler);
+		}
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.SftpATTRS;
 
 import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.stream.Message;
 
 /**
@@ -35,6 +37,7 @@ public class SftpFileRef {
 	private @Getter String folder;
 	private String name;
 	private SftpATTRS attributes = null;
+	private @Setter @Getter boolean isDirectory = false;
 
 	private SftpFileRef() {
 	}
@@ -45,7 +48,7 @@ public class SftpFileRef {
 
 	/**
 	 * @param name A canonical name might be provided, strip the path when present and only use the actual file name.
-	 * @param folder The directory the file. This always has presedence over the canonical path provided by the name.
+	 * @param folder The directory the file. This always has precedence over the canonical path provided by the name.
 	 */
 	public SftpFileRef(String name, String folder) {
 		setName(name);
@@ -98,6 +101,7 @@ public class SftpFileRef {
 		file.setName(entry.getFilename());
 		file.setFolder(folder);
 		file.setAttrs(entry.getAttrs());
+		file.setDirectory(entry.getAttrs().isDir());
 		return file;
 	}
 

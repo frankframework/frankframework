@@ -1,45 +1,65 @@
 import { LocationStrategy } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AppService } from 'src/app/app.service';
 import { BaseIframeComponent } from '../iframe.base';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-iframe-custom-view',
   templateUrl: '../iframe.component.html',
   styleUrls: ['../iframe.component.scss'],
 })
-export class IframeCustomViewComponent
-  extends BaseIframeComponent
-  implements OnInit
-{
+export class IframeCustomViewComponent extends BaseIframeComponent implements OnInit, OnDestroy {
+  private routeSubscription?: Subscription;
+
   constructor(
-    sanitizer: DomSanitizer,
-    appService: AppService,
+    protected override sanitizer: DomSanitizer,
+    protected override appService: AppService,
     private router: Router,
+    private route: ActivatedRoute,
     private location: LocationStrategy,
     private window: Window,
   ) {
     super(sanitizer, appService);
   }
 
-  ngOnInit(): void {
-    const routeState = this.location.getState() as Record<
-      string,
-      { name: string; url: string }
-    >;
+  override ngOnInit(): void {
+    super.ngOnInit();
+    this.routeSubscription = this.route.url.subscribe((url) => {
+      if (url[0].path == 'customView') {
+        this.loadPage();
+      }
+    });
+  }
 
-    if (!('view' in routeState) || routeState['view'].url == '')
+  loadPage(): void {
+    const routeState = this.location.getState() as Record<string, { name: string; url: string }>;
+
+    if (!('view' in routeState) || routeState['view'].url == '') {
       this.router.navigate(['status']);
+    }
 
     const view = routeState['view'];
 
     if (view['url'].includes('http')) {
       this.window.open(view['url'], view['name']);
       this.redirectURL = view['url'];
-    } else this.url = this.appService.getServerPath() + view['url'];
+      this.url = '';
+    } else {
+      this.url = this.appService.getServerPath() + view['url'];
+    }
+
     this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
-    this.appService.setIframePopoutUrl(this.url);
+    setTimeout(() => {
+      // run after router events have passed
+      this.appService.setIframePopoutUrl(this.url);
+    }, 50);
+  }
+
+  override ngOnDestroy(): void {
+    super.ngOnDestroy();
+    this.routeSubscription?.unsubscribe();
   }
 }

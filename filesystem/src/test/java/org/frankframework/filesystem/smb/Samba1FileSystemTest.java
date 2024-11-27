@@ -1,14 +1,15 @@
 package org.frankframework.filesystem.smb;
 
+import org.junit.jupiter.api.BeforeEach;
+
+import jcifs.smb.SmbFile;
+
 import org.frankframework.filesystem.FileSystemTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.filesystem.LocalFileSystemTestHelper;
 import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileServer.FileSystemType;
 import org.frankframework.testutil.junit.LocalFileSystemMock;
-import org.junit.jupiter.api.BeforeEach;
-
-import jcifs.smb.SmbFile;
 
 public class Samba1FileSystemTest extends FileSystemTest<SmbFile, Samba1FileSystem> {
 

@@ -25,7 +25,6 @@ import org.frankframework.core.INamedObject;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
-
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 
@@ -86,14 +85,8 @@ public class Collection<C extends ICollector<P>, P> implements AutoCloseable, IN
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder("Collection [");
-		builder.append(getName());
-		builder.append("] of type [");
-		builder.append(ClassUtils.nameOf(collector));
-		builder.append("] consisting of [");
-		builder.append(parts.size());
-		builder.append("] parts");
-
-		return builder.toString();
+		return "Collection [" + getName() +
+				"] of type [" + ClassUtils.nameOf(collector) +
+				"] consisting of [" + parts.size() + "] parts";
 	}
 }

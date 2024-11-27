@@ -22,15 +22,15 @@ import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.filesystem.ExchangeFileSystem;
 import org.frankframework.filesystem.ExchangeMessageReference;
-import org.frankframework.filesystem.FileSystemSender;
-import org.frankframework.filesystem.MailFileSystemBase;
+import org.frankframework.filesystem.AbstractFileSystemSender;
+import org.frankframework.filesystem.AbstractMailFileSystem;
 
 /**
- * Implementation of a {@link FileSystemSender} that enables to manipulate messages in an Exchange folder.
+ * Implementation of a {@link AbstractFileSystemSender} that enables to manipulate messages in an Exchange folder.
  *
  * @author Gerrit van Brakel
  */
-public class ExchangeFolderSender extends FileSystemSender<ExchangeMessageReference,ExchangeFileSystem> {
+public class ExchangeFolderSender extends AbstractFileSystemSender<ExchangeMessageReference,ExchangeFileSystem> {
 
 	public ExchangeFolderSender() {
 		setFileSystem(new ExchangeFileSystem());
@@ -80,7 +80,7 @@ public class ExchangeFolderSender extends FileSystemSender<ExchangeMessageRefere
 		getFileSystem().setAuthAlias(authAlias);
 	}
 
-	@ReferTo(MailFileSystemBase.class)
+	@ReferTo(AbstractMailFileSystem.class)
 	public void setBaseFolder(String baseFolder) {
 		getFileSystem().setBaseFolder(baseFolder);
 	}
@@ -90,7 +90,7 @@ public class ExchangeFolderSender extends FileSystemSender<ExchangeMessageRefere
 		getFileSystem().setFilter(filter);
 	}
 
-	@ReferTo(MailFileSystemBase.class)
+	@ReferTo(AbstractMailFileSystem.class)
 	public void setReplyAddressFields(String replyAddressFields) {
 		getFileSystem().setReplyAddressFields(replyAddressFields);
 	}

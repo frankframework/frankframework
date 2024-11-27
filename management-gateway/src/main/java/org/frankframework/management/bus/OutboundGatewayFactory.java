@@ -18,30 +18,29 @@ package org.frankframework.management.bus;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.util.SpringUtils;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.integration.IntegrationPatternType;
 import org.springframework.util.ClassUtils;
 
 import lombok.Setter;
 
+import org.frankframework.util.SpringUtils;
+
 /**
  * Allows the creation of outbound integration gateways.
  */
-public class OutboundGatewayFactory<T> implements InitializingBean, ApplicationContextAware, FactoryBean<OutboundGateway<T>> {
+public class OutboundGatewayFactory implements InitializingBean, ApplicationContextAware, FactoryBean<OutboundGateway> {
 
 	private final Logger log = LogManager.getLogger(this);
 	private @Setter ApplicationContext applicationContext;
-	private OutboundGateway<T> gateway;
+	private OutboundGateway gateway;
 
 	private static final String GATEWAY_CLASS_KEY = "management.gateway.outbound.class";
 	private @Setter String gatewayClassname = null;
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public void afterPropertiesSet() throws Exception {
 		if(StringUtils.isBlank(gatewayClassname)) {
 			throw new IllegalStateException("no outbound gateway class specified. Please set ["+GATEWAY_CLASS_KEY+"]");
@@ -54,22 +53,16 @@ public class OutboundGatewayFactory<T> implements InitializingBean, ApplicationC
 			throw new IllegalArgumentException("gateway ["+gatewayClassname+"] does not implement type IntegrationGateway");
 		}
 
-		gateway = (OutboundGateway<T>) SpringUtils.createBean(applicationContext, gatewayClass);
-		IntegrationPatternType type = gateway.getIntegrationPatternType();
-		if(IntegrationPatternType.outbound_gateway != type) {
-			throw new IllegalArgumentException("gateway ["+gatewayClassname+"] must be of an Outbound Gateway");
-		}
-
+		gateway = (OutboundGateway) SpringUtils.createBean(applicationContext, gatewayClass);
 		log.info("created gateway [{}]", gateway);
 	}
 
 	@Override
-	public OutboundGateway<T> getObject() {
+	public OutboundGateway getObject() {
 		return gateway;
 	}
 
 	@Override
-	@SuppressWarnings("rawtypes")
 	public Class<? extends OutboundGateway> getObjectType() {
 		return this.gateway != null ? this.gateway.getClass() : OutboundGateway.class;
 	}

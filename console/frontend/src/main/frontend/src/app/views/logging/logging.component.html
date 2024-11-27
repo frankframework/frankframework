@@ -1,17 +1,11 @@
-<div class="wrapper wrapper-content">
-  <ngb-alert *ngIf="alert" type="danger" [dismissible]="false">{{
-    alert
-  }}</ngb-alert>
+<div class="wrapper wrapper-content animated fadeInRight">
+  <ngb-alert *ngIf="alert" type="danger" [dismissible]="false">{{ alert }}</ngb-alert>
   <div class="row">
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
         <div class="ibox-title">
           <div class="pull-right" *ngIf="viewFile">
-            <button
-              (click)="closeFile()"
-              class="btn btn-xs pull-right"
-              type="button"
-            >
+            <button (click)="closeFile()" class="btn btn-xs pull-right" type="button">
               <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
               <span> Back</span>
             </button>
@@ -42,9 +36,7 @@
                 />
                 <i
                   (click)="fileName = ''"
-                  class="fa fa-times input-group-closeSearch{{
-                    fileName.length < 1 ? ' hidden' : ''
-                  }}"
+                  class="fa fa-times input-group-closeSearch{{ fileName.length < 1 ? ' hidden' : '' }}"
                   aria-hidden="true"
                 ></i>
                 <span class="input-group-addon">
@@ -57,9 +49,7 @@
                 <tr>
                   <th sortable="name" (sorted)="onSort($event)">Name</th>
                   <th sortable="size" (sorted)="onSort($event)">Size</th>
-                  <th sortable="lastModified" (sorted)="onSort($event)">
-                    Date
-                  </th>
+                  <th sortable="lastModified" (sorted)="onSort($event)">Date</th>
                   <th>&nbsp;</th>
                 </tr>
               </thead>
@@ -67,30 +57,17 @@
                 <tr *ngFor="let file of sortedlist | searchFilter: fileName">
                   <td class="pointer" (click)="open(file)">{{ file.name }}</td>
                   <td>
-                    <span *ngIf="file.type === 'file'">{{
-                      file.sizeDisplay
-                    }}</span>
+                    <span *ngIf="file.type === 'file'">{{ file.sizeDisplay }}</span>
                   </td>
                   <td appToDate [time]="file.lastModified"></td>
                   <td class="hideBtn1170" *ngIf="file.type === 'file'">
-                    <button
-                      (click)="download(file)"
-                      class="btn btn-xs pull-right"
-                      type="button"
-                    >
-                      <i
-                        class="fa fa-arrow-circle-o-down"
-                        aria-hidden="true"
-                      ></i>
+                    <button (click)="download(file)" class="btn btn-xs pull-right" type="button">
+                      <i class="fa fa-arrow-circle-o-down" aria-hidden="true"></i>
                       <span> Download</span>
                     </button>
                   </td>
                   <td class="loggingBtn" *ngIf="file.type === 'directory'">
-                    <button
-                      (click)="open(file)"
-                      class="btn btn-xs pull-right"
-                      type="button"
-                    >
+                    <button (click)="open(file)" class="btn btn-xs pull-right" type="button">
                       <i class="fa fa-folder-open-o" aria-hidden="true"></i>
                       <span> Open</span>
                     </button>
@@ -101,15 +78,7 @@
           </div>
         </div>
         <div *ngIf="viewFile">
-          <app-file-viewer
-            [fileName]="viewFile"
-            style="
-              width: 100%;
-              min-height: 650px;
-              border: none;
-              overflow: hidden;
-            "
-          ></app-file-viewer>
+          <app-file-viewer [fileName]="viewFile"></app-file-viewer>
         </div>
       </div>
     </div>

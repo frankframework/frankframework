@@ -24,7 +24,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlBuilder;
 
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.6.0")
 public class RestSender extends HttpSender {
 
 	@Override
@@ -40,8 +40,7 @@ public class RestSender extends HttpSender {
 		Header[] headers = responseHandler.getAllHeaders();
 		if(headers != null) {
 			XmlBuilder headersXml = new XmlBuilder("headers");
-			for (int i = 0; i < headers.length; i++) {
-				Header header = headers[i];
+			for (Header header : headers) {
 				String name = header.getName().toLowerCase();
 				XmlBuilder headerXml = new XmlBuilder("header");
 				headerXml.addAttribute("name", name);
@@ -62,6 +61,6 @@ public class RestSender extends HttpSender {
 			result.addSubElement(message);
 		}
 
-		return Message.asMessage(result.toXML());
+		return result.asMessage();
 	}
 }

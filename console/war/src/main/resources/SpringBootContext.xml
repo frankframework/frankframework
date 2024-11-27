@@ -7,11 +7,15 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 	">
 
-	<context:property-placeholder location="classpath:application.properties"/>
+	<context:property-placeholder location="classpath:application.properties,classpath:testtool.properties"/>
 
 	<bean id="tomcat" class="org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory">
 		<property name="port" value="${server.port}"/>
 	</bean>
 
-	<import resource="FrankConsoleContext.xml"/>
+	<import resource="FrankConsoleContext.xml" />
+
+	<beans profile="ladybug.file,ladybug.database">
+		<import resource="springTestToolStandalone.xml" />
+	</beans>
 </beans>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,14 +15,16 @@
 */
 package org.frankframework.compression;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+
+import org.frankframework.collection.AbstractCollectorPipe;
 import org.frankframework.collection.CollectionException;
-import org.frankframework.collection.CollectorPipeBase;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
@@ -31,7 +33,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
-import org.frankframework.util.FileUtils;
+import org.frankframework.util.TemporaryDirectoryUtils;
 
 /**
  * Pipe that creates a ZIP archive (on action close).
@@ -40,14 +42,14 @@ import org.frankframework.util.FileUtils;
  * Action <code>CLOSE</code> will generate the ZIP archive which is returned as the pipe ouput.
  * </p>
  *
- * @ff.parameter filename only for action=<code>WRITE</code>: the filename of the zip-entry
- * @ff.parameter contents only for action=<code>WRITE</code>: contents of the zip-entry, If not specified, the input is used.
+ * @ff.parameter filename only for <code>action=WRITE</code>: the filename of the zip-entry
+ * @ff.parameter contents only for <code>action=WRITE</code>: contents of the zip-entry, If not specified, the input is used.
  *
  * @author Gerrit van Brakel
  * @author Niels Meijer
  * @since  7.9
  */
-public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry> {
+public class ZipWriterPipe extends AbstractCollectorPipe<ZipWriter, MessageZipEntry> {
 
 	private @Getter boolean includeFileHeaders = false;
 
@@ -104,17 +106,17 @@ public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry>
 				throw new PipeRunException(this, "filename may not be empty");
 			}
 
-			File collectorsTempFolder = FileUtils.getTempDirectory("collectors");
-			File file = File.createTempFile("msg", ".zip", collectorsTempFolder);
+			Path collectorsTempFolder = TemporaryDirectoryUtils.getTempDirectory("collectors");
+			Path file = Files.createTempFile(collectorsTempFolder, "msg", ".zip");
 
 			// Unfortunately we cannot call doAction(Action.WRITE, PathMessage, session);
 			// directly because the ParameterList is resolved against the input message.
 			// We have to change the input here, but want to keep the original PVL.
-			PathMessage tempZipArchive = PathMessage.asTemporaryMessage(file.toPath());
+			PathMessage tempZipArchive = PathMessage.asTemporaryMessage(file);
 			addPartToCollection(getCollection(session), tempZipArchive, session, pvl);
 
-			//We must return a file location, not the reference or file it self
-			return new PipeRunResult(getSuccessForward(), new Message(file.getAbsolutePath()));
+			//We must return a file location, not the reference or file itself
+			return new PipeRunResult(getSuccessForward(), new Message(file.toString()));
 		} catch (CollectionException e) {
 			throw new PipeRunException(this, "unable to preserve message for action ["+getAction()+"]", e);
 		}
@@ -124,7 +126,7 @@ public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry>
 	 * Session key used to refer to zip session. Must be specified with another value if ZipWriterPipes are nested. Deprecated, use collectionName instead.
 	 * @ff.default zipwriterhandle
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.9.0")
 	@ConfigurationWarning("Replaced with attribute collectionName")
 	public void setZipWriterHandle(String string) {
 		setCollectionName(string);
@@ -143,7 +145,7 @@ public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry>
 	 * When action is WRITE: Input will be 'piped' to the output, and the message will be preserved.
 	 * Avoid using this if possible.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.9.0")
 	public void setBackwardsCompatibility(boolean backwardsCompatibility) {
 		this.backwardsCompatibility = backwardsCompatibility;
 	}

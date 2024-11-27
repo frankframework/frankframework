@@ -20,18 +20,19 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.messaging.Message;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
-import org.frankframework.core.IAdapter;
 import org.frankframework.core.IListener;
-import org.frankframework.core.SenderException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -46,7 +47,7 @@ import org.frankframework.scheduler.job.DatabaseJob;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
-import org.springframework.messaging.Message;
+
 
 @BusAware("frank-management-bus")
 public class CreateScheduledJob extends BusEndpointBase {
@@ -83,7 +84,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 		String configurationName = BusMessageUtils.getHeader(message, "configuration", null);
 		String adapterName = BusMessageUtils.getHeader(message, "adapter");
 
-		IAdapter adapter = getAdapter(configurationName, adapterName);
+		Adapter adapter = getAdapter(configurationName, adapterName);
 		//Make sure the adapter exists!
 		if(adapter == null) {
 			throw new BusException("Adapter ["+adapterName+"] not found");
@@ -151,7 +152,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 			}
 
 			try {
-				qs.open();
+				qs.start();
 				try (Connection conn = qs.getConnection()) {
 
 					if(overwrite) {
@@ -183,10 +184,10 @@ public class CreateScheduledJob extends BusEndpointBase {
 						success = stmt.executeUpdate() > 0;
 					}
 				}
-			} catch (SenderException | SQLException | JdbcException e) {
+			} catch (LifecycleException | SQLException | JdbcException e) {
 				throw new BusException("error saving job in database", e);
 			} finally {
-				qs.close();
+				qs.stop();
 			}
 
 			if(!success)
@@ -196,7 +197,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 		return EmptyMessage.created();
 	}
 
-	private IAdapter getAdapter(String configurationName, String adapterName) {
+	private Adapter getAdapter(String configurationName, String adapterName) {
 		Configuration configuration = null;
 		if(StringUtils.isNotEmpty(configurationName)) {
 			configuration = getIbisManager().getConfiguration(configurationName);
@@ -210,7 +211,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 		return findAdapter(adapterName);
 	}
 
-	private IAdapter findAdapter(String adapterName) {
+	private Adapter findAdapter(String adapterName) {
 		for(Configuration config : getIbisManager().getConfigurations()) {
 			if(config.isActive()) {
 				Adapter adapter = config.getRegisteredAdapter(adapterName);

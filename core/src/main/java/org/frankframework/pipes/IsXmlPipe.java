@@ -18,13 +18,12 @@ package org.frankframework.pipes;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.Forward;
 import org.frankframework.stream.Message;
 
 /**
@@ -35,7 +34,8 @@ import org.frankframework.stream.Message;
  * @author  Peter Leeuwenburgh
  * @since   4.3
  */
-@ElementType(ElementTypes.ROUTER)
+@Forward(name = "*", description = "when {@literal thenForwardName} or {@literal elseForwardName} are used")
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ROUTER)
 public class IsXmlPipe extends AbstractPipe {
 
 	private String thenForwardName = "then";
@@ -86,7 +86,7 @@ public class IsXmlPipe extends AbstractPipe {
 	}
 
 	/**
-	 * forward returned when <code>'true'</code>
+	 * forward returned when <code>true</code>
 	 * @ff.default then
 	 */
 	public void setThenForwardName(String thenForwardName) {

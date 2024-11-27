@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
@@ -23,11 +24,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
+
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.jdbc.JdbcQuerySenderBase.QueryType;
+import org.frankframework.jdbc.AbstractJdbcQuerySender.QueryType;
 import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
@@ -35,9 +40,6 @@ import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.StreamUtil;
-import org.junit.jupiter.api.BeforeEach;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = DbmsSupportTest.TEST_TABLE)
@@ -47,6 +49,7 @@ public class DbmsSupportTest {
 	private IDbmsSupport dbmsSupport;
 
 	public static final String TEST_TABLE = "Temp"; // use mixed case tablename for testing
+	private static final String ROW_VERSION_TEST_TABLE_NAME = "TestTable";
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) {
@@ -442,22 +445,6 @@ public class DbmsSupportTest {
 	}
 
 	@DatabaseTest
-	public void testInsertEmptyClobUsingDbmsSupport() throws Exception {
-		try (Connection connection = env.getConnection()) {
-
-			JdbcTestUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TCLOB) VALUES (13," + dbmsSupport.emptyClobValue() + ")");
-
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM " + TEST_TABLE + " WHERE TKEY=13", QueryType.SELECT)) {
-				try (ResultSet resultSet = stmt.executeQuery()) {
-					resultSet.next();
-					assertEquals("", JdbcUtil.getClobAsString(dbmsSupport, resultSet, 1, false));
-				}
-			}
-		}
-	}
-
-
-	@DatabaseTest
 	public void testWriteAndReadBlob() throws Exception {
 		try (Connection connection = env.getConnection()) {
 			String blobContents = "Dit is de content van de blob";
@@ -565,20 +552,6 @@ public class DbmsSupportTest {
 	}
 
 	@DatabaseTest
-	public void testInsertEmptyBlobUsingDbmsSupport() throws Exception {
-		try (Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TBLOB) VALUES (25," + dbmsSupport.emptyBlobValue() + ")");
-
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM " + TEST_TABLE + " WHERE TKEY=25", QueryType.SELECT)) {
-				try (ResultSet resultSet = stmt.executeQuery()) {
-					resultSet.next();
-					assertEquals("", JdbcUtil.getBlobAsString(dbmsSupport, resultSet, 1, "UTF-8", false, false, false));
-				}
-			}
-		}
-	}
-
-	@DatabaseTest
 	public void testReadBlobAndCLobUsingJdbcUtilGetValue() throws Exception {
 		try (Connection connection = env.getConnection()) {
 			String blobContents = "Dit is de content van de blob";
@@ -604,7 +577,6 @@ public class DbmsSupportTest {
 		}
 	}
 
-
 	@DatabaseTest
 	public void testBooleanHandling() throws Exception {
 		try (Connection connection = env.getConnection()) {
@@ -624,6 +596,7 @@ public class DbmsSupportTest {
 
 	@DatabaseTest
 	public void testQueueHandling() throws Exception {
+		assumeTrue(dbmsSupport.hasSkipLockedFunctionality(), "This test works only when locked records can be skipped, not supported for DBMS [" + dbmsSupport.getDbmsName() + "]");
 		try (Connection connection = env.getConnection()) {
 			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (40,100)", QueryType.OTHER);
 
@@ -638,14 +611,15 @@ public class DbmsSupportTest {
 			assertEquals(40, JdbcTestUtil.executeIntQuery(connection, readQueueQuery));
 			assertEquals(40, JdbcTestUtil.executeIntQuery(connection, peekQueueQuery));
 
-			try (Statement stmt1 = connection.createStatement()) {
-				stmt1.setFetchSize(1);
-				log.debug("Read queue using query [" + readQueueQuery + "]");
-				try (ResultSet rs1 = stmt1.executeQuery(readQueueQuery)) {
-					assertTrue(rs1.next());
-					assertEquals(40, rs1.getInt(1));            // find the first record
+			try (Connection lockingReadConnection = env.getConnection()) {
+				lockingReadConnection.setAutoCommit(false);
+				try (Statement stmt1 = lockingReadConnection.createStatement()) {
+					stmt1.setFetchSize(1);
+					log.debug("Read queue using query [" + readQueueQuery + "]");
+					try (ResultSet rs1 = stmt1.executeQuery(readQueueQuery)) {
+						assertTrue(rs1.next());
+						assertEquals(40, rs1.getInt(1));            // find the first record
 
-					if (dbmsSupport.hasSkipLockedFunctionality()) {
 						try (Connection workConn2 = env.getConnection()) {
 							workConn2.setAutoCommit(false);
 							try (Statement stmt2 = workConn2.createStatement()) {
@@ -655,8 +629,9 @@ public class DbmsSupportTest {
 										fail("readQueueQuery [" + readQueueQuery + "] should not have found record [" + rs2.getString(1) + "] that is already locked");
 									}
 								}
+							} finally {
+								workConn2.commit();
 							}
-							workConn2.commit();
 						}
 
 						// insert another record
@@ -672,15 +647,13 @@ public class DbmsSupportTest {
 									assertTrue(rs2.next());
 									assertEquals(41, rs2.getInt(1));    // find the second record
 								}
+							} finally {
+								workConn2.rollback();
 							}
-							workConn2.rollback();
 						}
-					} else {
-						// Next best behaviour for DBMSes that have no skip lock functionality (like MariaDB):
-						// another thread must find the next record when the thread that has the current record moves it out of the way
-
-						// A proper test could/should be created
 					}
+				} finally {
+					lockingReadConnection.commit();
 				}
 			}
 		}
@@ -718,37 +691,12 @@ public class DbmsSupportTest {
 	}
 
 	@DatabaseTest
-	public void testIsBlobTypeIbisTemp() throws Exception {
-		try (Connection connection = env.getConnection()) {
-			assumeTrue(dbmsSupport.isTablePresent(connection, "IBISTEMP"));
-			try (PreparedStatement stmt = connection.prepareStatement("SELECT TKEY, TVARCHAR, TNUMBER, TDATE, TTIMESTAMP, TBLOB, TCLOB FROM IBISTEMP")) {
-				try (ResultSet rs = stmt.executeQuery()) {
-					ResultSetMetaData rsmeta = rs.getMetaData();
-					for (int i = 1; i <= 7; i++) {
-						assertEquals(i == 6, dbmsSupport.isBlobType(rsmeta, i), "column type name [" + rsmeta.getColumnTypeName(i) + "] precision [" + rsmeta.getPrecision(i) + "] column type [" + rsmeta.getColumnType(i) + "]");
-					}
-				}
+	public void testSkipLockedSupportPresent() {
+		// We expect this test to run against a MariaDB version 10.6 or later and so it should support "skip locked" when running these tests
+		boolean expectSkipLockedSupport = dbmsSupport.getDbms() != Dbms.H2;
 
-			}
-		}
+		assertEquals(expectSkipLockedSupport, dbmsSupport.hasSkipLockedFunctionality());
 	}
-
-	@DatabaseTest
-	public void testIsClobTypeIbisTemp() throws Exception {
-		try (Connection connection = env.getConnection()) {
-			assumeTrue(dbmsSupport.isTablePresent(connection, "IBISTEMP"));
-			try (PreparedStatement stmt = connection.prepareStatement("SELECT TKEY, TVARCHAR, TNUMBER, TDATE, TTIMESTAMP, TBLOB, TCLOB FROM IBISTEMP")) {
-				try (ResultSet rs = stmt.executeQuery()) {
-					ResultSetMetaData rsmeta = rs.getMetaData();
-					for (int i = 1; i <= 7; i++) {
-						assertEquals(i == 7, dbmsSupport.isClobType(rsmeta, i), "column type name [" + rsmeta.getColumnTypeName(i) + "] precision [" + rsmeta.getPrecision(i) + "] column type [" + rsmeta.getColumnType(i) + "]");
-					}
-				}
-
-			}
-		}
-	}
-
 
 	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType) throws JdbcException, SQLException {
 		return executeTranslatedQuery(connection, query, queryType, false);
@@ -760,11 +708,30 @@ public class DbmsSupportTest {
 		log.debug("executing translated query [{}]", translatedQuery);
 		if (queryType==QueryType.SELECT) {
 			if(!selectForUpdate) {
-				return  connection.prepareStatement(translatedQuery);
+				return connection.prepareStatement(translatedQuery);
 			}
 			return connection.prepareStatement(translatedQuery, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 		}
 		JdbcTestUtil.executeStatement(connection, translatedQuery);
 		return null;
+	}
+
+	@DatabaseTest
+	@WithLiquibase(file = "Migrator/AddTableForDatabaseContext.xml", tableName = ROW_VERSION_TEST_TABLE_NAME)
+	public void testRowVersionTimestamp() throws SQLException, JdbcException, IOException {
+		assumeTrue(dbmsSupport.getDbms() == Dbms.MSSQL, "This test is only relevant for MSSQL");
+
+		try (Connection connection = env.getConnection()) {
+			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT * FROM " + ROW_VERSION_TEST_TABLE_NAME, QueryType.SELECT)) {
+				try (ResultSet resultSet = stmt.executeQuery()) {
+					ResultSetMetaData rsmeta = resultSet.getMetaData();
+					resultSet.next();
+					String actual2 = JdbcUtil.getValue(dbmsSupport, resultSet, 3, rsmeta, "UTF-8", false, null, true, false, false);
+
+					assertEquals(rsmeta.getColumnTypeName(3), "timestamp");
+					assertNotNull(actual2);
+				}
+			}
+		}
 	}
 }

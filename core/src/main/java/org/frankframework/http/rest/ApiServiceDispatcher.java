@@ -20,17 +20,18 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.json.JsonObject;
+
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.core.IPipe;
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
 import org.frankframework.http.openapi.OpenApiGenerator;
 import org.frankframework.pipes.Json2XmlValidator;
@@ -179,12 +180,10 @@ public class ApiServiceDispatcher {
 	public static int scoreUriPattern(@Nonnull String uriPattern) {
 		int startValue = uriPattern.endsWith("/**") ? -10 : 0;
 		return uriPattern.chars()
-				.reduce(startValue, (cnt, chr) -> {
-					switch ((char)chr) {
-						case '/': return cnt + 1;
-						case '*': return cnt - 1;
-						default: return cnt;
-					}
+				.reduce(startValue, (cnt, chr) -> switch ((char) chr) {
+					case '/' -> cnt + 1;
+					case '*' -> cnt - 1;
+					default -> cnt;
 				});
 	}
 
@@ -237,46 +236,53 @@ public class ApiServiceDispatcher {
 		return !matchFullPattern && !"**".equals(patternSegments[patternSegments.length - 1]);
 	}
 
-	public void registerServiceClient(ApiListener listener) throws ListenerException {
+	public void registerServiceClient(ApiListener listener) {
 		String uriPattern = listener.getCleanPattern();
-		if (StringUtils.isBlank(uriPattern))
-			throw new ListenerException("uriPattern cannot be null or empty");
+
+		// This is already checked in ApiListener#configure()
+		Objects.requireNonNull(uriPattern);
 
 		synchronized(patternClients) {
 			for(ApiListener.HttpMethod method : listener.getAllMethods()){
 				patternClients.computeIfAbsent(uriPattern, ApiDispatchConfig::new).register(method, listener);
-				if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully registered uriPattern [{}] method [{}}]", uriPattern, method);
+
+				if (log.isTraceEnabled()) {
+					log.trace("ApiServiceDispatcher successfully registered uriPattern [{}] method [{}]", uriPattern, method);
+				}
 			}
 		}
 	}
 
 	public void unregisterServiceClient(ApiListener listener) {
 		String uriPattern = listener.getCleanPattern();
-		if(uriPattern == null) {
+		if (uriPattern == null) {
 			log.warn("uriPattern cannot be null or empty, unable to unregister ServiceClient");
+		} else {
+			listener.getAllMethods()
+					.forEach(method -> clearMethod(method, uriPattern));
 		}
-		else {
-			for(ApiListener.HttpMethod method : listener.getAllMethods()){
-				boolean success = false;
-				synchronized (patternClients) {
-					ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
-					if(dispatchConfig != null) {
-						if(dispatchConfig.getMethods().size() == 1) {
-							patternClients.remove(uriPattern); //Remove the entire config if there's only 1 ServiceClient registered
-						} else {
-							dispatchConfig.remove(method); //Only remove the ServiceClient as there are multiple registered
-						}
-						success = true;
-					}
-				}
+	}
 
-				//keep log statements out of synchronized block
-				if(success) {
-					if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully unregistered uriPattern [{}] method [{}}]", uriPattern, method);
+	private void clearMethod(ApiListener.HttpMethod httpMethod, String uriPattern) {
+		boolean success = false;
+
+		synchronized (patternClients) {
+			ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
+			if (dispatchConfig != null) {
+				if (dispatchConfig.getMethods().size() == 1) {
+					patternClients.remove(uriPattern); // Remove the entire config if there's only 1 ServiceClient registered
 				} else {
-					log.warn("unable to find DispatchConfig for uriPattern [{}]", uriPattern);
+					dispatchConfig.remove(httpMethod); // Only remove the ServiceClient as there are multiple registered
 				}
+				success = true;
 			}
+		}
+
+		// Keep log statements out of synchronized block
+		if (success) {
+			if (log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully unregistered uriPattern [{}] method [{}]", uriPattern, httpMethod);
+		} else {
+			log.warn("unable to find DispatchConfig for uriPattern [{}]", uriPattern);
 		}
 	}
 
@@ -293,15 +299,52 @@ public class ApiServiceDispatcher {
 		return OpenApiGenerator.generateOpenApiJsonSchema(clientList, endpoint);
 	}
 
-	public static Json2XmlValidator getJsonValidator(PipeLine pipeline, boolean forOutputValidation) {
-		IPipe validator = forOutputValidation ? pipeline.getOutputValidator() : pipeline.getInputValidator();
-		if(validator == null) {
-			validator = pipeline.getPipe(pipeline.getFirstPipe());
+	public static Optional<Json2XmlValidator> getJsonInputValidator(PipeLine pipeLine) {
+		IPipe inputValidator = pipeLine.getInputValidator();
+
+		if (inputValidator == null) {
+			inputValidator = pipeLine.getPipe(pipeLine.getFirstPipe());
 		}
-		if(validator instanceof Json2XmlValidator xmlValidator) {
-			return xmlValidator;
+
+		if (inputValidator instanceof Json2XmlValidator json2XmlValidator) {
+			return Optional.of(json2XmlValidator);
 		}
-		return null;
+
+		return Optional.empty();
+	}
+
+	public static Optional<Json2XmlValidator> getJsonOutputValidator(PipeLine pipeline, String exit) {
+		IPipe validator = pipeline.getOutputValidator();
+
+		if (validator == null) {
+			validator = determineValidator(pipeline, exit);
+		}
+
+		if (validator instanceof Json2XmlValidator xmlValidator) {
+			return Optional.of(xmlValidator);
+		}
+
+		return Optional.empty();
+	}
+
+	private static Json2XmlValidator determineValidator(PipeLine pipeline, String exit) {
+		IPipe firstPipe = pipeline.getPipe(pipeline.getFirstPipe());
+
+		// Find the optional last pipe of type Json2XmlValidator
+		Optional<Json2XmlValidator> optionalLastPipe = pipeline.getPipes().stream()
+				.filter(Json2XmlValidator.class::isInstance)
+				.map(Json2XmlValidator.class::cast)
+				.filter(pipe -> pipe.hasRegisteredForward(exit))
+				.reduce((first, second) -> second);
+
+		// If there's no last pipe and the first pipe is an XmlValidator with a response root, use the first pipe
+		if (optionalLastPipe.isEmpty() && firstPipe instanceof Json2XmlValidator isXmlValidator
+				&& isXmlValidator.getResponseRoot() != null) {
+			return isXmlValidator;
+		}
+
+		// If the validator is still null, and the optional last pipe is present, use that - or else return null
+		return optionalLastPipe.orElse(null);
 	}
 
 	public void clear() {

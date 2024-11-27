@@ -35,8 +35,8 @@
 			</pipe>
 
 			<pipe name="Read input CSV file"
-                  className="org.frankframework.pipes.FilePipe" actions="read"
-                  outputType="stream">
+                  className="org.frankframework.pipes.FixedResultPipe">
+				<param name="filename" sessionKey="filePathName"/>
 				<forward name="success" path="Process each Line" />
 			</pipe>
 

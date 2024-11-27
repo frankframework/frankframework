@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,32 +24,41 @@ import java.util.Iterator;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.xml.soap.AttachmentPart;
-import javax.xml.soap.MimeHeader;
-import javax.xml.soap.SOAPException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.xml.soap.AttachmentPart;
+import jakarta.xml.soap.MimeHeader;
+import jakarta.xml.soap.SOAPException;
 
+import com.ibm.icu.text.CharsetDetector;
+import com.ibm.icu.text.CharsetMatch;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpResponse;
 import org.apache.logging.log4j.Logger;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.TikaMetadataKeys;
+import org.apache.tika.metadata.TikaCoreProperties;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.MimeType;
 
-import com.ibm.icu.text.CharsetDetector;
-import com.ibm.icu.text.CharsetMatch;
-
+import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 
-public abstract class MessageUtils {
+public class MessageUtils {
+
+	private MessageUtils() {
+		throw new IllegalStateException("Don't construct utility class");
+	}
+
 	private static final Logger LOG = LogUtil.getLogger(MessageUtils.class);
 	private static final int CHARSET_CONFIDENCE_LEVEL = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
 	private static final TikaConfig TIKA_CONFIG = createTikaConfig();
-	private static final int TIKA_MAGIC_LENGHT = 64 * 1024; // This needs to be reasonably large to be able to correctly detect things like XML root elements after initial comment and DTDs
+	private static final int TIKA_MAGIC_LENGTH = 64 * 1024; // This needs to be reasonably large to be able to correctly detect things like XML root elements after initial comment and DTDs
 
 	private static TikaConfig createTikaConfig() {
 		try {
@@ -76,7 +85,10 @@ public abstract class MessageUtils {
 		Enumeration<String> names = request.getHeaderNames();
 		while(names.hasMoreElements()) {
 			String name = names.nextElement();
-			result.put(MessageContext.HEADER_PREFIX + name, request.getHeader(name));
+			// https://datatracker.ietf.org/doc/html/rfc7230
+			// Each header field consists of a case-insensitive field name followed by a colon (":"),
+			// optional leading whitespace, the field value, and optional trailing whitespace.
+			result.put(MessageContext.HEADER_PREFIX + name, request.getHeader(name).trim());
 		}
 
 		return result;
@@ -87,12 +99,38 @@ public abstract class MessageUtils {
 		while (mimeHeaders.hasNext()) {
 			MimeHeader header = mimeHeaders.next();
 			String name = header.getName();
-			if("Content-Type".equals(name)) {
+			if(HttpHeaders.CONTENT_TYPE.equalsIgnoreCase(name)) {
 				result.withMimeType(header.getValue());
 			} else {
 				result.put(MessageContext.HEADER_PREFIX + name, header.getValue());
 			}
 		}
+		return result;
+	}
+
+	public static MessageContext getContext(HttpResponse httpResponse) {
+		MessageContext result = new MessageContext();
+		HttpEntity entity = httpResponse.getEntity();
+		if(entity != null) {
+			result.withSize(entity.getContentLength());
+			Header contentType = entity.getContentType();
+			if(contentType != null) {
+				result.withMimeType(contentType.getValue());
+			}
+		} else {
+			Header contentTypeHeader = httpResponse.getFirstHeader(HttpHeaders.CONTENT_TYPE);
+			if(contentTypeHeader != null) {
+				result.withMimeType(contentTypeHeader.getValue());
+			}
+		}
+
+		if (httpResponse.getAllHeaders() != null) {
+			for(Header header: httpResponse.getAllHeaders()) {
+				String name = header.getName();
+				result.put(MessageContext.HEADER_PREFIX + name, header.getValue());
+			}
+		}
+
 		return result;
 	}
 
@@ -111,7 +149,6 @@ public abstract class MessageUtils {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public static Message parse(AttachmentPart soapAttachment) throws SOAPException {
 		return new Message(soapAttachment.getRawContentBytes(), getContext(soapAttachment.getAllMimeHeaders()));
 	}
@@ -215,7 +252,7 @@ public abstract class MessageUtils {
 	/**
 	 * Computes the {@link MimeType} when not available, attempts to resolve the Charset when of type TEXT.
 	 * <p>
-	 * NOTE: This is a resource intensive operation, the first {@value #TIKA_MAGIC_LENGHT} bytes are being read and stored in memory.
+	 * NOTE: This is a resource intensive operation, the first {@value #TIKA_MAGIC_LENGTH} bytes are being read and stored in memory.
 	 */
 	public static MimeType computeMimeType(Message message, String filename) {
 		if(Message.isEmpty(message)) {
@@ -237,8 +274,8 @@ public abstract class MessageUtils {
 
 		try {
 			Metadata metadata = new Metadata();
-			metadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, name);
-			byte[] magic = message.getMagic(TIKA_MAGIC_LENGHT);
+			metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, name);
+			byte[] magic = message.getMagic(TIKA_MAGIC_LENGTH);
 			if(magic.length == 0) {
 				return null;
 			}
@@ -264,6 +301,7 @@ public abstract class MessageUtils {
 	/**
 	 * Resource intensive operation, preserves the message and calculates an MD5 hash over the entire message.
 	 */
+	@SuppressWarnings("java:S4790") // MD5 usage is allowed for checksums
 	public static String generateMD5Hash(Message message) {
 		try {
 			if(!message.isRepeatable()) {
@@ -328,6 +366,30 @@ public abstract class MessageUtils {
 		} catch (IOException e) {
 			LOG.warn("unable to read Message", e);
 			return Message.MESSAGE_SIZE_UNKNOWN;
+		}
+	}
+
+	/**
+	 * Convert an object to a string. Does not close object when it is of type Message or MessageWrapper.
+	 */
+	@Deprecated
+	public static String asString(Object object) throws IOException {
+		if (object == null) {
+			return null;
+		}
+		if (object instanceof String string) {
+			return string;
+		}
+		if (object instanceof Message message) {
+			message.assertNotClosed();
+			return message.asString();
+		}
+		if (object instanceof MessageWrapper wrapper) {
+			return wrapper.getMessage().asString();
+		}
+		// In other cases, message can be closed directly after converting to String.
+		try (Message message = Message.asMessage(object)) {
+			return message.asString();
 		}
 	}
 }

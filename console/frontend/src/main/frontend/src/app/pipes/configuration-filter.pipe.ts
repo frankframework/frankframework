@@ -12,8 +12,7 @@ export function ConfigurationFilter(
     const adapter = adapters[adapterName];
 
     if (
-      (adapter.configuration == selectedConfiguration ||
-        selectedConfiguration == 'All') &&
+      (adapter.configuration == selectedConfiguration || selectedConfiguration == 'All') &&
       (filter == undefined || filter[adapter.status!])
     )
       filteredAdapters[adapterName] = adapter;

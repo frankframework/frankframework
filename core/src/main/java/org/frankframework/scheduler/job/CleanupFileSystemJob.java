@@ -18,10 +18,17 @@ package org.frankframework.scheduler.job;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.frankframework.scheduler.JobDef;
+import org.frankframework.scheduler.AbstractJobDef;
 import org.frankframework.util.DirectoryCleaner;
 
-public class CleanupFileSystemJob extends JobDef {
+/**
+ * Frank!Framework job to empty files in a given directory that have been
+ * stale (untouched) for the given {@code retention} duration.
+ * See {@link DirectoryCleaner} for more info.
+ * 
+ * {@inheritDoc}
+ */
+public class CleanupFileSystemJob extends AbstractJobDef {
 
 	private final List<DirectoryCleaner> directoryCleaners = new ArrayList<>();
 

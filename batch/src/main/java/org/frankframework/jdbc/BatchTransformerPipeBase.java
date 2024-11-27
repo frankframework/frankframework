@@ -23,7 +23,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import org.frankframework.batch.StreamTransformerPipe;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
@@ -31,8 +30,8 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.ReferTo;
-
-import org.frankframework.parameters.Parameter;
+import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
 
@@ -60,8 +59,8 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	@Override
 	public void start() throws PipeStartException {
 		try {
-			querySender.open();
-		} catch (SenderException e) {
+			querySender.start();
+		} catch (LifecycleException e) {
 			throw new PipeStartException(e);
 		}
 		super.start();
@@ -70,7 +69,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	@Override
 	public void stop() {
 		super.stop();
-		querySender.close();
+		querySender.stop();
 	}
 
 	public static class ResultSetReader extends BufferedReader {
@@ -118,7 +117,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	}
 
 	@Override
-	public void addParameter(Parameter p) {
+	public void addParameter(IParameter p) {
 		querySender.addParameter(p);
 	}
 

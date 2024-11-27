@@ -60,7 +60,7 @@ public class FullXmlFilter extends XMLFilterImpl implements LexicalHandler {
 		try {
 			parent.setProperty("http://xml.org/sax/properties/lexical-handler", this);
 		} catch (SAXNotRecognizedException | SAXNotSupportedException e) {
-			log.warn("cannot set LexicalHandler to parent ["+parent+"]");
+			log.warn("cannot set LexicalHandler to parent [{}]", parent);
 		}
 	}
 

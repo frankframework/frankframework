@@ -7,13 +7,6 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.frankframework.configuration.Configuration;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.testutil.QuerySenderPostProcessor;
-import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.testutil.mock.FixedQuerySenderMock;
-import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
-import org.frankframework.util.LogUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -21,6 +14,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
+
+import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.testutil.QuerySenderPostProcessor;
+import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
+import org.frankframework.util.LogUtil;
 
 public class BusTestBase {
 
@@ -83,7 +83,7 @@ public class BusTestBase {
 
 	/**
 	 * Add the ability to mock FixedQuerySender ResultSets. Enter the initial query and a mocked
-	 * ResultSet using a {@link FixedQuerySenderMock.ResultSetBuilder ResultSetBuilder}.
+	 * ResultSet using a {@link org.frankframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder ResultSetBuilder}.
 	 */
 	public void mockFixedQuerySenderResult(String query, ResultSet resultSet) {
 		qsPostProcessor.addFixedQuerySenderMock(query, resultSet);
@@ -134,8 +134,9 @@ public class BusTestBase {
 			this.payload = payload;
 		}
 
-		public <T> T getHeader(String key, Class<T> clazz) {
-			return (T) headers.get(key);
+		@SuppressWarnings("unchecked")
+		public <C> C getHeader(String key, Class<C> clazz) {
+			return (C) headers.get(key);
 		}
 
 		public void setHeader(String headerName, Object headerValue) {

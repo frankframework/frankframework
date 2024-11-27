@@ -5,16 +5,16 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.sql.ResultSet;
 
+import org.springframework.beans.BeansException;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.lifecycle.MessageEventListener;
-import org.frankframework.testutil.mock.FixedQuerySenderMock;
 import org.frankframework.testutil.mock.MockIbisManager;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.SpringUtils;
-import org.springframework.beans.BeansException;
 
 /**
  * Test Configuration utility
@@ -74,18 +74,13 @@ public class TestConfiguration extends Configuration {
 		}
 	}
 
-	@Override
-	protected void runMigrator() {
-		//Suppress migrator instantiation during test phase
-	}
-
 	public String getConfigWarning(int index) {
 		return getConfigurationWarnings().getWarnings().get(index);
 	}
 
 	/**
 	 * Add the ability to mock FixedQuerySender ResultSets. Enter the initial query and a mocked
-	 * ResultSet using a {@link FixedQuerySenderMock.ResultSetBuilder ResultSetBuilder}.
+	 * ResultSet using a {@link org.frankframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder ResultSetBuilder}.
 	 */
 	public void mockQuery(String query, ResultSet resultSet) {
 		qsPostProcessor.addFixedQuerySenderMock(query, resultSet);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,14 +15,11 @@
 */
 package org.frankframework.senders;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-
-import com.sun.mail.smtp.SMTPMessage;
 
 import jakarta.activation.DataHandler;
 import jakarta.mail.BodyPart;
@@ -36,51 +33,54 @@ import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.util.ByteArrayDataSource;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.angus.mail.smtp.SMTPMessage;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ISender;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.Category;
-import org.frankframework.util.Misc;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  * {@link ISender sender} that sends a mail specified by an XML message.
  * <p>
  * Sample email.xml:
- * <code><pre>
- *    &lt;email&gt;
- *       &lt;recipients&gt;
- *          &lt;recipient type="to"&gt;***@hotmail.com&lt;/recipient&gt;
- *          &lt;recipient type="cc"&gt;***@gmail.com&lt;/recipient&gt;
- *       &lt;/recipients&gt;
- *       &lt;from name="*** ***"&gt;***@yahoo.com&lt;/from&gt;
- *       &lt;subject&gt;This is the subject&lt;/subject&gt;
- *       &lt;threadTopic&gt;subject&lt;/threadTopic&gt;
- *       &lt;message&gt;This is the message&lt;/message&gt;
- *       &lt;messageType&gt;text/plain&lt;/messageType&gt;&lt;!-- Optional --&gt;
- *       &lt;messageBase64&gt;false&lt;/messageBase64&gt;&lt;!-- Optional --&gt;
- *       &lt;charset&gt;UTF-8&lt;/charset&gt;&lt;!-- Optional --&gt;
- *       &lt;attachments&gt;
- *          &lt;attachment name="filename1.txt"&gt;This is the first attachment&lt;/attachment&gt;
- *          &lt;attachment name="filename2.pdf" base64="true"&gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&lt;/attachment&gt;
- *          &lt;attachment name="filename3.pdf" url="file:/c:/filename3.pdf"/&gt;
- *          &lt;attachment name="filename4.pdf" sessionKey="fileContent"/&gt;
- *       &lt;/attachments&gt;&lt;!-- Optional --&gt;
- *   &lt;/email&gt;
- * </pre></code>
+ * <pre>{@code
+ * <email>
+ *     <recipients>
+ *         <recipient type="to">***@hotmail.com</recipient>
+ *         <recipient type="cc">***@gmail.com</recipient>
+ *     </recipients>
+ *     <from name="*** ***">***@yahoo.com</from>
+ *     <subject>This is the subject</subject>
+ *     <threadTopic>subject</threadTopic>
+ *     <message>This is the message</message>
+ *     <messageType>text/plain</messageType><!-- Optional -->
+ *     <messageBase64>false</messageBase64><!-- Optional -->
+ *     <charset>UTF-8</charset><!-- Optional -->
+ *     <attachments>
+ *         <attachment name="filename1.txt">This is the first attachment</attachment>
+ *         <attachment name="filename2.pdf" base64="true">JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==</attachment>
+ *         <attachment name="filename3.pdf" url="file:/c:/filename3.pdf"/>
+ *         <attachment name="filename4.pdf" sessionKey="fileContent"/>
+ *     </attachments><!-- Optional -->
+ * </email>
+ * }</pre>
  * </p><p>
  * Notice: the XML message must be valid XML. Therefore, especially the message element
  * must be plain text or be wrapped as CDATA. Example:
- * <code><pre>
- *    &lt;message&gt;&lt;![CDATA[&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;]]&gt;&lt;/message&gt;
- * </pre></code>
+ * <pre>{@code
+ * <message><![CDATA[<h1>This is a HtmlMessage</h1>]]></message>
+ * }</pre>
  * </p><p>
  * The <code>sessionKey</code> attribute for attachment can contain an inputstream or a string. Other types are not supported at this moment.
  * </p><p>
@@ -101,8 +101,8 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  */
 
-@Category("Advanced")
-public class MailSender extends MailSenderBase implements HasPhysicalDestination {
+@Category(Category.Type.ADVANCED)
+public class MailSender extends AbstractMailSender implements HasPhysicalDestination {
 
 	private @Getter String smtpHost;
 	private @Getter int smtpPort=25;
@@ -147,14 +147,14 @@ public class MailSender extends MailSenderBase implements HasPhysicalDestination
 	 * Create a session to validate connectivity
 	 */
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 		createSession(); //Test connection to SMTP host
 	}
 
 	/**
 	 * Create the session during runtime
 	 */
-	protected Session createSession() throws SenderException {
+	protected Session createSession() {
 		try {
 			if(session == null) {
 				session = Session.getInstance(properties, null);
@@ -162,17 +162,16 @@ public class MailSender extends MailSenderBase implements HasPhysicalDestination
 			}
 
 			return session;
-		}
-		catch (Exception e) {
-			throw new SenderException("MailSender got error", e);
+		} catch (Exception e) {
+			throw new LifecycleException("MailSender got error", e);
 		}
 	}
 
 	@Override
-	public String sendEmail(MailSessionBase mailSession) throws SenderException {
+	public void sendEmail(MailSessionBase mailSession) throws SenderException {
 		Session session = createSession();
 		log.debug("sending mail using session [{}]", session);
-		return sendEmail(session, (MailSession)mailSession);
+		sendEmail(session, (MailSession)mailSession);
 	}
 
 	@Override
@@ -219,7 +218,7 @@ public class MailSender extends MailSenderBase implements HasPhysicalDestination
 		}
 	}
 
-	private String sendEmail(Session session, MailSession mailSession) throws SenderException {
+	private void sendEmail(Session session, MailSession mailSession) throws SenderException {
 		StringBuilder builder = new StringBuilder();
 
 		if (log.isDebugEnabled()) {
@@ -241,17 +240,8 @@ public class MailSender extends MailSenderBase implements HasPhysicalDestination
 		// Only send if some recipients remained after whitelisting
 		if (mailSession.hasWhitelistedRecipients()) {
 			putOnTransport(session, msg);
-		} else if (log.isDebugEnabled()) {
-			log.debug("No recipients left after whitelisting, mail is not send");
-		}
-
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		try {
-			msg.writeTo(out);
-			byte[] byteArray = out.toByteArray();
-			return Misc.byteArrayToString(byteArray, "\n", false);
-		} catch (Exception e) {
-			throw new SenderException("Error occurred while sending email", e);
+		} else {
+			log.debug("no recipients left after whitelisting, mail is not send");
 		}
 	}
 
@@ -287,7 +277,9 @@ public class MailSender extends MailSenderBase implements HasPhysicalDestination
 			}
 		}
 
+		//Even though this is called EnvelopeFrom/mail.smtp.from, it actually adds the Return-Path header and does not overwrite the MAIL FROM header
 		if (StringUtils.isNotEmpty(mailSession.getBounceAddress())) {
+			//TODO: use session.setProperty("mail.smtp.from", mailSession.getBounceAddress()); here, or do not globally share the session...
 			msg.setEnvelopeFrom(mailSession.getBounceAddress());
 		}
 

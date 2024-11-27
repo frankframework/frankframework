@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- example file for kubernetes deployments -->
+
+<hazelcast xmlns="http://www.hazelcast.com/schema/config" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<network>
+		<join>
+			<!-- when this is enabled, Hazelcast will automatically try and enable different connection methods such as multicast, k8s, aws or azure. -->
+			<auto-detection enabled="false"/>
+
+			<kubernetes enabled="true" service-dns="SERVICE-NAME.NAMESPACE.svc.cluster.local" service-port="5701">
+				<namespace>default</namespace>
+			</kubernetes>
+		</join>
+	</network>
+
+	<partition-group enabled="true" group-type="ZONE_AWARE" />
+
+</hazelcast>

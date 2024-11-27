@@ -35,5 +35,5 @@ public interface IMonitorDestination extends INamedObject {
 
 	void fireEvent(String monitorName, EventType eventType, Severity severity, String eventCode, MonitorEvent message);
 
-	public XmlBuilder toXml();
+	XmlBuilder toXml();
 }

@@ -28,7 +28,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.http.rest.ApiCacheManager;
 import org.frankframework.http.rest.ApiEhcache;
 import org.frankframework.http.rest.IApiCache;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
@@ -51,7 +51,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 
 //	hash over data genereren, uit cache lezen en teruggeven, in cache updaten, verwijderen uit cache, cache naar disk wegschrijven, cache legen
 	public enum EtagAction {
-		GENERATE, GET, SET, DELETE, FLUSH, CLEAR;
+		GENERATE, GET, SET, DELETE, FLUSH, CLEAR
 	}
 
 	@Override
@@ -65,7 +65,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		boolean hasUriPatternParameter = false;
 		ParameterList parameterList = getParameterList();
 		for (int i=0; i<parameterList.size(); i++) {
-			Parameter parameter = parameterList.getParameter(i);
+			IParameter parameter = parameterList.getParameter(i);
 			if("uriPattern".equalsIgnoreCase(parameter.getName()))
 				hasUriPatternParameter = true;
 		}

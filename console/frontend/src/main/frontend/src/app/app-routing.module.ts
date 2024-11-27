@@ -17,9 +17,9 @@ import { InlinestoreComponent } from './views/inlinestore/inlinestore.component'
 import { IbisstoreSummaryComponent } from './views/ibisstore-summary/ibisstore-summary.component';
 import { LiquibaseComponent } from './views/liquibase/liquibase.component';
 import { IframeCustomViewComponent } from './views/iframe/iframe-custom-view/iframe-custom-view.component';
-import { IframeLadybugComponent } from './views/iframe/iframe-ladybug/iframe-ladybug.component';
+import { IframeLadybugLegacyComponent } from './views/iframe/iframe-ladybug-legacy/iframe-ladybug-legacy.component';
 import { IframeLarvaComponent } from './views/iframe/iframe-larva/iframe-larva.component';
-import { IframeLadybugBetaComponent } from './views/iframe/iframe-ladybug-beta/iframe-ladybug-beta.component';
+import { IframeLadybugComponent } from './views/iframe/iframe-ladybug/iframe-ladybug.component';
 import { MonitorsComponent } from './views/monitors/monitors.component';
 import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
 import { SchedulerComponent } from './views/scheduler/scheduler.component';
@@ -39,8 +39,16 @@ import { ConnectionsComponent } from './views/connections/connections.component'
 import { TestPipelineComponent } from './views/test-pipeline/test-pipeline.component';
 import { TestServiceListenerComponent } from './views/test-service-listener/test-service-listener.component';
 import { LoginComponent } from './views/login/login.component';
+import { WebsocketTestComponent } from './views/websocket-test/websocket-test.component';
+import { LoggingAddComponent } from './views/logging/logging-add/logging-add.component';
+import { MonitorsNewComponent } from './views/monitors/monitors-new/monitors-new.component';
 
 export const routes: Routes = [
+  {
+    path: 'websocket-test',
+    component: WebsocketTestComponent,
+    title: 'Websocket Test',
+  },
   {
     path: 'login',
     component: LoginComponent,
@@ -131,6 +139,14 @@ export const routes: Routes = [
     title: 'Logging',
     data: {
       breadcrumbs: 'Logging > Log Settings',
+    },
+  },
+  {
+    path: 'logging/settings/add',
+    component: LoggingAddComponent,
+    title: 'Logging',
+    data: {
+      breadcrumbs: 'Logging > Log Settings > Add Logger',
     },
   },
   {
@@ -248,6 +264,7 @@ export const routes: Routes = [
   {
     path: 'security-items',
     component: SecurityItemsComponent,
+    title: 'Security Items',
     data: {
       pageTitle: 'Security Items',
       breadcrumbs: 'Security Items',
@@ -278,6 +295,14 @@ export const routes: Routes = [
     },
   },
   {
+    path: 'monitors/:monitor/triggers/new',
+    component: MonitorsAddEditComponent,
+    title: 'Add Trigger',
+    data: {
+      breadcrumbs: 'Monitors > Triggers > Add',
+    },
+  },
+  {
     path: 'monitors/:monitor/triggers/:trigger',
     component: MonitorsAddEditComponent,
     title: 'Edit Trigger',
@@ -286,11 +311,11 @@ export const routes: Routes = [
     },
   },
   {
-    path: 'monitors/:monitor/triggers/new',
-    component: MonitorsAddEditComponent,
-    title: 'Add Trigger',
+    path: 'monitors/new',
+    component: MonitorsNewComponent,
+    title: 'New Monitor',
     data: {
-      breadcrumbs: 'Monitors > Triggers > Add',
+      breadcrumbs: 'Monitors > New',
     },
   },
   {
@@ -328,6 +353,15 @@ export const routes: Routes = [
     },
   },
   {
+    path: 'testing/ladybug-legacy',
+    component: IframeLadybugLegacyComponent,
+    title: 'Ladybug (legacy)',
+    data: {
+      breadcrumbs: 'Testing > Ladybug (legacy)',
+      iframe: true,
+    },
+  },
+  {
     path: 'testing/ladybug',
     component: IframeLadybugComponent,
     title: 'Ladybug',
@@ -337,25 +371,11 @@ export const routes: Routes = [
     },
   },
   {
-    path: 'testing/ladybug-beta',
-    component: IframeLadybugBetaComponent,
-    title: 'Ladybug (beta)',
-    data: {
-      breadcrumbs: 'Testing > Ladybug (beta)',
-      iframe: true,
-    },
-  },
-  /* {
-    path: 'empty_page',
-    templateUrl: "js/app/views/empty/empty_page.html",
-    title: 'Empty Page'
-  }, */
-  {
     path: 'iaf-update',
     component: IafUpdateComponent,
-    title: 'FF Update',
+    title: 'FF! update',
     data: {
-      breadcrumbs: 'FF Update',
+      breadcrumbs: 'FF! update',
     },
   },
   {
@@ -376,7 +396,7 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'status',
+    redirectTo: '',
     data: {
       breadcrumbs: 'Loading',
     },
@@ -387,7 +407,7 @@ export const routes: Routes = [
   imports: [
     RouterModule.forRoot(routes, {
       useHash: true,
-      enableTracing: true,
+      enableTracing: false,
       paramsInheritanceStrategy: 'always',
     }),
   ],

@@ -1,26 +1,28 @@
 package org.frankframework.testutil.mock;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp2.PoolableConnectionFactory;
-import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.tomcat.dbcp.dbcp2.PoolableConnection;
+import org.apache.tomcat.dbcp.dbcp2.PoolableConnectionFactory;
+import org.apache.tomcat.dbcp.pool2.impl.GenericObjectPool;
+import org.mockito.Mockito;
+
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.jdbc.datasource.OpenPoolingDataSource;
 import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
-import org.mockito.Mockito;
 
 public class DataSourceFactoryMock implements IDataSourceFactory {
-	private final Map<String, DataSource> objects = new ConcurrentHashMap<>();
+	private final Map<String, DataSource> objects = new HashMap<>();
 
 	public DataSourceFactoryMock() {
 		// Create a pooled datasource for the TestSecurityItems test, and wrap it in a delegating datasource to test it's recursive-ness.
-		DataSource ds = new OpenPoolingDataSource(new GenericObjectPool(Mockito.mock(PoolableConnectionFactory.class)));
+		DataSource ds = new OpenPoolingDataSource<PoolableConnection>(new GenericObjectPool<>(Mockito.mock(PoolableConnectionFactory.class)));
 		objects.put(IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME, new TransactionalDbmsSupportAwareDataSourceProxy(ds));
 	}
 

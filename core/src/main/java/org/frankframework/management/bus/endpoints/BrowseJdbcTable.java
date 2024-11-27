@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,24 +18,36 @@ package org.frankframework.management.bus.endpoints;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.JDBCType;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import javax.annotation.security.RolesAllowed;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+
+import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.messaging.Message;
+import org.xml.sax.SAXException;
+
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.dbms.JdbcException;
+import org.frankframework.jdbc.AbstractJdbcQuerySender;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
-import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.jdbc.transformer.QueryOutputToListOfMaps;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -46,11 +58,8 @@ import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
-import org.frankframework.util.DB2XMLWriter;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
-import org.springframework.messaging.Message;
-import org.xml.sax.SAXException;
 
 @BusAware("frank-management-bus")
 public class BrowseJdbcTable extends BusEndpointBase {
@@ -62,6 +71,19 @@ public class BrowseJdbcTable extends BusEndpointBase {
 	private static final String COLUMN_SIZE = "COLUMN_SIZE";
 	private String countColumnName = "ROWCOUNTER";
 	private String rnumColumnName = "RNUM";
+	private Transformer transformer = null;
+
+	@Override
+	protected void doAfterPropertiesSet() {
+		URL url = ClassLoaderUtils.getResourceURL(DB2XML_XSLT);
+		if (url != null) { //Should never be null but...
+			try {
+				transformer = XmlUtils.createTransformer(url, 2);
+			} catch (TransformerConfigurationException | IOException e) {
+				log.error("unable to create Transformer", e);
+			}
+		}
+	}
 
 	@TopicSelector(BusTopic.JDBC)
 	@ActionSelector(BusAction.FIND)
@@ -85,67 +107,44 @@ public class BrowseJdbcTable extends BusEndpointBase {
 			throw new BusException("Difference between Rownum max and Rownum min must be less than hundred");
 		}
 
+		if (transformer == null) {
+			throw new BusException("unable to create query transformer ["+DB2XML_XSLT+"]");
+		}
+
 		return doAction(datasource, tableName, where, order, numberOfRowsOnly, minRow, maxRow);
 	}
 
 	private Message<String> doAction(String datasource, String table, String where, String order, boolean numberOfRowsOnly, int minRow, int maxRow) {
-		Map<String, Object> fieldDef = new LinkedHashMap<>();
-		String result = "";
-		String query = null;
+		final List<RowDefinition> rowDefinitions;
+		final org.frankframework.stream.Message result;
+		final String query;
 
-		DirectQuerySender qs = createBean(DirectQuerySender.class);
+		DirectQuerySender qs = createQuerySender(datasource);
 
 		try {
-			qs.setName("BrowseTable QuerySender");
-			qs.setDatasourceName(datasource);
-
-			qs.setQueryType(JdbcQuerySenderBase.QueryType.SELECT);
-			qs.setSqlDialect("Oracle");
-			qs.setBlobSmartGet(true);
-			qs.setIncludeFieldDefinition(true);
-			qs.configure(true);
-			qs.open();
-
+			rowDefinitions = getFieldDefinitions(qs, numberOfRowsOnly, table, order);
 			StringBuilder fielddefinition = new StringBuilder("<fielddefinition>");
-			String firstColumnName = numberOfRowsOnly ? countColumnName : rnumColumnName;
-			String field = "<field name=\""+firstColumnName+"\" type=\"INTEGER\" />";
-			fielddefinition.append(field);
-			fieldDef.put(firstColumnName, "INTEGER");
-			IDbmsSupport dbmsSupport = qs.getDbmsSupport();
-			if(!numberOfRowsOnly || StringUtils.isNotEmpty(order)) {
-				try (Connection conn =qs.getConnection()) {
-					try (ResultSet rs = numberOfRowsOnly ? dbmsSupport.getTableColumns(conn, null, table, order) : dbmsSupport.getTableColumns(conn, table)) {
-						while(rs != null && rs.next()) {
-							field = "<field name=\"" + rs.getString(COLUMN_NAME).toUpperCase() + "\" type=\"" + DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "\" size=\"" + rs.getInt(COLUMN_SIZE) + "\"/>";
-							fielddefinition.append(field);
-							fieldDef.put(rs.getString(COLUMN_NAME).toUpperCase(), DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "("+rs.getInt(COLUMN_SIZE)+")");
-						}
-					}
-				}
-			}
+			rowDefinitions.stream().map(RowDefinition::xmlValue).forEach(fielddefinition::append);
 			fielddefinition.append("</fielddefinition>");
 
-			String browseJdbcTableExecuteREQ = browseJdbcTableExecuteREQ(dbmsSupport.getDbms(), table, where, order, numberOfRowsOnly, minRow, maxRow, fielddefinition.toString());
-			URL url = ClassLoaderUtils.getResourceURL(DB2XML_XSLT);
-			if (url != null) {
-				Transformer t = XmlUtils.createTransformer(url);
-				query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
-			}
+			String browseJdbcTableExecuteREQ = browseJdbcTableExecuteREQ(qs.getDbmsSupport().getDbms(), table, where, order, numberOfRowsOnly, minRow, maxRow, fielddefinition.toString());
+			query = XmlUtils.transformXml(transformer, browseJdbcTableExecuteREQ);
 			try(PipeLineSession session = new PipeLineSession()) {
-				try (org.frankframework.stream.Message message = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query), session)) {
-					result = message.asString();
-				}
+				result = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query), session);
+				result.unscheduleFromCloseOnExitOf(session);
+			} catch (Exception t) {
+				throw new BusException("an error occurred on executing jdbc query ["+query+"]", t);
 			}
 		} catch (Exception t) {
-			throw new BusException("an error occurred on executing jdbc query ["+query+"]", t);
+			throw new BusException("an error occurred while determining query to execute", t);
 		} finally {
-			qs.close();
+			qs.stop();
 		}
 
 		List<Map<String, String>> resultMap = null;
-		if(XmlUtils.isWellFormed(result)) {
+		if(XmlUtils.isWellFormed(result, null)) {
 			try {
-				resultMap = new QueryOutputToListOfMaps().parseString(result);
+				resultMap = new QueryOutputToListOfMaps().parseMessage(result);
 			} catch (IOException | SAXException e) {
 				throw new BusException("query result could not be parsed", e);
 			}
@@ -157,10 +156,61 @@ public class BrowseJdbcTable extends BusEndpointBase {
 		Map<String, Object> resultObject = new HashMap<>();
 		resultObject.put("table", table);
 		resultObject.put("query", XmlEncodingUtils.encodeChars(query));
-		resultObject.put("fielddefinition", fieldDef);
+		Map<String, String> fDef = rowDefinitions.stream() //confusing collector but this maintains insert order.
+				.collect(Collectors.toMap(RowDefinition::name, RowDefinition::jsonValue, (t, u) -> t, LinkedHashMap::new));
+		resultObject.put("fielddefinition", fDef);
 		resultObject.put("result", resultMap);
 
 		return new JsonMessage(resultObject);
+	}
+
+	private List<RowDefinition> getFieldDefinitions(DirectQuerySender qs, boolean numberOfRowsOnly, String table, String order) throws SQLException, JdbcException {
+		List<RowDefinition> rowDefinitions = new ArrayList<>();
+		rowDefinitions.add(new RowDefinition(numberOfRowsOnly ? countColumnName : rnumColumnName, JDBCType.INTEGER, 0));
+
+		IDbmsSupport dbmsSupport = qs.getDbmsSupport();
+		if(!numberOfRowsOnly || StringUtils.isNotEmpty(order)) {
+			try (Connection conn = qs.getConnection();
+					ResultSet rs = numberOfRowsOnly ? dbmsSupport.getTableColumns(conn, null, table, order) : dbmsSupport.getTableColumns(conn, table)) {
+				while(rs != null && rs.next()) {
+					rowDefinitions.add(new RowDefinition(rs.getString(COLUMN_NAME), rs.getInt(DATA_TYPE), rs.getInt(COLUMN_SIZE)));
+				}
+			}
+		}
+		return rowDefinitions;
+	}
+
+	private record RowDefinition(String name, JDBCType type, int size) {
+
+		private RowDefinition(String name, int type, int size) {
+			this(name.toUpperCase(), JDBCType.valueOf(type), size);
+		}
+
+		public String jsonValue() {
+			return String.format("%s(%d)", type.getName(), size);
+		}
+
+		public String xmlValue() {
+			return String.format("<field name=\"%s\" type=\"%s\" size=\"%d\" />", name, type.getName(), size);
+		}
+	}
+
+	private DirectQuerySender createQuerySender(String datasource) {
+		DirectQuerySender qs = createBean(DirectQuerySender.class);
+		try {
+			qs.setName("BrowseTable QuerySender");
+			qs.setDatasourceName(datasource);
+
+			qs.setQueryType(AbstractJdbcQuerySender.QueryType.SELECT);
+			qs.setSqlDialect("Oracle");
+			qs.setBlobSmartGet(true);
+			qs.setIncludeFieldDefinition(true);
+			qs.configure(true);
+			qs.start();
+			return qs;
+		} catch (ConfigurationException | LifecycleException e) {
+			throw new BusException("unable to create QuerySender", e);
+		}
 	}
 
 	private String browseJdbcTableExecuteREQ(Dbms dbms, String table, String where, String order, boolean numberOfRowsOnly, int minRow, int maxRow, String fieldDefinition) {

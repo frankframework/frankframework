@@ -1,0 +1,223 @@
+<context name="dc=frankframework,dc=org">
+	<context name="ou=development">
+		<context name="ou=groups">
+			<context name="cn=Application Developer">
+				<attributes>
+					<attribute name="memberUid">
+						<item value="testdeveloper"/>
+						<item value="developer"/>
+						<item value="slcdeveloper"/>
+						<item value="developer-email@frankframework.org"/>
+						<item value="devldapuser@frankframework.org"/>
+						<item value="sandboxdeveloper"/>
+						<item value="admintest-developer@frankframework.org"/>
+					</attribute>
+					<attribute name="entryUUID" value="5d900131-e33c-45b2-a57e-30791f757313"/>
+					<attribute name="gidNumber" value="506"/>
+					<attribute name="department" value="Java Developers"/>
+					<attribute name="entryDN" value="cn=application developer,ou=groups,ou=development,dc=frankframework,dc=org"/>
+					<attribute name="objectClass">
+						<item value="posixGroup"/>
+						<item value="top"/>
+					</attribute>
+					<attribute name="changetype" value="add"/>
+					<attribute name="modifyTimestamp" value="20241016082654.720Z"/>
+					<attribute name="modifiersName" value=""/>
+					<attribute name="createTimestamp" value="20241016082654.703Z"/>
+					<attribute name="creatorsName" value="cn=Internal Root User"/>
+					<attribute name="cn" value="Application Developer"/>
+					<attribute name="subschemaSubentry" value="cn=schema"/>
+				</attributes>
+			</context>
+			<context name="cn=LEA Administrator">
+				<attributes>
+					<attribute name="memberUid">
+						<item value="sunsetadmin"/>
+						<item value="daybreakadmin"/>
+						<item value="daybreaknorealmadmin"/>
+						<item value="mreynolds"/>
+					</attribute>
+					<attribute name="entryUUID" value="5e5a6d17-444b-4675-9066-edf717671fb6"/>
+					<attribute name="gidNumber" value="505"/>
+					<attribute name="mail" value="leaadministrator@frankframework.org"/>
+					<attribute name="entryDN" value="cn=lea administrator,ou=groups,ou=development,dc=frankframework,dc=org"/>
+					<attribute name="objectClass">
+						<item value="posixGroup"/>
+						<item value="top"/>
+					</attribute>
+					<attribute name="changetype" value="add"/>
+					<attribute name="modifyTimestamp" value="20241016082654.703Z"/>
+					<attribute name="modifiersName" value="cn=Internal Root User"/>
+					<attribute name="createTimestamp" value="20241016082654.703Z"/>
+					<attribute name="creatorsName" value="cn=Internal Root User"/>
+					<attribute name="cn" value="LEA Administrator"/>
+					<attribute name="subschemaSubentry" value="cn=schema"/>
+				</attributes>
+			</context>
+			<context name="cn=Realm Administrator">
+				<attributes>
+					<attribute name="memberUid">
+						<item value="fakerealmadmin"/>
+						<item value="sunsetadmin"/>
+						<item value="nyadmin"/>
+						<item value="sunsetrealmadmin"/>
+						<item value="daybreakadmin"/>
+						<item value="mreynoldsGRFCuEDNjZSMfahLDbIlZuxYqdbnbFzOd"/>
+					</attribute>
+					<attribute name="entryUUID" value="f53bb83d-08ae-4e3b-9c09-fe5a3f2a4b19"/>
+					<attribute name="gidNumber" value="509"/>
+					<attribute name="entryDN" value="cn=realm administrator,ou=groups,ou=development,dc=frankframework,dc=org"/>
+					<attribute name="objectClass">
+						<item value="posixGroup"/>
+						<item value="top"/>
+					</attribute>
+					<attribute name="changetype" value="add"/>
+					<attribute name="modifyTimestamp" value="20241016082654.703Z"/>
+					<attribute name="modifiersName" value="cn=Internal Root User"/>
+					<attribute name="createTimestamp" value="20241016082654.703Z"/>
+					<attribute name="creatorsName" value="cn=Internal Root User"/>
+					<attribute name="cn" value="Realm Administrator"/>
+					<attribute name="subschemaSubentry" value="cn=schema"/>
+				</attributes>
+			</context>
+			<context name="cn=SEA Administrator">
+				<attributes>
+					<attribute name="memberUid">
+						<item value="nyadmin"/>
+						<item value="iladmin"/>
+						<item value="mreynolds"/>
+					</attribute>
+					<attribute name="entryUUID" value="8afdbf59-7e8c-409c-812d-7e99a6609b9d"/>
+					<attribute name="gidNumber" value="508"/>
+					<attribute name="entryDN" value="cn=sea administrator,ou=groups,ou=development,dc=frankframework,dc=org"/>
+					<attribute name="objectClass">
+						<item value="posixGroup"/>
+						<item value="top"/>
+					</attribute>
+					<attribute name="changetype" value="add"/>
+					<attribute name="modifyTimestamp" value="20241016082654.703Z"/>
+					<attribute name="modifiersName" value="cn=Internal Root User"/>
+					<attribute name="createTimestamp" value="20241016082654.703Z"/>
+					<attribute name="creatorsName" value="cn=Internal Root User"/>
+					<attribute name="cn" value="SEA Administrator"/>
+					<attribute name="subschemaSubentry" value="cn=schema"/>
+				</attributes>
+			</context>
+			<attributes>
+				<attribute name="ou" value="groups"/>
+				<attribute name="entryUUID" value="3918ebda-683e-4660-a018-b3a17605e47b"/>
+				<attribute name="entryDN" value="ou=groups,ou=development,dc=frankframework,dc=org"/>
+				<attribute name="objectClass">
+					<item value="organizationalUnit"/>
+					<item value="top"/>
+				</attribute>
+				<attribute name="changetype" value="add"/>
+				<attribute name="modifyTimestamp" value="20241016082654.703Z"/>
+				<attribute name="modifiersName" value="cn=Internal Root User"/>
+				<attribute name="creatorsName" value="cn=Internal Root User"/>
+				<attribute name="createTimestamp" value="20241016082654.703Z"/>
+				<attribute name="subschemaSubentry" value="cn=schema"/>
+			</attributes>
+		</context>
+		<context name="ou=people">
+			<context name="cn=Daybreak Admin">
+				<attributes>
+					<attribute name="displayName" value="0bd6b800ec046191473a61b9b9584c48"/>
+					<attribute name="givenName" value="Daybreak"/>
+					<attribute name="entryDN" value="cn=daybreak admin,ou=people,ou=development,dc=frankframework,dc=org"/>
+					<attribute name="modifyTimestamp" value="20241016082654.704Z"/>
+					<attribute name="objectClass">
+						<item value="inetOrgPerson"/>
+						<item value="posixAccount"/>
+						<item value="top"/>
+					</attribute>
+					<attribute name="userPassword" value="[B@6b60d99c"/>
+					<attribute name="createTimestamp" value="20241016082654.704Z"/>
+					<attribute name="subschemaSubentry" value="cn=schema"/>
+					<attribute name="uid" value="daybreakadmin"/>
+					<attribute name="mail" value="daybreakadmin@frankframework.org"/>
+					<attribute name="uidNumber" value="1119"/>
+					<attribute name="cn" value="Daybreak Admin"/>
+					<attribute name="changetype" value="add"/>
+					<attribute name="loginShell" value="/bin/sh"/>
+					<attribute name="modifiersName" value="cn=Internal Root User"/>
+					<attribute name="creatorsName" value="cn=Internal Root User"/>
+					<attribute name="gidNumber" value="505"/>
+					<attribute name="description" value="tenant=Midgar edOrg=IL-DAYBREAK"/>
+					<attribute name="homeDirectory" value="/ingestion/lz/Midgar/13e785053e77f7d6b064cdcd43167f70ae8c32ca88c6a3b9b0c8cd52458faa77"/>
+					<attribute name="sn" value="Admin"/>
+					<attribute name="entryUUID" value="66b32745-e301-4415-ad48-7063dcb4b51e"/>
+				</attributes>
+			</context>
+			<context name="cn=SLC Operator">
+				<attributes>
+					<attribute name="displayName" value="2ccd88620d9d3fb3ee8ee839c806fb73"/>
+					<attribute name="givenName" value="SLC"/>
+					<attribute name="entryDN" value="cn=slc operator,ou=people,ou=development,dc=frankframework,dc=org"/>
+					<attribute name="modifyTimestamp" value="20241016082654.704Z"/>
+					<attribute name="objectClass">
+						<item value="inetOrgPerson"/>
+						<item value="posixAccount"/>
+						<item value="top"/>
+					</attribute>
+					<attribute name="userPassword" value="[B@543a7605"/>
+					<attribute name="createTimestamp" value="20241016082654.704Z"/>
+					<attribute name="subschemaSubentry" value="cn=schema"/>
+					<attribute name="uid" value="slcoperator"/>
+					<attribute name="mail" value="slcoperator@frankframework.org"/>
+					<attribute name="uidNumber" value="1118"/>
+					<attribute name="cn" value="SLC Operator"/>
+					<attribute name="changetype" value="add"/>
+					<attribute name="loginShell" value="/bin/sh"/>
+					<attribute name="modifiersName" value="cn=Internal Root User"/>
+					<attribute name="creatorsName" value="cn=Internal Root User"/>
+					<attribute name="gidNumber" value="504"/>
+					<attribute name="homeDirectory" value="/home/users/slcoperator"/>
+					<attribute name="sn" value="Operator"/>
+					<attribute name="entryUUID" value="f7704624-cace-4488-855b-03772099022e"/>
+				</attributes>
+			</context>
+			<attributes>
+				<attribute name="ou" value="people"/>
+				<attribute name="entryUUID" value="dc50a597-5579-4225-881c-9c7493439316"/>
+				<attribute name="entryDN" value="ou=people,ou=development,dc=frankframework,dc=org"/>
+				<attribute name="objectClass">
+					<item value="organizationalUnit"/>
+					<item value="top"/>
+				</attribute>
+				<attribute name="changetype" value="add"/>
+				<attribute name="modifyTimestamp" value="20241016082654.703Z"/>
+				<attribute name="modifiersName" value="cn=Internal Root User"/>
+				<attribute name="creatorsName" value="cn=Internal Root User"/>
+				<attribute name="createTimestamp" value="20241016082654.703Z"/>
+				<attribute name="subschemaSubentry" value="cn=schema"/>
+			</attributes>
+		</context>
+		<attributes>
+			<attribute name="ou" value="development"/>
+			<attribute name="entryUUID" value="762857cc-be77-45a0-b63e-e31ba9ec9717"/>
+			<attribute name="entryDN" value="ou=development,dc=frankframework,dc=org"/>
+			<attribute name="objectClass" value="organizationalUnit"/>
+			<attribute name="changetype" value="add"/>
+			<attribute name="modifyTimestamp" value="20241016082654.702Z"/>
+			<attribute name="modifiersName" value="cn=Internal Root User"/>
+			<attribute name="creatorsName" value="cn=Internal Root User"/>
+			<attribute name="createTimestamp" value="20241016082654.702Z"/>
+			<attribute name="subschemaSubentry" value="cn=schema"/>
+		</attributes>
+	</context>
+	<attributes>
+		<attribute name="entryUUID" value="ac398d29-6459-4c83-998a-0c5ea700c475"/>
+		<attribute name="entryDN" value="dc=frankframework,dc=org"/>
+		<attribute name="objectClass">
+			<item value="top"/>
+			<item value="domain"/>
+		</attribute>
+		<attribute name="modifyTimestamp" value="20241016082654.702Z"/>
+		<attribute name="modifiersName" value="cn=Internal Root User"/>
+		<attribute name="creatorsName" value="cn=Internal Root User"/>
+		<attribute name="createTimestamp" value="20241016082654.702Z"/>
+		<attribute name="subschemaSubentry" value="cn=schema"/>
+		<attribute name="dc" value="frankframework"/>
+	</attributes>
+</context>

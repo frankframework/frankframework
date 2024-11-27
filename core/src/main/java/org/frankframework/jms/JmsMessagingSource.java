@@ -17,9 +17,9 @@ package org.frankframework.jms;
 
 import java.util.Map;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.jms.Session;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.Destination;
+import jakarta.jms.Session;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
@@ -49,14 +49,14 @@ public class JmsMessagingSource extends MessagingSource {
 			try {
 				dest = lookupDestinationInJndi(destinationName);
 			} catch (Exception e) {
-				log.warn("could not lookup destination in jndi, will try to create it ("+e.getClass()+"): "+ e.getMessage());
+				log.warn("could not lookup destination in jndi, will try to create it ({}): {}", e.getClass(), e.getMessage());
 			}
 			if (dest==null) {
-				log.debug(getLogPrefix() + "looking up destination by creating it [" + destinationName + "]");
+				log.debug("{}looking up destination by creating it [{}]", getLogPrefix(), destinationName);
 				if (proxiedDestinationNames != null) {
 					String proxiedDestinationName = proxiedDestinationNames.get(destinationName);
 					if (proxiedDestinationName != null) {
-						log.debug(getLogPrefix() + "replacing destination name with proxied destination name [" + proxiedDestinationName + "]");
+						log.debug("{}replacing destination name with proxied destination name [{}]", getLogPrefix(), proxiedDestinationName);
 						destinationName = proxiedDestinationName;
 					}
 				}
@@ -70,9 +70,9 @@ public class JmsMessagingSource extends MessagingSource {
 
 	private Destination lookupDestinationInJndi(String destinationName) throws NamingException {
 		String prefixedDestinationName = getJndiContextPrefix() + destinationName;
-		log.debug(getLogPrefix() + "looking up destination [" + prefixedDestinationName + "]");
+		log.debug("{}looking up destination [{}]", getLogPrefix(), prefixedDestinationName);
 		if (StringUtils.isNotEmpty(getJndiContextPrefix())) {
-			log.debug(getLogPrefix() + "using JNDI context prefix [" + getJndiContextPrefix() + "]");
+			log.debug("{}using JNDI context prefix [{}]", getLogPrefix(), getJndiContextPrefix());
 		}
 		return (Destination)getContext().lookup(prefixedDestinationName);
 	}

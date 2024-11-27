@@ -43,16 +43,12 @@ import javax.wsdl.xml.WSDLLocator;
 import javax.wsdl.xml.WSDLReader;
 import javax.xml.namespace.QName;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.binding.soap.SoapBindingConstants;
 import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.IScopeProvider;
@@ -70,6 +66,9 @@ import org.frankframework.validation.SchemaUtils;
 import org.frankframework.validation.XmlValidatorException;
 import org.frankframework.validation.xsd.ResourceXsd;
 import org.frankframework.validation.xsd.WsdlXsd;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 /**
  * XmlValidator that will read the XSD's to use from a WSDL. As it extends the
@@ -124,10 +123,9 @@ public class WsdlXmlValidator extends SoapValidator {
 		int counter = 0;
 		int soapBodyFoundCounter = 0;
 		for (Object o : definition.getTypes().getExtensibilityElements()) {
-			if (!(o instanceof Schema)) {
+			if (!(o instanceof Schema schema)) {
 				continue;
 			}
-			Schema schema = (Schema) o;
 			String tns = schema.getElement().getAttribute("targetNamespace");
 			NodeList childNodes = schema.getElement().getChildNodes();
 			boolean soapBodyFound = false;
@@ -400,7 +398,7 @@ public class WsdlXmlValidator extends SoapValidator {
 }
 
 class ClassLoaderWSDLLocator implements WSDLLocator, IScopeProvider {
-	private @Getter ClassLoader configurationClassLoader;
+	private final @Getter ClassLoader configurationClassLoader;
 	private final String wsdl;
 	private final @Getter URL url;
 	private @Getter IOException iOException;
@@ -466,7 +464,7 @@ class ClassLoaderWSDLLocator implements WSDLLocator, IScopeProvider {
 class SchemaLocation implements Comparable<SchemaLocation> {
 	private final String namespace;
 	private final String schema;
-	private String schemaFormatted;
+	private final String schemaFormatted;
 
 	SchemaLocation(String namespace, String schema) {
 		this.namespace = namespace;
@@ -493,9 +491,7 @@ class SchemaLocation implements Comparable<SchemaLocation> {
 	@Override
 	public boolean equals(Object o) {
 		if (o instanceof SchemaLocation other) {
-			if (compareTo(other) == 0) {
-				return true;
-			}
+			return compareTo(other) == 0;
 		}
 		return false;
 	}

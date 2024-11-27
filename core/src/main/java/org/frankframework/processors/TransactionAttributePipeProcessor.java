@@ -15,9 +15,8 @@
 */
 package org.frankframework.processors;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.frankframework.core.HasSender;
 import org.frankframework.core.HasTransactionAttribute;
 import org.frankframework.core.IPipe;
@@ -43,7 +42,7 @@ import lombok.Setter;
 /**
  * @author Jaco de Groot
  */
-public class TransactionAttributePipeProcessor extends PipeProcessorBase {
+public class TransactionAttributePipeProcessor extends AbstractPipeProcessor {
 
 	private @Getter @Setter PlatformTransactionManager txManager;
 

@@ -15,19 +15,18 @@
 */
 package org.frankframework.core;
 
-import javax.annotation.Nonnull;
-
-import org.apache.commons.lang3.StringUtils;
+import jakarta.annotation.Nonnull;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.stream.Message;
 
 /**
  * The SenderResult is a type to store both the result of the processing of a message by a Sender,
  * as well as the exitState.
  */
-public class SenderResult {
+public class SenderResult implements AutoCloseable {
 
 	private @Getter @Setter boolean success;
 	private @Getter @Setter Message result;
@@ -35,7 +34,7 @@ public class SenderResult {
 	private @Getter @Setter String forwardName;
 
 	public SenderResult(String result) {
-		this(Message.asMessage(result));
+		this(new Message(result));
 	}
 
 	public SenderResult(@Nonnull Message result) {
@@ -51,5 +50,12 @@ public class SenderResult {
 		this.forwardName = forwardName;
 		this.result = result;
 		this.errorMessage = errorMessage;
+	}
+
+	@Override
+	public void close() {
+		if (result != null) {
+			result.close();
+		}
 	}
 }

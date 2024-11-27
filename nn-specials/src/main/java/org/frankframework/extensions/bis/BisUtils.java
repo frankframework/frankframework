@@ -23,6 +23,10 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.logging.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
@@ -35,9 +39,6 @@ import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 /**
  * Some utilities for working with BIS.
@@ -147,7 +148,7 @@ public class BisUtils {
 		timestampElement.setValue(DateFormatUtils.now(DateFormatUtils.FULL_ISO_FORMATTER));
 		headerFieldsElement.addSubElement(timestampElement);
 		messageHeaderElement.addSubElement(headerFieldsElement);
-		return messageHeaderElement.toXML();
+		return messageHeaderElement.asXmlString();
 	}
 
 	public String prepareResult(String errorCode, String errorText, String serviceName, String actionName, String detailText) {
@@ -197,7 +198,7 @@ public class BisUtils {
 			errorListElement.addSubElement(errorElement);
 			resultElement.addSubElement(errorListElement);
 		}
-		return resultElement.toXML();
+		return resultElement.asXmlString();
 	}
 	public Message prepareReply(Message rawReply, String messageHeader, String result, boolean resultInPayload) throws DomBuilderException, IOException, TransformerException {
 		List<String> messages = new ArrayList<>();
@@ -208,10 +209,10 @@ public class BisUtils {
 
 		String payload = null;
 		if (result == null) {
-			payload = Misc.listToString(messages);
+			payload = listToString(messages);
 		} else {
 			if (resultInPayload) {
-				String message = Misc.listToString(messages);
+				String message = listToString(messages);
 				Document messageDoc = XmlUtils.buildDomDocument(message);
 				Node messageRootNode = messageDoc.getFirstChild();
 				Node resultNode = messageDoc.importNode(XmlUtils.buildNode(result), true);
@@ -219,10 +220,14 @@ public class BisUtils {
 				payload = XmlUtils.nodeToString(messageDoc);
 			} else {
 				messages.add(result);
-				payload = Misc.listToString(messages);
+				payload = listToString(messages);
 			}
 		}
 		return new Message(payload);
+	}
+
+	public static String listToString(List<String> list) {
+		return String.join("", list);
 	}
 
 	public String errorCodeToText(String errorCode) {

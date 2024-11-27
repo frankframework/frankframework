@@ -7,13 +7,14 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
+import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
 
-public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
+public class LocalFileSystemTestHelper implements IFileSystemTestHelperFullControl {
 
 	public Path folder;
-
 
 	public LocalFileSystemTestHelper(Path folder2) {
 		this.folder=folder2;
@@ -21,7 +22,9 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public void setUp() throws Exception {
-		FileUtils.cleanDirectory(folder.toFile());
+		if (Files.exists(folder)) {
+			FileUtils.cleanDirectory(folder.toFile());
+		}
 	}
 
 	@Override
@@ -59,15 +62,15 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 
 			Files.createFile(f);
 		} catch (IOException e) {
-			throw new IOException("Cannot create file ["+f.toString()+"]",e);
+			throw new IOException("Cannot create file ["+ f +"]",e);
 		}
 		return Files.newOutputStream(f);
 	}
 
 	@Override
-	public void _createFolder(String filename) throws IOException {
-		Path f = getFileHandle(filename);
-		Files.createDirectory(f);
+	public void _createFolder(String foldername) throws IOException {
+		Path f = getFileHandle(foldername);
+		Files.createDirectories(f);
 	}
 
 	@Override
@@ -89,5 +92,11 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 				// nothing to delete if the folder doesn't exist.
 			}
 		}
+	}
+
+	@Override
+	public void setFileDate(String folderName, String filename, Date modifiedDate) throws Exception {
+		Path f = getFileHandle(folderName, filename);
+		Files.setLastModifiedTime(f, FileTime.fromMillis(modifiedDate.getTime()));
 	}
 }

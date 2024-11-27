@@ -19,12 +19,14 @@ import java.util.Iterator;
 
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.INamedObject;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.StringUtil;
+
 /**
  * A JmsRealm is a definition of a JMS provider, and is kind of a utility
  * class to prevent the tedeous work of repeatedly defining all parameters
@@ -36,6 +38,7 @@ import org.frankframework.util.LogUtil;
  * @see JMSFacade#setJmsRealm
  * @author Johan Verrips IOS
  */
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class JmsRealm {
 	//TODO: change to J2eeRealm
 	private final Logger log = LogUtil.getLogger(this);
@@ -98,9 +101,9 @@ public class JmsRealm {
 				}
 			}
 		}catch (Exception e) {
-			log.error(logPrefixDest+"unable to copy properties of JmsRealm", e);
+			log.error("{}unable to copy properties of JmsRealm", logPrefixDest, e);
 		}
-		log.info(logPrefixDest+"loaded properties from jmsRealm ["+toString()+"]");
+		log.info("{}loaded properties from jmsRealm [{}]", logPrefixDest, this);
 	}
 
 	/**
@@ -127,12 +130,7 @@ public class JmsRealm {
 	 **/
 	@Override
 	public String toString() {
-		try {
-			return ToStringBuilder.reflectionToString(this);
-		} catch (Throwable t) {
-			log.warn("exception getting string representation of jmsRealm [" + getRealmName() + "]", t);
-		}
-		return super.toString();
+		return StringUtil.reflectionToString(this);
 	}
 
 	/**

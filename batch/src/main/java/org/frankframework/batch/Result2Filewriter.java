@@ -25,13 +25,12 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.util.FileUtils;
 
-
 /**
  * Resulthandler that writes the transformed record to a file.
- *
  *
  * @author  John Dekker
  * @deprecated Warning: non-maintained functionality.
@@ -52,11 +51,11 @@ public class Result2Filewriter extends ResultWriter {
 
 	@Override
 	protected Writer createWriter(PipeLineSession session, String streamId) throws Exception {
-		log.debug("create writer ["+streamId+"]");
+		log.debug("create writer [{}]", streamId);
 		String outputFilename = FileUtils.getFilename(null, session, new File(streamId), getFilenamePattern());
 		File outputFile = new File(outputDirectory, outputFilename);
 		if (outputFile.exists() && outputFile.isFile()) {
-			log.warn("Outputfile " + outputFilename + " exists in " + outputDirectory);
+			log.warn("Outputfile {} exists in {}", outputFilename, outputDirectory);
 		}
 		openFiles.put(streamId,outputFile);
 		return new FileWriter(outputFile, false);
@@ -69,7 +68,7 @@ public class Result2Filewriter extends ResultWriter {
 
 	@Override
 	public String finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
-		log.debug("finalizeResult ["+streamId+"]");
+		log.debug("finalizeResult [{}]", streamId);
 		super.finalizeResult(session,streamId, error);
 		super.closeDocument(session,streamId);
 
@@ -84,7 +83,7 @@ public class Result2Filewriter extends ResultWriter {
 		if (!StringUtils.isEmpty(getMove2dirAfterFinalize())) {
 			File movedFile = new File(getMove2dirAfterFinalize(), file.getName());
 			if (movedFile.exists()) {
-				log.warn("File [" + movedFile.getAbsolutePath() + "] exists, file gets overwritten");
+				log.warn("File [{}] exists, file gets overwritten", movedFile.getAbsolutePath());
 				movedFile.delete();
 			}
 			file.renameTo(movedFile);

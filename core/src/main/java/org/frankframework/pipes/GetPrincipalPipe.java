@@ -25,8 +25,8 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.Forward;
 import org.frankframework.stream.Message;
 
 /**
@@ -36,7 +36,8 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-@ElementType(ElementTypes.SESSION)
+@Forward(name = "*", description = "principal has not been found, when @{literal notFoundForwardName} is used")
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.SESSION)
 public class GetPrincipalPipe extends FixedForwardPipe {
 	private @Getter String notFoundForwardName;
 	protected PipeForward notFoundForward;

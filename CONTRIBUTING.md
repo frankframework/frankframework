@@ -5,6 +5,13 @@
 Thanks for reading this we're glad you're taking an interest in contributing to our framework.
 We want you working on things you're excited about, there are however plenty of [issues](https://github.com/frankframework/frankframework/issues) that can be picked up.
 
+Before getting started it's recommended to get acquainted with the core classes in the framework. They've been documented pretty well, check out:
+* Receiver: org.frankframework.receivers.Receiver
+* Listener: org.frankframework.core.IPullingListener and org.frankframework.core.IPushingListener
+* Adapter: org.frankframework.core.Adapter
+* Pipe: org.frankframework.pipes.AbstractPipe
+* Sender: org.frankframework.senders.FrankSender
+
 ## Running the Frank!Framework
 
 If you want to experiment with the Frank!Framework, you can use the [Frank!Runner](https://github.com/wearefrank/frank-runner) or follow the instructions for running the Frank!Framework inside your IDE (See [Developing with Eclipse](#developing-with-eclipse) or [Developing with IntelliJ](#developing-with-intellij)).
@@ -82,7 +89,7 @@ Start reading our code, and you'll get the hang of it. We optimize for readabili
 
 The Frank!Framework community has introduced [Project Lombok](https://projectlombok.org/) in this source code. Please keep the following in mind when using it:
 
-* With Lombok, you do not have to code getters and setters anymore. You can generate them by putting annotations `@Getter` and `@Setter` on the backing field. This is very useful. But please do NOT put the `@Getter` or `@Setter` on the class. This makes fewer lines of code, but there is a drawback. You cannot see the call hierarchy anymore of a getter or a setter. When you put the annotations on the method level, you can still see the call hierarchy: right-click the `@Getter` or `@Setter` and select "Open Call Hierarchy" in Eclipse.
+* With Lombok, you do not have to code getters and setters anymore. You can generate them by putting annotations `@Getter` and `@Setter` on the backing field. This is very useful. But please do NOT put the `@Getter` or `@Setter` on a non-private class. This makes fewer lines of code, but there is a drawback. You cannot see the call hierarchy anymore of a getter or a setter. When you put the annotations on the method level, you can still see the call hierarchy: right-click the `@Getter` or `@Setter` and select "Open Call Hierarchy" in Eclipse.
 * For the sake of readability, please put the `@Getter` or `@Setter` annotations inside the variable declaration: "`private @Getter @Setter MyType myField`".
 
 See our [Additional Coding Guidelines](AdditionalCodingGuidelines.md) for code examples to help create more readable, testable and maintainable code.
@@ -127,11 +134,11 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 - If you want to change -vm options in `eclipse.ini`, please be aware that that option is present already. Update the existing option and do not introduce a duplicate -vm.
 - Start Eclipse and close Welcome.
 - Make sure that the default text file line delimiter is set to Unix and default encoding is set to UTF-8: Window, Preferences, General, Workspace, New text file line delimiter: Unix, Text file encoding: UTF-8.
-- We prefer to run the Frank!Framework on Java 11. Please install a Java 11 JDK in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://www.azul.com/downloads/?package=jdk). This is the Zulu OpenJDK, so no issues with copyright. After downloading, install it in Windows | Preferences | Java | Installed JREs. (You may have to delete the JRE that came with Eclipse there.)
+- We prefer to run the Frank!Framework on Java 17. Please install a Java 17 JDK in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://adoptium.net/temurin/releases/?package=jdk&version=17). This is a distribution of the OpenJDK, so no issues with copyright. After downloading, install it in Windows | Preferences | Java | Installed JREs. (You may have to delete the JRE that came with Eclipse there.)
 
 *Note: the Frank!Console is an NPM project, if you choose to import this module (in a later step) you will need to run 'Run as -> Maven install'*
 
-### Set up a Lombok in Eclipse
+### Set up Lombok in Eclipse
 - Download the [Lombok dependency](https://projectlombok.org/). Please open it as a Java application.
 - You see a GUI. The GUI may automatically find your Eclipse installation. If this does not work, use the button "Specify location".
 - Press Install / Update.
@@ -153,21 +160,26 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 
 ### Set up a Tomcat server in Eclipse
 
-- Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v9.0 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download [Tomcat](http://tomcat.apache.org/) version 9.0.59 or a later version of Tomcat 9), OK, Finish.
-- Double click Tomcat v9.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Ddtap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
-- Right click Tomcat v9.0 Server at localhost, Start.
+- Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v10.0 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download [Tomcat](http://tomcat.apache.org/) version 10.1.20 or a later version of Tomcat 10), OK, Finish.
+- Double click Tomcat v10.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Ddtap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
+- Right click Tomcat v10.0 Server at localhost, Start.
 - Browse the IAF console at [http://localhost:8080/iaf-example/](http://localhost:8080/iaf-example/).
+
+### Install latest LTS NodeJS
+
+- Download the latest [LTS version of NodeJS](https://nodejs.org/en) or check the [Angular Version compatability](https://angular.dev/reference/versions) to decide which version to install.
+- Test if NodeJS is correctly installed then you should be able to open a terminal/cmd and type in `node -v` and `npm -v` without any errors.
 
 ### In some cases you might want/need to:
 
 - Right click iaf, Maven, Update Project..., OK.
-- Delete .setting folder(s) in broken iaf module(s), followed by rightclick iaf, Maven, Update Project..., OK.
+- Delete .setting folder(s) in broken iaf module(s), followed by right click iaf, Maven, Update Project..., OK.
 - Enable Project, Build Automatically
 - Right click Tomcat Server at localhost, Clean...
 - Change newlines in .classpath and org.eclipse.wst.common.component files back to Unix newlines.
 - Right click pom.xml (in iaf), Run As, Maven build..., JRE, make sure a JDK (not a JRE) is used, Refresh, Refresh resources upon completion, Specific resources, Specify Resources..., iaf (Using "The project containing the selected resource" doesn't seem to work), Finish, Run.
 - The local Maven repository might contain corrupt jar files which for example will result in java.lang.NoClassDefFoundError: org/aspectj/lang/ProceedingJoinPoint when starting Tomcat. Remove the jar file from the repository to make Maven download the file again.
-- When changing IAF versions Eclipse doesn't always automatically clean the  tomcat deploy folder (wtpwebapps). Rightclick project, Run As, Maven Clean, followed by  Right click Tomcat v7.0 Server at localhost, Clean...
+- When changing IAF versions Eclipse doesn't always automatically clean the  tomcat deploy folder (wtpwebapps). Right click project, Run As, Maven Clean, followed by  Right click Tomcat v7.0 Server at localhost, Clean...
 - Check the deployment assemblies:
   - Right-click iaf-webapp and choose Properties. In the left-hand menu select "Deployment Assembly". To the right, you see what Eclipse directories are mapped to what directories within Apache Tomcat. You should have:
     - `src/main/webapp` to `/`
@@ -188,7 +200,8 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
     - `iaf-webapp` to -
     - `Maven Dependencies` to `WEB-INF/lib`
   - Sometimes, an additional mapping `/` to `/` is present. This is wrong; if you see it, delete it!
-- When running Tomcat v8.5, you can disable its pluggability scans to prevent unnecessarily long startup times. To do this, add the following element within the Context element of your Tomcat server's _context.xml_ file:
+- When running Tomcat v8.5 or higher, you can disable its pluggability scans to prevent unnecessarily long startup times. Background info: https://tomcat.apache.org/tomcat-10.0-doc/config/jar-scan-filter.html 
+  To do this, add the following element within the Context element of your Tomcat server's _context.xml_ file:
 ######
     <JarScanner>
         <JarScanFilter defaultPluggabilityScan="false" />
@@ -211,39 +224,52 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 
 ## Developing with IntelliJ
 
+### Install latest LTS NodeJS
+
+- Download the latest [LTS version of NodeJS](https://nodejs.org/en) or check the [Angular Version compatability](https://angular.dev/reference/versions) to decide which version to install.
+- Test if NodeJS is correctly installed then you should be able to open a terminal/cmd and type in `node -v` and `npm -v` without any errors.
+
+### Setup IntelliJ
+
+This guide assumes that you are using IntelliJ Ultimate, because application servers and WAR exploded are not included in the community edition.
+
 - Clone the source any way you like. E.g. "New | Project from Version Control", or at the commandline: `git clone git@github.com:frankframework/frankframework.git`
 - If you cloned from the command line, then: From File -> Open... Select iaf folder and import it as a Maven project.
 - When asked to open the Eclipse project or the Maven project, choose opening the Maven project.
-- Make sure to select Java 11 as a default JDK.
+- Make sure to select Java 17 as a default JDK.
 - In the Maven tool window, open the "Profiles" section and make sure to select the profile `database-drivers` amongst other profiles that are selected by default.
   After doing this, make sure to reload the Maven project to add the extra dependencies from this profile to your project classpath.
 - You may need to install / enable the Lombok plugin if it is not already installed / enabled, so that IntelliJ will properly understand the code with all the Lombok annotations in it. 
   If the plugin is installed you may get a notification from IntelliJ when the project is built that annotation processing needs to be enabled in the project for Lombok to work, enable this.
-- Download Tomcat 9 from https://tomcat.apache.org/download-90.cgi and unzip it anywhere you like. (On windows make sure to extract it on a folder which can be edited by non-admin users.), 
+- Download Tomcat 10 from https://tomcat.apache.org/download-10.cgi and unzip it anywhere you like. (On Windows, make sure to extract it on a folder which can be edited by non-admin users), 
   or install it via `brew` (on macOS) or `sdkman`.
   Make sure that all scripts are executable, for instance: `chmod a+x ~/.sdkman/candidates/tomcat/current/bin/*.sh`
-- Open Settings | Application Servers, add the Tomcat installation you just did.
-- Create a run configuration for a Tomcat server for the Example project.
-	- In the tab "Deployments", choose the module "frankframework-example:war exploded"
-	  (or frankframework-test, or other adapter, but in any case make sure to select the artefact with type `war exploded` and not `war`)
-	- Set the context to `/iaf-example` (or `/iaf-test`, for running tests from the project frankframework-test).
-	- Add `-Ddtap.stage=LOC` to VM Options.
-    - In the "On Update" section, select "Update Classes and Resources" so that classes can be automatically updated and reloaded after project build (providing this is supported by your JDK)
-    - Under the section "Before launch", add a build step to build the console-frontend project via Maven. Add a Maven Goal action, running command `install` in the project "frankframework-console-frontend".
-      __NB__: It is important that you run this step before the final Build step, which is to build the (Exploded) War Artifact! Otherwise, front-end resources will not be deployed.
-    - Name your configuration and save it.
-- Create a run configuration for a Tomcat server for the Test project (See also [TESTING WITH IAF-TEST](TESTING_WITH_IAF-TEST.md)).  
-  Unfortunately it is not possible to provide a run configuration for IAF-Test in the repository, since the configuration contains system-dependenty paths. 
-	- In the tab "Deployments", choose the module "frankframework-test:war exploded"
-	- Set the context to `/iaf-test` for the Test module.  
-      __NB__: This is very important, otherwise a lot of tests will fail!
-	- Set the following VM options:
-      `-Ddtap.stage=LOC -DauthAliases.expansion.allowed=testalias -Dweb.port=8080 -DcredentialFactory.class=org.frankframework.credentialprovider.FileSystemCredentialFactory -DcredentialFactory.filesystem.root=/<path to source>/iaf/test/src/main/secrets`
-	- In the "On Update" section, select "Update Classes and Resources" so that classes can be automatically updated and reloaded after project
-	  build (providing this is supported by your JDK)
-    - Name your configuration and save it
+- Open Settings | Build, Execution, Deployment | Application Servers, add the Tomcat installation you just did.
+- A run configuration can be created for each individual project. Provided are examples for the example project and test project, but these can be adapted to work for other projects as well.
+	- **Example project:**
+      - Create a run configuration for a Tomcat server.
+      - In the tab "Deployments", choose the module "frankframework-example:war exploded". Make sure that it is a war exploded and not a war.
+      - Set the context to `/iaf-example`.
+      - Set the following VM options: `-Ddtap.stage=LOC`.
+      - In the "On Update" section, select "Update Classes and Resources", so classes can be automatically updated and reloaded after project build (providing this is supported by your JDK)
+      - Under the section "Before launch", add a build step to build the console-frontend project via Maven. Add a Maven Goal action, running command `install` in the project "frankframework-console-frontend". These build steps should be in the following order:
+        1. Build console-frontend
+        2. Build the war exploded artifact.
+      - Name your configuration and save it.
+    - **Test project:**
+      - [TESTING WITH IAF-TEST](TESTING_WITH_IAF-TEST.md) contains detailed information on how to use this project.
+      - Create a run configuration for a Tomcat server.
+      - In the tab "Deployments", choose the module "frankframework-test:war exploded". Make sure that it is a war exploded and not a war.
+      - Set the context to `/iaf-test`.
+		__NB__: This is very important, otherwise a lot of tests will fail!
+      - Set the following VM options:
+        `-Ddtap.stage=LOC -DauthAliases.expansion.allowed=testalias -Dweb.port=8080 -DcredentialFactory.class=org.frankframework.credentialprovider.FileSystemCredentialFactory -DcredentialFactory.filesystem.root=/<path to source>/frankframework/test/src/main/secrets`
+      - In the "On Update" section, select "Update Classes and Resources", so classes can be automatically updated and reloaded after project build (providing this is supported by your JDK)
+      - Under the section "Before launch", add a build step to build the console-frontend project via Maven. Add a Maven Goal action, running command `install` in the project "frankframework-console-frontend". These build steps should be in the following order:
+          1. Build console-frontend
+          2. Build the war exploded artifact.
+      - Name your configuration and save it.
 - Run your configuration and you are ready to go. The IAF-Test configuration has all scenarios built-in for testing the Frank!Framework from the Larva test-tool.
-
 
 # Frank!Doc - Documentation for Frank developers
 

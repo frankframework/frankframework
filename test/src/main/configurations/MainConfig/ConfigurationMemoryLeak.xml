@@ -17,10 +17,10 @@
 				getCurrentTimeStampInMillis="true">
 				<forward name="success" path="writeStartTime" />
 			</pipe>
-			<pipe name="writeStartTime" actions="write"
-				className="org.frankframework.pipes.FilePipe"
-				directory="${testdata.dir}/MemoryLeak"
-				createDirectory="true"
+			<pipe name="writeStartTime" action="write"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				inputFolder="${testdata.dir}/MemoryLeak"
+				createFolder="true"
 				filename="startTimeStamp.txt"
 				getInputFromSessionKey="systemDate">
 				<forward name="success" path="Echo" />
@@ -55,7 +55,7 @@
 	</adapter>
 	<adapter name="MemoryLeakSubAdapter1"
 		active="${MemoryLeak.active}"
-		description="Passes throug a message with a wildcard">
+		description="Passes through a message with a wildcard">
 		<receiver>
 			<listener name="MemoryLeakSubAdapterListener1"
 				className="org.frankframework.receivers.JavaListener" />
@@ -77,7 +77,7 @@
 	</adapter>
 	<adapter name="MemoryLeakSubAdapter2"
 		active="${MemoryLeak.active}"
-		description="Passes throug a message with a wildcard">
+		description="Passes through a message with a wildcard">
 		<receiver>
 			<listener name="MemoryLeakSubAdapterListener2"
 				className="org.frankframework.receivers.JavaListener" />
@@ -259,10 +259,10 @@
 				getCurrentTimeStampInMillis="true">
 				<forward name="success" path="writeEndTime" />
 			</pipe>
-			<pipe name="writeEndTime" actions="write"
-				className="org.frankframework.pipes.FilePipe"
+			<pipe name="writeEndTime" action="write"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 				getInputFromSessionKey="systemDate"
-				directory="${testdata.dir}/MemoryLeak"
+				inputFolder="${testdata.dir}/MemoryLeak"
 				filename="endTimeStamp.txt">
 				<forward name="success" path="Echo" />
 			</pipe>
@@ -284,16 +284,16 @@
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
-			<pipe name="getStartTime" actions="read"
-				className="org.frankframework.pipes.FilePipe"
-				directory="${testdata.dir}/MemoryLeak"
+			<pipe name="getStartTime" action="read"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				inputFolder="${testdata.dir}/MemoryLeak"
 				filename="startTimeStamp.txt"
 				storeResultInSessionKey="startTime">
 				<forward name="success" path="getEndTime" />
 			</pipe>
-			<pipe name="getEndTime" actions="read"
-				className="org.frankframework.pipes.FilePipe"
-				directory="${testdata.dir}/MemoryLeak"
+			<pipe name="getEndTime" action="read"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				inputFolder="${testdata.dir}/MemoryLeak"
 				filename="endTimeStamp.txt"
 				storeResultInSessionKey="endTime">
 				<forward name="success" path="StoreValues" />
@@ -319,8 +319,9 @@
 					path="compareDurationWithExpectedDuration" />
 			</pipe>
 			<pipe name="compareDurationWithExpectedDuration"
-				className="org.frankframework.pipes.CompareIntegerPipe"
-				sessionKey1="actualDuration" sessionKey2="expectedDuration">
+				className="org.frankframework.pipes.CompareIntegerPipe">
+				<param name="operand1" sessionKey="actualDuration"/>
+				<param name="operand2" sessionKey="expectedDuration"/>
 				<forward name="lessthan" path="Echo" />
 				<forward name="equals" path="Echo" />
 				<forward name="greaterthan" path="failWithException" />
@@ -336,5 +337,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-
 </module>

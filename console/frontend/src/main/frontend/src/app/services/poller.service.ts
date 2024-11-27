@@ -29,30 +29,16 @@ export class PollerService {
     this.pollers[url].setInterval(intervalTime, true);
   }
 
-  add<T>(
-    url: string,
-    callback: (data: T) => void,
-    intervalTime?: number,
-    runOnce?: boolean,
-  ): Poller<T> {
+  add<T>(url: string, callback: (data: T) => void, intervalTime?: number, runOnce?: boolean): Poller<T> {
     if (url in this.pollers) {
       return this.pollers[url];
     }
 
-    this.Debug.log(
-      `Adding new poller [${url}] runOnce [${runOnce}] interval [${intervalTime}]`,
-    );
+    this.Debug.log(`Adding new poller [${url}] runOnce [${runOnce}] interval [${intervalTime}]`);
 
-    const interval =
-      intervalTime ?? (this.appConstants['console.pollerInterval'] as number);
+    const interval = intervalTime ?? (this.appConstants['console.pollerInterval'] as number);
 
-    const poller = new Poller<T>(
-      `${this.appService.absoluteApiPath}${url}`,
-      interval,
-      callback,
-      this.http,
-      this.Debug,
-    );
+    const poller = new Poller<T>(`${this.appService.absoluteApiPath}${url}`, interval, callback, this.http, this.Debug);
 
     this.pollers[url] = poller as Poller<unknown>; // this hurts yet there is no better solution
 
@@ -84,8 +70,7 @@ export class PollerService {
   } {
     return {
       changeInterval: (interval): void => {
-        for (const index in this.pollers)
-          this.pollers[index].setInterval(interval, false);
+        for (const index in this.pollers) this.pollers[index].setInterval(interval, false);
       },
       start: (): void => {
         this.Debug.info('starting all Pollers');
@@ -131,9 +116,7 @@ export class Poller<T> {
   }
 
   setInterval(intervalTime: number, restart?: boolean): void {
-    this.Debug.info(
-      `Interval for ${this.url} changed to [${intervalTime}] restart [${restart}]`,
-    );
+    this.Debug.info(`Interval for ${this.url} changed to [${intervalTime}] restart [${restart}]`);
     this.intervalTime = intervalTime;
     if (restart) this.restart();
   }
@@ -142,11 +125,10 @@ export class Poller<T> {
     if (this.state !== 'STOPPED') return;
 
     this.runningSubscription = null;
-    this.windowIntervalId = window.setInterval(
-      () => this.run(),
-      this.intervalTime,
-    );
+    this.windowIntervalId = window.setInterval(() => this.run(), this.intervalTime);
     this.state = 'WAITING';
+
+    this.run();
   }
 
   stop(): void {
@@ -182,10 +164,7 @@ export class Poller<T> {
 
         if (this.errorCount < this.maxErrorCount) return;
 
-        this.Debug.warn(
-          `Max retries reached. Stopping poller [${this.url}]`,
-          this,
-        );
+        this.Debug.warn(`Max retries reached. Stopping poller [${this.url}]`, this);
         this.stop();
       },
       complete: () => {

@@ -15,11 +15,10 @@
 */
 package org.frankframework.dbms;
 
-import org.frankframework.util.ClassUtils;
-
 import lombok.Getter;
-
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.util.ClassUtils;
 
 @Log4j2
 public enum Dbms {
@@ -49,8 +48,12 @@ public enum Dbms {
 	}
 
 	public static IDbmsSupport findDbmsSupportByProduct(String product, String productVersion) {
-		if (MYSQL.getProductName().equals(product) && productVersion.contains("MariaDB")) {
-			log.debug("Setting databasetype to MARIADB (using MySQL driver)");
+		if (productVersion.contains("MariaDB")) {
+			if (MYSQL.getProductName().equals(product)) {
+				log.debug("Setting databasetype to MARIADB (using MySQL driver)");
+			} else {
+				log.debug("Setting databasetype to MARIADB (using MariaDB driver)");
+			}
 			return new MariaDbDbmsSupport(productVersion);
 		}
 		if (product.startsWith("DB2/")) {

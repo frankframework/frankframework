@@ -2,35 +2,22 @@
 <!-- Wrapper-->
 <div id="wrapper" *ngIf="!isLoginView; else loginWrapper">
   <!-- Navigation -->
-  <app-pages-navigation
-    (shouldOpenInfo)="openInfoModel()"
-    (shouldOpenFeedback)="sendFeedback()"
-    [queryParams]="routeQueryParams"
-  ></app-pages-navigation>
+  <app-pages-navigation (shouldOpenInfo)="openInfoModel()" [queryParams]="routeQueryParams"></app-pages-navigation>
 
   <!-- Page wraper -->
-  <!-- ng-class with current state name give you the ability to extended customization your view -->
-  <!-- <div id="page-wrapper" class="gray-bg {{$ctrl.$state.current.name}}"> -->
   <div id="page-wrapper" class="gray-bg">
     <!-- Page wrapper -->
     <app-pages-topnavbar
       class="topnavbar"
-      (shouldOpenFeedback)="sendFeedback($event)"
-      [serverTime]="serverTime"
       [dtapSide]="dtapSide"
       [dtapStage]="dtapStage"
+      [clusterMembers]="clusterMembers"
+      [selectedClusterMember]="selectedClusterMember"
       [userName]="userName"
-      [loggedin]="loggedin"
     ></app-pages-topnavbar>
     <app-pages-topinfobar class="topinfobar"></app-pages-topinfobar>
 
-    <div
-      *ngIf="startupError"
-      class="m-sm alert alert-danger pointer"
-      role="alert"
-      type="danger"
-      routerLink="/error"
-    >
+    <div *ngIf="startupError" class="m-sm alert alert-danger pointer" role="alert" type="danger" routerLink="/error">
       <h4>Startup error:</h4>
       <span [innerHtml]="startupError"></span>
     </div>

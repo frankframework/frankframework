@@ -26,13 +26,14 @@ import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
+
+import lombok.Setter;
+
 import org.frankframework.logging.IbisPatternLayout;
 import org.frankframework.logging.IbisThreadFilter;
 import org.frankframework.util.LogUtil;
 
-import lombok.Setter;
-
-public class TestAppender extends AbstractAppender {
+public class TestAppender extends AbstractAppender implements AutoCloseable {
 	private final List<String> logMessages = new ArrayList<>();
 	private final List<LogEvent> logEvents = new ArrayList<>();
 	private Level minLogLevel = Level.DEBUG;
@@ -73,7 +74,13 @@ public class TestAppender extends AbstractAppender {
 
 	private TestAppender(String name, Filter filter, Layout<? extends Serializable> layout) {
 		super(name, filter, layout, false, null);
+		addToRootLogger(this);
 		start();
+	}
+
+	@Override
+	public void close() {
+		removeAppender(this);
 	}
 
 	@Override
@@ -93,6 +100,7 @@ public class TestAppender extends AbstractAppender {
 	}
 
 	public List<String> getLogLines() {
+		// NB: By getting here a copy we are sure that there will be no concurrent modifications while we go over the log messages to verify tests.
 		return new ArrayList<>(logMessages);
 	}
 
@@ -104,7 +112,7 @@ public class TestAppender extends AbstractAppender {
 		return (Logger) LogUtil.getRootLogger();
 	}
 
-	public static void addToRootLogger(TestAppender appender) {
+	private void addToRootLogger(TestAppender appender) {
 		Logger logger = getRootLogger();
 		logger.addAppender(appender);
 	}
@@ -114,7 +122,8 @@ public class TestAppender extends AbstractAppender {
 		logger.addAppender(appender);
 	}
 
-	public static void removeAppender(TestAppender appender) {
+	private void removeAppender(TestAppender appender) {
+		if (appender == null) return;
 		Logger logger = getRootLogger();
 		logger.removeAppender(appender);
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,29 +17,29 @@ package org.frankframework.stream;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.Serial;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.lang.ref.Cleaner;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.CleanerProvider;
-import org.frankframework.util.FileUtils;
-import org.frankframework.util.StreamUtil;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.CleanerProvider;
+import org.frankframework.util.StreamUtil;
+import org.frankframework.util.TemporaryDirectoryUtils;
 
 /**
  * A reference to a file {@link Path} that can be serialized. When serialized it will write all the file data to
@@ -48,16 +48,15 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public class SerializableFileReference implements Serializable, AutoCloseable {
-	private static final Cleaner cleaner = CleanerProvider.getCleaner(); // Get the Cleaner thread, to clean the SFR file when this resource becomes phantom reachable
+	public static final String TEMP_MESSAGE_DIRECTORY = "temp-messages";
 
-	private static final long serialVersionUID = 1L;
+	@Serial private static final long serialVersionUID = 1L;
 	private static final long customSerializationVersion = 1L;
 
 	private long size = Message.MESSAGE_SIZE_UNKNOWN;
 	@Getter private boolean binary;
 	private String charset;
 	@Getter private transient Path path;
-	private transient Cleaner.Cleanable cleanable;
 	private transient CleanupFileAction cleanupFileAction;
 
 
@@ -79,15 +78,15 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	}
 
 	/**
-	 * Create a new {@link SerializableFileReference} from the given {@link byte[]}. The {@link byte[]} will be copied
+	 * Create a new {@link SerializableFileReference} from the given {@code byte[]}. The {@code byte[]} will be copied
 	 * to a temporary file on disk. The {@link SerializableFileReference} will be treated as binary data.
 	 * <p>
 	 * The temporary file will be deleted on calling {@link SerializableFileReference#close()}.
 	 * </p>
 	 *
-	 * @param data The {@link byte[]} from which to create the {@link SerializableFileReference}.
+	 * @param data The {@code byte[]} from which to create the {@link SerializableFileReference}.
 	 * @return A new binary {@link SerializableFileReference}.
-	 * @throws IOException If the {@link byte[]} cannot be written to a temporary file.
+	 * @throws IOException If the {@code byte[]} cannot be written to a temporary file.
 	 */
 	public static SerializableFileReference of(byte[] data) throws IOException {
 		return of(new ByteArrayInputStream(data));
@@ -161,12 +160,11 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 
 	private void createCleanerAction(final Path path) {
 		cleanupFileAction = new CleanupFileAction(path);
-		cleanable = cleaner.register(this, cleanupFileAction);
+		CleanerProvider.register(this, cleanupFileAction);
 	}
 
 	private static class CleanupFileAction implements Runnable {
 		private final Path fileToClean;
-		private boolean calledByClose = false;
 
 		private CleanupFileAction(Path fileToClean) {
 			this.fileToClean = fileToClean;
@@ -174,13 +172,10 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 
 		@Override
 		public void run() {
-			if (!calledByClose) {
-				log.info("Leak detection: File [{}] was not closed properly, cleaning up", fileToClean);
-			}
 			try {
 				Files.deleteIfExists(fileToClean);
 			} catch (Exception e) {
-				log.warn("failed to remove file reference {}", fileToClean);
+				log.warn("failed to remove file reference [{}]. Exception message: {}", fileToClean, e.getMessage());
 			}
 		}
 	}
@@ -214,13 +209,13 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() {
 		if (cleanupFileAction != null) {
-			cleanupFileAction.calledByClose = true;
-			cleanable.clean();
+			CleanerProvider.clean(cleanupFileAction);
 		}
 	}
 
+	@Serial
 	private void writeObject(ObjectOutputStream out) throws IOException {
 		// If in future we need to make incompatible changes we can keep reading old version by selecting on version-nr
 		out.writeLong(customSerializationVersion);
@@ -240,6 +235,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 * @param in ObjectInputStream to create object from
 	 * @throws IOException if there is a problem reading from the stream
 	 */
+	@Serial
 	private void readObject(ObjectInputStream in) throws IOException {
 		in.readLong(); // Custom serialization version; only version 1 yet so value can be ignored for now.
 		size = in.readLong();
@@ -261,8 +257,8 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 * @throws IOException Thrown if there was any exception reading or writing the data.
 	 */
 	private static Path copyToTempFile(InputStream in, long maxBytes) throws IOException {
-		File tmpMessagesFolder = FileUtils.getTempDirectory("temp-messages");
-		Path destination = File.createTempFile("msg", ".dat", tmpMessagesFolder).toPath();
+		Path tmpMessagesFolder = TemporaryDirectoryUtils.getTempDirectory(TEMP_MESSAGE_DIRECTORY);
+		Path destination = Files.createTempFile(tmpMessagesFolder, "msg", ".dat");
 		try (OutputStream fileOutputStream = Files.newOutputStream(destination)) {
 			StreamUtil.copyPartialStream(in, fileOutputStream, maxBytes, 16384);
 		}

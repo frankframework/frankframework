@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Base64Service } from './base64.service';
-import { ServerInfo } from '../app.service';
+import { ServerInfo } from './server-info.service';
 
 @Injectable({
   providedIn: 'root',
@@ -39,11 +39,7 @@ export class MiscService {
     return chunks.reverse().join('');
   }
 
-  compare_version(
-    v1: string | number,
-    v2: string | number,
-    operator?: string,
-  ): boolean | number | null {
+  compare_version(v1: string | number, v2: string | number, operator?: string): boolean | number | null {
     // See for more info: http://locutus.io/php/info/version_compare/
 
     let index,
@@ -62,11 +58,7 @@ export class MiscService {
     };
 
     const _numberVersion = function (v: string | number): number {
-      return v
-        ? Number.isNaN(Number(v))
-          ? vm[v as keyof typeof vm] || -7
-          : Number.parseInt(v as string, 10)
-        : 0;
+      return v ? (Number.isNaN(Number(v)) ? vm[v as keyof typeof vm] || -7 : Number.parseInt(v as string, 10)) : 0;
     };
 
     const v1Array = this._prepVersion(v1);

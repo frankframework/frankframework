@@ -8,6 +8,19 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandlingException;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusException;
@@ -32,19 +45,6 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlBuilder;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHandlingException;
-
-import lombok.Getter;
-import lombok.Setter;
-
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 @WithMockUser(roles = { "IbisTester" })
@@ -72,15 +72,15 @@ public class TestMonitoring extends BusTestBase {
 		Trigger trigger = new Trigger();
 		AdapterFilter filter = new AdapterFilter();
 		filter.setAdapter("dummyAdapterName");
-		filter.registerSubObject("dummySubObjectName");
+		filter.addSubObjectText("dummySubObjectName");
 		trigger.setPeriod(42);
 		trigger.setThreshold(1337);
 		trigger.setSeverity(Severity.HARMLESS);
 		trigger.setTriggerType(TriggerType.ALARM);
-		trigger.registerAdapterFilter(filter);
+		trigger.addAdapterFilter(filter);
 		trigger.setSourceFiltering(SourceFiltering.ADAPTER);
-		trigger.addEventCode(TEST_TRIGGER_EVENT_NAME);
-		monitor.registerTrigger(trigger);
+		trigger.addEventCodeText(TEST_TRIGGER_EVENT_NAME);
+		monitor.addTrigger(trigger);
 		manager.addMonitor(monitor);
 		IMonitorDestination ima = new IMonitorDestination() {
 			private @Getter @Setter String name = "mockDestination";
@@ -100,7 +100,7 @@ public class TestMonitoring extends BusTestBase {
 				return new XmlBuilder("destination");
 			}
 		};
-		manager.registerDestination(ima);
+		manager.addDestination(ima);
 		manager.configure();
 	}
 

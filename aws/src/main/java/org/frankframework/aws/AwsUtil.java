@@ -15,48 +15,43 @@
 */
 package org.frankframework.aws;
 
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.AWSCredentialsProviderChain;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-
-import org.frankframework.util.CredentialFactory;
+import lombok.NoArgsConstructor;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProviderChain;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProviderChain.Builder;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 
+import org.frankframework.util.CredentialFactory;
+
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class AwsUtil {
 
 	private static final boolean REUSE_LAST_PROVIDER = true;
 
-	// S3
-	/** com.amazonaws.auth based CredentialProvider */
-	public static @Nonnull AWSCredentialsProvider createCredentialProviderChain(@Nullable CredentialFactory cf) {
-		List<AWSCredentialsProvider> chain = new ArrayList<>();
-
-		if(cf != null) {
-			BasicAWSCredentials awsCreds = new BasicAWSCredentials(cf.getUsername(), cf.getPassword());
-			chain.add(new AWSStaticCredentialsProvider(awsCreds));
+	/**
+	 * Create a chain of credential providers, for AWS SDK v2.
+	 * @param cf credential factory
+	 * @return chain of credential providers
+	 */
+	public static @Nonnull AwsCredentialsProvider createCredentialProviderChain(@Nullable CredentialFactory cf) {
+		AwsCredentialsProviderChain.Builder chain = AwsCredentialsProviderChain.builder();
+		if (cf != null) {
+			chain.addCredentialsProvider(StaticCredentialsProvider.create(getAwsCredentials(cf)));
 		}
 
-		chain.add(new com.amazonaws.auth.profile.ProfileCredentialsProvider());
-		chain.add(new com.amazonaws.auth.EC2ContainerCredentialsProviderWrapper());
-		chain.add(new com.amazonaws.auth.InstanceProfileCredentialsProvider(false));
+		chain.addCredentialsProvider(software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider.create());
+		chain.addCredentialsProvider(software.amazon.awssdk.auth.credentials.ContainerCredentialsProvider.builder().build());
+		chain.addCredentialsProvider(software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider.builder()
+				.asyncCredentialUpdateEnabled(false)
+				.build());
 
-		AWSCredentialsProviderChain cfc = new AWSCredentialsProviderChain(chain);
-		cfc.setReuseLastProvider(REUSE_LAST_PROVIDER);
-		return cfc;
+		chain.reuseLastProviderEnabled(REUSE_LAST_PROVIDER);
+		return chain.build();
 	}
 
-	// SQS
 	/** software.amazon.awssdk.auth.credentials based CredentialProvider */
 	private static AwsCredentials getAwsCredentials(CredentialFactory cf) {
 		return new AwsCredentials() {
@@ -71,21 +66,6 @@ public class AwsUtil {
 				return cf.getPassword();
 			}
 		};
-	}
-
-	public static @Nonnull AwsCredentialsProvider getAwsCredentialsProvider(@Nullable CredentialFactory cf) {
-		Builder chain = AwsCredentialsProviderChain.builder();
-
-		if(cf != null) {
-			chain.addCredentialsProvider(StaticCredentialsProvider.create(getAwsCredentials(cf)));
-		}
-
-		chain.addCredentialsProvider(software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider.create());
-		chain.addCredentialsProvider(software.amazon.awssdk.auth.credentials.ContainerCredentialsProvider.builder().build());
-		chain.addCredentialsProvider(software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider.create());
-
-		chain.reuseLastProviderEnabled(REUSE_LAST_PROVIDER);
-		return chain.build();
 	}
 
 }

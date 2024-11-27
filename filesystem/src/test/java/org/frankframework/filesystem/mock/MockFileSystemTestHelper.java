@@ -7,20 +7,21 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 
-import org.frankframework.filesystem.IFileSystemTestHelperFullControl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
+import org.frankframework.filesystem.IFileSystemTestHelperFullControl;
+
 public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystemTestHelperFullControl {
 
-	private MockFileSystem<F> fileSystem;
+	private final MockFileSystem<F> fileSystem;
 
 	protected MockFileSystemTestHelper(MockFileSystem<F> fileSystem) {
 		this.fileSystem=fileSystem;
 	}
 
 	public MockFileSystemTestHelper() {
-		this(new MockFileSystem<F>());
+		this(new MockFileSystem<>());
 	}
 
 	@BeforeEach
@@ -47,7 +48,7 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 	@Override
 	public boolean _folderExists(String folderName) throws Exception {
 		MockFile mf = fileSystem.getFolders().get(folderName);
-		return mf!=null && mf instanceof MockFolder;
+		return mf instanceof MockFolder;
 	}
 
 	@Override
@@ -100,9 +101,8 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 		return new ByteArrayInputStream( mf.getContents());
 	}
 
-
 	@Override
-	public void setFileDate(String folderName, String filename, Date modifiedDate) throws Exception {
+	public void setFileDate(String folderName, String filename, Date modifiedDate) {
 		MockFolder folder = folderName==null?fileSystem:fileSystem.getFolders().get(folderName);
 		if (folder==null) {
 			throw new IllegalStateException("folder ["+folderName+"] for file ["+filename+"] does not exist");
@@ -113,7 +113,6 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 		}
 		mf.setLastModified(modifiedDate);
 	}
-
 
 	@Override
 	public void _createFolder(String filename) throws Exception {

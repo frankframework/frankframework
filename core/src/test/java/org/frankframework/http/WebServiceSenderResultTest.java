@@ -18,6 +18,10 @@ package org.frankframework.http;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,16 +37,19 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HttpContext;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
-public class WebServiceSenderResultTest extends Mockito {
+@Log4j2
+public class WebServiceSenderResultTest {
 
 	private WebServiceSender sender = null;
 
@@ -62,13 +69,13 @@ public class WebServiceSenderResultTest extends Mockito {
 		when(httpEntity.getContent()).thenReturn(responseStream);
 		when(httpResponse.getEntity()).thenReturn(httpEntity);
 
-		//Mock all requests
+		// Mock all requests
 		when(httpClient.execute(any(HttpHost.class), any(HttpRequestBase.class), any(HttpContext.class))).thenReturn(httpResponse);
 
 		WebServiceSender sender = spy(new WebServiceSender());
 		when(sender.getHttpClient()).thenReturn(httpClient);
 
-		//Some default settings, url will be mocked.
+		// Some default settings, url will be mocked.
 		sender.setUrl("http://127.0.0.1/");
 		sender.setIgnoreRedirects(true);
 		sender.setVerifyHostname(false);
@@ -86,14 +93,14 @@ public class WebServiceSenderResultTest extends Mockito {
 	@AfterEach
 	public void setDown() {
 		if (sender != null) {
-			sender.close();
+			sender.stop();
 			sender = null;
 		}
 	}
 
-  private InputStream getFile(String file) throws IOException {
-    String baseDir = "/org/frankframework/http/";
-    URL url = this.getClass().getResource(baseDir +file);
+	private InputStream getFile(String file) throws IOException {
+		String baseDir = "/org/frankframework/http/";
+		URL url = this.getClass().getResource(baseDir + file);
 		if (url == null) {
 			throw new IOException("file not found");
 		}
@@ -107,7 +114,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertEquals("<TestElement xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">test value</TestElement>", result);
@@ -115,7 +122,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		int multipartAttachmentCount = 0;
 		for (Map.Entry<String, Object> entry : pls.entrySet()) {
 			if (entry.getKey().startsWith("multipart")) {
-				System.out.println("found multipart [" + entry.getKey() + "]");
+				log.info("found multipart [{}]", entry::getKey);
 				multipartAttachmentCount++;
 			}
 		}
@@ -132,38 +139,38 @@ public class WebServiceSenderResultTest extends Mockito {
 	void simpleSoapMultiPartResponseMocked500StatusCode() throws IOException, ConfigurationException, SenderException {
 		WebServiceSender sender = createWebServiceSenderFromFile("soapMultipart.txt", "multipart/form-data", 500);
 
-		PipeLineSession pls = new PipeLineSession();
-
 		sender.configure();
-		sender.open();
+		sender.start();
 
-		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message("tralala"), pls).asString());
+		try (PipeLineSession pls = new PipeLineSession(); Message message = new Message("tralala")) {
+			assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(message, pls).asString());
+		}
 	}
 
 	@Test
 	void simpleInvalidMultipartResponse() throws Exception {
 		WebServiceSender sender = createWebServiceSenderFromFile("soapMultipart2.txt", "multipart/form-data", 200);
 
-		PipeLineSession pls = new PipeLineSession();
-
 		sender.configure();
-		sender.open();
+		sender.start();
 
-		Throwable exception = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message("tralala"), pls).asString());
-		assertTrue(exception.getMessage().contains("Missing start boundary"));
+		try (PipeLineSession pls = new PipeLineSession(); Message message = new Message("tralala")) {
+			Throwable exception = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(message, pls).asString());
+			assertTrue(exception.getMessage().contains("Missing start boundary"));
+		}
 	}
 
 	@Test
 	void soapFault() throws Exception {
 		WebServiceSender sender = createWebServiceSenderFromFile("soapFault.txt", "text/xml", 500);
 
-		PipeLineSession pls = new PipeLineSession();
-
 		sender.configure();
-		sender.open();
+		sender.start();
 
-		Throwable exception = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message("tralala"), pls));
-		assertTrue(exception.getMessage().contains("SOAP fault [soapenv:Client]: much error"));
+		try (PipeLineSession pls = new PipeLineSession(); Message message = new Message("tralala")) {
+			Throwable exception = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(message, pls));
+			assertTrue(exception.getMessage().contains("SOAP fault [soapenv:Client]: much error"));
+		}
 	}
 
 	@Test
@@ -173,7 +180,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertEquals("<TestElement xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">test value</TestElement>", result.trim());
@@ -181,7 +188,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		int multipartAttachmentCount = 0;
 		for (Map.Entry<String, Object> entry : pls.entrySet()) {
 			if (entry.getKey().startsWith("multipart")) {
-				System.out.println("found multipart key["+entry.getKey()+"] type["+(entry.getValue().getClass())+"]");
+				log.info("found multipart key[{}] type[{}]", entry::getKey, () -> entry.getValue().getClass());
 				multipartAttachmentCount++;
 			}
 		}

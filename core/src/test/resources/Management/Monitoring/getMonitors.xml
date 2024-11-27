@@ -1,9 +1,9 @@
 <monitoring>
 	<destination/>
-	<monitor name="TestMonitor" type="FUNCTIONAL">
-		<trigger className="org.frankframework.monitoring.Alarm" period="42" severity="HARMLESS" threshold="1337">
-			<event>testEvent1</event>
-			<adapterfilter adapter="dummyAdapterName"/>
-		</trigger>
-	</monitor>
+	<Monitor name="TestMonitor" type="FUNCTIONAL">
+		<AlarmTrigger period="42" severity="HARMLESS" threshold="1337">
+			<Event>testEvent1</Event>
+			<Adapterfilter adapter="dummyAdapterName"/>
+		</AlarmTrigger>
+	</Monitor>
 </monitoring>

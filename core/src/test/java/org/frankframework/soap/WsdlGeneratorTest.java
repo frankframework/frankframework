@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.ByteArrayOutputStream;
 import java.net.URL;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
@@ -17,7 +19,6 @@ import org.frankframework.pipes.XmlValidator;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.Test;
 
 public class WsdlGeneratorTest {
 
@@ -25,15 +26,15 @@ public class WsdlGeneratorTest {
 
 	private PipeLine createPipeline() throws Exception {
 		EchoPipe pipe = new EchoPipe();
-		pipe.registerForward(new PipeForward("success",null));
+		pipe.addForward(new PipeForward("success",null));
 		pipe.setName(pipe.getClass().getSimpleName().concat("4WsdlGeneratorTest"));
 		PipeLine pipeline = configuration.createBean(PipeLine.class);
 		pipeline.addPipe(pipe);
 
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("exit");
+		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
-		pipeline.registerPipeLineExit(exit);
+		pipeline.addPipeLineExit(exit);
 
 		Adapter adapter = configuration.createBean(Adapter.class);
 		adapter.setName(pipe.getClass().getSimpleName().concat("4WsdlGeneratorTest"));

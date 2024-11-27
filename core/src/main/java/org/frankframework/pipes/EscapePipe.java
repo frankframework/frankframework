@@ -23,8 +23,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
@@ -37,7 +37,7 @@ import lombok.Getter;
  *
  * @author Peter Leeuwenburgh
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(Type.TRANSLATOR)
 public class EscapePipe extends FixedForwardPipe {
 
 	private @Getter String substringStart;
@@ -46,7 +46,7 @@ public class EscapePipe extends FixedForwardPipe {
 	private boolean encodeSubstring = false;
 
 	public enum Direction {
-		ENCODE, DECODE, CDATA2TEXT;
+		ENCODE, DECODE, CDATA2TEXT
 	}
 
 	@Override

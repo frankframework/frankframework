@@ -1,18 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { SchedulerAddEditParent } from '../scheduler-add-edit-parent';
-import { AppService } from 'src/app/app.service';
+import { AppService, ServerErrorResponse } from 'src/app/app.service';
 import { SchedulerService } from '../scheduler.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-scheduler-add',
   templateUrl: '../scheduler-add-edit-parent.component.html',
   styleUrls: ['./scheduler-add.component.scss'],
 })
-export class SchedulerAddComponent
-  extends SchedulerAddEditParent
-  implements OnInit
-{
+export class SchedulerAddComponent extends SchedulerAddEditParent implements OnInit, OnDestroy {
+  private subscriptions: Subscription = new Subscription();
+
   constructor(
     private appService: AppService,
     private schedulerService: SchedulerService,
@@ -22,14 +22,20 @@ export class SchedulerAddComponent
 
   ngOnInit(): void {
     this.configurations = this.appService.configurations;
-    this.appService.configurations$.subscribe(() => {
+    const configurationsSubscription = this.appService.configurations$.subscribe(() => {
       this.configurations = this.appService.configurations;
     });
+    this.subscriptions.add(configurationsSubscription);
 
     this.adapters = this.appService.adapters;
-    this.appService.adapters$.subscribe(() => {
+    const adaptersSubscription = this.appService.adapters$.subscribe(() => {
       this.adapters = this.appService.adapters;
     });
+    this.subscriptions.add(adaptersSubscription);
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   submit(): void {
@@ -67,9 +73,13 @@ export class SchedulerAddComponent
         };
       },
       error: (errorData: HttpErrorResponse) => {
-        const error = errorData.error
-          ? errorData.error.error
-          : errorData.message;
+        let error = '';
+        try {
+          const errorResponse = JSON.parse(errorData.error) as ServerErrorResponse | undefined;
+          error = errorResponse ? errorResponse.error : errorData.message;
+        } catch {
+          error = errorData.message;
+        }
         this.addLocalAlert('warning', error);
       },
     }); //TODO no intercept

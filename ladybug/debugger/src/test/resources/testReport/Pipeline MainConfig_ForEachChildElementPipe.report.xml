@@ -1,0 +1,1511 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="17.0.6" class="java.beans.XMLDecoder">
+ <object class="nl.nn.testtool.Report" id="Report0">
+  <void property="checkpoints">
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="message">
+      <string>&lt;requests&gt;
+	&lt;request&gt;hello&lt;/request&gt;
+	&lt;request&gt;hi&lt;/request&gt;
+&lt;/requests&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[7d9a20f6:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipeline MainConfig/ForEachChildElementPipe</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.core.PipeLine</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>XMLEncoder</string>
+     </void>
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;java version=&quot;17.0.6&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;boolean&gt;false&lt;/boolean&gt;
+&lt;/java&gt;
+</string>
+     </void>
+     <void property="messageClassName">
+      <string>java.lang.Boolean</string>
+     </void>
+     <void property="name">
+      <string>SystemKey __isManualRetry</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>Test Tool correlation id(2)</string>
+     </void>
+     <void property="name">
+      <string>SessionKey cid</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>synthetic-message-id-0a000a6f--7e48fbbb_1924c4ab500_-7ffd</string>
+     </void>
+     <void property="name">
+      <string>SessionKey mid</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>&lt;requests&gt;
+	&lt;request&gt;hello&lt;/request&gt;
+	&lt;request&gt;hi&lt;/request&gt;
+&lt;/requests&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[7d9a20f6:String]</string>
+     </void>
+     <void property="name">
+      <string>SessionKey originalMessage</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>2024-10-02 10:17:21.585</string>
+     </void>
+     <void property="name">
+      <string>SessionKey tsReceived</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>&lt;requests&gt;
+	&lt;request&gt;hello&lt;/request&gt;
+	&lt;request&gt;hi&lt;/request&gt;
+&lt;/requests&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[7d9a20f6:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipe ForEachChildElementPipe_Record</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.ForEachChildElementPipe</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>&lt;pipe className=&quot;org.frankframework.pipes.ForEachChildElementPipe&quot; elementXPathExpression=&quot;requests/request&quot; name=&quot;ForEachChildElementPipe_Record&quot;&gt;
+	&lt;sender className=&quot;org.frankframework.senders.IbisLocalSender&quot; javaListener=&quot;ForEachChildElementPipe_Record&quot;/&gt;
+&lt;/pipe&gt;</string>
+     </void>
+     <void property="name">
+      <string>Pipe ForEachChildElementPipe_Record</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.ForEachChildElementPipe</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238</string>
+     </void>
+     <void property="type">
+      <int>6</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="name">
+      <string>Thread</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.ForEachChildElementPipe</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>8</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>3</int>
+     </void>
+     <void property="message">
+      <string>&lt;request&gt;hello&lt;/request&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[6179c9b4:String]</string>
+     </void>
+     <void property="name">
+      <string>Sender ForEachChildElementPipe_Record-sender</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.senders.IbisLocalSender</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>4</int>
+     </void>
+     <void property="message">
+      <string>&lt;request&gt;hello&lt;/request&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[6179c9b4:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipeline MainConfig/ForEachChildElementPipe_Record</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.core.PipeLine</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>XMLEncoder</string>
+     </void>
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;java version=&quot;17.0.6&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;boolean&gt;false&lt;/boolean&gt;
+&lt;/java&gt;
+</string>
+     </void>
+     <void property="messageClassName">
+      <string>java.lang.Boolean</string>
+     </void>
+     <void property="name">
+      <string>SystemKey __isManualRetry</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>Test Tool correlation id(2)</string>
+     </void>
+     <void property="name">
+      <string>SessionKey cid</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>synthetic-message-id-0a000a6f--7e48fbbb_1924c4ab500_-7ffc</string>
+     </void>
+     <void property="name">
+      <string>SessionKey mid</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>&lt;request&gt;hello&lt;/request&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[6179c9b4:String]</string>
+     </void>
+     <void property="name">
+      <string>SessionKey originalMessage</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>2024-10-02 10:17:21.629</string>
+     </void>
+     <void property="name">
+      <string>SessionKey tsReceived</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>&lt;request&gt;hello&lt;/request&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[6179c9b4:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipe switch</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.XmlSwitch</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>6</int>
+     </void>
+     <void property="message">
+      <string>&lt;pipe className=&quot;org.frankframework.pipes.XmlSwitch&quot; name=&quot;switch&quot; xpathExpression=&quot;request&quot;/&gt;</string>
+     </void>
+     <void property="name">
+      <string>Pipe switch</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.XmlSwitch</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>6</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>6</int>
+     </void>
+     <void property="message">
+      <string>&lt;request&gt;hello&lt;/request&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[6179c9b4:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipe switch</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.XmlSwitch</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>&lt;request&gt;hello&lt;/request&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[6179c9b4:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipe hello</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.EchoPipe</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>6</int>
+     </void>
+     <void property="message">
+      <string>&lt;pipe className=&quot;org.frankframework.pipes.EchoPipe&quot; getInputFromFixedValue=&quot;&amp;lt;reply&amp;gt;goodbye&amp;lt;/reply&amp;gt;&quot; name=&quot;hello&quot;&gt;
+	&lt;forward name=&quot;success&quot; path=&quot;EXIT&quot;/&gt;
+&lt;/pipe&gt;</string>
+     </void>
+     <void property="name">
+      <string>Pipe hello</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.EchoPipe</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>6</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>6</int>
+     </void>
+     <void property="message">
+      <string>&lt;reply&gt;goodbye&lt;/reply&gt;</string>
+     </void>
+     <void property="name">
+      <string>GetInputFromFixedValue</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>6</int>
+     </void>
+     <void property="message">
+      <string>&lt;reply&gt;goodbye&lt;/reply&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[518cb1c:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipe hello</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.EchoPipe</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>SUCCESS</string>
+     </void>
+     <void property="name">
+      <string>exitState</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>5</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>&lt;reply&gt;goodbye&lt;/reply&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[518cb1c:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipeline MainConfig/ForEachChildElementPipe_Record</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.core.PipeLine</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>XMLEncoder</string>
+     </void>
+     <void property="level">
+      <int>4</int>
+     </void>
+     <void property="message">
+      <string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;java version=&quot;17.0.6&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;object class=&quot;java.lang.Enum&quot; method=&quot;valueOf&quot;&gt;
+  &lt;class&gt;org.frankframework.core.PipeLine$ExitState&lt;/class&gt;
+  &lt;string&gt;SUCCESS&lt;/string&gt;
+ &lt;/object&gt;
+&lt;/java&gt;
+</string>
+     </void>
+     <void property="messageClassName">
+      <string>org.frankframework.core.PipeLine$ExitState</string>
+     </void>
+     <void property="name">
+      <string>SessionKey exitState</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>5</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>XMLEncoder</string>
+     </void>
+     <void property="level">
+      <int>4</int>
+     </void>
+     <void property="message">
+      <string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;java version=&quot;17.0.6&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;boolean&gt;true&lt;/boolean&gt;
+&lt;/java&gt;
+</string>
+     </void>
+     <void property="messageClassName">
+      <string>java.lang.Boolean</string>
+     </void>
+     <void property="name">
+      <string>success</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>5</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>4</int>
+     </void>
+     <void property="message">
+      <string>&lt;reply&gt;goodbye&lt;/reply&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[518cb1c:String]</string>
+     </void>
+     <void property="name">
+      <string>Sender ForEachChildElementPipe_Record-sender</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.senders.IbisLocalSender</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>3</int>
+     </void>
+     <void property="message">
+      <string>&lt;request&gt;hi&lt;/request&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[6351c452:String]</string>
+     </void>
+     <void property="name">
+      <string>Sender ForEachChildElementPipe_Record-sender</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.senders.IbisLocalSender</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>4</int>
+     </void>
+     <void property="message">
+      <string>&lt;request&gt;hi&lt;/request&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[6351c452:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipeline MainConfig/ForEachChildElementPipe_Record</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.core.PipeLine</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>XMLEncoder</string>
+     </void>
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;java version=&quot;17.0.6&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;boolean&gt;false&lt;/boolean&gt;
+&lt;/java&gt;
+</string>
+     </void>
+     <void property="messageClassName">
+      <string>java.lang.Boolean</string>
+     </void>
+     <void property="name">
+      <string>SystemKey __isManualRetry</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>Test Tool correlation id(2)</string>
+     </void>
+     <void property="name">
+      <string>SessionKey cid</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>synthetic-message-id-0a000a6f--7e48fbbb_1924c4ab500_-7ffb</string>
+     </void>
+     <void property="name">
+      <string>SessionKey mid</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>&lt;request&gt;hi&lt;/request&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[6351c452:String]</string>
+     </void>
+     <void property="name">
+      <string>SessionKey originalMessage</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>2024-10-02 10:17:21.651</string>
+     </void>
+     <void property="name">
+      <string>SessionKey tsReceived</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>&lt;request&gt;hi&lt;/request&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[6351c452:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipe switch</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.XmlSwitch</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>6</int>
+     </void>
+     <void property="message">
+      <string>&lt;pipe className=&quot;org.frankframework.pipes.XmlSwitch&quot; name=&quot;switch&quot; xpathExpression=&quot;request&quot;/&gt;</string>
+     </void>
+     <void property="name">
+      <string>Pipe switch</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.XmlSwitch</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>6</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>6</int>
+     </void>
+     <void property="message">
+      <string>&lt;request&gt;hi&lt;/request&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[6351c452:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipe switch</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.XmlSwitch</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>&lt;request&gt;hi&lt;/request&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[6351c452:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipe hi</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.EchoPipe</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>6</int>
+     </void>
+     <void property="message">
+      <string>&lt;pipe className=&quot;org.frankframework.pipes.EchoPipe&quot; getInputFromFixedValue=&quot;&amp;lt;reply&amp;gt;ha&amp;lt;/reply&amp;gt;&quot; name=&quot;hi&quot;&gt;
+	&lt;forward name=&quot;success&quot; path=&quot;EXIT&quot;/&gt;
+&lt;/pipe&gt;</string>
+     </void>
+     <void property="name">
+      <string>Pipe hi</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.EchoPipe</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>6</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>6</int>
+     </void>
+     <void property="message">
+      <string>&lt;reply&gt;ha&lt;/reply&gt;</string>
+     </void>
+     <void property="name">
+      <string>GetInputFromFixedValue</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>6</int>
+     </void>
+     <void property="message">
+      <string>&lt;reply&gt;ha&lt;/reply&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[5a28ab54:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipe hi</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.EchoPipe</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>SUCCESS</string>
+     </void>
+     <void property="name">
+      <string>exitState</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>5</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>&lt;reply&gt;ha&lt;/reply&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[5a28ab54:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipeline MainConfig/ForEachChildElementPipe_Record</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.core.PipeLine</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>XMLEncoder</string>
+     </void>
+     <void property="level">
+      <int>4</int>
+     </void>
+     <void property="message">
+      <string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;java version=&quot;17.0.6&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;object class=&quot;java.lang.Enum&quot; method=&quot;valueOf&quot;&gt;
+  &lt;class&gt;org.frankframework.core.PipeLine$ExitState&lt;/class&gt;
+  &lt;string&gt;SUCCESS&lt;/string&gt;
+ &lt;/object&gt;
+&lt;/java&gt;
+</string>
+     </void>
+     <void property="messageClassName">
+      <string>org.frankframework.core.PipeLine$ExitState</string>
+     </void>
+     <void property="name">
+      <string>SessionKey exitState</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>5</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>XMLEncoder</string>
+     </void>
+     <void property="level">
+      <int>4</int>
+     </void>
+     <void property="message">
+      <string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;java version=&quot;17.0.6&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;boolean&gt;true&lt;/boolean&gt;
+&lt;/java&gt;
+</string>
+     </void>
+     <void property="messageClassName">
+      <string>java.lang.Boolean</string>
+     </void>
+     <void property="name">
+      <string>success</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>5</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>4</int>
+     </void>
+     <void property="message">
+      <string>&lt;reply&gt;ha&lt;/reply&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[5a28ab54:String]</string>
+     </void>
+     <void property="name">
+      <string>Sender ForEachChildElementPipe_Record-sender</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.senders.IbisLocalSender</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>3</int>
+     </void>
+     <void property="name">
+      <string>Thread</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.ForEachChildElementPipe</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238/Thread-239</string>
+     </void>
+     <void property="type">
+      <int>9</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>&lt;root&gt;
+	&lt;request&gt;hello&lt;/request&gt;
+	&lt;request&gt;hi&lt;/request&gt;
+&lt;/root&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>request to provide outputstream</string>
+     </void>
+     <void property="name">
+      <string>XML after preprocessing: filter XPath &apos;requests/request&apos;</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="streaming">
+      <string>Character</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>UTF-8</string>
+     </void>
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>&lt;results&gt;
+&lt;result item=&quot;1&quot;&gt;
+&lt;reply&gt;goodbye&lt;/reply&gt;
+&lt;/result&gt;
+&lt;result item=&quot;2&quot;&gt;
+&lt;reply&gt;ha&lt;/reply&gt;
+&lt;/result&gt;
+&lt;/results&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[17283e2:byte[]]</string>
+     </void>
+     <void property="name">
+      <string>Pipe ForEachChildElementPipe_Record</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.ForEachChildElementPipe</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>UTF-8</string>
+     </void>
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>&lt;results&gt;
+&lt;result item=&quot;1&quot;&gt;
+&lt;reply&gt;goodbye&lt;/reply&gt;
+&lt;/result&gt;
+&lt;result item=&quot;2&quot;&gt;
+&lt;reply&gt;ha&lt;/reply&gt;
+&lt;/result&gt;
+&lt;/results&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[17283e2:byte[]]</string>
+     </void>
+     <void property="name">
+      <string>Pipe echo</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.RetrieveContextPipe</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>&lt;pipe className=&quot;org.frankframework.pipes.RetrieveContextPipe&quot; name=&quot;echo&quot;/&gt;</string>
+     </void>
+     <void property="name">
+      <string>Pipe echo</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.RetrieveContextPipe</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238</string>
+     </void>
+     <void property="type">
+      <int>6</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>{&quot;message&quot;:&quot;&lt;results&gt;\n&lt;result item=\&quot;1\&quot;&gt;\n&lt;reply&gt;goodbye&lt;\/reply&gt;\n&lt;\/result&gt;\n&lt;result item=\&quot;2\&quot;&gt;\n&lt;reply&gt;ha&lt;\/reply&gt;\n&lt;\/result&gt;\n&lt;\/results&gt;&quot;,&quot;messageContext&quot;:{},&quot;logContext&quot;:{&quot;listener.type&quot;:&quot;JavaListener&quot;,&quot;adapter&quot;:&quot;ForEachChildElementPipe&quot;,&quot;exit.state&quot;:&quot;SUCCESS&quot;,&quot;pipeline.duration&quot;:&quot;10&quot;,&quot;listener&quot;:&quot;listener of [JavaListener]&quot;,&quot;pipe&quot;:&quot;echo&quot;,&quot;cid&quot;:&quot;Test Tool correlation id(2)&quot;}}</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[23939850:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipe echo</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.RetrieveContextPipe</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>SUCCESS</string>
+     </void>
+     <void property="name">
+      <string>exitState</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-238</string>
+     </void>
+     <void property="type">
+      <int>5</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>{&quot;message&quot;:&quot;&lt;results&gt;\n&lt;result item=\&quot;1\&quot;&gt;\n&lt;reply&gt;goodbye&lt;\/reply&gt;\n&lt;\/result&gt;\n&lt;result item=\&quot;2\&quot;&gt;\n&lt;reply&gt;ha&lt;\/reply&gt;\n&lt;\/result&gt;\n&lt;\/results&gt;&quot;,&quot;messageContext&quot;:{},&quot;logContext&quot;:{&quot;listener.type&quot;:&quot;JavaListener&quot;,&quot;adapter&quot;:&quot;ForEachChildElementPipe&quot;,&quot;exit.state&quot;:&quot;SUCCESS&quot;,&quot;pipeline.duration&quot;:&quot;10&quot;,&quot;listener&quot;:&quot;listener of [JavaListener]&quot;,&quot;pipe&quot;:&quot;echo&quot;,&quot;cid&quot;:&quot;Test Tool correlation id(2)&quot;}}</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[23939850:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipeline MainConfig/ForEachChildElementPipe</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.core.PipeLine</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-238</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+  </void>
+  <void property="correlationId">
+   <string>Test Tool correlation id(2)</string>
+  </void>
+  <void property="endTime">
+   <long>1727857041685</long>
+  </void>
+  <void property="name">
+   <string>Pipeline MainConfig_ForEachChildElementPipe</string>
+  </void>
+  <void property="startTime">
+   <long>1727857041586</long>
+  </void>
+  <void property="storageId">
+   <int>3</int>
+  </void>
+  <void property="stubStrategy">
+   <string>Stub all senders</string>
+  </void>
+ </object>
+</java>

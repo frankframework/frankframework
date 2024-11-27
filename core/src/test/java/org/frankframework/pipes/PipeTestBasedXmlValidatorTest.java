@@ -4,8 +4,9 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.frankframework.core.PipeForward;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.core.PipeForward;
 
 public class PipeTestBasedXmlValidatorTest extends PipeTestBase<XmlValidator> {
 	public static String BASE_DIR_VALIDATION="/Validation";
@@ -23,7 +24,7 @@ public class PipeTestBasedXmlValidatorTest extends PipeTestBase<XmlValidator> {
 		pipe.setRoot("Root");
 		pipe.setReasonSessionKey("reason");
 		pipe.setThrowException(true);
-		pipe.registerForward(new PipeForward("success", null));
+		pipe.addForward(new PipeForward("success", null));
 		pipe.setSchemaLocation(SCHEMA_LOCATION_FACET_ERROR);
 		configureAndStartPipe();
 		assertEquals(1, getConfigurationWarnings().size());

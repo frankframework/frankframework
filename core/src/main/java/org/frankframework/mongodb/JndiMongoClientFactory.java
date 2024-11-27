@@ -18,19 +18,17 @@ package org.frankframework.mongodb;
 import java.util.List;
 import java.util.Properties;
 
-import javax.naming.NamingException;
-
-import org.frankframework.jdbc.datasource.ObjectFactoryBase;
-import org.frankframework.util.AppConstants;
-
 import com.mongodb.client.MongoClient;
+
+import org.frankframework.jdbc.datasource.ObjectFactory;
+import org.frankframework.util.AppConstants;
 
 /**
  * MongoClientFactory that retrieves its configuration from JNDI.
  *
  * @author Gerrit van Brakel
  */
-public class JndiMongoClientFactory extends ObjectFactoryBase<MongoClient> implements IMongoClientFactory {
+public class JndiMongoClientFactory extends ObjectFactory<MongoClient> implements IMongoClientFactory {
 
 	public static final String DEFAULT_DATASOURCE_NAME_PROPERTY = "mongodb.datasource.default";
 	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT = "mongodb/MongoClient";
@@ -41,12 +39,12 @@ public class JndiMongoClientFactory extends ObjectFactoryBase<MongoClient> imple
 	}
 
 	@Override
-	public MongoClient getMongoClient(String name) throws NamingException {
+	public MongoClient getMongoClient(String name) {
 		return getMongoClient(name, null);
 	}
 
 	@Override
-	public MongoClient getMongoClient(String dataSourceName, Properties environment) throws NamingException {
+	public MongoClient getMongoClient(String dataSourceName, Properties environment) {
 		return get(dataSourceName, environment);
 	}
 

@@ -3,15 +3,12 @@ import { copyToClipboard } from '../utils';
 
 @Pipe({
   name: 'truncate',
+  standalone: true,
 })
 export class TruncatePipe implements PipeTransform {
   constructor() {}
 
-  transform(
-    value: string,
-    length: number,
-    onclickElement?: HTMLElement,
-  ): string {
+  transform(value: string, length: number, onclickElement?: HTMLElement): string {
     if (!(value && value.length > length)) return value;
 
     if (onclickElement) {
@@ -20,8 +17,6 @@ export class TruncatePipe implements PipeTransform {
       });
     }
 
-    return `${value.slice(0, Math.max(0, length))}... (${
-      value.length - length
-    } characters more)`;
+    return `${value.slice(0, Math.max(0, length))}... (${value.length - length} characters more)`;
   }
 }

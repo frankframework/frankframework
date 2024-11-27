@@ -49,7 +49,7 @@ import org.frankframework.util.XmlUtils;
  * @author Peter Leeuwenburgh
  */
 
-@Category("NN-Special")
+@Category(Category.Type.NN_SPECIAL)
 public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 
 	private String url;
@@ -110,10 +110,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 						// skipDir(xmlStreamWriter, token);
 					} else {
 						String newUrl = cUrl + token;
-						boolean dir = false;
-						if (token.endsWith("/")) {
-							dir = true;
-						}
+						boolean dir = token.endsWith("/");
 						if (dir) {
 							xmlStreamWriter.writeStartElement("dir");
 							xmlStreamWriter.writeAttribute("name",
@@ -415,12 +412,13 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 			httpSender.setIgnoreCertificateExpiredException(true);
 			httpSender.setXhtml(true);
 			httpSender.configure();
-			httpSender.open();
-			try (Message result = httpSender.sendMessageOrThrow(Message.nullMessage(), null)) {
+			httpSender.start();
+			try (PipeLineSession session = new PipeLineSession();
+				Message result = httpSender.sendMessageOrThrow(Message.nullMessage(), session)) {
 				return result.asString();
 			}
 		} finally {
-			httpSender.close();
+			httpSender.stop();
 		}
 	}
 

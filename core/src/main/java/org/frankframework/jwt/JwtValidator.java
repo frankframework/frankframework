@@ -16,12 +16,9 @@
 package org.frankframework.jwt;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -42,6 +39,7 @@ import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 public class JwtValidator<C extends SecurityContext> {
 
@@ -54,7 +52,7 @@ public class JwtValidator<C extends SecurityContext> {
 		jwtProcessor = new DefaultJWTProcessor<>();
 	}
 
-	public void init(String jwksUrl, String requiredIssuer) throws ParseException, MalformedURLException, IOException {
+	public void init(String jwksUrl, String requiredIssuer) throws ParseException, IOException {
 		JWKSource<C> keySource = getKeySource(new URL(jwksUrl));
 
 		// The expected JWS algorithm of the access tokens (agreed out-of-band)

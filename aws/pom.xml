@@ -20,19 +20,22 @@
 			<artifactId>frankframework-filesystem</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId>aws-java-sdk-s3</artifactId>
-			<version>1.12.687</version>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>auth</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>apache-client</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>amazon-sqs-java-messaging-lib</artifactId>
-			<version>2.0.3</version><!-- Stay at 2.0.x, due to jakarta package names in 2.1.x libs -->
+			<version>2.1.2</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.geronimo.specs</groupId>
@@ -46,12 +49,17 @@
 			<version>${micrometer.version}</version>
 		</dependency>
 
+		<!-- Provided scoped dependencies -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>jakarta.jms</groupId>
 			<artifactId>jakarta.jms-api</artifactId>
 		</dependency>
 
-		<!-- Test scoped and provided dependencies -->
+		<!-- Test scoped dependencies -->
 		<dependency>
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-core</artifactId>
@@ -67,18 +75,6 @@
 			<type>test-jar</type>
 			<version>${project.version}</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.findify</groupId>
-			<artifactId>s3mock_2.13</artifactId>
-			<version>0.2.6</version>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>javax.xml.bind</groupId>
-					<artifactId>jaxb-api</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -98,9 +94,15 @@
 		</dependency>
 
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<scope>provided</scope>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.adobe.testing</groupId>
+			<artifactId>s3mock-testcontainers</artifactId>
+			<version>3.11.0</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

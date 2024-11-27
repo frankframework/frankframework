@@ -1,12 +1,12 @@
 package org.frankframework.xslt;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.SenderPipe;
 import org.frankframework.senders.XsltSender;
-import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool.OutputType;
-import org.junit.jupiter.api.Test;
 
 public class XsltSenderTest extends XsltErrorTestBase<SenderPipe> {
 
@@ -14,7 +14,7 @@ public class XsltSenderTest extends XsltErrorTestBase<SenderPipe> {
 
 	@Override
 	public SenderPipe createPipe() {
-		SenderPipe pipe=new SenderPipe();
+		SenderPipe pipe = new SenderPipe();
 		sender = new XsltSender();
 		autowireByType(sender);
 		pipe.setSender(sender);
@@ -40,12 +40,10 @@ public class XsltSenderTest extends XsltErrorTestBase<SenderPipe> {
 		String expected = TestFileUtils.getTestFile("/Xslt/MultiNamespace/out.txt");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = Message.asString(prr.getResult());
+		String result = prr.getResult().asString();
 
 		assertResultsAreCorrect(expected, result, session);
 	}
-
-
 
 	@Override
 	protected void setStyleSheetName(String styleSheetName) {
@@ -56,7 +54,6 @@ public class XsltSenderTest extends XsltErrorTestBase<SenderPipe> {
 	protected void setStyleSheetNameSessionKey(String styleSheetNameSessionKey) {
 		sender.setStyleSheetNameSessionKey(styleSheetNameSessionKey);
 	}
-
 
 	@Override
 	protected void setXpathExpression(String xpathExpression) {

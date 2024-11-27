@@ -24,7 +24,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 
@@ -35,7 +34,7 @@ import org.frankframework.util.LogUtil;
  * @author Niels Meijer
  */
 public class HttpMessageEntity extends AbstractHttpEntity {
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 	private final Message message;
 
 	public HttpMessageEntity(Message message) {

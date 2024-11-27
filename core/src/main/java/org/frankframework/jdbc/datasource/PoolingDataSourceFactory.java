@@ -22,16 +22,15 @@ import javax.sql.CommonDataSource;
 import javax.sql.ConnectionPoolDataSource;
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp2.ConnectionFactory;
-import org.apache.commons.dbcp2.DataSourceConnectionFactory;
-import org.apache.commons.dbcp2.PoolableConnection;
-import org.apache.commons.dbcp2.PoolableConnectionFactory;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.frankframework.util.AppConstants;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.tomcat.dbcp.dbcp2.ConnectionFactory;
+import org.apache.tomcat.dbcp.dbcp2.DataSourceConnectionFactory;
+import org.apache.tomcat.dbcp.dbcp2.PoolableConnection;
+import org.apache.tomcat.dbcp.dbcp2.PoolableConnectionFactory;
+import org.apache.tomcat.dbcp.pool2.impl.GenericObjectPool;
+import org.frankframework.util.AppConstants;
 
 /**
  * Factory through which (TX-enabled) Pooling DataSources can be retrieved.

@@ -20,10 +20,6 @@ import io.micrometer.core.instrument.Meter.Type;
 import lombok.Getter;
 
 public enum FrankMeterType {
-	TOTAL_MESSAGES_IN_ERROR("frank.messagesInError", Meter.Type.COUNTER),
-	TOTAL_MESSAGES_PROCESSED("frank.messagesProcessed", Meter.Type.COUNTER),
-	TOTAL_MESSAGES_REJECTED("frank.messagesRejected", Meter.Type.COUNTER),
-
 	JOB_DURATION("frank.job.duration", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT),
 
 	PIPE_DURATION("frank.pipe.duration", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT),
@@ -38,12 +34,19 @@ public enum FrankMeterType {
 	PIPELINE_PROCESSED("frank.pipeline.messagesProcessed", Meter.Type.COUNTER),
 	PIPELINE_IN_PROCESS("frank.pipeline.messagesInProcess", Meter.Type.GAUGE),
 
-
 	RECEIVER_DURATION("frank.receiver.duration", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT),
-	RECEIVER_IDLE("frank.receiver.idle", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT),
 	RECEIVER_RECEIVED("frank.receiver.messagesReceived", Meter.Type.COUNTER),
 	RECEIVER_REJECTED("frank.receiver.messagesRejected", Meter.Type.COUNTER),
-	RECEIVER_RETRIED("frank.receiver.messagesRetried", Meter.Type.COUNTER);
+	RECEIVER_RETRIED("frank.receiver.messagesRetried", Meter.Type.COUNTER),
+
+	SENDER_HTTP("frank.http.requests", Meter.Type.TIMER),
+	SENDER_HTTP_POOL_MAX("frank.http.pool.max", Meter.Type.GAUGE),
+	SENDER_HTTP_POOL_AVAILABLE("frank.http.pool.available", Meter.Type.GAUGE),
+	SENDER_HTTP_POOL_LEASED("frank.http.pool.leased", Meter.Type.GAUGE),
+	SENDER_HTTP_POOL_PENDING("frank.http.pool.pending", Meter.Type.GAUGE),
+
+	LISTENER_MESSAGE_PEEKING("frank.listener.messagePeeking", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT),
+	LISTENER_MESSAGE_RECEIVING("frank.listener.messageReceiving", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT);
 
 	public static final String TIME_UNIT = "ms";
 	public static final String SIZE_UNIT = "B";
@@ -52,11 +55,11 @@ public enum FrankMeterType {
 	private final @Getter Type meterType;
 	private final @Getter String baseUnit;
 
-	private FrankMeterType(String meterName, Type type) {
+	FrankMeterType(String meterName, Type type) {
 		this(meterName, type, null);
 	}
 
-	private FrankMeterType(String meterName, Type type, String units) {
+	FrankMeterType(String meterName, Type type, String units) {
 		this.meterName = meterName;
 		this.meterType = type;
 		this.baseUnit = units;

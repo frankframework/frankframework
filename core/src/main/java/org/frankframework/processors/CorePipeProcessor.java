@@ -15,6 +15,8 @@
 */
 package org.frankframework.processors;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeLine;
@@ -23,9 +25,6 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 /**
  * @author Jaco de Groot
  */
@@ -33,11 +32,13 @@ public class CorePipeProcessor implements PipeProcessor {
 
 	@Override
 	public PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
+		if (message != null) message.assertNotClosed();
 		return pipe.doPipe(message, pipeLineSession);
 	}
 
 	@Override
 	public PipeRunResult validate(@Nonnull PipeLine pipeLine, @Nonnull IValidator validator, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
+		if (message != null) message.assertNotClosed();
 		return validator.validate(message, pipeLineSession, messageRoot);
 	}
 

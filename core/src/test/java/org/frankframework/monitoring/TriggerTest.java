@@ -13,12 +13,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.frankframework.core.Adapter;
-import org.frankframework.monitoring.events.ConsoleMonitorEvent;
-import org.frankframework.monitoring.events.FireMonitorEvent;
-import org.frankframework.monitoring.events.MonitorEvent;
-import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.util.XmlBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,6 +21,13 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import lombok.Getter;
+
+import org.frankframework.core.Adapter;
+import org.frankframework.monitoring.events.ConsoleMonitorEvent;
+import org.frankframework.monitoring.events.FireMonitorEvent;
+import org.frankframework.monitoring.events.MonitorEvent;
+import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.XmlBuilder;
 
 public class TriggerTest implements EventThrowing {
 	private static final String EVENT_CODE = "dummy code";
@@ -50,7 +51,7 @@ public class TriggerTest implements EventThrowing {
 
 		monitor.setName("monitorName");
 		manager.addMonitor(monitor);
-		manager.registerDestination(destination);
+		manager.addDestination(destination);
 		monitor.setDestinations(destination.getName());
 	}
 
@@ -65,9 +66,9 @@ public class TriggerTest implements EventThrowing {
 
 		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), anyString(), monitorEventCaptor.capture());
 
-		monitor.registerTrigger(trigger);
+		monitor.addTrigger(trigger);
 
-		trigger.addEventCode(EVENT_CODE);
+		trigger.addEventCodeText(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
 
 		manager.configure();
@@ -111,9 +112,9 @@ public class TriggerTest implements EventThrowing {
 
 		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), eventCode.capture(), monitorEventCaptor.capture());
 
-		monitor.registerTrigger(trigger);
+		monitor.addTrigger(trigger);
 
-		trigger.addEventCode(EVENT_CODE);
+		trigger.addEventCodeText(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
 		trigger.setThreshold(5);
 		trigger.setPeriod(1);
@@ -160,10 +161,10 @@ public class TriggerTest implements EventThrowing {
 
 		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), anyString(), monitorEventCaptor.capture());
 
-		monitor.registerTrigger(trigger);
+		monitor.addTrigger(trigger);
 		monitor.setAlarmSeverity(Severity.WARNING);
 
-		trigger.addEventCode(EVENT_CODE);
+		trigger.addEventCodeText(EVENT_CODE);
 		trigger.setSeverity(Severity.WARNING);
 
 		manager.configure();
@@ -204,9 +205,9 @@ public class TriggerTest implements EventThrowing {
 
 		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), eventCode.capture(), monitorEventCaptor.capture());
 
-		monitor.registerTrigger(trigger);
+		monitor.addTrigger(trigger);
 
-		trigger.addEventCode(EVENT_CODE);
+		trigger.addEventCodeText(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
 
 		manager.configure();
@@ -256,10 +257,10 @@ public class TriggerTest implements EventThrowing {
 		when(destination.toXml()).thenReturn(new XmlBuilder("destination"));
 
 		manager.addMonitor(monitor);
-		monitor.registerTrigger(trigger);
-		manager.registerDestination(destination);
+		monitor.addTrigger(trigger);
+		manager.addDestination(destination);
 		monitor.setDestinations(destination.getName());
-		trigger.addEventCode(EVENT_CODE);
+		trigger.addEventCodeText(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
 		monitor.setAlarmSeverity(Severity.WARNING);
 
@@ -268,6 +269,6 @@ public class TriggerTest implements EventThrowing {
 
 		// Assert
 		verify(trigger, times(1)).configure();
-		assertEquals(TestFileUtils.getTestFile("/Management/Monitoring/getManagerToXML.xml"), manager.toXml().toXML());
+		assertEquals(TestFileUtils.getTestFile("/Management/Monitoring/getManagerToXML.xml"), manager.toXml().asXmlString());
 	}
 }

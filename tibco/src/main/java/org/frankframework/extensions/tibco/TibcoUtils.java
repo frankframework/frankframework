@@ -16,17 +16,15 @@
 package org.frankframework.extensions.tibco;
 
 import java.util.Enumeration;
+import java.util.Map;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Queue;
-import javax.jms.QueueBrowser;
-import javax.jms.Session;
-
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.LogUtil;
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.Queue;
+import jakarta.jms.QueueBrowser;
+import jakarta.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
@@ -35,6 +33,9 @@ import org.apache.logging.log4j.Logger;
 import com.tibco.tibjms.admin.ServerInfo;
 import com.tibco.tibjms.admin.TibjmsAdmin;
 import com.tibco.tibjms.admin.TibjmsAdminException;
+
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.LogUtil;
 
 /**
  * Some utilities for working with TIBCO.
@@ -64,7 +65,7 @@ public class TibcoUtils {
 		try {
 			connection = getConnection(provUrl, authAlias, userName, password);
 			jSession = connection.createSession(false,
-					javax.jms.Session.AUTO_ACKNOWLEDGE);
+					jakarta.jms.Session.AUTO_ACKNOWLEDGE);
 			return getQueueFirstMessageAge(jSession, queueName, messageSelector);
 		} finally {
 			if (connection != null) {
@@ -129,8 +130,7 @@ public class TibcoUtils {
 					return currentTime - jmsTimestamp;
 				} else {
 					if (warn) {
-						log.warn("message was not of type Message, but ["
-								+ o.getClass().getName() + "]");
+						log.warn("message was not of type Message, but [{}]", o.getClass().getName());
 					}
 					return -2;
 				}
@@ -148,15 +148,13 @@ public class TibcoUtils {
 		}
 	}
 
-	protected static String getQueueFirstMessageAgeAsString(Session jSession,
-			String queueName, long currentTime) {
+	protected static String getQueueFirstMessageAgeAsString(Session jSession, String queueName, long currentTime) {
 		try {
-			long age = getQueueFirstMessageAge(jSession, queueName, null,
-					currentTime, false);
-			if (age == -2) {
-				return "??";
-			} else if (age == -1) {
+			long age = getQueueFirstMessageAge(jSession, queueName, null, currentTime, false);
+			if (age == -1) {
 				return null;
+			} else if (age < -1) {
+				return "??";
 			} else {
 				return DurationFormatUtils.formatDuration(age, "ddd-HH:mm:ss");
 			}
@@ -173,7 +171,7 @@ public class TibcoUtils {
 		try {
 			connection = getConnection(provUrl, authAlias, userName, password);
 			jSession = connection.createSession(false,
-					javax.jms.Session.AUTO_ACKNOWLEDGE);
+					jakarta.jms.Session.AUTO_ACKNOWLEDGE);
 			return getQueueMessageCount(jSession, queueName, messageSelector);
 		} finally {
 			if (connection != null) {
@@ -213,8 +211,7 @@ public class TibcoUtils {
 		}
 	}
 
-	protected static TibjmsAdmin getActiveServerAdmin(String url,
-			CredentialFactory cf) throws TibjmsAdminException {
+	protected static TibjmsAdmin getActiveServerAdmin(String url, CredentialFactory cf, Map<String, Object> connectionProperties) throws TibjmsAdminException {
 		TibjmsAdminException lastException = null;
 		TibjmsAdmin admin = null;
 		String[] uws = url.split(",");
@@ -227,8 +224,8 @@ public class TibcoUtils {
 				// The next line of code has been reported to throw the
 				// following exception:
 				//   com.tibco.tibjms.admin.TibjmsAdminException: Unable to connect to server. Root cause:
-				//   javax.jms.ResourceAllocationException: too many open connections
-				admin = new TibjmsAdmin(uw, cf.getUsername(), cf.getPassword());
+				//   jakarta.jms.ResourceAllocationException: too many open connections
+				admin = new TibjmsAdmin(uw, cf.getUsername(), cf.getPassword(), connectionProperties);
 				// The next line of code has been reported to throw the
 				// following exception:
 				//   com.tibco.tibjms.admin.TibjmsAdminSecurityException: Command unavailable on a server not in active state and using a JSON configuration file
@@ -245,13 +242,11 @@ public class TibcoUtils {
 				if (state == ServerInfo.SERVER_ACTIVE) {
 					uws_ok = true;
 				} else {
-					log.debug("Server [" + uw + "] is not active");
+					log.debug("Server [{}] is not active", uw);
 					try {
 						admin.close();
 					} catch (TibjmsAdminException e) {
-						log.warn(
-								"Exception on closing Tibjms Admin on server ["
-										+ uw + "]", e);
+						log.warn("Exception on closing Tibjms Admin on server [{}]", uw, e);
 					}
 				}
 			}
@@ -260,7 +255,7 @@ public class TibcoUtils {
 			log.warn("Could not find an active server", lastException);
 			return null;
 		} else {
-			log.debug("Found active server [" + uw + "]");
+			log.debug("Found active server [{}]", uw);
 			return admin;
 		}
 	}

@@ -8,15 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
 
-import javax.jms.BytesMessage;
-import javax.jms.TextMessage;
+import jakarta.jms.BytesMessage;
+import jakarta.jms.TextMessage;
 
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.stream.Message;
-import org.frankframework.testutil.MessageTestUtils;
-import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.EnumUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,8 +19,17 @@ import org.junit.jupiter.params.provider.EnumSource;
 
 import com.mockrunner.mock.jms.MockQueue;
 
-class JmsSenderTest {
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.statistics.MetricsInitializer;
+import org.frankframework.stream.Message;
+import org.frankframework.testutil.MessageTestUtils;
+import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.EnumUtils;
 
+class JmsSenderTest {
+	private TestConfiguration configuration;
 	private MockRunnerConnectionFactoryFactory mockFactory;
 	private MockQueue mockQueue;
 
@@ -36,6 +39,8 @@ class JmsSenderTest {
 
 	@BeforeEach
 	void setUp() throws Exception {
+		configuration = new TestConfiguration(false);
+
 		pipeLineSession = new PipeLineSession();
 		jmsSender = new JmsSender();
 
@@ -46,15 +51,17 @@ class JmsSenderTest {
 		jmsSender.setQueueConnectionFactoryName("mock");
 		jmsSender.setConnectionFactoryFactory(mockFactory);
 		jmsSender.setDestinationName("TestQueue");
+		jmsSender.setConfigurationMetrics(configuration.getBean("configurationMetrics", MetricsInitializer.class));
+		jmsSender.setApplicationContext(configuration.getApplicationContext());
 
 		jmsSender.configure();
-		jmsSender.open();
+		jmsSender.start();
 	}
 
 	@AfterEach
 	void tearDown() {
 		pipeLineSession.close();
-		jmsSender.close();
+		jmsSender.stop();
 	}
 
 	@Test
@@ -72,14 +79,14 @@ class JmsSenderTest {
 	@Test
 	void testSendMessageModeAutoWithTextMessage() throws Exception {
 		// Arrange
-		Message message = Message.asMessage("A Textual Message");
+		Message message = new Message("A Textual Message");
 		jmsSender.setMessageClass(JMSFacade.MessageClass.AUTO);
 
 		// Act
 		jmsSender.sendMessage(message, pipeLineSession);
 
 		// Assert
-		javax.jms.Message jmsMessage = mockQueue.getMessage();
+		jakarta.jms.Message jmsMessage = mockQueue.getMessage();
 		assertNotNull(jmsMessage);
 		assertInstanceOf(TextMessage.class, jmsMessage);
 
@@ -98,28 +105,28 @@ class JmsSenderTest {
 		jmsSender.sendMessage(message, pipeLineSession);
 
 		// Assert
-		javax.jms.Message jmsMessage = mockQueue.getMessage();
+		jakarta.jms.Message jmsMessage = mockQueue.getMessage();
 		assertNotNull(jmsMessage);
 		assertInstanceOf(BytesMessage.class, jmsMessage);
 
 		BytesMessage bytesMessage = (BytesMessage) jmsMessage;
 		byte[] data = new byte[(int) bytesMessage.getBodyLength()];
 		bytesMessage.readBytes(data);
-		Message result = Message.asMessage(data);
+		Message result = new Message(data);
 		assertEquals(message.asString(), result.asString());
 	}
 
 	@Test
 	void testSendMessageModeBytesWithTextMessage() throws Exception {
 		// Arrange
-		Message message = Message.asMessage("A Textual Message");
+		Message message = new Message("A Textual Message");
 		jmsSender.setMessageClass(JMSFacade.MessageClass.BYTES);
 
 		// Act
 		jmsSender.sendMessage(message, pipeLineSession);
 
 		// Assert
-		javax.jms.Message jmsMessage = mockQueue.getMessage();
+		jakarta.jms.Message jmsMessage = mockQueue.getMessage();
 		assertNotNull(jmsMessage);
 		assertTrue(jmsMessage instanceof BytesMessage);
 
@@ -132,14 +139,14 @@ class JmsSenderTest {
 	@Test
 	void testSendMessageModeTextWithBinaryMessage() throws Exception {
 		// Arrange
-		Message message = Message.asMessage("A Textual Message".getBytes(StandardCharsets.UTF_8));
+		Message message = new Message("A Textual Message".getBytes(StandardCharsets.UTF_8));
 		jmsSender.setMessageClass(JMSFacade.MessageClass.TEXT);
 
 		// Act
 		jmsSender.sendMessage(message, pipeLineSession);
 
 		// Assert
-		javax.jms.Message jmsMessage = mockQueue.getMessage();
+		jakarta.jms.Message jmsMessage = mockQueue.getMessage();
 		assertNotNull(jmsMessage);
 		assertTrue(jmsMessage instanceof TextMessage);
 

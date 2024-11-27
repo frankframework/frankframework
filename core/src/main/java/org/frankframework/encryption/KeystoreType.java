@@ -20,5 +20,5 @@ public enum KeystoreType {
 	PKCS12,
 	PEM,
 	JKS,
-	JCEKS;
+	JCEKS
 }

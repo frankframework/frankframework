@@ -25,6 +25,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.util.LogUtil;
 
 /**
@@ -34,6 +36,7 @@ import org.frankframework.util.LogUtil;
  * @author Johan Verrips IOS
  * @see JmsRealm
  */
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class JmsRealmFactory {
 	private final Logger log = LogUtil.getLogger(this);
 
@@ -72,7 +75,7 @@ public class JmsRealmFactory {
 	public JmsRealm getJmsRealm(String jmsRealmName) {
 		JmsRealm jmsRealm = jmsRealms.get(jmsRealmName);
 		if (jmsRealm == null) {
-			log.error("no JmsRealm found under name [" + jmsRealmName + "], factory contents [" + toString() + "]");
+			log.error("no JmsRealm found under name [{}], factory contents [{}]", jmsRealmName, this);
 		}
 		return jmsRealm;
 	}
@@ -110,10 +113,10 @@ public class JmsRealmFactory {
 	/**
 	 * Register a Realm
 	 */
-	public void registerJmsRealm(JmsRealm jmsRealm) {
+	public void addJmsRealm(JmsRealm jmsRealm) {
 		String realmName = jmsRealm.getRealmName();
 		if(jmsRealms.containsKey(realmName)) {
-			log.warn("overwriting JmsRealm [" + jmsRealm.toString() + "]. Realm with name ["+realmName+"] already exists");
+			log.warn("overwriting JmsRealm [{}]. Realm with name [{}] already exists", jmsRealm, realmName);
 		}
 		jmsRealms.put(realmName, jmsRealm);
 		log.debug("JmsRealmFactory registered realm [{}]", () -> jmsRealm.toString());

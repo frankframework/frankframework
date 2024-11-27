@@ -17,6 +17,7 @@ package org.frankframework.batch;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 

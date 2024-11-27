@@ -1,6 +1,6 @@
 <throwable>
   <class>org.frankframework.core.SenderException</class>
-  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-SendersExceptionInSubAdapter]: (RequestProcessorException) RequestProcessor [ibis4test-SendersExceptionInSubAdapter] caught exception: Pipe [Call ExceptionPipe] caught exception: IbisLocalSender [Call ExceptionPipe-sender] exception calling JavaListener [ExceptionPipe]: Pipe [Generate exception] &lt;test/&gt;</message>
+  <message>exception processing message using request processor [ibis4test-SendersExceptionInSubAdapter]: (RequestProcessorException) RequestProcessor [ibis4test-SendersExceptionInSubAdapter] caught exception: Pipe [Call ExceptionPipe] caught exception: exception calling JavaListener [ExceptionPipe]: Pipe [Generate exception] &lt;test/&gt;</message>
   <cause>
     <throwable>
       <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>
@@ -8,15 +8,15 @@
       <cause>
         <throwable>
           <class>org.frankframework.core.ListenerException</class>
-          <message>Pipe [Call ExceptionPipe] caught exception: IbisLocalSender [Call ExceptionPipe-sender] exception calling JavaListener [ExceptionPipe]: Pipe [Generate exception] &lt;test/&gt;</message>
+          <message>Pipe [Call ExceptionPipe] caught exception: exception calling JavaListener [ExceptionPipe]: Pipe [Generate exception] &lt;test/&gt;</message>
           <cause>
             <throwable>
               <class>org.frankframework.core.PipeRunException</class>
-              <message>Pipe [Call ExceptionPipe] caught exception: IbisLocalSender [Call ExceptionPipe-sender] exception calling JavaListener [ExceptionPipe]: Pipe [Generate exception] &lt;test/&gt;</message>
+              <message>Pipe [Call ExceptionPipe] caught exception: exception calling JavaListener [ExceptionPipe]: Pipe [Generate exception] &lt;test/&gt;</message>
               <cause>
                 <throwable>
                   <class>org.frankframework.core.SenderException</class>
-                  <message>IbisLocalSender [Call ExceptionPipe-sender] exception calling JavaListener [ExceptionPipe]: Pipe [Generate exception] &lt;test/&gt;</message>
+                  <message>exception calling JavaListener [ExceptionPipe]: Pipe [Generate exception] &lt;test/&gt;</message>
                   <cause>
                     <throwable>
                       <class>org.frankframework.core.ListenerException</class>

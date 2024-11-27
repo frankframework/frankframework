@@ -30,17 +30,20 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.jms.JMSException;
+import jakarta.jms.JMSException;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.AbstractParameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.parameters.ParameterType;
 import org.frankframework.pipes.Base64Pipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DB2XMLWriter;
@@ -66,82 +69,81 @@ import org.frankframework.util.JdbcUtil;
  * </p>
  * <p>
  *     All stored procedure parameters that are not fixed, so specified in the query with a {@code ?}, should
- *     have a corresponding {@link Parameter} entry. Output parameters should have {@code mode="OUTPUT"}, or
+ *     have a corresponding {@link IParameter} entry. Output parameters should have {@code mode="OUTPUT"}, or
  *     {@code mode="INOUT"} depending on how the stored procedure is defined.
  * </p>
  * <p>
  *	<h3>Sample Output for queryType=OTHER</h3>
  *	<h4>Basic Example with Only Simple Output Parameters</h4>
- *  <code><pre>
-	&lt;resultset&gt;
-		&lt;result param="r1" type="STRING"&gt;MESSAGE-CONTENTS&lt;/result&gt;
-		&lt;result param="r2" type="STRING"&gt;E&lt;/result&gt;
-	&lt;/resultset&gt;
- *  </pre></code>
+ * <pre>{@code
+ * <resultset>
+ * 	   <result param="r1" type="STRING">MESSAGE-CONTENTS</result>
+ *     <result param="r2" type="STRING">E</result>
+ * </resultset>
+ * }</pre>
  *
  *	<h4>Example with Resultset and Simple Output Parameters</h4>
- *  <code><pre>
-	 &lt;resultset&gt;
-		 &lt;result resultNr="1"&gt;
-			 &lt;fielddefinition&gt;
-				&lt;field name="FIELDNAME"
-						  type="columnType"
-						  columnDisplaySize=""
-						  precision=""
-						  scale=""
-						  isCurrency=""
-						  columnTypeName=""
-						  columnClassName=""/&gt;
-				 &lt;field ...../&gt;
- 		     &lt;/fielddefinition&gt;
-			 &lt;rowset&gt;
-				 &lt;row number="0"&gt;
-					 &lt;field name="TKEY"&gt;MSG-ID&lt;/field&gt;
-					 &lt;field name="TCHAR"&gt;E&lt;/field&gt;
-					 &lt;field name="TMESSAGE"&gt;MESSAGE-CONTENTS&lt;/field&gt;
-					 &lt;field name="TCLOB" null="true"/&gt;
-					 &lt;field name="TBLOB" null="true"/&gt;
-				 &lt;/row&gt;
-                 &lt;row number="1" ...../&gt;
-			 &lt;/rowset&gt;
-		 &lt;/result&gt;
-		 &lt;result param="count" type="INTEGER"&gt;5&lt;/result&gt;
-	 &lt;/resultset&gt;
- *  </pre></code>
+ * <pre>{@code
+ * <resultset>
+ * 		 <result resultNr="1">
+ * 			 <fielddefinition>
+ * 				<field name="FIELDNAME"
+ * 						  type="columnType"
+ * 						  columnDisplaySize=""
+ * 						  precision=""
+ * 						  scale=""
+ * 						  isCurrency=""
+ * 						  columnTypeName=""
+ * 						  columnClassName=""/>
+ * 				 <field ...../>
+*  		     </fielddefinition>
+ * 			 <rowset>
+ * 				 <row number="0">
+ * 					 <field name="TKEY">MSG-ID</field>
+ * 					 <field name="TCHAR">E</field>
+ * 					 <field name="TMESSAGE">MESSAGE-CONTENTS</field>
+ * 					 <field name="TCLOB" null="true"/>
+ * 					 <field name="TBLOB" null="true"/>
+ * 				 </row>
+ *                  <row number="1" ...../>
+ * 			 </rowset>
+ * 		 </result>
+ * 		 <result param="count" type="INTEGER">5</result>
+ * </resultset>
+ * }</pre>
  *
  *	<h4>Example with Simple and Cursor Output Parameters</h4>
- *	<code><pre>
-	&lt;resultset&gt;
-		&lt;result param="count" type="INTEGER"&gt;5&lt;/result&gt;
-		&lt;result param="cursor1" type="LIST"&gt;
-			 &lt;fielddefinition&gt;
-				&lt;field name="FIELDNAME"
-						  type="columnType"
-						  columnDisplaySize=""
-						  precision=""
-						  scale=""
-						  isCurrency=""
-						  columnTypeName=""
-						  columnClassName=""/&gt;
-				 &lt;field ...../&gt;
- 		     &lt;/fielddefinition&gt;
-			&lt;rowset&gt;
-				&lt;row number="0"&gt;
-					&lt;field name="TKEY"&gt;MSG-ID&lt;/field&gt;
-					&lt;field name="TCHAR"&gt;E&lt;/field&gt;
-					&lt;field name="TMESSAGE"&gt;MESSAGE-CONTENTS&lt;/field&gt;
-					&lt;field name="TCLOB" null="true"/&gt;
-					&lt;field name="TBLOB" null="true"/&gt;
-				&lt;/row&gt;
-				&lt;row number="1" ..... /&gt;
-			&lt;/rowset&gt;
-		&lt;/result&gt;
-	&lt;/resultset&gt;
- *	</pre></code>
+ * <pre>{@code
+ * <resultset>
+ * 		<result param="count" type="INTEGER">5</result>
+ * 		<result param="cursor1" type="LIST">
+ * 			 <fielddefinition>
+ * 				<field name="FIELDNAME"
+ * 						  type="columnType"
+ * 						  columnDisplaySize=""
+ * 						  precision=""
+ * 						  scale=""
+ * 						  isCurrency=""
+ * 						  columnTypeName=""
+ * 						  columnClassName=""/>
+ * 				 <field ...../>
+ *  		</fielddefinition>
+ * 			<rowset>
+ * 				<row number="0">
+ * 					<field name="TKEY">MSG-ID</field>
+ * 					<field name="TCHAR">E</field>
+ * 					<field name="TMESSAGE">MESSAGE-CONTENTS</field>
+ * 					<field name="TCLOB" null="true"/>
+ * 					<field name="TBLOB" null="true"/>
+ * 				</row>
+ * 				<row number="1" ..... />
+ * 			</rowset>
+ * 		</result>
+ * 	</resultset>
+ * }</pre>
  * </p>
- * <p><em>NOTE:</em> Support for stored procedures is currently experimental and changes in the currently produced output-format
- * are expected.</p>
- *
+ * @ff.info Support for stored procedures is currently experimental and changes in the currently produced output-format are expected.
+ * @ff.info Please note that the default value of {@code trimSpaces} is {@literal true}
  * @ff.parameters All parameters present are applied to the query to be executed.
  *
  * @since 7.9
@@ -152,7 +154,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	 * All stored procedure OUT parameters indexed by their position
 	 * in the query parameter list (1-based).
 	 */
-	private Map<Integer, Parameter> outputParameters;
+	private Map<Integer, IParameter> outputParameters;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -196,7 +198,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	 * @param query The query that is configured
 	 * @return Output-parameters indexed by position in the query parameter-list.
 	 */
-	private Map<Integer, Parameter> buildOutputParameterMap(ParameterList parameterList, String query) {
+	private Map<Integer, IParameter> buildOutputParameterMap(ParameterList parameterList, String query) {
 		if (parameterList == null) {
 			return Collections.emptyMap();
 		}
@@ -211,12 +213,12 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 			queryParameterMap.put(queryParameterNames.get(i), i+1);
 		}
 
-		Map<Integer, Parameter> result = new HashMap<>();
+		Map<Integer, IParameter> result = new HashMap<>();
 		int pos = 0;
-		for (Parameter param : parameterList) {
+		for (IParameter param : parameterList) {
 			++pos;
 
-			if (param.getMode() == Parameter.ParameterMode.INPUT) {
+			if (param.getMode() == AbstractParameter.ParameterMode.INPUT) {
 				continue;
 			}
 
@@ -230,14 +232,14 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	protected PreparedStatement prepareQueryWithResultSet(Connection con, String query, int resultSetConcurrency) throws SQLException {
 		final CallableStatement callableStatement = con.prepareCall(query, ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency);
 		ParameterMetaData parameterMetaData = callableStatement.getParameterMetaData();
-		for (Map.Entry<Integer, Parameter> entry : outputParameters.entrySet()) {
+		for (Map.Entry<Integer, IParameter> entry : outputParameters.entrySet()) {
 			final int position = entry.getKey();
-			final Parameter param = entry.getValue();
+			final IParameter param = entry.getValue();
 			final int typeNr;
 			// Parameter metadata are more accurate than our parameter type mapping and
 			// for some databases, this can cause exceptions.
 			// But for Oracle we do need our own mapping.
-			if (getDbmsSupport().canFetchStatementParameterMetaData() && param.getType() != Parameter.ParameterType.LIST) {
+			if (getDbmsSupport().canFetchStatementParameterMetaData() && param.getType() != ParameterType.LIST) {
 				typeNr = parameterMetaData.getParameterType(position);
 			} else {
 				typeNr = JdbcUtil.mapParameterTypeToSqlType(getDbmsSupport(), param.getType()).getVendorTypeNumber();
@@ -275,7 +277,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 
 		DB2XMLWriter db2xml = buildDb2XMLWriter();
 		String result = db2xml.getXML(getDbmsSupport(), callableStatement, alsoGetResultSets, outputParameters, getMaxRows(), isIncludeFieldDefinition());
-		return Message.asMessage(result);
+		return new Message(result);
 	}
 
 	/**
@@ -290,9 +292,9 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	}
 
 	/**
-	 * The query type. For stored procedures, valid query types are {@link JdbcQuerySenderBase.QueryType#SELECT} and {@link JdbcQuerySenderBase.QueryType#OTHER}.
-	 * Use {@link JdbcQuerySenderBase.QueryType#SELECT} when your stored procedure returns a row set (not supported by Oracle and PostgreSQL).
-	 * Use {@link JdbcQuerySenderBase.QueryType#OTHER} when your stored procedure returns values via <code>OUT</code> or <code>INOUT</code> parameters, or does not return
+	 * The query type. For stored procedures, valid query types are {@link AbstractJdbcQuerySender.QueryType#SELECT} and {@link AbstractJdbcQuerySender.QueryType#OTHER}.
+	 * Use {@link AbstractJdbcQuerySender.QueryType#SELECT} when your stored procedure returns a row set (not supported by Oracle and PostgreSQL).
+	 * Use {@link AbstractJdbcQuerySender.QueryType#OTHER} when your stored procedure returns values via <code>OUT</code> or <code>INOUT</code> parameters, or does not return
 	 * anything at all.
 	 * <p>
 	 * Using any other value will be rejected.

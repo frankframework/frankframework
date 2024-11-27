@@ -3,12 +3,13 @@ package org.frankframework.management.bus;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.frankframework.testutil.SpringRootInitializer;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
+import org.frankframework.testutil.SpringRootInitializer;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 public class TestBusAuthorisation extends BusTestBase {

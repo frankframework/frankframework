@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
+import jakarta.annotation.Nonnull;
+import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -34,6 +34,7 @@ import org.springframework.core.env.Environment;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.lifecycle.DynamicRegistration.Servlet;
 import org.frankframework.util.EnumUtils;
@@ -60,13 +61,15 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 	private @Getter @Setter boolean enabled = true;
 	private @Getter TransportGuarantee transportGuarantee;
 	private @Getter String authenticatorName = null;
-	private @Getter javax.servlet.Servlet servlet;
+	private @Getter jakarta.servlet.Servlet servlet;
 	private @Setter Environment environment;
-	private @Getter Map<String, String> initParameters = new LinkedHashMap<>();
+	private final @Getter Map<String, String> initParameters = new LinkedHashMap<>();
 
 	@Override
 	public void afterPropertiesSet() {
-		defaultSecuritySettings();
+		transportGuarantee = SecuritySettings.getDefaultTransportGuarantee();
+		String defaultAuthenticatorName = environment.getProperty("application.security.http.authenticator");
+		authenticatorName = SecuritySettings.isWebSecurityEnabled() ? defaultAuthenticatorName : AuthenticationType.NONE.name();
 	}
 
 	public void setSecurityRoles(String[] accessGrantingRoles) {
@@ -104,7 +107,7 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 		loadProperties();
 	}
 
-	public void setServlet(javax.servlet.Servlet servlet) {
+	public void setServlet(jakarta.servlet.Servlet servlet) {
 		this.servlet = servlet;
 	}
 
@@ -114,12 +117,6 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 
 	public boolean isAuthenticationEnabled() {
 		return !securityRoles.isEmpty() && !"NONE".equals(authenticatorName);
-	}
-
-	private void defaultSecuritySettings() {
-		transportGuarantee = SecuritySettings.getDefaultTransportGuarantee();
-		AuthenticationType defaultType = SecuritySettings.isWebSecurityEnabled() ? AuthenticationType.CONTAINER : AuthenticationType.NONE;
-		authenticatorName = defaultType.name();
 	}
 
 	/**
@@ -144,8 +141,8 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 
 	private void configureServletSecurity(String propertyPrefix) {
 		String roleNames = environment.getProperty(propertyPrefix+"securityRoles");
-		if(environment.containsProperty(propertyPrefix+"securityroles")) { //Deprecated warning
-			log.warn("property ["+propertyPrefix+"securityroles] has been replaced with ["+propertyPrefix+"securityRoles"+"]");
+		if(environment.containsProperty(propertyPrefix+"securityroles")) { // Deprecated warning
+			log.warn("property [{}securityroles] has been replaced with [{}securityRoles]", propertyPrefix, propertyPrefix);
 			roleNames = environment.getProperty(propertyPrefix+"securityroles");
 		}
 
@@ -179,7 +176,7 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 			if(firstChar == '!' && (mapping.charAt(1) != SLASH || mapping.charAt(mapping.length()-1) == '*')) {
 				throw new IllegalStateException("when excluding an URL you it must start with '!/' and may not end with a wildcard");
 			}
-			if(firstChar != SLASH && firstChar != '*' && firstChar != '!') { //Add a conditional slash
+			if(firstChar != SLASH && firstChar != '*' && firstChar != '!') { // Add a conditional slash
 				mapping = "/"+mapping;
 			}
 			log.debug("converted raw mapping [{}] to [{}]", rawMapping, mapping);
@@ -192,13 +189,13 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(" servlet ["+name+"]");
-		builder.append(" url(s) "+urlMapping);
-		builder.append(" loadOnStartup ["+loadOnStartup+"]");
-		builder.append(" protocol "+(transportGuarantee==TransportGuarantee.CONFIDENTIAL?"[HTTPS]":"[HTTP]"));
-		builder.append(" authenticatior ["+authenticatorName+"]");
+		builder.append(" url(s) ").append(urlMapping);
+		builder.append(" loadOnStartup [").append(loadOnStartup).append("]");
+		builder.append(" protocol ").append(transportGuarantee==TransportGuarantee.CONFIDENTIAL?"[HTTPS]":"[HTTP]");
+		builder.append(" authenticatior [").append(authenticatorName).append("]");
 
 		if(isAuthenticationEnabled()) {
-			builder.append(" roles "+getSecurityRoles());
+			builder.append(" roles ").append(getSecurityRoles());
 		} else {
 			builder.append(" with no authentication enabled!");
 		}

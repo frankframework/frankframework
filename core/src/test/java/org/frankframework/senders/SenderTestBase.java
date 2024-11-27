@@ -22,17 +22,19 @@ import java.net.URL;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.ConfiguredTestBase;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.pipes.PipeTestBase;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBase {
 
@@ -53,11 +55,15 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 
 	@AfterEach
 	@Override
-	public void tearDown() throws Exception {
-		if (sender != null) {
-			sender.close();
-			sender = null;
+	public void tearDown() {
+		try {
+			if (sender != null) {
+				sender.stop();
+			}
+		} catch (LifecycleException e) {
+			log.warn("Error closing Sender", e);
 		}
+		sender = null;
 		super.tearDown();
 	}
 

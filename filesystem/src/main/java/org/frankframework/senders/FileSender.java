@@ -15,6 +15,8 @@
 */
 package org.frankframework.senders;
 
+import jakarta.annotation.Nonnull;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ISenderWithParameters;
@@ -22,7 +24,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.FileHandler;
@@ -42,7 +44,7 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (!"string".equalsIgnoreCase(outputType) && !"base64".equalsIgnoreCase(outputType)) {
-			throw new ConfigurationException(getLogPrefix(null) + "sender doesn't support outputType [" + outputType + "], use file pipe instead");
+			throw new ConfigurationException("sender doesn't support outputType [" + outputType + "], use file pipe instead");
 		}
 		if (paramList!=null) {
 			paramList.configure();
@@ -50,7 +52,7 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			return new SenderResult(Message.asMessage(handle(message, session, getParameterList())));
 		} catch(Exception e) {
@@ -69,11 +71,11 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 	}
 
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 	}
 
 	@Override
-	public void close() throws SenderException {
+	public void stop() {
 	}
 
 	@Override
@@ -82,7 +84,7 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 	}
 
 	@Override
-	public void addParameter(Parameter p) {
+	public void addParameter(IParameter p) {
 		if (paramList==null) {
 			paramList=new ParameterList();
 		}

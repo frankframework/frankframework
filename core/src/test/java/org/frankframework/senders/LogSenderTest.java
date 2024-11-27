@@ -7,13 +7,14 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.logging.log4j.Level;
-import org.frankframework.stream.Message;
-import org.frankframework.testutil.ParameterBuilder;
-import org.frankframework.testutil.TestAppender;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import org.frankframework.stream.Message;
+import org.frankframework.testutil.ParameterBuilder;
+import org.frankframework.testutil.TestAppender;
 
 class LogSenderTest extends SenderTestBase<LogSender> {
 
@@ -35,20 +36,15 @@ class LogSenderTest extends SenderTestBase<LogSender> {
 	void defaultLogSettings(String level) throws Exception {
 		sender.setLogLevel(level);
 		sender.configure();
-		sender.open();
+		sender.start();
 
-		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level: %m").build();
-		TestAppender.addToRootLogger(appender);
-
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level: %m").build()) {
 			String result = sender.sendMessageOrThrow(message, session).asString();
 
 			assertEquals(input, result);
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(1, logEvents.size(), "found messages "+logEvents);
 			assertEquals(level+": Message2Log", logEvents.get(0));
-		} finally {
-			TestAppender.removeAppender(appender);
 		}
 	}
 
@@ -63,20 +59,15 @@ class LogSenderTest extends SenderTestBase<LogSender> {
 	void dynamicParameter(String level) throws Exception {
 		sender.addParameter(ParameterBuilder.create("logLevel", level));
 		sender.configure();
-		sender.open();
+		sender.start();
 
-		TestAppender appender = TestAppender.newBuilder().minLogLevel(Level.INFO).useIbisPatternLayout("%level: %m").build();
-		TestAppender.addToRootLogger(appender);
-
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().minLogLevel(Level.INFO).useIbisPatternLayout("%level: %m").build()) {
 			String result = sender.sendMessageOrThrow(message, session).asString();
 
 			assertEquals(input, result);
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(1, logEvents.size(), "found messages "+logEvents);
 			assertEquals(level+": Message2Log", logEvents.get(0));
-		} finally {
-			TestAppender.removeAppender(appender);
 		}
 	}
 
@@ -85,20 +76,15 @@ class LogSenderTest extends SenderTestBase<LogSender> {
 		sender.addParameter(ParameterBuilder.create("logLevel", "perensap"));
 		sender.setLogLevel("WARN");
 		sender.configure();
-		sender.open();
+		sender.start();
 
-		TestAppender appender = TestAppender.newBuilder().minLogLevel(Level.INFO).useIbisPatternLayout("%level: %m").build();
-		TestAppender.addToRootLogger(appender);
-
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().minLogLevel(Level.INFO).useIbisPatternLayout("%level: %m").build()) {
 			String result = sender.sendMessageOrThrow(message, session).asString();
 
 			assertEquals(input, result);
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(1, logEvents.size(), "found messages "+logEvents);
 			assertEquals("WARN: Message2Log", logEvents.get(0));
-		} finally {
-			TestAppender.removeAppender(appender);
 		}
 	}
 
@@ -107,12 +93,9 @@ class LogSenderTest extends SenderTestBase<LogSender> {
 		sender.addParameter(ParameterBuilder.create("logLevel", "perensap"));
 		sender.setLogLevel("");
 		sender.configure();
-		sender.open();
+		sender.start();
 
-		TestAppender appender = TestAppender.newBuilder().minLogLevel(Level.DEBUG).useIbisPatternLayout("%level: %m").build();
-		TestAppender.addToRootLogger(appender);
-
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().minLogLevel(Level.DEBUG).useIbisPatternLayout("%level: %m").build()) {
 			String result = sender.sendMessageOrThrow(message, session).asString();
 
 			assertEquals(input, result);
@@ -121,8 +104,6 @@ class LogSenderTest extends SenderTestBase<LogSender> {
 			assertEquals("DEBUG: Calculating value for Parameter [logLevel]", logEvents.get(0));
 			assertEquals("DEBUG: Parameter [logLevel] resolved to [perensap]", logEvents.get(1));
 			assertEquals("DEBUG: Message2Log", logEvents.get(2));
-		} finally {
-			TestAppender.removeAppender(appender);
 		}
 	}
 
@@ -133,12 +114,9 @@ class LogSenderTest extends SenderTestBase<LogSender> {
 		sender.addParameter(ParameterBuilder.create("param 1", "appelflap"));
 		sender.addParameter(ParameterBuilder.create("param 2", "perensap"));
 		sender.configure();
-		sender.open();
+		sender.start();
 
-		TestAppender appender = TestAppender.newBuilder().minLogLevel(Level.INFO).useIbisPatternLayout("%level: %m").build();
-		TestAppender.addToRootLogger(appender);
-
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().minLogLevel(Level.INFO).useIbisPatternLayout("%level: %m").build()) {
 			String result = sender.sendMessageOrThrow(message, session).asString();
 
 			assertEquals(input, result);
@@ -147,8 +125,6 @@ class LogSenderTest extends SenderTestBase<LogSender> {
 			assertEquals("INFO: Message2Log", logEvents.get(0));
 			assertEquals("INFO: parameter [param 1] value [appelflap]", logEvents.get(1));
 			assertEquals("INFO: parameter [param 2] value [perensap]", logEvents.get(2));
-		} finally {
-			TestAppender.removeAppender(appender);
 		}
 	}
 }

@@ -6,14 +6,18 @@ import static org.mockito.Mockito.when;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import jakarta.annotation.Nonnull;
+
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class ReconnectSenderWrapperTest extends SenderTestBase<ReconnectSenderWrapper> {
 
@@ -28,7 +32,7 @@ class ReconnectSenderWrapperTest extends SenderTestBase<ReconnectSenderWrapper> 
 	@Test
 	void basic() throws Exception {
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String input = "<dummy/>";
 		Message message = new Message(input);
@@ -43,23 +47,23 @@ class ReconnectSenderWrapperTest extends SenderTestBase<ReconnectSenderWrapper> 
 		when(senderMock.sendMessage(Mockito.any(Message.class), Mockito.any(PipeLineSession.class))).thenReturn(new SenderResult(Message.nullMessage()));
 		sender.setSender(senderMock);
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		// Act 1
 		sender.sendMessageOrThrow(Message.nullMessage(), session).asString();
 
 		// Assert 1
-		verify(senderMock, Mockito.times(2)).open();
-		verify(senderMock, Mockito.times(1)).close();
+		verify(senderMock, Mockito.times(2)).start();
+		verify(senderMock, Mockito.times(1)).stop();
 
 		// Act 2: now close the session too
 		session.close();
 
 		// Assert 2: only now the sender should be closed
-		verify(senderMock, Mockito.times(2)).close();
+		verify(senderMock, Mockito.times(2)).stop();
 	}
 
-	private static class TestOpenAndConfigureSender extends SenderWithParametersBase {
+	private static class TestOpenAndConfigureSender extends AbstractSenderWithParameters {
 		private final AtomicBoolean opened = new AtomicBoolean(false);
 		private final AtomicBoolean configured = new AtomicBoolean(false);
 
@@ -73,24 +77,24 @@ class ReconnectSenderWrapperTest extends SenderTestBase<ReconnectSenderWrapper> 
 		}
 
 		@Override
-		public void open() throws SenderException {
+		public void start() {
 			if (!opened.compareAndSet(false, true)) {
-				throw new SenderException("not yet opened");
+				throw new LifecycleException("not yet opened");
 			}
 			if (!configured.getAcquire()) {
-				throw new SenderException("not configured");
+				throw new LifecycleException("not configured");
 			}
 		}
 
 		@Override
-		public void close() throws SenderException {
+		public void stop() {
 			if (!opened.compareAndSet(true, false)) {
-				throw new SenderException("already closed");
+				throw new LifecycleException("already closed");
 			}
 		}
 
 		@Override
-		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
+		public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 			if (opened.getAcquire()) {
 				if (!configured.getAcquire()) {
 					throw new IllegalStateException("not configured");

@@ -25,8 +25,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -36,8 +38,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.core.SenderException;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
@@ -53,7 +54,7 @@ import org.frankframework.util.StreamUtil;
  * @since   4.7
  * @deprecated Warning: non-maintained functionality.
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class StreamTransformerPipe extends FixedForwardPipe {
 
 	public static final String originalBlockKey = "originalBlock";
@@ -118,7 +119,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			}
 			manager.addHandler(flow);
 			try {
-				registerManager(manager);
+				addManager(manager);
 			} catch (Exception e) {
 				throw new ConfigurationException("could not register default manager and flow", e);
 			}
@@ -169,7 +170,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			try {
 				handler.close();
 			} catch (SenderException e) {
-				log.error("exception on closing recordhandler ["+recordHandlerName+"]", e);
+				log.error("exception on closing recordhandler [{}]", recordHandlerName, e);
 			}
 		}
 		for (String resultHandlerName: registeredResultHandlers.keySet()) {
@@ -177,19 +178,19 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			try {
 				handler.close();
 			} catch (SenderException e) {
-				log.error("exception on closing resulthandler ["+resultHandlerName+"]", e);
+				log.error("exception on closing resulthandler [{}]", resultHandlerName, e);
 			}
 		}
 	}
 
 	/**
 	 * Register a uniquely named manager.
-	 * @deprecated please use registerManager
+	 * @deprecated please use addManager
 	 */
 	@Deprecated
-	public void registerChild(IRecordHandlerManager manager) throws Exception {
+	public void addChild(IRecordHandlerManager manager) throws Exception {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'manager'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
-		registerManager(manager);
+		addManager(manager);
 	}
 
 	/**
@@ -198,7 +199,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * and the first registered resultHandler (if available).
 	 * @ff.mandatory
 	 */
-	public void registerManager(IRecordHandlerManager manager) throws Exception {
+	public void addManager(IRecordHandlerManager manager) throws Exception {
 		registeredManagers.put(manager.getName(), manager);
 		if (manager.isInitial()) {
 			if (initialManager != null) {
@@ -217,7 +218,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * @deprecated please use manager.addFlow()
 	 */
 	@Deprecated
-	public void registerChild(RecordHandlingFlow flowEl) throws ConfigurationException {
+	public void addChild(RecordHandlingFlow flowEl) throws ConfigurationException {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'flow' nested in element 'manager'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
 		IRecordHandlerManager manager = registeredManagers.get(flowEl.getRecordHandlerManagerRef());
 		if (manager == null) {
@@ -229,16 +230,16 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 
 	/**
 	 * Register a uniquely named record manager.
-	 * @deprecated please use registerRecordHandler()
+	 * @deprecated please use addRecordHandler()
 	 */
 	@Deprecated
-	public void registerChild(IRecordHandler handler) {
+	public void addChild(IRecordHandler handler) {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'recordHandler'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
-		registerRecordHandler(handler);
+		addRecordHandler(handler);
 	}
 
 	/** Handler for transforming records of a specific type */
-	public void registerRecordHandler(IRecordHandler handler) {
+	public void addRecordHandler(IRecordHandler handler) {
 		registeredRecordHandlers.put(handler.getName(), handler);
 	}
 
@@ -248,16 +249,16 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 
 	/**
 	 * Register a uniquely named result manager.
-	 * @deprecated Please use registerResultHandler()
+	 * @deprecated Please use addResultHandler()
 	 */
 	@Deprecated
-	public void registerChild(IResultHandler handler) {
+	public void addChild(IResultHandler handler) {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'resultHandler'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
-		registerResultHandler(handler);
+		addResultHandler(handler);
 	}
 
 	/** Handler for processing transformed records */
-	public void registerResultHandler(IResultHandler handler) {
+	public void addResultHandler(IResultHandler handler) {
 		handler.setPipe(this);
 		registeredResultHandlers.put(handler.getName(), handler);
 		if (handler.isDefault()) {
@@ -318,23 +319,23 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	private boolean autoCloseBlocks(PipeLineSession session, IResultHandler handler, String streamId, RecordHandlingFlow flow, String blockName, Map<String, Object> blocks) throws Exception {
 		List<String> blockStack=getBlockStack(handler, streamId, true, blocks);
 		int blockLevel;
-		if (log.isTraceEnabled()) log.trace("searching block stack for open block ["+blockName+"] to perform autoclose");
+		if (log.isTraceEnabled()) log.trace("searching block stack for open block [{}] to perform autoclose", blockName);
 		for (blockLevel=blockStack.size()-1;blockLevel>=0; blockLevel--) {
 			String stackedBlock=blockStack.get(blockLevel);
-			if (log.isTraceEnabled()) log.trace("stack position ["+blockLevel+"] block ["+stackedBlock+"]");
+			if (log.isTraceEnabled()) log.trace("stack position [{}] block [{}]", blockLevel, stackedBlock);
 			if (stackedBlock.equals(blockName)) {
 				break;
 			}
 		}
 		if (blockLevel>=0) {
-			if (log.isTraceEnabled()) log.trace("found open block ["+blockName+"] at stack position ["+blockLevel+"]");
+			if (log.isTraceEnabled()) log.trace("found open block [{}] at stack position [{}]", blockName, blockLevel);
 			for (int i=blockStack.size()-1; i>=blockLevel; i--) {
 				String stackedBlock=blockStack.remove(i);
 				closeBlock(session, handler, streamId,null,stackedBlock, "autoclose of previous blocks while opening block ["+blockName+"]", blocks);
 			}
 			return true;
 		}
-		if (log.isTraceEnabled()) log.trace("did not find open block ["+blockName+"] at block stack");
+		if (log.isTraceEnabled()) log.trace("did not find open block [{}] at block stack", blockName);
 		return false;
 	}
 
@@ -344,13 +345,13 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				if (flow.isAutoCloseBlock()) {
 					autoCloseBlocks(session, handler, streamId,flow, blockName, blocks);
 					List<String> blockStack=getBlockStack(handler, streamId, true, blocks);
-					if (log.isTraceEnabled()) log.trace("adding block ["+blockName+"] to block stack at position ["+blockStack.size()+"]");
+					if (log.isTraceEnabled()) log.trace("adding block [{}] to block stack at position [{}]", blockName, blockStack.size());
 					blockStack.add(blockName);
 				}
-				if (log.isTraceEnabled()) log.trace("opening block ["+blockName+"] for resultHandler ["+handler.getName()+"]");
+				if (log.isTraceEnabled()) log.trace("opening block [{}] for resultHandler [{}]", blockName, handler.getName());
 				handler.openBlock(session, streamId, blockName, blocks);
 			} else {
-				log.warn("openBlock("+blockName+") without resultHandler");
+				log.warn("openBlock({}) without resultHandler", blockName);
 			}
 		}
 	}
@@ -360,12 +361,12 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			if (handler!=null) {
 				if (flow!=null && flow.isAutoCloseBlock()) {
 					if (autoCloseBlocks(session, handler, streamId, flow, blockName, blocks)) {
-						if (log.isDebugEnabled()) log.debug("autoclosed block ["+blockName+"] due to "+reason);
+						if (log.isDebugEnabled()) log.debug("autoclosed block [{}] due to {}", blockName, reason);
 					} else {
-						if (log.isDebugEnabled()) log.debug("autoclose did not find block ["+blockName+"] to close due to "+reason);
+						if (log.isDebugEnabled()) log.debug("autoclose did not find block [{}] to close due to {}", blockName, reason);
 					}
 				} else {
-					if (log.isDebugEnabled()) log.debug("closing block ["+blockName+"] for resultHandler ["+handler.getName()+"] due to "+reason);
+					if (log.isDebugEnabled()) log.debug("closing block [{}] for resultHandler [{}] due to {}", blockName, handler.getName(), reason);
 					if (isStoreOriginalBlock()) {
 						if (handler instanceof ResultBlock2Sender sender) {
 							if (sender.getLevel(streamId)==1) {
@@ -376,7 +377,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 					handler.closeBlock(session, streamId, blockName, blocks);
 				}
 			} else {
-				log.warn("closeBlock("+blockName+") without resultHandler");
+				log.warn("closeBlock({}) without resultHandler", blockName);
 			}
 		}
 	}
@@ -420,7 +421,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				// get handlers for current line
 				RecordHandlingFlow flow = currentManager.getRecordHandler(session, rawRecord);
 				if (flow == null) {
-					log.debug("<no flow>: "+rawRecord);
+					log.debug("<no flow>: {}", rawRecord);
 					continue; // ignore line for which no handlers are registered
 				}
 				//log.debug("flow ["+flow.getRecordKey()+"] openBlockBeforeLine ["+flow.getOpenBlockBeforeLine()+"]");
@@ -454,7 +455,8 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 
 				IRecordHandler curHandler = flow.getRecordHandler();
 				if (curHandler != null) {
-					if (log.isDebugEnabled()) log.debug("manager ["+currentManager.getName()+"] key ["+flow.getRecordKey()+"] record handler ["+curHandler.getName()+"] line ["+linenumber+"] record ["+rawRecord+"]");
+					if (log.isDebugEnabled())
+						log.debug("manager [{}] key [{}] record handler [{}] line [{}] record [{}]", currentManager.getName(), flow.getRecordKey(), curHandler.getName(), linenumber, rawRecord);
 					// there is a record handler, so transform the line
 					List<String> parsedRecord = curHandler.parse(session, rawRecord);
 					String result = curHandler.handleRecord(session, parsedRecord);
@@ -463,10 +465,12 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 					// if there is a result handler, write the transformed result
 					if (result != null && resultHandler != null) {
 						boolean recordTypeChanged = curHandler.isNewRecordType(session, curHandler.equals(prevHandler), prevParsedRecord, parsedRecord);
-						if (log.isTraceEnabled()) log.trace("manager ["+currentManager.getName()+"] key ["+flow.getRecordKey()+"] record handler ["+curHandler.getName()+"] recordTypeChanged ["+recordTypeChanged+"]");
+						if (log.isTraceEnabled())
+							log.trace("manager [{}] key [{}] record handler [{}] recordTypeChanged [{}]", currentManager.getName(), flow.getRecordKey(), curHandler.getName(), recordTypeChanged);
 						if (recordTypeChanged && prevHandler!=null && resultHandler.isBlockByRecordType()) {
 							String prevRecordType = prevHandler.getRecordType(prevParsedRecord);
-							if (log.isDebugEnabled()) log.debug("record handler ["+prevHandler.getName()+"] result handler ["+resultHandler.getName()+"] closing block for record type ["+prevRecordType+"]");
+							if (log.isDebugEnabled())
+								log.debug("record handler [{}] result handler [{}] closing block for record type [{}]", prevHandler.getName(), resultHandler.getName(), prevRecordType);
 							closeBlock(session, resultHandler, streamId, flow, prevRecordType, "record type change", blocks);
 						}
 						// the hasPrefix() call allows users use a suffix without a prefix.
@@ -479,7 +483,8 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 						}
 						if (recordTypeChanged && resultHandler.isBlockByRecordType()) {
 							String recordType = curHandler.getRecordType(parsedRecord);
-							if (log.isDebugEnabled()) log.debug("record handler ["+curHandler.getName()+"] result handler ["+resultHandler.getName()+"] opening block ["+recordType+"]");
+							if (log.isDebugEnabled())
+								log.debug("record handler [{}] result handler [{}] opening block [{}]", curHandler.getName(), resultHandler.getName(), recordType);
 							openBlock(session, resultHandler, streamId, flow, recordType, blocks);
 						}
 						resultHandler.handleResult(session, streamId, flow.getRecordKey(), result);
@@ -487,7 +492,8 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 					prevParsedRecord = parsedRecord;
 					prevHandler = curHandler;
 				} else {
-					if (log.isDebugEnabled()) log.debug("manager ["+currentManager.getName()+"] key ["+flow.getRecordKey()+"], no record handler, line ["+linenumber+"] record ["+rawRecord+"]");
+					if (log.isDebugEnabled())
+						log.debug("manager [{}] key [{}], no record handler, line [{}] record [{}]", currentManager.getName(), flow.getRecordKey(), linenumber, rawRecord);
 				}
 
 				closeBlock(session, resultHandler, streamId, flow, flow.getCloseBlockAfterLine(),"closeBlockAfterLine of flow ["+flow.getRecordKey()+"]", blocks);
@@ -501,7 +507,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			try {
 				finalizeResult(session, streamId, true, blocks);
 			} catch(Throwable t) {
-				log.error("Unexpected error during finalizeResult of [" + streamId + "]", t);
+				log.error("Unexpected error during finalizeResult of [{}]", streamId, t);
 			}
 			throw new PipeRunException(this, "Error while transforming [" + streamId + "] at or after line [" + linenumber+"]", e);
 		} finally {
@@ -532,7 +538,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		for (IResultHandler resultHandler: registeredResultHandlers.values()) {
 			resultHandler.closeRecordType(session, inputFilename);
 			closeAllBlocks(session, inputFilename, resultHandler, blocks);
-			log.debug("finalizing resulthandler ["+resultHandler.getName()+"]");
+			log.debug("finalizing resulthandler [{}]", resultHandler.getName());
 			String result = resultHandler.finalizeResult(session, inputFilename, error);
 			if (result != null) {
 				results.add(result);

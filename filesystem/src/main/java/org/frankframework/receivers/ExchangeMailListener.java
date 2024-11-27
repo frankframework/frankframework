@@ -16,6 +16,7 @@
 package org.frankframework.receivers;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.doc.Category;
@@ -26,16 +27,16 @@ import org.frankframework.encryption.KeystoreType;
 import org.frankframework.filesystem.ExchangeAttachmentReference;
 import org.frankframework.filesystem.ExchangeFileSystem;
 import org.frankframework.filesystem.ExchangeMessageReference;
-import org.frankframework.filesystem.MailFileSystemBase;
-import org.frankframework.filesystem.MailListener;
+import org.frankframework.filesystem.AbstractMailFileSystem;
+import org.frankframework.filesystem.AbstractMailListener;
 
 /**
- * Microsoft Exchange Implementation of a {@link MailListener}.
+ * Microsoft Exchange Implementation of a mail filesystem.
  *
  * @author Gerrit van Brakel
  */
-@Category("Advanced")
-public class ExchangeMailListener extends MailListener<ExchangeMessageReference, ExchangeAttachmentReference,ExchangeFileSystem> {
+@Category(Category.Type.ADVANCED)
+public class ExchangeMailListener extends AbstractMailListener<ExchangeMessageReference, ExchangeAttachmentReference,ExchangeFileSystem> {
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -98,7 +99,7 @@ public class ExchangeMailListener extends MailListener<ExchangeMessageReference,
 		getFileSystem().setAuthAlias(authAlias);
 	}
 
-	@ReferTo(MailFileSystemBase.class)
+	@ReferTo(AbstractMailFileSystem.class)
 	public void setBaseFolder(String baseFolder) {
 		getFileSystem().setBaseFolder(baseFolder);
 	}
@@ -108,7 +109,7 @@ public class ExchangeMailListener extends MailListener<ExchangeMessageReference,
 		getFileSystem().setFilter(filter);
 	}
 
-	@ReferTo(MailFileSystemBase.class)
+	@ReferTo(AbstractMailFileSystem.class)
 	public void setReplyAddressFields(String replyAddressFields) {
 		getFileSystem().setReplyAddressFields(replyAddressFields);
 	}

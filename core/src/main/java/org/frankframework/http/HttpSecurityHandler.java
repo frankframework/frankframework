@@ -17,7 +17,7 @@ package org.frankframework.http;
 
 import java.security.Principal;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.frankframework.core.ISecurityHandler;
 

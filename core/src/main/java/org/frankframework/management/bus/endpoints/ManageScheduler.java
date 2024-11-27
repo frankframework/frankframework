@@ -20,14 +20,23 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
+import org.quartz.CronTrigger;
+import org.quartz.JobDetail;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SimpleTrigger;
+import org.quartz.Trigger;
+import org.springframework.messaging.Message;
+
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.SenderException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -39,14 +48,6 @@ import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.scheduler.IbisJobDetail;
 import org.frankframework.scheduler.IbisJobDetail.JobType;
 import org.frankframework.scheduler.SchedulerHelper;
-import org.quartz.CronTrigger;
-import org.quartz.JobDetail;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.SimpleTrigger;
-import org.quartz.Trigger;
-import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.SCHEDULER)
@@ -207,7 +208,7 @@ public class ManageScheduler extends BusEndpointBase {
 				qs.configure();
 
 				try {
-					qs.open();
+					qs.start();
 					try (Connection conn = qs.getConnection()) {
 
 						String query = "DELETE FROM IBISSCHEDULES WHERE JOBNAME=? AND JOBGROUP=?";
@@ -218,10 +219,10 @@ public class ManageScheduler extends BusEndpointBase {
 							success = stmt.executeUpdate() > 0;
 						}
 					}
-				} catch (SenderException | SQLException | JdbcException e) {
+				} catch (LifecycleException | SQLException | JdbcException e) {
 					throw new BusException("error removing job from database", e);
 				} finally {
-					qs.close();
+					qs.stop();
 				}
 				if(!success) {
 					throw new BusException("failed to remove job from database");

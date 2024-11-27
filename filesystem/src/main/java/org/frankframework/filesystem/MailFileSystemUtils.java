@@ -24,29 +24,30 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
-import jakarta.mail.internet.AddressException;
-import jakarta.mail.internet.InternetAddress;
 import org.frankframework.util.LogUtil;
 import org.frankframework.xml.SaxElementBuilder;
 
 public class MailFileSystemUtils {
 	protected static Logger log = LogUtil.getLogger(MailFileSystemUtils.class);
 
-	public static final List<String> specialHeaders = Arrays.asList(new String[] {
-				IMailFileSystem.TO_RECEPIENTS_KEY,
-				IMailFileSystem.CC_RECEPIENTS_KEY,
-				IMailFileSystem.BCC_RECEPIENTS_KEY,
-				IMailFileSystem.FROM_ADDRESS_KEY,
-				IMailFileSystem.SENDER_ADDRESS_KEY,
-				IMailFileSystem.REPLY_TO_RECEPIENTS_KEY,
-				IMailFileSystem.DATETIME_SENT_KEY,
-				IMailFileSystem.DATETIME_RECEIVED_KEY,
-				IMailFileSystem.BEST_REPLY_ADDRESS_KEY} );
-
+	public static final List<String> specialHeaders = Arrays.asList(
+			IMailFileSystem.TO_RECIPIENTS_KEY,
+			IMailFileSystem.CC_RECIPIENTS_KEY,
+			IMailFileSystem.BCC_RECIPIENTS_KEY,
+			IMailFileSystem.FROM_ADDRESS_KEY,
+			IMailFileSystem.SENDER_ADDRESS_KEY,
+			IMailFileSystem.REPLY_TO_RECIPIENTS_KEY,
+			IMailFileSystem.DATETIME_SENT_KEY,
+			IMailFileSystem.DATETIME_RECEIVED_KEY,
+			IMailFileSystem.BEST_REPLY_ADDRESS_KEY
+	);
 
 	public static <M,A> void addEmailInfoSimple(IMailFileSystem<M,A> fileSystem, M emailMessage, SaxElementBuilder emailXml) throws FileSystemException, SAXException {
 		emailXml.addElement("subject", fileSystem.getSubject(emailMessage));
@@ -86,13 +87,13 @@ public class MailFileSystemUtils {
 	public static <M,A> void addEmailInfo(IMailFileSystem<M,A> fileSystem, M emailMessage, SaxElementBuilder emailXml) throws FileSystemException, SAXException {
 		Map<String,Object> properties = fileSystem.getAdditionalFileProperties(emailMessage);
 		try (SaxElementBuilder recipientsXml = emailXml.startElement("recipients")) {
-			addRecipientProperty(recipientsXml, properties, IMailFileSystem.TO_RECEPIENTS_KEY);
-			addRecipientProperty(recipientsXml, properties, IMailFileSystem.CC_RECEPIENTS_KEY);
-			addRecipientProperty(recipientsXml, properties, IMailFileSystem.BCC_RECEPIENTS_KEY);
+			addRecipientProperty(recipientsXml, properties, IMailFileSystem.TO_RECIPIENTS_KEY);
+			addRecipientProperty(recipientsXml, properties, IMailFileSystem.CC_RECIPIENTS_KEY);
+			addRecipientProperty(recipientsXml, properties, IMailFileSystem.BCC_RECIPIENTS_KEY);
 		}
 		addPropertyAsHeader(emailXml,IMailFileSystem.FROM_ADDRESS_KEY, properties.get(IMailFileSystem.FROM_ADDRESS_KEY));
 		addPropertyAsHeader(emailXml,IMailFileSystem.SENDER_ADDRESS_KEY, properties.get(IMailFileSystem.SENDER_ADDRESS_KEY));
-		addPropertyAsHeader(emailXml,IMailFileSystem.REPLY_TO_RECEPIENTS_KEY, properties.get(IMailFileSystem.REPLY_TO_RECEPIENTS_KEY));
+		addPropertyAsHeader(emailXml,IMailFileSystem.REPLY_TO_RECIPIENTS_KEY, properties.get(IMailFileSystem.REPLY_TO_RECIPIENTS_KEY));
 		addPropertyAsHeader(emailXml,IMailFileSystem.BEST_REPLY_ADDRESS_KEY, properties.get(IMailFileSystem.BEST_REPLY_ADDRESS_KEY));
 		emailXml.addElement("subject", fileSystem.getSubject(emailMessage));
 		addPropertyAsHeader(emailXml,IMailFileSystem.DATETIME_SENT_KEY, properties.get(IMailFileSystem.DATETIME_SENT_KEY));
@@ -132,7 +133,6 @@ public class MailFileSystemUtils {
 			}
 		}
 	}
-
 
 	public static String findBestReplyAddress(Map<String,Object> headers, String replyAddressFields) {
 		if (StringUtils.isEmpty(replyAddressFields)) {
@@ -186,7 +186,7 @@ public class MailFileSystemUtils {
 			}
 			return result.toString();
 		} catch (AddressException | UnsupportedEncodingException e) {
-			log.warn("type ["+type+"] address ["+address+"] is invalid: "+e.getMessage());
+			log.warn("type [{}] address [{}] is invalid: {}", type, address, e.getMessage());
 			return null;
 		}
 	}

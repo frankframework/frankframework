@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,15 +35,16 @@ import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Hex;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.testutil.SerializationTester;
-import org.frankframework.util.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.io.TempDir;
 
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.testutil.SerializationTester;
 
 @Log4j2
 public class SerializableFileReferenceTest {
@@ -62,7 +63,6 @@ public class SerializableFileReferenceTest {
 	};
 
 	private SerializableFileReference reference;
-	private File tempFile;
 
 	@BeforeEach
 	public void setUp(TestInfo testInfo) throws Exception {
@@ -70,13 +70,9 @@ public class SerializableFileReferenceTest {
 	}
 
 	@AfterEach
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		if (reference != null) {
 			reference.close();
-		}
-		if (tempFile != null) {
-			Files.deleteIfExists(tempFile.toPath());
-			assertFalse(Files.exists(tempFile.toPath()), "Temp file should not exist after test");
 		}
 	}
 
@@ -282,9 +278,9 @@ public class SerializableFileReferenceTest {
 	}
 
 	@Test
-	public void testWithReferenceToExistingFile() throws Exception {
+	public void testWithReferenceToExistingFile(@TempDir File tempDir) throws Exception {
 		// Arrange
-		tempFile = FileUtils.createTempFile();
+		File tempFile = File.createTempFile("file", null, tempDir);
 		MessageTest.writeContentsToFile(tempFile, testDataEnriched);
 
 		// Act
@@ -307,9 +303,9 @@ public class SerializableFileReferenceTest {
 	}
 
 	@Test
-	public void testWithReferenceToExistingPath() throws Exception {
+	public void testWithReferenceToExistingPath(@TempDir File tempDir) throws Exception {
 		// Arrange
-		tempFile = FileUtils.createTempFile();
+		File tempFile = File.createTempFile("file", null, tempDir);
 		Path tempFilePath = tempFile.toPath();
 		MessageTest.writeContentsToFile(tempFile, testDataEnriched);
 
@@ -353,9 +349,9 @@ public class SerializableFileReferenceTest {
 	}
 
 	@Test
-	public void testSerializationWithMessage() throws Exception {
+	public void testSerializationWithMessage(@TempDir File tempDir) throws Exception {
 		// Arrange
-		tempFile = FileUtils.createTempFile();
+		File tempFile = File.createTempFile("file", null, tempDir);
 		MessageTest.writeContentsToFile(tempFile, testDataEnriched);
 		Message message = new FileMessage(tempFile, "UTF-8");
 
@@ -372,11 +368,11 @@ public class SerializableFileReferenceTest {
 	}
 
 	@Test
-	public void testSerializationWithBinaryMessage() throws Exception {
+	public void testSerializationWithBinaryMessage(@TempDir File tempDir) throws Exception {
 		// NB: This test logs a serialization-wire that can be added to the array `messageWires` when there are change to the class structure, to protect a version against breakage by future changes.
 
 		// Arrange
-		tempFile = FileUtils.createTempFile();
+		File tempFile = File.createTempFile("file", null, tempDir);
 		MessageTest.writeContentsToFile(tempFile, testDataEnriched);
 		Message message = new FileMessage(tempFile);
 		message.getContext().withCharset("UTF-8");

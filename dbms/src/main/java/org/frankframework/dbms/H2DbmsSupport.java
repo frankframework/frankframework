@@ -58,23 +58,13 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 		return rs.getStatement().getConnection().createClob();
 	}
 
-	@Override
-	public Object getClobHandle(ResultSet rs, String column) throws SQLException, DbmsException {
-		return rs.getStatement().getConnection().createClob();
-	}
-
 
 	@Override
 	public Object getBlobHandle(ResultSet rs, int column) throws SQLException, DbmsException {
 		return rs.getStatement().getConnection().createBlob();
 	}
 
-	@Override
-	public Object getBlobHandle(ResultSet rs, String column) throws SQLException, DbmsException {
-		return rs.getStatement().getConnection().createBlob();
-	}
-
-//	@Override
+	//	@Override
 //	// 2020-07-13 GvB: Did not get "SET SESSION CHARACTERISTICS" to work
 //	public JdbcSession prepareSessionForDirtyRead(Connection conn) throws DbmsException {
 //		JdbcUtil.executeStatement(conn, "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");

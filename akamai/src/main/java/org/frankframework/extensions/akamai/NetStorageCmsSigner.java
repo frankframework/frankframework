@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2020 Nationale-Nederlanden
+   Copyright 2017, 2020 Nationale-Nederlanden, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,11 +19,12 @@ import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
+
+import org.apache.commons.codec.binary.Base64;
 
 import org.frankframework.extensions.akamai.NetStorageUtils.KeyedHashAlgorithm;
-
 import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.UUIDUtil;
 
 
 /**
@@ -45,7 +46,7 @@ public class NetStorageCmsSigner {
 	 * Hmac-MD5 = v3
 	 * Hmac-SHA1 = v4
 	 * Hmac-SHA256 = v5
-	 *
+	 * <p>
 	 * (don't ask what v1 and v2 were. You don't want to know. It will make you cry.)
 	 */
 	public enum SignType {
@@ -55,7 +56,7 @@ public class NetStorageCmsSigner {
 		private final int value;
 		private final KeyedHashAlgorithm algorithm;
 
-		private SignType(KeyedHashAlgorithm algorithm, int value) {
+		SignType(KeyedHashAlgorithm algorithm, int value) {
 			this.value = value;
 			this.algorithm = algorithm;
 		}
@@ -69,10 +70,10 @@ public class NetStorageCmsSigner {
 		}
 	}
 
-	private URI uri;
-	private String nonce;
-	private String accessToken;
-	private SignType signType;
+	private final URI uri;
+	private final String nonce;
+	private final String accessToken;
+	private final SignType signType;
 
 	/**
 	 * Primary invocation for an API communication. This constructor is used for convenience when not uploading content
@@ -122,9 +123,9 @@ public class NetStorageCmsSigner {
 	 */
 	protected String getAuthDataHeaderValue() {
 		Date currentTime = new Date();
-		int rand = new Random().nextInt(Integer.MAX_VALUE);
+		int rand = UUIDUtil.RANDOM.nextInt(Integer.MAX_VALUE);
 
-		return 
+		return
 				"%d, 0.0.0.0, 0.0.0.0, %d, %d, %s".formatted(
 				signType.getValue(),
 				currentTime.getTime() / 1000,
@@ -142,7 +143,7 @@ public class NetStorageCmsSigner {
 	 * @return a base64 encoded return string
 	 */
 	protected String getAuthSignHeaderValue(String action, String authData) {
-		String signData = 
+		String signData =
 				"%s%s\n%s:%s\n".formatted(
 				authData,
 				uri.getPath(),
@@ -150,7 +151,7 @@ public class NetStorageCmsSigner {
 				action);
 		byte[] hash = NetStorageUtils.computeKeyedHash(signData.getBytes(), accessToken, signType.getAlgorithm());
 
-		return NetStorageUtils.encodeBase64(hash);
+		return Base64.encodeBase64String(hash);
 	}
 
 	/**

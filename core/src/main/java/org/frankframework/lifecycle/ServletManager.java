@@ -24,15 +24,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.servlet.HttpConstraintElement;
-import javax.servlet.HttpMethodConstraintElement;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletRegistration.Dynamic;
-import javax.servlet.ServletSecurityElement;
-import javax.servlet.annotation.ServletSecurity;
-import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
+import jakarta.servlet.HttpConstraintElement;
+import jakarta.servlet.HttpMethodConstraintElement;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.ServletRegistration.Dynamic;
+import jakarta.servlet.ServletSecurityElement;
+import jakarta.servlet.annotation.ServletSecurity;
+import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -46,11 +46,12 @@ import org.springframework.core.env.Environment;
 import org.springframework.web.context.ServletContextAware;
 
 import lombok.Setter;
+
+import org.frankframework.lifecycle.servlets.AbstractServletAuthenticator;
 import org.frankframework.lifecycle.servlets.AuthenticationType;
 import org.frankframework.lifecycle.servlets.IAuthenticator;
 import org.frankframework.lifecycle.servlets.JeeAuthenticator;
 import org.frankframework.lifecycle.servlets.SecuritySettings;
-import org.frankframework.lifecycle.servlets.ServletAuthenticatorBase;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
@@ -62,9 +63,9 @@ import org.frankframework.util.StringUtil;
 /**
  * <p>
  * Enables the use of programmatically adding servlets to the given ServletContext.<br/>
- * Run during the ApplicationServers {@link ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent) contextInitialized} phase, before starting servlets.
+ * Run during the ApplicationServers {@link ServletContextListener#contextInitialized(jakarta.servlet.ServletContextEvent) contextInitialized} phase, before starting servlets.
  * This ensures that all (dynamic) {@link DynamicRegistration.Servlet servlets} are created, before servlets are being created.
- * This in turn avoids a ConcurrentModificationException if this where to be done during a {@link javax.servlet.http.HttpServlet servlet} initialization phase.
+ * This in turn avoids a ConcurrentModificationException if this where to be done during a {@link jakarta.servlet.http.HttpServlet servlet} initialization phase.
  * </p>
  * <p>
  * When <code>dtap.stage</code> is set to LOC, the default behavior of each servlet is not-secured (no authentication) on HTTP.<br/>
@@ -87,7 +88,7 @@ import org.frankframework.util.StringUtil;
 public class ServletManager implements ApplicationContextAware, InitializingBean, ServletContextAware {
 
 	private ServletContext servletContext = null;
-	private final List<String> registeredRoles = new ArrayList<>(ServletAuthenticatorBase.DEFAULT_IBIS_ROLES); //Add the default IBIS roles
+	private final List<String> registeredRoles = new ArrayList<>(AbstractServletAuthenticator.DEFAULT_IBIS_ROLES); // Add the default IBIS roles
 	private final Logger log = LogUtil.getLogger(this);
 	private final Map<String, ServletConfiguration> servlets = new HashMap<>();
 	private final Map<String, IAuthenticator> authenticators = new HashMap<>();
@@ -121,7 +122,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 
 		Environment env = applicationContext.getEnvironment();
 		SecuritySettings.setupDefaultSecuritySettings(env);
-		allowUnsecureOptionsRequest = env.getProperty(ServletAuthenticatorBase.ALLOW_OPTIONS_REQUESTS_KEY, boolean.class, false);
+		allowUnsecureOptionsRequest = env.getProperty(AbstractServletAuthenticator.ALLOW_OPTIONS_REQUESTS_KEY, boolean.class, false);
 
 		addDefaultAuthenticator(AuthenticationType.CONTAINER);
 		addDefaultAuthenticator(AuthenticationType.NONE);
@@ -229,7 +230,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 		serv.setServletSecurity(getServletSecurity(config));
 
 		if(!config.getInitParameters().isEmpty()) {
-			//Manually loop through the map as serv.setInitParameters will fail all parameters even if only 1 fails...
+			// Manually loop through the map as serv.setInitParameters will fail all parameters even if only 1 fails...
 			for(Entry<String, String> entry : config.getInitParameters().entrySet()) {
 				String key = entry.getKey();
 				String value = entry.getValue();
@@ -252,13 +253,13 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 
 	private void logServletInfo(Dynamic serv, ServletConfiguration config) {
 		StringBuilder builder = new StringBuilder("registered");
-		builder.append(" servlet ["+serv.getName()+"]");
+		builder.append(" servlet [").append(serv.getName()).append("]");
 		builder.append(" configuration ");
 		builder.append(config);
 
 		getServletContext().log(builder.toString());
 
-		if(log.isDebugEnabled()) builder.append(" class ["+serv.getClassName()+"]");
+		if(log.isDebugEnabled()) builder.append(" class [").append(serv.getClassName()).append("]");
 		log.info(builder::toString);
 	}
 

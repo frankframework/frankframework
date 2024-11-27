@@ -23,22 +23,23 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import javax.annotation.Nonnull;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import jakarta.annotation.Nonnull;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 
 import org.apache.logging.log4j.LogManager;
-import org.frankframework.ibistesttool.runner.LadybugWarInitializer;
-import org.frankframework.lifecycle.FrankApplicationInitializer;
-import org.frankframework.lifecycle.SpringContextScope;
-import org.frankframework.lifecycle.servlets.ApplicationServerConfigurer;
-import org.frankframework.util.AppConstants;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
+
+import org.frankframework.ladybug.runner.LadybugWarInitializer;
+import org.frankframework.lifecycle.FrankApplicationInitializer;
+import org.frankframework.lifecycle.SpringContextScope;
+import org.frankframework.lifecycle.servlets.ApplicationServerConfigurer;
+import org.frankframework.util.AppConstants;
 
 /**
  * Spring Boot entrypoint or main class defined in the pom.xml when packaging using the 'spring-boot:repackage' goal.

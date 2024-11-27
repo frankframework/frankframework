@@ -22,11 +22,17 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
 import org.frankframework.receivers.Receiver;
-import org.frankframework.scheduler.JobDef;
+import org.frankframework.scheduler.AbstractJobDef;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.RunState;
 
-public class RecoverAdaptersJob extends JobDef {
+/**
+ * Frank!Framework Adapter recovery-job, which monitors all adapter states, attempts to recover them if required,
+ * and logs this information to the {@code HEARTBEAT} log appender.
+ * 
+ * @ff.info This is a default job that can be controlled with the property {@literal recover.adapters.interval}.
+ */
+public class RecoverAdaptersJob extends AbstractJobDef {
 	protected Logger heartbeatLog = LogUtil.getLogger("HEARTBEAT");
 
 	@Override
@@ -42,15 +48,15 @@ public class RecoverAdaptersJob extends JobDef {
 					countAdapter++;
 					RunState adapterRunState = adapter.getRunState();
 					boolean startAdapter = false;
-					if (adapterRunState==RunState.ERROR) { //if not previously configured, there is no point in trying to do this again.
+					if (adapterRunState==RunState.ERROR) { // If not previously configured, there is no point in trying to do this again.
 						log.debug("trying to recover adapter [{}]", adapter::getName);
 
-						if (!adapter.configurationSucceeded()) { //This should only happen once, so only try to (re-)configure if it failed in the first place!
+						if (!adapter.configurationSucceeded()) { // This should only happen once, so only try to (re-)configure if it failed in the first place!
 							try {
 								adapter.configure();
 							} catch (ConfigurationException e) {
 								// log the warning and do nothing, it couldn't configure before, it still can't...
-								log.warn("error configuring adapter [" + adapter.getName() + "] while trying to recover", e);
+								log.warn("error configuring adapter [{}] while trying to recover", adapter.getName(), e);
 							}
 						}
 
@@ -75,7 +81,7 @@ public class RecoverAdaptersJob extends JobDef {
 						countReceiver++;
 
 						RunState receiverRunState = receiver.getRunState();
-						//Only try to (re-)start receivers in a running adapter. Receiver configure is done in Adapter.configure
+						// Only try to (re-)start receivers in a running adapter. Receiver configure is done in Adapter.configure
 						if (adapterRunState==RunState.STARTED && (receiverRunState==RunState.ERROR || receiverRunState==RunState.EXCEPTION_STARTING) && receiver.configurationSucceeded()) {
 							log.debug("trying to recover receiver [{}] of adapter [{}]", receiver::getName, adapter::getName);
 
@@ -96,13 +102,13 @@ public class RecoverAdaptersJob extends JobDef {
 						}
 					}
 
-					if (startAdapter) { // can only be true if adapter was in error before and AutoStart is enabled
-						adapter.startRunning(); //ASync startup can still cause the Adapter to end up in an ERROR state
+					if (startAdapter) { // Can only be true if adapter was in error before and AutoStart is enabled
+						adapter.startRunning(); // ASync startup can still cause the Adapter to end up in an ERROR state
 					}
 				}
 			}
 		}
-		heartbeatLog.info("[" + countAdapterStateStarted + "/" + countAdapter + "] adapters and [" + countReceiverStateStarted + "/" + countReceiver + "] receivers have state [" + RunState.STARTED + "]");
+		heartbeatLog.info("[{}/{}] adapters and [{}/{}] receivers have state [{}]", countAdapterStateStarted, countAdapter, countReceiverStateStarted, countReceiver, RunState.STARTED);
 	}
 
 }

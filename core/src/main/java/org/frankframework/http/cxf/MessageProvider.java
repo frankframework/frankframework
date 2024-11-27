@@ -15,8 +15,8 @@
 */
 package org.frankframework.http.cxf;
 
-import javax.xml.ws.BindingType;
-import javax.xml.ws.ServiceMode;
+import jakarta.xml.ws.BindingType;
+import jakarta.xml.ws.ServiceMode;
 
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -30,9 +30,9 @@ import org.frankframework.stream.Message;
  *
  */
 
-@ServiceMode(value=javax.xml.ws.Service.Mode.MESSAGE)
-@BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
-public class MessageProvider extends SOAPProviderBase {
+@ServiceMode(value=jakarta.xml.ws.Service.Mode.MESSAGE)
+@BindingType(jakarta.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
+public class MessageProvider extends AbstractSOAPProvider {
 
 	private PushingListenerAdapter listener;
 

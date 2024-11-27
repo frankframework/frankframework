@@ -15,8 +15,7 @@ export class StatusService {
   ) {}
 
   getConfigurationFlowDiagramUrl(flowUrl: string): string {
-    const baseUrl = `${this.appService.getServerPath()}iaf/api/configurations/`;
-    return baseUrl + flowUrl;
+    return `${this.appService.getServerPath()}iaf/api/configurations${flowUrl}`;
   }
 
   getAdapterFlowDiagram(flowUrl: string): Observable<HttpResponse<string>> {
@@ -32,14 +31,8 @@ export class StatusService {
     });
   }
 
-  updateSelectedConfiguration(
-    selectedConfiguration: string,
-    action: string,
-  ): Observable<object> {
-    return this.http.put(
-      `${this.appService.absoluteApiPath}configurations/${selectedConfiguration}`,
-      { action },
-    );
+  updateSelectedConfiguration(selectedConfiguration: string, action: string): Observable<object> {
+    return this.http.put(`${this.appService.absoluteApiPath}configurations/${selectedConfiguration}`, { action });
   }
 
   updateAdapters(action: string, adapters: string[]): Observable<object> {
@@ -49,31 +42,16 @@ export class StatusService {
     });
   }
 
-  updateAdapter(
-    configuration: string,
-    adapter: string,
-    action: string,
-  ): Observable<object> {
+  updateAdapter(configuration: string, adapter: string, action: string): Observable<object> {
     return this.http.put(
-      `${
-        this.appService.absoluteApiPath
-      }configurations/${configuration}/adapters/${this.Misc.escapeURL(
-        adapter,
-      )}`,
+      `${this.appService.absoluteApiPath}configurations/${configuration}/adapters/${this.Misc.escapeURL(adapter)}`,
       { action },
     );
   }
 
-  updateReceiver(
-    configuration: string,
-    adapter: string,
-    receiver: string,
-    action: string,
-  ): Observable<object> {
+  updateReceiver(configuration: string, adapter: string, receiver: string, action: string): Observable<object> {
     return this.http.put(
-      `${
-        this.appService.absoluteApiPath
-      }configurations/${configuration}/adapters/${this.Misc.escapeURL(
+      `${this.appService.absoluteApiPath}configurations/${configuration}/adapters/${this.Misc.escapeURL(
         adapter,
       )}/receivers/${this.Misc.escapeURL(receiver)}`,
       { action },

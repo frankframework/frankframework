@@ -2,59 +2,132 @@ package org.frankframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Method;
 
-import org.frankframework.core.INamedObject;
 import org.junit.jupiter.api.Test;
 
 import lombok.Getter;
 import lombok.Setter;
 
-public class ClassUtilsTest {
+import org.frankframework.core.INamedObject;
 
-	private static enum TestEnum {ONE,TWO};
+class ClassUtilsTest {
 
 	@Test
-	public void testConvertToType() {
+	void testConvertToType() {
 		assertAll(
-			() -> assertEquals(7, ClassUtils.convertToType(int.class, "7")),
-			() -> assertEquals(7, ClassUtils.convertToType(Integer.class, "7")),
-			() -> assertEquals(7L, ClassUtils.convertToType(long.class, "7")),
-			() -> assertEquals(7L, ClassUtils.convertToType(Long.class, "7")),
-			() -> assertEquals("7", ClassUtils.convertToType(String.class, "7")),
-			() -> assertEquals(true, ClassUtils.convertToType(boolean.class, "true")),
-			() -> assertEquals(true, ClassUtils.convertToType(Boolean.class, "true")),
-			() -> assertEquals(false, ClassUtils.convertToType(Boolean.class, "niet true")),
-			() -> assertEquals(TestEnum.ONE, ClassUtils.convertToType(TestEnum.class, "one")),
+				() -> assertEquals(7, ClassUtils.convertToType(int.class, "7")),
+				() -> assertEquals(7, ClassUtils.convertToType(Integer.class, "7")),
+				() -> assertEquals(7L, ClassUtils.convertToType(long.class, "7")),
+				() -> assertEquals(7L, ClassUtils.convertToType(Long.class, "7")),
+				() -> assertEquals("7", ClassUtils.convertToType(String.class, "7")),
+				() -> assertTrue(ClassUtils.convertToType(boolean.class, "true")),
+				() -> assertTrue(ClassUtils.convertToType(Boolean.class, "true")),
+				() -> assertFalse(ClassUtils.convertToType(Boolean.class, "niet true")),
+				() -> assertEquals(TestEnum.ONE, ClassUtils.convertToType(TestEnum.class, "one")),
 
-			() -> assertThrows(IllegalArgumentException.class, ()->ClassUtils.convertToType(Object.class, "dummy")),
-			() -> assertThrows(IllegalArgumentException.class, ()->ClassUtils.convertToType(Long.class, "dummy")),
-			() -> assertThrows(IllegalArgumentException.class, ()->ClassUtils.convertToType(int.class, "")) //Empty string
+				() -> assertThrows(IllegalArgumentException.class, () -> ClassUtils.convertToType(Object.class, "dummy")),
+				() -> assertThrows(IllegalArgumentException.class, () -> ClassUtils.convertToType(Long.class, "dummy")),
+				() -> assertThrows(IllegalArgumentException.class, () -> ClassUtils.convertToType(int.class, "")) //Empty string
 		);
 	}
 
-	private static class DummyClassWithSetter {
-		private @Getter @Setter String field;
-	}
-
 	@Test
-	public void testInvokeSetter() throws Exception {
+	void testInvokeStringSetter() throws Exception {
 		DummyClassWithSetter clazz = new DummyClassWithSetter();
-		Method method = clazz.getClass().getDeclaredMethod("setField", new Class[] {String.class});
+		Method method = clazz.getClass().getDeclaredMethod("setField", String.class);
 		ClassUtils.invokeSetter(clazz, method, "value");
 		assertEquals("value", clazz.getField());
 	}
 
+	@Test
+	void testInvokeWithNullSetter() throws Exception {
+		DummyClassWithSetter clazz = new DummyClassWithSetter();
+		Method method = clazz.getClass().getDeclaredMethod("setEnumVarArgs", TestEnum[].class);
+		ClassUtils.invokeSetter(clazz, method, null);
+		assertNull(clazz.getField());
+	}
+
+	@Test
+	void testInvokeEnumVarArgsSetter() throws Exception {
+		DummyClassWithSetter clazz = new DummyClassWithSetter();
+		Method method = clazz.getClass().getDeclaredMethod("setEnumVarArgs", TestEnum[].class);
+		ClassUtils.invokeSetter(clazz, method, "ONE, TWO");
+		assertEquals(TestEnum.ONE, clazz.getTestEnums()[0]);
+		assertEquals(TestEnum.TWO, clazz.getTestEnums()[1]);
+	}
+
+	@Test
+	void testInvokeStringVarArgsSetter() throws Exception {
+		DummyClassWithSetter clazz = new DummyClassWithSetter();
+		Method method = clazz.getClass().getDeclaredMethod("setTestStrings", String[].class);
+
+		ClassUtils.invokeSetter(clazz, method, "AAA, BBB");
+		assertEquals("AAA", clazz.getTestStrings()[0]);
+		assertEquals("BBB", clazz.getTestStrings()[1]);
+	}
+
 	/** see CredentialProvider ClassUtilsTest to test results without Spring present */
 	@Test
-	public void testNameOf() {
+	void testNameOf() {
 		assertEquals("String", ClassUtils.nameOf("test"));
 		assertEquals("ClassUtilsTest", ClassUtils.nameOf(this));
 		assertEquals("ClassUtilsTest", ClassUtils.nameOf(this.getClass()));
 		assertEquals("org.frankframework.util.ClassUtilsTest$1", ClassUtils.nameOf(new INamedObject() {
 			private @Getter @Setter String name;
 		}));
+	}
+
+	@Test
+	public void getDeclaredFieldValueReturnsCorrectValue() throws NoSuchFieldException {
+		TestClass testClass = new TestClass();
+		testClass.setField("testValue");
+		Object result = ClassUtils.getDeclaredFieldValue(testClass, "field");
+		assertEquals("testValue", result);
+	}
+
+	@Test
+	public void getDeclaredFieldValueThrowsExceptionForNonExistentField() {
+		TestClass testClass = new TestClass();
+		assertThrows(NoSuchFieldException.class, () -> ClassUtils.getDeclaredFieldValue(testClass, "nonExistentField"));
+	}
+
+	@Test
+	public void getDeclaredFieldValueThrowsExceptionForNullObject() {
+		assertThrows(NullPointerException.class, () -> ClassUtils.getDeclaredFieldValue(null, "field"));
+	}
+
+	@Test
+	public void getDeclaredFieldValueThrowsExceptionForNullFieldName() {
+		TestClass testClass = new TestClass();
+		assertThrows(NullPointerException.class, () -> ClassUtils.getDeclaredFieldValue(testClass, null));
+	}
+
+	private enum TestEnum {ONE, TWO}
+
+	@Setter
+	@SuppressWarnings("unused")
+	private static class TestClass {
+		private String field;
+
+	}
+
+	private class DummyClassWithSetter {
+		private @Getter @Setter String field;
+		private @Getter TestEnum[] testEnums;
+		private @Getter String[] testStrings;
+
+		public void setEnumVarArgs(TestEnum... testEnum) {
+			this.testEnums = testEnum;
+		}
+
+		public void setTestStrings(String... testStrings) {
+			this.testStrings = testStrings;
+		}
 	}
 }

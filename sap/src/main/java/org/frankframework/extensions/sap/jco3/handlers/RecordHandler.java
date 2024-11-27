@@ -40,7 +40,7 @@ public class RecordHandler extends Handler {
 				startStringField(localName, record);
 			}
 		} else {
-			log.warn("field '" + localName + "' does not exist");
+			log.warn("field '{}' does not exist", localName);
 			unknownElementDepth = 1;
 		}
 	}

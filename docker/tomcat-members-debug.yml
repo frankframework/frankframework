@@ -1,0 +1,28 @@
+version: ''
+
+name: tomcat-members-debug
+
+services:
+  ff-test:
+    volumes:
+      - "../test/src/test/testtool:/opt/frank/testtool-ext"
+    image: private.docker.nexus.frankframework.org/ff-test:${VERSION:-latest}-tomcat
+    build: Tomcat/test
+    ports:
+      - "8080:8080"
+      - "5700-5709:5700-5709"
+    environment:
+      larva.adapter.active: false
+      management.gateway.inbound.class: org.frankframework.management.gateway.HazelcastInboundGateway
+      management.gateway.outbound.class: org.frankframework.management.gateway.HazelcastOutboundGateway
+  ff-test2:
+    volumes:
+      - "../test/src/test/testtool:/opt/frank/testtool-ext"
+    image: private.docker.nexus.frankframework.org/ff-test:${VERSION:-latest}-tomcat
+    build: Tomcat/test
+    ports:
+      - "8081:8080"
+      - "5710-5720:5700-5710"
+    environment:
+      larva.adapter.active: false
+      management.gateway.inbound.class: org.frankframework.management.gateway.HazelcastInboundGateway

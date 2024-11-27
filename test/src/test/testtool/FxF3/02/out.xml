@@ -1,6 +1,6 @@
 <throwable>
   <class>org.frankframework.core.SenderException</class>
-  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-FxF3In]: (RequestProcessorException) RequestProcessor [ibis4test-FxF3In] caught exception: Pipe [- pipeline inputValidator] Could not validate: Validation using FxfXmlValidator with &#39;xml/wsdl/OnCompletedTransferNotify_FxF3_1.1.4_abstract.wsdl&#39; failed:
+  <message>exception processing message using request processor [ibis4test-FxF3In]: (RequestProcessorException) RequestProcessor [ibis4test-FxF3In] caught exception: Pipe [- pipeline inputValidator] Could not validate: Validation using FxfXmlValidator with &#39;xml/wsdl/OnCompletedTransferNotify_FxF3_1.1.4_abstract.wsdl&#39; failed:
 /Envelope/Body/OnCompletedTransferNotify_Action: at (5,24): cvc-complex-type.2.4.a: Invalid content was found starting with element &#39;{&quot;http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1&quot;:TransferFlowIdX}&#39;. One of &#39;{&quot;http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1&quot;:TransferFlowId}&#39; is expected.</message>
   <cause>
     <throwable>

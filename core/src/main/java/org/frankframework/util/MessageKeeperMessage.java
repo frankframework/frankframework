@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2017-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
 */
 package org.frankframework.util;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Set;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -31,41 +31,38 @@ import org.frankframework.logging.IbisMaskingLayout;
  * @author Johan Verrips IOS
  */
 public class MessageKeeperMessage {
+	private static final DateTimeFormatter MESSAGE_DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy hh:mm:ss a");
 
-	private Date messageDate=new Date();
-	private String messageText;
-	private MessageKeeper.MessageKeeperLevel messageLevel;
+	private final Instant messageDate;
+	private final String messageText;
+	private final MessageKeeper.MessageKeeperLevel messageLevel;
 
 	/**
-	* Set the messagetext of this message. The text will be xml-encoded.
+	* Set the message-text of this message. The text will be xml-encoded.
 	*/
 	public MessageKeeperMessage(String message, MessageKeeper.MessageKeeperLevel level){
-	//	this.messageText=XmlUtils.encodeChars(message);
-		this.messageText=maskMessage(message);
+		this.messageText = maskMessage(message);
+		this.messageDate = Instant.now();
 		this.messageLevel=level;
 	}
+
 	/**
-	* Set the messagetext and -date of this message. The text will be xml-encoded.
+	* Set the message-text and -date of this message. The text will be xml-encoded.
 	*/
-	public MessageKeeperMessage(String message, Date date, MessageKeeper.MessageKeeperLevel level) {
-	//	this.messageText=XmlUtils.encodeChars(message);
-		this.messageText=maskMessage(message);
+	public MessageKeeperMessage(String message, Instant date, MessageKeeper.MessageKeeperLevel level) {
+		this.messageText = maskMessage(message);
 		this.messageDate=date;
 		this.messageLevel=level;
 	}
 
 	private String maskMessage(String message) {
 		if (StringUtils.isNotEmpty(message)) {
-			Set<String> hideRegex = IbisMaskingLayout.getGlobalReplace();
-			message = StringUtil.hideAll(message, hideRegex);
-
-			Set<String> threadHideRegex = IbisMaskingLayout.getThreadLocalReplace();
-			message = StringUtil.hideAll(message, threadHideRegex);
+			return IbisMaskingLayout.maskSensitiveInfo(message);
 		}
 		return message;
 	}
 
-	public Date getMessageDate() {
+	public Instant getMessageDate() {
 		return messageDate;
 	}
 	public String getMessageText() {
@@ -77,7 +74,8 @@ public class MessageKeeperMessage {
 
 	@Override
 	public String toString() {
-		String date = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss a").format(messageDate);
+		// Ideally we'd use the end-user timezone, but we can't look across the browser. ;-)
+		String date = MESSAGE_DATE_FORMATTER.format(messageDate.atZone(ZoneId.systemDefault()));
 		return "%S: %s - %s".formatted(messageLevel, date, messageText);
 	}
 }

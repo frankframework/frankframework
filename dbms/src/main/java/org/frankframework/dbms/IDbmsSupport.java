@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import java.sql.SQLType;
 import java.util.Date;
 import java.util.List;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * Interface to define DBMS specific SQL implementations.
@@ -54,8 +54,6 @@ public interface IDbmsSupport {
 
 	String getDateAndOffset(String dateValue, int daysOffset);
 
-	String getNumericKeyFieldType();
-
 	/**
 	 * http://en.wikipedia.org/wiki/DUAL_table
 	 */
@@ -69,36 +67,21 @@ public interface IDbmsSupport {
 
 	boolean autoIncrementUsesSequenceObject();
 
-	String getInsertedAutoIncrementValueQuery(String sequenceName);
-
 	String getTimestampFieldType();
 
 	String getDatetimeLiteral(Date date);
 
 	String getTimestampAsDate(String columnName);
 
-	String getClobFieldType();
-
 	boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException;
-
-	boolean mustInsertEmptyClobBeforeData();
-
-	String emptyClobValue();
 
 	Reader getClobReader(ResultSet rs, int column) throws SQLException, DbmsException;
 
 	Reader getClobReader(ResultSet rs, String column) throws SQLException, DbmsException;
 
-	// CLOB update methods, to support updating ResultSets using SELECT ... FOR UPDATE statements
-	String getUpdateClobQuery(String table, String clobField, String keyField);
-
 	Object getClobHandle(ResultSet rs, int column) throws SQLException, DbmsException;
 
-	Object getClobHandle(ResultSet rs, String column) throws SQLException, DbmsException;
-
 	Writer getClobWriter(ResultSet rs, int column, Object clobHandle) throws SQLException, DbmsException;
-
-	Writer getClobWriter(ResultSet rs, String column, Object clobHandle) throws SQLException, DbmsException;
 
 	void updateClob(ResultSet rs, int column, Object clobHandle) throws SQLException, DbmsException;
 
@@ -116,24 +99,13 @@ public interface IDbmsSupport {
 
 	boolean isBlobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException;
 
-	boolean mustInsertEmptyBlobBeforeData();
-
-	String emptyBlobValue();
-
 	InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException, DbmsException;
 
 	InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException, DbmsException;
 
-	// BLOB update methods, to support updating ResultSets using SELECT ... FOR UPDATE statements
-	String getUpdateBlobQuery(String table, String clobField, String keyField);
-
 	Object getBlobHandle(ResultSet rs, int column) throws SQLException, DbmsException;
 
-	Object getBlobHandle(ResultSet rs, String column) throws SQLException, DbmsException;
-
 	OutputStream getBlobOutputStream(ResultSet rs, int column, Object blobHandle) throws SQLException, DbmsException;
-
-	OutputStream getBlobOutputStream(ResultSet rs, String column, Object blobHandle) throws SQLException, DbmsException;
 
 	void updateBlob(ResultSet rs, int column, Object blobHandle) throws SQLException, DbmsException;
 
@@ -155,8 +127,6 @@ public interface IDbmsSupport {
 	String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery) throws DbmsException;
 
 	String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws DbmsException;
-
-	String getFirstRecordQuery(String tableName) throws DbmsException;
 
 	/**
 	 * Modify the provided selectQuery in such a way that the resulting query will not be blocked by locks, and will avoid placing locks itself as much as possible.
@@ -191,25 +161,15 @@ public interface IDbmsSupport {
 
 	boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws DbmsException;
 
-	boolean isIndexPresent(Connection conn, String schemaOwner, String tableName, String indexName);
-
 	boolean isSequencePresent(Connection conn, String schemaOwner, String tableName, String sequenceName);
 
 	boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName) throws DbmsException;
 
 	boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) throws DbmsException;
 
-	String getSchemaOwner(Connection conn) throws SQLException, DbmsException;
-
 	boolean isConstraintViolation(SQLException e);
 
-	String getRowNumber(String order, String sort);
-
-	String getRowNumberShortName();
-
 	String getLength(String column);
-
-	String getBooleanFieldType();
 
 	String getBooleanValue(boolean value);
 
@@ -229,5 +189,15 @@ public interface IDbmsSupport {
 
 	default boolean canFetchStatementParameterMetaData() {
 		return true;
+	}
+
+	/**
+	 * @param resultSetMetaData
+	 * @param columnNumber
+	 * @return whether the columnNumber metadata is defined as a RowVersion/Timestamp (MSSQL - specific, see {@link MsSqlServerDbmsSupport}).
+	 * @throws SQLException
+	 */
+	default boolean isRowVersionTimestamp(ResultSetMetaData resultSetMetaData, int columnNumber) throws SQLException {
+		return false;
 	}
 }

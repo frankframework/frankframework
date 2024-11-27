@@ -46,9 +46,6 @@
 			</xsl:choose>
 			<xsl:text>&#10;</xsl:text>
 		</xsl:for-each-group>
-		<!-- The code below gives back the preprocessed configuration
-				This is for testing purposes. To test, also change method(line 3) to xml instead of text-->
-<!--		 <xsl:copy-of select="$preproccessedAdapter"/>-->
 	</xsl:template>
 
 	<xsl:template match="*" mode="resolveExits">
@@ -62,9 +59,8 @@
 		<xsl:copy>
 			<xsl:copy-of select="@*"/>
 			<exits>
-				<xsl:variable name="definedUsedExits" select="//exit[(@name = current()//forward/@path) or (@path = current()//forward/@path)]"/>
-				<xsl:apply-templates select="$definedUsedExits" mode="#current"/>
-				<xsl:if test="not($definedUsedExits)">
+				<xsl:apply-templates select="//exit" mode="#current"/>
+				<xsl:if test="not(//exit[lower-case(@state) = 'success'])">
 					<exit name="READY" state="success"/>
 				</xsl:if>
 			</exits>
@@ -161,7 +157,7 @@
 			<xsl:variable name="pipelineWithExplicitForwards">
 				<xsl:copy-of select="$elementsWithExplicitForwards/*"/>
 				<!-- Create outputwrappers and outputvalidators per exit -->
-				<xsl:for-each select=".//exit[@name = $elementsWithExplicitForwards//forward/@path]">
+				<xsl:for-each select="./exits/exit[@name = $elementsWithExplicitForwards//forward/@path]">
 					<xsl:apply-templates select="ancestor::pipeline/outputWrapper" mode="#current">
 						<xsl:with-param name="exit" select="."/>
 					</xsl:apply-templates>
@@ -177,7 +173,7 @@
 			<xsl:apply-templates select="$pipelineWithExplicitForwards/*[@elementID=$firstElementID]" mode="sort">
 				<xsl:with-param name="originalPipes">
 					<xsl:copy-of select="$pipelineWithExplicitForwards/*"/>
-					<xsl:apply-templates select=".//exit" mode="#current"/>
+					<xsl:apply-templates select="./exits/exit" mode="#current"/>
 				</xsl:with-param>
 			</xsl:apply-templates>
 		</xsl:copy>
@@ -256,7 +252,7 @@
 			<xsl:call-template name="createForwardIfNecessary">
 				<xsl:with-param name="forwards" select="forward"/>
 				<xsl:with-param name="name" select="'success'"/>
-				<xsl:with-param name="path" select="(following-sibling::pipe/@name,..//exit[@state='success']/@name,'READY')[1]"/>
+				<xsl:with-param name="path" select="(following-sibling::pipe/@name,../exits/exit[lower-case(@state)='success']/@name,'READY')[1]"/>
 			</xsl:call-template>
 		</xsl:copy>
 	</xsl:template>
@@ -343,7 +339,7 @@
 		<xsl:param name="parentName" select="parent::*/name()"/>
 		<xsl:copy>
 			<xsl:attribute name="elementID" select="generate-id()"/>
-			<xsl:variable name="target" select="$pipeline/(pipe[@name=current()/@path]|.//exit[@name=current()/@path])[1]"/>
+			<xsl:variable name="target" select="$pipeline/(pipe[@name=current()/@path]|./exits/exit[@name=current()/@path])[1]"/>
 			<!-- When the forward is an exit, link it to the corresponding outputWrapper or outputValidator -->
 			<xsl:choose>
 				<xsl:when test="name($target)='exit'">

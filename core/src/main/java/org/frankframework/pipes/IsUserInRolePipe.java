@@ -26,8 +26,8 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.Forward;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StringUtil;
 
@@ -42,13 +42,14 @@ import lombok.Getter;
  *
  * N.B. The role itself must be specified by hand in the deployment descriptors web.xml and application.xml.
  * </p>
- * @ff.forward notInRole user may not assume role
  *
  * @author  Gerrit van Brakel
  * @since   4.4.3
  */
-@Category("Advanced")
-@ElementType(ElementTypes.ROUTER)
+@Forward(name = "notInRole", description = "user does not have the required role")
+@Forward(name = "*", description = "the first matched role which the user has")
+@Category(Category.Type.ADVANCED)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ROUTER)
 public class IsUserInRolePipe extends FixedForwardPipe {
 
 	private String role=null;
@@ -117,11 +118,11 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		role = string;
 	}
 
-	@Deprecated
 	/**
 	 * name of forward returned if user is not allowed to assume the specified role
 	 * @ff.default notInRole
 	 */
+	@Deprecated(forRemoval = true, since = "7.7.0")
 	public void setNotInRoleForwardName(String string) {
 		notInRoleForwardName = string;
 	}

@@ -20,7 +20,7 @@ import lombok.Setter;
 
 public class JacksonUtilsTest {
 
-	public static enum TestEnum { Aa, Bb }
+	public enum TestEnum { Aa, Bb }
 
 	@JsonInclude(Include.NON_NULL)
 	public static class DummyDTO {

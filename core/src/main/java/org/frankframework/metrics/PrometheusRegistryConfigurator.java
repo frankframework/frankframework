@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,15 +18,15 @@ package org.frankframework.metrics;
 import java.time.Duration;
 
 import io.micrometer.core.instrument.DistributionSummary;
-import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Meter.Id;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusConfig;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 
-public class PrometheusRegistryConfigurator extends MetricsRegistryConfiguratorBase<PrometheusConfig> {
+public class PrometheusRegistryConfigurator extends AbstractMetricsRegistryConfigurator<PrometheusConfig> {
 
-	private class Config extends MeterRegistryConfigBase implements PrometheusConfig {}
+	private class Config extends AbstractMeterRegistryConfig implements PrometheusConfig {}
 
 	@Override
 	protected PrometheusConfig createConfig() {

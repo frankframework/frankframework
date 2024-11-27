@@ -21,7 +21,10 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
+
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 
@@ -33,7 +36,8 @@ import org.frankframework.util.AppConstants;
  * @author  Gerrit van Brakel
  * @since   4.11
  */
-public class EhCache<V> extends CacheAdapterBase<V> {
+@FrankDocGroup(FrankDocGroupValue.OTHER)
+public class EhCache<V> extends AbstractCacheAdapter<V> {
 
 	private static final String KEY_PREFIX = "cache.default.";
 	private static final String KEY_MAX_ELEMENTS_IN_MEMORY = KEY_PREFIX + "maxElementsInMemory";
@@ -107,10 +111,10 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 	@Override
 	public void close() {
 		if (isDiskPersistent()) {
-			log.debug("cache ["+getName()+"] flushing to disk");
+			log.debug("cache [{}] flushing to disk", getName());
 			cache.flush();
 		} else {
-			log.debug("cache ["+getName()+"] clearing data");
+			log.debug("cache [{}] clearing data", getName());
 			cache.removeAll();
 		}
 		if (cacheManager!=null) {

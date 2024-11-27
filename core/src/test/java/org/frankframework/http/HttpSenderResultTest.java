@@ -34,13 +34,14 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HttpContext;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.http.HttpSenderBase.HttpMethod;
-import org.frankframework.stream.Message;
-import org.frankframework.util.StreamUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.http.AbstractHttpSender.HttpMethod;
+import org.frankframework.stream.Message;
+import org.frankframework.util.StreamUtil;
 
 public class HttpSenderResultTest extends Mockito {
 
@@ -108,7 +109,7 @@ public class HttpSenderResultTest extends Mockito {
 	@AfterEach
 	public void setDown() {
 		if (sender != null) {
-			sender.close();
+			sender.stop();
 			sender = null;
 		}
 	}
@@ -131,7 +132,7 @@ public class HttpSenderResultTest extends Mockito {
 		sender.setMethodType(HttpMethod.GET);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		//Use InputStream 'content' as result.
 		String result = sender.sendMessageOrThrow(new Message(""), session).asString();
@@ -146,7 +147,7 @@ public class HttpSenderResultTest extends Mockito {
 
 		sender.setMethodType(HttpMethod.GET);
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertEquals("text default", result);
@@ -170,7 +171,7 @@ public class HttpSenderResultTest extends Mockito {
 
 		sender.setMethodType(HttpMethod.GET);
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertEquals("<soap:Envelope/>", result.trim());

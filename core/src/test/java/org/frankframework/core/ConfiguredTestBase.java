@@ -1,12 +1,14 @@
 package org.frankframework.core;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.LogUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 
 public abstract class ConfiguredTestBase {
 	protected Logger log = LogUtil.getLogger(this);
@@ -18,7 +20,7 @@ public abstract class ConfiguredTestBase {
 
 	protected PipeLine pipeline;
 	protected Adapter adapter;
-	private static  TestConfiguration configuration;
+	private static TestConfiguration configuration;
 
 	protected TestConfiguration getConfiguration() {
 		if(configuration == null) {
@@ -37,14 +39,13 @@ public abstract class ConfiguredTestBase {
 	}
 
 	@AfterEach
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		getConfigurationWarnings().destroy();
 		getConfigurationWarnings().afterPropertiesSet();
 		pipeline = null;
 		adapter = null;
-		if(session != null) {
-			session.close();
-		}
+		CloseUtils.closeSilently(session);
+		session = null;
 	}
 
 	protected void autowireByType(Object bean) {

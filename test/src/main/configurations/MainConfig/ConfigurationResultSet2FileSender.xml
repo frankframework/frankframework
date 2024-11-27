@@ -29,8 +29,9 @@
 				<forward name="success" path="readFile" />
 			</pipe>
 
-			<pipe name="readFile" className="org.frankframework.pipes.FilePipe"
-				actions="read" filenameSessionKey="fileName">
+			<pipe name="readFile" className="org.frankframework.pipes.LocalFileSystemPipe"
+				action="read">
+				<param name="filename" sessionKey="fileName"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

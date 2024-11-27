@@ -8,16 +8,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
-import org.frankframework.dbms.DbmsSupportFactory;
-import org.frankframework.dbms.IDbmsSupport;
-import org.frankframework.jdbc.JdbcFacade;
-import org.frankframework.jta.SpringTxManagerProxy;
-import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.testutil.TransactionManagerType;
-import org.frankframework.util.SpringUtils;
+import jakarta.annotation.Nonnull;
+
 import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.platform.commons.JUnitException;
 import org.junit.platform.commons.util.ExceptionUtils;
@@ -30,6 +24,14 @@ import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.dbms.DbmsSupportFactory;
+import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.jdbc.JdbcFacade;
+import org.frankframework.jta.SpringTxManagerProxy;
+import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.testutil.TransactionManagerType;
+import org.frankframework.util.SpringUtils;
 
 /**
  * The DatabaseTestEnvironment will automatically be cleaned up after each test where it may throw exceptions if any connections have not been closed properly.

@@ -15,6 +15,8 @@
 */
 package org.frankframework.senders;
 
+import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.AdapterAware;
 import org.frankframework.core.ISender;
@@ -22,27 +24,26 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
-
-import lombok.Setter;
 
 /**
  * Wrapper for senders, that opens the wrapped sender at runtime before each sender action, and closes it afterwards.
  * This prevents (long) open connections inside Senders and possible connection failures.
  *
  * <b>Example:</b>
- * <pre><code>
- *   &lt;SenderPipe&gt;
- *     &lt;ReconnectSenderWrapper&gt;
- *        &lt;EchoSender myAttribute="myValue" /&gt;
- *     &lt;/ReconnectSenderWrapper&gt;
- *   &lt;/SenderPipe&gt;
- * </code></pre>
+ * <pre>{@code
+ * <SenderPipe>
+ *     <ReconnectSenderWrapper>
+ *         <EchoSender myAttribute="myValue" />
+ *     </ReconnectSenderWrapper>
+ * </SenderPipe>
+ * }</pre>
  * </p>
  *
  * @author  Niels Meijer
  */
-public class ReconnectSenderWrapper extends SenderWrapperBase {
+public class ReconnectSenderWrapper extends AbstractSenderWrapper {
 
 	/** specification of sender to send messages with */
 	private @Setter ISender sender;
@@ -63,18 +64,18 @@ public class ReconnectSenderWrapper extends SenderWrapperBase {
 	}
 
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 		try {
-			sender.open();
-			super.open();
+			sender.start();
+			super.start();
 		} finally {
-			sender.close(); //Only open to test the connection, close afterwards if all is ok.
+			sender.stop(); // Only open to test the connection, close afterwards if all is ok.
 		}
 	}
 
 	@Override
 	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		sender.open();
+		sender.start();
 		session.scheduleCloseOnSessionExit(new AutoCloseableSenderWrapper(sender), this.toString());
 		return sender.sendMessage(message, session);
 	}
@@ -90,8 +91,8 @@ public class ReconnectSenderWrapper extends SenderWrapperBase {
 		public void close() {
 			try {
 				log.debug("Closing sender after use: [{}]", sender.getName());
-				sender.close();
-			} catch (SenderException e) {
+				sender.stop();
+			} catch (LifecycleException e) {
 				log.warn("Error closing sender: [{}]", sender.getName(), e);
 			}
 		}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
 package org.frankframework.errormessageformatters;
 
 import java.io.IOException;
-import java.util.Map;
 
-import javax.xml.transform.Source;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -27,8 +25,9 @@ import org.frankframework.core.INamedObject;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.Resource;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
@@ -67,7 +66,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 					transformerPool = TransformerPool.getXPathTransformerPool(null, getXpathExpression(), OutputType.TEXT, false, getParameterList());
 				}
 
-				Map<String, Object> parameterValues = null;
+				ParameterValueList parameterValueList = null;
 				if (getParameterList() != null) {
 					try {
 						getParameterList().configure();
@@ -76,14 +75,14 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 					}
 
 					try {
-						parameterValues = getParameterList().getValues(new Message(errorMessage), new PipeLineSession()).getValueMap();
+						parameterValueList = getParameterList().getValues(new Message(errorMessage), new PipeLineSession());
 					} catch (ParameterException e) {
 						log.error("got exception extracting parameters", e);
 					}
 				}
-				Source resultSource = result.asSource();
-				result.close();
-				return Message.asMessage(transformerPool.transform(resultSource, parameterValues));
+				try (Message closeable = result) {
+					return transformerPool.transform(closeable, parameterValueList);
+				}
 			} catch (IOException e) {
 				log.error(" cannot retrieve [{}]", getStyleSheet(), e);
 			} catch (TransformerConfigurationException te) {
@@ -94,11 +93,10 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 		} else {
 			log.warn("no stylesheet or xpathExpression defined for XslErrorMessageFormatter");
 		}
-
 		return result;
 	}
 
-	public void addParameter(Parameter p) {
+	public void addParameter(IParameter p) {
 		if (paramList == null) {
 			paramList = new ParameterList();
 		}

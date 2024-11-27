@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,25 +15,22 @@
 */
 package org.frankframework.senders;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
+import javax.xml.transform.TransformerException;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.stream.xml.JsonXslt3XmlReader;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.documentbuilder.xml.JsonXslt3XmlReader;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
+import org.frankframework.threading.ThreadConnector;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlJsonWriter;
 import org.frankframework.xml.IXmlDebugger;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.XMLReader;
-
-import lombok.Getter;
-import lombok.Setter;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.stream.Message;
-import org.frankframework.stream.StreamingException;
-import org.frankframework.stream.ThreadConnector;
 
 /**
  * Perform an XSLT transformation with a specified stylesheet on a JSON input, yielding JSON, yielding JSON, XML or text.
@@ -58,20 +55,17 @@ public class JsonXsltSender extends XsltSender {
 	}
 
 	@Override
-	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, File tempFile) throws StreamingException {
+	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws TransformerException {
 		if (!isJsonResult()) {
-			return super.createHandler(input, threadConnector, session, poolToUse, handler, tempFile);
+			return super.createHandler(input, threadConnector, session, poolToUse, handler, messageBuilder);
 		}
-		try {
-			XmlJsonWriter xjw = new XmlJsonWriter(Files.newBufferedWriter(tempFile.toPath()));
-			handler = super.createHandler(input, threadConnector, session, poolToUse, xjw, tempFile);
-			if (getXmlDebugger() != null) {
-				handler = getXmlDebugger().inspectXml(session, "output XML to be converted to JSON", handler);
-			}
-			return handler;
-		} catch (IOException e) {
-			throw new StreamingException(e);
+
+		XmlJsonWriter xjw = new XmlJsonWriter(messageBuilder.asWriter());
+		handler = super.createHandler(input, threadConnector, session, poolToUse, xjw, messageBuilder);
+		if (getXmlDebugger() != null) {
+			handler = getXmlDebugger().inspectXml(session, "output XML to be converted to JSON", handler);
 		}
+		return handler;
 	}
 
 	@Override
@@ -94,13 +88,11 @@ public class JsonXsltSender extends XsltSender {
 	}
 
 	/**
-	 * Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions
+	 * Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code> definitions
 	 * @ff.default j=http://www.w3.org/2013/XSL/json
 	 */
 	@Override
 	public void setNamespaceDefs(String namespaceDefs) {
 		super.setNamespaceDefs(namespaceDefs);
 	}
-
-
 }

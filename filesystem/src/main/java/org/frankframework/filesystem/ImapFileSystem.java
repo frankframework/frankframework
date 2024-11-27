@@ -25,20 +25,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.http.PartMessage;
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.StringUtil;
-import org.frankframework.xml.SaxElementBuilder;
-import org.xml.sax.SAXException;
-
-import com.sun.mail.imap.AppendUID;
-import com.sun.mail.imap.IMAPFolder;
-import com.sun.mail.imap.IMAPMessage;
-
+import jakarta.annotation.Nullable;
 import jakarta.mail.BodyPart;
 import jakarta.mail.Flags;
 import jakarta.mail.Folder;
@@ -57,9 +45,23 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
+
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.angus.mail.imap.AppendUID;
+import org.eclipse.angus.mail.imap.IMAPFolder;
+import org.eclipse.angus.mail.imap.IMAPMessage;
+import org.xml.sax.SAXException;
+
 import lombok.Getter;
 
-public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IMAPFolder> {
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.http.PartMessage;
+import org.frankframework.stream.MessageContext;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.StringUtil;
+import org.frankframework.xml.SaxElementBuilder;
+
+public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart, IMAPFolder> {
 	private final @Getter String domain = "IMAP";
 
 	private @Getter String host;
@@ -73,7 +75,6 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 			throw new ConfigurationException("attribute host needs to be specified");
 		}
 	}
-
 
 	@Override
 	protected IMAPFolder createConnection() throws FileSystemException {
@@ -98,12 +99,12 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 					folder = (IMAPFolder)store.getFolder(baseFolder);
 				}
 				if (!folder.exists()) {
-					throw new FileSystemException("Could not find baseFolder ["+baseFolder+"]");
+					throw new FolderNotFoundException("Could not find baseFolder ["+baseFolder+"]");
 				}
 			} else {
 				folder = inbox;
 				if (!folder.exists()) {
-					throw new FileSystemException("Could not find baseFolder ["+folder+"]");
+					throw new FolderNotFoundException("Could not find baseFolder ["+folder+"]");
 				}
 			}
 			return folder;
@@ -123,7 +124,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 		}
 	}
 
-	private IMAPFolder getFolder(IMAPFolder baseFolder, String name) throws MessagingException {
+	IMAPFolder getFolder(IMAPFolder baseFolder, String name) throws MessagingException {
 		if (StringUtils.isNotEmpty(name)) {
 			return (IMAPFolder)baseFolder.getFolder(name);
 		}
@@ -154,12 +155,12 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public Message toFile(String filename) throws FileSystemException {
+	public Message toFile(@Nullable String filename) throws FileSystemException {
 		return toFile(null, filename);
 	}
 
 	@Override
-	public Message toFile(String defaultFolder, String filename) throws FileSystemException {
+	public Message toFile(@Nullable String defaultFolder, @Nullable String filename) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -185,6 +186,11 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 		} catch (MessagingException e) {
 			throw new FileSystemException(e);
 		}
+	}
+
+	@Override
+	public boolean isFolder(Message message) throws FileSystemException {
+		return false;  // Currently only supports messages
 	}
 
 	@Override
@@ -222,12 +228,15 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public DirectoryStream<Message> listFiles(String foldername) throws FileSystemException {
+	public DirectoryStream<Message> list(String foldername, TypeFilter filter) throws FileSystemException {
+		if (filter.includeFolders()) {
+			throw new FileSystemException("Filtering on folders is not supported");
+		}
 		IMAPFolder baseFolder = getConnection();
-		boolean invalidateConnectionOnRelease = false;
-		if (baseFolder==null) {
+		if (baseFolder == null) {
 			return null;
 		}
+		boolean invalidateConnectionOnRelease = false;
 		try {
 			IMAPFolder folder = getFolder(baseFolder, foldername);
 			if (!folder.isOpen()) {
@@ -244,16 +253,17 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public void deleteFile(Message f) throws FileSystemException {
+	public void deleteFile(Message message) throws FileSystemException {
 		try {
-			f.setFlag(Flags.Flag.DELETED, true);
+			message.setFlag(Flags.Flag.DELETED, true);
+			message.getFolder().expunge();
 		} catch (MessagingException e) {
-			throw new FileSystemException("Could not delete message [" + getCanonicalName(f) + "]: " + e.getMessage());
+			throw new FileSystemException("Could not delete message [" + getCanonicalNameOrErrorMessage(message) + "]: " + e.getMessage());
 		}
 	}
 
 	@Override
-	public Message moveFile(Message f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public Message moveFile(Message f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -266,7 +276,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 				results = src.moveUIDMessages(messages, destination);
 			}
 			if (results[0] == null) {
-				log.warn("could not find new name of message in folder [" + destinationFolder + "]");
+				log.warn("could not find new name of message in folder [{}]", destinationFolder);
 				return null;
 			}
 			IMAPFolder destination = getFolder(baseFolder, destinationFolder);
@@ -281,7 +291,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public Message copyFile(final Message f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public Message copyFile(final Message f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -294,7 +304,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 				results = src.copyUIDMessages(messages, destination);
 			}
 			if (results[0] == null) {
-				log.warn("could not find new name of message in folder [" + destinationFolder + "]");
+				log.warn("could not find new name of message in folder [{}]", destinationFolder);
 				return null;
 			}
 			IMAPFolder destination = getFolder(baseFolder, destinationFolder);
@@ -332,7 +342,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 		try {
 			IMAPFolder folder = getFolder(baseFolder, folderName);
 			if (folder == null) {
-				throw new FileSystemException("Could not find folder object [" + folderName + "]");
+				throw new FolderNotFoundException("Could not find folder object [" + folderName + "]");
 			}
 			if (!folder.delete(removeNonEmptyFolder)) {
 				throw new FileSystemException("Could not delete folder [" + folderName + "]");
@@ -501,8 +511,12 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public Date getModificationTime(Message f) {
-		return null;
+	public Date getModificationTime(Message message) {
+		try {
+			return message.getReceivedDate();
+		} catch (MessagingException e) {
+			return null;
+		}
 	}
 
 	private List<String> getRecipientsOfType(Message f, RecipientType type) throws MessagingException {
@@ -510,7 +524,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 		if (recipients == null) {
 			return Collections.emptyList();
 		}
-		return Arrays.asList(recipients).stream().map(InternetAddress::toUnicodeString).collect(Collectors.toList());
+		return Arrays.stream(recipients).map(InternetAddress::toUnicodeString).toList();
 	}
 
 	private List<String> getReplyTo(Message f) throws MessagingException {
@@ -518,19 +532,20 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 		if (recipients == null) {
 			return Collections.emptyList();
 		}
-		return Arrays.asList(recipients).stream().map(InternetAddress::toUnicodeString).collect(Collectors.toList());
+		return Arrays.stream(recipients).map(InternetAddress::toUnicodeString).toList();
 	}
 
 	@Override
+	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(Message f) throws FileSystemException {
 		try {
 			Map<String, Object> result = new LinkedHashMap<>();
-			result.put(TO_RECEPIENTS_KEY, getRecipientsOfType(f, RecipientType.TO));
-			result.put(CC_RECEPIENTS_KEY, getRecipientsOfType(f, RecipientType.CC));
-			result.put(BCC_RECEPIENTS_KEY, getRecipientsOfType(f, RecipientType.BCC));
+			result.put(TO_RECIPIENTS_KEY, getRecipientsOfType(f, RecipientType.TO));
+			result.put(CC_RECIPIENTS_KEY, getRecipientsOfType(f, RecipientType.CC));
+			result.put(BCC_RECIPIENTS_KEY, getRecipientsOfType(f, RecipientType.BCC));
 			result.put(FROM_ADDRESS_KEY, InternetAddress.toUnicodeString(f.getFrom()));
 			// result.put(IMailFileSystem.SENDER_ADDRESS_KEY, f.getS);
-			result.put(REPLY_TO_RECEPIENTS_KEY, getReplyTo(f));
+			result.put(REPLY_TO_RECIPIENTS_KEY, getReplyTo(f));
 			result.put(DATETIME_SENT_KEY, f.getSentDate());
 			result.put(DATETIME_RECEIVED_KEY, f.getReceivedDate());
 			for (Enumeration<Header> headerEnum = f.getAllHeaders(); headerEnum.hasMoreElements();) {
@@ -606,10 +621,9 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 		return new MimeContentMessage((IMAPMessage) emailMessage);
 	}
 
-	private class MimeContentMessage extends org.frankframework.stream.Message {
-
+	private static class MimeContentMessage extends org.frankframework.stream.Message {
 		public MimeContentMessage(IMAPMessage imapMessage) {
-			super(imapMessage::getMimeStream, null, imapMessage.getClass());
+			super(imapMessage::getMimeStream, new MessageContext(), imapMessage.getClass());
 		}
 	}
 

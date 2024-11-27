@@ -16,17 +16,21 @@
 package org.frankframework.parameters;
 
 import java.io.IOException;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 import org.frankframework.core.ParameterException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  *
@@ -37,43 +41,44 @@ public class ParameterValue {
 	private static final Logger LOG = LogManager.getLogger(ParameterValue.class);
 
 	private Object value;
-	private Parameter definition;
+	private IParameter definition;
 
-	protected ParameterValue(Parameter type, Object value) {
+	protected ParameterValue(IParameter type, Object value) {
 		this.definition = type;
 		this.value = value;
 	}
 
 	/**
-	 * Returns the description of the parameter
+	 * Returns the description of the IParameter
 	 */
-	public Parameter getDefinition() {
+	public IParameter getDefinition() {
 		return definition;
 	}
 
 	/**
-	 * Returns the name of the parameter
+	 * Returns the name of the IParameter
 	 */
 	public String getName() {
 		return definition.getName();
 	}
 
 	/**
-	 * Returns the value of the parameter
+	 * Returns the value of the IParameter
 	 */
 	public Object getValue() {
 		return value;
 	}
 	public Message asMessage() {
+		if (value instanceof Message message) return message;
 		return Message.asMessage(value);
 	}
 
-	public void setDefinition(Parameter parameterDef) {
-		this.definition = parameterDef;
+	public void setDefinition(IParameter IParameterDef) {
+		this.definition = IParameterDef;
 	}
 
 	/**
-	 * Sets value for the parameter
+	 * Sets value for the IParameter
 	 */
 	public void setValue(Object value) {
 		this.value = value;
@@ -84,23 +89,15 @@ public class ParameterValue {
 	 * @return convert the value to a boolean
 	 */
 	public boolean asBooleanValue(boolean defaultValue) {
-		return value != null ? Boolean.parseBoolean(valueAsString()) : defaultValue;
-	}
+		if (value == null) {
+			return defaultValue;
+		}
 
-	/**
-	 * @param defaultValue returned if value is null
-	 * @return convert the value to a byte
-	 */
-	public byte asByteValue(byte defaultValue) {
-		return value != null ? Byte.parseByte(valueAsString()) : defaultValue;
-	}
+		if (value instanceof Boolean b) {
+			return b;
+		}
 
-	/**
-	 * @param defaultValue returned if value is null
-	 * @return convert the value to a double
-	 */
-	public double asDoubleValue(double defaultValue) {
-		return value != null ? Double.parseDouble(valueAsString()) : defaultValue;
+		return Boolean.parseBoolean(valueAsString());
 	}
 
 	/**
@@ -108,7 +105,15 @@ public class ParameterValue {
 	 * @return convert the value to an int
 	 */
 	public int asIntegerValue(int defaultValue) {
-		return value != null ? Integer.parseInt(valueAsString()) : defaultValue;
+		if (value == null) {
+			return defaultValue;
+		}
+
+		if (value instanceof Integer i) {
+			return i;
+		}
+
+		return Integer.parseInt(valueAsString());
 	}
 
 	/**
@@ -117,22 +122,6 @@ public class ParameterValue {
 	 */
 	public long asLongValue(long defaultValue) {
 		return value != null ? Long.parseLong(valueAsString()) : defaultValue;
-	}
-
-	/**
-	 * @param defaultValue returned if value is null
-	 * @return convert the value to a float
-	 */
-	public float asFloatValue(float defaultValue) {
-		return value != null ? Float.parseFloat(valueAsString()) : defaultValue;
-	}
-
-	/**
-	 * @param defaultValue returned if value is null
-	 * @return convert the value to a short
-	 */
-	public short asShortValue(short defaultValue) {
-		return value != null ? Short.parseShort(valueAsString()) : defaultValue;
 	}
 
 	/**
@@ -157,6 +146,12 @@ public class ParameterValue {
 				throw new IllegalStateException("cannot open stream", e);
 			}
 		}
+
+		if (getDefinition() instanceof DateParameter dateParameter && value instanceof Date date) {
+			final DateTimeFormatter dtf = DateTimeFormatter.ofPattern(dateParameter.getFormatString()).withZone(ZoneId.systemDefault());
+			return dtf.format(date.toInstant());
+		}
+
 		return value.toString();
 	}
 
@@ -165,11 +160,11 @@ public class ParameterValue {
 			return Collections.emptyList();
 		}
 		try {
-			LOG.debug("rendering Parameter [{}] value [{}] as Collection", ()->getDefinition().getName(), ()->value);
+			LOG.debug("rendering IParameter [{}] value [{}] as Collection", ()->getDefinition().getName(), ()->value);
 			Element holder = XmlUtils.buildElement("<root>"+value+"</root>");
 			return XmlUtils.getChildTags(holder, "*");
 		} catch (DomBuilderException e) {
-			throw new ParameterException(getDefinition().getName(), "Parameter ["+getDefinition().getName()+"] cannot create Collection from ["+value+"]", e);
+			throw new ParameterException(getDefinition().getName(), "IParameter ["+getDefinition().getName()+"] cannot create Collection from ["+value+"]", e);
 		}
 	}
 }

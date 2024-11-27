@@ -19,8 +19,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -31,8 +32,6 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ProcessUtil;
 
-import lombok.Getter;
-
 /**
  * Sender that executes either its input or a fixed line, with all parametervalues appended, as a command.
  *
@@ -41,7 +40,7 @@ import lombok.Getter;
  * @since   4.8
  * @author  Gerrit van Brakel
  */
-public class CommandSender extends SenderWithParametersBase {
+public class CommandSender extends AbstractSenderWithParameters {
 
 	private String command;
 	@Getter private int timeout = 0;
@@ -49,7 +48,7 @@ public class CommandSender extends SenderWithParametersBase {
 	private final boolean synchronous = true;
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		List commandline;
 		if (StringUtils.isNotEmpty(getCommand())) {
 			commandline = commandToList(getCommand());
@@ -96,17 +95,6 @@ public class CommandSender extends SenderWithParametersBase {
 	}
 	public String getCommand() {
 		return command;
-	}
-
-	/**
-	 * The number of seconds to execute a command. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited
-	 * @deprecated use {@link #setTimeout(int)} instead.
-	 * @ff.default 0
-	 */
-	@Deprecated(since = "8.1")
-	@ConfigurationWarning("Use attribute timeout instead")
-	public void setTimeOut(int timeout) {
-		this.timeout = timeout;
 	}
 
 	/**

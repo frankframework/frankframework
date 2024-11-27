@@ -15,14 +15,14 @@
 */
 package org.frankframework.core;
 
-import org.frankframework.configuration.ConfigurationException;
-
 import org.apache.logging.log4j.Logger;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.springframework.transaction.TransactionDefinition;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.util.LogUtil;
 
@@ -38,9 +38,10 @@ public class TransactionAttributes implements HasTransactionAttribute {
 		txDef = configureTransactionAttributes(log, getTransactionAttribute(), getTransactionTimeout());
 	}
 
-	public static TransactionDefinition configureTransactionAttributes(Logger log, TransactionAttribute transactionAttribute, int transactionTimeout) {
-		if (log.isDebugEnabled()) log.debug("creating TransactionDefinition for transactionAttribute ["+transactionAttribute+"], timeout ["+transactionTimeout+"]");
-		return SpringTxManagerProxy.getTransactionDefinition(transactionAttribute.getTransactionAttributeNum(),transactionTimeout);
+	public static TransactionDefinition configureTransactionAttributes(Logger log, TransactionAttribute transactionAttribute, int transactionTimeoutInSeconds) {
+		if (log.isDebugEnabled())
+			log.debug("creating TransactionDefinition for transactionAttribute [{}], timeout [{}] seconds", transactionAttribute, transactionTimeoutInSeconds);
+		return SpringTxManagerProxy.getTransactionDefinition(transactionAttribute.getTransactionAttributeNum(), transactionTimeoutInSeconds);
 	}
 
 	@Deprecated
@@ -62,8 +63,13 @@ public class TransactionAttributes implements HasTransactionAttribute {
 				txAtt==TransactionAttribute.MANDATORY;
 	}
 
+	/**
+	 * Set transactionTimeout in seconds.
+	 *
+	 * @param transactionTimeoutSeconds Time in seconds after which a transaction will fail.
+	 */
 	@Override
-	public void setTransactionTimeout(int i) {
-		transactionTimeout = i;
+	public void setTransactionTimeout(int transactionTimeoutSeconds) {
+		transactionTimeout = transactionTimeoutSeconds;
 	}
 }

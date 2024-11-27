@@ -26,11 +26,11 @@ import org.frankframework.core.IConfigurable;
  */
 public interface ISapFunctionFacade extends IConfigurable, HasPhysicalDestination {
 
-	public void setCorrelationIdFieldIndex(int i);
-	public void setCorrelationIdFieldName(String string);
-	public void setRequestFieldIndex(int i);
-	public void setRequestFieldName(String string);
-	public void setReplyFieldIndex(int i);
-	public void setReplyFieldName(String string);
-	public void setSapSystemName(String string);
+	void setCorrelationIdFieldIndex(int i);
+	void setCorrelationIdFieldName(String string);
+	void setRequestFieldIndex(int i);
+	void setRequestFieldName(String string);
+	void setReplyFieldIndex(int i);
+	void setReplyFieldName(String string);
+	void setSapSystemName(String string);
 }

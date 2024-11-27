@@ -1,6 +1,6 @@
 <throwable>
   <class>org.frankframework.core.SenderException</class>
-  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-QuerySender]: (RequestProcessorException) RequestProcessor [ibis4test-QuerySender] caught exception: Pipe [generateException] &lt;result&gt;&lt;rowsupdated&gt;1&lt;/rowsupdated&gt;&lt;/result&gt;</message>
+  <message>exception processing message using request processor [ibis4test-QuerySender]: (RequestProcessorException) RequestProcessor [ibis4test-QuerySender] caught exception: Pipe [generateException] &lt;result&gt;&lt;rowsupdated&gt;1&lt;/rowsupdated&gt;&lt;/result&gt;</message>
   <cause>
     <throwable>
       <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>

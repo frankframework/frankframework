@@ -15,7 +15,7 @@
 */
 package org.frankframework.receivers;
 
-import javax.jms.Message;
+import jakarta.jms.Message;
 
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;

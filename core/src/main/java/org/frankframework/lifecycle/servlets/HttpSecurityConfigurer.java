@@ -16,8 +16,7 @@
 package org.frankframework.lifecycle.servlets;
 
 import java.util.Map;
-
-import javax.servlet.ServletContext;
+import java.util.Map.Entry;
 
 import org.frankframework.lifecycle.ServletManager;
 import org.springframework.beans.factory.BeanFactory;
@@ -32,15 +31,29 @@ import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.context.WebApplicationContext;
 
+import jakarta.servlet.ServletContext;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
+/**
+ * The default SecurityFilterChain will be added by {@link SecurityFilterChainConfigurer}.
+ * All {@link SecurityFilterChain} are added to the root {@link WebApplicationContext} which is stored under
+ * {@link WebApplicationContext#ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE}.
+ * 
+ * In newer versions of Spring Boot the boot context overwrites this key, using the 'old' context as a parent.
+ * By not unregistering the {@link SecurityFilterChain} they can be picked up by the new context (which may
+ * add their own filters). This indirectly means that the default 'FilterChainProxy' (which collects all 
+ * SecurityFilters) will not NOT be used. Instead a new one, created in the sub-context, will be used.
+ * 
+ * @author Niels Meijer
+ */
 @Log4j2
 @Order(Ordered.LOWEST_PRECEDENCE)
 @Configuration
-@EnableWebSecurity //Enables Spring Security (classpath)
-@EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) //Enables JSR 250 (JAX-RS) annotations
+@EnableWebSecurity // Enables Spring Security (classpath)
+@EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) // Enables JSR 250 (JAX-RS) annotations
 public class HttpSecurityConfigurer implements WebSecurityConfigurer<WebSecurity>, InitializingBean {
 
 	private @Setter @Autowired ServletManager servletManager;
@@ -70,9 +83,9 @@ public class HttpSecurityConfigurer implements WebSecurityConfigurer<WebSecurity
 		Map<String, SecurityFilterChain> filters = factory.getBeansOfType(SecurityFilterChain.class);
 		webSecurity.debug(log.isTraceEnabled());
 
-		for(SecurityFilterChain chain : filters.values()) {
-			log.info("adding SecurityFilterChain [{}] to WebSecurity", chain);
-			webSecurity.addSecurityFilterChainBuilder(() -> chain);
+		for(Entry<String, SecurityFilterChain> chain : filters.entrySet()) {
+			log.info("adding SecurityFilterChain [{}] to WebSecurity", chain::getKey);
+			webSecurity.addSecurityFilterChainBuilder(chain::getValue);
 		}
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,25 +19,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-
+import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
+import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 
-public class NoOpAuthenticator extends ServletAuthenticatorBase {
-	private static final String ROLE_PREFIX = "ROLE_"; //see AuthorityAuthorizationManager#ROLE_PREFIX
+public class NoOpAuthenticator extends AbstractServletAuthenticator {
+	private static final String ROLE_PREFIX = "ROLE_"; // See AuthorityAuthorizationManager#ROLE_PREFIX
 
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
-		http.anonymous().authorities(getAuthorities());
+		http.anonymous(anonymous -> anonymous.authorities(getAuthorities()).principal("anonymous"));
 		return http.build();
 	}
 
 	@Override
-	protected boolean authorizationRequestMatcher(HttpServletRequest request) {
-		return false;
+	protected AuthorizationManager<RequestAuthorizationContext> getAuthorizationManager() {
+		return AuthenticatedAuthorizationManager.anonymous();
 	}
 
 	private List<GrantedAuthority> getAuthorities() {

@@ -147,12 +147,15 @@ TagDatabase
 		</addColumn>
 	</changeSet>
 
-	<changeSet id="FF_Util:8" author="Yannick van Leeuwen">
+<!-- MS_SQL doesn't like it when you change a column which is part of a constraint -->
+	<changeSet id="FF_Util:8" author="Yannick van Leeuwen" onValidationFail="MARK_RAN">
 		<comment>Allow 120 chars for version field</comment>
+<!-- 		<dropPrimaryKey tableName="IBISCONFIG" constraintName="PK_IBISCONFIG" /> -->
 		<modifyDataType
 				columnName="VERSION"
 				newDataType="java.sql.Types.VARCHAR(120)"
 				tableName="IBISCONFIG"/>
+<!-- 		<addPrimaryKey tableName="IBISCONFIG" columnNames="NAME, VERSION" constraintName="PK_IBISCONFIG"/> -->
 		<rollback>
 			<modifyDataType
 					columnName="VERSION"

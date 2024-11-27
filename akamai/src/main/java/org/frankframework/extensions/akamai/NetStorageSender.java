@@ -24,22 +24,25 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.Nonnull;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
-import org.frankframework.extensions.akamai.NetStorageCmsSigner.SignType;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.extensions.akamai.NetStorageCmsSigner.SignType;
+import org.frankframework.http.AbstractHttpSender;
 import org.frankframework.http.HttpResponseHandler;
-import org.frankframework.http.HttpSenderBase;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
@@ -51,27 +54,30 @@ import org.frankframework.util.XmlUtils;
 /**
  * Sender for Akamai NetStorage (HTTP based).
  *
- * <p>See {@link HttpSenderBase} for more arguments and parameters!</p>
+ * <p>See {@link AbstractHttpSender} for more arguments and parameters!</p>
  *
  *
  * <p><b>AuthAlias:</b></p>
- * <p>If you do not want to specify the nonce and the accesstoken used to authenticate with Akamai, you can use the authalias property. The username represents the nonce and the password the accesstoken.</p>
+ * <p>If you do not want to specify the nonce and the access token used to authenticate with Akamai, you can use the authalias property. The username
+ * represents the nonce and the password the access token.</p>
  *
- * @ff.parameters Some actions require specific parameters to be set. Optional parameters for the <code>upload</code> action are: md5, sha1, sha256 and mtime.
+ * @ff.parameters Some actions require specific parameters to be set. Optional parameters for the <code>UPLOAD</code> action are: md5, sha1, sha256 and mtime.
  *
  * @author	Niels Meijer
  * @since	7.0-B4
  */
-public class NetStorageSender extends HttpSenderBase {
+public class NetStorageSender extends AbstractHttpSender {
 	private static final String URL_PARAM_KEY = "urlParameter";
 	public static final String DESTINATION_PARAM_KEY = "destination";
 	public static final String FILE_PARAM_KEY = "file";
 	public static final String MTIME_PARAM_KEY = "mtime";
 	public static final String HASHVALUE_PARAM_KEY = "hashValue";
 
+	private static final String PATH_SEPARATOR = "/";
+
 	private @Getter Action action = null;
 	public enum Action {
-		DU, DIR, DELETE, UPLOAD, MKDIR, RMDIR, RENAME, MTIME, DOWNLOAD;
+		DU, DIR, DELETE, UPLOAD, MKDIR, RMDIR, RENAME, MTIME, DOWNLOAD
 	}
 
 	private @Getter int signVersion = 5;
@@ -99,33 +105,33 @@ public class NetStorageSender extends HttpSenderBase {
 
 		//Safety checks
 		if(getAction() == null)
-			throw new ConfigurationException(getLogPrefix()+"action must be specified");
+			throw new ConfigurationException("action must be specified");
 
 		if(getCpCode() == null)
-			throw new ConfigurationException(getLogPrefix()+"cpCode must be specified");
+			throw new ConfigurationException("cpCode must be specified");
 		if(!getUrl().startsWith("http"))
-			throw new ConfigurationException(getLogPrefix()+"url must be start with http(s)");
+			throw new ConfigurationException("url must be start with http(s)");
 
 		if(getSignVersion() < 3 || getSignVersion() > 5)
-			throw new ConfigurationException(getLogPrefix()+"signVersion must be either 3, 4 or 5");
+			throw new ConfigurationException("signVersion must be either 3, 4 or 5");
 
 
 		ParameterList parameterList = getParameterList();
-		if(getAction() == Action.UPLOAD && parameterList.findParameter(FILE_PARAM_KEY) == null) {
-			throw new ConfigurationException(getLogPrefix()+"the upload action requires a file parameter to be present");
+		if(getAction() == Action.UPLOAD && !parameterList.hasParameter(FILE_PARAM_KEY)) {
+			throw new ConfigurationException("the upload action requires a file parameter to be present");
 		}
-		if(getAction() == Action.RENAME && parameterList.findParameter(DESTINATION_PARAM_KEY) == null) {
-			throw new ConfigurationException(getLogPrefix()+"the rename action requires a destination parameter to be present");
+		if(getAction() == Action.RENAME && !parameterList.hasParameter(DESTINATION_PARAM_KEY)) {
+			throw new ConfigurationException("the rename action requires a destination parameter to be present");
 		}
-		if(getAction() == Action.MTIME && parameterList.findParameter(MTIME_PARAM_KEY) == null) {
-			throw new ConfigurationException(getLogPrefix()+"the mtime action requires a mtime parameter to be present");
+		if(getAction() == Action.MTIME && !parameterList.hasParameter(MTIME_PARAM_KEY)) {
+			throw new ConfigurationException("the mtime action requires a mtime parameter to be present");
 		}
 
 		//check if md5/sha1/sha256 -> geef deprecated warning + parse hashAlgorithme
 		//hashValue  parameterList
 		for(HashAlgorithm algorithm : HashAlgorithm.values()) {
 			String simpleName = algorithm.name().toLowerCase();
-			Parameter hashValue = parameterList.findParameter(simpleName);
+			IParameter hashValue = parameterList.findParameter(simpleName);
 
 			if(hashValue != null) {
 				setHashAlgorithm(algorithm);
@@ -144,7 +150,7 @@ public class NetStorageSender extends HttpSenderBase {
 	 */
 	@Override
 	protected URI getURI(String path) throws URISyntaxException {
-		if (!path.startsWith("/")) path = "/" + path;
+		if (!path.startsWith(PATH_SEPARATOR)) path = PATH_SEPARATOR + path;
 		String url = getUrl() + getCpCode();
 
 		if(getRootDir() != null)
@@ -152,14 +158,14 @@ public class NetStorageSender extends HttpSenderBase {
 
 		url += path;
 
-		if(url.endsWith("/")) //The path should never end with a '/'
+		if(url.endsWith(PATH_SEPARATOR)) //The path should never end with a '/'
 			url = url.substring(0, url.length() -1);
 
 		return new URIBuilder(url).build();
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 
 		//The input of this sender is the path where to send or retrieve info from.
 		String path;
@@ -187,7 +193,7 @@ public class NetStorageSender extends HttpSenderBase {
 		}
 
 		setMethodType(request.getMethodType()); //For logging purposes
-		if(log.isDebugEnabled()) log.debug("opening ["+request.getMethodType()+"] connection to ["+uri+"] with action ["+getAction()+"]");
+		log.debug("opening [{}] connection to [{}] with action [{}]", request::getMethodType, () -> uri, this::getAction);
 
 		NetStorageCmsSigner signer = new NetStorageCmsSigner(uri, accessTokenCf, getSignType());
 		request.sign(signer);
@@ -197,7 +203,7 @@ public class NetStorageSender extends HttpSenderBase {
 
 	@Override
 	public Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
-		int statusCode = responseHandler.getStatusLine().getStatusCode();
+		final int statusCode = responseHandler.getStatusLine().getStatusCode();
 
 		boolean ok = false;
 		if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey())) {
@@ -215,7 +221,7 @@ public class NetStorageSender extends HttpSenderBase {
 		}
 
 		if (!ok) {
-			throw new SenderException(getLogPrefix() + "httpstatus "
+			throw new SenderException("httpstatus "
 					+ statusCode + ": " + responseHandler.getStatusLine().getReasonPhrase()
 					+ " body: " + getResponseBodyAsString(responseHandler, false));
 		}
@@ -228,9 +234,7 @@ public class NetStorageSender extends HttpSenderBase {
 			statuscode.setValue(statusCode + "");
 			result.addSubElement(statuscode);
 
-			String responseString = getResponseBodyAsString(responseHandler, true);
-			responseString = XmlUtils.skipDocTypeDeclaration(responseString.trim());
-			responseString = XmlUtils.skipXmlDeclaration(responseString);
+			final String responseString = getSanitizedResponseBodyAsString(responseHandler);
 
 			if (statusCode == HttpURLConnection.HTTP_OK) {
 				XmlBuilder message = new XmlBuilder("message");
@@ -258,12 +262,18 @@ public class NetStorageSender extends HttpSenderBase {
 				message.setValue(responseString);
 				result.addSubElement(message);
 
-				log.warn("Unexpected Response from Server: %d %s\n%s".formatted(
-						statusCode, responseString, responseHandler.getHeaderFields()));
+				log.warn("Unexpected Response from Server: {} {}\n{}", () -> statusCode, () -> responseString, responseHandler::getHeaderFields);
 			}
 		}
 
-		return Message.asMessage(result.toXML());
+		return result.asMessage();
+	}
+
+	private String getSanitizedResponseBodyAsString(HttpResponseHandler responseHandler) throws IOException {
+		String responseString = getResponseBodyAsString(responseHandler, true);
+		responseString = XmlUtils.skipDocTypeDeclaration(responseString.trim());
+		responseString = XmlUtils.skipXmlDeclaration(responseString);
+		return responseString;
 	}
 
 	/**
@@ -271,9 +281,6 @@ public class NetStorageSender extends HttpSenderBase {
 	 * Since this method is used when handling exceptions, silently return null, to avoid NPE's and IOExceptions
 	 */
 	public String getResponseBodyAsString(HttpResponseHandler responseHandler, boolean throwIOExceptionWhenParsingResponse) throws IOException {
-		String charset = responseHandler.getCharset();
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
-
 		Message response = responseHandler.getResponseMessage();
 
 		try {

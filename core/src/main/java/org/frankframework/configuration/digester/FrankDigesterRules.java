@@ -20,13 +20,13 @@ import java.io.IOException;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.binder.RulesBinder;
 import org.apache.commons.digester3.binder.RulesModule;
-import org.frankframework.core.Resource;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.SAXException;
 
 import lombok.Setter;
 
+import org.frankframework.core.Resource;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlUtils;
@@ -69,7 +69,7 @@ public class FrankDigesterRules implements RulesModule, ApplicationContextAware 
 			digesterRules = Resource.getResource(DIGESTER_RULES_FILE);
 		}
 
-		DigesterRulesHandler handler = new DigesterRulesParser(digester, rulesBinder);
+		AbstractDigesterRulesHandler handler = new DigesterRulesParser(digester, rulesBinder);
 		SpringUtils.autowireByType(applicationContext, handler);
 		try {
 			XmlUtils.parseXml(digesterRules.asInputSource(), handler);

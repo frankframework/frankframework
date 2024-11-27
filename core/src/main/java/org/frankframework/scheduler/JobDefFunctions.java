@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2021 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@ package org.frankframework.scheduler;
 import lombok.Getter;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
+import org.frankframework.scheduler.job.ActionJob;
 import org.frankframework.scheduler.job.CheckReloadJob;
 import org.frankframework.scheduler.job.CleanupDatabaseJob;
 import org.frankframework.scheduler.job.CleanupFileSystemJob;
 import org.frankframework.scheduler.job.ExecuteQueryJob;
 import org.frankframework.scheduler.job.IJob;
-import org.frankframework.scheduler.job.IbisActionJob;
 import org.frankframework.scheduler.job.LoadDatabaseSchedulesJob;
 import org.frankframework.scheduler.job.RecoverAdaptersJob;
 import org.frankframework.scheduler.job.SendMessageJob;
@@ -32,10 +32,10 @@ import org.frankframework.scheduler.job.SendMessageJob;
  * @author Niels Meijer
  */
 public enum JobDefFunctions implements DocumentedEnum {
-	@EnumLabel("StopAdapter") STOP_ADAPTER(IbisActionJob.class),
-	@EnumLabel("StartAdapter") START_ADAPTER(IbisActionJob.class),
-	@EnumLabel("StopReceiver") STOP_RECEIVER(IbisActionJob.class),
-	@EnumLabel("StartReceiver") START_RECEIVER(IbisActionJob.class),
+	@EnumLabel("StopAdapter") STOP_ADAPTER(ActionJob.class),
+	@EnumLabel("StartAdapter") START_ADAPTER(ActionJob.class),
+	@EnumLabel("StopReceiver") STOP_RECEIVER(ActionJob.class),
+	@EnumLabel("StartReceiver") START_RECEIVER(ActionJob.class),
 	@EnumLabel("SendMessage") SEND_MESSAGE(SendMessageJob.class),
 	@EnumLabel("ExecuteQuery") QUERY(ExecuteQueryJob.class),
 	@EnumLabel("cleanupDatabase") CLEANUPDB(CleanupDatabaseJob.class),

@@ -11,7 +11,7 @@
     <Transaction>
         <language>nl</language>
         <entranceCode>abc4ef7ons</entranceCode>
-        <container><ns3:AuthRequest signature="here">
+        <container><ns3:AuthnRequest xmlns:ns3="http://dummy" signature="here">
     <Issuer>1234567890</Issuer>
     <Conditions/>
     <ns3:RequestedAuthnContext Comparison="minimum">

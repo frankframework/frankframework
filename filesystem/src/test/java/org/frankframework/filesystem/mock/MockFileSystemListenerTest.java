@@ -1,6 +1,6 @@
 package org.frankframework.filesystem.mock;
 
-import org.frankframework.filesystem.FileSystemListener;
+import org.frankframework.filesystem.AbstractFileSystemListener;
 import org.frankframework.filesystem.FileSystemListenerExtraTest;
 import org.frankframework.filesystem.IFileSystemTestHelperFullControl;
 
@@ -13,8 +13,8 @@ public class MockFileSystemListenerTest extends FileSystemListenerExtraTest <Moc
 	}
 
 	@Override
-	public FileSystemListener<MockFile, MockFileSystem<MockFile>> createFileSystemListener() {
-		FileSystemListener<MockFile,MockFileSystem<MockFile>> result=new FileSystemListener<>(){
+	public AbstractFileSystemListener<MockFile, MockFileSystem<MockFile>> createFileSystemListener() {
+		AbstractFileSystemListener<MockFile,MockFileSystem<MockFile>> result=new AbstractFileSystemListener<>(){
 
 			@Override
 			protected MockFileSystem<MockFile> createFileSystem() {

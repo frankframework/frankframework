@@ -159,7 +159,7 @@ public class AppConstantsTest {
 	@Test
 	public void setAndGetBooleanProperty() {
 		constants.setProperty("property.type.boolean", "true");
-		assertEquals(true, constants.getBoolean("property.type.boolean", false));
+		assertTrue(constants.getBoolean("property.type.boolean", false));
 	}
 
 	@Test

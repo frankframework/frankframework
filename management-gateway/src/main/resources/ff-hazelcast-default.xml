@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- The default Hazelcast configuration, slightly edited to work for the Frank!Framework. -->
+
+<hazelcast xmlns="http://www.hazelcast.com/schema/config"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.hazelcast.com/schema/config
+           http://www.hazelcast.com/schema/config/hazelcast-config-5.5.xsd">
+
+    <!--
+        The name of the cluster. All members of a single cluster must have the same cluster name
+        configured and a client connecting to this cluster must use it as well.
+    -->
+    <cluster-name>hazelcast</cluster-name>
+    
+    <properties>
+        <property name="hazelcast.logging.type">log4j2</property>
+        <property name="hazelcast.config.schema.validation.enabled">false</property>
+        <property name="hazelcast.phone.home.enabled">false</property>
+    </properties>
+
+	<!-- network can be configured in 'ff-hazelcast-network.xml' -->
+
+    <partition-group enabled="false"/>
+
+    <executor-service name="default">
+        <!--Queue capacity. 0 means Integer.MAX_VALUE.-->
+        <queue-capacity>0</queue-capacity>
+        <pool-size>8</pool-size>
+        <statistics-enabled>false</statistics-enabled>
+    </executor-service>
+
+    <durable-executor-service name="default">
+        <capacity>100</capacity>
+        <durability>1</durability>
+        <pool-size>8</pool-size>
+        <statistics-enabled>false</statistics-enabled>
+    </durable-executor-service>
+
+    <scheduled-executor-service name="default">
+        <capacity>100</capacity>
+        <durability>1</durability>
+        <pool-size>8</pool-size>
+        <merge-policy batch-size="100">com.hazelcast.spi.merge.PutIfAbsentMergePolicy</merge-policy>
+        <statistics-enabled>false</statistics-enabled>
+    </scheduled-executor-service>
+
+    <security>
+        <client-block-unmapped-actions>true</client-block-unmapped-actions>
+    </security>
+
+    <!-- queues are used as reply channels, they are short lived and do not need to be persistent -->
+    <queue name="__tmp.*">
+        <statistics-enabled>false</statistics-enabled>
+
+        <max-size>512</max-size>
+        <backup-count>0</backup-count>
+        <async-backup-count>0</async-backup-count>
+
+        <!--
+            Used to purge unused or empty queues. If you define a value (time in seconds)
+            for this element, then your queue will be destroyed if it stays empty or
+            unused for that time.
+        -->
+        <empty-queue-ttl>60</empty-queue-ttl>
+
+        <merge-policy batch-size="100">com.hazelcast.spi.merge.PutIfAbsentMergePolicy</merge-policy>
+    </queue>
+
+    <!--
+        Configuration for a device, which a tiered-store can reference and use for its disk-tier.
+    -->
+    <local-device name="default-tiered-store-device">
+        <base-dir>tiered-store</base-dir>
+        <capacity unit="GIGABYTES" value="1"/>
+        <block-size>4096</block-size>
+        <read-io-thread-count>4</read-io-thread-count>
+        <write-io-thread-count>4</write-io-thread-count>
+    </local-device>
+
+    <map name="default">
+        <!--
+           Data type that will be used for storing recordMap.
+           Possible values:
+           BINARY (default): keys and values will be stored as binary data
+           OBJECT : values will be stored in their object forms
+           NATIVE : values will be stored in non-heap region of JVM
+        -->
+        <in-memory-format>BINARY</in-memory-format>
+
+        <!--
+            Metadata creation policy for this map. Hazelcast may process objects of supported types ahead of time to
+            create additional metadata about them. This metadata then is used to make querying and indexing faster.
+            Metadata creation may decrease put throughput.
+            Valid values are:
+            CREATE_ON_UPDATE (default): Objects of supported types are pre-processed when they are created and updated.
+            OFF: No metadata is created.
+        -->
+        <metadata-policy>CREATE_ON_UPDATE</metadata-policy>
+
+        <!--
+            Number of backups. If 1 is set as the backup-count for example,
+            then all entries of the map will be copied to another JVM for
+            fail-safety. 0 means no backup.
+        -->
+        <backup-count>1</backup-count>
+        <!--
+            Number of async backups. 0 means no backup.
+        -->
+        <async-backup-count>0</async-backup-count>
+        <!--
+            Maximum number of seconds for each entry to stay in the map. Entries that are
+            older than <time-to-live-seconds> and not updated for <time-to-live-seconds>
+            will get automatically evicted from the map.
+            Any integer between 0 and Integer.MAX_VALUE. 0 means infinite. Default is 0
+        -->
+        <time-to-live-seconds>0</time-to-live-seconds>
+        <!--
+            Maximum number of seconds for each entry to stay idle in the map. Entries that are
+            idle(not touched) for more than <max-idle-seconds> will get
+            automatically evicted from the map. Entry is touched if get, put or containsKey is called.
+            Any integer between 0 and Integer.MAX_VALUE. 0 means infinite. Default is 0.
+        -->
+        <max-idle-seconds>0</max-idle-seconds>
+
+        <eviction eviction-policy="NONE" max-size-policy="PER_NODE" size="0"/>
+        <!--
+            While recovering from split-brain (network partitioning),
+            map entries in the small cluster will merge into the bigger cluster
+            based on the policy set here. When an entry merge into the
+            cluster, there might an existing entry with the same key already.
+            Values of these entries might be different for that same key.
+            Which value should be set for the key? Conflict is resolved by
+            the policy set here. Default policy is PutIfAbsentMapMergePolicy
+
+            There are built-in merge policies such as
+            com.hazelcast.spi.merge.PassThroughMergePolicy; entry will be overwritten if merging entry exists for the key.
+            com.hazelcast.spi.merge.PutIfAbsentMergePolicy ; entry will be added if the merging entry doesn't exist in the cluster.
+            com.hazelcast.spi.merge.HigherHitsMergePolicy ; entry with the higher hits wins.
+            com.hazelcast.spi.merge.LatestUpdateMergePolicy ; entry with the latest update wins.
+        -->
+        <merge-policy batch-size="100">com.hazelcast.spi.merge.PutIfAbsentMergePolicy</merge-policy>
+
+        <!--
+           Control caching of de-serialized values. Caching makes query evaluation faster, but it cost memory.
+           Possible Values:
+                        NEVER: Never cache deserialized object
+                        INDEX-ONLY: Caches values only when they are inserted into an index.
+                        ALWAYS: Always cache deserialized values.
+        -->
+        <cache-deserialized-values>INDEX-ONLY</cache-deserialized-values>
+
+        <!--
+           Whether map level statistical information (total
+           hits, memory-cost etc.) should be gathered and stored.
+        -->
+        <statistics-enabled>false</statistics-enabled>
+
+        <!--
+            Whether statistical information (hits, creation
+            time, last access time etc.) should be gathered
+            and stored. You have to enable this if you plan to
+            implement a custom eviction policy, out-of-the-box
+            eviction policies work regardless of this setting.
+        -->
+        <per-entry-stats-enabled>false</per-entry-stats-enabled>
+
+        <!--
+            Tiered Store configuration. By default, it is disabled.
+        -->
+        <tiered-store enabled="false">
+            <memory-tier>
+                <!--
+                    The amount of memory to be reserved for the memory-tier of the tiered-store instance
+                    of this map.
+                -->
+                <capacity unit="MEGABYTES" value="256"/>
+            </memory-tier>
+
+            <!--
+                Whether disk-tier is enabled, and the name of the device to be used for the disk-tier
+                of the tiered-store instance of this map.
+            -->
+            <disk-tier enabled="false" device-name="default-tiered-store-device"/>
+        </tiered-store>
+
+    </map>
+
+    <multimap name="default">
+        <backup-count>1</backup-count>
+        <value-collection-type>SET</value-collection-type>
+        <merge-policy batch-size="100">com.hazelcast.spi.merge.PutIfAbsentMergePolicy</merge-policy>
+    </multimap>
+
+    <replicatedmap name="default">
+        <in-memory-format>OBJECT</in-memory-format>
+        <async-fillup>true</async-fillup>
+        <statistics-enabled>false</statistics-enabled>
+        <merge-policy batch-size="100">com.hazelcast.spi.merge.PutIfAbsentMergePolicy</merge-policy>
+    </replicatedmap>
+
+    <list name="default">
+        <backup-count>1</backup-count>
+        <merge-policy batch-size="100">com.hazelcast.spi.merge.PutIfAbsentMergePolicy</merge-policy>
+    </list>
+
+    <set name="default">
+        <backup-count>1</backup-count>
+        <merge-policy batch-size="100">com.hazelcast.spi.merge.PutIfAbsentMergePolicy</merge-policy>
+    </set>
+
+    <topic name="default">
+        <multi-threading-enabled>false</multi-threading-enabled>
+        <global-ordering-enabled>false</global-ordering-enabled>
+        <statistics-enabled>false</statistics-enabled>
+    </topic>
+
+    <reliable-topic name="default">
+        <read-batch-size>10</read-batch-size>
+        <topic-overload-policy>BLOCK</topic-overload-policy>
+        <statistics-enabled>false</statistics-enabled>
+    </reliable-topic>
+
+    <ringbuffer name="default">
+        <capacity>10000</capacity>
+        <backup-count>0</backup-count>
+        <async-backup-count>0</async-backup-count>
+        <time-to-live-seconds>0</time-to-live-seconds>
+        <in-memory-format>BINARY</in-memory-format>
+        <merge-policy batch-size="100">com.hazelcast.spi.merge.PutIfAbsentMergePolicy</merge-policy>
+    </ringbuffer>
+
+    <flake-id-generator name="default">
+        <!--
+            The number of IDs are pre-fetched on the background when one call to
+            FlakeIdGenerator#newId() is made.
+        -->
+        <prefetch-count>100</prefetch-count>
+        <!--
+            The validity timeout in ms for how long the pre-fetched IDs can be used. If this
+            time elapses, a new batch of IDs will be fetched. The generated IDs contain timestamp
+            component, which ensures rough global ordering of IDs. If an ID is assigned to an
+            object that was created much later, it will be much out of order. If you don't care
+            about ordering, set this value to 0. This setting pertains only to newId() calls made
+            on the member that configured it.
+        -->
+        <prefetch-validity-millis>600000</prefetch-validity-millis>
+        <!--
+            The offset for the timestamp component in milliseconds. The default value corresponds
+            to the beginning of 2018, (1.1.2018 0:00 UTC). You can adjust the value to determine
+            the lifespan of the generator.
+        -->
+        <epoch-start>1514764800000</epoch-start>
+        <!--
+            The offset that will be added to the node ID assigned to cluster member for this generator.
+            Might be useful in A/B deployment scenarios where you have cluster A which you want to upgrade.
+            You create cluster B and for some time both will generate IDs and you want to have them unique.
+            In this case, configure node ID offset for generators on cluster B.
+        -->
+        <node-id-offset>0</node-id-offset>
+        <!--
+            The bit-length of the sequence component of this flake id generator. This configuration
+            is limiting factor for the maximum rate at which IDs can be generated. Default is 6 bits.
+        -->
+        <bits-sequence>6</bits-sequence>
+        <!-- The bit-length of node id component of this flake id generator. Default value is 16 bits. -->
+        <bits-node-id>16</bits-node-id>
+        <!--
+            Sets how far to the future is the generator allowed to go to generate IDs without blocking,
+            default is 15 seconds.
+        -->
+        <allowed-future-millis>15000</allowed-future-millis>
+        <!-- Enables/disables statistics gathering for the flake-id generator on this member. -->
+        <statistics-enabled>false</statistics-enabled>
+    </flake-id-generator>
+
+    <!--
+        The version of the portable serialization. Portable version is used to differentiate two same
+        classes that have changes on it like adding/removing field or changing a type of a field.
+    -->
+    <serialization>
+        <portable-version>0</portable-version>
+        <allow-override-default-serializers>false</allow-override-default-serializers>
+        <allow-unsafe>false</allow-unsafe>
+        <java-serialization-filter>
+            <blacklist>
+                <class>com.acme.app.BeanComparator</class>
+            </blacklist>
+            <whitelist>
+<!--                 <class>org.frankframework.management.gateway.SerializableInputStream</class> -->
+                <class>org.springframework.messaging.support.GenericMessage</class>
+                <class>org.springframework.messaging.MessageHeaders</class>
+                <package>org.frankframework.management.gateway</package>
+                <package>org.frankframework.management.bus.message</package>
+                <package>org.springframework.security.authentication</package>
+                <package>org.springframework.security.core.authority</package>
+                <package>org.springframework.security.web.authentication</package>
+                <package>org.springframework.security.core.userdetails</package>
+            </whitelist>
+        </java-serialization-filter>
+    </serialization>
+
+    <!-- Enables a Hazelcast member to be a lite member -->
+    <lite-member enabled="false"/>
+
+    <cardinality-estimator name="default">
+        <backup-count>1</backup-count>
+        <async-backup-count>0</async-backup-count>
+        <merge-policy batch-size="100">HyperLogLogMergePolicy</merge-policy>
+    </cardinality-estimator>
+
+    <crdt-replication>
+        <replication-period-millis>1000</replication-period-millis>
+        <max-concurrent-replication-targets>1</max-concurrent-replication-targets>
+    </crdt-replication>
+
+    <pn-counter name="default">
+        <replica-count>2147483647</replica-count>
+        <statistics-enabled>true</statistics-enabled>
+    </pn-counter>
+
+    <cp-subsystem>
+        <cp-member-count>0</cp-member-count>
+        <group-size>0</group-size>
+        <session-time-to-live-seconds>300</session-time-to-live-seconds>
+        <session-heartbeat-interval-seconds>5</session-heartbeat-interval-seconds>
+        <missing-cp-member-auto-removal-seconds>14400</missing-cp-member-auto-removal-seconds>
+        <fail-on-indeterminate-operation-state>false</fail-on-indeterminate-operation-state>
+        <cp-member-priority>0</cp-member-priority>
+        <raft-algorithm>
+            <leader-election-timeout-in-millis>2000</leader-election-timeout-in-millis>
+            <leader-heartbeat-period-in-millis>5000</leader-heartbeat-period-in-millis>
+            <max-missed-leader-heartbeat-count>5</max-missed-leader-heartbeat-count>
+            <append-request-max-entry-count>100</append-request-max-entry-count>
+            <commit-index-advance-count-to-snapshot>10000</commit-index-advance-count-to-snapshot>
+            <uncommitted-entry-count-to-reject-new-appends>100</uncommitted-entry-count-to-reject-new-appends>
+            <append-request-backoff-timeout-in-millis>100</append-request-backoff-timeout-in-millis>
+        </raft-algorithm>
+    </cp-subsystem>
+
+    <metrics enabled="false">
+        <management-center enabled="true">
+            <retention-seconds>5</retention-seconds>
+        </management-center>
+        <jmx enabled="true"/>
+        <collection-frequency-seconds>5</collection-frequency-seconds>
+    </metrics>
+
+    <sql>
+        <statement-timeout-millis>0</statement-timeout-millis>
+        <catalog-persistence-enabled>false</catalog-persistence-enabled>
+    </sql>
+
+    <jet enabled="false" resource-upload-enabled="false"/>
+    <integrity-checker enabled="false"/>
+</hazelcast>

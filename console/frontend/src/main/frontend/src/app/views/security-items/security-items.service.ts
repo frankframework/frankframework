@@ -87,14 +87,10 @@ export class SecurityItemsService {
   ) {}
 
   getSecurityItems(): Observable<SecurityItems> {
-    return this.http.get<SecurityItems>(
-      `${this.appService.absoluteApiPath}securityitems`,
-    );
+    return this.http.get<SecurityItems>(`${this.appService.absoluteApiPath}securityitems`);
   }
 
   getEndpointsWithRoles(): Observable<Links> {
-    return this.http.get<Links>(
-      `${this.appService.absoluteApiPath}?allowedRoles=true`,
-    );
+    return this.http.get<Links>(`${this.appService.absoluteApiPath}?allowedRoles=true`);
   }
 }

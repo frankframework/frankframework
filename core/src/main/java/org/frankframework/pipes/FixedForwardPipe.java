@@ -17,21 +17,22 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.doc.Forward;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.processors.InputOutputPipeProcessor;
 import org.frankframework.stream.Message;
+import org.frankframework.util.MessageUtils;
 
 /**
  * Provides a base-class for a Pipe that always has the same forward.
@@ -39,6 +40,7 @@ import org.frankframework.stream.Message;
  *
  * @author Gerrit van Brakel
  */
+@Forward(name = "success", description = "successful processing of the message of the pipe")
 public abstract class FixedForwardPipe extends AbstractPipe {
 
 	private @Getter PipeForward successForward;
@@ -51,7 +53,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 	private @Getter String unlessSessionKey;
 	private @Getter String unlessValue;
 
-	private Parameter ifParameter = null;
+	private IParameter ifParameter = null;
 
 	/**
 	 * checks for correct configuration of forward
@@ -104,7 +106,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 					return paramValueIsNotNull;
 				}
 
-				boolean ifValueNotEqualToIfParam = !ifValue.equalsIgnoreCase(Message.asString(paramValue));
+				boolean ifValueNotEqualToIfParam = !ifValue.equalsIgnoreCase(MessageUtils.asString(paramValue));
 				log.debug("skip pipe processing: ifValue value [{}] not equal to ifParameter value [{}]", ifValue, paramValue);
 				return ifValueNotEqualToIfParam;
 			}

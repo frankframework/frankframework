@@ -1,5 +1,13 @@
 package org.frankframework.management.bus.endpoints;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.messaging.Message;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
+import com.mockrunner.mock.jms.MockMessage;
+
 import org.frankframework.jms.JMSFacade.DestinationType;
 import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
@@ -11,14 +19,6 @@ import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.messaging.Message;
-
-import com.mockrunner.mock.jms.MockMessage;
-
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 @WithMockUser(roles = { "IbisTester" })
@@ -32,7 +32,7 @@ public class TestBrowseQueue extends BusTestBase {
 		JmsRealm jmsRealm = new JmsRealm();
 		jmsRealm.setRealmName("dummyQCFAddedViaJmsRealm");
 		jmsRealm.setQueueConnectionFactoryName("dummyQCFAddedViaJmsRealm");
-		JmsRealmFactory.getInstance().registerJmsRealm(jmsRealm);
+		JmsRealmFactory.getInstance().addJmsRealm(jmsRealm);
 	}
 
 	@Test

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import org.apache.logging.log4j.core.pattern.PatternParser;
 public class IbisPatternLayout extends IbisMaskingLayout {
 
 	private static final String DEFAULT_PATTERN = "%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X %c{2} - %m%n";
-	private Serializer serializer;
+	private final Serializer serializer;
 
 	/**
 	 * @param pattern the pattern to use or DEFAULT when null
@@ -99,32 +99,18 @@ public class IbisPatternLayout extends IbisMaskingLayout {
 
 		@Override
 		public StringBuilder toSerializable(final LogEvent event, final StringBuilder buffer) {
-			final int len = formatters.length;
-			for (int i = 0; i < len; i++) {
-				PatternFormatter formatter = formatters[i];
-				formatter.format(event, buffer);
-			}
+			Arrays.stream(formatters).forEach(formatter -> formatter.format(event, buffer));
 			return buffer;
 		}
 
 		@Override
 		public boolean requiresLocation() {
-			for (PatternFormatter formatter : formatters) {
-				if (formatter.requiresLocation()) {
-					return true;
-				}
-			}
-			return false;
+			return Arrays.stream(formatters).anyMatch(PatternFormatter::requiresLocation);
 		}
 
 		@Override
 		public String toString() {
-			final StringBuilder builder = new StringBuilder();
-			builder.append(super.toString());
-			builder.append("[formatters=");
-			builder.append(Arrays.toString(formatters));
-			builder.append("]");
-			return builder.toString();
+			return super.toString() + "[formatters=" + Arrays.toString(formatters) + "]";
 		}
 	}
 }

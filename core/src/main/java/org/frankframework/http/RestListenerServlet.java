@@ -22,12 +22,15 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
+
+import com.google.common.net.HttpHeaders;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.ListenerException;
@@ -36,8 +39,6 @@ import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
-
 import org.frankframework.util.StreamUtil;
 
 /**
@@ -45,13 +46,13 @@ import org.frankframework.util.StreamUtil;
  *
  * @author  Gerrit van Brakel
  */
+@Log4j2
 @IbisInitializer
-public class RestListenerServlet extends HttpServletBase {
-	protected Logger log=LogUtil.getLogger(this);
-	private final String CorsAllowOrigin = AppConstants.getInstance().getString("rest.cors.allowOrigin", "*"); //Defaults to everything
-	private final String CorsExposeHeaders = AppConstants.getInstance().getString("rest.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
+public class RestListenerServlet extends AbstractHttpServlet {
+	private final String corsAllowOrigin = AppConstants.getInstance().getString("rest.cors.allowOrigin", "*"); //Defaults to everything
+	private final String corsExposeHeaders = AppConstants.getInstance().getString("rest.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 
-	private RestServiceDispatcher sd=null;
+	private transient RestServiceDispatcher sd = null;
 
 	@Override
 	public void init() throws ServletException {
@@ -69,11 +70,11 @@ public class RestListenerServlet extends HttpServletBase {
 		String body = "";
 
 		if(restPath.contains("rest-public")) {
-			response.setHeader("Access-Control-Allow-Origin", CorsAllowOrigin);
-			String headers = request.getHeader("Access-Control-Request-Headers");
+			response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, corsAllowOrigin);
+			String headers = request.getHeader(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS);
 			if (headers != null)
-				response.setHeader("Access-Control-Allow-Headers", headers);
-			response.setHeader("Access-Control-Expose-Headers", CorsExposeHeaders);
+				response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, headers);
+			response.setHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, corsExposeHeaders);
 
 			String pattern = sd.findMatchingPattern(path);
 			if(pattern!=null) {
@@ -100,26 +101,26 @@ public class RestListenerServlet extends HttpServletBase {
 		String ifMatch=request.getHeader("If-Match");
 		String contentType=request.getHeader("accept");
 
-		if (log.isTraceEnabled()) log.trace("path ["+path+"] If-Match ["+ifMatch+"] If-None-Match ["+ifNoneMatch+"] contentType ["+contentType+"]");
+		if (log.isTraceEnabled()) log.trace("path [{}] If-Match [{}] If-None-Match [{}] contentType [{}]", path, ifMatch, ifNoneMatch, contentType);
 
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
 		try (PipeLineSession messageContext= new PipeLineSession()) {
 			messageContext.setSecurityHandler(securityHandler);
 			messageContext.put(PipeLineSession.HTTP_METHOD_KEY, request.getMethod());
 
-			Enumeration<String> paramnames=request.getParameterNames();
-			while (paramnames.hasMoreElements()) {
-				String paramname = paramnames.nextElement();
+			Enumeration<String> paramNames = request.getParameterNames();
+			while (paramNames.hasMoreElements()) {
+				String paramname = paramNames.nextElement();
 				String paramvalue = request.getParameter(paramname);
-				if (log.isTraceEnabled()) log.trace("setting parameter ["+paramname+"] to ["+paramvalue+"]");
+				if (log.isTraceEnabled()) log.trace("setting parameter [{}] to [{}]", paramname, paramvalue);
 				messageContext.put(paramname, paramvalue);
 			}
 			if (!MultipartUtils.isMultipart(request)) {
 				body = StreamUtil.streamToString(request.getInputStream(),"\n",false);
 			}
 			try {
-				log.trace("RestListenerServlet calling service ["+path+"]");
-				Message result = sd.dispatchRequest(restPath, path, request, contentType, body, messageContext, response, getServletContext());
+				log.trace("RestListenerServlet calling service [{}]", path);
+				Message result = sd.dispatchRequest(restPath, path, request, contentType, body, messageContext, response);
 
 				if(Message.isNull(result) && messageContext.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY) && messageContext.containsKey("validateEtag")) {
 					int status = Integer.parseInt( ""+ messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
@@ -154,9 +155,7 @@ public class RestListenerServlet extends HttpServletBase {
 						response.setHeader("Allow", allowedMethods);
 					}
 
-					/*
-					 * Finalize the pipeline and write the result to the response
-					 */
+					// Finalize the pipeline and write the result to the response
 					writeToResponseStream(response, result);
 					log.trace("RestListenerServlet finished with result [{}] etag [{}] contentType [{}] contentDisposition [{}]", result, etag, contentType, contentDisposition);
 				}

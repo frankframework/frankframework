@@ -1,12 +1,12 @@
 application:
-    security:
-        http:
-            authenticators:
-                one:
-                 -  type: AD
-                    baseDn: ''
-                    url: 'ldap://10.1.2.3'
-                two:
-                 -  type: AD
-                    baseDn: ''
-                    url: 'ldap://10.1.2.3'
+  security:
+    http:
+      authenticators:
+        one:
+          - type: AD
+            baseDn: ''
+            url: 'ldap://10.1.2.3'
+        two:
+          - type: AD
+            baseDn: ''
+            url: 'ldap://10.1.2.3'

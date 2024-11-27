@@ -1,14 +1,14 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppService } from 'src/app/app.service';
 
 @Component({
   template: '',
 })
-export abstract class BaseIframeComponent {
-  url: string = '';
-  iframeSrc?: SafeResourceUrl;
-  redirectURL?: string;
+export abstract class BaseIframeComponent implements OnInit, OnDestroy {
+  protected url: string = '';
+  protected iframeSrc?: SafeResourceUrl;
+  protected redirectURL?: string;
 
   private topBarHeightPx = 99;
 
@@ -17,14 +17,18 @@ export abstract class BaseIframeComponent {
     protected appService: AppService,
   ) {}
 
+  ngOnInit(): void {
+    document.body.classList.add('no-scroll');
+  }
+
+  ngOnDestroy(): void {
+    document.body.classList.remove('no-scroll');
+  }
+
   @HostListener('window:resize', ['$event'])
   calcTopBarHeight(): void {
-    const topinfobarHeight =
-      document.querySelector('app-pages-topinfobar')?.getBoundingClientRect()
-        .height ?? 0;
-    const topnavbarHeight =
-      document.querySelector('app-pages-topnavbar')?.getBoundingClientRect()
-        .height ?? 0;
+    const topinfobarHeight = document.querySelector('app-pages-topinfobar')?.getBoundingClientRect().height ?? 0;
+    const topnavbarHeight = document.querySelector('app-pages-topnavbar')?.getBoundingClientRect().height ?? 0;
     const newTopBarHeight = topinfobarHeight + topnavbarHeight;
     if (newTopBarHeight !== 0) {
       this.topBarHeightPx = Math.round(newTopBarHeight);

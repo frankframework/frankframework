@@ -22,13 +22,12 @@ import javax.management.ObjectName;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.configuration.Configuration;
+import org.frankframework.core.Adapter;
+import org.frankframework.util.LogUtil;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.jmx.export.naming.IdentityNamingStrategy;
-
-import org.frankframework.configuration.Configuration;
-import org.frankframework.core.IAdapter;
-import org.frankframework.util.LogUtil;
 
 public class JmxNamingStrategy extends IdentityNamingStrategy implements InitializingBean {
 
@@ -55,7 +54,7 @@ public class JmxNamingStrategy extends IdentityNamingStrategy implements Initial
 			throw new MalformedObjectNameException("managedBean cannot be null");
 		}
 
-		if(managedBean instanceof IAdapter adapter) {
+		if(managedBean instanceof Adapter adapter) {
 			Configuration config = adapter.getConfiguration();
 			if (config != null) {
 				String version = null;
@@ -70,11 +69,11 @@ public class JmxNamingStrategy extends IdentityNamingStrategy implements Initial
 			}
 			properties.put("name", adapter.getName().replaceAll(ILLEGAL_CHARACTER_REGEX, "_"));
 			ObjectName name = new ObjectName(jmxDomain, properties);
-			if(log.isDebugEnabled()) log.debug("determined ObjectName ["+name+"] for MBean ["+managedBean+"]");
+			if(log.isDebugEnabled()) log.debug("determined ObjectName [{}] for MBean [{}]", name, managedBean);
 			return name;
 		} else {
 			ObjectName name = super.getObjectName(managedBean, beanKey);
-			log.warn("currently only MBeans of type [Adapter] are supported, falling back to IdentityNamingStrategy converting key ["+beanKey+"] bean ["+managedBean+"] to ObjectName ["+name+"]");
+			log.warn("currently only MBeans of type [Adapter] are supported, falling back to IdentityNamingStrategy converting key [{}] bean [{}] to ObjectName [{}]", beanKey, managedBean, name);
 			return name;
 		}
 	}

@@ -15,16 +15,13 @@
 */
 package org.frankframework.management.bus.endpoints;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.JsonMessage;
-import org.springframework.messaging.Message;
-
+import jakarta.annotation.security.RolesAllowed;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.HasPhysicalDestination;
@@ -34,10 +31,12 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLine;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.pipes.MessageSendingPipe;
+import org.frankframework.pipes.AsyncSenderWithListenerPipe;
 import org.frankframework.receivers.Receiver;
-
-import javax.annotation.security.RolesAllowed;
+import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 public class ConnectionOverview extends BusEndpointBase {
@@ -45,7 +44,7 @@ public class ConnectionOverview extends BusEndpointBase {
 	@TopicSelector(BusTopic.CONNECTION_OVERVIEW)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getAllConnections(Message<?> message) {
-		List<Object> connectionsIncoming = new LinkedList<>();
+		List<Object> connectionsIncoming = new ArrayList<>();
 
 		for(Configuration config : getIbisManager().getConfigurations()) {
 			for(Adapter adapter: config.getRegisteredAdapters()) {
@@ -67,11 +66,13 @@ public class ConnectionOverview extends BusEndpointBase {
 							String domain = physicalDestination.getDomain();
 							connectionsIncoming.add(addToMap(adapter.getName(), destination, sender.getName(), "Outbound", domain));
 						}
-						IListener<?> listener = msp.getListener();
-						if (listener instanceof HasPhysicalDestination physicalDestination) {
-							String destination = physicalDestination.getPhysicalDestinationName();
-							String domain = physicalDestination.getDomain();
-							connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", domain));
+						if (pipe instanceof AsyncSenderWithListenerPipe slp) {
+							IListener<?> listener = slp.getListener();
+							if (listener instanceof HasPhysicalDestination physicalDestination) {
+								String destination = physicalDestination.getPhysicalDestinationName();
+								String domain = physicalDestination.getDomain();
+								connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", domain));
+							}
 						}
 					}
 				}

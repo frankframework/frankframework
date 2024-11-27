@@ -1,13 +1,12 @@
 import { NgModule, ValueProvider } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HttpClientXsrfModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { TitleStrategy } from '@angular/router';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgIdleModule } from '@ng-idle/core';
 import { NgChartsModule } from 'ng2-charts';
 import { LaddaModule } from 'angular2-ladda';
-import { DataTablesModule } from 'angular-datatables';
 
 import { AppRoutingModule } from './app-routing.module';
 
@@ -23,8 +22,8 @@ import { JdbcBrowseTablesComponent } from './views/jdbc/jdbc-browse-tables/jdbc-
 import { OrderByPipe } from './pipes/orderby.pipe';
 import { JdbcExecuteQueryComponent } from './views/jdbc/jdbc-execute-query/jdbc-execute-query.component';
 import { IframeCustomViewComponent } from './views/iframe/iframe-custom-view/iframe-custom-view.component';
+import { IframeLadybugLegacyComponent } from './views/iframe/iframe-ladybug-legacy/iframe-ladybug-legacy.component';
 import { IframeLadybugComponent } from './views/iframe/iframe-ladybug/iframe-ladybug.component';
-import { IframeLadybugBetaComponent } from './views/iframe/iframe-ladybug-beta/iframe-ladybug-beta.component';
 import { IframeLarvaComponent } from './views/iframe/iframe-larva/iframe-larva.component';
 import { IbisstoreSummaryComponent } from './views/ibisstore-summary/ibisstore-summary.component';
 import { StatusComponent } from './views/status/status.component';
@@ -47,14 +46,13 @@ import { StorageListDtComponent } from './views/storage/storage-list/storage-lis
 import { AdapterstatisticsComponent } from './views/adapterstatistics/adapterstatistics.component';
 import { FormatStatisticsPipe } from './views/adapterstatistics/format-statistics.pipe';
 import { DropLastCharPipe } from './pipes/drop-last-char.pipe';
-import { QuickSubmitFormDirective } from './views/jdbc/jdbc-execute-query/quick-submit-form.directive';
+import { QuickSubmitFormDirective } from './components/quick-submit-form.directive';
 import { FormatStatKeysPipe } from './views/adapterstatistics/format-stat-keys.pipe';
 import { SecurityItemsComponent } from './views/security-items/security-items.component';
 import { WebservicesComponent } from './views/webservices/webservices.component';
 import { SchedulerComponent } from './views/scheduler/scheduler.component';
 import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
 import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
-import { SideNavigationDirective } from './components/pages/side-navigation.directive';
 import { ConfigurationsManageComponent } from './views/configurations/configurations-manage/configurations-manage.component';
 import { ConfigurationsShowComponent } from './views/configurations/configurations-show/configurations-show.component';
 import { ConfigurationsUploadComponent } from './views/configurations/configurations-upload/configurations-upload.component';
@@ -63,9 +61,7 @@ import { MonitorsComponent } from './views/monitors/monitors.component';
 import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
 import { PagesTitleStrategy } from './pages-title-strategy';
 import { WithJavaListenerPipe } from './pipes/with-java-listener.pipe';
-import { FormatCodeDirective } from './views/configurations/configurations-show/format-code.directive';
 import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
-import { FeedbackModalComponent } from './components/pages/feedback-modal/feedback-modal.component';
 import { FlowModalComponent } from './views/status/flow/flow-modal/flow-modal.component';
 import { NgMermaidComponent } from './components/ng-mermaid/ng-mermaid.component';
 import { LoggingComponent } from './views/logging/logging.component';
@@ -84,6 +80,17 @@ import { ToastsContainerComponent } from './components/toasts-container/toasts-c
 import { ThSortableDirective } from './components/th-sortable.directive';
 import { FileViewerComponent } from './components/file-viewer/file-viewer.component';
 import { HumanFileSizePipe } from './pipes/human-file-size.pipe';
+import { MonacoEditorComponent } from './components/monaco-editor/monaco-editor.component';
+import { ServerWarningsComponent } from './views/status/server-warnings/server-warnings.component';
+import { AdapterStatusComponent } from './views/status/adapter-status/adapter-status.component';
+import { ConfigurationMessagesComponent } from './views/status/configuration-messages/configuration-messages.component';
+import { ConfigurationSummaryComponent } from './views/status/configuration-summary/configuration-summary.component';
+import { LoggingAddComponent } from './views/logging/logging-add/logging-add.component';
+import { DatatableComponent } from './components/datatable/datatable.component';
+import { DtContentDirective } from './components/datatable/dt-content.directive';
+import { MonitorsNewComponent } from './views/monitors/monitors-new/monitors-new.component';
+import { ConfigurationTabListComponent } from './components/tab-list/configuration-tab-list.component';
+import { TabListComponent } from './components/tab-list/tab-list.component';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -101,8 +108,8 @@ const windowProvider: ValueProvider = {
     FlowComponent,
     IbisstoreSummaryComponent,
     IframeCustomViewComponent,
+    IframeLadybugLegacyComponent,
     IframeLadybugComponent,
-    IframeLadybugBetaComponent,
     IframeLarvaComponent,
     InlinestoreComponent,
     JdbcBrowseTablesComponent,
@@ -133,6 +140,9 @@ const windowProvider: ValueProvider = {
     TestPipelineComponent,
     TestServiceListenerComponent,
     LoginComponent,
+    ServerWarningsComponent,
+    AdapterStatusComponent,
+    LoggingAddComponent,
 
     //modals
     FlowModalComponent,
@@ -142,7 +152,6 @@ const windowProvider: ValueProvider = {
     DropLastCharPipe,
     OrderByPipe,
     SearchFilterPipe,
-    TruncatePipe,
     VariablesFilterPipe,
     FormatStatisticsPipe,
     FormatStatKeysPipe,
@@ -150,25 +159,25 @@ const windowProvider: ValueProvider = {
     MarkDownPipe,
 
     // directives
-    FormatCodeDirective,
-    QuickSubmitFormDirective,
+    ConfigurationMessagesComponent,
+    ConfigurationSummaryComponent,
   ],
   imports: [
     BrowserModule,
     FormsModule,
     HttpClientModule,
+    HttpClientXsrfModule.withOptions(),
     LaddaModule,
     NgbModule,
     AppRoutingModule,
     NgIdleModule.forRoot(),
     NgChartsModule.forRoot(),
-    DataTablesModule,
 
     // standalone directives
     TimeSinceDirective,
     ToDateDirective,
     ThSortableDirective,
-    SideNavigationDirective,
+    QuickSubmitFormDirective,
 
     // standalone components
     CustomViewsComponent,
@@ -178,18 +187,23 @@ const windowProvider: ValueProvider = {
     NgMermaidComponent,
     ToastsContainerComponent,
     InformationModalComponent,
-    FeedbackModalComponent,
     PagesFooterComponent,
     PagesNavigationComponent,
     PagesTopinfobarComponent,
     PagesTopnavbarComponent,
     HumanFileSizePipe,
+    MonacoEditorComponent,
+    DatatableComponent,
+    DtContentDirective,
+    MonitorsNewComponent,
+
+    // standalone pipes
+    TruncatePipe,
+    ConfigurationTabListComponent,
+    TabListComponent,
   ],
-  providers: [
-    windowProvider,
-    { provide: TitleStrategy, useClass: PagesTitleStrategy },
-    httpInterceptorProviders,
-  ],
+  providers: [windowProvider, { provide: TitleStrategy, useClass: PagesTitleStrategy }, httpInterceptorProviders],
   bootstrap: [AppComponent],
+  exports: [TruncatePipe],
 })
 export class AppModule {}

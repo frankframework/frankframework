@@ -11,7 +11,7 @@
 	<name>Frank!Framework support for Cmis</name>
 
 	<properties>
-		<opencmis.version>1.1.0</opencmis.version>
+		<opencmis.version>1.2.3</opencmis.version>
 	</properties>
 
 	<dependencies>
@@ -29,14 +29,10 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.chemistry.opencmis</groupId>
+			<groupId>com.kgs-software</groupId>
 			<artifactId>chemistry-opencmis-client-impl</artifactId>
 			<version>${opencmis.version}</version>
 			<exclusions>
-				<exclusion><!-- Exclude 1.0-2 as 1.0.1 is already included by xmlbeans. -->
-					<groupId>javax.xml.stream</groupId>
-					<artifactId>stax-api</artifactId>
-				</exclusion>
 				<exclusion>
 					<!-- Omitted because CORE uses a different version -->
 					<groupId>org.apache.cxf</groupId>
@@ -50,9 +46,14 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.chemistry.opencmis</groupId>
+			<groupId>com.kgs-software</groupId>
 			<artifactId>chemistry-opencmis-server-bindings</artifactId>
 			<version>${opencmis.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- CXF -->
@@ -123,12 +124,6 @@
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest</artifactId>
 			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

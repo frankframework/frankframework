@@ -14,7 +14,7 @@ ul.cyphers-list {
     min-width: 200px;
     padding: 0.5rem;
 
-    &+li {
+    & + li {
       border-top: 1px solid #ddd;
     }
   }

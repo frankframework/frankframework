@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -31,7 +33,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Mandatory;
-import org.frankframework.senders.SenderWithParametersBase;
+import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.FileUtils;
@@ -43,7 +45,7 @@ import org.frankframework.util.StringUtil;
  *
  * @author John Dekker
  */
-public class XComSender extends SenderWithParametersBase {
+public class XComSender extends AbstractSenderWithParameters {
 
 	private File workingDir;
 	private @Getter FileOptionType fileOption = null;
@@ -123,7 +125,7 @@ public class XComSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		String messageString;
 		try {
 			messageString = message.asString();
@@ -131,7 +133,7 @@ public class XComSender extends SenderWithParametersBase {
 			throw new SenderException(getLogPrefix(),e);
 		}
 		for (String filename : getFileList(messageString)) {
-			log.debug("Start sending " + filename);
+			log.debug("Start sending {}", filename);
 
 			// get file to send
 			File localFile = new File(filename);
@@ -160,15 +162,15 @@ public class XComSender extends SenderWithParametersBase {
 				try {
 					p.waitFor();
 				} catch (InterruptedException e) {
-					log.warn(getLogPrefix() + "has been interrupted", e);
+					log.warn("has been interrupted", e);
 				}
 
 				log.debug("output for {} = {}", localFile::getName, output::toString);
-				log.debug(localFile.getName() + "{} exits with {}", localFile::getName, p::exitValue);
+				log.debug("{} exits with {}", localFile::getName, p::exitValue);
 
 				// throw an exception if the command returns an error exit value
 				if (p.exitValue() != 0) {
-					throw new SenderException("XComSender failed for file " + localFile.getAbsolutePath() + "\r\n" + output.toString());
+					throw new SenderException("XComSender failed for file " + localFile.getAbsolutePath() + "\r\n" + output);
 				}
 			} catch (IOException e) {
 				throw new SenderException("Error while executing command " + getCommand(session, localFile, false), e);

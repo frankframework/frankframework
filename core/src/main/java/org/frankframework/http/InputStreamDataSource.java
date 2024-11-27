@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class InputStreamDataSource implements javax.activation.DataSource, jakarta.activation.DataSource {
+import jakarta.activation.DataSource;
+
+public class InputStreamDataSource implements DataSource {
 	private final String contentType;
 	private final InputStream inputStream;
 

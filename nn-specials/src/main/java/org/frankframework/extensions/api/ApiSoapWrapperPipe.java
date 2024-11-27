@@ -77,7 +77,7 @@ public class ApiSoapWrapperPipe extends SoapWrapperPipe {
 	private void addParameters() {
 		ParameterList parameterList = getParameterList();
 		Parameter p;
-		if (parameterList.findParameter(CONVERSATIONID) == null) {
+		if (!parameterList.hasParameter(CONVERSATIONID)) {
 			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName(CONVERSATIONID);
 			p.setSessionKey(getSoapHeaderSessionKey());
@@ -88,7 +88,7 @@ public class ApiSoapWrapperPipe extends SoapWrapperPipe {
 			// p.setDefaultValueMethods("pattern");
 			addParameter(p);
 		}
-		if (parameterList.findParameter(FROM_IN) == null) {
+		if (!parameterList.hasParameter(FROM_IN)) {
 			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName(FROM_IN);
 			p.setSessionKey(getSoapHeaderSessionKey());

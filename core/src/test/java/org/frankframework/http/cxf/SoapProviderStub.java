@@ -1,50 +1,34 @@
 package org.frankframework.http.cxf;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import jakarta.xml.ws.WebServiceContext;
 
-import javax.xml.ws.WebServiceContext;
+import lombok.Getter;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 
-import lombok.Getter;
-import lombok.SneakyThrows;
+public class SoapProviderStub extends AbstractSOAPProvider {
 
-public class SoapProviderStub extends SOAPProviderBase {
+	final @Getter PipeLineSession session;
 
 	public SoapProviderStub(WebServiceContext context) {
 		this.webServiceContext = context;
+		session = new PipeLineSession();
 	}
 
-	@Getter PipeLineSession session = null;
-
-	final Map<String, Message> sessionCopy = new HashMap<>();
-
 	@Override
-	@SneakyThrows(IOException.class)
 	Message processRequest(Message message, PipeLineSession pipelineSession) {
-		if(session != null) {
-			pipelineSession.putAll(session);
-			session.getCloseables().clear();
-		}
-		session = pipelineSession;
-		for (String key : session.keySet()) {
-			if (!(session.get(key) instanceof InputStream)) {
-				// Do not copy input-streams b/c then they are no longer readable
-				sessionCopy.put(key, session.getMessage(key).copyMessage());
-			}
-		}
+		pipelineSession.putAll(session);
+
+		pipelineSession.mergeToParentSession("*", session);
 		return message;
 	}
 
 	public void setSession(PipeLineSession session) {
-		this.session = session;
+		this.session.putAll(session);
 	}
 
-	public Message getMessageFromSessionCopy(String key) {
-		return sessionCopy.get(key);
+	public void setMultipartBackwardsCompatibilityMode(boolean legacyAttachmentNotation) {
+		multipartBackwardsCompatibilityMode = legacyAttachmentNotation;
 	}
 }

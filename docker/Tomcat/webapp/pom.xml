@@ -62,18 +62,18 @@
 			<version>${db2.driver.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-j2ee-management_1.1_spec</artifactId>
-			<version>${geronimo.j2ee.spec.version}</version>
+			<groupId>jakarta.management.j2ee</groupId>
+			<artifactId>jakarta.management.j2ee-api</artifactId>
+			<version>1.1.4</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-jta_1.1_spec</artifactId>
-			<version>${geronimo.jta.spec.version}</version>
+			<groupId>jakarta.transaction</groupId>
+			<artifactId>jakarta.transaction-api</artifactId>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
-			<artifactId>artemis-jms-client-all</artifactId>
+			<artifactId>artemis-jakarta-client-all</artifactId>
 			<version>${artemis.driver.version}</version>
 		</dependency>
 		<!-- required for ActiveMQ classic-->
@@ -81,6 +81,14 @@
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-client</artifactId>
 			<version>${activemq.driver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j2-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

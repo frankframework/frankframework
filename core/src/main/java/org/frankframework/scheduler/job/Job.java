@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,26 +15,33 @@
 */
 package org.frankframework.scheduler.job;
 
+import lombok.Getter;
 import org.apache.commons.lang3.NotImplementedException;
 
-import lombok.Getter;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Mandatory;
-import org.frankframework.scheduler.JobDef;
+import org.frankframework.scheduler.AbstractJobDef;
 import org.frankframework.scheduler.JobDefFunctions;
 
 /**
- * Placeholder class to allow old-school <code>&lt;job function='SendMessage' /&gt;</code> in the new Frank!Config XSD.
+ * Placeholder class to allow legacy configuration notations <code>&lt;job function='SendMessage' /&gt;</code> in the new Frank!Config XSD.
+ * <p>
+ * The attribute {@literal function} has been removed in favor of explicit JobDefinitions such as: {@literal SendMessageJob},
+ * {@literal ExecuteQueryJob} and {@literal ActionJob}.
+ * Using the new elements enables the use of auto-completion for the specified type.
+ * 
+ * @ff.info The job function {@literal IbisActionJob} has been renamed to {@literal ActionJob}.
+ * @ff.danger This element in combination with the attribute {@literal function} has been removed.
  *
  * @author Niels Meijer
  */
 // Should never be instantiated directly. See {@link JobFactory} and {@link JobDefFunctions} for more information.
-public class Job extends JobDef {
+@Deprecated(since = "7.7.0")
+public class Job extends AbstractJobDef {
 
 	private @Getter JobDefFunctions function;
 
 	@Override
-	public void execute() throws JobExecutionException, TimeoutException {
+	public void execute() {
 		throw new NotImplementedException(); // will be replaced by appropriate executor class in JobFactory, based on function
 	}
 
@@ -42,7 +49,7 @@ public class Job extends JobDef {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(super.toString());
-		if(function != null) builder.append(" function ["+function+"]");
+		if(function != null) builder.append(" function [").append(function).append("]");
 		return builder.toString();
 	}
 

@@ -1,91 +1,89 @@
-import { Component, OnInit } from '@angular/core';
-import { ViewportScroller } from '@angular/common';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService, Configuration } from 'src/app/app.service';
 import { ConfigurationsService } from '../configurations.service';
 import { copyToClipboard } from 'src/app/utils';
-
-type TransitionObject = {
-  name?: string;
-  loaded?: boolean;
-  adapter?: string;
-};
+import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-configurations-show',
   templateUrl: './configurations-show.component.html',
   styleUrls: ['./configurations-show.component.scss'],
 })
-export class ConfigurationsShowComponent implements OnInit {
-  configurations: Configuration[] = [];
-  configuration: string = '';
-  selectedConfiguration: string = 'All';
-  loadedConfiguration: boolean = false;
-  anchor = '';
+export class ConfigurationsShowComponent implements OnInit, OnDestroy {
+  @ViewChild('editor') editor!: MonacoEditorComponent;
 
+  protected configurations: Configuration[] = [];
+  protected selectedConfiguration: string = 'All';
+  protected loadedConfiguration: boolean = false;
+
+  private configuration: string = '';
+  private fragment?: string;
   private selectedAdapter?: string;
+  private skipParamsUpdate: boolean = false;
+  private initialized: boolean = false;
+  private configsSubscription: Subscription | null = null;
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private viewportScroller: ViewportScroller,
     private configurationsService: ConfigurationsService,
     private appService: AppService,
   ) {}
 
   ngOnInit(): void {
     this.configurations = this.appService.configurations;
-    this.appService.configurations$.subscribe(() => {
+    this.configsSubscription = this.appService.configurations$.subscribe(() => {
       this.configurations = this.appService.configurations;
     });
 
-    this.route.fragment.subscribe((hash) => {
-      this.anchor = hash ?? '';
+    this.route.fragment.subscribe((fragment) => {
+      this.fragment = fragment ?? undefined;
+      this.removeAdapterAfterLineSelection(fragment);
     });
 
     this.route.queryParamMap.subscribe((parameters) => {
-      this.selectedConfiguration =
-        parameters.has('name') && parameters.get('name') != ''
-          ? parameters.get('name')!
-          : 'All';
-      this.loadedConfiguration = !(
-        parameters.has('loaded') && parameters.get('loaded') == 'false'
-      );
-      if (parameters.has('adapter'))
-        this.selectedAdapter = parameters.get('adapter')!;
-
-      this.getConfiguration();
+      if (this.skipParamsUpdate) {
+        this.skipParamsUpdate = false;
+        return;
+      }
+      this.selectedAdapter = parameters.get('adapter') ?? undefined;
+      this.loadedConfiguration = parameters.get('loaded') !== 'false';
     });
+  }
+
+  ngOnDestroy(): void {
+    this.configsSubscription?.unsubscribe();
   }
 
   update(loaded: boolean): void {
     this.loadedConfiguration = loaded;
-    this.anchor = '';
+    this.fragment = undefined;
+
     this.getConfiguration();
+    this.updateQueryParams();
   }
 
   changeConfiguration(name: string): void {
     this.selectedConfiguration = name;
-    this.selectedAdapter = undefined;
-    this.router.navigate([], { relativeTo: this.route, fragment: '' });
-    this.anchor = ''; //unset hash anchor
+    if (this.initialized) {
+      this.selectedAdapter = undefined;
+      this.fragment = undefined; //unset hash anchor
+    }
     this.getConfiguration();
+    this.updateQueryParams();
   }
 
   updateQueryParams(): void {
-    const transitionObject: TransitionObject = {};
-    if (this.selectedConfiguration != 'All')
-      transitionObject.name = this.selectedConfiguration;
-    if (!this.loadedConfiguration)
-      transitionObject.loaded = this.loadedConfiguration;
-    if (this.selectedAdapter) transitionObject.adapter = this.selectedAdapter;
-
-    const fragment = this.anchor == '' ? undefined : this.anchor;
-
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: transitionObject,
-      fragment,
+      queryParams: {
+        loaded: this.loadedConfiguration ? null : 'false',
+        adapter: this.selectedAdapter,
+      },
+      queryParamsHandling: 'merge',
+      fragment: this.fragment,
     });
   }
 
@@ -96,16 +94,34 @@ export class ConfigurationsShowComponent implements OnInit {
   }
 
   getConfiguration(): void {
-    this.updateQueryParams();
-
     this.configurationsService
       .getConfiguration(this.selectedConfiguration, this.loadedConfiguration)
       .subscribe((data) => {
         this.configuration = data;
-
-        if (this.anchor) {
-          document.querySelector(`#${this.anchor}`)?.scrollIntoView();
-        }
+        this.editor.setValue(data).then(() => {
+          this.initialized = true;
+          this.highlightAdapter();
+        });
       });
+  }
+
+  private highlightAdapter(): void {
+    if (!this.selectedAdapter) {
+      return;
+    }
+    const match = this.editor.findMatchForRegex(
+      `<[aA]dapter.*? name="${this.selectedAdapter}".*?>(?:.|\\n)*?<\\/[aA]dapter>`,
+    )?.[0];
+    if (match) {
+      this.editor.setLineNumberInRoute(match.range.startLineNumber, match.range.endLineNumber);
+    }
+  }
+
+  private removeAdapterAfterLineSelection(fragment: string | null): void {
+    if (this.selectedAdapter && fragment?.includes('L') && !fragment?.includes('-')) {
+      this.selectedAdapter = undefined;
+      this.skipParamsUpdate = true;
+      this.updateQueryParams();
+    }
   }
 }

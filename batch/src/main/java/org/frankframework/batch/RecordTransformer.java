@@ -29,13 +29,13 @@ import java.util.StringTokenizer;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.util.StringUtil;
 
 /**
  * Translate a record using an outputFields description.
- *
  *
  * The {@link #setOutputFields(String) outputFields} description can contain the following functions:
  *
@@ -275,11 +275,11 @@ public class RecordTransformer extends AbstractRecordHandler {
 	 * digester-rules
 	 */
 	@Deprecated
-	public void registerChild(OutputfieldsPart part) throws ConfigurationException {
-		registerOutputFields(part);
+	public void addChild(OutputfieldsPart part) throws ConfigurationException {
+		addOutputFields(part);
 	}
 
-	public void registerOutputFields(OutputfieldsPart part) throws ConfigurationException {
+	public void addOutputFields(OutputfieldsPart part) throws ConfigurationException {
 		setOutputFields(part.getValue());
 	}
 

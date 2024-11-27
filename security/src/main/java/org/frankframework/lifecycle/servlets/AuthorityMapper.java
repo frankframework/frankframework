@@ -33,11 +33,12 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 
 import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.util.StringResolver;
 
 @Log4j2
 public class AuthorityMapper implements GrantedAuthoritiesMapper {
-	private Map<GrantedAuthority, String> roleToAuthorityMapping = new HashMap<>();
+	private final Map<GrantedAuthority, String> roleToAuthorityMapping = new HashMap<>();
 
 	public AuthorityMapper(URL roleMappingURL, Set<String> roles, Properties properties) throws IOException {
 		Properties roleMappingProperties = new Properties();

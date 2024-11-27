@@ -20,14 +20,15 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.frankframework.util.JacksonUtils;
-import org.springframework.http.MediaType;
-
 import jakarta.json.Json;
 import jakarta.json.JsonStructure;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
+
+import org.springframework.http.MediaType;
+
+import org.frankframework.util.JacksonUtils;
 
 public class JsonMessage extends StringMessage {
 	private static final JsonWriterFactory WRITER_FACTORY;

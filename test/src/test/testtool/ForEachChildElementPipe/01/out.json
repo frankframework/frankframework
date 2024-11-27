@@ -1,10 +1,6 @@
 {
     "message": "<results>\n<result item=\"1\">\n<reply>goodbye</reply>\n</result>\n<result item=\"2\">\n<reply>ha</reply>\n</result>\n</results>",
 	"messageContext": {
-		"Metadata.ModificationTime": "2023-11-23 15:18:29.755",
-		"Metadata.Size": "117",
-		"Metadata.Name": "dontcare.tmp",
-		"Metadata.Location": "dontcare.tmp"
 	},
     "logContext": {
         "listener.type": "JavaListener",

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,12 +28,10 @@ import org.bson.json.StrictCharacterStreamJsonWriterSettings;
 import org.bson.json.StrictJsonWriter;
 import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
-
-import org.frankframework.stream.document.INodeBuilder;
+import org.frankframework.documentbuilder.INodeBuilder;
 
 /**
  * BSON writer to write to FF DocumentBuilder, to generate JSON or XML.
- *
  * Based on org.bson.json.JsonWriter, called in Document.toJson();
  *
  * @author Gerrit van Brakel
@@ -279,4 +277,3 @@ public class JsonDocumentWriter extends AbstractBsonWriter {
 		}
 	}
 }
-

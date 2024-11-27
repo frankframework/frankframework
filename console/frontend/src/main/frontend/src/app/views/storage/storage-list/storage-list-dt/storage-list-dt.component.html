@@ -1,43 +1,38 @@
-<input
-  icheck
-  type="checkbox"
-  [(ngModel)]="storageService.selectedMessages[+message.id]"
-/>
-<div *ngIf="!storageService.selectedMessages[+message.id]">
-  <a
-    [routerLink]="['messages', message.id]"
-    class="btn btn-info btn-xs"
-    type="button"
-    ><i class="fa fa-file-text-o"></i> View</a
-  >
-  <button
-    *ngIf="storageService.storageParams.processState === 'Error'"
-    [ladda]="message.resending"
-    data-style="slide-down"
-    title="Resend Message"
-    (click)="storageService.resendMessage(message)"
-    class="btn btn-warning btn-xs"
-    type="button"
-  >
-    <i class="fa fa-repeat"></i> Resend
-  </button>
-  <button
-    *ngIf="storageService.storageParams.processState === 'Error'"
-    [ladda]="message.deleting"
-    data-style="slide-down"
-    title="Delete Message"
-    (click)="storageService.deleteMessage(message)"
-    class="btn btn-danger btn-xs"
-    type="button"
-  >
-    <i class="fa fa-times"></i> Delete
-  </button>
-  <button
-    title="Download Message"
-    (click)="storageService.downloadMessage(message.id)"
-    class="btn btn-info btn-xs"
-    type="button"
-  >
-    <i class="fa fa-arrow-circle-o-down"></i> Download
-  </button>
-</div>
+<ng-container *ngIf="message">
+  <input type="checkbox" [(ngModel)]="storageService.selectedMessages[message.id]" />
+  <div *ngIf="!storageService.selectedMessages[message.id]">
+    <a [routerLink]="['messages', message.id]" class="btn btn-info btn-xs" type="button"
+      ><i class="fa fa-file-text-o"></i> View</a
+    >
+    <button
+      *ngIf="storageService.storageParams.processState === 'Error'"
+      [ladda]="message.resending"
+      data-style="slide-down"
+      title="Resend Message"
+      (click)="storageService.resendMessage(message)"
+      class="btn btn-warning btn-xs"
+      type="button"
+    >
+      <i class="fa fa-repeat"></i> Resend
+    </button>
+    <button
+      *ngIf="storageService.storageParams.processState === 'Error'"
+      [ladda]="message.deleting"
+      data-style="slide-down"
+      title="Delete Message"
+      (click)="storageService.deleteMessage(message)"
+      class="btn btn-danger btn-xs"
+      type="button"
+    >
+      <i class="fa fa-times"></i> Delete
+    </button>
+    <button
+      title="Download Message"
+      (click)="storageService.downloadMessage(message.id)"
+      class="btn btn-info btn-xs"
+      type="button"
+    >
+      <i class="fa fa-arrow-circle-o-down"></i> Download
+    </button>
+  </div>
+</ng-container>

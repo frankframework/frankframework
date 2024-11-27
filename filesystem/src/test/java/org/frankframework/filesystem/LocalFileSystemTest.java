@@ -11,21 +11,22 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.StreamUtil;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
-public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem>{
+public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 
 	@TempDir
 	public Path folder;
 
 	@Override
 	protected LocalFileSystem createFileSystem() {
-		LocalFileSystem result=new LocalFileSystem();
+		LocalFileSystem result = new LocalFileSystem();
 		result.setRoot(folder.toAbsolutePath().toString());
 		return result;
 	}
@@ -46,7 +47,7 @@ public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem>{
 		deleteFile(null, filename);
 		waitForActionToFinish();
 
-		Path file = fileSystem.toFile(fileSystem.getRoot()+"/"+filename);
+		Path file = fileSystem.toFile(fileSystem.getRoot() + "/" + filename);
 		OutputStream out = fileSystem.createFile(file);
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
@@ -74,20 +75,20 @@ public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem>{
 		createFile(rootFolderLongName, filename, contents);
 
 		LocalFileSystem fsLong = new LocalFileSystem();
-		fsLong.setRoot(folder.toAbsolutePath()+"\\"+rootFolderLongName);
+		fsLong.setRoot(folder.toAbsolutePath() + "\\" + rootFolderLongName);
 		fsLong.configure();
 		fsLong.open();
 
 		LocalFileSystem fsShort = new LocalFileSystem();
-		fsShort.setRoot(folder.toAbsolutePath()+"\\"+rootFolderShortName);
+		fsShort.setRoot(folder.toAbsolutePath() + "\\" + rootFolderShortName);
 		fsShort.configure();
 		fsShort.open();
 
 		Path fLong = fsLong.toFile(filename);
 		Path fShort = fsShort.toFile(filename);
 
-		log.info("Flong ["+fLong.getFileName().toString()+"] absolute path ["+fLong.toAbsolutePath()+"]");
-		log.info("Fshort ["+fShort.getFileName().toString()+"] absolute path ["+fShort.toAbsolutePath()+"]");
+		log.info("Flong [" + fLong.getFileName().toString() + "] absolute path [" + fLong.toAbsolutePath() + "]");
+		log.info("Fshort [" + fShort.getFileName().toString() + "] absolute path [" + fShort.toAbsolutePath() + "]");
 
 		assertTrue(fsLong.exists(fLong));
 		assertTrue(fsShort.exists(fShort));
@@ -95,8 +96,12 @@ public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem>{
 		assertTrue(fsLong.exists(fsLong.toFile(fLong.toAbsolutePath().toString())));
 		assertTrue(fsShort.exists(fsShort.toFile(fShort.toAbsolutePath().toString())));
 
-		assertTrue(fsShort.exists(fsShort.toFile(fLong.toAbsolutePath().toString())), "LocalFileSystem with short path root must accept absolute filename with long path root");
-		assertTrue(fsLong.exists(fsLong.toFile(fShort.toAbsolutePath().toString())), "LocalFileSystem with long path root must accept absolute filename with short path root");
+		assertTrue(fsShort.exists(fsShort.toFile(fLong.toAbsolutePath()
+				.toString())), "LocalFileSystem with short path root must accept absolute filename with long path root");
+		assertTrue(fsLong.exists(fsLong.toFile(fShort.toAbsolutePath()
+				.toString())), "LocalFileSystem with long path root must accept absolute filename with short path root");
+		fsLong.close();
+		fsShort.close();
 	}
 
 	@Test

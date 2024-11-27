@@ -9,16 +9,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import jakarta.mail.internet.InternetHeaders;
+import jakarta.mail.internet.MimeBodyPart;
+
 import org.apache.commons.codec.binary.Hex;
+import org.junit.jupiter.api.Test;
+
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.http.PartMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
 import org.frankframework.testutil.SerializationTester;
-import org.junit.jupiter.api.Test;
-
-import jakarta.mail.internet.InternetHeaders;
-import jakarta.mail.internet.MimeBodyPart;
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class MessageWrapperTest {

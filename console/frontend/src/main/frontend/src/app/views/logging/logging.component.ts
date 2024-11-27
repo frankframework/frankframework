@@ -1,14 +1,11 @@
 import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
-import { AppService } from 'src/app/app.service';
+import { AppService, ServerErrorResponse } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
 import { LoggingService, LoggingFile } from './logging.service';
-import {
-  SortEvent,
-  ThSortableDirective,
-  basicTableSort,
-} from 'src/app/components/th-sortable.directive';
+import { SortEvent, ThSortableDirective, basicTableSort } from 'src/app/components/th-sortable.directive';
 import { copyToClipboard } from 'src/app/utils';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-logging',
@@ -16,15 +13,16 @@ import { copyToClipboard } from 'src/app/utils';
   styleUrls: ['./logging.component.scss'],
 })
 export class LoggingComponent implements OnInit {
-  viewFile: null | string = null;
-  alert: boolean | string = false;
-  directory: string = '';
-  path: string = '';
-  fileName: string = '';
-  originalList: LoggingFile[] = [];
-  sortedlist: LoggingFile[] = [];
-
   @ViewChildren(ThSortableDirective) headers!: QueryList<ThSortableDirective>;
+
+  protected viewFile: null | string = null;
+  protected alert: boolean | string = false;
+  protected path: string = '';
+  protected fileName: string = '';
+  protected sortedlist: LoggingFile[] = [];
+
+  private directory: string = '';
+  private originalList: LoggingFile[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -62,6 +60,9 @@ export class LoggingComponent implements OnInit {
     }
   }
 
+  /**
+   * @deprecated Use the parameters instead `/logging/${directoryParameter}/${fileParameter}`
+   * */
   handleOldUrlParameters(parameters: ParamMap): void {
     const directoryParameter = parameters.get('directory') ?? '';
     const fileParameter = parameters.get('file') ?? '';
@@ -111,8 +112,9 @@ export class LoggingComponent implements OnInit {
           this.alert = `Total number of items [${data.count}] exceeded maximum number, only showing first [${data.list.length - 1}] items!`;
         }
       },
-      error: (data) => {
-        this.alert = data.error?.error || 'An unknown error occured!';
+      error: (data: HttpErrorResponse) => {
+        const errorResponse = data.error as ServerErrorResponse | undefined;
+        this.alert = errorResponse ? errorResponse.error : 'An unknown error occurred!';
       },
     });
   }

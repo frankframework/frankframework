@@ -9,6 +9,9 @@ import java.net.URL;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ConfiguredTestBase;
 import org.frankframework.core.IPipe;
@@ -20,8 +23,6 @@ import org.frankframework.core.PipeStartException;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 
 public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 
@@ -35,14 +36,14 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 		super.setUp();
 		pipe = createPipe();
 		autowireByType(pipe);
-		pipe.registerForward(new PipeForward("success", "READY"));
+		pipe.addForward(new PipeForward("success", "READY"));
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
 		pipeline.addPipe(pipe);
 	}
 
 	@Override
 	@AfterEach
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		getConfigurationWarnings().destroy();
 		getConfigurationWarnings().afterPropertiesSet();
 		pipe = null;
@@ -64,7 +65,6 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 		pipe.start();
 	}
 
-
 	/*
 	 * use these methods to execute pipe, instead of calling pipe.doPipe directly. This allows for
 	 * integrated testing of streaming.
@@ -80,7 +80,6 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 		return doPipe(pipe, Message.asMessage(input), session);
 	}
 
-	@SuppressWarnings("deprecation")
 	protected PipeRunResult doPipe(final P pipe, final Message input, final PipeLineSession session) throws PipeRunException {
 		if (input != null && input.isRequestOfType(InputStream.class)) {
 			// Wrap input-stream in a stream that forces IOExceptions after it is closed; close the session

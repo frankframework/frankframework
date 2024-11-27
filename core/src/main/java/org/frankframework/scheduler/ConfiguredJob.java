@@ -15,13 +15,12 @@
 */
 package org.frankframework.scheduler;
 
-import org.frankframework.core.IAdapter;
+import org.frankframework.configuration.Configuration;
+import org.frankframework.core.Adapter;
 import org.frankframework.scheduler.job.IJob;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-
-import org.frankframework.configuration.Configuration;
 
 
 /**
@@ -41,10 +40,10 @@ import org.frankframework.configuration.Configuration;
  * </p>
  *
  * @author  Johan Verrips
- * @see IAdapter
+ * @see Adapter
  * @see Configuration
   */
-public class ConfiguredJob extends BaseJob {
+public class ConfiguredJob extends AbstractJob {
 
 	public static final String JOBDEF_KEY = "jobdef";
 
@@ -55,12 +54,12 @@ public class ConfiguredJob extends BaseJob {
 			JobDataMap dataMap = context.getJobDetail().getJobDataMap();
 			IJob jobDef = (IJob)dataMap.get(JOBDEF_KEY);
 			Thread.currentThread().setName(jobDef.getName() + "["+ctName+"]");
-			if (log.isTraceEnabled()) log.trace(getLogPrefix(jobDef) + "executing");
+			if (log.isTraceEnabled()) log.trace("{}executing", getLogPrefix(jobDef));
 			jobDef.executeJob();
-			if (log.isTraceEnabled()) log.trace(getLogPrefix(jobDef) + "completed");
+			if (log.isTraceEnabled()) log.trace("{}completed", getLogPrefix(jobDef));
 		}
 		catch (Exception e) {
-			log.error("JobExecutionException while running "+getLogPrefix(context), e);
+			log.error("JobExecutionException while running {}", getLogPrefix(context), e);
 			throw new JobExecutionException(e, false);
 		}
 		finally {

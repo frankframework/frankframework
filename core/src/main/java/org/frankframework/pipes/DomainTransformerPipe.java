@@ -21,20 +21,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.StringTokenizer;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
-
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
-import org.frankframework.jdbc.FixedQuerySender;
-
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
+import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
 
@@ -54,7 +52,7 @@ import org.frankframework.util.JdbcUtil;
  * @author  Peter Leeuwenburgh
  * @since   4.9
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(Type.TRANSLATOR)
 public class DomainTransformerPipe extends FixedForwardPipe {
 
 	private static final String DT_START = "%![DT{";
@@ -133,7 +131,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 				int endPos =
 					invoerString.indexOf(DT_END, startPos + DT_START.length());
 				if (endPos == -1 || endPos > nextStartPos) {
-					log.warn("Found a start delimiter without an end delimiter at position [" + startPos + "] in ["+ invoerString+ "]");
+					log.warn("Found a start delimiter without an end delimiter at position [{}] in [{}]", startPos, invoerString);
 					builder.append(invoerChars, startPos, nextStartPos - startPos);
 					copyFrom = nextStartPos;
 				} else {
@@ -141,7 +139,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 					StringTokenizer st = new StringTokenizer(invoerSubstring, DT_SEPARATOR);
 					int aantalTokens = st.countTokens();
 					if (aantalTokens < 2 || aantalTokens > 3) {
-						log.warn("Only 2 or 3 tokens are allowed in [" + invoerSubstring + "]");
+						log.warn("Only 2 or 3 tokens are allowed in [{}]", invoerSubstring);
 						builder.append(invoerChars, startPos, endPos - startPos + DT_END.length());
 						copyFrom = endPos + DT_END.length();
 					} else {
@@ -153,7 +151,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 						}
 						if (!type.equals(TYPE_STRING)
 							&& !type.equals(TYPE_NUMBER)) {
-							log.warn("Only types ["+ TYPE_STRING+ ","+ TYPE_NUMBER+ "] are allowed in ["+ invoerSubstring+ "]");
+							log.warn("Only types [{},{}] are allowed in [{}]", TYPE_STRING, TYPE_NUMBER, invoerSubstring);
 							builder.append(invoerChars, startPos, endPos - startPos + DT_END.length());
 							copyFrom = endPos + DT_END.length();
 						} else {
@@ -197,7 +195,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 	@Override
 	public void start() throws PipeStartException {
 		try {
-			qs.open();
+			qs.start();
 		} catch (Throwable t) {
 			PipeStartException pse = new PipeStartException("could not start", t);
 			pse.setPipeNameInError(getName());
@@ -207,10 +205,10 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 
 	@Override
 	public void stop() {
-		qs.close();
+		qs.stop();
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.8.0")
 	public void setJmsRealm(String jmsRealm) {
 		this.jmsRealm = jmsRealm;
 	}

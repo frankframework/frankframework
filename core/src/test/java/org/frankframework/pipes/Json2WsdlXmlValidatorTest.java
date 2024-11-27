@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -13,18 +15,16 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 import org.frankframework.validation.ValidatorTestBase;
-import org.junit.jupiter.api.Test;
 
 public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 
-	WsdlXmlValidator validator;
-
 	private final PipeLineSession session = new PipeLineSession();
 	private final TestConfiguration configuration = new TestConfiguration();
+	WsdlXmlValidator validator;
 
 	@Override
 	public ValidationResult validate(String rootElement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
-			boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) {
+									 boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) {
 		// TODO Auto-generated method stub
 		fail("method not implemented");
 		return null;
@@ -33,12 +33,12 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	public void validate(String description, WsdlXmlValidator val, String input, String outputFormat, boolean compactJsonArrays, String targetContent1, String targetContent2) {
 		val.setCompactJsonArrays(compactJsonArrays);
 		if (compactJsonArrays) {
-			description+=" (compact)";
+			description += " (compact)";
 		} else {
-			description+=" (straight)";
+			description += " (straight)";
 		}
-		log.debug("-- "+description+" --");
-		log.debug("input ["+input+"]");
+		log.debug("-- " + description + " --");
+		log.debug("input [" + input + "]");
 		if (outputFormat != null) {
 			session.put("outputFormat", outputFormat);
 		} else {
@@ -47,11 +47,12 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 		PipeRunResult result;
 		try {
 			result = val.doPipe(new Message(input), session);
-		String resultStr=null;
+			String resultStr = null;
+
 			try {
-				resultStr = Message.asString(result);
+				resultStr = result.getResult().asString();
 			} catch (IOException e) {
-				fail("cannot open stream: "+description +": "+ e.getMessage());
+				fail("cannot open stream: " + description + ": " + e.getMessage());
 			}
 			log.info("result of [" + description + "]\n" + resultStr);
 			if (resultStr.indexOf(targetContent1) < 0) {
@@ -66,7 +67,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 //	        }
 		} catch (PipeRunException e) {
 			e.printStackTrace();
-			fail(description +": "+ e.getMessage());
+			fail(description + ": " + e.getMessage());
 		}
 	}
 
@@ -75,7 +76,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 		val.setWsdl(wsdl);
 //        val.setSoapBody("TradePriceRequest");
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.setSoapBody(soapBody);
 		val.setValidateJsonToRootElementOnly(false);
 		val.configure();
@@ -113,7 +114,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 		String targetContent1 = "childDateOfBirth";
 		// String targetContent2="€ 19,82"; // The Euro sign is somehow escaped,
 		// sometimes. Disabled it, because it breaks the build.
-		String targetContent2="";
+		String targetContent2 = "";
 
 		String jsonFileStraight = BASE_DIR_VALIDATION + "/Wsdl/GetPolicyDetailsTravel/response1full.json";
 		String jsonFileCompact = BASE_DIR_VALIDATION + "/Wsdl/GetPolicyDetailsTravel/response1compact.json";
@@ -127,7 +128,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 		WsdlXmlValidator val = configuration.createBean(WsdlXmlValidator.class);
 		val.setWsdl(wsdl);
 		val.setThrowException(true);
-		val.registerForward(new PipeForward("success", null));
+		val.addForward(new PipeForward("success", null));
 		val.setSoapBody(soapBody);
 		val.configure();
 		val.start();
@@ -135,12 +136,12 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 		PipeRunResult result;
 		try {
 			result = val.doPipe(new Message(input), session);
-			Message.asString(result.getResult());
-			fail("expected error ["+expectedError+"]");
+			result.getResult().asString();
+			fail("expected error [" + expectedError + "]");
 		} catch (PipeRunException e) {
-			String msg=e.getMessage();
-			if (msg==null || msg.indexOf(expectedError)<0) {
-				fail("expected ["+expectedError+"] in error message, but was ["+msg+"]");
+			String msg = e.getMessage();
+			if (msg == null || msg.indexOf(expectedError) < 0) {
+				fail("expected [" + expectedError + "] in error message, but was [" + msg + "]");
 			}
 		}
 	}
@@ -163,14 +164,20 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	void testAddNamespace() {
 		String tail = "<elem1>content</elem></root>";
 		testAddNamespace("<root>" + tail, "<root xmlns=\"xxx\">" + tail);
-		testAddNamespace("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>" + tail,
-				"<?xml version=\"1.0\" encoding=\"UTF-8\"?><root xmlns=\"xxx\">" + tail);
-		testAddNamespace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root>" + tail,
-				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root xmlns=\"xxx\">" + tail);
+		testAddNamespace(
+				"<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>" + tail,
+				"<?xml version=\"1.0\" encoding=\"UTF-8\"?><root xmlns=\"xxx\">" + tail
+		);
+		testAddNamespace(
+				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root>" + tail,
+				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root xmlns=\"xxx\">" + tail
+		);
 		testAddNamespace("<root xmlns=\"xxx\">" + tail, "<root xmlns=\"xxx\">" + tail);
 		testAddNamespace("<root xmlns=\"yyy\">" + tail, "<root xmlns=\"yyy\">" + tail);
-		testAddNamespace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>bagger",
-				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>bagger");
+		testAddNamespace(
+				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>bagger",
+				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>bagger"
+		);
 		testAddNamespace("bagger", "bagger");
 		testAddNamespace("", "");
 		testAddNamespace(null, null);

@@ -34,9 +34,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.extensions.sap.ISapSystem;
 import org.frankframework.extensions.sap.SapException;
-import org.frankframework.extensions.sap.SapSystemFactory;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.GlobalListItem;
+import org.frankframework.util.SapSystemListItem;
 
 /**
  * A SapSystem is a provider of repository information and connections to a SAP-system.
@@ -46,7 +45,7 @@ import org.frankframework.util.GlobalListItem;
  * @author  Niels Meijer
  * @since   5.0
  */
-public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem {
+public abstract class SapSystemImpl extends SapSystemListItem implements ISapSystem {
 
 	private String host;
 	private String ashost;
@@ -111,21 +110,21 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 	public synchronized void openSystem() throws SapException {
 		if (referenceCount++<=0) {
 			referenceCount=1;
-			log.debug(getLogPrefix()+"opening system");
+			log.debug("{}opening system", getLogPrefix());
 			initSystem();
-			log.debug(getLogPrefix()+"opened system");
+			log.debug("{}opened system", getLogPrefix());
 		}
 	}
 
 	public synchronized void closeSystem() {
 		clearCache();
 		if (--referenceCount<=0) {
-			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], closing system");
+			log.debug("{}reference count [{}], closing system", getLogPrefix(), referenceCount);
 			referenceCount=0;
 			clearSystem();
-			log.debug(getLogPrefix()+"closed system");
+			log.debug("{}closed system", getLogPrefix());
 		} else {
-			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], waiting for other references to close");
+			log.debug("{}reference count [{}], waiting for other references to close", getLogPrefix(), referenceCount);
 		}
 	}
 
@@ -145,26 +144,29 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 		}
 	}
 
-	@Override
-	public void registerItem(Object dummyParent) {
-		super.registerItem(dummyParent);
-		SapSystemFactory.getInstance().registerSapSystem(this, getName());
-	}
-
 	public void clearCache() {
-		log.debug("start clearing cache of SapSystem ["+getName()+"]");
+		log.debug("start clearing cache of SapSystem [{}]", getName());
 		try {
 			JCoRepository jcoRepository = getJcoRepository();
 			jcoRepository.clear();
 		} catch (JCoException e) {
 			log.warn("cannot clear function template cache",e);
 		}
-		log.debug("end clearing cache of SapSystem ["+getName()+"]");
+		log.debug("end clearing cache of SapSystem [{}]", getName());
 	}
 
 	public JCoDestination getDestination() throws JCoException {
 		JCoDestination destination = JCoDestinationManager.getDestination(getName());
 		return destination;
+	}
+
+	@Override
+	public String getDestinationAsString() {
+		try {
+			return getDestination().toString();
+		} catch (JCoException exception) {
+			return null;
+		}
 	}
 
 	public JCoRepository getJcoRepository() throws JCoException {
@@ -409,7 +411,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 	}
 
 	@Override
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.8.0")
 	@ConfigurationWarning("setServiceOffset not used in JCo3")
 	public void setServiceOffset(int i) {
 		log.warn("setServiceOffset not used in JCo3");

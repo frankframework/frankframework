@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+        targetNamespace="http://www.frankframework.org/test"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        elementFormDefault="qualified"
+	xmlns:dup="http://www.frankframework.org/test/imported2"
+        >
+	<xsd:import namespace="http://www.frankframework.org/test/imported2" schemaLocation="nested2_l2.xsd"/>
+    <xsd:element name="d" type="dup:t2">
+    </xsd:element>
+</xsd:schema>

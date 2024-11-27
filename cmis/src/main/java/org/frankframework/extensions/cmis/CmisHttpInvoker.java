@@ -34,15 +34,16 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.impl.UrlBuilder;
 import org.apache.chemistry.opencmis.commons.spi.AuthenticationProvider;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.SenderException;
 import org.frankframework.encryption.KeystoreType;
-import org.frankframework.http.HttpSenderBase.HttpMethod;
+import org.frankframework.http.AbstractHttpSender.HttpMethod;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StreamUtil;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
@@ -62,14 +63,14 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 	public void close() {
 		if (sender != null) {
 			log.debug("Closing CmisHttpSender [{}] from CmisHttpInvoker [{}]", sender, this);
-			sender.close();
+			sender.stop();
 			sender = null;
 		} else {
 			log.debug("Closing CmisHttpInvoker [{}] but does not have a sender to close", this);
 		}
 	}
 
-	private CmisHttpSender getInstance(BindingSession session) throws SenderException, ConfigurationException {
+	private CmisHttpSender getInstance(BindingSession session) throws LifecycleException, ConfigurationException {
 		if(sender == null) {
 			log.debug("creating new CmisHttpInvoker");
 			sender = createSender();
@@ -151,7 +152,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 			}
 
 			sender.configure();
-			sender.open();
+			sender.start();
 		}
 		return sender;
 	}
@@ -185,7 +186,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 	private Response invoke(UrlBuilder url, HttpMethod method, String contentType, Map<String, String> headers,
 			Output writer, BindingSession session, BigInteger offset, BigInteger length) {
 
-		log.debug("Session "+session.getSessionId()+": "+method+" "+url);
+		log.debug("Session {}: {} {}", session.getSessionId(), method, url);
 
 		if(url.toString().equals(CmisSessionBuilder.OVERRIDE_WSDL_URL)) {
 			try {
@@ -280,7 +281,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 
 			response = sender.invoke(method, url.toString(), headers, writer, session);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.trace("exception creating or retrieving sender instance", e);
 			throw new CmisConnectionException(url.toString(), -1, e);
 		}
 

@@ -33,20 +33,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
-import javax.xml.soap.MessageFactory;
-import javax.xml.soap.SOAPException;
 import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
@@ -74,27 +71,16 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import jakarta.xml.soap.MessageFactory;
+import jakarta.xml.soap.SOAPException;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xalan.processor.TransformerFactoryImpl;
 import org.apache.xmlbeans.GDate;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IScopeProvider;
-import org.frankframework.core.Resource;
-import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.ParameterList;
-import org.frankframework.stream.Message;
-import org.frankframework.validation.RootValidations;
-import org.frankframework.validation.XmlValidatorContentHandler;
-import org.frankframework.validation.XmlValidatorErrorHandler;
-import org.frankframework.xml.BodyOnlyFilter;
-import org.frankframework.xml.CanonicalizeFilter;
-import org.frankframework.xml.ClassLoaderEntityResolver;
-import org.frankframework.xml.NamespaceRemovingFilter;
-import org.frankframework.xml.NonResolvingExternalEntityResolver;
-import org.frankframework.xml.PrettyPrintFilter;
-import org.frankframework.xml.SaxException;
-import org.frankframework.xml.XmlWriter;
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
@@ -116,13 +102,32 @@ import com.ctc.wstx.stax.WstxInputFactory;
 
 import net.sf.saxon.xpath.XPathFactoryImpl;
 
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.IScopeProvider;
+import org.frankframework.core.Resource;
+import org.frankframework.parameters.IParameter;
+import org.frankframework.parameters.ParameterList;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
+import org.frankframework.validation.RootValidations;
+import org.frankframework.validation.XmlValidatorContentHandler;
+import org.frankframework.validation.XmlValidatorErrorHandler;
+import org.frankframework.xml.BodyOnlyFilter;
+import org.frankframework.xml.CanonicalizeFilter;
+import org.frankframework.xml.ClassLoaderEntityResolver;
+import org.frankframework.xml.NamespaceRemovingFilter;
+import org.frankframework.xml.NonResolvingExternalEntityResolver;
+import org.frankframework.xml.PrettyPrintFilter;
+import org.frankframework.xml.SaxException;
+import org.frankframework.xml.XmlWriter;
+
 /**
  * Some utilities for working with XML.
  *
  * @author  Johan Verrips
  */
 public class XmlUtils {
-	static Logger log = LogUtil.getLogger(XmlUtils.class);
+	static Logger log = LogManager.getLogger(XmlUtils.class);
 
 	public static final int DEFAULT_XSLT_VERSION = AppConstants.getInstance().getInt("xslt.version.default", 2);
 
@@ -607,12 +612,12 @@ public class XmlUtils {
 	 * Convert an XML string to a Document, then return the root-element as a Node
 	 */
 	public static Node buildNode(String s, boolean namespaceAware) throws DomBuilderException {
-		log.debug("buildNode() ["+s+"],["+namespaceAware+"]");
+		log.debug("buildNode() [{}],[{}]", s, namespaceAware);
 		return buildElement(s,namespaceAware);
 	}
 
 	public static Node buildNode(String s) throws DomBuilderException {
-		log.debug("buildNode() ["+s+"]");
+		log.debug("buildNode() [{}]", s);
 		return buildElement(s,isNamespaceAwareByDefault());
 	}
 
@@ -784,14 +789,14 @@ public class XmlUtils {
 	 * @return An XSLT stylesheet generated to evaluate the XPath Expression
 	 */
 	@Nonnull
-	public static String createXPathEvaluatorSource(@Nonnull Function<String,String> xpathContainerSupplier, @Nonnull String xPathExpression, @Nonnull TransformerPool.OutputType outputMethod, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
+	public static String createXPathEvaluatorSource(@Nonnull UnaryOperator<String> xpathContainerSupplier, @Nonnull String xPathExpression, @Nonnull TransformerPool.OutputType outputMethod, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
 		if (StringUtils.isEmpty(xPathExpression)) {
 			throw new IllegalArgumentException("XPathExpression must be filled");
 		}
 
 		StringBuilder paramsString = new StringBuilder();
 		if (params != null) {
-			for (Parameter param: params) {
+			for (IParameter param: params) {
 				paramsString.append("<xsl:param name=\"").append(param.getName()).append("\"/>");
 			}
 		}
@@ -900,7 +905,7 @@ public class XmlUtils {
 		try {
 			TransformerPool tpVersion = XmlUtils.getDetectXsltVersionTransformerPool();
 			String version=tpVersion.transform(xsltString, null, true);
-			log.debug("detected version ["+version+"] for xslt ["+xsltString+"]");
+			log.debug("detected version [{}] for xslt [{}]", version, xsltString);
 			return interpretXsltVersion(version);
 		} catch (Exception e) {
 			throw new TransformerConfigurationException(e);
@@ -1160,7 +1165,7 @@ public class XmlUtils {
 			num = Long.parseLong(str);
 		} catch (NumberFormatException e) {
 			num = defaultValue;
-			log.error("Tag [" + tag + "] has no integer value",e);
+			log.error("Tag [{}] has no integer value", tag, e);
 		}
 		return num;
 	}
@@ -1296,28 +1301,35 @@ public class XmlUtils {
 	 * sets all the parameters of the transformer using a Map with parameter values.
 	 * @throws IOException If an IOException occurs.
 	 */
-	public static void setTransformerParameters(Transformer t, Map<String,Object> parameters) throws IOException {
+	public static void setTransformerParameters(Transformer t, Map<String, Object> parameters) throws IOException {
 		t.clearParameters();
 		if (parameters == null) {
 			return;
 		}
-		for (String paramName:parameters.keySet()) {
-			Object value = parameters.get(paramName);
+		for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+			String paramName = entry.getKey();
+			Object value = sanitizeValue(paramName, entry.getValue());
 			if (value != null) {
-				if (value instanceof Reader || value instanceof InputStream || value instanceof byte[] || value instanceof Message) {
-					try {
-						value = Message.asString(value);
-					} catch (IOException e) {
-						throw new IOException("Cannot get value of parameter ["+paramName+"]", e);
-					}
-				}
 				t.setParameter(paramName, value);
-				log.debug("setting parameter [" + paramName+ "] on transformer from class ["+value.getClass().getTypeName()+"]");
-			}
-			else {
-				log.info("omitting setting of parameter ["+paramName+"] on transformer, as it has a null-value");
+				log.debug("setting parameter [{}] on transformer from class [{}]", paramName, value.getClass().getTypeName());
+			} else {
+				log.info("omitting setting of parameter [{}] on transformer, as it has a null-value", paramName);
 			}
 		}
+	}
+
+	private static Object sanitizeValue(String paramName, Object value) throws IOException {
+		if (value == null) {
+			return null;
+		}
+		if (value instanceof Reader || value instanceof InputStream || value instanceof byte[] || value instanceof Message) {
+			try {
+				return MessageUtils.asString(value);
+			} catch (IOException e) {
+				throw new IOException("Cannot get value of parameter ["+paramName+"]", e);
+			}
+		}
+		return value;
 	}
 
 	public static String transformXml(Transformer t, String s) throws TransformerException, IOException, SAXException {
@@ -1327,13 +1339,6 @@ public class XmlUtils {
 	public static String transformXml(Transformer t, String s, boolean namespaceAware) throws TransformerException, IOException, SAXException {
 		return transformXml(t, stringToSourceForSingleUse(s, namespaceAware));
 	}
-
-	public static void transformXml(Transformer t, String s, Result result) throws TransformerException, SAXException {
-		synchronized (t) {
-			t.transform(stringToSourceForSingleUse(s), result);
-		}
-	}
-
 
 	public static String transformXml(Transformer t, Source s) throws TransformerException, IOException {
 
@@ -1345,8 +1350,7 @@ public class XmlUtils {
 
 	}
 
-	public static void transformXml(Transformer t, Source s, Writer out) throws TransformerException {
-
+	private static void transformXml(Transformer t, Source s, Writer out) throws TransformerException {
 		Result result = new StreamResult(out);
 		synchronized (t) {
 			t.transform(s, result);
@@ -1358,7 +1362,7 @@ public class XmlUtils {
 	}
 
 	public static boolean isWellFormed(String input, String root) {
-		return isWellFormed(Message.asMessage(input), root);
+		return isWellFormed(new Message(input), root);
 	}
 
 	public static boolean isWellFormed(Message input, String root) {
@@ -1467,10 +1471,10 @@ public class XmlUtils {
 
 	public static Message removeNamespaces(Message input) throws XmlException {
 		try {
-			XmlWriter xmlWriter = new XmlWriter();
-			ContentHandler handler = new NamespaceRemovingFilter(xmlWriter);
+			MessageBuilder messageBuilder = new MessageBuilder();
+			ContentHandler handler = new NamespaceRemovingFilter(messageBuilder.asXmlWriter());
 			parseXml(input.asInputSource(), handler);
-			return Message.asMessage(xmlWriter.toString());
+			return messageBuilder.build();
 		} catch (Exception e) {
 			throw new XmlException(e);
 		}
@@ -1501,7 +1505,7 @@ public class XmlUtils {
 			TransformerPool tp = getCopyOfSelectTransformerPool(xpath, true,false);
 			return tp.transform(input,null);
 		} catch (Exception e) {
-			log.warn("unable to execute xpath expression ["+xpath+"]", e);
+			log.warn("unable to execute xpath expression [{}]", xpath, e);
 			return null;
 		}
 	}
@@ -1603,12 +1607,11 @@ public class XmlUtils {
 				.getNamespaceContext());
 	}
 
-	public static boolean attributesEqual(Attribute attribute1, Attribute attribute2) {
-		if (!attribute1.getName().equals(attribute2.getName())) {
-			return false;
-		} else {
-			return attribute1.getValue().equals(attribute2.getValue());
-		}
+	public static boolean attributesEqual(@Nullable Attribute attribute1, @Nullable Attribute attribute2) {
+		if (attribute1 == null && attribute2 == null) return true;
+		if (attribute1 == null || attribute2 == null) return false;
+		return Objects.equals(attribute1.getName(), attribute2.getName())
+				&& Objects.equals(attribute1.getValue(), attribute2.getValue());
 	}
 
 	public static Collection<String> evaluateXPathNodeSet(String input, String xpathExpr) throws XmlException {

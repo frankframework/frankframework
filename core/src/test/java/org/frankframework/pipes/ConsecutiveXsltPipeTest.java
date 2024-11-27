@@ -2,6 +2,8 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineResult;
@@ -11,7 +13,6 @@ import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MatchUtils;
-import org.junit.jupiter.api.Test;
 
 public class ConsecutiveXsltPipeTest extends PipeTestBase<XsltPipe> {
 
@@ -22,10 +23,10 @@ public class ConsecutiveXsltPipeTest extends PipeTestBase<XsltPipe> {
 
 	@Test
 	public void testConsecutiveXsltPipes() throws ConfigurationException, PipeRunException, IOException, PipeStartException {
-		XsltPipe first = createPipe();
+		XsltPipe first = new XsltPipe();
 		first.setName("XsltPipe");
 		first.setStyleSheetName("/Xslt/extract.xslt");
-		first.registerForward(new PipeForward("success", "nextPipe"));
+		first.addForward(new PipeForward("success", "nextPipe"));
 		autowireByType(first);
 		autowireByName(first);
 		pipeline.addPipe(first);

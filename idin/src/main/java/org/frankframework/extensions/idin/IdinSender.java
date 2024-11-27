@@ -19,30 +19,19 @@ import static org.frankframework.util.DateFormatUtils.FULL_GENERIC_FORMATTER;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map.Entry;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.parsers.ParserConfigurationException;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.HasPhysicalDestination;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
-import org.frankframework.core.SenderResult;
-import org.frankframework.senders.SenderWithParametersBase;
-import org.frankframework.stream.Message;
-import org.frankframework.util.ClassLoaderUtils;
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.DomBuilderException;
-import org.frankframework.util.XmlBuilder;
-import org.frankframework.util.XmlEncodingUtils;
-import org.frankframework.util.XmlUtils;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
@@ -62,13 +51,28 @@ import net.bankid.merchant.library.StatusRequest;
 import net.bankid.merchant.library.StatusResponse;
 import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
 
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.HasPhysicalDestination;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SenderException;
+import org.frankframework.core.SenderResult;
+import org.frankframework.doc.Mandatory;
+import org.frankframework.senders.AbstractSenderWithParameters;
+import org.frankframework.stream.Message;
+import org.frankframework.util.ClassLoaderUtils;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.DomBuilderException;
+import org.frankframework.util.XmlBuilder;
+import org.frankframework.util.XmlEncodingUtils;
+import org.frankframework.util.XmlUtils;
+
 /**
  * Requires the net.bankid.merchant.library V1.2.9
- * Compile with Java 1.8+
  *
  * @author Niels Meijer
  */
-public class IdinSender extends SenderWithParametersBase implements HasPhysicalDestination {
+public class IdinSender extends AbstractSenderWithParameters implements HasPhysicalDestination {
 	private @Getter final String domain = "iDin";
 
 	private @Getter String merchantID = null;
@@ -90,8 +94,8 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	private @Getter CredentialFactory merchantCertificateCredentials = null;
 	private @Getter String acquirerCertificateAlias = null;
 	private @Getter String acquirerAlternativeCertificateAlias = null;
-	private @Getter String SAMLCertificateAlias = null;
-	private @Getter CredentialFactory SAMLCertificateCredentials = null;
+	private @Getter String samlCertificateAlias = null;
+	private @Getter CredentialFactory samlCertificateCredentials = null;
 
 	private @Getter boolean logsEnabled = false;
 	private @Getter boolean serviceLogsEnabled = false;
@@ -121,7 +125,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 		// In order to implement this properly we should consider making the iDinSender a HttpSender, so it inherits the nightmare of configurable SSL and proxy settings.
 		// A 'proxy authentication fix' is below, this will however be used by default by ALL HttpURLConnection's in this JVM, therefore highly discouraged!
 
-		//		cf=new CredentialFactory(getProxyAuthAliasName(), null, null);	
+//		cf=new CredentialFactory(getProxyAuthAliasName(), null, null);
 //		Authenticator.setDefault( new Authenticator() {
 //            @Override
 //            protected PasswordAuthentication getPasswordAuthentication() {
@@ -167,16 +171,16 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 		if(StringUtils.isNotEmpty(getAcquirerAlternativeCertificateAlias()))
 			idinConfig.setAcquirerAlternateCertificateAlias(getAcquirerAlternativeCertificateAlias());
 
-		if(StringUtils.isNotEmpty(getSAMLCertificateAlias())) {
-			idinConfig.setSamlCertificateAlias(getSAMLCertificateAlias());
+		if(StringUtils.isNotEmpty(getSamlCertificateAlias())) {
+			idinConfig.setSamlCertificateAlias(getSamlCertificateAlias());
 			if(StringUtils.isNotEmpty(getSAMLCertificatePassword()))
 				idinConfig.setSamlCertificatePassword(getSAMLCertificatePassword());
 		}
 
 		if(isLogsEnabled())
-			idinConfig.setLogsEnabled(isLogsEnabled());
+			idinConfig.setLogsEnabled(true);
 		if(isServiceLogsEnabled())
-			idinConfig.setServiceLogsEnabled(isServiceLogsEnabled());
+			idinConfig.setServiceLogsEnabled(true);
 		if(StringUtils.isNotEmpty(getServiceLogsLocation()))
 			idinConfig.setServiceLogsLocation(getServiceLogsLocation());
 		if(StringUtils.isNotEmpty(getServiceLogsPattern()))
@@ -194,7 +198,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	protected Configuration createConfiguration() throws ConfigurationException {
-		final Configuration config = new Configuration();
+		Configuration config = null;
 		if(StringUtils.isNotEmpty(getIDinConfigurationXML())) {
 			URL defaultIdinConfigXML = ClassLoaderUtils.getResourceURL(this, getIDinConfigurationXML());
 			if(defaultIdinConfigXML == null) {
@@ -202,10 +206,30 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 			}
 
 			try {
+				config = new Configuration();
 				config.Load(defaultIdinConfigXML.openStream());
 			} catch (ParserConfigurationException | SAXException | IOException e) {
 				throw new ConfigurationException("unable to read iDin configuration from XML file ["+getIDinConfigurationXML()+"]", e);
 			}
+		} else {
+			config = new Configuration(getMerchantID(),
+										getMerchantSubID(),
+										getMerchantReturnUrl(),
+										getKeyStoreLocation(),
+										getKeyStorePassword(),
+										getMerchantCertificateAlias(),
+										getMerchantCertificatePassword(),
+										getAcquirerCertificateAlias(),
+										getAcquirerAlternativeCertificateAlias(),
+										getAcquirerDirectoryUrl(),
+										getAcquirerTransactionUrl(),
+										getAcquirerStatusUrl(),
+										isLogsEnabled(),
+										isServiceLogsEnabled(),
+										getServiceLogsLocation(),
+										getServiceLogsPattern(),
+										isTls12Enabled(),
+										null);
 		}
 		return config;
 	}
@@ -238,7 +262,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 
 		Element queryElement = null;
 		try {
@@ -292,8 +316,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 				result.addSubElement(issuers);
 
 				XmlBuilder timestamp = new XmlBuilder("timestamp");
-				Date txDate = response.getDirectoryDateTimestamp().toGregorianCalendar().getTime();
-				timestamp.setValue(DateFormatUtils.format(txDate, FULL_GENERIC_FORMATTER), false);
+				timestamp.setValue(toFormattedDate(response.getDirectoryDateTimestamp()), false);
 				result.addSubElement(timestamp);
 
 				log.debug("received directory response [{}]", response::getRawMessage);
@@ -317,7 +340,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 				status.setValue(response.getStatus(), false);
 				result.addSubElement(status);
 
-				if(response.getStatus() == StatusResponse.Success) {
+				if(StatusResponse.Success.equals(response.getStatus())) {
 					SamlResponse saml = response.getSamlResponse();
 					XmlBuilder samlXml = new XmlBuilder("saml");
 
@@ -350,8 +373,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 					result.addSubElement(transactionIdXml);
 
 					XmlBuilder timestamp = new XmlBuilder("timestamp");
-					Date txDate = response.getStatusDateTimestamp().toGregorianCalendar().getTime();
-					timestamp.setValue(DateFormatUtils.format(txDate, FULL_GENERIC_FORMATTER), false);
+					timestamp.setValue(toFormattedDate(response.getStatusDateTimestamp()), false);
 					result.addSubElement(timestamp);
 				}
 
@@ -420,8 +442,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 				result.addSubElement(transactionIdXml);
 
 				XmlBuilder creationTime = new XmlBuilder("createDateTimestamp");
-				Date txDate = response.getTransactionCreateDateTimestamp().toGregorianCalendar().getTime();
-				creationTime.setValue(DateFormatUtils.format(txDate, FULL_GENERIC_FORMATTER), false);
+				creationTime.setValue(toFormattedDate(response.getTransactionCreateDateTimestamp()), false);
 				result.addSubElement(creationTime);
 
 				log.debug("received authentication response [{}]", response::getRawMessage);
@@ -445,7 +466,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 			result.addSubElement(errorXml);
 		}
 
-		return new SenderResult(result.toXML());
+		return new SenderResult(result.asXmlString());
 	}
 
 	@Override
@@ -464,6 +485,11 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 			destination.append(" statusUrl["+getAcquirerStatusUrl()+"]");
 
 		return destination.toString().trim();
+	}
+
+	private String toFormattedDate(XMLGregorianCalendar xmlGregorianCalendar) {
+		Instant txDate = xmlGregorianCalendar.toGregorianCalendar().getTime().toInstant();
+		return DateFormatUtils.format(txDate, FULL_GENERIC_FORMATTER);
 	}
 
 
@@ -631,33 +657,33 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	 * The Merchant can then use the private key to decrypt that information. The SAML certificate must be in
 	 * PKCS#12 format which has the extension .p12 or .pfx;
 	 *
-	 * @param SAMLCertificateAlias The alias assigned to the SAML certificate in the keystore.
+	 * @param samlCertificateAlias The alias assigned to the SAML certificate in the keystore.
 	 * This could  be the alias supplied explicitly when importing an existing certificate in the keystore,
 	 * or it could be an alias automatically assigned by the keytool application.
 	 */
-	public void setSAMLCertificateAlias(String sAMLCertificateAlias) {
-		this.SAMLCertificateAlias = sAMLCertificateAlias;
+	public void setSamlCertificateAlias(String samlCertificateAlias) {
+		this.samlCertificateAlias = samlCertificateAlias;
 	}
 
 	/**
 	 * In case the SAML certificate has been password protected
-	 * @param SAMLCertificatePassword The password for the SAML Certificate
+	 * @param samlCertificatePassword The password for the SAML Certificate
 	 */
-	public void setSAMLCertificatePassword(String sAMLCertificatePassword) {
-		this.SAMLCertificateCredentials = new CredentialFactory(null, null, sAMLCertificatePassword);
+	public void setSAMLCertificatePassword(String samlCertificatePassword) {
+		this.samlCertificateCredentials = new CredentialFactory(null, null, samlCertificatePassword);
 	}
 	/**
 	 * In case the SAML certificate has been password protected
-	 * @param sAMLCertificateAuthAlias The AuthAlias that contains the password for the SAML Certificate
+	 * @param samlCertificateAuthAlias The AuthAlias that contains the password for the SAML Certificate
 	 */
-	public void setSAMLCertificateAuthAlias(String sAMLCertificateAuthAlias) {
-		this.SAMLCertificateCredentials = new CredentialFactory(sAMLCertificateAuthAlias);
+	public void setSAMLCertificateAuthAlias(String samlCertificateAuthAlias) {
+		this.samlCertificateCredentials = new CredentialFactory(samlCertificateAuthAlias);
 	}
 	public String getSAMLCertificatePassword() {
-		if(SAMLCertificateCredentials == null)
+		if(samlCertificateCredentials == null)
 			return null;
 
-		return SAMLCertificateCredentials.getPassword();
+		return samlCertificateCredentials.getPassword();
 	}
 
 
@@ -694,6 +720,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	/**
 	 * Load configuration from XML. Attributes may overwrite this 'default'.
 	 */
+	@Mandatory
 	public void setConfigurationXML(String iDinConfigurationXML) {
 		this.iDinConfigurationXML = iDinConfigurationXML;
 	}

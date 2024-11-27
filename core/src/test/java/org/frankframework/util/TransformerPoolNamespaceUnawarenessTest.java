@@ -2,12 +2,13 @@ package org.frankframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.Test;
+import org.xml.sax.ContentHandler;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.xml.XmlWriter;
-import org.junit.jupiter.api.Test;
-import org.xml.sax.ContentHandler;
 
 public class TransformerPoolNamespaceUnawarenessTest {
 

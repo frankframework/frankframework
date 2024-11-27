@@ -22,10 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.springframework.http.MediaType;
 
 import com.aspose.words.Document;
@@ -37,6 +35,9 @@ import com.aspose.words.SaveFormat;
 import com.aspose.words.SaveOptions;
 
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
+import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.stream.Message;
 
 /**
@@ -55,6 +56,7 @@ class WordConvertor extends AbstractConvertor {
 		map.put(new MediaType("application", "msword"), null);
 		map.put(new MediaType("application", "vnd.openxmlformats-officedocument.wordprocessingml.document"), null);
 		map.put(new MediaType("application", "vnd.ms-word.document.macroenabled.12"), null);
+		map.put(new MediaType("application", "x-tika-msoffice"), null);
 
 		// The string value is defined in com.aspose.words.LoadFormat.
 		map.put(new MediaType("text", "plain"), ()->new LoadOptions(LoadFormat.fromName("TEXT"), null, null));

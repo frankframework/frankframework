@@ -23,11 +23,8 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Wrapper;
 import java.util.Properties;
 
-import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
-
-import org.apache.logging.log4j.Logger;
 
 import com.arjuna.ats.internal.jdbc.ConnectionImple;
 import com.arjuna.ats.internal.jdbc.ConnectionManager;
@@ -35,8 +32,10 @@ import com.arjuna.ats.internal.jdbc.drivers.modifiers.IsSameRMModifier;
 import com.arjuna.ats.internal.jdbc.drivers.modifiers.ModifierFactory;
 import com.arjuna.ats.jdbc.TransactionalDriver;
 
+import jakarta.annotation.Nonnull;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.util.LogUtil;
 
 /**

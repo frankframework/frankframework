@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,15 +15,21 @@
 */
 package org.frankframework.management.bus;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import org.springframework.integration.gateway.MessagingGatewaySupport;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.core.GenericMessagingTemplate;
 
 /**
  * A Spring Integration Gateway in it's most simplistic form.
  * Put's messages on their respective Channels.
  */
-public class LocalGateway<T> extends MessagingGatewaySupport implements OutboundGateway<T> {
+public class LocalGateway extends MessagingGatewaySupport implements OutboundGateway {
+
+	private static long DEFAULT_REQUEST_TIMEOUT = 1000L;
 
 	@Override
 	protected void onInit() {
@@ -32,17 +38,50 @@ public class LocalGateway<T> extends MessagingGatewaySupport implements Outbound
 			setRequestChannel(requestChannel);
 		}
 
+		setRequestTimeout(DEFAULT_REQUEST_TIMEOUT);
+		setReplyTimeout(DEFAULT_REQUEST_TIMEOUT);
+
 		super.onInit();
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public Message<T> sendSyncMessage(Message<T> in) {
-		return (Message<T>) super.sendAndReceiveMessage(in);
+	@Nonnull
+	public <I, O> Message<O> sendSyncMessage(Message<I> requestMessage) {
+		Message<O> replyMessage = (Message<O>) super.sendAndReceiveMessage(requestMessage);
+		if (replyMessage != null) {
+			return replyMessage;
+		}
+
+		long timeout = getSendTimeout(requestMessage) + getReceiveTimeout(requestMessage);
+		throw new BusException("no reponse found on reply-queue within receiveTimeout ["+timeout+"]");
+	}
+
+	private long getSendTimeout(Message<?> requestMessage) {
+		Long sendTimeout = convertHeaderToLong(requestMessage.getHeaders().get(GenericMessagingTemplate.DEFAULT_SEND_TIMEOUT_HEADER));
+		return (sendTimeout != null ? sendTimeout : DEFAULT_REQUEST_TIMEOUT);
+	}
+
+	private long getReceiveTimeout(Message<?> requestMessage) {
+		Long sendTimeout = convertHeaderToLong(requestMessage.getHeaders().get(GenericMessagingTemplate.DEFAULT_RECEIVE_TIMEOUT_HEADER));
+		return (sendTimeout != null ? sendTimeout : DEFAULT_REQUEST_TIMEOUT);
+	}
+
+	@Nullable
+	private Long convertHeaderToLong(@Nullable Object headerValue) {
+		if (headerValue instanceof Number) {
+			return ((Number) headerValue).longValue();
+		}
+		else if (headerValue instanceof String) {
+			return Long.parseLong((String) headerValue);
+		}
+		else {
+			return null;
+		}
 	}
 
 	@Override
-	public void sendAsyncMessage(Message<T> in) {
+	public <I >void sendAsyncMessage(Message<I> in) {
 		super.send(in);
 	}
 

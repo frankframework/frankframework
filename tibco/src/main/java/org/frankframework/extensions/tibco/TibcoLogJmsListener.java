@@ -22,8 +22,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.jms.JMSException;
 import javax.xml.transform.TransformerException;
+
+import jakarta.jms.JMSException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
@@ -33,7 +34,6 @@ import com.tibco.tibjms.TibjmsMapMessage;
 import org.frankframework.jms.JmsListener;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
-
 import org.frankframework.util.DateFormatUtils;
 
 public class TibcoLogJmsListener extends JmsListener {
@@ -42,12 +42,13 @@ public class TibcoLogJmsListener extends JmsListener {
 	private static final String[] LOGLEVELS_TEXT = { "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL" };
 
 	@Override
-	public Message extractMessage(javax.jms.Message rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
+	public Message extractMessage(jakarta.jms.Message rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
 		TibjmsMapMessage tjmMessage;
 		try {
 			tjmMessage = (TibjmsMapMessage) rawMessage;
 		} catch (ClassCastException e) {
-			log.error("message received by listener on [" + getDestinationName() + "] was not of type TibjmsMapMessage, but [" + rawMessage.getClass().getName() + "]", e);
+			log.error("message received by listener on [{}] was not of type TibjmsMapMessage, but [{}]", getDestinationName(), rawMessage.getClass()
+					.getName(), e);
 			return null;
 		}
 		Enumeration enumeration = tjmMessage.getMapNames();
@@ -99,14 +100,14 @@ public class TibcoLogJmsListener extends JmsListener {
 								} else {
 									sb.append(",");
 								}
-								sb.append("[" + mapName + "]=[" + mapValue + "]");
+								sb.append("[").append(mapName).append("]=[").append(mapValue).append("]");
 							}
 						}
 					}
 				}
 			}
 		}
-		return new Message(DateFormatUtils.format(creationTimes) + " " + severityStr + " [" + (engineName != null ? engineName : (environment + "-" + node)) + "] [" + (jobId != null ? jobId : "") + "] " + msg + " " + sb.toString());
+		return new Message(DateFormatUtils.format(creationTimes) + " " + severityStr + " [" + (engineName != null ? engineName : (environment + "-" + node)) + "] [" + (jobId != null ? jobId : "") + "] " + msg + " " + sb);
 	}
 
 	private String logLevelToText(int logLevel) {

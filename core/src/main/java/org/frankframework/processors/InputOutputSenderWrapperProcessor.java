@@ -23,59 +23,61 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.senders.SenderWrapperBase;
+import org.frankframework.senders.AbstractSenderWrapper;
 import org.frankframework.stream.Message;
 
 /**
  * @author  Gerrit van Brakel
  * @since   4.11
  */
-public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBase {
+public class InputOutputSenderWrapperProcessor extends AbstractSenderWrapperProcessor {
 
 	@Override
-	public SenderResult sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(AbstractSenderWrapper abstractSenderWrapper, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Message senderInput=message;
-		if (StringUtils.isNotEmpty(senderWrapperBase.getStoreInputInSessionKey())) {
+		if (StringUtils.isNotEmpty(abstractSenderWrapper.getStoreInputInSessionKey())) {
 			try {
 				message.preserve();
 			} catch (IOException e) {
 				throw new SenderException("Could not preserve input",e);
 			}
-			session.put(senderWrapperBase.getStoreInputInSessionKey(), message);
+			session.put(abstractSenderWrapper.getStoreInputInSessionKey(), message);
 		}
-		if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromSessionKey())) {
-			if (!session.containsKey(senderWrapperBase.getGetInputFromSessionKey())) {
-				throw new SenderException("getInputFromSessionKey ["+senderWrapperBase.getGetInputFromSessionKey()+"] is not present in session");
+		if (StringUtils.isNotEmpty(abstractSenderWrapper.getGetInputFromSessionKey())) {
+			if (!session.containsKey(abstractSenderWrapper.getGetInputFromSessionKey())) {
+				throw new SenderException("getInputFromSessionKey ["+ abstractSenderWrapper.getGetInputFromSessionKey()+"] is not present in session");
 			}
-			senderInput=session.getMessage(senderWrapperBase.getGetInputFromSessionKey());
-			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set contents of session variable ["+senderWrapperBase.getGetInputFromSessionKey()+"] as input ["+senderInput+"]");
+			senderInput=session.getMessage(abstractSenderWrapper.getGetInputFromSessionKey());
+			if (log.isDebugEnabled())
+				log.debug("set contents of session variable [{}] as input [{}]", abstractSenderWrapper.getGetInputFromSessionKey(), senderInput);
 		} else {
-			if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromFixedValue())) {
-				senderInput=new Message(senderWrapperBase.getGetInputFromFixedValue());
-				if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set input to fixed value ["+senderInput+"]");
+			if (StringUtils.isNotEmpty(abstractSenderWrapper.getGetInputFromFixedValue())) {
+				senderInput=new Message(abstractSenderWrapper.getGetInputFromFixedValue());
+				if (log.isDebugEnabled()) log.debug("set input to fixed value [{}]", senderInput);
 			}
 		}
-		if (senderWrapperBase.isPreserveInput() && message==senderInput) { // test if it is the same object, not if the contents is the same
+		if (abstractSenderWrapper.isPreserveInput() && message==senderInput) { // test if it is the same object, not if the contents is the same
 			try {
 				message.preserve();
 			} catch (IOException e) {
 				throw new SenderException("Could not preserve input",e);
 			}
 		}
-		SenderResult result = senderWrapperProcessor.sendMessage(senderWrapperBase, senderInput, session);
+		SenderResult result = senderWrapperProcessor.sendMessage(abstractSenderWrapper, senderInput, session);
 		if (result.isSuccess()) {
-			if (StringUtils.isNotEmpty(senderWrapperBase.getStoreResultInSessionKey())) {
-				if (!senderWrapperBase.isPreserveInput()) {
+			if (StringUtils.isNotEmpty(abstractSenderWrapper.getStoreResultInSessionKey())) {
+				if (!abstractSenderWrapper.isPreserveInput()) {
 					try {
 						message.preserve();
 					} catch (IOException e) {
 						throw new SenderException("Could not preserve result",e);
 					}
 				}
-				if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"storing results in session variable ["+senderWrapperBase.getStoreResultInSessionKey()+"]");
-				session.put(senderWrapperBase.getStoreResultInSessionKey(), result.getResult());
+				if (log.isDebugEnabled())
+					log.debug("storing results in session variable [{}]", abstractSenderWrapper.getStoreResultInSessionKey());
+				session.put(abstractSenderWrapper.getStoreResultInSessionKey(), result.getResult());
 			}
-			if (senderWrapperBase.isPreserveInput()) {
+			if (abstractSenderWrapper.isPreserveInput()) {
 				return new SenderResult(message);
 			}
 		}

@@ -6,25 +6,16 @@
 
     <p>Please examine the startup-log and try restarting the server.</p>
 
-    <p class="space-30 text-danger">
-      NOTE: The IBIS application will automatically retry to startup every
-      minute.
-    </p>
+    <p class="space-30 text-danger">NOTE: The IBIS application will automatically retry to startup every minute.</p>
     <p>
       <button routerLink="/logging" class="btn btn-primary m-r">
         <i class="fa fa-life-ring" aria-hidden="true"></i> View Logs
       </button>
-      <button
-        *ngIf="stackTrace"
-        (click)="viewStackTrace = !viewStackTrace"
-        class="btn btn-info m-r"
-      >
+      <button *ngIf="stackTrace" (click)="viewStackTrace = !viewStackTrace" class="btn btn-info m-r">
         <i class="fa fa-bug" aria-hidden="true"></i>
         {{ viewStackTrace ? 'Hide' : 'View' }} Stack Trace
       </button>
-      <span *ngIf="cooldownCounter > 0"
-        >Refreshing in {{ cooldownCounter }} seconds.</span
-      >
+      <span *ngIf="cooldownCounter > 0">Refreshing in {{ cooldownCounter }} seconds.</span>
     </p>
   </div>
 

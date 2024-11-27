@@ -20,25 +20,29 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.net.URL;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.core.SenderException;
-import org.frankframework.http.HttpServletBase;
-import org.frankframework.lifecycle.IbisInitializer;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.StreamUtil;
 
 import lombok.Getter;
 
+import org.frankframework.core.SenderException;
+import org.frankframework.http.AbstractHttpServlet;
+import org.frankframework.lifecycle.IbisInitializer;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.StreamUtil;
+
 @IbisInitializer
-public class LarvaServlet extends HttpServletBase {
+public class LarvaServlet extends AbstractHttpServlet {
 	private static final URL INDEX_TEMPLATE = getResource("/index.html.template");
 	private static final String SERVLET_PATH = "/iaf/larva/";
 	private final transient Logger log = LogUtil.getLogger(this);
+
+	private final transient boolean allowSave = AppConstants.getInstance().getBoolean("servlet.LarvaServlet.allowFileSave", false);
 
 	private enum Assets {
 		STYLESHEET("/assets/style.css", "text/css"),
@@ -48,7 +52,7 @@ public class LarvaServlet extends HttpServletBase {
 		private final URL url;
 		private final String resource;
 
-		private Assets(String resource, String contentType) {
+		Assets(String resource, String contentType) {
 			URL resourceURL = getResource(resource);
 			if(resourceURL == null) {
 				throw new IllegalStateException("unable to find asset");
@@ -111,7 +115,7 @@ public class LarvaServlet extends HttpServletBase {
 		if("/".equals(path) || "/index.jsp".equalsIgnoreCase(path)) {
 			handleIndex(req, resp);
 			return;
-		} else if ("/saveResultToFile.jsp".equals(path)) {
+		} else if (allowSave && "/saveResultToFile.jsp".equals(path)) {
 			handleSaveResult(req, resp);
 			return;
 		}
@@ -138,9 +142,8 @@ public class LarvaServlet extends HttpServletBase {
 		resp.setContentType("text/html");
 		writer.append(getTemplate("Larva Test Tool"));
 
-		String realPath = getServletContext().getRealPath("/jsp/"); //Points to a folder in the webapp project
+		LarvaTool.runScenarios(getServletContext(), req, writer);
 
-		LarvaTool.runScenarios(getServletContext(), req, writer, realPath);
 		writer.append("</body></html>");
 		resp.flushBuffer();
 	}
@@ -171,7 +174,7 @@ public class LarvaServlet extends HttpServletBase {
 				writer.append("<p>Comparing actual result with expected result...</p>");
 				writer.flush();
 				try {
-					new LarvaTool().windiff(getServletContext(), request, request.getParameter("expectedFileName"), request.getParameter("expectedBox"), request.getParameter("resultBox"));
+					new LarvaTool().windiff(request.getParameter("expectedFileName"), request.getParameter("expectedBox"), request.getParameter("resultBox"));
 				} catch (SenderException e) {
 					log.warn("unable to execute windiff command", e);
 					resp.sendError(500, "unable to save file");

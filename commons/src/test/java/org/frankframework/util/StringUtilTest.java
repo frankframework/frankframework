@@ -1,8 +1,8 @@
 package org.frankframework.util;
 
-import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.util.ArrayList;
@@ -11,11 +11,14 @@ import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
@@ -74,6 +77,24 @@ class StringUtilTest {
 	}
 
 	/**
+	 * Method: {@link StringUtil#hideAll(String string, Collection regexes})
+	 */
+	@Test
+	public void testHideAll() {
+		// Arrange
+		String input = "<t1>test1</t1><t2>test2</t2><t3>test3</t3><t1>test1 again</t1>";
+		Pattern t1 = Pattern.compile("(?<=<t1>)(.*?)(?=</t1>)");
+		Pattern t2 = Pattern.compile("<t2>.*?.<t2>"); // Pattern won't match
+		Pattern t3 = Pattern.compile("(?<=<t3>)(.*?)(?=</t3>)");
+
+		// Act
+		String res = StringUtil.hideAll(input, List.of(t1, t2, t3));
+
+		// Assert
+		assertEquals("<t1>*****</t1><t2>test2</t2><t3>*****</t3><t1>***********</t1>", res);
+	}
+
+	/**
 	 * Method: hide(String string, int mode)
 	 */
 	@Test
@@ -87,11 +108,11 @@ class StringUtilTest {
 	 * Method: hideFirstHalf(String inputString, String regex)
 	 */
 	@Test
-	public void testHideFirstHalf() {
-		String s = "Donald Duck     Hey hey     Wooo";
-		String hideRegex = "[^\\s*].*[^\\s*]";
-		String res = StringUtil.hideFirstHalf(s, hideRegex);
-		assertEquals("****************Hey hey     Wooo", res);
+	public void testHideAllMode1() {
+		String s = "1 Donald Duck 123  Hey hey  45  Wooo  6789 and 12345";
+		String regex = "\\d+";
+		String res = StringUtil.hideAll(s, regex, 1);
+		assertEquals("* Donald Duck **3  Hey hey  *5  Wooo  **89 and ***45", res);
 	}
 
 	/**
@@ -168,11 +189,17 @@ class StringUtilTest {
 
 	public static Stream<Arguments> testSplitStringDefaultDelimiter() {
 		return Stream.of(
-				arguments("a,b", asList("a", "b")),
-				arguments(",a,,b,", asList("a", "b")),
-				arguments(" a , b ", asList("a", "b")),
-				arguments(null, Collections.emptyList()),
-				arguments("", Collections.emptyList())
+				arguments("a,b", List.of("a", "b")),
+				arguments(",a,,b,", List.of("a", "b")),
+				arguments("  a  , b ", List.of("a", "b")),
+				arguments(null, List.of()),
+				arguments("", List.of()),
+				arguments("      ", List.of()),
+				arguments("   ,   ", List.of()),
+				arguments(",,,,,", List.of()),
+				arguments(",,      ,,,", List.of()),
+				// Oversized input to stress the regex-engine, catch any potential runaway regex searching.
+				arguments(StringUtils.repeat("," + StringUtils.repeat(" ", 10_000), 1_000), Collections.emptyList())
 		);
 	}
 
@@ -183,18 +210,30 @@ class StringUtilTest {
 		List<String> result = StringUtil.split(input);
 
 		// Assert
-		assertIterableEquals(expected, result);
+		assertIterableEquals(expected, result, () -> "With input [" + escapeUnprintable(input) + "] and default delimiter [,] expected result [" + String.join("|", expected) + "] but instead got [" + String.join("|", result) + "]");
 	}
 
 	public static Stream<Arguments> testSplitStringCustomDelimiters() {
 		return Stream.of(
-				arguments(null, "\\/", Collections.emptyList()),
-				arguments("", "\\/", Collections.emptyList()),
-				arguments("a,b;c", ";,", asList("a", "b", "c")),
-				arguments(";a,b;,c,", ";,", asList("a", "b", "c")),
-				arguments(" a , ;  b;,c ; ", ";,", asList("a", "b", "c")),
-				arguments(" a , ;  b  c  ", " ;,", asList("a", "b", "c")),
-				arguments(" a , b  c\t d\re  \n f  \f  g", ", \t\r\n\f", asList("a", "b", "c", "d", "e", "f", "g"))
+				arguments(null, "\\/", List.of()),
+				arguments("", "\\/", List.of()),
+				arguments("a,b; c    ", ",", List.of("a", "b; c")),
+				arguments("a,b;c", ";,", List.of("a", "b", "c")),
+				arguments("a,b;c d", ";,", List.of("a", "b", "c d")),
+				arguments("a b c", " ", List.of("a", "b", "c")),
+				arguments("a,b c", " ", List.of("a,b", "c")),
+				arguments("a, b c", ", ", List.of("a", "b", "c")),
+				arguments(";a,b;,c,", ";,", List.of("a", "b", "c")),
+				arguments(" a , ;  b;,c ; ", ";,", List.of("a", "b", "c")),
+				arguments(" a , ;  b  c  ", " ;,", List.of("a", "b", "c")),
+				arguments("filename.txt", ".", List.of("filename", "txt")), // Check that the dot character works as separator in the regexes
+				arguments(" a , b  c\t d\re  \n f  \f  g", ", \t\r\n\f", List.of("a", "b", "c", "d", "e", "f", "g")),
+				// Oversized inputs to stress the regex-engine, catch any potential regex performance issues.
+				arguments("                                             ", " ", List.of()), // Short-ish input with only whitespace and whitespace as separator
+				arguments("                   :                 ", ":", List.of()), // Short-ish input with spaces and single separator
+				arguments(StringUtils.repeat("                             ", 1_000_000), " ", List.of()), // Long empty string
+				arguments(";" + StringUtils.repeat("                             ", 1_000_000), ";", List.of()), // Long nearly empty string with single separator
+				arguments(StringUtils.repeat(";" + StringUtils.repeat(" ", 10_000), 1_000), ";,|", List.of()) // Very long string with mostly spaces and many separators
 		);
 	}
 
@@ -204,11 +243,11 @@ class StringUtilTest {
 		// Act
 		List<String> result = StringUtil.split(input, delimiters);
 
-		LOG.debug("input: [{}]", ()->escapeUnprintable(input));
-		LOG.debug("result [{}]", ()->String.join("|", result));
+		LOG.debug("input: [{}]", () -> escapeUnprintable(input));
+		LOG.debug("result [{}]", () -> String.join("|", result));
 
 		// Assert
-		assertIterableEquals(expected, result);
+		assertIterableEquals(expected, result, () -> "With input [" + escapeUnprintable(input) + "] and custom delimiters [" + escapeUnprintable(delimiters) + "] expected result [" + String.join("|", expected) + "] but instead got [" + String.join("|", result) + "]");
 	}
 
 	static String escapeUnprintable(String input) {
@@ -231,7 +270,44 @@ class StringUtilTest {
 			case '\f':
 				return "\\f";
 			default:
-				return Character.toString((char)chr);
+				return Character.toString((char) chr);
+		}
+	}
+
+	@Test
+	public void testReflectionToString() {
+		String startsWithStr = "StringUtilTest.ToStringTestClass[field1=tralala,field2=lalala,field3=false,"
+				+ "hoofdletterPassword=*************,password=**********,props={";
+
+		ToStringTestClass testClass = new ToStringTestClass();
+		int hashcode = testClass.props.hashCode();
+		String toStringResult = StringUtil.reflectionToString(testClass);
+		assertTrue(toStringResult.startsWith(startsWithStr));
+		assertTrue(toStringResult.contains("no-string-password=***hidden***"));
+		assertTrue(toStringResult.contains("com.tibco.tibjms.factory.username=tipko"));
+		assertTrue(toStringResult.contains("com.tibco.tibjms.factory.password=*************"));
+		assertTrue(toStringResult.endsWith("}]"));
+		assertEquals(hashcode, testClass.props.hashCode());
+	}
+
+	@Test
+	public void testReflectionToStringNull() {
+		assertEquals("<null>", StringUtil.reflectionToString(null));
+	}
+
+	@SuppressWarnings("unused")
+	private static class ToStringTestClass {
+		private final String field1 = "tralala";
+		private final String field2 = "lalala";
+		private final boolean field3 = false;
+		private final String password = "top-secret";
+		private final String hoofdletterPassword = "bottom-secret";
+		private final Properties props = new Properties();
+
+		public ToStringTestClass() {
+			props.put("no-string-password", Collections.singletonList("something"));
+			props.setProperty("com.tibco.tibjms.factory.username", "tipko");
+			props.setProperty("com.tibco.tibjms.factory.password", "not-so-secret");
 		}
 	}
 }

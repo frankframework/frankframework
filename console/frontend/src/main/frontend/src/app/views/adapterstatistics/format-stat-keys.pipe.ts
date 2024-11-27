@@ -1,9 +1,4 @@
-import {
-  KeyValueDiffer,
-  KeyValueDiffers,
-  Pipe,
-  PipeTransform,
-} from '@angular/core';
+import { KeyValueDiffer, KeyValueDiffers, Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
   name: 'formatStatKeys',

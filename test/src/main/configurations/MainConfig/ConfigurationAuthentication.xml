@@ -30,14 +30,16 @@
 				<forward name="exception" path="extractErrorMessage" />
 			</pipe>
 
-			<pipe name="expandCredentialProperty" className="org.frankframework.pipes.FixedResultPipe"
-				substituteVars="true" returnString="username: ${credential:username:${test.alias}}; password:${credential:password:${test.alias}}">
+			<pipe name="expandCredentialProperty" className="org.frankframework.pipes.ReplacerPipe"
+				substituteVars="true"
+				getInputFromFixedValue="username: ${credential:username:${test.alias}}; password:${credential:password:${test.alias}}">
 				<forward name="success" path="text2Xml" />
 				<forward name="exception" path="extractErrorMessage" />
 			</pipe>
 
-			<pipe name="expandCredentialPropertyNotAllowed" className="org.frankframework.pipes.FixedResultPipe"
-				substituteVars="true" returnString="username: ${credential:username:secretAlias}; password:${credential:password:secretAlias}">
+			<pipe name="expandCredentialPropertyNotAllowed" className="org.frankframework.pipes.ReplacerPipe"
+				substituteVars="true"
+				getInputFromFixedValue="username: ${credential:username:secretAlias}; password:${credential:password:secretAlias}">
 				<forward name="success" path="text2Xml" />
 				<forward name="exception" path="extractErrorMessage" />
 			</pipe>

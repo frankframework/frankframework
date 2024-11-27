@@ -1,0 +1,23 @@
+<errorMessage timestamp="IGNORE" originator="IGNORE" message="SenderPipe [Sender With Expected Keys Missing] msgId [IGNORE]: exception calling ADAPTER [Pipeline with Expected Session Keys]: &lt;errorMessage timestamp=&quot;IGNORE&quot; originator=&quot;IGNORE&quot; message=&quot;error during pipeline processing: Adapter [Pipeline with Expected Session Keys] called without expected session keys [k1, k2]&quot;&gt;  &lt;details&gt;org.frankframework.core.ListenerException: Adapter [Pipeline with Expected Session Keys] called without expected session keys [k1, k2](Stacktrace, Ignored)&lt;/details&gt;   &lt;/errorMessage&gt;">
+	<location class="org.frankframework.pipes.SenderPipe" name="Sender With Expected Keys Missing"/>
+	<details>org.frankframework.core.SenderException: exception calling ADAPTER [Pipeline with Expected Session Keys]: &lt;errorMessage timestamp="Fri Sep 20 17:48:03 CEST 2024" originator="IAF_ss9 8.3.0-SNAPSHOT" message="error during pipeline processing: Adapter [Pipeline with Expected Session Keys] called without expected session keys [k1, k2]"&gt;
+	&lt;details&gt;org.frankframework.core.ListenerException: Adapter [Pipeline with Expected Session Keys] called without expected session keys [k1, k2]
+	at org.frankframework.core.Adapter.processMessageWithExceptions(Adapter.java:615)
+Caused by: org.frankframework.core.PipeRunException: Adapter [Pipeline with Expected Session Keys] called without expected session keys [k1, k2]
+	... 144 more
+&lt;/details&gt;
+	&lt;originalMessage receivedTime="Fri Sep 20 17:48:03 CEST 2024"&gt;&amp;lt;select-sender&amp;gt;Sender with Missing Keys&amp;lt;/select-sender&amp;gt;
+&lt;/originalMessage&gt;
+&lt;/errorMessage&gt;
+	at org.frankframework.senders.FrankSender.doCallService(FrankSender.java:405)
+	... 144 more
+&lt;/details&gt;
+	&lt;originalMessage receivedTime="Fri Sep 20 17:48:03 CEST 2024"&gt;&amp;lt;select-sender&amp;gt;Sender with Missing Keys&amp;lt;/select-sender&amp;gt;
+&lt;/originalMessage&gt;
+&lt;/errorMessage&gt;
+	at org.frankframework.senders.FrankSender.lambda$3(FrankSender.java:483)
+	... 141 more
+</details>
+	<originalMessage messageId="0a000a6f--5725cd49_192101819a2_-7ff9">&lt;select-sender&gt;Sender with Missing Keys&lt;/select-sender&gt;
+</originalMessage>
+</errorMessage>

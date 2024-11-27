@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,13 +20,14 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.statsd.StatsdConfig;
 import io.micrometer.statsd.StatsdFlavor;
 import io.micrometer.statsd.StatsdMeterRegistry;
+
 import org.frankframework.util.EnumUtils;
 
-public class StatsDRegistryConfigurator extends MetricsRegistryConfiguratorBase<StatsdConfig> {
+public class StatsDRegistryConfigurator extends AbstractMetricsRegistryConfigurator<StatsdConfig> {
 
-	private final String FLAVOR_PROPERTY="flavor";
+	private static final String FLAVOR_PROPERTY = "flavor";
 
-	private class Config extends MeterRegistryConfigBase implements StatsdConfig {
+	private class Config extends AbstractMeterRegistryConfig implements StatsdConfig {
 		@Override
 		public StatsdFlavor flavor() {
 			return EnumUtils.parse(StatsdFlavor.class, getProperty(FLAVOR_PROPERTY));

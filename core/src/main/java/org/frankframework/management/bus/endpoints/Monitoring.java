@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.dto.MonitorDTO;
@@ -56,8 +57,6 @@ import org.frankframework.util.EnumUtils;
 import org.frankframework.util.JacksonUtils;
 
 import org.frankframework.util.SpringUtils;
-
-import javax.annotation.security.RolesAllowed;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.MONITORING)
@@ -122,7 +121,7 @@ public class Monitoring extends BusEndpointBase {
 			monitor = getMonitor(mm, name);
 			ITrigger trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
 			updateTrigger(trigger, message);
-			monitor.registerTrigger(trigger);
+			monitor.addTrigger(trigger);
 		} else {
 			monitor = SpringUtils.createBean(getApplicationContext(), Monitor.class);
 			updateMonitor(monitor, message);
@@ -212,16 +211,16 @@ public class Monitoring extends BusEndpointBase {
 			for(String adapter : dto.getAdapters()) {
 				AdapterFilter adapterFilter = new AdapterFilter();
 				adapterFilter.setAdapter(adapter);
-				trigger.registerAdapterFilter(adapterFilter);
+				trigger.addAdapterFilter(adapterFilter);
 			}
 		} else if(SourceFiltering.SOURCE == dto.getFilter()) {
 			for(Map.Entry<String, List<String>> entry : dto.getSources().entrySet()) {
 				AdapterFilter adapterFilter = new AdapterFilter();
 				adapterFilter.setAdapter(entry.getKey());
 				for(String subObject : entry.getValue()) {
-					adapterFilter.registerSubObject(subObject);
+					adapterFilter.addSubObjectText(subObject);
 				}
-				trigger.registerAdapterFilter(adapterFilter);
+				trigger.addAdapterFilter(adapterFilter);
 			}
 		}
 	}
@@ -251,7 +250,7 @@ public class Monitoring extends BusEndpointBase {
 
 	private Message<String> getMonitors(MonitorManager mm, boolean showConfigAsXml) {
 		if(showConfigAsXml) {
-			String xml = mm.toXml().toXML();
+			String xml = mm.toXml().asXmlString();
 			return new StringMessage(xml, MediaType.APPLICATION_XML);
 		}
 
@@ -281,7 +280,7 @@ public class Monitoring extends BusEndpointBase {
 
 	private Message<String> getMonitor(MonitorManager manager, Monitor monitor, boolean showConfigAsXml) {
 		if(showConfigAsXml) {
-			String xml = monitor.toXml().toXML();
+			String xml = monitor.toXml().asXmlString();
 			return new StringMessage(xml, MediaType.APPLICATION_XML);
 		}
 

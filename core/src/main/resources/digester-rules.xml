@@ -5,26 +5,26 @@
 
 	<rule pattern="configuration" factory="null"/>
 
-	<rule pattern="*/include" registerMethod="registerInclude" beanClass="org.frankframework.configuration.Include" />
+	<rule pattern="*/include" registerMethod="addInclude" beanClass="org.frankframework.configuration.Include" />
 
 	<rule pattern="configuration/jmsRealms" registerMethod="setJmsRealms" factory="org.frankframework.configuration.digester.JmsRealmsFactory"/>
-	<rule pattern="*/jmsRealm" registerMethod="registerJmsRealm" beanClass="org.frankframework.jms.JmsRealm"/>
+	<rule pattern="*/jmsRealm" registerMethod="addJmsRealm" beanClass="org.frankframework.jms.JmsRealm"/>
 
 	<rule pattern="configuration/sharedResources" registerMethod="setSharedResources" beanClass="org.frankframework.configuration.SharedResources" />
-	<rule pattern="*/sharedResources/sharedResource" registerMethod="registerSharedResource" factory="org.frankframework.configuration.digester.SharedResourceFactory"/>
+	<rule pattern="*/sharedResources/sharedResource" registerMethod="addSharedResource" factory="org.frankframework.configuration.digester.SharedResourceFactory"/>
 	<rule pattern="*/sharedResources/httpSession" registerMethod="addHttpSession" factory="org.frankframework.configuration.digester.SharedResourceFactory"/> <!-- Hack to make the frankdoc look nice -->
 
 	<rule pattern="configuration/sapSystems" registerMethod="setSapSystems" beanClass="org.frankframework.configuration.extensions.SapSystems"/>
-	<rule pattern="*/sapSystem" registerMethod="registerSapSystem" beanClass="org.frankframework.extensions.sap.extensions.SapSystem" selfRegisterMethod="registerItem"/>
+	<rule pattern="*/sapSystem" registerMethod="addSapSystem" beanClass="org.frankframework.extensions.sap.SapSystem"/>
 
-	<rule pattern="*/adapter" registerMethod="registerAdapter" beanClass="org.frankframework.core.Adapter"/>
+	<rule pattern="*/adapter" registerMethod="addAdapter" beanClass="org.frankframework.core.Adapter"/>
 	<rule pattern="*/adapter/pipeline" registerMethod="setPipeLine" beanClass="org.frankframework.core.PipeLine"/>
 	<rule pattern="*/errorMessageFormatter" registerMethod="setErrorMessageFormatter" beanClass="org.frankframework.errormessageformatters.XslErrorMessageFormatter"/>
 
-	<rule pattern="*/receiver" registerMethod="registerReceiver" beanClass="org.frankframework.receivers.Receiver"/>
+	<rule pattern="*/receiver" registerMethod="addReceiver" beanClass="org.frankframework.receivers.Receiver"/>
 	<!-- Also applied for monitors -->
 	<rule pattern="*/sender" registerMethod="setSender" beanClass="org.frankframework.core.ISender" />
-	<rule pattern="*/sender" registerMethod="registerSender" beanClass="org.frankframework.core.ISender" /> <!-- to tell FrankDoc about multiplicity of SenderSeries and ParallelSenders. Duplicate pattern will be suppressed by core digester -->
+	<rule pattern="*/sender" registerMethod="addSender" beanClass="org.frankframework.core.ISender" /> <!-- to tell FrankDoc about multiplicity of SenderSeries and ParallelSenders. Duplicate pattern will be suppressed by core digester -->
 	<rule pattern="*/listener" factory="org.frankframework.configuration.digester.ListenerFactory" registerMethod="setListener"/>
 	<rule pattern="*/errorSender" registerMethod="setErrorSender" beanClass="org.frankframework.core.ISender"/>
 	<rule pattern="*/messageLog" registerMethod="setMessageLog"/>
@@ -34,42 +34,42 @@
 	<rule pattern="*/inputWrapper" registerMethod="setInputWrapper"/>
 	<rule pattern="*/outputWrapper" registerMethod="setOutputWrapper"/>
 
-	<rule pattern="*/pipe" registerMethod="addPipe" paramtype="org.frankframework.core.IPipe" beanClass="org.frankframework.pipes.SenderPipe"/>
+	<rule pattern="*/pipe" registerMethod="addPipe" beanClass="org.frankframework.pipes.SenderPipe"/>
 
 	<!-- forward element is on the pipeline / global-forward as well as on the pipe element -->
 	<rule pattern="*/globalForwards" registerMethod="setGlobalForwards"/>
-	<rule pattern="*/forward" registerMethod="registerForward" beanClass="org.frankframework.core.PipeForward"/>
-	<rule pattern="*/child" registerMethod="registerChild"/>
-	<rule pattern="*/outputFields" registerMethod="registerOutputFields"/>
-	<rule pattern="*/inputFields" registerMethod="registerInputFields"/>
+	<rule pattern="*/forward" registerMethod="addForward" beanClass="org.frankframework.core.PipeForward"/>
+	<rule pattern="*/child" registerMethod="addChild"/>
+	<rule pattern="*/outputFields" registerMethod="addOutputFields"/>
+	<rule pattern="*/inputFields" registerMethod="addInputFields"/>
 	<rule pattern="*/exits" registerMethod="setPipeLineExits"/>
-	<rule pattern="*/exit" registerMethod="registerPipeLineExit" beanClass="org.frankframework.core.PipeLineExit"/>
+	<rule pattern="*/exit" registerMethod="addPipeLineExit" beanClass="org.frankframework.core.PipeLineExit"/>
 
 	<rule pattern="configuration/scheduler" registerMethod="setScheduleManager"/>
-	<rule pattern="*/job" factory="org.frankframework.configuration.digester.JobFactory" registerMethod="registerScheduledJob"/>
+	<rule pattern="*/job" factory="org.frankframework.configuration.digester.JobFactory" registerMethod="addScheduledJob"/>
 	<rule pattern="*/locker" registerMethod="setLocker" beanClass="org.frankframework.util.Locker"/>
-	<rule pattern="*/param" registerMethod="addParameter" beanClass="org.frankframework.parameters.Parameter"/>
+	<rule pattern="*/param" factory="org.frankframework.configuration.digester.ParameterFactory" registerMethod="addParameter"/>
 	<rule pattern="*/directoryCleaner" registerMethod="addDirectoryCleaner" beanClass="org.frankframework.util.DirectoryCleaner"/>
 
 	<!-- batch related rules -->
 	<rule pattern="*/readerFactory" registerMethod="setReaderFactory"/>
-	<rule pattern="*/manager" registerMethod="registerManager"/>
+	<rule pattern="*/manager" registerMethod="addManager"/>
 	<rule pattern="*/manager/flow" registerMethod="addHandler" beanClass="org.frankframework.batch.RecordHandlingFlow" />
-	<rule pattern="*/recordHandler" registerMethod="registerRecordHandler"/>
-	<rule pattern="*/resultHandler" registerMethod="registerResultHandler"/>
+	<rule pattern="*/recordHandler" registerMethod="addRecordHandler"/>
+	<rule pattern="*/resultHandler" registerMethod="addResultHandler"/>
 
 	<rule pattern="*/cache" registerMethod="setCache" beanClass="org.frankframework.cache.EhCache"/>
 
 	<!-- Digester rules for monitoring -->
 	<rule pattern="configuration/monitoring" registerMethod="setMonitoring" factory="org.frankframework.monitoring.MonitoringFactory"/>
 
-	<rule pattern="*/destination" registerMethod="registerDestination" beanClass="org.frankframework.monitoring.IMonitorAdapter"/>
+	<rule pattern="*/destination" registerMethod="addDestination" beanClass="org.frankframework.monitoring.IMonitorAdapter"/>
 
 	<rule pattern="*/monitor" registerMethod="addMonitor" beanClass="org.frankframework.monitoring.Monitor"/>
 
-	<rule pattern="*/monitor/trigger" registerMethod="registerTrigger" beanClass="org.frankframework.monitoring.Trigger"/>
-	<rule pattern="*/monitor/trigger/event" registerTextMethod="addEventCode"/>
+	<rule pattern="*/monitor/trigger" registerMethod="addTrigger" beanClass="org.frankframework.monitoring.Trigger"/>
+	<rule pattern="*/monitor/trigger/event" registerTextMethod="addEventCodeText"/>
 
-	<rule pattern="*/adapterfilter" registerMethod="registerAdapterFilter" beanClass="org.frankframework.monitoring.AdapterFilter"/>
-	<rule pattern="*/adapterfilter/source" registerTextMethod="registerSubObject"/>
+	<rule pattern="*/adapterfilter" registerMethod="addAdapterFilter" beanClass="org.frankframework.monitoring.AdapterFilter"/>
+	<rule pattern="*/adapterfilter/source" registerTextMethod="addSubObjectText"/>
 </digester-rules>

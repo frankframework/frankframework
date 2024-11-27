@@ -18,16 +18,14 @@ package org.frankframework.pipes;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.SneakyThrows;
-import org.frankframework.configuration.ConfigurationException;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.stream.Message;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
 
 /**
@@ -35,28 +33,14 @@ import org.frankframework.util.StringUtil;
  * from the {@link PipeLineSession pipeLineSession}.
  *
  * @author Peter Leeuwenburgh
- *
  * @see PipeLineSession
  */
-@ElementType(ElementTypes.SESSION)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.SESSION)
 public class RemoveFromSession extends FixedForwardPipe {
 	private String sessionKey;
 
 	public RemoveFromSession() {
 		super.setPreserveInput(true);
-	}
-
-	/**
-	 * Checks whether the proper forward is defined.
-	 */
-	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-
-		/*
-		 * if (null== getSessionKey()) { throw new ConfigurationException("Pipe [" +
-		 * getName() + "]" + " has a null value for sessionKey"); }
-		 */
 	}
 
 	@Override
@@ -78,7 +62,7 @@ public class RemoveFromSession extends FixedForwardPipe {
 			result = StringUtil.splitToStream(sessionKeys)
 					.map(sk -> {
 						Object skResult = session.remove(sk);
-						if (skResult==null) {
+						if (skResult == null) {
 							log.warn("key [{}] not found", sk);
 							return "[null]";
 						} else {
@@ -95,17 +79,18 @@ public class RemoveFromSession extends FixedForwardPipe {
 	@SneakyThrows(PipeRunException.class) // SneakyThrows because the method is called from a Lambda
 	private String objectToString(final Object skResult) {
 		try {
-			return Message.asString(skResult);
+			return MessageUtils.asString(skResult);
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
 	}
 
+	public String getSessionKey() {
+		return sessionKey;
+	}
+
 	/** name of the key of the entry in the <code>pipelinesession</code> to remove. if this key is empty the input message is interpretted as key. for multiple keys use ',' as delimiter */
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
-	}
-	public String getSessionKey() {
-		return sessionKey;
 	}
 }

@@ -6,19 +6,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+import org.springframework.messaging.Message;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.util.AppConstants;
-import org.junit.jupiter.api.Test;
-import org.springframework.messaging.Message;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 public class TestUpdateLogSettings extends BusTestBase {

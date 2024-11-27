@@ -6,19 +6,19 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 
-import org.frankframework.core.PipeForward;
-import org.frankframework.core.PipeRunException;
-import org.frankframework.core.PipeRunResult;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import org.frankframework.core.PipeForward;
+import org.frankframework.core.PipeRunException;
+import org.frankframework.core.PipeRunResult;
+
 /**
- * FilePipe Tester.
- *
- * @author <Sina Sen>
+ * FilePipe Tester. This class is due to be removed! Do not add more tests
  */
+@SuppressWarnings("removal")
 public class FilePipeTest extends PipeTestBase<FilePipe> {
 
 	@TempDir
@@ -43,8 +43,8 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
 	@Test
 	void doTestSuccess() throws Exception {
 		PipeForward fw = new PipeForward();
-		fw.setName("test");
-		pipe.registerForward(fw);
+		fw.setName("exception");
+		pipe.addForward(fw);
 		pipe.setCharset("/");
 		pipe.setDirectory(sourceFolderPath);
 		pipe.setOutputType("stream");
@@ -61,8 +61,8 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
 	@Test
 	void doTestFailAsEncodingNotSupportedBase64() throws Exception {
 		PipeForward fw = new PipeForward();
-		fw.setName("test");
-		pipe.registerForward(fw);
+		fw.setName("success");
+		pipe.addForward(fw);
 		pipe.setCharset("/");
 		pipe.setDirectory(sourceFolderPath);
 		pipe.setOutputType("base64");

@@ -2,9 +2,9 @@ package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.frankframework.core.PipeRunResult;
-import org.frankframework.stream.Message;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.core.PipeRunResult;
 
 public class DelayPipeTest extends PipeTestBase<DelayPipe> {
 
@@ -27,7 +27,7 @@ public class DelayPipeTest extends PipeTestBase<DelayPipe> {
 		pipe.configure();
 		pipe.start();
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = Message.asString(prr.getResult());
+		String result = prr.getResult().asString();
 		assertEquals(input, result);
 	}
 }

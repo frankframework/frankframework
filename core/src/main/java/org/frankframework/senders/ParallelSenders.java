@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.concurrent.Phaser;
 import java.util.stream.Collectors;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -31,7 +30,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.doc.Category;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.SpringUtils;
@@ -41,13 +40,15 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.util.ConcurrencyThrottleSupport;
 
+import lombok.Getter;
+
 /**
  * Collection of Senders, that are executed all at the same time.
  *
  * @author Gerrit van Brakel
  * @since 4.9
  */
-@Category("Advanced")
+@Category(Category.Type.ADVANCED)
 public class ParallelSenders extends SenderSeries {
 
 	private @Getter int maxConcurrentThreads = 0;
@@ -58,7 +59,7 @@ public class ParallelSenders extends SenderSeries {
 		super.configure();
 		if (getParameterList() != null && !getParameterList().isEmpty()) {
 			String paramList = getParameterList().stream()
-					.map(Parameter::getName)
+					.map(IParameter::getName)
 					.collect(Collectors.joining(", "));
 
 			ConfigurationWarnings.add(this, log, "parameters [" + paramList + "] of ParallelSenders [" + getName() + "] are not available for use by nested Senders");
@@ -73,7 +74,7 @@ public class ParallelSenders extends SenderSeries {
 				message.preserve();
 			}
 		} catch (IOException e) {
-			throw new SenderException(getLogPrefix() + " could not preserve input message", e);
+			throw new SenderException("could not preserve input message", e);
 		}
 
 		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
@@ -139,7 +140,7 @@ public class ParallelSenders extends SenderSeries {
 			}
 			resultsXml.addSubElement(resultXml);
 		}
-		return new SenderResult(success, new Message(resultsXml.toXML()), errorMessage, null);
+		return new SenderResult(success, resultsXml.asMessage(), errorMessage, null);
 	}
 
 	@Override
@@ -163,8 +164,8 @@ public class ParallelSenders extends SenderSeries {
 
 	/** one or more specifications of senders. Each will receive the same input message, to be processed in parallel */
 	@Override
-	public void registerSender(ISender sender) {
-		super.registerSender(sender);
+	public void addSender(ISender sender) {
+		super.addSender(sender);
 	}
 
 	/**

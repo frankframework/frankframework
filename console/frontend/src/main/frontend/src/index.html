@@ -9,7 +9,7 @@
   <meta http-equiv="cache-control" content="no-cache">
   <meta http-equiv="pragma" content="no-cache">
   <base href="">
-  <title>Loading...</title>
+  <title>Frank!Console | Loading...</title>
   <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png?v=2">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png?v=2">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png?v=2">
@@ -20,7 +20,6 @@
   <meta name="msapplication-config" content="assets/favicon/browserconfig.xml?v=2">
   <meta name="theme-color" content="#1e1e1e">
 </head>
-
 <body id="page-top">
   <app-root>
     <div
@@ -43,6 +42,15 @@
       </div>
     </div>
   </app-root>
-</body>
 
+  <script type="text/javascript" nonce="IE-warning">
+    //Detect if using any (older) version of Internet Explorer
+    if (navigator.userAgent.indexOf('MSIE') > -1 || navigator.appVersion.indexOf('Trident/') > -1) {
+      var warning = document.createElement("div")
+      var bodyElement = document.querySelector('.loading');
+      warning.innerHTML = "<h2 style='text-align: center; color: #fdc300;'><strong>Internet Explorer 11 and older do not support XHR requests, the Frank!Console might not load correctly!</strong><br/>Please open this website in MS Edge, Mozilla Firefox or Google Chrome.</h2>"
+      bodyElement.insertBefore(warning, bodyElement.firstChild);
+    }
+  </script>
+</body>
 </html>

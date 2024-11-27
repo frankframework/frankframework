@@ -5,11 +5,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.JsonPipe.Direction;
 import org.frankframework.testutil.MatchUtils;
-import org.junit.jupiter.api.Test;
 
 public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
@@ -81,6 +82,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
 		String result = prr.getResult().asString();
 		String expected = "<root><item>Wie</item><item>dit leest</item><item>is gek</item></root>";
+		assertEquals("application/xml", prr.getResult().getContext().getMimeType().toString());
 		MatchUtils.assertXmlEquals(expected, result);
 	}
 
@@ -110,6 +112,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
 		String result = prr.getResult().asString();
 		assertEquals(expected, result);
+		assertEquals("application/json", prr.getResult().getContext().getMimeType().toString());
 	}
 
 	@Test

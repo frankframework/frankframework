@@ -17,18 +17,16 @@ package org.frankframework.unmanaged;
 
 import java.util.Timer;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.jms.ExceptionListener;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Session;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.Destination;
+import jakarta.jms.ExceptionListener;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Supplier;
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.JtaUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -52,8 +50,11 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.jms.IbisMessageListenerContainer;
 import org.frankframework.jms.PushingJmsListener;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
+import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.JtaUtil;
 
 /**
  * Configure a Spring JMS Container from a {@link PushingJmsListener}.
@@ -190,13 +191,13 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	}
 
 	@Override
-	public void start() throws ListenerException {
+	public void start() {
 		log.debug("{} starting", this::getLogPrefix);
 		if (jmsContainer == null) {
 			try {
 				configureEndpointConnection();
 			} catch (ConfigurationException e) {
-				throw new ListenerException(e);
+				throw new LifecycleException(e);
 			}
 		}
 		if (jmsContainer!=null) {
@@ -210,21 +211,22 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 					pollGuardTimer.schedule(pollGuard, pollGuardInterval, pollGuardInterval);
 				}
 			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix()+"cannot start", e);
+				throw new LifecycleException(getLogPrefix()+"cannot start", e);
 			}
 		} else {
-			throw new ListenerException(getLogPrefix()+"no jmsContainer defined");
+			throw new LifecycleException(getLogPrefix()+"no jmsContainer defined");
 		}
 	}
 
 	@Override
-	public void stop() throws ListenerException {
+	public void stop() {
 		log.debug("{} stopping", this::getLogPrefix);
 		if (pollGuardTimer != null) {
 			log.debug("Cancelling previous poll-guard timer while stopping SpringJmsConnector");
 			pollGuardTimer.cancel();
 			pollGuardTimer = null;
 		}
+
 		if (jmsContainer!=null) {
 			try {
 				jmsContainer.stop();
@@ -232,10 +234,10 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				jmsContainer = null;
 				log.debug("{} jmsContainer is destroyed", this::getLogPrefix);
 			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix()+"Exception while trying to stop", e);
+				throw new LifecycleException(getLogPrefix()+"Exception while trying to stop", e);
 			}
 		} else {
-			throw new ListenerException(getLogPrefix()+"no jmsContainer defined");
+			throw new LifecycleException(getLogPrefix()+"no jmsContainer defined");
 		}
 	}
 

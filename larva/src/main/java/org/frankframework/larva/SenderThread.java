@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.frankframework.larva;
 import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -51,46 +52,42 @@ public class SenderThread extends Thread {
 		this.session = session;
 		this.convertExceptionToMessage = convertExceptionToMessage;
 		this.correlationId = correlationId;
-		log.debug("Creating SenderThread for ISenderWithParameters '" + name + "'");
-		log.debug("Request: " + request);
+		log.debug("Creating SenderThread for ISenderWithParameters '{}'", name);
+		log.debug("Request: {}", request);
 	}
 
 	@Override
 	public void run() {
-		try {
-			if (session==null) {
-				session = new PipeLineSession();
-			}
-			session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-			SenderResult result = sender.sendMessage(new Message(request), session);
-			response = result.getResult().asString();
-			result.getResult().close();
+		session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+
+		try (Message input = new Message(request); SenderResult result = sender.sendMessage(input, session)) {
+			response = (Message.isNull(result.getResult())) ? "" : result.getResult().asString();
 		} catch(SenderException e) {
 			if (convertExceptionToMessage) {
 				response = throwableToXml(e);
 			} else {
-				log.error("SenderException for ISender '" + name + "'", e);
+				log.error("SenderException for ISender '{}'", name, e);
 				senderException = e;
 			}
 		} catch(IOException e) {
 			if (convertExceptionToMessage) {
 				response = throwableToXml(e);
 			} else {
-				log.error("IOException for ISender '" + name + "'", e);
+				log.error("IOException for ISender '{}'", name, e);
 				ioException = e;
 			}
 		} catch(TimeoutException e) {
 			if (convertExceptionToMessage) {
 				response = throwableToXml(e);
 			} else {
-				log.error("timeoutException for ISender '" + name + "'", e);
+				log.error("timeoutException for ISender '{}'", name, e);
 				timeoutException = e;
 			}
 		}
 	}
 
     public String getResponse() {
-    	log.debug("Getting response for Sender: " + name);
+		log.debug("Getting response for Sender: {}", name);
         while (this.isAlive()) {
             try {
                 Thread.sleep(100);

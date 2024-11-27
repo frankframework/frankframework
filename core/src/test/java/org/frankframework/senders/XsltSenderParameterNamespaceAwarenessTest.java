@@ -2,11 +2,12 @@ package org.frankframework.senders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.Parameter.ParameterType;
+import org.junit.jupiter.api.Test;
+
+import org.frankframework.parameters.ParameterType;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.Test;
+import org.frankframework.testutil.XmlParameterBuilder;
 
 @SuppressWarnings("unused")
 public class XsltSenderParameterNamespaceAwarenessTest extends SenderTestBase<XsltSender> {
@@ -48,14 +49,13 @@ public class XsltSenderParameterNamespaceAwarenessTest extends SenderTestBase<Xs
 
 		sender.setStyleSheetName("/Xslt/3205/xslt.xslt");
 		sender.setRemoveNamespaces(!senderNamespaceAware);
-		Parameter param = new Parameter();
-		param.setName("getPartiesOnAgreementRLY");
-		param.setValue(paramContents);
-		param.setType(ParameterType.NODE);
-		param.setRemoveNamespaces(paramNRemoveNamespaces);
-		sender.addParameter(param);
+
+		XmlParameterBuilder parameter = XmlParameterBuilder.create("getPartiesOnAgreementRLY", paramContents).withType(ParameterType.NODE);
+		parameter.setRemoveNamespaces(paramNRemoveNamespaces);
+
+		sender.addParameter(parameter);
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		Message result = sender.sendMessageOrThrow(new Message(input), session);
 

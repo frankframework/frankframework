@@ -15,10 +15,10 @@
 */
 package org.frankframework.jta;
 
-import javax.annotation.Nonnull;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import jakarta.annotation.Nonnull;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.util.LogUtil;
 import org.springframework.beans.factory.InitializingBean;
@@ -41,8 +41,6 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 	private IThreadConnectableTransactionManager<Object,Object> threadConnectableProxy;
 	private @Getter @Setter PlatformTransactionManager realTxManager;
 
-	private final boolean trace = false;
-
 	/**
 	 * @param txOption e.q. TransactionDefinition.PROPAGATION_REQUIRES_NEW
 	 * @param timeout Set the timeout to apply in seconds. Default timeout is {@value org.springframework.transaction.TransactionDefinition#TIMEOUT_DEFAULT}.
@@ -59,32 +57,32 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 	@Override
 	@Nonnull
 	public TransactionStatus getTransaction(TransactionDefinition txDef) throws TransactionException {
-		if (trace && log.isDebugEnabled()) log.debug("getting transaction definition [{}]", txDef);
+		log.trace("getting transaction definition [{}]", txDef);
 		return getRealTxManager().getTransaction(txDef);
 	}
 
 	@Override
 	public void commit(TransactionStatus txStatus) throws TransactionException {
-		if (trace && log.isDebugEnabled()) {
+		if (log.isTraceEnabled()) {
 			if (txStatus.isRollbackOnly())
-				log.debug("<TX> Executing rollback from tx.commit. TransactionStatus: [{}], Stacktrace:", txStatus, new Exception("<TX> Rollback from commit"));
+				log.trace("<TX> Executing rollback from tx.commit. TransactionStatus: [{}], Stacktrace:", txStatus, new Exception("<TX> Rollback from commit"));
 			else
-				log.debug("committing transaction [{}]", txStatus);
+				log.trace("committing transaction [{}]", txStatus);
 		}
 		getRealTxManager().commit(txStatus);
 	}
 
 	@Override
 	public void rollback(@Nonnull TransactionStatus txStatus) throws TransactionException {
-		if (trace && log.isDebugEnabled()) log.debug("rolling back transaction [{}]", txStatus);
+		log.trace("rolling back transaction [{}]", txStatus);
 		getRealTxManager().rollback(txStatus);
 	}
 
+	@SuppressWarnings("unchecked")
 	public IThreadConnectableTransactionManager<Object,Object> getThreadConnectableProxy() {
 		if (threadConnectableProxy==null) {
 			PlatformTransactionManager realTxManager = getRealTxManager();
 			if (realTxManager instanceof IThreadConnectableTransactionManager manager) {
-				//noinspection rawtypes
 				threadConnectableProxy = manager;
 			} else if (realTxManager instanceof JtaTransactionManager manager) {
 				threadConnectableProxy = new ThreadConnectableJtaTransactionManager(manager);

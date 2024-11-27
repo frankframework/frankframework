@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!
+   Copyright 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 */
 package org.frankframework.xml;
 
-import java.io.Writer;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -27,20 +26,12 @@ import org.xml.sax.helpers.AttributesImpl;
 
 public class SaxElementBuilder implements AutoCloseable {
 
-	private ContentHandler handler;
+	private final ContentHandler handler;
 	private String elementName;
-	private SaxElementBuilder parent;
+	private final SaxElementBuilder parent;
 
 	private AttributesImpl attributes=null;
 	private boolean promotedToObject = false;
-
-	public SaxElementBuilder() throws SAXException {
-		this(new XmlWriter());
-	}
-
-	public SaxElementBuilder(Writer writer) throws SAXException {
-		this(new XmlWriter(writer));
-	}
 
 	public SaxElementBuilder(ContentHandler handler) throws SAXException {
 		this(null, handler, null);
@@ -50,17 +41,13 @@ public class SaxElementBuilder implements AutoCloseable {
 		this(elementName, new XmlWriter());
 	}
 
-	public SaxElementBuilder(String elementName, Writer writer) throws SAXException {
-		this(elementName, new XmlWriter(writer));
-	}
-
 	public SaxElementBuilder(String elementName, ContentHandler handler) throws SAXException {
 		this(elementName, handler, null);
 	}
 
 	private SaxElementBuilder(String elementName, ContentHandler handler, SaxElementBuilder parent) {
 		this.handler = handler;
-		this.elementName = elementName;
+		this.elementName = XmlUtils.cleanseElementName(elementName);
 		this.parent = parent;
 		if (elementName!=null) {
 			attributes = new AttributesImpl();
@@ -126,12 +113,14 @@ public class SaxElementBuilder implements AutoCloseable {
 	}
 
 	public SaxElementBuilder startElement(String elementName) throws SAXException {
-		if (elementName==null) {
+		String cleanElementName = XmlUtils.cleanseElementName(elementName);
+
+		if (cleanElementName==null) {
 			promotedToObject = true;
 			return this;
 		}
 		writePendingStartElement();
-		return new SaxElementBuilder(elementName, handler, this);
+		return new SaxElementBuilder(cleanElementName, handler, this);
 	}
 
 	public void addElement(String elementName) throws SAXException {
@@ -165,12 +154,8 @@ public class SaxElementBuilder implements AutoCloseable {
 		}
 	}
 
-	@Override
-	public String toString() {
-		return getHandler().toString();
-	}
-
-	public ContentHandler getHandler() {
+	// Package private for now
+	ContentHandler getHandler() {
 		return handler;
 	}
 }

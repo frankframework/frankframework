@@ -13,11 +13,13 @@ Frank!Framework
 [![total GitHub contributors](https://img.shields.io/github/contributors-anon/frankframework/frankframework.svg)](https://github.com/frankframework/frankframework/graphs/contributors)
 [![Maven Central](https://img.shields.io/maven-central/v/org.frankframework/frankframework-parent.svg?label=Maven%20Central)](https://central.sonatype.com/namespace/org.frankframework)
 [![Latest Snapshot](https://img.shields.io/nexus/public/org.frankframework/frankframework-core?label=Latest%20Snapshot&server=https%3A%2F%2Fnexus.frankframework.org%2F)](https://nexus.frankframework.org/#browse/browse)
-[![Public Vulnerabilities](https://img.shields.io/endpoint?url=https%3A%2F%2Fapi-hooks.soos.io%2Fapi%2Fshieldsio-badges%3FbadgeType%3DVulnerabilities%26pid%3D68wlxudjy%26packageVersion%3Dlatest-alpha)](https://app.soos.io/research/packages/Java/org.ibissource/ibis-adapterframework-parent)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Ffrankframework%2Ffrankframework.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Ffrankframework%2Ffrankframework?ref=badge_shield&issueType=license)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Ffrankframework%2Ffrankframework.svg?type=shield&issueType=security)](https://app.fossa.com/projects/git%2Bgithub.com%2Ffrankframework%2Ffrankframework?ref=badge_shield&issueType=security)
+[![Dependency Vulnerabilities](https://img.shields.io/endpoint?url=https%3A%2F%2Fapi-hooks.soos.io%2Fapi%2Fshieldsio-badges%3FbadgeType%3DDependencyVulnerabilities%26pid%3Dxbuzi9hbw%26)](https://app.soos.io/research/repositories/github/frankframework/frankframework?attributionFormat=soosissues)
 
 
 ## Open-Source, Low-Code & Stateless
-The Frank!Framework is a framework that is completely configurable through XML configurations. Each Frank!Application may contain multiple configurations, and each configuration can consist of multiple end-to-end connections which we call 'adapters'. Configurations may be (re)loaded conditionally or individiually for optimal performance and customizability.
+The Frank!Framework is a framework that is completely configurable through XML configurations. Each Frank!Application may contain multiple configurations, and each configuration can consist of multiple end-to-end connections which we call 'adapters'. Configurations may be (re)loaded conditionally or individually for optimal performance and customizability.
 The application may be managed and monitored through a web interface or REST API.
 See it in action: https://frank2example.frankframework.org
 

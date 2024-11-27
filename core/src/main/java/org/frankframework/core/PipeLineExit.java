@@ -19,6 +19,8 @@ import lombok.Getter;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.doc.Category;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 
 /**
  * The Exit of a Pipeline that specifies the end state of a PipeLine. The state is returned to the receiver as well as
@@ -33,12 +35,13 @@ import org.frankframework.doc.Category;
  * @author Johan Verrips
  * @author Niels Meijer
  */
-@Category("Basic")
+@Category(Category.Type.BASIC)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class PipeLineExit implements IForwardTarget {
 
 	private @Getter String name;
 	private @Getter ExitState state;
-	private @Getter int exitCode = 0;
+	private @Getter int exitCode = 0; // TODO this should become NULL
 	private @Getter String responseRoot;
 	private @Getter boolean emptyResult = false;
 	private @Getter boolean skipValidation = false;
@@ -57,7 +60,7 @@ public class PipeLineExit implements IForwardTarget {
 		this.name = name;
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.8.0")
 	@ConfigurationWarning("The attribute 'path' has been renamed to: 'name'")
 	public void setPath(String path) {
 		setName(path);

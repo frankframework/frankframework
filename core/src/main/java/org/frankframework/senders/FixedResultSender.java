@@ -19,6 +19,8 @@ import java.io.IOException;
 
 import javax.xml.transform.TransformerException;
 
+import jakarta.annotation.Nonnull;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
@@ -36,10 +38,7 @@ import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringResolver;
 import org.frankframework.util.TransformerPool;
-import org.frankframework.util.XmlUtils;
 import org.xml.sax.SAXException;
-
-import lombok.Getter;
 
 /**
  * FixedResultSender, same behaviour as {@link FixedResultPipe}, but now as a ISender.
@@ -49,8 +48,8 @@ import lombok.Getter;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-@Category("Basic")
-public class FixedResultSender extends SenderWithParametersBase {
+@Category(Category.Type.BASIC)
+public class FixedResultSender extends AbstractSenderWithParameters {
 
 	private @Getter String filename;
 	private @Getter String returnString;
@@ -84,7 +83,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		String result=returnString;
 		if (paramList!=null) {
 			ParameterValueList pvl;
@@ -108,14 +107,14 @@ public class FixedResultSender extends SenderWithParametersBase {
 
 		if (transformerPool != null) {
 			try{
-				result = transformerPool.transform(XmlUtils.stringToSourceForSingleUse(result));
+				result = transformerPool.transform(result);
 			} catch (IOException | TransformerException e) {
-				throw new SenderException(getLogPrefix()+"got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
+				throw new SenderException("got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
 			} catch (SAXException se) {
-				throw new SenderException(getLogPrefix()+"got error converting string [" + result + "] to source", se);
+				throw new SenderException("got error converting string [" + result + "] to source", se);
 			}
 		}
-		log.debug("returning fixed result [" + result + "]");
+		log.debug("returning fixed result [{}]", result);
 		return new SenderResult(result);
 	}
 

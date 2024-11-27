@@ -32,32 +32,25 @@
                 "output": "/assets/"
               },
               {
-                "glob": "**/*.html",
-                "input": "src/angularjs/app/",
-                "output": "/angularjs/app/"
+                "glob": "**/*",
+                "input": "./node_modules/monaco-editor/min/vs",
+                "output": "assets/monaco/vs"
               }
             ],
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.css",
               "node_modules/font-awesome/css/font-awesome.css",
               "node_modules/ladda/dist/ladda-themeless.min.css",
-              "node_modules/prismjs/themes/prism.css",
-              "node_modules/prismjs/plugins/line-numbers/prism-line-numbers.css",
-              "node_modules/prismjs/plugins/line-highlight/prism-line-highlight.css",
               "src/styles.scss"
             ],
             "scripts": [
-              "node_modules/jquery/dist/jquery.js",
               "node_modules/chart.js/dist/chart.js",
-              "node_modules/datatables.net/js/jquery.dataTables.js",
-              "node_modules/metismenu/dist/metisMenu.js"
+              "node_modules/sockjs-client/dist/sockjs.min.js"
             ],
             "allowedCommonJsDependencies": [
               "sweetalert2",
-              "angular-datatables/dist/angular-datatables",
-              "angular-datatables/dist/plugins/buttons/angular-datatables.buttons",
               "pace-js",
-              "prismjs"
+              "lodash.merge"
             ]
           },
           "configurations": {
@@ -130,10 +123,7 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": [
-              "node_modules/jquery/dist/jquery.js",
-              "node_modules/metismenu/dist/metisMenu.js"
-            ]
+            "scripts": []
           }
         }
       }

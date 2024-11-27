@@ -4,7 +4,6 @@ import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 
 export const errorLevelsConst = ['DEBUG', 'INFO', 'WARN', 'ERROR'] as const;
-
 export type ErrorLevels = typeof errorLevelsConst;
 
 export type LoggingFile = {
@@ -53,8 +52,7 @@ export class LoggingService {
   ) {}
 
   getLogging(directory: string): Observable<Logging> {
-    const url =
-      directory.length > 0 ? `logging?directory=${directory}` : 'logging';
+    const url = directory.length > 0 ? `logging?directory=${directory}` : 'logging';
     return this.http.get<Logging>(this.appService.absoluteApiPath + url);
   }
 
@@ -66,9 +64,11 @@ export class LoggingService {
     return this.http.get<LogInformation>(this.logSettingsURL);
   }
 
-  putLoggingSettingsChange(
-    action: Record<string, NonNullable<unknown>>,
-  ): Observable<object> {
+  postLoggingSettings(formData: FormData): Observable<object> {
+    return this.http.post(this.logSettingsURL, formData);
+  }
+
+  putLoggingSettingsChange(action: Record<string, NonNullable<unknown>>): Observable<object> {
     return this.http.put(this.logSettingsURL, action);
   }
 

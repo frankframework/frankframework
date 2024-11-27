@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013-2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 */
 package org.frankframework.pipes;
 
-import java.io.StringWriter;
-import java.util.HashMap;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -26,16 +26,25 @@ import jakarta.json.JsonException;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
+
 import lombok.Getter;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+
+import org.springframework.http.MediaType;
+import org.xml.sax.SAXException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.documentbuilder.ArrayBuilder;
+import org.frankframework.documentbuilder.DocumentBuilderFactory;
+import org.frankframework.documentbuilder.DocumentFormat;
+import org.frankframework.documentbuilder.DocumentUtils;
+import org.frankframework.documentbuilder.IDocumentBuilder;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.document.DocumentUtils;
-import org.frankframework.stream.document.XmlDocumentBuilder;
+import org.frankframework.stream.MessageBuilder;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.util.TransformerPool;
 
 /**
@@ -45,7 +54,7 @@ import org.frankframework.util.TransformerPool;
  * @author Martijn Onstwedder
  * @author Tom van der Heijden
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class JsonPipe extends FixedForwardPipe {
 	private @Getter Direction direction = Direction.JSON2XML;
 	private Boolean addXmlRootElement = null;
@@ -55,7 +64,7 @@ public class JsonPipe extends FixedForwardPipe {
 
 	public enum Direction {
 		JSON2XML,
-		XML2JSON;
+		XML2JSON
 	}
 
 	@Override
@@ -70,7 +79,7 @@ public class JsonPipe extends FixedForwardPipe {
 			addXmlRootElement = dir == Direction.JSON2XML;
 		}
 		if (dir == Direction.XML2JSON) {
-			tpXml2Json = TransformerPool.configureStyleSheetTransformer(this, "/xml/xsl/xml2json.xsl", 0);
+			tpXml2Json = TransformerPool.configureStyleSheetTransformer(this, "/xml/xsl/xml2json.xsl", 2); // shouldn't this be a utility transformer?
 		}
 	}
 
@@ -82,62 +91,57 @@ public class JsonPipe extends FixedForwardPipe {
 		}
 
 		try {
-			String stringResult=null;
-
 			switch (getDirection()) {
 			case JSON2XML:
 				try(JsonReader jr = Json.createReader(message.asReader())) {
-					JsonValue jValue=null;
-					try {
-						jValue = jr.read();
-					} catch (JsonException e) {
-						log.debug("cannot parse as JsonStructure", e);
-						stringResult="<root>"+message.asString()+"</root>";
-						break;
-					}
-					String root="root";
-					StringWriter writer = new StringWriter();
-					if (jValue instanceof JsonObject jObj) { //{"d":{"convert":{"__metadata":{"type":"ZCD_API_FCC_SRV.convertcurrencys"},"amount":"0.000000000","currency":"EUR"}}}
-						if (!addXmlRootElement) {
-							if (jObj.size()>1) {
-								throw new PipeRunException(this, "Cannot extract root element name from object with ["+jObj.size()+"] names");
-							}
-							Entry<String,JsonValue> firstElem=jObj.entrySet().stream().findFirst().orElseThrow(()->new PipeRunException(this, "Cannot extract root element name from empty object"));
-							root = firstElem.getKey();
-							jValue = firstElem.getValue();
-						}
-						try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder(root, writer, isPrettyPrint())) {
-							DocumentUtils.jsonValue2Document(jValue, documentBuilder);
-						}
-					} else {
-						if (addXmlRootElement) {
-							try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder(root, writer, isPrettyPrint())) {
-								DocumentUtils.jsonValue2Document(jValue, documentBuilder);
-							}
-						} else {
-							for (JsonValue item:(JsonArray)jValue) {
-								try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("item", writer, isPrettyPrint())) {
-									DocumentUtils.jsonValue2Document(item, documentBuilder);
-								}
-							}
-						}
-					}
-					stringResult = writer.toString();
+					return convertJsonToXml(jr.read());
+				} catch (JsonException e) {
+					log.debug("cannot parse input as JsonStructure", e);
+					Message result = new Message("<root>"+message.asString()+"</root>");
+					result.getContext().withMimeType(MediaType.APPLICATION_XML);
+					return new PipeRunResult(getSuccessForward(), result);
 				}
-				break;
 			case XML2JSON:
-				Map<String, Object> parameterValues = new HashMap<>(1);
-				parameterValues.put("includeRootElement", addXmlRootElement);
-				stringResult = tpXml2Json.transform(message, parameterValues);
-				break;
+				Map<String, Object> parameterValues = Collections.singletonMap("includeRootElement", addXmlRootElement);
+				String stringResult = tpXml2Json.transform(message.asSource(), parameterValues);
+				MessageContext context = new MessageContext();
+				context.withMimeType(MediaType.APPLICATION_JSON);
+				Message result = new Message(stringResult, context);
+				return new PipeRunResult(getSuccessForward(), result);
 			default:
 				throw new IllegalStateException("unknown direction ["+getDirection()+"]");
 			}
-
-			return new PipeRunResult(getSuccessForward(), stringResult);
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Exception on transforming input", e);
 		}
+	}
+
+	private PipeRunResult convertJsonToXml(JsonValue jValue) throws SAXException, IOException, PipeRunException {
+		MessageBuilder builder = new MessageBuilder();
+		if (jValue instanceof JsonObject jObj) { // {"d":{"convert":{"__metadata":{"type":"ZCD_API_FCC_SRV.convertcurrencys"},"amount":"0.000000000","currency":"EUR"}}}
+			String root = "root";
+			if (!addXmlRootElement) {
+				if (jObj.size()>1) {
+					throw new PipeRunException(this, "Cannot extract root element name from object with ["+jObj.size()+"] names");
+				}
+				Entry<String,JsonValue> firstElem=jObj.entrySet().stream().findFirst().orElseThrow(()->new PipeRunException(this, "Cannot extract root element name from empty object"));
+				root = firstElem.getKey();
+				jValue = firstElem.getValue();
+			}
+			try (IDocumentBuilder documentBuilder = DocumentBuilderFactory.startDocument(DocumentFormat.XML, root, builder, isPrettyPrint())) {
+				DocumentUtils.jsonValue2Document(jValue, documentBuilder);
+			}
+		} else {
+			String root = addXmlRootElement ? "root" : null;
+			try (IDocumentBuilder documentBuilder = DocumentBuilderFactory.startDocument(DocumentFormat.XML, root, builder, isPrettyPrint())) {
+				try (ArrayBuilder arrayBuilder = documentBuilder.asArrayBuilder("item")) {
+					DocumentUtils.jsonArray2Builder((JsonArray) jValue, arrayBuilder);
+				}
+			}
+		}
+
+		builder.setMimeType(MediaType.APPLICATION_XML);
+		return new PipeRunResult(getSuccessForward(), builder.build());
 	}
 
 	/**
@@ -148,7 +152,7 @@ public class JsonPipe extends FixedForwardPipe {
 		direction = value;
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.8.0")
 	public void setVersion(String version) {
 		if("1".equals(version)) {
 			setAddXmlRootElement(true);

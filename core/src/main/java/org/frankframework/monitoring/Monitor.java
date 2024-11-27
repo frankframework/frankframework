@@ -23,6 +23,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
+
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -32,8 +36,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
@@ -41,8 +43,7 @@ import org.frankframework.util.XmlBuilder;
 
 /**
  * <p>Example configuration:</p>
- * <pre><code>
- * {@literal
+ * <pre>{@code
  * <monitor name="Receiver Shutdown" destinations="MONITOR_LOG">
  *    <trigger className="org.frankframework.monitoring.Alarm" severity="WARNING">
  *        <event>Receiver Shutdown</event>
@@ -51,9 +52,8 @@ import org.frankframework.util.XmlBuilder;
  *        <event>Receiver Shutdown</event>
  *    </trigger>
  * </monitor>
- * }
+ * }</pre>
  *
- * </code></pre>
  * @author  Gerrit van Brakel
  * @since   4.9
  *
@@ -92,7 +92,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 			}
 		}
 
-		if (log.isDebugEnabled()) log.debug("monitor ["+getName()+"] configuring triggers");
+		if (log.isDebugEnabled()) log.debug("monitor [{}] configuring triggers", getName());
 		for (ITrigger trigger : triggers) {
 			if (!trigger.isConfigured()) {
 				trigger.configure();
@@ -145,7 +145,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 
 		for(String destination : destinations) {
 			IMonitorDestination monitorAdapter = getManager().getDestination(destination);
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"firing event on destination ["+destination+"]");
+			if (log.isDebugEnabled()) log.debug("{}firing event on destination [{}]", getLogPrefix(), destination);
 
 			if (monitorAdapter != null) {
 				monitorAdapter.fireEvent(name, eventType, severity, eventCode, event);
@@ -172,7 +172,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 	}
 
 	public XmlBuilder toXml() {
-		XmlBuilder monitor=new XmlBuilder("monitor");
+		XmlBuilder monitor=new XmlBuilder("Monitor");
 		monitor.addAttribute("name",getName());
 		monitor.addAttribute("type",getType().name());
 		monitor.addAttribute("destinations",getDestinationsAsString());
@@ -205,10 +205,10 @@ public class Monitor implements IConfigurable, DisposableBean {
 	}
 	public void setDestinationSet(Set<String> newDestinations) {
 		if (newDestinations==null) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"clearing destinations");
+			if (log.isDebugEnabled()) log.debug("{}clearing destinations", getLogPrefix());
 			destinations.clear();
 		} else {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"setting destinations to ["+newDestinations+"]");
+			if (log.isDebugEnabled()) log.debug("{}setting destinations to [{}]", getLogPrefix(), newDestinations);
 			for(String destination : newDestinations) {
 				if(getManager().getDestination(destination) == null) {
 					throw new IllegalArgumentException("destination ["+destination+"] does not exist");
@@ -218,13 +218,13 @@ public class Monitor implements IConfigurable, DisposableBean {
 			//Only proceed if all destinations exist
 			destinations.clear();
 			for(String destination : newDestinations) {
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"adding destination ["+destination+"]");
+				if (log.isDebugEnabled()) log.debug("{}adding destination [{}]", getLogPrefix(), destination);
 				destinations.add(destination);
 			}
 		}
 	}
 
-	public void registerTrigger(ITrigger trigger) {
+	public void addTrigger(ITrigger trigger) {
 		trigger.setMonitor(this);
 		triggers.add(trigger);
 	}
@@ -288,7 +288,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 	 */
 	@Override
 	public void destroy() {
-		log.info("removing monitor ["+this+"]");
+		log.info("removing monitor [{}]", this);
 
 		AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
 		for (ITrigger trigger : triggers) {

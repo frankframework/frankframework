@@ -43,19 +43,19 @@ public class TestDirectWrapperPipePipeLine {
 
 		DirectWrapperPipe pipe = configuration.createBean(DirectWrapperPipe.class);
 		pipe.setName("DirectWrapperPipe");
-		pipe.registerForward(pf);
+		pipe.addForward(pf);
 		pipeline.addPipe(pipe);
 
 		EchoPipe echoPipe = configuration.createBean(EchoPipe.class);
 		echoPipe.setName("nextPipe");
 		echoPipe.setPipeLine(pipeline);
-		echoPipe.registerForward(toExit);
+		echoPipe.addForward(toExit);
 		pipeline.addPipe(echoPipe);
 
 		PipeLineExit exit = configuration.createBean(PipeLineExit.class);
-		exit.setPath("exit");
+		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
-		pipeline.registerPipeLineExit(exit);
+		pipeline.addPipeLineExit(exit);
 
 		pipeline.setOwner(pipe);
 		pipeline.configure();

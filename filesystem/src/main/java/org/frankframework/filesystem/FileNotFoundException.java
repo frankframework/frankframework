@@ -17,20 +17,16 @@ package org.frankframework.filesystem;
 
 public class FileNotFoundException extends FileSystemException {
 
-	public FileNotFoundException() {
-		super();
-	}
-
 	public FileNotFoundException(String message, Throwable cause) {
-		super(message, cause);
+		super(Forward.FILE_NOT_FOUND, message, cause);
 	}
 
 	public FileNotFoundException(String message) {
-		super(message);
+		super(Forward.FILE_NOT_FOUND, message);
 	}
 
 	public FileNotFoundException(Throwable cause) {
-		super(cause);
+		super(Forward.FILE_NOT_FOUND, cause);
 	}
 
 }

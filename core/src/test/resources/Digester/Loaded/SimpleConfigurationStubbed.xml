@@ -11,7 +11,7 @@
 		</receiver>
 		<pipeline firstPipe="HelloBeautifulWorld">
 			<exit name="EXIT" state="success"/>
-			<pipe name="HelloBeautifulWorld" returnString="Hello Beautiful World ${digester.property} [${secret}] &lt;@quot;&gt;" className="org.frankframework.pipes.FixedResultPipe">
+			<pipe name="HelloBeautifulWorld" getInputFromFixedValue="Hello Beautiful World ${digester.property} [${secret}] &lt;@quot;&gt;" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>

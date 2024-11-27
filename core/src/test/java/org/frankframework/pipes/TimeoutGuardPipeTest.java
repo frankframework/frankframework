@@ -6,12 +6,13 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
-import org.junit.jupiter.api.Test;
 
 public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 	private static final String SUCCESS_MESSAGE = "did not timeout!";

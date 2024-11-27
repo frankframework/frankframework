@@ -15,15 +15,16 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.function.Consumer;
 
 import org.apache.commons.io.input.ReaderInputStream;
+
+import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.jdbc.JdbcQuerySenderBase.QueryType;
+import org.frankframework.jdbc.AbstractJdbcQuerySender.QueryType;
 import org.frankframework.testutil.JdbcTestUtil;
+import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
-import org.frankframework.testutil.junit.TxManagerTest;
 import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.StreamUtil;
 
@@ -33,21 +34,9 @@ public class TestBlobs {
 	protected static final String TABLE_NAME = "testBlobs_TABLE";
 	boolean testBigBlobs = false;
 
-	public static void getBigString(int numBlocks, int blockSize, Consumer<String> consumer) {
-		String tenChars="0123456789";
-		StringBuilder block = new StringBuilder(blockSize);
-		for (int i=0; i<(blockSize+9)/10; i++) {
-			block.append(tenChars);
-		}
-		for (int i=0; i<numBlocks; i++) {
-			consumer.accept(block.toString());
-		}
-	}
-
 	public static String getBigString(int numBlocks, int blockSize) {
-		StringBuilder result = new StringBuilder(numBlocks*blockSize);
-		getBigString(numBlocks, blockSize, s -> result.append(s));
-		return result.toString();
+		String tenChars="0123456789";
+		return tenChars.repeat( numBlocks * (blockSize + 9) / 10);
 	}
 
 	public static int readStream(InputStream inputStream) throws IOException {
@@ -80,15 +69,15 @@ public class TestBlobs {
 		}
 	}
 
-	@TxManagerTest
+	@DatabaseTest
 	public void testWriteAndReadBlobUsingSetBinaryStream15MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		testWriteAndReadBlobUsingSetBinaryStream(1000, 15000, databaseTestEnvironment);
 	}
 
-	@TxManagerTest
+	@DatabaseTest
 	public void testWriteAndReadBlobUsingSetBinaryStream20MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		assumeTrue(testBigBlobs);
-		assumeFalse(databaseTestEnvironment.getDataSourceName().equals("MariaDB"), "MariaDb cannot handle statement packets> 16M");
+		assumeFalse(databaseTestEnvironment.getDbmsSupport().getDbms() == Dbms.MARIADB, "MariaDb cannot handle statement packets> 16M");
 		testWriteAndReadBlobUsingSetBinaryStream(1000, 20000, databaseTestEnvironment);
 	}
 
@@ -111,15 +100,15 @@ public class TestBlobs {
 		}
 	}
 
-	@TxManagerTest
+	@DatabaseTest
 	public void testWriteAndReadBlobUsingSetBytes7MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		testWriteAndReadBlobUsingSetBytes(1000, 7000, databaseTestEnvironment);
 	}
 
-	@TxManagerTest
+	@DatabaseTest
 	public void testWriteAndReadBlobUsingBytes20MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		assumeTrue(testBigBlobs);
-		assumeFalse(databaseTestEnvironment.getDataSourceName().equals("MariaDB"), "MariaDb cannot handle statement packets> 16M");
+		assumeFalse(databaseTestEnvironment.getDbmsSupport().getDbms() == Dbms.MARIADB, "MariaDb cannot handle statement packets> 16M");
 		testWriteAndReadBlobUsingSetBytes(1000, 20000, databaseTestEnvironment);
 	}
 
@@ -177,41 +166,41 @@ public class TestBlobs {
 
 	}
 
-	@TxManagerTest
+	@DatabaseTest
 	public void testWriteAndReadBlobUsingDbmsSupport15MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		testWriteAndReadBlobUsingDbmsSupport(10000, 1500, databaseTestEnvironment);
 	}
 
-	@TxManagerTest
+	@DatabaseTest
 	public void testWriteAndReadBlobUsingDbmsSupport20MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		assumeTrue(testBigBlobs);
-		assumeFalse(databaseTestEnvironment.getDataSourceName().equals("MariaDB"), "MariaDb cannot handle statement packets> 16M");
+		assumeFalse(databaseTestEnvironment.getDbmsSupport().getDbms() == Dbms.MARIADB, "MariaDb cannot handle statement packets> 16M");
 		testWriteAndReadBlobUsingDbmsSupport(10000, 2000, databaseTestEnvironment);
 	}
 
-	@TxManagerTest
+	@DatabaseTest
 	public void testWriteAndReadBlobUsingDbmsSupport100MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		assumeTrue(testBigBlobs);
-		assumeFalse(databaseTestEnvironment.getDataSourceName().equals("MariaDB") || databaseTestEnvironment.getDataSourceName().equals("PostgreSQL"), "MariaDb cannot handle statement packets> 16M, PostgreSQL uses ByteArray");
+		assumeFalse(databaseTestEnvironment.getDbmsSupport().getDbms() == Dbms.MARIADB || databaseTestEnvironment.getDbmsSupport().getDbms() == Dbms.POSTGRESQL, "MariaDb cannot handle statement packets> 16M, PostgreSQL uses ByteArray");
 		testWriteAndReadBlobUsingDbmsSupport(10000, 10000, databaseTestEnvironment);
 	}
 
-	@TxManagerTest
+	@DatabaseTest
 	public void testWriteAndReadClobUsingDbmsSupport15MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		testWriteAndReadClobUsingDbmsSupport(10000, 1500, databaseTestEnvironment);
 	}
 
-	@TxManagerTest
+	@DatabaseTest
 	public void testWriteAndReadClobUsingDbmsSupport20MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		assumeTrue(testBigBlobs);
-		assumeFalse(databaseTestEnvironment.getDataSourceName().equals("MariaDB"), "MariaDb cannot handle statement packets> 16M");
+		assumeFalse(databaseTestEnvironment.getDbmsSupport().getDbms() == Dbms.MARIADB, "MariaDb cannot handle statement packets> 16M");
 		testWriteAndReadClobUsingDbmsSupport(10000, 2000, databaseTestEnvironment);
 	}
 
-	@TxManagerTest
+	@DatabaseTest
 	public void testWriteAndReadClobUsingDbmsSupport100MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		assumeTrue(testBigBlobs);
-		assumeFalse(databaseTestEnvironment.getDataSourceName().equals("MariaDB") || databaseTestEnvironment.getDataSourceName().equals("PostgreSQL"), "MariaDb cannot handle statement packets> 16M, PostgreSQL uses ByteArray");
+		assumeFalse(databaseTestEnvironment.getDbmsSupport().getDbms() == Dbms.MARIADB || databaseTestEnvironment.getDbmsSupport().getDbms() == Dbms.POSTGRESQL, "MariaDb cannot handle statement packets> 16M, PostgreSQL uses ByteArray");
 		testWriteAndReadClobUsingDbmsSupport(10000, 10000, databaseTestEnvironment);
 	}
 

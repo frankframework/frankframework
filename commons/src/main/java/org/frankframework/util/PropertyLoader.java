@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Properties;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -49,9 +49,9 @@ public class PropertyLoader extends Properties {
 
 		load(classLoader, propertiesFile);
 
-		//Make sure to not call ClassUtils when using the root instance, as it has a static field referencing to AppConstants
-		if(classLoader != null) {
-			LOG.info("created new PropertyLoader for classloader [{}]", ()->ClassUtils.nameOf(classLoader));
+		// Make sure to not call ClassUtils when using the root instance, as it has a static field referencing to AppConstants
+		if (classLoader != null) {
+			LOG.info("created new PropertyLoader for classloader [{}]", () -> ClassUtils.classNameOf(classLoader));
 		} else {
 			LOG.info("created new PropertyLoader for root classloader");
 		}
@@ -72,14 +72,14 @@ public class PropertyLoader extends Properties {
 				return result;
 			}
 		} catch (Throwable e) {
-			LOG.warn("unable to read environment variable [{}]: {}", ()->key, e::getMessage);
+			LOG.warn("unable to read environment variable [{}]: {}", () -> key, e::getMessage);
 		}
 		try {
 			String result = System.getProperty(key);
 			LOG.trace("Get key [{}] from System Properties, value: [{}]", key, result);
 			return result;
 		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
-			LOG.warn("unable to read system property [{}]: {}", ()->key, e::getMessage);
+			LOG.warn("unable to read system property [{}]: {}", () -> key, e::getMessage);
 			return null;
 		}
 	}
@@ -156,10 +156,10 @@ public class PropertyLoader extends Properties {
 	 * the {@link #getResolvedProperty(String)} method. If the resolved property value is null, it returns the list of string
 	 * values provided as "defaults".
 	 *
-	 * @param key the key of the property value to retrieve
+	 * @param key      the key of the property value to retrieve
 	 * @param defaults the default list of string values to return if the resolved property is null
 	 * @return a list of string values associated with the specified key, or the default list if the resolved property is null.
-	 * If the defaults is also null, then returns an empty list.
+	 * 		If the defaults is also null, then returns an empty list.
 	 */
 	@Nonnull
 	public List<String> getListProperty(@Nonnull String key, @Nullable String defaults) {
@@ -176,6 +176,7 @@ public class PropertyLoader extends Properties {
 	 * <p>
 	 * This method is used by {@link Properties#load(InputStream)} to add all properties found (in a file/stream)
 	 * to the underlying {@link Hashtable}.
+	 *
 	 * @deprecated Use {@link #setProperty(String, String)} instead!
 	 */
 	@Deprecated
@@ -189,32 +190,32 @@ public class PropertyLoader extends Properties {
 	/**
 	 * Load the contents of a properties file.
 	 * <p>Optionally, this may be a comma-separated list of files to load, e.g.
-	 * <code><pre>log4j2.properties,DeploymentSpecifics.properties</pre></code>
+	 * <code>log4j2.properties,DeploymentSpecifics.properties</code>
 	 * which will cause both files to be loaded in the listed order.
 	 * </p>
 	 */
 	protected synchronized void load(final ClassLoader classLoader, final String filename) {
-		if(StringUtils.isEmpty(filename)) {
+		if (StringUtils.isEmpty(filename)) {
 			throw new IllegalStateException("file to load properties from cannot be null");
 		}
 
 		try {
-			if(classLoader == null) {
+			if (classLoader == null) {
 				throw new IllegalStateException("no classloader found!");
 			}
 			List<URL> resources = Collections.list(classLoader.getResources(filename));
-			if(resources.isEmpty()) {
-				if(rootPropertyFile.equals(filename)) { //The file cannot be found, abort!
-					String msg = rootPropertyFile+ " file not found, unable to initalize AppConstants";
+			if (resources.isEmpty()) {
+				if (rootPropertyFile.equals(filename)) { // The file cannot be found, abort!
+					String msg = rootPropertyFile + " file not found, unable to initialize PropertyLoader";
 					LOG.error(msg);
 					throw new MissingResourceException(msg, this.getClass().getSimpleName(), rootPropertyFile);
 				}
 
-				//An additional file to load properties from cannot be found
+				// An additional file to load properties from cannot be found
 				LOG.debug("cannot find resource [{}] in classloader [{}] to load additional properties from, ignoring", filename, classLoader);
 			}
 
-			//We need to reverse the loading order to make sure the parent files are loaded first
+			// We need to reverse the loading order to make sure the parent files are loaded first
 			Collections.reverse(resources);
 
 			for (URL url : resources) {
@@ -226,20 +227,20 @@ public class PropertyLoader extends Properties {
 		}
 	}
 
-	//Special Getters
-
+	// Special Getters
 
 	/**
 	 * Gets a <code>String</code> value
 	 * Uses the {@link #getResolvedProperty(String)} method.
+	 *
 	 * @param key    the Key
 	 * @param dfault the default value
 	 * @return String
 	 */
-	public String getString(String key, String dfault){
+	public String getString(String key, String dfault) {
 		String ob = this.getResolvedProperty(key);
 
-		if (ob == null)return dfault;
+		if (ob == null) return dfault;
 		return ob;
 	}
 
@@ -247,6 +248,7 @@ public class PropertyLoader extends Properties {
 	 * Gets a <code>boolean</code> value
 	 * Returns "true" if the retrieved value is "true", otherwise "false"
 	 * Uses the {@link #getResolvedProperty(String)} method.
+	 *
 	 * @param key    the Key
 	 * @param dfault the default value
 	 * @return double
@@ -261,6 +263,7 @@ public class PropertyLoader extends Properties {
 	/**
 	 * Gets an <code>int</code> value
 	 * Uses the {@link #getResolvedProperty(String)} method.
+	 *
 	 * @param key    the Key
 	 * @param dfault the default value
 	 * @return int
@@ -275,6 +278,7 @@ public class PropertyLoader extends Properties {
 	/**
 	 * Gets a <code>long</code> value
 	 * Uses the {@link #getResolvedProperty(String)} method.
+	 *
 	 * @param key    the Key
 	 * @param dfault the default value
 	 * @return long
@@ -282,20 +286,21 @@ public class PropertyLoader extends Properties {
 	public long getLong(String key, long dfault) {
 		String ob = this.getResolvedProperty(key);
 
-		if (ob == null)return dfault;
+		if (ob == null) return dfault;
 		return Long.parseLong(ob);
 	}
 
 	/**
 	 * Gets a <code>double</code> value
 	 * Uses the {@link #getResolvedProperty(String)} method.
+	 *
 	 * @param key    the Key
 	 * @param dfault the default value
 	 * @return double
 	 */
 	public double getDouble(String key, double dfault) {
 		String ob = this.getResolvedProperty(key);
-		if (ob == null)return dfault;
+		if (ob == null) return dfault;
 		return Double.parseDouble(ob);
 	}
 
@@ -304,7 +309,7 @@ public class PropertyLoader extends Properties {
 	 */
 	private synchronized void loadResource(URL url) throws IOException {
 		String extension = FilenameUtils.getExtension(url.getPath());
-		try(InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
+		try (InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
 			switch (extension) {
 				case "properties":
 					load(reader);

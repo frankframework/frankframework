@@ -18,16 +18,15 @@ package org.frankframework.jms;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 
-import org.frankframework.aws.AwsBase;
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSException;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,11 +38,13 @@ import com.amazon.sqs.javamessaging.SQSConnectionFactory;
 
 import lombok.Getter;
 import lombok.Setter;
-
-import software.amazon.awssdk.regions.Region;
+import lombok.extern.log4j.Log4j2;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.SqsClientBuilder;
 
+import org.frankframework.aws.AwsBase;
+
+@Log4j2
 public class AmazonSqsFactory extends AwsBase implements ObjectFactory {
 
 	private @Getter @Setter String queues;
@@ -82,10 +83,7 @@ public class AmazonSqsFactory extends AwsBase implements ObjectFactory {
 		ProviderConfiguration providerConfiguration = new ProviderConfiguration();
 
 		SqsClient client = createSqsClient();
-
-		SQSConnectionFactory connectionFactory = new SQSConnectionFactory(providerConfiguration, client);
-
-		return connectionFactory;
+		return new SQSConnectionFactory(providerConfiguration, client);
 	}
 
 	// A dirty workaround to create queues, should use JmsMessagingSource#createDestination
@@ -104,7 +102,7 @@ public class AmazonSqsFactory extends AwsBase implements ObjectFactory {
 
 	public SqsClient createSqsClient() {
 		SqsClientBuilder builder = SqsClient.builder();
-		builder.region(Region.of(getClientRegion()));
+		builder.region(getClientRegion());
 		builder.credentialsProvider(getAwsCredentialsProvider());
 //		builder.endpointProvider(new SqsEndpointProvider()); // TODO allow the use of destinationName="https://sqs.eu-west-1.amazonaws.com/00123567890/dummy-ibis-test-queue"
 		return builder.build();

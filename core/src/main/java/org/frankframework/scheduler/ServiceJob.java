@@ -18,6 +18,7 @@ package org.frankframework.scheduler;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
@@ -30,7 +31,7 @@ import org.frankframework.stream.Message;
  *
  * @author John Dekker
  */
-public class ServiceJob extends BaseJob {
+public class ServiceJob extends AbstractJob {
 
 	public static final String JAVALISTENER_KEY = "javaListener";
 	public static final String CORRELATIONID_KEY = "correlationId";
@@ -54,11 +55,11 @@ public class ServiceJob extends BaseJob {
 			localSender.setName("ServiceJob");
 			localSender.configure();
 
-			localSender.open();
+			localSender.start();
 			try(PipeLineSession session = new PipeLineSession()) {
 				localSender.sendMessageOrThrow(message, session).close();
 			} finally {
-				localSender.close();
+				localSender.stop();
 			}
 		}
 		catch (Exception e) {

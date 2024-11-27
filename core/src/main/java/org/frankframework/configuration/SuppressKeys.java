@@ -37,16 +37,17 @@ public enum SuppressKeys {
 	XSLT_STREAMING_SUPRESS_KEY("warnings.suppress.xslt.streaming", true),
 	XSD_VALIDATION_WARNINGS_SUPPRESS_KEY("warnings.suppress.xsd.warning", true),
 	XSD_VALIDATION_ERROR_SUPPRESS_KEY("warnings.suppress.xsd.error", true),
-	XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY("warnings.suppress.xsd.fatalError", true);
+	XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY("warnings.suppress.xsd.fatalError", true),
+	UNSAFE_ATTRIBUTE_SUPPRESS_KEY("warnings.suppress.unsafeAttribute", true);
 
 	private final @Getter String key;
 	private final @Getter boolean allowGlobalSuppression;
 
-	private SuppressKeys(String key) {
+	SuppressKeys(String key) {
 		this(key, false);
 	}
 
-	private SuppressKeys(String key, boolean allowGlobalSuppression) {
+	SuppressKeys(String key, boolean allowGlobalSuppression) {
 		this.key = key;
 		this.allowGlobalSuppression = allowGlobalSuppression;
 	}

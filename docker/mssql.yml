@@ -1,13 +1,13 @@
-version: '3.8'
+version: ''
 
 services:
-    ff-test:
-        environment:
-            jdbc.dbms.default: mssql
-            jdbc.hostname: mssql
+  ff-test:
+    environment:
+      jdbc.dbms.default: mssql
+      jdbc.hostname: mssql
 
-    mssql:
-        image: private.docker.nexus.frankframework.org/ff-test/dbms/mssqlserver
-        ports:
-            - "1433:1433"
+  mssql:
+    image: private.docker.nexus.frankframework.org/ff-test/dbms/mssqlserver
+    ports:
+      - "1433:1433"
 

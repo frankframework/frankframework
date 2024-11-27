@@ -30,8 +30,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Resource;
 import org.frankframework.stream.Message;
@@ -42,10 +47,6 @@ import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.TestScopeProvider;
 import org.frankframework.xml.StringBuilderContentHandler;
 import org.frankframework.xml.XmlWriter;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 @Log4j2
 public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {

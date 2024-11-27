@@ -2,7 +2,9 @@
     "services": [
         {
             "name": "TestRestListener",
-            "method": "GET",
+            "methods": [
+                "GET"
+            ],
             "uriPattern": "rest-uri-pattern",
             "receiver": "ReceiverName1",
             "adapter": "TestAdapter"
@@ -17,7 +19,9 @@
     ],
     "apiListeners": [
         {
-            "method": "POST",
+            "methods": [
+                "POST"
+            ],
             "uriPattern": "/api-uri-pattern",
             "receiver": "ReceiverName2",
             "adapter": "ApiTestAdapter"

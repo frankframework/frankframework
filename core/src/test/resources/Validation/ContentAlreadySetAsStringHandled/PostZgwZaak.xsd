@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:zgw="http://google.com/zgw">
+    <xs:import namespace="http://google.com/zgw" schemaLocation="ZgwSchemaBase.xsd" />
+    <xs:element name="ZgwZaak">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="identificatie" type="zgw:AN0_40" minOccurs="0"/>
+                <xs:element name="bronorganisatie" type="zgw:Rsin"/>
+                <xs:element name="omschrijving" type="zgw:AN0_80" minOccurs="0"/>
+                <xs:element name="toelichting" type="zgw:AN1000" minOccurs="0"/>
+                <xs:element name="zaaktype" type="zgw:Uri1_1000"/>
+                <xs:element name="registratiedatum" type="xs:date" minOccurs="0"/>
+                <xs:element name="verantwoordelijkeOrganisatie" type="zgw:Rsin"/>
+                <xs:element name="startdatum" type="xs:date"/>
+                <xs:element name="einddatumGepland" type="xs:date" minOccurs="0" nillable="true"/>
+                <xs:element name="uiterlijkeEinddatumAfdoening" type="xs:date" minOccurs="0" nillable="true"/>
+                <xs:element name="publicatiedatum" type="xs:date" minOccurs="0" nillable="true"/>
+                <xs:element name="communicatiekanaal" type="zgw:Uri1_1000" minOccurs="0"/>
+                <xs:element name="productenOfDiensten" type="zgw:Uri1_1000" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="vertrouwelijkheidaanduiding" type="zgw:Vertrouwelijkheidaanduiding" minOccurs="0"/>
+                <xs:element name="betalingsindicatie" type="zgw:Betalingsindicatie" minOccurs="0"/>
+                <xs:element name="laatsteBetaaldatum" type="xs:dateTime" minOccurs="0" nillable="true"/>
+                <!-- zaakgeometrie -->
+                <xs:element name="verlenging" type="zgw:Verlenging" minOccurs="0" maxOccurs="1" nillable="true"/>
+                <xs:element name="opschorting" type="zgw:Opschorting" minOccurs="0" maxOccurs="1" nillable="true"/>
+                <xs:element name="selectielijstklasse" type="zgw:Uri1_1000" minOccurs="0"/>
+                <xs:element name="hoofdzaak" type="zgw:Uri1_1000" minOccurs="0" nillable="true"/>
+                <xs:element name="relevanteAndereZaken" type="zgw:RelevanteAndereZaken" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="kenmerken" type="zgw:Kenmerken" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="archiefnominatie" type="zgw:Archiefnominatie" minOccurs="0" nillable="true"/>
+                <xs:element name="archiefstatus" type="zgw:Archiefstatus" minOccurs="0"/>
+                <xs:element name="archiefactiedatum" type="xs:date" minOccurs="0" nillable="true"/>
+                <xs:element name="opdrachtgevendeOrganisatie" type="zgw:Rsin" minOccurs="0" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema> 

@@ -2,6 +2,7 @@ package org.frankframework.management.security;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -17,10 +18,9 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -91,9 +91,9 @@ public class JwtSecurityFilterTest {
 		// Assert
 		verify(chain, times(1)).doFilter(any(ServletRequest.class), any(ServletResponse.class));
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		List<String> authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+		List<String> authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
 		assertAll(
-				() -> assertTrue(authentication instanceof JwtAuthenticationToken),
+				() -> assertInstanceOf(JwtAuthenticationToken.class, authentication),
 				() -> assertEquals("dummy", authentication.getPrincipal(), "principal not mapped correctly"),
 				() -> assertEquals(2, authorities.size()),
 				() -> assertTrue(authorities.contains("ROLE_role1")),

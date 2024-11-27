@@ -15,8 +15,6 @@
 */
 package org.frankframework.ldap;
 
-import java.util.Map;
-
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -28,6 +26,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.ldap.LdapSender.Operation;
 import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 
@@ -53,7 +52,7 @@ import org.frankframework.stream.Message;
  * @deprecated
  * @author  Milan Tomc
  */
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.6.0")
 @ConfigurationWarning("please use LdapSender with operation challenge and check for returned message <LdapResult>Success</LdapResult>")
 public class LdapChallengePipe extends FixedForwardPipe {
 
@@ -65,16 +64,16 @@ public class LdapChallengePipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if (StringUtils.isEmpty(ldapProviderURL) && getParameterList().findParameter("ldapProviderURL")==null) {
+		if (StringUtils.isEmpty(ldapProviderURL) && !getParameterList().hasParameter("ldapProviderURL")) {
 			throw new ConfigurationException("ldapProviderURL must be specified, either as attribute or as parameter");
 		}
-		if (StringUtils.isNotEmpty(ldapProviderURL) && getParameterList().findParameter("ldapProviderURL")!=null) {
+		if (StringUtils.isNotEmpty(ldapProviderURL) && getParameterList().hasParameter("ldapProviderURL")) {
 			throw new ConfigurationException("ldapProviderURL can only be specified once, either as attribute or as parameter");
 		}
-		if (getParameterList().findParameter("principal")==null) {
+		if (!getParameterList().hasParameter("principal")) {
 			throw new ConfigurationException("Parameter 'principal' must be specified");
 		}
-		if (getParameterList().findParameter("credentials")==null) {
+		if (!getParameterList().hasParameter("credentials")) {
 			throw new ConfigurationException("Parameter 'credentials' must be specified");
 		}
 	}
@@ -92,16 +91,16 @@ public class LdapChallengePipe extends FixedForwardPipe {
 		String credentials;
 		String principal;
 
-		Map<String,Object> paramMap=null;
 		try {
-			paramMap = getParameterList().getValues(msg, pls).getValueMap();
+			ParameterValueList pvl = getParameterList().getValues(msg, pls);
+
 			if (StringUtils.isNotEmpty(getLdapProviderURL())) {
 				ldapProviderURL = getLdapProviderURL();
 			} else {
-				ldapProviderURL = (String)paramMap.get("ldapProviderURL");
+				ldapProviderURL = pvl.get("ldapProviderURL").asStringValue();
 			}
-			credentials = (String)paramMap.get("credentials");
-			principal = (String)paramMap.get("principal");
+			credentials = pvl.get("credentials").asStringValue();
+			principal = pvl.get("principal").asStringValue();
 		} catch (ParameterException e) {
 			throw new PipeRunException(this, "Invalid parameter", e);
 		}
@@ -132,14 +131,14 @@ public class LdapChallengePipe extends FixedForwardPipe {
 		ldapSender.setCredentials(credentials);
 		ldapSender.setOperation(Operation.READ);
 		try {
-			log.debug("Looking up context for principal ["+principal+"]");
+			log.debug("Looking up context for principal [{}]", principal);
 			ldapSender.configure();
-			log.debug("Succesfully looked up context for principal ["+principal+"]");
+			log.debug("Successfully looked up context for principal [{}]", principal);
 		} catch (Exception e) {
 			if (StringUtils.isNotEmpty(getErrorSessionKey())) {
 				ldapSender.storeLdapException(e, pls);
 			} else {
-				log.warn("LDAP error looking up context for principal ["+principal+"]", e);
+				log.warn("LDAP error looking up context for principal [{}]", principal, e);
 			}
 			return new PipeRunResult(findForward("invalid"), msg);
 		}

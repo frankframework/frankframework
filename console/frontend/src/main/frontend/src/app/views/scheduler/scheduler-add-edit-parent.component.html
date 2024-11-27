@@ -1,23 +1,11 @@
-<!-- Angular ui-router hack-->
-<div ui-view></div>
-
 <div class="wrapper wrapper-content animated fadeInRight">
-  <ngb-alert
-    *ngFor="let alert of state"
-    [type]="alert.type"
-    [dismissible]="false"
-    >{{ alert.message }}</ngb-alert
-  >
+  <ngb-alert *ngFor="let alert of state" [type]="alert.type" [dismissible]="false">{{ alert.message }}</ngb-alert>
   <div class="row">
     <div class="col-lg-12 table-responsive">
       <div class="ibox float-e-margins">
         <div class="ibox-title">
           <div class="pull-right">
-            <button
-              [routerLink]="['/scheduler']"
-              class="btn btn-xs pull-right btn-info"
-              type="button"
-            >
+            <button [routerLink]="['/scheduler']" class="btn btn-xs pull-right btn-info" type="button">
               <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
               <span> Back</span>
             </button>
@@ -25,94 +13,57 @@
         </div>
         <div class="ibox-content">
           <form role="form">
-            <div class="form-group">
+            <div class="row form-group">
               <label class="col-sm-3 control-label">Schedule Name</label>
               <div class="col-sm-9">
-                <input
-                  class="form-control m-b"
-                  name="name"
-                  type="text"
-                  [(ngModel)]="form.name"
-                  [disabled]="editMode"
-                />
+                <input class="form-control" name="name" type="text" [(ngModel)]="form.name" [disabled]="editMode" />
               </div>
             </div>
-            <div class="form-group">
+            <div class="row form-group">
               <label class="col-sm-3 control-label">Job Group</label>
               <div class="col-sm-9">
-                <input
-                  class="form-control m-b"
-                  name="group"
-                  type="text"
-                  [(ngModel)]="form.group"
-                />
+                <input class="form-control" name="group" type="text" [(ngModel)]="form.group" />
                 <!-- [disabled]="jobGroup" -->
               </div>
             </div>
-            <div class="form-group">
+            <div class="row form-group">
               <label class="col-sm-3 control-label">Configuration</label>
               <div class="col-sm-9">
-                <select
-                  class="form-control m-b"
-                  name="configuration"
-                  [(ngModel)]="selectedConfiguration"
-                >
-                  <option
-                    *ngFor="let config of configurations"
-                    [ngValue]="config.name"
-                  >
+                <select class="form-control" name="configuration" [(ngModel)]="selectedConfiguration">
+                  <option *ngFor="let config of configurations" [ngValue]="config.name">
                     {{ config.name }}
                   </option>
                 </select>
               </div>
             </div>
-            <div class="form-group">
+            <div class="row form-group">
               <label class="col-sm-3 control-label">Select an adapter</label>
               <div class="col-sm-9">
                 <select
-                  class="form-control m-b"
+                  class="form-control"
                   name="adapter"
                   [(ngModel)]="form.adapter"
                   [disabled]="selectedConfiguration === ''"
                 >
                   <option
-                    *ngFor="
-                      let adapter of adapters
-                        | configurationFilter: selectedConfiguration
-                        | withJavaListener
-                    "
+                    *ngFor="let adapter of adapters | configurationFilter: selectedConfiguration | withJavaListener"
                     [ngValue]="adapter"
                   >
                     {{
-                      adapter.name +
-                        (adapter.description !== null
-                          ? ' - ' + adapter.description
-                          : '') | truncate: 150
+                      adapter.name + (adapter.description !== null ? ' - ' + adapter.description : '') | truncate: 150
                     }}
                   </option>
                 </select>
               </div>
             </div>
-            <div class="form-group">
+            <div class="row form-group">
               <label class="col-sm-3 control-label">Select a listener</label>
               <div class="col-sm-9" *ngIf="!form.adapter">
-                <input
-                  class="form-control m-b"
-                  value="Select an adapter first.."
-                  disabled
-                />
+                <input class="form-control" value="Select an adapter first.." disabled />
               </div>
               <div class="col-sm-9" *ngIf="form.adapter">
-                <select
-                  class="form-control m-b"
-                  name="receiver"
-                  [(ngModel)]="form.listener"
-                >
-                  <ng-template
-                    ngFor
-                    let-receiver
-                    [ngForOf]="form.adapter.receivers"
-                  >
+                <select class="form-control" name="receiver" [(ngModel)]="form.listener">
+                  <ng-template ngFor let-receiver [ngForOf]="form.adapter.receivers">
                     <option
                       *ngIf="receiver.listener.class.startsWith('JavaListener')"
                       [ngValue]="receiver.listener.name"
@@ -123,14 +74,11 @@
                 </select>
               </div>
             </div>
-            <div
-              class="form-group"
-              title="Quartz CRON Expression to specify execution times. Overrides Interval"
-            >
+            <div class="row form-group" title="Quartz CRON Expression to specify execution times. Overrides Interval">
               <label class="col-sm-3 control-label">CRON Expression</label>
               <div class="col-sm-9">
                 <input
-                  class="form-control m-b"
+                  class="form-control"
                   name="cron"
                   type="text"
                   [disabled]="form.interval !== ''"
@@ -139,13 +87,13 @@
               </div>
             </div>
             <div
-              class="form-group"
+              class="row form-group"
               title="Interval between executions. Only used when NO cron expression specified"
             >
               <label class="col-sm-3 control-label">Interval</label>
               <div class="col-sm-9">
                 <input
-                  class="form-control m-b"
+                  class="form-control"
                   name="interval"
                   type="text"
                   [disabled]="form.cron !== ''"
@@ -153,45 +101,32 @@
                 />
               </div>
             </div>
-            <div class="form-group">
-              <label class="col-sm-3 control-label label-height-30"
-                >Message</label
-              >
-              <div class="col-sm-9">
-                <textarea
-                  class="form-control m-b"
-                  name="message"
-                  rows="5"
-                  style="resize: none"
-                  [(ngModel)]="form.message"
-                ></textarea>
+            <div class="row form-group">
+              <label class="col-sm-3 control-label label-height-30">Message</label>
+              <div class="col-sm-9" style="height: 100px">
+                <app-monaco-editor
+                  class="form-control"
+                  [(value)]="form.message"
+                  [options]="{ language: 'text' }"
+                ></app-monaco-editor>
               </div>
             </div>
-            <div class="form-group" title="At most 255 chars (optional)">
+            <div class="row form-group" title="At most 255 chars (optional)">
               <label class="col-sm-3 control-label">Description</label>
               <div class="col-sm-9">
-                <input
-                  class="form-control m-b"
-                  name="description"
-                  type="text"
-                  [(ngModel)]="form.description"
-                />
+                <input class="form-control" name="description" type="text" [(ngModel)]="form.description" />
               </div>
             </div>
-            <div class="form-group">
+            <div class="row form-group">
               <label class="col-sm-3 control-label">Contains Locker</label>
               <div class="col-sm-1">
-                <span class="form-control m-b" style="border: none"
-                  ><input
-                    icheck
-                    type="checkbox"
-                    [(ngModel)]="form.locker"
-                    name="locker"
+                <span class="form-control" style="border: none"
+                  ><input type="checkbox" [(ngModel)]="form.locker" name="locker"
                 /></span>
               </div>
               <div class="col-sm-8">
                 <input
-                  class="form-control m-b"
+                  class="form-control"
                   name="lockkey"
                   type="text"
                   [(ngModel)]="form.lockkey"
@@ -200,22 +135,10 @@
               </div>
             </div>
             <div class="col-lg-3 m-t-md">
-              <button
-                class="btn btn-info btn-w-m font-bold"
-                type="button"
-                (click)="reset()"
-              >
-                Reset
-              </button>
+              <button class="btn btn-info btn-w-m font-bold" type="button" (click)="reset()">Reset</button>
             </div>
             <div class="col-lg-9 m-t-md">
-              <button
-                class="btn btn-primary btn-w-m font-bold"
-                type="submit"
-                (click)="submit()"
-              >
-                Save
-              </button>
+              <button class="btn btn-primary btn-w-m font-bold" type="submit" (click)="submit()">Save</button>
             </div>
           </form>
         </div>

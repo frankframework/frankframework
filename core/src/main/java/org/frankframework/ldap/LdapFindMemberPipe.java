@@ -40,7 +40,7 @@ import org.frankframework.stream.Message;
  *
  * @author Peter Leeuwenburgh
  */
-public class LdapFindMemberPipe extends LdapQueryPipeBase {
+public class LdapFindMemberPipe extends AbstractLdapQueryPipe {
 	private String dnSearchIn;
 	private String dnFind;
 	private boolean recursiveSearch = true;
@@ -88,7 +88,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 		return new PipeRunResult(getSuccessForward(), message);
 	}
 
-	private boolean findMember(String host, int port, String dnSearchIn, boolean useSsl, String dnFind, boolean recursiveSearch) throws NamingException {
+	protected boolean findMember(String host, int port, String dnSearchIn, boolean useSsl, String dnFind, boolean recursiveSearch) throws NamingException {
 		Hashtable<String,Object> env = new Hashtable<>();
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 		String provUrl = retrieveUrl(host, port, dnSearchIn, useSsl);
@@ -105,7 +105,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 			try {
 				ctx = new InitialDirContext(env);
 			} catch (CommunicationException e) {
-				log.info("Cannot create constructor for DirContext ["+ e.getMessage() + "], will try again with dummy SocketFactory",e);
+				log.info("Cannot create constructor for DirContext [{}], will try again with dummy SocketFactory", e.getMessage(), e);
 				ctx = new InitialLdapContext(env, null); //Try again without connection request controls.
 			}
 			Attribute attrs = ctx.getAttributes("").get("member");

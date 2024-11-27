@@ -23,23 +23,28 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.Nonnull;
 import javax.xml.transform.TransformerException;
 
+import jakarta.annotation.Nonnull;
+
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.SAXException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.AdapterAware;
 import org.frankframework.core.DestinationValidator;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.HasSender;
-import org.frankframework.core.ICorrelatedPullingListener;
 import org.frankframework.core.IDualModeValidator;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowser.HideMethod;
@@ -59,15 +64,14 @@ import org.frankframework.core.PipeStartException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.doc.Forward;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.jdbc.DirectQuerySender;
-import org.frankframework.jdbc.MessageStoreSender;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
-import org.frankframework.processors.ListenerProcessor;
 import org.frankframework.processors.PipeProcessor;
 import org.frankframework.receivers.MessageWrapper;
-import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
@@ -80,31 +84,21 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlUtils;
-import org.xml.sax.SAXException;
-
-import io.micrometer.core.instrument.DistributionSummary;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
 
 /**
- * Sends a message using a {@link ISender sender} and optionally receives a reply from the same sender, or
- * from a {@link ICorrelatedPullingListener listener}.
- *
- * @ff.parameters any parameters defined on the pipe will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
+ * @ff.parameters Any parameters defined on the pipe will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}.
  * @ff.parameter  stubFilename will <u>not</u> be handed to the sender
  * and it is used at runtime instead of the stubFilename specified by the attribute. A lookup of the
  * file for this stubFilename will be done at runtime, while the file for the stubFilename specified
  * as an attribute will be done at configuration time.
-
- * @ff.forward timeout
- * @ff.forward illegalResult
- * @ff.forward presumedTimeout
- * @ff.forward interrupt
- * @ff.forward "&lt;defined-by-sender&gt;" any forward, as returned by name by {@link ISender sender}
  *
  * @author  Gerrit van Brakel
  */
+@Forward(name = "timeout")
+@Forward(name = "illegalResult")
+@Forward(name = "presumedTimeout")
+@Forward(name = "interrupt")
+@Forward(name = "*", description = "{@link ISender sender} provided forward, such as the http statuscode or exit name (or code) of a sub-adapter.")
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
@@ -124,17 +118,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 
 	private @Getter LinkMethod linkMethod = LinkMethod.CORRELATIONID;
 
-	private @Getter String correlationIDStyleSheet;
-	private @Getter String correlationIDXPath;
-	private @Getter String correlationIDNamespaceDefs;
-	private @Getter String correlationIDSessionKey = null;
-	private @Getter String labelStyleSheet;
-	private @Getter String labelXPath;
-	private @Getter String labelNamespaceDefs;
-	private @Getter String auditTrailSessionKey = null;
-	private @Getter String auditTrailXPath;
-	private @Getter String auditTrailNamespaceDefs;
-	private @Getter boolean useInputForExtract = true;
 	private @Getter HideMethod hideMethod = HideMethod.ALL;
 
 	private @Getter boolean checkXmlWellFormed = false;
@@ -153,13 +136,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	private @Getter String exceptionOnResult;
 
 	private @Getter ISender sender = null;
-	private @Getter ICorrelatedPullingListener listener = null;
 	private @Getter ITransactionalStorage messageLog=null;
 
 	private String returnString; // contains contents of stubUrl
-	private TransformerPool auditTrailTp=null;
-	private TransformerPool correlationIDTp=null;
-	private TransformerPool labelTp=null;
 	private TransformerPool retryTp=null;
 
 	public static final String INPUT_VALIDATOR_NAME_PREFIX="- ";
@@ -184,7 +163,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	private final boolean msgLogHumanReadable = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("msg.log.humanReadable", false);
 
 	private @Setter PipeProcessor pipeProcessor;
-	private @Setter ListenerProcessor listenerProcessor;
 
 	private final Map<String, DistributionSummary> statisticsMap = new ConcurrentHashMap<>();
 	protected @Setter @Getter MetricsInitializer configurationMetrics;
@@ -220,7 +198,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			// copying of pipe parameters to sender must be done at configure(), not by overriding addParam()
 			// because sender might not have been set when addPipe() is called.
 			if (getParameterList()!=null && getSender() instanceof ISenderWithParameters) {
-				for (Parameter p:getParameterList()) {
+				for (IParameter p:getParameterList()) {
 					if (!p.getName().equals(STUBFILENAME)) {
 						((ISenderWithParameters)getSender()).addParameter(p);
 					}
@@ -245,19 +223,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			}
 			if (getSender() instanceof HasPhysicalDestination) {
 				log.debug("has sender on {}", ((HasPhysicalDestination)sender)::getPhysicalDestinationName);
-			}
-			if (getListener() != null) {
-				if (getSender().isSynchronous()) {
-					throw new ConfigurationException("cannot have listener with synchronous sender");
-				}
-				try {
-					getListener().configure();
-				} catch (ConfigurationException e) {
-					throw new ConfigurationException("while configuring listener",e);
-				}
-				if (getListener() instanceof HasPhysicalDestination) {
-					log.debug("has listener on {}", ((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
-				}
 			}
 
 			if (isCheckXmlWellFormed() || StringUtils.isNotEmpty(getCheckRootTag())) {
@@ -288,26 +253,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			}
 		}
 		ITransactionalStorage messageLog = getMessageLog();
-		if (messageLog==null) {
-			if (StringUtils.isEmpty(getStubFilename()) && !getSender().isSynchronous() && getListener()==null
-					&& !(getSender() instanceof IbisLocalSender)
-					&& !(getSender() instanceof MessageStoreSender)) { // sender is asynchronous and not a local sender or messageStoreSender, but has no messageLog
-				boolean suppressIntegrityCheckWarning = ConfigurationWarnings.isSuppressed(SuppressKeys.INTEGRITY_CHECK_SUPPRESS_KEY, getAdapter());
-				if (!suppressIntegrityCheckWarning) {
-					boolean legacyCheckMessageLog = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("messageLog.check", true);
-					if (!legacyCheckMessageLog) {
-						ConfigurationWarnings.add(this, log, "Suppressing integrityCheck warnings by setting property 'messageLog.check=false' has been replaced by by setting property 'warnings.suppress.integrityCheck=true'");
-						suppressIntegrityCheckWarning=true;
-					}
-				}
-				if (!suppressIntegrityCheckWarning) {
-					ConfigurationWarnings.add(this, log, "asynchronous sender [" + getSender().getName() + "] without sibling listener has no messageLog. " +
-						"Service Managers will not be able to perform an integrity check (matching messages received by the adapter to messages sent by this pipe). " +
-						"This warning can be suppressed globally by setting property 'warnings.suppress.integrityCheck=true', "+
-						"or for this adapter only by setting property 'warnings.suppress.integrityCheck."+getAdapter().getName()+"=true'");
-				}
-			}
-		} else {
+		if (messageLog != null) {
 			if (StringUtils.isNotEmpty(getHideRegex()) && StringUtils.isEmpty(messageLog.getHideRegex())) {
 				messageLog.setHideRegex(getHideRegex());
 				messageLog.setHideMethod(getHideMethod());
@@ -318,15 +264,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				log.debug(msg);
 				if (getAdapter() != null)
 					getAdapter().getMessageKeeper().add(msg);
-			}
-			if (StringUtils.isNotEmpty(getAuditTrailXPath())) {
-				auditTrailTp = TransformerPool.configureTransformer(this, getAuditTrailNamespaceDefs(), getAuditTrailXPath(), null, OutputType.TEXT,false,null);
-			}
-			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
-				correlationIDTp=TransformerPool.configureTransformer(this, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(), OutputType.TEXT,false,null);
-			}
-			if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
-				labelTp=TransformerPool.configureTransformer(this, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(), OutputType.TEXT,false,null);
 			}
 		}
 		if (StringUtils.isNotEmpty(getRetryXPath())) {
@@ -365,7 +302,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	private void configureElement(@Nonnull final IPipe pipe) throws ConfigurationException {
 		PipeForward pf = new PipeForward();
 		pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
-		pipe.registerForward(pf);
+		pipe.addForward(pf);
 		configure(pipe);
 	}
 
@@ -382,10 +319,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		ISender sender=getSender();
 		if (sender!=null && StringUtils.isEmpty(sender.getName())) {
 			sender.setName(getName() + "-sender");
-		}
-		ICorrelatedPullingListener listener=getListener();
-		if (listener!=null && StringUtils.isEmpty(listener.getName())) {
-			listener.setName(getName() + "-replylistener");
 		}
 	}
 
@@ -486,10 +419,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		return new PipeRunResult(forward, result);
 	}
 
-	private PipeRunResult sendMessageWithRetries(Message input, Message originalMessage, PipeLineSession session) throws IOException, InterruptedException, TransformerException, SAXException, TimeoutException, SenderException, PipeRunException, ListenerException {
+	protected PipeRunResult sendMessageWithRetries(Message input, Message originalMessage, PipeLineSession session) throws IOException, InterruptedException, TransformerException, SAXException, TimeoutException, SenderException, PipeRunException, ListenerException {
 		Map<String,Object> threadContext = new LinkedHashMap<>();
-		String correlationID = session.getCorrelationId();
-		String messageID = null;
 		// sendResult has a messageID for async senders, the result for sync senders
 		int retryInterval = getRetryMinInterval();
 		PipeRunResult sendResult = null;
@@ -530,14 +461,16 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			}
 		}
 
-		if (!replyIsValid){
+		if (!replyIsValid) {
 			throw new PipeRunException(this, "invalid reply message is received");
 		}
 
-		if (sendResult == null){
+		if (sendResult == null) {
 			throw new PipeRunException(this, "retrieved null result from sender");
 		}
 
+		String correlationID = session.getCorrelationId();
+		String messageID = "-"; // TODO perhaps this should session.getMessageId();
 		if (getSender().isSynchronous()) {
 			if (log.isInfoEnabled()) {
 				log.info("sent message to [{}] synchronously", getSender().getName());
@@ -557,13 +490,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 
 		correlationID = logToMessageLog(input, session, originalMessage, messageID, correlationID);
 
-		if (getListener() != null) {
-			Message result = Message.asMessage(listenerProcessor.getMessage(getListener(), correlationID, session));
-			sendResult.setResult(result);
-		}
-		if (Message.isNull(sendResult.getResult())) {
-			sendResult.setResult(new Message(""));
-		}
+		postSendAction(sendResult, correlationID, session);
+
 		if (timeoutPending) {
 			timeoutPending = false;
 			throwEvent(PIPE_CLEAR_TIMEOUT_MONITOR_EVENT);
@@ -572,56 +500,31 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		return sendResult;
 	}
 
+	protected PipeRunResult postSendAction(PipeRunResult sendResult, String correlationID, PipeLineSession session) throws ListenerException, TimeoutException {
+		return sendResult;
+	}
+
 	private String logToMessageLog(final Message input, final PipeLineSession session, final Message originalMessage, final String messageID, String correlationID) throws TransformerException, IOException, SAXException, SenderException {
-		ITransactionalStorage messageLog = getMessageLog();
-		if (messageLog == null) {
+		if (getMessageLog() == null) {
 			return correlationID;
 		}
 		long messageLogStartTime= System.currentTimeMillis();
-		String messageTrail="no audit trail";
-		if (auditTrailTp!=null) {
-			if (isUseInputForExtract()){
-				messageTrail=auditTrailTp.transform(originalMessage,null);
-			} else {
-				messageTrail=auditTrailTp.transform(input,null);
-			}
-		} else {
-			if (StringUtils.isNotEmpty(getAuditTrailSessionKey())) {
-				messageTrail = session.getString(getAuditTrailSessionKey());
-			}
-		}
-		String storedMessageID= messageID;
-		if (storedMessageID==null) {
-			storedMessageID="-";
-		}
-		if (correlationIDTp!=null) {
-			if (StringUtils.isNotEmpty(getCorrelationIDSessionKey())) {
-				String sourceString = session.getString(getCorrelationIDSessionKey());
-				correlationID =correlationIDTp.transform(sourceString,null);
-			} else {
-				if (isUseInputForExtract()) {
-					correlationID =correlationIDTp.transform(originalMessage,null);
-				} else {
-					correlationID =correlationIDTp.transform(input,null);
-				}
-			}
-			if (StringUtils.isEmpty(correlationID)) {
-				correlationID ="-";
-			}
-		}
-		String label=null;
-		if (labelTp!=null) {
-			if (isUseInputForExtract()) {
-				label=labelTp.transform(originalMessage,null);
-			} else {
-				label=labelTp.transform(input,null);
-			}
-		}
-		messageLog.storeMessage(storedMessageID, correlationID,new Date(),messageTrail,label, new MessageWrapper(input, storedMessageID, correlationID));
 
-		long messageLogEndTime = System.currentTimeMillis();
-		long messageLogDuration = messageLogEndTime - messageLogStartTime;
-		getPipeSubStatistics("MessageLog").record(messageLogDuration);
+		try {
+			return doLogToMessageLog(input, session, originalMessage, messageID, correlationID);
+		} finally {
+			long messageLogEndTime = System.currentTimeMillis();
+			long messageLogDuration = messageLogEndTime - messageLogStartTime;
+			getPipeSubStatistics("MessageLog").record(messageLogDuration);
+		}
+	}
+
+	protected String doLogToMessageLog(final Message input, final PipeLineSession session, final Message originalMessage, final String messageID, String correlationID) throws SenderException {
+		return storeMessage(messageID, correlationID, input, "no audit trail", null);
+	}
+
+	protected final String storeMessage(String messageID, String correlationID, Message messageToStore, String messageTrail, String label) throws SenderException {
+		messageLog.storeMessage(messageID, correlationID, new Date(), messageTrail, null, new MessageWrapper(messageToStore, messageID, correlationID));
 		return correlationID;
 	}
 
@@ -707,14 +610,14 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		if (outputValidator != null) {
 			log.debug("validating response");
 			PipeRunResult validationResult;
-			validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, Message.asMessage(output), session);
+			validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, output, session);
 			if (validationResult!=null) {
 				if (!validationResult.isSuccessful()) {
 					return validationResult;
 				}
 				output = validationResult.getResult();
 			}
-			log.debug("response after validating ({}) [{}]", () -> ClassUtils.nameOf(validationResult.getResult()), validationResult::getResult);
+			log.debug("response after validating [{}]", validationResult::getResult);
 		}
 
 		if (outputWrapper != null) {
@@ -728,7 +631,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			}
 			output = wrapResult.getResult();
 
-			log.debug("response after wrapping ({}) [{}]", () -> ClassUtils.nameOf(wrapResult.getResult()), wrapResult::getResult);
+			log.debug("response after wrapping [{}]", wrapResult::getResult);
 		}
 
 		if (outputValidator != null && outputWrapper != null) {
@@ -737,14 +640,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		return new PipeRunResult(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, "dummy"), output);
 	}
 
-	private boolean validResult(Object result) throws IOException {
-		boolean validResult = true;
-		if (isCheckXmlWellFormed() || StringUtils.isNotEmpty(getCheckRootTag())) {
-			if (!XmlUtils.isWellFormed(Message.asString(result), getCheckRootTag())) {
-				validResult = false;
-			}
-		}
-		return validResult;
+	private boolean validResult(Message result) throws IOException {
+		return (!isCheckXmlWellFormed() && !StringUtils.isNotEmpty(getCheckRootTag()))
+				|| XmlUtils.isWellFormed(result.asString(), getCheckRootTag());
 	}
 
 	protected PipeRunResult sendMessage(Message input, PipeLineSession session, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeoutException, InterruptedException, IOException {
@@ -756,7 +654,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				exitState = PRESUMED_TIMEOUT_FORWARD;
 				throw new TimeoutException(PRESUMED_TIMEOUT_FORWARD);
 			}
-			try {
+			try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("sender", sender.getName())){
 				SenderResult senderResult = sender.sendMessage(input, session);
 				PipeForward forward = findForwardForResult(senderResult);
 				sendResult = new PipeRunResult(forward, senderResult.getResult());
@@ -862,7 +760,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			currentInterval = retryInterval;
 			retryInterval = retryInterval * 2;
 		}
-		log.warn(description+", starts waiting for [" + currentInterval + "] seconds");
+		log.warn("{}, starts waiting for [{}] seconds", description, currentInterval);
 		while (currentInterval-- > 0) {
 			Thread.sleep(1000);
 		}
@@ -873,13 +771,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	public void start() throws PipeStartException {
 		if (StringUtils.isEmpty(getStubFilename())) {
 			try {
-				getSender().open();
-				if (getListener() != null) {
-					getListener().open();
-				}
-
-			} catch (Throwable t) {
-				PipeStartException pse = new PipeStartException("could not start", t);
+				getSender().start();
+			} catch (LifecycleException lifecycleException) {
+				PipeStartException pse = new PipeStartException("could not start", lifecycleException);
 				pse.setPipeNameInError(getName());
 				throw pse;
 			}
@@ -901,7 +795,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		ITransactionalStorage<?> messageLog = getMessageLog();
 		if (messageLog!=null) {
 			try {
-				messageLog.open();
+				messageLog.start();
 			} catch (Exception e) {
 				PipeStartException pse = new PipeStartException("could not open messagelog", e);
 				pse.setPipeNameInError(getName());
@@ -914,17 +808,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		if (StringUtils.isEmpty(getStubFilename())) {
 			log.info("is closing");
 			try {
-				getSender().close();
-			} catch (SenderException e) {
+				getSender().stop();
+			} catch (LifecycleException e) {
 				log.warn("exception closing sender", e);
-			}
-			if (getListener() != null) {
-				try {
-					log.info("is closing; closing listener");
-					getListener().close();
-				} catch (ListenerException e) {
-					log.warn("Exception closing listener", e);
-				}
 			}
 		}
 
@@ -944,7 +830,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		ITransactionalStorage messageLog = getMessageLog();
 		if (messageLog!=null) {
 			try {
-				messageLog.close();
+				messageLog.stop();
 			} catch (Exception e) {
 				log.warn("Exception closing messageLog", e);
 			}
@@ -979,14 +865,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		log.debug("pipe [{}] registered sender [{}] with properties [{}]", this::getName, sender::getName, sender::toString);
 	}
 
-	/** Listener for responses on the request sent */
-	protected void setListener(ICorrelatedPullingListener listener) {
-		this.listener = listener;
-		log.debug("pipe [{}] registered listener [{}]", this::getName, listener::toString);
-	}
-
 	/** log of all messages sent */
-	public void setMessageLog(ITransactionalStorage messageLog) {
+	public void setMessageLog(ITransactionalStorage<?> messageLog) {
 		this.messageLog = messageLog;
 		messageLog.setName(MESSAGE_LOG_NAME_PREFIX+getName()+MESSAGE_LOG_NAME_SUFFIX);
 		if (StringUtils.isEmpty(messageLog.getSlotId())) {
@@ -1048,67 +928,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	 */
 	public void setLinkMethod(LinkMethod method) {
 		linkMethod = method;
-	}
-
-
-	/** Stylesheet to extract correlationid from message */
-	public void setCorrelationIDStyleSheet(String string) {
-		correlationIDStyleSheet = string;
-	}
-
-	/** XPath expression to extract correlationid from message */
-	public void setCorrelationIDXPath(String string) {
-		correlationIDXPath = string;
-	}
-
-	/** Namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceUri</code>-definitions */
-	public void setCorrelationIDNamespaceDefs(String correlationIDNamespaceDefs) {
-		this.correlationIDNamespaceDefs = correlationIDNamespaceDefs;
-	}
-
-	/** Key of a PipelineSession-variable. If specified, the value of the PipelineSession variable is used as input for the XPathExpression or stylesheet, instead of the current input message */
-	public void setCorrelationIDSessionKey(String string) {
-		correlationIDSessionKey = string;
-	}
-
-
-	/** Stylesheet to extract label from message */
-	public void setLabelStyleSheet(String string) {
-		labelStyleSheet = string;
-	}
-
-	/** XPath expression to extract label from message */
-	public void setLabelXPath(String string) {
-		labelXPath = string;
-	}
-
-	/** Namespace defintions for labelXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceUri</code>-definitions */
-	public void setLabelNamespaceDefs(String labelXNamespaceDefs) {
-		this.labelNamespaceDefs = labelXNamespaceDefs;
-	}
-
-
-	/** XPath expression to extract audit trail from message */
-	public void setAuditTrailXPath(String string) {
-		auditTrailXPath = string;
-	}
-
-	/** Namespace defintions for auditTrailXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceUri</code>-definitions */
-	public void setAuditTrailNamespaceDefs(String auditTrailNamespaceDefs) {
-		this.auditTrailNamespaceDefs = auditTrailNamespaceDefs;
-	}
-
-	/** Key of a PipelineSession-variable. If specified, the value of the PipelineSession variable is used as audit trail (instead of the default 'no audit trail) */
-	public void setAuditTrailSessionKey(String string) {
-		auditTrailSessionKey = string;
-	}
-
-	/**
-	 * If set <code>true</code>, the input of the Pipe is used to extract audit trail, correlationid and label (instead of the wrapped input)
-	 * @ff.default true
-	 */
-	public void setUseInputForExtract(boolean b) {
-		useInputForExtract = b;
 	}
 
 	/** Next to common usage in {@link AbstractPipe}, also strings in the error/logstore are masked */

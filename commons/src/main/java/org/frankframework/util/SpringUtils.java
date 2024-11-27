@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,10 @@ import org.springframework.context.ApplicationContext;
 
 public class SpringUtils {
 
-	@SuppressWarnings("unchecked")
+	/**
+	 * Even though this has been deprecated, we cannot use the new/alternative method due to the autowireByName capability.
+	 */
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	public static <T> T createBean(ApplicationContext applicationContext, Class<T> beanClass) {
 		return (T) applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 	}
@@ -35,7 +38,7 @@ public class SpringUtils {
 	}
 
 	public static void autowire(ApplicationContext applicationContext, Object existingBean, int autowireMode) {
-		if (applicationContext==null) {
+		if (applicationContext == null) {
 			throw new NullPointerException("ApplicationContext not set");
 		}
 

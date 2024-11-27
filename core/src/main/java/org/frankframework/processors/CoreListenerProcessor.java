@@ -36,7 +36,8 @@ public class CoreListenerProcessor<M> implements ListenerProcessor<M> {
 
 	@Override
 	public Message getMessage(ICorrelatedPullingListener<M> listener, String correlationID, PipeLineSession pipeLineSession) throws ListenerException, TimeoutException {
-		if (log.isDebugEnabled()) log.debug(getLogPrefix(listener, pipeLineSession) + "starts listening for return message with correlationID ["+ correlationID	+ "]");
+		if (log.isDebugEnabled())
+			log.debug("{}starts listening for return message with correlationID [{}]", getLogPrefix(listener, pipeLineSession), correlationID);
 		Message result;
 		Map<String,Object> threadContext = new HashMap<>();
 		try {
@@ -44,17 +45,17 @@ public class CoreListenerProcessor<M> implements ListenerProcessor<M> {
 			RawMessageWrapper<M> msg = listener.getRawMessage(correlationID, threadContext);
 			// TODO: Add a method to check if it is an empty / null RawMessageWrapper?
 			if (msg==null) {
-				log.info(getLogPrefix(listener, pipeLineSession)+"received null reply message");
+				log.info("{}received null reply message", getLogPrefix(listener, pipeLineSession));
 			} else {
-				log.info(getLogPrefix(listener, pipeLineSession)+"received reply message");
+				log.info("{}received reply message", getLogPrefix(listener, pipeLineSession));
 			}
 			result = listener.extractMessage(msg, threadContext);
 		} finally {
 			try {
-				log.debug(getLogPrefix(listener, pipeLineSession)+"is closing");
+				log.debug("{}is closing", getLogPrefix(listener, pipeLineSession));
 				listener.closeThread(threadContext);
 			} catch (ListenerException le) {
-				log.error(getLogPrefix(listener, pipeLineSession)+"got error on closing", le);
+				log.error("{}got error on closing", getLogPrefix(listener, pipeLineSession), le);
 			}
 		}
 		return result;
@@ -62,9 +63,9 @@ public class CoreListenerProcessor<M> implements ListenerProcessor<M> {
 
 	protected String getLogPrefix(ICorrelatedPullingListener<M> listener, PipeLineSession session){
 		StringBuilder sb = new StringBuilder();
-		sb.append("Listener [" + listener.getName() + "] ");
+		sb.append("Listener [").append(listener.getName()).append("] ");
 		if (session != null) {
-			sb.append("msgId [" + session.getMessageId() + "] ");
+			sb.append("msgId [").append(session.getMessageId()).append("] ");
 		}
 		return sb.toString();
 	}

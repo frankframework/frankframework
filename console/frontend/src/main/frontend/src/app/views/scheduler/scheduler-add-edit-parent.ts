@@ -7,10 +7,10 @@ interface StateItem {
 }
 
 export class SchedulerAddEditParent {
-  state: StateItem[] = [];
-  selectedConfiguration: string = '';
-  editMode = false;
-  form: JobForm = {
+  protected state: StateItem[] = [];
+  protected selectedConfiguration: string = '';
+  protected editMode = false;
+  protected form: JobForm = {
     name: '',
     group: '',
     adapter: null,
@@ -22,8 +22,8 @@ export class SchedulerAddEditParent {
     locker: false,
     lockkey: '',
   };
-  configurations: Configuration[] = [];
-  adapters: Record<string, Adapter> = {};
+  protected configurations: Configuration[] = [];
+  protected adapters: Record<string, Adapter> = {};
 
   reset(): void {
     this.form = {

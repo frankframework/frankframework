@@ -2,13 +2,14 @@ package org.frankframework.filesystem;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import java.io.IOException;
 import java.nio.file.DirectoryStream;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-import org.frankframework.filesystem.mock.MockFileSystem;
+import jakarta.annotation.Nonnull;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -258,27 +259,26 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void testEmptyFilteredStream() throws Exception {
-		IBasicFileSystem<?> fs = new MockFileSystem() {
+		IBasicFileSystem<?> fs = new LocalFileSystem() {
 
 			@Override
-			public DirectoryStream<?> listFiles(String folder) {
-				return new DirectoryStream() {
-
+			public DirectoryStream<Path> list(String folder, TypeFilter filter) {
+				return new DirectoryStream<>() {
 					@Override
-					public void close() throws IOException {
+					public void close() {
 						// nothing needed
 					}
 
 					@Override
-					public Iterator iterator() {
+					@Nonnull
+					public Iterator<Path> iterator() {
 						return Collections.emptyIterator();
 					}
-
 				};
 			}
 		};
 
-		Stream<?> stream = FileSystemUtils.getFilteredStream(fs, null, null, null);
+		Stream<?> stream = FileSystemUtils.getFilteredStream(fs, null, null, null, TypeFilter.FILES_ONLY);
 		assertFalse(stream.findAny().isPresent());
 	}
 }

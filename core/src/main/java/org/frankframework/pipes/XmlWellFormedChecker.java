@@ -23,6 +23,7 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.doc.Forward;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
@@ -31,12 +32,11 @@ import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
  *<code>Pipe</code> that checks the well-formedness of the input message.
  * If <code>root</code> is given then this is also checked.
  *
- * @ff.forward parserError a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case
- * @ff.forward failure The document is not well formed.
- *
  * @author  Peter Leeuwenburgh
  * @since	4.4.5
  */
+@Forward(name = "parserError", description = "a parser exception occurred, probably caused by non-well-formed XML. If not specified, \"failure\" is used in such a case")
+@Forward(name = "failure", description = "the document is not well formed")
 public class XmlWellFormedChecker extends FixedForwardPipe implements IValidator {
 	private String root = null;
 

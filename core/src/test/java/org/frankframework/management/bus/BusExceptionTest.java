@@ -6,11 +6,12 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Level;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.testutil.TestAppender;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.testutil.TestAppender;
 
 class BusExceptionTest {
 
@@ -27,9 +28,8 @@ class BusExceptionTest {
 	@ParameterizedTest
 	@MethodSource("data")
 	void testExceptionMessage(String expectedLogMessage, Level expectedLogLevel, Exception innerException) {
-		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m - %throwable{1}").build(); //only log the first line of the exception
-		TestAppender.addToRootLogger(appender);
-		try {
+		//only log the first line of the exception
+		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m - %throwable{1}").build()) {
 			Exception ex = new BusException(BUS_EXCEPTION_MESSAGE, innerException);
 			assertEquals(BUS_EXCEPTION_MESSAGE + expectedLogMessage, ex.getMessage());
 
@@ -45,14 +45,12 @@ class BusExceptionTest {
 			assertEquals(expectedLogLevel.name(), level, "["+level+"] did not match the expected log level ["+expectedLogLevel+"]");
 
 			//Check log message
-			assertEquals("outer exception", message);
+			assertEquals("outer exception", message.trim());
 
 			//Check log exception
 			if(exception != null) {
-				assertEquals("org.frankframework.configuration.ConfigurationException" + expectedLogMessage, exception);
+				assertEquals("org.frankframework.configuration.ConfigurationException" + expectedLogMessage, exception.trim());
 			}
-		} finally {
-			TestAppender.removeAppender(appender);
 		}
 	}
 }

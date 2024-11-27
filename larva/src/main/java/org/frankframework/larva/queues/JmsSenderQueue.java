@@ -26,6 +26,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jms.JmsSender;
+import org.frankframework.lifecycle.LifecycleException;
 
 public class JmsSenderQueue extends HashMap<String, Object> implements Queue {
 
@@ -48,8 +49,8 @@ public class JmsSenderQueue extends HashMap<String, Object> implements Queue {
 	@Override
 	public void open() throws ConfigurationException {
 		try {
-			jmsSender.open();
-		} catch (SenderException e) {
+			jmsSender.start();
+		} catch (LifecycleException e) {
 			throw new ConfigurationException(e);
 		}
 	}

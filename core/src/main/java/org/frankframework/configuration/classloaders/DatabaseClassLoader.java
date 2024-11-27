@@ -17,11 +17,12 @@ package org.frankframework.configuration.classloaders;
 
 import java.util.Map;
 
-import org.frankframework.configuration.ClassLoaderException;
-import org.frankframework.configuration.ConfigurationUtils;
 import org.springframework.context.ApplicationContext;
 
-public class DatabaseClassLoader extends JarBytesClassLoader {
+import org.frankframework.configuration.ClassLoaderException;
+import org.frankframework.configuration.ConfigurationUtils;
+
+public class DatabaseClassLoader extends AbstractJarBytesClassLoader {
 
 	private Map<String, Object> configuration;
 	private String datasourceName = null;
@@ -82,8 +83,8 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(super.toString());
-		if(datasourceName != null) builder.append(" datasourceName ["+datasourceName+"]");
-		if(configuration != null && getFileName() != null) builder.append(" fileName ["+getFileName()+"]");
+		if(datasourceName != null) builder.append(" datasourceName [").append(datasourceName).append("]");
+		if(configuration != null && getFileName() != null) builder.append(" fileName [").append(getFileName()).append("]");
 		return builder.toString();
 	}
 }

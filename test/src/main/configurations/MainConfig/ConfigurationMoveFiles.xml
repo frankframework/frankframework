@@ -1,0 +1,174 @@
+<module>
+	<adapter name="MoveFiles" description="Test the functioning moving files with the LocalFileSystemPipe">
+		<receiver>
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-MoveFiles"/>
+		</receiver>
+		<pipeline firstPipe="cleanup dir">
+			<exits>
+				<exit path="EXIT" state="success"/>
+				<exit path="ERROR" state="error"/>
+			</exits>
+
+			<LocalFileSystemPipe
+				name="cleanup dir"
+				action="rmdir"
+				removeNonEmptyFolder="true"
+				createFolder="false"
+				inputFolder="${testdata.dir}/mfp/"
+			>
+				<Forward name="success" path="cleanup dir2"/>
+				<Forward name="folderNotFound" path="cleanup dir2"/>
+			</LocalFileSystemPipe>
+			<LocalFileSystemPipe
+				name="cleanup dir2"
+				action="rmdir"
+				removeNonEmptyFolder="true"
+				createFolder="false"
+				inputFolder="${testdata.dir}/mfp2/"
+			>
+				<Forward name="success" path="write file"/>
+				<Forward name="folderNotFound" path="write file"/>
+			</LocalFileSystemPipe>
+
+			<!-- Write file -->
+			<pipe
+				name="write file"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				action="write"
+				filename="${testdata.dir}/mfp/test1.txt"
+				getInputFromFixedValue="test"
+				createFolder="true">
+				<forward name="success" path="write file2"/>
+			</pipe>
+
+			<pipe
+				name="write file2"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				action="write"
+				filename="${testdata.dir}/mfp/test2.txt"
+				getInputFromFixedValue="test2"
+				createFolder="true">
+				<forward name="success" path="write file3"/>
+			</pipe>
+
+			<pipe
+				name="write file3"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				action="write"
+				filename="${testdata.dir}/mfp/test3.abc"
+				getInputFromFixedValue="test3"
+				createFolder="true">
+				<forward name="success" path="write file4"/>
+			</pipe>
+
+			<pipe
+				name="write file4"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				action="write"
+				filename="${testdata.dir}/mfp/sub/test4.txt"
+				getInputFromFixedValue="test4"
+				createFolder="true">
+				<forward name="success" path="switchAction"/>
+			</pipe>
+
+			<!-- choose which action should be done -->
+			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch" xpathExpression="request/@action" getInputFromSessionKey="originalMessage"/>
+
+			<!-- Move file with use of filename -->
+			<pipe
+				name="move file [dir_file]"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				action="move"
+				filename="${testdata.dir}/mfp/test1.txt"
+				destination="${testdata.dir}/mfp2"
+				createFolder="true">
+				<forward name="success" path="list files"/>
+			</pipe>
+
+			<!-- Move file with use of input message -->
+			<pipe
+				name="move file [input]"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				action="move"
+				destination="${testdata.dir}/mfp2"
+				getInputFromFixedValue="${testdata.dir}/mfp/test1.txt"
+				createFolder="true">
+				<forward name="success" path="list files"/>
+			</pipe>
+
+			<!-- Move file with use of wildcard and directory -->
+			<pipe
+				name="move file [dir_wildcard]"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				action="move"
+				inputFolder="${testdata.dir}/mfp"
+				wildcard="*.txt"
+				destination="${testdata.dir}/mfp2"
+				createFolder="true">
+				<forward name="success" path="list files with count check"/>
+			</pipe>
+
+			<!-- Move file with use of wildcard and input message -->
+			<pipe
+				name="move file [input_wildcard]"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				action="move"
+				wildcard="*.txt"
+				destination="${testdata.dir}/mfp2"
+				createFolder="true"
+				getInputFromFixedValue="${testdata.dir}/mfp">
+				<forward name="success" path="list files with count check"/>
+			</pipe>
+
+			<!-- Move and rename file with use move2fileSessionKey -->
+			<pipe
+				name="move file [move2fileSessionKey]"
+				className="org.frankframework.pipes.PutInSession"
+				sessionKey="move2destination"
+				value="${testdata.dir}/mfp2">
+				<forward name="success" path="move file [move2fileSessionKey]2"/>
+			</pipe>
+			<pipe
+				name="move file [move2fileSessionKey]2"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				action="move"
+				filename="${testdata.dir}/mfp/test1.txt"
+				createFolder="true">
+				<param name="destination" sessionKey="move2destination"/>
+				<forward name="success" path="rename file"/>
+			</pipe>
+			<pipe
+				name="rename file"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				action="rename"
+				filename="${testdata.dir}/mfp2/test1.txt"
+				destination="${testdata.dir}/mfp2/new_test.txt">
+				<forward name="success" path="list files"/>
+			</pipe>
+
+			<!-- List files -->
+			<pipe
+				name="list files"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				action="list"
+				inputFolder="${testdata.dir}/mfp2/"
+				wildcard="*.*"
+				createFolder="true">
+				<forward name="success" path="EXIT"/>
+			</pipe>
+			<LocalFileSystemPipe
+				name="list files with count check"
+				action="list"
+				inputFolder="${testdata.dir}/mfp2/"
+				typeFilter="files_and_folders"
+				createFolder="true"
+				wildcard="*.txt">
+				<forward name="success" path="output-check"/>
+			</LocalFileSystemPipe>
+			<XmlIfPipe name="output-check" xpathExpression="count(/directory/file) = 2" thenForwardName="answerOk" elseForwardName="ERROR"/>
+			<FixedResultPipe name="answerOk" returnString="ok">
+				<Forward name="success" path="EXIT" />
+			</FixedResultPipe>
+		</pipeline>
+	</adapter>
+</module>

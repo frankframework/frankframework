@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
  */
 package org.frankframework.senders;
 
+import jakarta.annotation.Nonnull;
 import lombok.Setter;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.IbisManager;
-import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -37,36 +37,31 @@ import org.frankframework.util.XmlUtils;
  * @author	Lars Sinke
  * @author	Niels Meijer
  */
-public class ReloadSender extends SenderWithParametersBase {
+public class ReloadSender extends AbstractSenderWithParameters {
 
 	private boolean forceReload = false;
 	private @Setter IbisManager ibisManager;
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 
 		String configName = null;
 		String newVersion = null;
 		boolean forceReload = getForceReload();
 
-		ParameterValueList pvl = null;
-		try {
-			if (paramList != null) {
-				pvl = paramList.getValues(message, session);
-				if(pvl.get("name") != null)
-					configName = pvl.get("name").asStringValue();
-				if(pvl.get("forceReload") != null)
-					forceReload = pvl.get("forceReload").asBooleanValue(false);
-			}
-		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
+		ParameterValueList pvl = getParameterValueList(message, session);
+		if(pvl != null) {
+			if(pvl.contains("name"))
+				configName = pvl.get("name").asStringValue();
+			if(pvl.contains("forceReload"))
+				forceReload = pvl.get("forceReload").asBooleanValue(false);
 		}
 
 		try {
 			if(configName == null)
 				configName = XmlUtils.evaluateXPathNodeSetFirstElement(message.asString(), "row/field[@name='NAME']");
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix()+"error evaluating Xpath expression configName", e);
+			throw new SenderException("error evaluating Xpath expression configName", e);
 		}
 
 		try {
@@ -74,7 +69,7 @@ public class ReloadSender extends SenderWithParametersBase {
 				newVersion = XmlUtils.evaluateXPathNodeSetFirstElement(message.asString(), "row/field[@name='VERSION']");
 			}
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix()+"error evaluating Xpath expression activeVersion", e);
+			throw new SenderException("error evaluating Xpath expression activeVersion", e);
 		}
 
 		Configuration configuration = ibisManager.getConfiguration(configName);
@@ -87,7 +82,7 @@ public class ReloadSender extends SenderWithParametersBase {
 				return new SenderResult("Reload " + configName + " succeeded");
 			}
 		} else {
-			log.warn("Configuration [" + configName + "] not loaded yet");
+			log.warn("Configuration [{}] not loaded yet", configName);
 		}
 		return new SenderResult(true, new Message("Reload " + configName + " skipped"), null, "skipped");
 	}

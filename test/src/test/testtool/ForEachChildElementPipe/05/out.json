@@ -1,10 +1,6 @@
 {
     "message": "<results>\n<result item=\"1\">\n<reply>goodbye</reply>\n</result>\n<result item=\"2\">\n<request>mdc local</request>\n</result>\n<result item=\"3\">\n<request>mdc export</request>\n</result>\n<result item=\"4\">\n<request>mdc local</request>\n</result>\n</results>",
 	"messageContext": {
-		"Metadata.ModificationTime": "2023-11-23 15:20:06.869",
-		"Metadata.Size": "243",
-		"Metadata.Name": "dontcare.tmp",
-		"Metadata.Location": "dontcare.tmp"
 	},
     "logContext": {
         "listener.type": "JavaListener",

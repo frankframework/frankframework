@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.frankframework.receivers.RawMessageWrapper;
  * @author  Gerrit van Brakel
  * @since	4.9
  */
-public interface IKnowsDeliveryCount<M> {
+public interface IKnowsDeliveryCount<M> extends IListener<M> {
 
 	int getDeliveryCount(RawMessageWrapper<M> rawMessage);
 

@@ -18,6 +18,7 @@ package org.frankframework.batch;
 import java.util.List;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.ISenderWithParameters;
@@ -51,12 +52,12 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 	@Override
 	public void open() throws SenderException {
 		super.open();
-		sender.open();
+		sender.start();
 	}
 	@Override
 	public void close() throws SenderException {
 		super.close();
-		sender.close();
+		sender.stop();
 	}
 
 	@Override

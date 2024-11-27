@@ -2,17 +2,12 @@ package org.frankframework.jms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import javax.jms.BytesMessage;
-import javax.jms.TextMessage;
-import javax.xml.soap.SOAPConstants;
+import jakarta.jms.BytesMessage;
+import jakarta.jms.TextMessage;
+import jakarta.xml.soap.SOAPConstants;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.soap.SoapWrapper;
-import org.frankframework.stream.Message;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +15,11 @@ import org.junit.jupiter.api.Test;
 
 import com.mockrunner.mock.jms.MockBytesMessage;
 import com.mockrunner.mock.jms.MockTextMessage;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.soap.SoapWrapper;
+import org.frankframework.stream.Message;
 
 class JMSFacadeTest {
 
@@ -43,9 +43,9 @@ class JMSFacadeTest {
 	}
 
 	@AfterEach
-	void tearDown() throws IOException {
+	void tearDown() {
 		message.close();
-		jmsFacade.close();
+		jmsFacade.stop();
 	}
 
 	@Test

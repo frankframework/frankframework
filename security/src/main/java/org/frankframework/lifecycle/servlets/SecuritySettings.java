@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,12 +15,13 @@
 */
 package org.frankframework.lifecycle.servlets;
 
-import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
+import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.env.PropertyResolver;
 
 import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.util.EnumUtils;
 
 @Log4j2
@@ -28,10 +29,20 @@ public class SecuritySettings {
 	public static final String AUTH_ENABLED_KEY = "application.security.http.authentication";
 	public static final String HTTPS_ENABLED_KEY = "application.security.http.transportGuarantee";
 
-	private static boolean webSecurityEnabled = true;
+	private static Boolean webSecurityEnabled = null;
 	private static TransportGuarantee defaultTransportGuarantee = TransportGuarantee.CONFIDENTIAL;
 
+	// package private for testing purposes
+	static void resetSecuritySettings() {
+		webSecurityEnabled = null;
+		defaultTransportGuarantee = TransportGuarantee.CONFIDENTIAL;
+	}
+
 	public static void setupDefaultSecuritySettings(PropertyResolver properties) {
+		if(webSecurityEnabled != null) {
+			return; // Already configured, skipping...
+		}
+
 		boolean isDtapStageLoc = "LOC".equalsIgnoreCase(properties.getProperty("dtap.stage"));
 		String isAuthEnabled = properties.getProperty(AUTH_ENABLED_KEY);
 		webSecurityEnabled = StringUtils.isNotEmpty(isAuthEnabled) ? Boolean.parseBoolean(isAuthEnabled) : !isDtapStageLoc;

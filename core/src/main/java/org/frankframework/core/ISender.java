@@ -15,24 +15,23 @@
 */
 package org.frankframework.core;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.stream.Message;
 
 /**
- * The <code>ISender</code> is responsible for sending a message to
- * some destination.
+ * Marks an implementation as responsible for sending a message to some destination.
  *
  * @author  Gerrit van Brakel
  */
 @FrankDocGroup(FrankDocGroupValue.SENDER)
-@ElementType(ElementTypes.ENDPOINT)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ENDPOINT)
 public interface ISender extends IConfigurable {
 
 	/**
@@ -47,12 +46,12 @@ public interface ISender extends IConfigurable {
 	 * This method will be called to start the sender. After this method is called the sendMessage method may be called.
 	 * Purpose of this method is to reduce creating connections to databases etc. in the {@link #sendMessage(Message, PipeLineSession) sendMessage()} method.
 	 */
-	void open() throws SenderException;
+	void start();
 
 	/**
 	 * Stop/close the sender and deallocate resources.
 	 */
-	void close() throws SenderException;
+	void stop();
 
 	/**
 	 * When <code>true</code>, the result of sendMessage is the reply of the request.
@@ -77,7 +76,7 @@ public interface ISender extends IConfigurable {
 	 * Multiple objects may try to call this method at the same time, from different threads.
 	 * Implementations of this method should therefore be thread-safe, or <code>synchronized</code>.
 	 */
-	SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException;
+	@Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException;
 
 	default @Nonnull Message sendMessageOrThrow(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		SenderResult senderResult = sendMessage(message, session);

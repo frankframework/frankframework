@@ -2,18 +2,18 @@ package org.frankframework.http;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.junit.Ignore;
-
-org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.HttpSenderBase.HttpMethod;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.PropertyUtil;
-
 import org.frankframework.util.LogUtil;
 
 public class HttpSenderOAuthTest3NNClientCredentials {
@@ -45,7 +45,7 @@ public class HttpSenderOAuthTest3NNClientCredentials {
 
 
 	@Test
-	@Ignore("must use basic authentication for this provider")
+	@Disabled("must use basic authentication for this provider")
 	public void testSendClientCredentialsTokenRequestUsingRequestParameters() throws Exception {
 
 		String tokenUrl = tokenEndpoint+

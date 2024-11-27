@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { AppService } from 'src/app/app.service';
 import { BaseIframeComponent } from '../iframe.base';
@@ -8,15 +8,13 @@ import { BaseIframeComponent } from '../iframe.base';
   templateUrl: '../iframe.component.html',
   styleUrls: ['../iframe.component.scss'],
 })
-export class IframeLadybugComponent
-  extends BaseIframeComponent
-  implements OnInit
-{
+export class IframeLadybugComponent extends BaseIframeComponent implements OnInit, OnDestroy {
   constructor(sanitizer: DomSanitizer, appService: AppService) {
     super(sanitizer, appService);
   }
 
-  ngOnInit(): void {
-    this.setIframeSource('testtool');
+  override ngOnInit(): void {
+    super.ngOnInit();
+    this.setIframeSource('ladybug');
   }
 }

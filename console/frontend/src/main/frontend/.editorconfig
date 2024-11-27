@@ -5,8 +5,13 @@ indent_style = space
 indent_size = 2
 insert_final_newline = true
 trim_trailing_whitespace = true
-max_line_length = 80
+max_line_length = 120
 
 [*.md]
 max_line_length = off
 trim_trailing_whitespace = false
+
+[{*.ats,*.cts,*.mts,*.ts}]
+ij_typescript_spaces_within_imports = true
+ij_typescript_use_double_quotes = false
+ij_typescript_force_quote_style = true

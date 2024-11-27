@@ -7,10 +7,7 @@ import { AppConstants, AppService } from 'src/app/app.service';
 import { DebugService } from 'src/app/services/debug.service';
 import { MiscService } from 'src/app/services/misc.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
-import {
-  AdapterstatisticsService,
-  Statistics,
-} from './adapterstatistics.service';
+import { AdapterstatisticsService, Statistics } from './adapterstatistics.service';
 
 @Component({
   selector: 'app-adapterstatistics',
@@ -41,11 +38,7 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     // hoverBackgroundColor: "#2f4050",
     hoverBorderColor: '#2f4050',
   };
-  hourlyStatistics: ChartData<
-    'line',
-    Statistics['hourly'][0]['count'][],
-    Statistics['hourly'][0]['time']
-  > = {
+  hourlyStatistics: ChartData<'line', Statistics['hourly'][0]['count'][], Statistics['hourly'][0]['time']> = {
     labels: [],
     datasets: [],
   };
@@ -102,11 +95,9 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     private Misc: MiscService,
   ) {
     this.appConstants = this.appService.APP_CONSTANTS;
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(
-      () => {
-        this.appConstants = this.appService.APP_CONSTANTS;
-      },
-    );
+    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
+      this.appConstants = this.appService.APP_CONSTANTS;
+    });
     this._subscriptions.add(appConstantsSubscription);
   }
 
@@ -123,9 +114,7 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     if (this.appConstants['Statistics.boundaries']) {
       this.populateBoundaries(); //AppConstants already loaded
     } else {
-      const appConstantsSubscription = this.appService.appConstants$.subscribe(
-        () => this.populateBoundaries(),
-      ); //Wait for appConstants trigger to load
+      const appConstantsSubscription = this.appService.appConstants$.subscribe(() => this.populateBoundaries()); //Wait for appConstants trigger to load
       this._subscriptions.add(appConstantsSubscription);
     }
 
@@ -140,66 +129,40 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
 
   refresh(): void {
     this.refreshing = true;
-    this.statisticsService
-      .getStatistics(this.configuration!, this.adapterName!)
-      .subscribe((data) => {
-        this.stats = data;
+    this.statisticsService.getStatistics(this.configuration!, this.adapterName!).subscribe((data) => {
+      this.stats = data;
+      const labels: string[] = [];
+      const chartData: number[] = [];
+      for (const hour of data['hourly']) {
+        labels.push(hour.time);
+        chartData.push(hour.count);
+      }
+      this.hourlyStatistics.labels = labels;
+      this.hourlyStatistics.datasets = [
+        {
+          data: chartData,
+          ...this.dataset,
+        },
+      ];
 
-        const labels: string[] = [];
-        const chartData: number[] = [];
-        for (const index in data['hourly']) {
-          let hour = data['hourly'][index];
-          labels.push(hour['time']);
-          if (this.appConstants['timezoneOffset'] != 0) {
-            const offsetInHours =
-              (this.appConstants['timezoneOffset'] as number) / 60;
-            const offsetIndex = +index + offsetInHours;
-            const wrapCutoff = 24;
-            const wrappedOffsetIndex =
-              (wrapCutoff + (offsetIndex % wrapCutoff)) % wrapCutoff;
-            hour = data['hourly'][wrappedOffsetIndex];
-          }
-          chartData.push(hour['count']);
-        }
-        this.hourlyStatistics.labels = labels;
-        this.hourlyStatistics.datasets = [
-          {
-            data: chartData,
-            ...this.dataset,
-          },
-        ];
+      this.chart?.update();
 
-        this.chart?.update();
-
-        window.setTimeout(() => {
-          this.refreshing = false;
-        }, 500);
-      });
+      window.setTimeout(() => {
+        this.refreshing = false;
+      }, 500);
+    });
   }
 
   populateBoundaries(): void {
-    const timeBoundaries: string[] = (
-      this.appConstants['Statistics.boundaries'] as string
-    ).split(',');
-    const sizeBoundaries: string[] = (
-      this.appConstants['Statistics.size.boundaries'] as string
-    ).split(',');
-    const percBoundaries: string[] = (
-      this.appConstants['Statistics.percentiles'] as string
-    ).split(',');
+    const timeBoundaries: string[] = (this.appConstants['Statistics.boundaries'] as string).split(',');
+    const sizeBoundaries: string[] = (this.appConstants['Statistics.size.boundaries'] as string).split(',');
+    const percBoundaries: string[] = (this.appConstants['Statistics.percentiles'] as string).split(',');
 
-    const publishPercentiles =
-      this.appConstants['Statistics.percentiles.publish'] == 'true';
-    const publishHistograms =
-      this.appConstants['Statistics.histograms.publish'] == 'true';
+    const publishPercentiles = this.appConstants['Statistics.percentiles.publish'] == 'true';
+    const publishHistograms = this.appConstants['Statistics.histograms.publish'] == 'true';
     const displayPercentiles = publishPercentiles || publishHistograms;
 
-    this.Debug.info(
-      'appending Statistic.boundaries',
-      timeBoundaries,
-      sizeBoundaries,
-      percBoundaries,
-    );
+    this.Debug.info('appending Statistic.boundaries', timeBoundaries, sizeBoundaries, percBoundaries);
 
     const statisticsTimeBoundariesAdditive: Record<string, string> = {};
     const statisticsSizeBoundariesAdditive: Record<string, string> = {};

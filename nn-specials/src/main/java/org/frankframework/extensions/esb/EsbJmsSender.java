@@ -18,6 +18,7 @@ package org.frankframework.extensions.esb;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.doc.Category;
@@ -30,14 +31,14 @@ import org.frankframework.util.SpringUtils;
  *
  * @author  Peter Leeuwenburgh
  */
-@Category("NN-Special")
+@Category(Category.Type.NN_SPECIAL)
 public class EsbJmsSender extends JmsSender {
 
 	public enum MessageProtocol {
 		/** Fire & Forget protocol */
 		FF,
 		/** Request-Reply protocol */
-		RR;
+		RR
 	}
 
 	private @Getter MessageProtocol messageProtocol = null;
@@ -46,7 +47,7 @@ public class EsbJmsSender extends JmsSender {
 	@Override
 	public void configure() throws ConfigurationException {
 		if (getMessageProtocol() == null) {
-			throw new ConfigurationException(getLogPrefix() + "messageProtocol must be set");
+			throw new ConfigurationException("messageProtocol must be set");
 		}
 		if (getMessageProtocol() == MessageProtocol.RR) {
 			setDeliveryMode(DeliveryMode.NON_PERSISTENT);
@@ -55,10 +56,10 @@ public class EsbJmsSender extends JmsSender {
 			setSynchronous(true);
 		} else {
 			if (getReplyToName() != null) {
-				throw new ConfigurationException(getLogPrefix() + "replyToName [" + getReplyToName() + "] must not be set for messageProtocol [" + getMessageProtocol() + "]");
+				throw new ConfigurationException("replyToName [" + getReplyToName() + "] must not be set for messageProtocol [" + getMessageProtocol() + "]");
 			}
 		}
-		if (StringUtils.isEmpty(getSoapAction()) && (paramList==null || paramList.findParameter("SoapAction")==null)) {
+		if (StringUtils.isEmpty(getSoapAction()) && (paramList==null || !paramList.hasParameter("SoapAction"))) {
 			Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName("SoapAction");
 			p.setStyleSheetName("/xml/xsl/esb/soapAction.xsl");

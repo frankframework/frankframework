@@ -15,36 +15,40 @@ limitations under the License.
 */
 package org.frankframework.http.openapi;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonValue;
+import jakarta.ws.rs.core.Response;
+
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
+import org.springframework.util.MimeType;
+
 import org.frankframework.align.XmlTypeToJsonSchemaConverter;
-import org.frankframework.core.IAdapter;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.http.rest.ApiDispatchConfig;
 import org.frankframework.http.rest.ApiListener;
 import org.frankframework.http.rest.ApiServiceDispatcher;
 import org.frankframework.http.rest.MediaTypes;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
+import org.frankframework.parameters.ParameterType;
 import org.frankframework.pipes.Json2XmlValidator;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
-import org.springframework.util.MimeType;
-
-import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.frankframework.util.StringUtil;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class OpenApiGenerator {
@@ -71,7 +75,7 @@ public class OpenApiGenerator {
 				JsonObjectBuilder methodBuilder = Json.createObjectBuilder();
 				listener = config.getApiListener(method);
 				if (listener != null && listener.getReceiver() != null) {
-					IAdapter adapter = listener.getReceiver().getAdapter();
+					Adapter adapter = listener.getReceiver().getAdapter();
 					if (StringUtils.isNotEmpty(adapter.getDescription())) {
 						methodBuilder.add("summary", adapter.getDescription());
 					}
@@ -114,45 +118,48 @@ public class OpenApiGenerator {
 		return serversArray;
 	}
 
-	private static void mapParamsInRequest(IAdapter adapter, ApiListener listener, JsonObjectBuilder methodBuilder) {
-		String uriPattern = listener.getUriPattern();
+	private static void mapParamsInRequest(Adapter adapter, ApiListener listener, JsonObjectBuilder methodBuilder) {
 		JsonArrayBuilder paramBuilder = Json.createArrayBuilder();
-		mapPathParameters(paramBuilder, uriPattern);
-		List<String> paramsFromHeaderAndCookie = mapHeaderAndParams(paramBuilder, listener);
+		mapPathParameters(paramBuilder, listener.getUriPattern());
+
+		List<String> paramsFromHeaderAndCookie = getParamsFromHeader(listener);
+
+		mapHeaderAndParams(paramBuilder, paramsFromHeaderAndCookie, listener.getMessageIdHeader());
 
 		// query params
-		Json2XmlValidator inputValidator = ApiServiceDispatcher.getJsonValidator(adapter.getPipeLine(), false);
-		if (inputValidator != null && !inputValidator.getParameterList().isEmpty()) {
-			for (Parameter parameter : inputValidator.getParameterList()) {
+		ApiServiceDispatcher.getJsonInputValidator(adapter.getPipeLine()).ifPresent(inputValidator -> {
+			assert inputValidator.getParameterList() != null;
+
+			for (IParameter parameter : inputValidator.getParameterList()) {
 				String parameterSessionKey = parameter.getSessionKey();
 				if (StringUtils.isNotEmpty(parameterSessionKey) && !"headers".equals(parameterSessionKey) && !paramsFromHeaderAndCookie.contains(parameterSessionKey)) {
-					Parameter.ParameterType parameterType = parameter.getType() != null ? parameter.getType() : Parameter.ParameterType.STRING;
+					ParameterType parameterType = parameter.getType() != null ? parameter.getType() : ParameterType.STRING;
 					paramBuilder.add(addParameterToSchema(parameterSessionKey, "query", false, Json.createObjectBuilder()
 							.add("type", parameterType.toString().toLowerCase())));
 				}
 			}
-		}
+		});
+
 		JsonArray paramBuilderArray = paramBuilder.build();
 		if (!paramBuilderArray.isEmpty()) {
 			methodBuilder.add("parameters", paramBuilderArray);
 		}
 	}
 
-	private static List<String> mapHeaderAndParams(JsonArrayBuilder paramBuilder, ApiListener listener) {
-		List<String> paramsFromHeaderAndCookie = new ArrayList<>();
-		// header parameters
+	private static List<String> getParamsFromHeader(ApiListener listener) {
 		if (StringUtils.isNotEmpty(listener.getHeaderParams())) {
-			String[] params = listener.getHeaderParams().split(",");
-			for (String parameter : params) {
-				paramBuilder.add(addParameterToSchema(parameter, "header", false, Json.createObjectBuilder().add("type", "string")));
-				paramsFromHeaderAndCookie.add(parameter);
-			}
-		}
-		if (StringUtils.isNotEmpty(listener.getMessageIdHeader())) {
-			paramBuilder.add(addParameterToSchema(listener.getMessageIdHeader(), "header", false, Json.createObjectBuilder().add("type", "string")));
+			return StringUtil.split(listener.getHeaderParams());
 		}
 
-		return paramsFromHeaderAndCookie;
+		return Collections.emptyList();
+	}
+
+	private static void mapHeaderAndParams(JsonArrayBuilder paramBuilder, List<String> headerParams, String messageIdHeader) {
+		headerParams.forEach(parameter -> paramBuilder.add(addParameterToSchema(parameter, "header", false, Json.createObjectBuilder().add("type", "string"))));
+
+		if (StringUtils.isNotEmpty(messageIdHeader)) {
+			paramBuilder.add(addParameterToSchema(messageIdHeader, "header", false, Json.createObjectBuilder().add("type", "string")));
+		}
 	}
 
 	private static void mapPathParameters(JsonArrayBuilder paramBuilder, String uriPattern) {
@@ -177,16 +184,17 @@ public class OpenApiGenerator {
 		return param;
 	}
 
-	private static void mapRequest(IAdapter adapter, MediaTypes consumes, JsonObjectBuilder methodBuilder) {
+	private static void mapRequest(Adapter adapter, MediaTypes consumes, JsonObjectBuilder methodBuilder) {
 		PipeLine pipeline = adapter.getPipeLine();
-		Json2XmlValidator inputValidator = ApiServiceDispatcher.getJsonValidator(pipeline, false);
-		if (inputValidator != null && StringUtils.isNotEmpty(inputValidator.getRoot())) {
-			JsonObjectBuilder requestBodyContent = Json.createObjectBuilder();
-			JsonObjectBuilder schemaBuilder = Json.createObjectBuilder()
-					.add("schema", Json.createObjectBuilder().add("$ref", XmlTypeToJsonSchemaConverter.SCHEMA_DEFINITION_PATH + inputValidator.getRoot()));
-			requestBodyContent.add("content", Json.createObjectBuilder().add(mimeTypeToString(consumes.getMimeType()), schemaBuilder));
-			methodBuilder.add("requestBody", requestBodyContent);
-		}
+		ApiServiceDispatcher.getJsonInputValidator(pipeline).ifPresent(inputValidator -> {
+			if (StringUtils.isNotEmpty(inputValidator.getRoot())) {
+				JsonObjectBuilder requestBodyContent = Json.createObjectBuilder();
+				JsonObjectBuilder schemaBuilder = Json.createObjectBuilder()
+						.add("schema", Json.createObjectBuilder().add("$ref", XmlTypeToJsonSchemaConverter.SCHEMA_DEFINITION_PATH + inputValidator.getRoot()));
+				requestBodyContent.add("content", Json.createObjectBuilder().add(mimeTypeToString(consumes.getMimeType()), schemaBuilder));
+				methodBuilder.add("requestBody", requestBodyContent);
+			}
+		});
 	}
 
 	//ContentType may have more parameters such as charset and formdata-boundary, strip those
@@ -194,34 +202,19 @@ public class OpenApiGenerator {
 		return mimeType.getType() + "/" + mimeType.getSubtype();
 	}
 
-	private static JsonObjectBuilder mapResponses(IAdapter adapter, MimeType contentType, JsonObjectBuilder schemas) {
+	private static JsonObjectBuilder mapResponses(Adapter adapter, MimeType contentType, JsonObjectBuilder schemas) {
 		JsonObjectBuilder responses = Json.createObjectBuilder();
 
 		PipeLine pipeline = adapter.getPipeLine();
-		Json2XmlValidator inputValidator = ApiServiceDispatcher.getJsonValidator(pipeline, false);
-		Json2XmlValidator outputValidator = ApiServiceDispatcher.getJsonValidator(pipeline, true);
+		Optional<Json2XmlValidator> inputValidator = ApiServiceDispatcher.getJsonInputValidator(pipeline);
+		inputValidator.ifPresent(validator -> addComponentsToTheSchema(schemas, validator.getXSModels()));
 
-		JsonObjectBuilder schema = null;
-		String schemaReferenceElement = null;
-		List<XSModel> models = new ArrayList<>();
-		if (inputValidator != null) {
-			models.addAll(inputValidator.getXSModels());
-			schemaReferenceElement = inputValidator.getMessageRoot(true);
-		}
-		if (outputValidator != null) {
-			models.addAll(outputValidator.getXSModels());
-			schemaReferenceElement = outputValidator.getRoot();    // all non-empty exits should refer to this element
-		}
+		JsonObjectBuilder schema = Json.createObjectBuilder();
 
-		if (!models.isEmpty()) {
-			schema = Json.createObjectBuilder();
-		}
-		addComponentsToTheSchema(schemas, models);
+		for (Map.Entry<String, PipeLineExit> entry : pipeline.getPipeLineExits().entrySet()) {
+			PipeLineExit pipeLineExit = entry.getValue();
 
-		Map<String, PipeLineExit> pipeLineExits = pipeline.getPipeLineExits();
-		for (String exitPath : pipeLineExits.keySet()) {
-			PipeLineExit ple = pipeLineExits.get(exitPath);
-			int exitCode = ple.getExitCode();
+			int exitCode = pipeLineExit.getExitCode();
 			if (exitCode == 0) {
 				exitCode = 200;
 			}
@@ -230,40 +223,58 @@ public class OpenApiGenerator {
 
 			Response.Status status = Response.Status.fromStatusCode(exitCode);
 			exit.add("description", status.getReasonPhrase());
-			if (!ple.isEmptyResult()) {
+
+			Optional<Json2XmlValidator> outputValidator = ApiServiceDispatcher.getJsonOutputValidator(pipeline, pipeLineExit.getName());
+			outputValidator.ifPresent(validator -> addComponentsToTheSchema(schemas, validator.getXSModels()));
+
+			if (!pipeLineExit.isEmptyResult()) {
 				JsonObjectBuilder content = Json.createObjectBuilder();
-				if (StringUtils.isNotEmpty(schemaReferenceElement)) {
-					String reference;
-					if (StringUtils.isNotEmpty(ple.getResponseRoot()) && outputValidator == null) {
-						reference = ple.getResponseRoot();
-					} else {
-						List<String> references = List.of(schemaReferenceElement.split(","));
-						if (ple.isSuccessExit()) {
-							reference = references.get(0);
-						} else {
-							reference = references.get(references.size() - 1);
-						}
-					}
-					// JsonObjectBuilder add method consumes the schema
-					schema.add("schema", Json.createObjectBuilder().add("$ref", XmlTypeToJsonSchemaConverter.SCHEMA_DEFINITION_PATH + reference));
-					content.add(mimeTypeToString(contentType), schema);
-				}
+
+				getSchemaReferenceElement(inputValidator.orElse(null), outputValidator.orElse(null))
+						.ifPresent(schemaReferenceElement -> {
+							String reference = getReference(pipeLineExit, outputValidator.isPresent(), schemaReferenceElement);
+
+							// JsonObjectBuilder add method consumes the schema
+							schema.add("schema", Json.createObjectBuilder().add("$ref", XmlTypeToJsonSchemaConverter.SCHEMA_DEFINITION_PATH + reference));
+							content.add(mimeTypeToString(contentType), schema);
+						});
 				exit.add("content", content);
 			}
 
-			responses.add("" + exitCode, exit);
+			responses.add(String.valueOf(exitCode), exit);
 		}
 		return responses;
+	}
+
+	private static Optional<String> getSchemaReferenceElement(Json2XmlValidator inputValidator, Json2XmlValidator outputValidator) {
+		if (outputValidator != null) {
+			return Optional.ofNullable(outputValidator.getRoot()); // all non-empty exits should refer to this element
+		}
+
+		if (inputValidator != null) {
+			return Optional.ofNullable(inputValidator.getMessageRoot(true));
+		}
+
+		return Optional.empty();
+	}
+
+	private static String getReference(PipeLineExit pipeLineExit, boolean outputValidatorPresent, String schemaReferenceElement) {
+		if (StringUtils.isNotEmpty(pipeLineExit.getResponseRoot()) && !outputValidatorPresent) {
+			return pipeLineExit.getResponseRoot();
+		} else {
+			List<String> references = StringUtil.split(schemaReferenceElement);
+
+			if (pipeLineExit.isSuccessExit()) {
+				return references.get(0);
+			}
+
+			return references.get(references.size() - 1);
+		}
 	}
 
 	private static void addComponentsToTheSchema(JsonObjectBuilder schemas, List<XSModel> models) {
 		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, true, XmlTypeToJsonSchemaConverter.SCHEMA_DEFINITION_PATH);
 		JsonObject jsonSchema = converter.getDefinitions();
-		if (jsonSchema != null) {
-			for (Map.Entry<String, JsonValue> entry : jsonSchema.entrySet()) {
-				schemas.add(entry.getKey(), entry.getValue());
-			}
-		}
+		jsonSchema.forEach(schemas::add);
 	}
-
 }

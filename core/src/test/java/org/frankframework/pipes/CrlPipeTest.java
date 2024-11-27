@@ -6,10 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.InputStream;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.Test;
 
 public class CrlPipeTest extends PipeTestBase<CrlPipe> {
 
@@ -30,8 +31,8 @@ public class CrlPipeTest extends PipeTestBase<CrlPipe> {
 		pipe.setIssuerSessionKey(issuerKey);
 		configureAndStartPipe();
 
-		Message issuer_cert = Message.asMessage(TestFileUtils.getTestFileURL(CRL_ISSUER_CERT_FILE).openStream());
-		Message crl = Message.asMessage(TestFileUtils.getTestFileURL(CRL_FILE).openStream());
+		Message issuer_cert = new Message(TestFileUtils.getTestFileURL(CRL_ISSUER_CERT_FILE).openStream());
+		Message crl = new Message(TestFileUtils.getTestFileURL(CRL_FILE).openStream());
 		session.put(issuerKey, issuer_cert);
 
 		// act
@@ -50,7 +51,7 @@ public class CrlPipeTest extends PipeTestBase<CrlPipe> {
 		configureAndStartPipe();
 
 		InputStream issuer_cert = TestFileUtils.getTestFileURL(CRL_ISSUER_CERT_FILE).openStream();
-		Message crl = Message.asMessage(TestFileUtils.getTestFileURL(CRL_FILE).openStream());
+		Message crl = new Message(TestFileUtils.getTestFileURL(CRL_FILE).openStream());
 		session.put(issuerKey, issuer_cert);
 
 		// act
@@ -68,8 +69,8 @@ public class CrlPipeTest extends PipeTestBase<CrlPipe> {
 		pipe.setIssuerSessionKey(issuerKey);
 		configureAndStartPipe();
 
-		Message issuer_cert = Message.asMessage(TestFileUtils.getTestFileURL(CRL_ISSUER_CERT_FILE_WRONG).openStream());
-		Message crl = Message.asMessage(TestFileUtils.getTestFileURL(CRL_FILE).openStream());
+		Message issuer_cert = new Message(TestFileUtils.getTestFileURL(CRL_ISSUER_CERT_FILE_WRONG).openStream());
+		Message crl = new Message(TestFileUtils.getTestFileURL(CRL_FILE).openStream());
 		session.put(issuerKey, issuer_cert);
 
 		// act

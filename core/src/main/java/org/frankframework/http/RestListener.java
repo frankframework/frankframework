@@ -17,11 +17,12 @@ package org.frankframework.http;
 
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.HasSpecialDefaultValues;
 import org.frankframework.core.HasPhysicalDestination;
@@ -57,11 +58,12 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	private @Getter String etagSessionKey;
 	private @Getter String contentTypeSessionKey;
 	private @Getter String restPath = "/rest";
-	private @Getter Boolean view = null;
+	private final @Getter Boolean view = null;
 	private @Getter String authRoles="IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService";
 	private @Getter boolean writeToSecLog = false;
 	private @Getter boolean writeSecLogMessage = false;
 	private @Getter boolean retrieveMultipart = true;
+	private @Getter boolean automaticallyTransformToAndFromJson = true;
 
 	private @Getter MediaTypes consumes = MediaTypes.XML;
 	private @Getter MediaTypes produces = MediaTypes.XML;
@@ -70,32 +72,18 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	private @Getter boolean generateEtag = false;
 
 	public enum MediaTypes {
-		XML, JSON, TEXT;
-	}
-	/**
-	 * initialize listener and register <code>this</code> to the JNDI
-	 */
-	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-		if (view==null) {
-			if (StringUtils.isEmpty(getMethod()) || "GET".equalsIgnoreCase(getMethod())) {
-				setView(true);
-			} else {
-				setView(false);
-			}
-		}
+		XML, JSON, TEXT
 	}
 
 	@Override
-	public void open() throws ListenerException {
-		super.open();
+	public void start() {
+		super.start();
 		RestServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), getMethod(), getEtagSessionKey(), getContentTypeSessionKey(), isValidateEtag());
 	}
 
 	@Override
-	public void close() {
-		super.close();
+	public void stop() {
+		super.stop();
 		RestServiceDispatcher.getInstance().unregisterServiceClient(getUriPattern(), getMethod());
 	}
 
@@ -103,7 +91,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public Message processRequest(Message message, PipeLineSession session) throws ListenerException {
 		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(PipeLineSession.HTTP_REQUEST_KEY);
 		Message response;
-		String contentType = (String) session.get("contentType");
+		String acceptHeaderThatIsSomeHowStoredUnderThisKey = (String) session.get("contentType");
 
 		//Check if valid path
 		String requestRestPath = (String) session.get("restPath");
@@ -112,7 +100,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		}
 
 		//Check if consumes has been set or contentType is set to JSON
-		if(getConsumes()== MediaTypes.JSON && "application/json".equalsIgnoreCase(httpServletRequest.getContentType())) {
+		if(automaticallyTransformToAndFromJson && getConsumes()== MediaTypes.JSON && "application/json".equalsIgnoreCase(httpServletRequest.getContentType())) {
 			try {
 				message = transformToXml(message);
 			} catch (PipeRunException e) {
@@ -122,7 +110,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		int eTag = 0;
 
 		//Check if contentType is not overwritten which disabled auto-converting and mediatype headers
-		if(contentType == null || StringUtils.isEmpty(contentType) || "*/*".equalsIgnoreCase(contentType)) {
+		if(StringUtils.isEmpty(acceptHeaderThatIsSomeHowStoredUnderThisKey) || "*/*".equalsIgnoreCase(acceptHeaderThatIsSomeHowStoredUnderThisKey)) {
 			switch(getProduces()) {
 				case XML:
 					session.put("contentType", "application/xml");
@@ -141,10 +129,10 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 			if(response != null && !response.isEmpty())
 				eTag = response.hashCode();
 
-			if(getProduces()== MediaTypes.JSON) {
+			if(automaticallyTransformToAndFromJson && getProduces()== MediaTypes.JSON) {
 				try {
 					response = transformToJson(response);
-				} catch (PipeRunException e) {
+				} catch (PipeRunException | ConfigurationException e) {
 					throw new ListenerException("Failed to transform XML to JSON", e);
 				}
 			}
@@ -162,9 +150,14 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		return response;
 	}
 
-	public Message transformToJson(Message message) throws PipeRunException {
+	public Message transformToJson(Message message) throws PipeRunException, ConfigurationException {
 		JsonPipe pipe = new JsonPipe();
 		pipe.setDirection(Direction.XML2JSON);
+		try {
+			pipe.configure();
+		} catch (ConfigurationException e) {
+			throw new ConfigurationException("unable to configure ");
+		}
 		PipeRunResult pipeResult = pipe.doPipe(message, new PipeLineSession());
 		return pipeResult.getResult();
 	}
@@ -222,21 +215,6 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	}
 
 	/**
-	 * Indicates whether this listener supports a view (and a link should be put in the ibis console)
-	 * @ff.default if <code>method=get</code> then <code>true</code>, else <code>false</code>
-	 */
-	public void setView(boolean b) {
-		view = b;
-	}
-	public boolean isView() {
-		if (view==null ) {
-			log.warn("RestListener ["+getName()+"] appears to be not configured");
-			return false;
-		}
-		return view;
-	}
-
-	/**
 	 * Comma separated list of authorization roles which are granted for this rest service
 	 * @ff.default IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService
 	 */
@@ -290,5 +268,14 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	 */
 	public void setGenerateEtag(boolean b) {
 		this.generateEtag = b;
+	}
+
+	/**
+	 * Uses an JsonPipe to convert the json-input to xml, and xml-output to json.
+	 * Use with caution, a properly configured Input/Output-wrapper can do much more and is more robust!
+	 * @ff.default true
+	 */
+	public void setAutomaticallyTransformToAndFromJson(boolean b) {
+		automaticallyTransformToAndFromJson = b;
 	}
 }

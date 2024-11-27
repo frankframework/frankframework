@@ -1,0 +1,10 @@
+users:
+  - username: observer
+    password: IbisObserver
+    roles: IbisObserver
+
+  - username: tester
+    password: IbisTester
+    roles:
+      - IbisObserver
+      - IbisTester

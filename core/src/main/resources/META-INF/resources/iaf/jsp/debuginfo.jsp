@@ -1,7 +1,6 @@
-<%@ page import="javax.servlet.*" %>
-<%@ page import="javax.servlet.http.*" %>
 <%@ page import="java.util.*" %>
 <%@ page import="javax.naming.*" %>
+<%@ page import="org.apache.commons.text.StringEscapeUtils"%>
 
 <br/>
 <br/>
@@ -141,10 +140,11 @@
       <%
         for ( Enumeration enumeration = request.getAttributeNames(); enumeration.hasMoreElements(); ) {
           String attributeName = (String) enumeration.nextElement();
+		  String attributeValue = StringEscapeUtils.escapeHtml4(request.getAttribute(attributeName).toString());
       %>
       <tr bgcolor="#eeeeee">
         <td><%= attributeName %></td>
-        <td><%= request.getAttribute( attributeName ) %></td>
+        <td><%= attributeValue %></td>
       </tr>
       <%
         }
@@ -161,11 +161,12 @@
       </tr>
       <%
         for ( Enumeration enumeration = request.getParameterNames(); enumeration.hasMoreElements(); ) {
-          String attributeName = (String) enumeration.nextElement();
+          String parameterName = (String) enumeration.nextElement();
+		  String parameterValue = StringEscapeUtils.escapeHtml4(request.getParameter(parameterName));
       %>
       <tr bgcolor="#eeeeee">
-        <td><%= attributeName %></td>
-        <td><%= request.getParameter( attributeName ) %></td>
+        <td><%= parameterName %></td>
+        <td><%= parameterValue %></td>
       </tr>
       <%
         }

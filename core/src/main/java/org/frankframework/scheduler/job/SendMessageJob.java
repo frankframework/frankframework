@@ -15,23 +15,31 @@
 */
 package org.frankframework.scheduler.job;
 
-import java.io.IOException;
-
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.scheduler.JobDef;
+import org.frankframework.doc.Mandatory;
+import org.frankframework.doc.Optional;
+import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.receivers.FrankListener;
+import org.frankframework.scheduler.AbstractJobDef;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.UUIDUtil;
 
-import lombok.Getter;
-import lombok.Setter;
-
-public class SendMessageJob extends JobDef {
+/**
+ * Scheduled job to send messages to a {@link FrankListener}.
+ * Message may be {@literal null} (or empty).
+ * 
+ * {@inheritDoc}
+ */
+public class SendMessageJob extends AbstractJobDef {
 	private @Setter IbisLocalSender localSender = null;
 	private @Getter String javaListener;
 	private @Getter String message = null;
@@ -58,17 +66,17 @@ public class SendMessageJob extends JobDef {
 	public void execute() throws JobExecutionException, TimeoutException {
 		try (Message toSendMessage = getMessage() == null ? Message.nullMessage() : new Message(getMessage());
 				PipeLineSession session = new PipeLineSession()) {
-			//Set a messageId that will be forwarded by the localSender to the called adapter. Adapter and job will then share a Ladybug report.
+			// Set a messageId that will be forwarded by the localSender to the called adapter. Adapter and job will then share a Ladybug report.
 			session.put(PipeLineSession.CORRELATION_ID_KEY, UUIDUtil.createSimpleUUID());
 
-			localSender.open();
+			localSender.start();
 			localSender.sendMessageOrThrow(toSendMessage, session).close();
-		} catch (SenderException | IOException e) {
+		} catch (LifecycleException | SenderException e) {
 			throw new JobExecutionException("unable to send message to javaListener [" + javaListener + "]", e);
 		} finally {
 			try {
-				localSender.close();
-			} catch (SenderException e) {
+				localSender.stop();
+			} catch (LifecycleException e) {
 				log.warn("unable to close LocalSender", e);
 			}
 		}
@@ -76,13 +84,14 @@ public class SendMessageJob extends JobDef {
 
 	/**
 	 * JavaListener to send the message to
-	 * @ff.mandatory
 	 */
+	@Mandatory
 	public void setJavaListener(String javaListener) {
 		this.javaListener = javaListener;
 	}
 
 	/** message to be sent into the pipeline */
+	@Optional
 	public void setMessage(String message) {
 		if(StringUtils.isNotEmpty(message)) {
 			this.message = message;

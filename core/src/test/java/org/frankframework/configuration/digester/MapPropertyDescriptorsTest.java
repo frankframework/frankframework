@@ -14,9 +14,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.configuration.ConfigurationWarning;
-import org.frankframework.core.IConfigurable;
-import org.frankframework.util.LogUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -26,6 +23,10 @@ import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.util.Assert;
+
+import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.core.IConfigurable;
+import org.frankframework.util.LogUtil;
 
 public class MapPropertyDescriptorsTest {
 	private final  Logger log = LogUtil.getLogger(this);
@@ -51,7 +52,7 @@ public class MapPropertyDescriptorsTest {
 		scanner.setBeanNameGenerator(beanNameGenerator);
 
 		int numberOfBeans = scanner.scan("org.frankframework", "nl.nn.ibistesttool");
-		log.debug("Found "+numberOfBeans+" beans registered!");
+		log.debug("Found {} beans registered!", numberOfBeans);
 
 		String[] bdn = scanner.getRegistry().getBeanDefinitionNames();
 		assertEquals(numberOfBeans, bdn.length); // ensure we got all beans

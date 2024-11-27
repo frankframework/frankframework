@@ -27,9 +27,9 @@ import org.apache.commons.lang3.StringUtils;
 
 public class FileSystemCredentials extends Credentials {
 
-	private Path root;
-	private String usernamefile;
-	private String passwordfile;
+	private final Path root;
+	private final String usernamefile;
+	private final String passwordfile;
 
 
 	public FileSystemCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier, Path root) {
@@ -72,8 +72,7 @@ public class FileSystemCredentials extends Credentials {
 					throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: alias not found");
 				}
 			} catch (IOException e) {
-				NoSuchElementException nsee=new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]");
-				nsee.initCause(e);
+				NoSuchElementException nsee = new NoSuchElementException("cannot obtain credentials from authentication alias [" + getAlias() + "]", e);
 				throw nsee;
 			}
 		}

@@ -40,9 +40,8 @@
 
 			<pipe
 				name="ReCreateZip"
-				className="org.frankframework.pipes.FixedResultPipe"
-				returnString="${testdata.dir}/zip/recreated.zip"
-				>
+				className="org.frankframework.pipes.EchoPipe"
+				getInputFromFixedValue="${testdata.dir}/zip/recreated.zip">
 				<forward name="success" path="create a new zip collection with a specified name"/>
 			</pipe>
 			<pipe
@@ -77,8 +76,8 @@
 
 			<pipe
 				name="SimpleZip"
-				className="org.frankframework.pipes.FixedResultPipe"
-				returnString="${testdata.dir}/zip/simple.zip"
+				className="org.frankframework.pipes.EchoPipe"
+				getInputFromFixedValue="${testdata.dir}/zip/simple.zip"
 			/>
 			<pipe
 				name="SimpleZip2"
@@ -108,8 +107,8 @@
 
 			<pipe
 				name="SimpleZipX"
-				className="org.frankframework.pipes.FixedResultPipe"
-				returnString="${testdata.dir}/zip/simple.zip"
+				className="org.frankframework.pipes.EchoPipe"
+				getInputFromFixedValue="${testdata.dir}/zip/simple.zip"
 			/>
 			<pipe
 				name="SimpleZipX2"
@@ -301,8 +300,8 @@
 			<!-- Data for the files in the ZIP to be created. All static in-built so we do not need a FilePipe -->
 			<pipe
 					name="Get File List"
-					className="org.frankframework.pipes.FixedResultPipe"
-					returnString="&lt;files&gt;
+					className="org.frankframework.pipes.EchoPipe"
+					getInputFromFixedValue="&lt;files&gt;
 	&lt;file&gt;&lt;filename&gt;file1.txt&lt;/filename&gt;&lt;contents&gt;File1 Contents
 &lt;/contents&gt;&lt;/file&gt;
 	&lt;file&gt;&lt;filename&gt;file2.txt&lt;/filename&gt;&lt;contents&gt;Contents of File 2

@@ -17,11 +17,10 @@ package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.util.Set;
 
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.springframework.http.MediaType;
 
 import org.frankframework.extensions.aspose.ConversionOption;
-
+import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.stream.Message;
 
 public interface Convertor {

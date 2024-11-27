@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,9 +47,8 @@ public class InboundGatewayFactory implements InitializingBean, ApplicationConte
 
 	private final Logger log = LogManager.getLogger(this);
 	private @Setter ApplicationContext applicationContext;
-	private static final String LOCAL_GATEWAY_CLASSNAME = LocalGateway.class.getCanonicalName();
 
-	private @Setter String gatewayClassnames = LOCAL_GATEWAY_CLASSNAME;
+	private @Setter String gatewayClassnames;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -69,7 +68,7 @@ public class InboundGatewayFactory implements InitializingBean, ApplicationConte
 
 				log.info("created inbound gateway [{}]", gateway);
 			} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
-				log.warn("unable to create inbound gateway [{}]", gateway);
+				log.warn("unable to create inbound gateway [{}]", gateway, e);
 			}
 		}
 	}
@@ -80,13 +79,11 @@ public class InboundGatewayFactory implements InitializingBean, ApplicationConte
 	 */
 	private Set<String> getInboundGateways() {
 		if(StringUtils.isBlank(gatewayClassnames)) {
-			return Collections.singleton(LOCAL_GATEWAY_CLASSNAME);
+			return Collections.emptySet();
 		}
 
 		// Ensure an unique list of gateways.
 		Set<String> gateways = new TreeSet<>(Arrays.asList(gatewayClassnames.split(",")));
-		gateways.add(LOCAL_GATEWAY_CLASSNAME);
-
 		return Collections.unmodifiableSet(gateways);
 	}
 

@@ -7,19 +7,20 @@ import static org.mockito.Mockito.mock;
 import java.net.URL;
 import java.util.stream.Stream;
 
-import org.frankframework.configuration.ConfigurationUtils;
-import org.frankframework.configuration.IbisContext;
-import org.frankframework.util.AppConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import org.frankframework.configuration.ConfigurationUtils;
+import org.frankframework.configuration.IbisContext;
+import org.frankframework.util.AppConstants;
+
 public class ResolveConfigurationFileTest {
 	private String configurationName;
 	private String basePath;
 	private String configurationFile;
-	private ClassLoaderBase classLoader;
+	private AbstractClassLoader classLoader;
 	private AppConstants appConstants;
 
 	private static Stream<Arguments> data() {
@@ -67,7 +68,7 @@ public class ResolveConfigurationFileTest {
 		return configurationName;
 	}
 
-	private ClassLoaderBase createClassLoader(ClassLoader parent) throws Exception {
+	private AbstractClassLoader createClassLoader(ClassLoader parent) throws Exception {
 		URL file = this.getClass().getResource("/ClassLoader/DirectoryClassLoaderRoot");
 
 		DirectoryClassLoader cl = new DirectoryClassLoader(parent);

@@ -1,42 +1,35 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { AppService } from 'src/app/app.service';
 import { copyToClipboard } from '../../../utils';
 import { ToastService } from '../../../services/toast.service';
 import { CommonModule } from '@angular/common';
 import { TimeSinceDirective } from '../../time-since.directive';
 import { ToDateDirective } from '../../to-date.directive';
 import { HumanFileSizePipe } from '../../../pipes/human-file-size.pipe';
+import { ServerInfoService } from '../../../services/server-info.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-information-modal',
   templateUrl: './information-modal.component.html',
   styleUrls: ['./information-modal.component.scss'],
   standalone: true,
-  imports: [
-    CommonModule,
-    TimeSinceDirective,
-    ToDateDirective,
-    HumanFileSizePipe,
-  ],
+  imports: [CommonModule, TimeSinceDirective, ToDateDirective, HumanFileSizePipe],
 })
-export class InformationModalComponent implements OnInit {
-  @ViewChild('environmentInformation')
-  environmentInformation!: ElementRef<HTMLParagraphElement>;
-  error = false;
-
-  framework: {
+export class InformationModalComponent implements OnInit, OnDestroy {
+  protected initialized: boolean = false;
+  protected framework: {
     name: string;
     version: string;
   } = { name: '', version: '' };
-  instance: {
+  protected instance: {
     name: string;
     version: string;
   } = { name: '', version: '' };
-  machineName: string = '';
-  applicationServer: string = '';
-  javaVersion: string = '';
-  processMetrics: {
+  protected machineName: string = '';
+  protected applicationServer: string = '';
+  protected javaVersion: string = '';
+  protected processMetrics: {
     maxMemory: number;
     freeMemory: number;
     totalMemory: number;
@@ -47,27 +40,34 @@ export class InformationModalComponent implements OnInit {
     totalMemory: -1,
     heapSize: -1,
   };
-  fileSystem: {
+  protected fileSystem: {
     freeSpace: number;
     totalSpace: number;
   } = {
     freeSpace: -1,
     totalSpace: -1,
   };
-  uptime: number = 0;
+  protected uptime: number = 0;
+
+  private serverInfoSubscription?: Subscription;
 
   constructor(
     private activeModal: NgbActiveModal,
-    private appService: AppService,
     private toastService: ToastService,
+    private serverInfoService: ServerInfoService,
   ) {}
 
   ngOnInit(): void {
-    this.getServerInfo();
+    this.refresh();
+    this.subscribeToServerInfo();
   }
 
-  getServerInfo(): void {
-    this.appService.getServerInfo().subscribe({
+  ngOnDestroy(): void {
+    this.serverInfoSubscription?.unsubscribe();
+  }
+
+  subscribeToServerInfo(): void {
+    this.serverInfoSubscription = this.serverInfoService.serverInfo$.subscribe({
       next: (data) => {
         this.applicationServer = data.applicationServer;
         this.fileSystem = data.fileSystem;
@@ -77,9 +77,7 @@ export class InformationModalComponent implements OnInit {
         this.machineName = data.machineName;
         this.processMetrics = data.processMetrics;
         this.uptime = data.uptime;
-      },
-      error: () => {
-        this.error = true;
+        this.initialized = true;
       },
     });
   }
@@ -89,14 +87,11 @@ export class InformationModalComponent implements OnInit {
   }
 
   copy(): void {
-    copyToClipboard(this.environmentInformation.nativeElement.innerText); // Needs to be innerText to copy newlines.
-    this.toastService.success(
-      'Copied',
-      'Copied environment information to clipboard',
-    );
+    copyToClipboard(this.serverInfoService.getMarkdownFormatedServerInfo());
+    this.toastService.success('Copied', 'Copied environment information to clipboard');
   }
 
   refresh(): void {
-    this.getServerInfo();
+    this.serverInfoService.refresh().subscribe();
   }
 }

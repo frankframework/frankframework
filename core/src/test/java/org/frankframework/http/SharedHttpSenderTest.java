@@ -16,13 +16,14 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.http.HttpSenderBase.HttpMethod;
-import org.frankframework.stream.Message;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.http.AbstractHttpSender.HttpMethod;
+import org.frankframework.stream.Message;
 
 public class SharedHttpSenderTest {
 

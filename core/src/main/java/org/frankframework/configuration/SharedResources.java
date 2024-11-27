@@ -16,11 +16,14 @@
 package org.frankframework.configuration;
 
 import org.frankframework.core.SharedResource;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.http.HttpSession;
 
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class SharedResources {
 
-	public void registerSharedResource(SharedResource<?> resource) {
+	public void addSharedResource(SharedResource<?> resource) {
 		//This method only exists for the FrankDoc
 	}
 

@@ -1,6 +1,6 @@
 <throwable>
   <class>org.frankframework.core.SenderException</class>
-  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-ExceptionPipe]: (RequestProcessorException) RequestProcessor [ibis4test-ExceptionPipe] caught exception: Pipe [Generate exception] &lt;test/&gt;</message>
+  <message>exception processing message using request processor [ibis4test-ExceptionPipe]: (RequestProcessorException) RequestProcessor [ibis4test-ExceptionPipe] caught exception: Pipe [Generate exception] &lt;test/&gt;</message>
   <cause>
     <throwable>
       <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>

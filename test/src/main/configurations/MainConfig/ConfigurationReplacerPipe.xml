@@ -7,7 +7,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="Replace" className="org.frankframework.pipes.ReplacerPipe" find="hallo" replace="bonjour" replaceNonXmlChars="true" replaceNonXmlChar="x">
+			<pipe name="Replace" className="org.frankframework.pipes.ReplacerPipe" find="hallo" replace="bonjour" replaceNonXmlChars="true" nonXmlReplacementCharacter="x">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

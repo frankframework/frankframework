@@ -107,7 +107,7 @@ public class CypherAES256 implements CypherInterface
         if (decrypted.length == 0)
         {
             if( logger.isDebugEnabled() ) {
-            	logger.debug("Empty decoded text has no padding.".formatted());
+            	logger.debug("Empty decoded text has no padding.");
             }
             return 0;
         }
@@ -232,7 +232,7 @@ public class CypherAES256 implements CypherInterface
         if (verifyHMAC(hmac, hmacKey, cypher))
         {
             if( logger.isDebugEnabled() ) {
-            	logger.debug("Signature matches - decrypting".formatted());
+            	logger.debug("Signature matches - decrypting");
             }
             decrypted = decryptAES(cypher, cypherKey, iv);
 

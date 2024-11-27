@@ -15,15 +15,17 @@
 */
 package org.frankframework.jdbc;
 
-import java.io.IOException;
-import java.util.ArrayList;
+import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-import org.apache.commons.text.StringEscapeUtils;
+import jakarta.annotation.Nonnull;
+
+import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
-import lombok.SneakyThrows;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.ITransactionalStorage;
@@ -33,8 +35,10 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.ExcludeFromType;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.doc.Mandatory;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StringUtil;
 
@@ -54,21 +58,20 @@ import org.frankframework.util.StringUtil;
  * to the adapter around the sender pipe, because errors may occur before the message reaches the sender pipe.
  * <br/><br/>
  * Example configuration:
- * <code><pre>
-	&lt;SenderPipe name="Send"&gt;
-		&lt;MessageStoreSender
-			slotId="${instance.name}/TestMessageStore"
-			onlyStoreWhenMessageIdUnique="false"
-		/&gt;
-	&lt;/SenderPipe&gt;
-</pre></code>
+ * <pre>{@code
+ * <SenderPipe name="Send">
+ *     <MessageStoreSender
+ * 	     slotId="${instance.name}/TestMessageStore"
+ * 		 onlyStoreWhenMessageIdUnique="false" />
+ * </SenderPipe>
+ * }</pre>
  *
  * @ff.parameter messageId messageId to check for duplicates, when this parameter isn't present the messageId is read from sessionKey messageId
  *
  * @author Jaco de Groot
  */
 @ExcludeFromType(ITransactionalStorage.class)
-public class MessageStoreSender extends JdbcTransactionalStorage<String> implements ISenderWithParameters {
+public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> implements ISenderWithParameters {
 	public static final String PARAM_MESSAGEID = "messageId";
 
 	private ParameterList paramList = null;
@@ -84,6 +87,9 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 			paramList.configure();
 		}
 		setType(StorageType.MESSAGESTORAGE.getCode());
+		if (StringUtils.isBlank(getSlotId())) {
+			throw new ConfigurationException("[slotId] has to be configured");
+		}
 		super.configure();
 	}
 
@@ -93,7 +99,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 	}
 
 	@Override
-	public void addParameter(Parameter p) {
+	public void addParameter(IParameter p) {
 		if (paramList == null) {
 			paramList = new ParameterList();
 		}
@@ -105,49 +111,35 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 		return paramList;
 	}
 
-	/**
-	 * Helper method to convert a message to a string from Stream.map, without hitting the exception thrown
-	 * and without the issue of ambiguous method overload for lambda reference.
-	 *
-	 * @param message Message to convert
-	 * @return String of the message.
-	 */
-	@SneakyThrows(IOException.class)
-	private String messageAsString(Message message) {
-		return message.asString();
-	}
-
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		try {
-			String messageToStore;
-			if (sessionKeys == null) {
-				messageToStore = message.asString(); // if no session keys are specified, message is stored without escaping, for compatibility with normal messagestore operation.
-			} else {
-				List<String> list = new ArrayList<>();
-				list.add(StringEscapeUtils.escapeCsv(message.asString()));
-				StringUtil.splitToStream(sessionKeys)
-						.map(session::getMessage)
-						.map(this::messageAsString)
-						.map(StringEscapeUtils::escapeCsv)
-						.forEachOrdered(list::add);
-				messageToStore = String.join(",", list);
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+		// the messageId to be inserted in the messageStore defaults to the messageId of the session
+		String messageId = session.getMessageId();
+		String correlationID = session.getCorrelationId();
+
+		if (paramList != null && paramList.hasParameter(PARAM_MESSAGEID)) {
+			try {
+				// the messageId to be inserted can also be specified via the parameter messageId
+				messageId = paramList.getValues(message, session).get(PARAM_MESSAGEID).asStringValue();
+			} catch (ParameterException e) {
+				throw new SenderException("Could not resolve parameter messageId", e);
 			}
-			// the messageId to be inserted in the messageStore defaults to the messageId of the session
-			String messageId = session.getMessageId();
-			String correlationID = session.getCorrelationId();
-			if (paramList != null && paramList.findParameter(PARAM_MESSAGEID) != null) {
-				try {
-					// the messageId to be inserted can also be specified via the parameter messageId
-					messageId = paramList.getValues(message, session).get(PARAM_MESSAGEID).asStringValue();
-				} catch (ParameterException e) {
-					throw new SenderException("Could not resolve parameter messageId", e);
-				}
-			}
-			return new SenderResult(storeMessage(messageId, correlationID, new Date(), null, null, messageToStore));
-		} catch (IOException e) {
-			throw new SenderException(getLogPrefix(),e);
 		}
+
+		Serializable messageToStore;
+		if (StringUtils.isBlank(sessionKeys)) {
+			messageToStore = message; // if no session keys are specified, message is stored without escaping, for compatibility with normal messagestore operation.
+		} else {
+			Map<String, Object> sessionValuesToStore = StringUtil.splitToStream(sessionKeys)
+					.filter(session::containsKey)
+					.map(key -> Map.entry(key, session.get(key)))
+					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+			MessageWrapper<Serializable> messageWrapper = new MessageWrapper<>(message, messageId, correlationID);
+			messageWrapper.getContext().putAll(sessionValuesToStore);
+			messageToStore = messageWrapper;
+		}
+		return new SenderResult(storeMessage(messageId, correlationID, new Date(), null, null, messageToStore));
 	}
 
 	/**
@@ -167,4 +159,17 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 		super.setOnlyStoreWhenMessageIdUnique(onlyStoreWhenMessageIdUnique);
 	}
 
+	/**
+	 * Set the slotId, an identifier to keep separate the messages inserted
+	 * by different MessageStoreSenders.
+	 * <br/>
+	 * This field should be set.
+	 *
+	 * @param string The {@code slotID} value for this MessageStoreSender.
+	 */
+	@Mandatory
+	@Override
+	public void setSlotId(String string) {
+		super.setSlotId(string);
+	}
 }

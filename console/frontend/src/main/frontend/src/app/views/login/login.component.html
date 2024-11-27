@@ -1,15 +1,13 @@
 <div class="middle-box text-center loginscreen animated fadeInDown">
   <div>
     <div>
-      <h1 class="logo-name">FF<span class="text-frank">!</span></h1>
+      <img *ngIf="isUwu; else logoText" src="assets/images/uwu-frank-framework-logo.svg" alt="Logo UwU" />
+      <ng-template #logoText>
+        <h1 class="logo-name">FF<span class="text-frank">!</span></h1>
+      </ng-template>
     </div>
     <h3>Frank<strong class="text-frank">!</strong>Console</h3>
-    <form
-      class="m-t FrankLogin"
-      role="form"
-      (submit)="login(credentials)"
-      ngNativeValidate
-    >
+    <form class="m-t FrankLogin" role="form" (submit)="login()" ngNativeValidate>
       <div class="form-group">
         <input
           id="username"
@@ -20,6 +18,7 @@
           placeholder="Username"
           required
           autofocus
+          disabled
         />
       </div>
       <div class="form-group">
@@ -31,28 +30,27 @@
           name="password"
           placeholder="Password"
           required
+          disabled
         />
       </div>
       <div class="form-group">
-        <span *ngFor="let notification of notifications" style="color: red">{{
-          notification.message
-        }}</span>
+        <span *ngFor="let notification of notifications" style="color: red">{{ notification.message }}</span>
       </div>
-      <button type="submit" class="btn btn-primary block full-width m-b">
-        Login
-      </button>
+      <button type="submit" class="btn btn-primary block full-width m-b">Login</button>
     </form>
     <p class="m-t">
-      <strong>Copyright</strong>
-      <a href="//frankframework.org/">frankframework.org</a> &copy; 2016-2023
+      <i class="fa fa-copyright"></i>
+      <a href="//frankframework.org/"> frankframework.org</a> 2016-2024
     </p>
     <p class="m-t">
-      <small
-        >Powered by: <a href="//frankframework.org">frankframework.org</a> |
-        <a href="//github.com/frankframework/frankframework"
-          >github.com/frankframework/frankframework</a
-        ></small
-      >
+      <small>
+        Powered by: <br />
+        <a href="//frankframework.org" target="_blank"> <i class="fa fa-globe"></i> frankframework.org </a>
+        |
+        <a href="//github.com/frankframework/frankframework" target="_blank">
+          <i class="fa fa-github"></i> frankframework
+        </a>
+      </small>
     </p>
   </div>
 </div>

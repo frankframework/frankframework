@@ -19,17 +19,17 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.util.LogUtil;
 
-import lombok.Getter;
-
 /**
  * The flow contains the handlers to handle records of a specific type.
  * Each flow is registered to a manager using the recordHandlerManagerRef.
- *
  *
  * @author  John Dekker
  * @deprecated Warning: non-maintained functionality.
@@ -85,7 +85,7 @@ public final class RecordHandlingFlow {
 				throw new ConfigurationException("cannot find recordhandler ["+getRecordHandlerRef()+"] for flow of manager [" + getNextRecordHandlerManagerRef() + "], key ["+getRecordKey()+"]");
 			}
 		} else {
-			log.debug("no recordhandler defined for flow of manager [" + getNextRecordHandlerManagerRef() + "], key ["+getRecordKey()+"]");
+			log.debug("no recordhandler defined for flow of manager [{}], key [{}]", getNextRecordHandlerManagerRef(), getRecordKey());
 		}
 
 		// obtain the named resultHandler

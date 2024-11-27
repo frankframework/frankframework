@@ -19,7 +19,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 
-import org.frankframework.lifecycle.CustomPropertySourcePostProcessor;
+import org.frankframework.lifecycle.AbstractPropertySourcePostProcessor;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.Misc;
 
@@ -29,7 +29,7 @@ import org.frankframework.util.Misc;
  *
  * @author Jaco de Groot
  */
-public class HostnamePropertySourcePostProcessor extends CustomPropertySourcePostProcessor {
+public class HostnamePropertySourcePostProcessor extends AbstractPropertySourcePostProcessor {
 	public static final String HOSTNAME_PROPERTY = "hostname";
 
 	@Override

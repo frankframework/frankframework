@@ -7,8 +7,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.frankframework.util.StringUtil;
 import org.mockito.Mockito;
+
+import org.frankframework.util.StringUtil;
 
 public abstract class PreparedStatementMock extends Mockito implements PreparedStatement {
 

@@ -17,8 +17,10 @@ package org.frankframework.compression;
 
 import java.io.IOException;
 
-import org.frankframework.collection.CollectorPipeBase.Action;
-import org.frankframework.collection.CollectorSenderBase;
+import jakarta.annotation.Nonnull;
+
+import org.frankframework.collection.AbstractCollectorPipe.Action;
+import org.frankframework.collection.AbstractCollectorSender;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
@@ -38,7 +40,7 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.9.10
  */
-public class ZipWriterSender extends CollectorSenderBase<ZipWriter, MessageZipEntry> {
+public class ZipWriterSender extends AbstractCollectorSender<ZipWriter, MessageZipEntry> {
 
 	private boolean backwardsCompatibility = false;
 
@@ -53,7 +55,7 @@ public class ZipWriterSender extends CollectorSenderBase<ZipWriter, MessageZipEn
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		if(backwardsCompatibility) {
 			try {
 				message.preserve();
@@ -71,7 +73,7 @@ public class ZipWriterSender extends CollectorSenderBase<ZipWriter, MessageZipEn
 	 * Session key used to refer to zip session. Must be specified with another value if ZipWriterPipes are nested
 	 * @ff.default zipwriterhandle
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.9.0")
 	@ConfigurationWarning("Replaced with attribute collectionName")
 	public void setZipWriterHandle(String string) {
 		setCollectionName(string);
@@ -80,7 +82,7 @@ public class ZipWriterSender extends CollectorSenderBase<ZipWriter, MessageZipEn
 	/**
 	 * Input will be 'piped' to the output, and the message will be preserved. Avoid using this if possible.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.9.0")
 	public void setBackwardsCompatibility(boolean backwardsCompatibility) {
 		this.backwardsCompatibility = backwardsCompatibility;
 	}

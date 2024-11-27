@@ -2,7 +2,9 @@
 	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd"
+	objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+
 	<changeSet id="TestTable:1:${tableName}" author="Niels Meijer">
 		<comment>Add ${tableName} Table</comment>
 		<createTable tableName="${tableName}">
@@ -18,9 +20,9 @@
 			<column name="TCLOB" type="CLOB"/> <!-- LONGBLOB required for MySQL and MariaDB, compatible with BLOB for other dbmses -->
 			<column name="TBLOB" type="LONGBLOB"/>
 		</createTable>
-		<createIndex tableName="${tableName}" indexName="IX_${tableName}">
-			<column name="TKEY"/>
-		</createIndex>
+<!--		<createIndex tableName="${tableName}" indexName="IX_${tableName}">-->
+<!--			<column name="TKEY"/>-->
+<!--		</createIndex>-->
 		<createIndex tableName="${tableName}" indexName="IX_${tableName}_02">
 			<column name="TINT"/>
 			<column name="TDATE"/>

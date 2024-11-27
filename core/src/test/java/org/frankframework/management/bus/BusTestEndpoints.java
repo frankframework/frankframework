@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,12 +15,13 @@
 */
 package org.frankframework.management.bus;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.stream.StreamingException;
+import jakarta.annotation.security.RolesAllowed;
+
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
 
-import javax.annotation.security.RolesAllowed;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.SenderException;
 
 @BusAware("frank-management-bus")
 public class BusTestEndpoints {
@@ -42,7 +43,7 @@ public class BusTestEndpoints {
 	@ActionSelector(BusAction.WARNINGS)
 	public Message<String> throwException(Message<?> message) {
 		ExceptionTestTypes type = BusMessageUtils.getEnumHeader(message, "type", ExceptionTestTypes.class);
-		Exception cause = new StreamingException("cannot stream",
+		Exception cause = new SenderException("cannot stream",
 			new ConfigurationException("cannot configure",
 				new IllegalStateException("something is wrong")));
 		switch (type) {

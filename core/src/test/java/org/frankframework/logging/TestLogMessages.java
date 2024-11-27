@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
@@ -33,13 +34,14 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.hamcrest.core.StringContains;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.LogUtil;
-import org.hamcrest.core.StringContains;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class TestLogMessages {
 	protected Logger log = LogUtil.getLogger(this);
@@ -55,32 +57,26 @@ public class TestLogMessages {
 
 	@Test
 	public void testHideRegexMatchInLogMessage() {
-		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build();
-		TestAppender.addToRootLogger(appender);
-		Set<String> globalReplace = IbisMaskingLayout.getGlobalReplace();
-		IbisMaskingLayout.cleanGlobalReplace();
+		Set<Pattern> globalReplace = IbisMaskingLayout.getGlobalReplace();
+		IbisMaskingLayout.clearGlobalReplace();
 		// Password matching regex that is intentionally different from the default
 		IbisMaskingLayout.addToGlobalReplace("(?<=password=\").+?(?=\")");
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build()) {
 			log.debug(TEST_REGEX_IN);
 
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(1, logEvents.size(), "found messages "+logEvents);
 			String message = logEvents.get(0);
 			assertEquals("DEBUG - "+ TEST_REGEX_OUT, message);
-		}
-		finally {
-			IbisMaskingLayout.cleanGlobalReplace();
+		} finally {
+			IbisMaskingLayout.clearGlobalReplace();
 			globalReplace.forEach(IbisMaskingLayout::addToGlobalReplace);
-			TestAppender.removeAppender(appender);
 		}
 	}
 
 	@Test
 	public void testLogHideRegexPropertyAppliedFromConfig() {
-		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build();
-		TestAppender.addToRootLogger(appender);
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build()) {
 			log.debug("my beautiful log with <password>TO BE HIDDEN</password> hidden value");
 
 			List<String> logEvents = appender.getLogLines();
@@ -88,17 +84,12 @@ public class TestLogMessages {
 			String message = logEvents.get(0);
 			assertEquals("DEBUG - my beautiful log with <password>************</password> hidden value", message);
 		}
-		finally {
-			TestAppender.removeAppender(appender);
-		}
 	}
 
 	@Test
 	public void dontLogDebugAndInfoLevelsWhenThreadFilterIsActive() {
-		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).useIbisThreadFilter("HIDE-HERE").build();
-		TestAppender.addToRootLogger(appender);
 		String threadName = Thread.currentThread().getName();
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).useIbisThreadFilter("HIDE-HERE").build()) {
 			Thread.currentThread().setName("HIDE-HERE");
 			log.debug("my beautiful debug message");
 			log.info("my beautiful info message");
@@ -118,15 +109,12 @@ public class TestLogMessages {
 		}
 		finally {
 			Thread.currentThread().setName(threadName);
-			TestAppender.removeAppender(appender);
 		}
 	}
 
 	@Test
 	public void testCdataInMessage() {
-		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build();
-		TestAppender.addToRootLogger(appender);
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build()) {
 			log.debug("my beautiful <![CDATA[debug]]> for me & you --> \"world\"");
 
 			List<String> logEvents = appender.getLogLines();
@@ -134,16 +122,11 @@ public class TestLogMessages {
 			String message = logEvents.get(0);
 			assertEquals("DEBUG - my beautiful <![CDATA[debug]]> for me & you --> \"world\"", message);
 		}
-		finally {
-			TestAppender.removeAppender(appender);
-		}
 	}
 
 	@Test
 	public void testUnicodeCharactersInMessage() {
-		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build();
-		TestAppender.addToRootLogger(appender);
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build()) {
 			log.debug("my beautiful unicode debug  aâΔع你好ಡತ  message for me & you --> \\\"world\\\"");
 
 			List<String> logEvents = appender.getLogLines();
@@ -151,18 +134,13 @@ public class TestLogMessages {
 			String message = logEvents.get(0);
 			assertEquals("DEBUG - my beautiful unicode debug  aâΔع你好ಡತ  message for me & you --> \\\"world\\\"", message);
 		}
-		finally {
-			TestAppender.removeAppender(appender);
-		}
 	}
 
 	@Test
 	public void logLength() {
-		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build();
-		TestAppender.addToRootLogger(appender);
 		int length = 23;
 		IbisMaskingLayout.setMaxLength(length);
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build()) {
 			log.debug(TEST_REGEX_IN);
 
 			List<String> logEvents = appender.getLogLines();
@@ -174,15 +152,12 @@ public class TestLogMessages {
 		}
 		finally {
 			IbisMaskingLayout.setMaxLength(-1);
-			TestAppender.removeAppender(appender);
 		}
 	}
 
 	@Test
 	public void logWithStacktrace() {
-		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build();
-		TestAppender.addToRootLogger(appender);
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build()) {
 			Throwable t = new Throwable("my exception message");
 			StackTraceElement[] stackTrace = new StackTraceElement[1];
 			stackTrace[0] = new StackTraceElement(this.getClass().getSimpleName(), "logWithStacktrace", "TestLogMessages", 0);
@@ -198,9 +173,6 @@ public class TestLogMessages {
 						at TestLogMessages.logWithStacktrace(TestLogMessages:0) ~[?:?]\
 					""";
 			TestAssertions.assertEqualsIgnoreCRLF(expected, message);
-		}
-		finally {
-			TestAppender.removeAppender(appender);
 		}
 	}
 
@@ -228,11 +200,9 @@ public class TestLogMessages {
 
 	@Test
 	public void testChangeLogLevel() {
-		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
-		TestAppender.addToRootLogger(appender);
 		String rootLoggerName = LogUtil.getLogger(this).getName(); //For tests, we use the `org.frankframework` logger instead of the rootlogger
 
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build()) {
 			Configurator.setLevel(rootLoggerName, Level.DEBUG);
 			log.debug("debug");
 
@@ -253,7 +223,6 @@ public class TestLogMessages {
 
 			assertEquals(4, appender.getNumberOfAlerts(), "found messages "+appender.getLogLines());
 		} finally {
-			TestAppender.removeAppender(appender);
 			Configurator.setLevel(rootLoggerName, Level.DEBUG);
 		}
 	}
@@ -261,9 +230,7 @@ public class TestLogMessages {
 	@Test
 	public void testMessageLogThreadContext() throws Exception {
 		PatternLayout layout =  PatternLayout.newBuilder().withPattern("%level - %m %TC").build();
-		TestAppender appender = TestAppender.newBuilder().setLayout(layout).build();
-		TestAppender.addToRootLogger(appender);
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().setLayout(layout).build()) {
 			try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("key", "value").put("key.two", "value2")) {
 				log.debug("Adapter Success");
 			}
@@ -279,26 +246,18 @@ public class TestLogMessages {
 				() -> assertFalse(message.contains("log.dir")) // No other info in log context
 			);
 		}
-		finally {
-			TestAppender.removeAppender(appender);
-		}
 	}
 
 	@Test
 	public void testMessageEmptyLogThreadContext() {
 		PatternLayout layout =  PatternLayout.newBuilder().withPattern("%level - %m %TC").build();
-		TestAppender appender = TestAppender.newBuilder().setLayout(layout).build();
-		TestAppender.addToRootLogger(appender);
-		try {
+		try (TestAppender appender = TestAppender.newBuilder().setLayout(layout).build()) {
 			log.debug("Adapter Success");
 
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(1, logEvents.size());
 			String message = logEvents.get(0);
 			assertEquals("DEBUG - Adapter Success ", message);
-		}
-		finally {
-			TestAppender.removeAppender(appender);
 		}
 	}
 }

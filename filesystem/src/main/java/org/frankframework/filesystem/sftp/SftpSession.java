@@ -16,10 +16,6 @@
 package org.frankframework.filesystem.sftp;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IConfigurable;
-import org.frankframework.filesystem.FileSystemException;
-import org.frankframework.util.CredentialFactory;
 import org.springframework.context.ApplicationContext;
 
 import com.jcraft.jsch.ChannelExec;
@@ -37,6 +33,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.IConfigurable;
+import org.frankframework.filesystem.FileSystemException;
+import org.frankframework.util.CredentialFactory;
+
 /**
  * Helper class for sftp.
  *
@@ -44,7 +45,7 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public class SftpSession implements IConfigurable {
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	public enum TransportType {

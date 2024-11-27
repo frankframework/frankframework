@@ -21,17 +21,18 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.jms.JMSException;
-import javax.jms.Session;
-import javax.jms.TextMessage;
 import javax.xml.transform.TransformerConfigurationException;
 
+import jakarta.jms.JMSException;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
+
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.Resource;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.Category;
 import org.frankframework.jms.JmsTransactionalStorage;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
@@ -66,7 +67,7 @@ import org.frankframework.util.UUIDUtil;
  *
  * @author Peter Leeuwenburgh
  */
-@Category("NN-Special")
+@Category(Category.Type.NN_SPECIAL)
 public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTransactionalStorage<S> {
 	private TransformerPool exceptionLogTp = null;
 	private TransformerPool auditLogTp = null;
@@ -101,31 +102,28 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 	}
 
 	@Override
-	public void open() throws ListenerException {
-		try {
-			super.open();
-		} catch (Exception e) {
-			throw new ListenerException(e);
-		}
+	public void start() {
+		super.start();
+
 		if (exceptionLogTp != null) {
 			try {
 				exceptionLogTp.open();
 			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix() + "cannot start TransformerPool for exceptionLog", e);
+				throw new LifecycleException(getLogPrefix() + "cannot start TransformerPool for exceptionLog", e);
 			}
 		}
 		if (auditLogTp != null) {
 			try {
 				auditLogTp.open();
 			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix() + "cannot start TransformerPool for auditLog", e);
+				throw new LifecycleException(getLogPrefix() + "cannot start TransformerPool for auditLog", e);
 			}
 		}
 	}
 
 	@Override
-	public void close() {
-		super.close();
+	public void stop() {
+		super.stop();
 		if (exceptionLogTp != null) {
 			exceptionLogTp.close();
 		}
@@ -141,16 +139,16 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 			Map<String,Object> parameterValues = createParameterValues(messageId, correlationId, receivedDate, comments, message);
 			String logRequest;
 			if ("E".equalsIgnoreCase(getType())) {
-				log.debug(getLogPrefix() + "creating exceptionLog request");
+				log.debug("{}creating exceptionLog request", getLogPrefix());
 				logRequest = exceptionLogTp.transform("<dummy/>", parameterValues, true);
 			} else {
-				log.debug(getLogPrefix() + "creating auditLog request");
+				log.debug("{}creating auditLog request", getLogPrefix());
 				logRequest = auditLogTp.transform("<dummy/>", parameterValues, true);
 			}
 			session = createSession();
-			javax.jms.Message msg = createMessage(session, null, new Message(logRequest));
+			jakarta.jms.Message msg = createMessage(session, null, new Message(logRequest));
 			String returnMessage = send(session, getDestination(), msg);
-			log.debug(getLogPrefix() + "sent message [" + logRequest + "] " + "to [" + getDestination() + "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID() + "]");
+			log.debug("{}sent message [{}] to [{}] msgID [{}] correlationID [{}]", getLogPrefix(), logRequest, getDestination(), msg.getJMSMessageID(), msg.getJMSCorrelationID());
 			return returnMessage;
 		} catch (Exception e) {
 			throw new SenderException(e);
@@ -183,11 +181,10 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 			rawMessageText = message.toString();
 		} else {
 			try {
-				TextMessage textMessage = null;
-				textMessage = (TextMessage) message;
+				TextMessage textMessage = (TextMessage) message;
 				rawMessageText = textMessage.getText();
 			} catch (ClassCastException e) {
-				log.error("message was not of type TextMessage, but [" + message.getClass().getName() + "]", e);
+				log.error("message was not of type TextMessage, but [{}]", message.getClass().getName(), e);
 				rawMessageText = message.toString();
 			}
 		}
@@ -196,7 +193,7 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 	}
 
 	@Override
-	public int getMessageCount() throws ListenerException {
+	public int getMessageCount() {
 		return -1;
 	}
 }

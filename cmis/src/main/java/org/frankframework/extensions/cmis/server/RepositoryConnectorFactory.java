@@ -28,8 +28,8 @@ import org.apache.chemistry.opencmis.server.support.wrapper.ConformanceCmisServi
 import org.apache.logging.log4j.Logger;
 
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.FileUtils;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.TemporaryDirectoryUtils;
 
 
 /**
@@ -49,7 +49,7 @@ public class RepositoryConnectorFactory extends AbstractServiceFactory {
 		LOG.info("initialized proxy repository service");
 
 		try {
-			tempDirectory = FileUtils.getTempDirectory("cmis");
+			tempDirectory = TemporaryDirectoryUtils.getTempDirectory("cmis").toFile();
 		} catch (IOException e) {
 			LOG.warn("unable to use [ibis.tmpdir], falling back to OpenCMIS default [java.io.tmpdir]", e);
 			tempDirectory = super.getTempDirectory();
@@ -89,7 +89,7 @@ public class RepositoryConnectorFactory extends AbstractServiceFactory {
 		BridgedCmisService service = null;
 		try {
 			service = new BridgedCmisService(context);
-			LOG.info("created repository service ["+service+"]");
+			LOG.info("created repository service [{}]", service);
 		} catch (Exception e) {
 			throw new CmisRuntimeException("could not create service instance: " + e, e);
 		}

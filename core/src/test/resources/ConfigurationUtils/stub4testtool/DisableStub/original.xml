@@ -16,8 +16,8 @@
 			</exits>
 
 			<pipe name="CreateResponse"
-				className="org.frankframework.pipes.FixedResult"
-				returnString="Success ">
+				className="org.frankframework.pipes.EchoPipe"
+				getInputFromFixedValue="Success ">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>
@@ -36,8 +36,8 @@
 			</exits>
 
 			<pipe name="CreateResponse"
-				className="org.frankframework.pipes.FixedResult"
-				returnString="Success ">
+				className="org.frankframework.pipes.EchoPipe"
+				getInputFromFixedValue="Success ">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>
@@ -61,8 +61,8 @@
 			</exits>
 
 			<pipe name="CreateResponse"
-				className="org.frankframework.pipes.FixedResult"
-				returnString="Success ">
+				className="org.frankframework.pipes.EchoPipe"
+				getInputFromFixedValue="Success ">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>
@@ -86,8 +86,8 @@
 			</exits>
 
 			<pipe name="CreateResponse"
-				className="org.frankframework.pipes.FixedResult"
-				returnString="Success ">
+				className="org.frankframework.pipes.EchoPipe"
+				getInputFromFixedValue="Success ">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>

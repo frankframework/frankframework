@@ -1,9 +1,10 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AppConstants, AppService } from 'src/app/app.service';
 import { InputFileUploadComponent } from 'src/app/components/input-file-upload/input-file-upload.component';
 import { JdbcService } from '../../jdbc/jdbc.service';
 import { ConfigurationsService } from '../configurations.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Subscription } from 'rxjs';
 
 type Form = {
   name: string;
@@ -20,9 +21,13 @@ type Form = {
   templateUrl: './configurations-upload.component.html',
   styleUrls: ['./configurations-upload.component.scss'],
 })
-export class ConfigurationsUploadComponent implements OnInit {
-  datasources: string[] = [];
-  form: Form = {
+export class ConfigurationsUploadComponent implements OnInit, OnDestroy {
+  @ViewChild(InputFileUploadComponent) fileInput!: InputFileUploadComponent;
+
+  protected datasources: string[] = [];
+  protected result: string = '';
+  protected error: string = '';
+  protected form: Form = {
     name: '',
     datasource: '',
     encoding: '',
@@ -31,42 +36,33 @@ export class ConfigurationsUploadComponent implements OnInit {
     activate_config: true,
     automatic_reload: false,
   };
-  file: File | null = null;
-  result: string = '';
-  error: string = '';
 
-  @ViewChild(InputFileUploadComponent) fileInput!: InputFileUploadComponent;
-
-  private appConstants: AppConstants;
+  private file: File | null = null;
+  private appConstants: AppConstants = this.appService.APP_CONSTANTS;
+  private appConstantsSubscription: Subscription | null = null;
 
   constructor(
     private configurationsService: ConfigurationsService,
     private jdbcService: JdbcService,
     private appService: AppService,
-  ) {
-    this.appConstants = this.appService.APP_CONSTANTS;
-    this.appService.appConstants$.subscribe(() => {
-      this.appConstants = this.appService.APP_CONSTANTS;
-      this.form.datasource = this.appConstants[
-        'jdbc.datasource.default'
-      ] as string;
-    });
-  }
+  ) {}
 
   ngOnInit(): void {
-    this.appService.appConstants$.subscribe(() => {
-      this.form.datasource = this.appConstants[
-        'jdbc.datasource.default'
-      ] as string;
+    this.appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
+      this.form.datasource = this.appConstants['jdbc.datasource.default'] as string;
     });
 
     this.jdbcService.getJdbc().subscribe((data) => {
       Object.assign(this, data);
       this.form.datasource =
-        this.appConstants['jdbc.datasource.default'] == undefined
+        this.appConstants['jdbc.datasource.default'] === undefined
           ? data.datasources[0]
           : (this.appConstants['jdbc.datasource.default'] as string);
     });
+  }
+
+  ngOnDestroy(): void {
+    this.appConstantsSubscription?.unsubscribe();
   }
 
   updateFile(file: File | null): void {
@@ -80,9 +76,10 @@ export class ConfigurationsUploadComponent implements OnInit {
     }
 
     const fd = new FormData();
-    if (this.form.datasource && this.form.datasource != '')
-      fd.append('datasource', this.form.datasource);
-    else fd.append('datasource', this.datasources[0]);
+    fd.append(
+      'datasource',
+      this.form.datasource && this.form.datasource != '' ? this.form.datasource : this.datasources[0],
+    );
 
     fd.append('encoding', this.form.encoding);
     fd.append('multiple_configs', this.form.multiple_configs.toString());
@@ -118,10 +115,7 @@ export class ConfigurationsUploadComponent implements OnInit {
         }
       },
       error: (errorData: HttpErrorResponse) => {
-        const error = errorData.error
-          ? errorData.error.error
-          : errorData.message;
-        this.error = error;
+        this.error = errorData.error ? errorData.error.error : errorData.message;
         this.result = '';
       },
     }); // TODO no intercept

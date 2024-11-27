@@ -5,13 +5,13 @@ import { AppService } from 'src/app/app.service';
 
 export interface Service {
   name: string;
-  method: string;
+  methods: string[];
   view: string;
   uriPattern: string;
 }
 
 export interface ApiListener {
-  method: string;
+  methods: string[];
   uriPattern: string;
   error: string;
 }
@@ -38,8 +38,6 @@ export class WebservicesService {
   ) {}
 
   getWebservices(): Observable<WebServices> {
-    return this.http.get<WebServices>(
-      `${this.appService.absoluteApiPath}webservices`,
-    );
+    return this.http.get<WebServices>(`${this.appService.absoluteApiPath}webservices`);
   }
 }

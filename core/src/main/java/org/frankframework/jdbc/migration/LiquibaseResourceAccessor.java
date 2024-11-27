@@ -21,7 +21,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 import liquibase.exception.UnexpectedLiquibaseException;
@@ -64,14 +63,13 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 		try {
 			return asResourceList(path, url.toURI(), url::openStream);
 		} catch (URISyntaxException e) {
-			LogUtil.getLogger(this).warn("unable to convert resource url ["+url+"]", e);
+			LogUtil.getLogger(this).warn("unable to convert resource url [{}]", url, e);
 		}
 		return Collections.emptyList();
 	}
 
 	protected List<liquibase.resource.Resource> asResourceList(String path, URI uri, ThrowingSupplier<InputStream,IOException> inputStreamSupplier) {
-		List<liquibase.resource.Resource> result = new LinkedList<>();
-		result.add(new AbstractResource(path, uri) {
+		return Collections.singletonList(new AbstractResource(path, uri) {
 
 			@Override
 			public InputStream openInputStream() throws IOException {
@@ -102,7 +100,6 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 			}
 
 		});
-		return result;
 	}
 
 
@@ -113,9 +110,7 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 
 	@Override
 	public List<String> describeLocations() {
-		List<String> list = new LinkedList<>();
-		list.add(resource.toString());
-		return list;
+		return Collections.singletonList(resource.toString());
 	}
 
 	@Override

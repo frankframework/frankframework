@@ -33,19 +33,21 @@ import org.frankframework.util.XmlUtils;
  * Transforms between ascii and an XML representation.
  *
  * <p>
- * Sample xml:<br/><code><pre>
- * 	&lt;CALCBOXMESSAGE&gt;
-		&lt;OPDRACHT&gt;
-			&lt;OPDRACHTSOORT&gt;ONTTREK_RISICO_EN_KOSTEN&lt;/OPDRACHTSOORT&gt;
-			&lt;BASISRENDEMENTSOORT&gt;NVT&lt;/BASISRENDEMENTSOORT&gt;
-			&lt;BEDRAG&gt;625&lt;/BEDRAG&gt;
-			&lt;DATUM&gt;20071201&lt;/DATUM&gt;
+ * Sample xml:<br/>
+ * <pre>{@code
+ * <CALCBOXMESSAGE>
+ * 		<OPDRACHT>
+ * 		    <OPDRACHTSOORT>ONTTREK_RISICO_EN_KOSTEN</OPDRACHTSOORT>
+ * 		    <BASISRENDEMENTSOORT>NVT</BASISRENDEMENTSOORT>
+ * 		    <BEDRAG>625</BEDRAG>
+ * 		    <DATUM>20071201</DATUM>
+ *     ...
+ * </CALCBOXMESSAGE>
+ * }</pre>
+ * <br/>
  *
- *          ...
- * 	&lt;/CALCBOXMESSAGE&gt;
- * </pre></code> <br/>
- *
- * Sample ascii:<br/><code><pre>
+ * Sample ascii:<br/>
+ * <pre>{@code
  * 	OPDRACHT : #SAMENGESTELD
  * 	OPDRACHT.OPDRACHTSOORT :ONTTREK_RISICO_EN_KOSTEN
  * 	OPDRACHT.BASISRENDEMENTSOORT :NVT
@@ -54,7 +56,7 @@ import org.frankframework.util.XmlUtils;
  *
  *          ...
  * 	EINDEREKENVERZOEK :EINDE
- * </pre></code>
+ * }</pre>
  * </p>
  *
  * <p><b>Configuration:</b>
@@ -69,7 +71,7 @@ import org.frankframework.util.XmlUtils;
  * </p>
  * @author Gerrit van Brakel
  */
-@Category("NN-Special")
+@Category(Category.Type.NN_SPECIAL)
 public class LabelFormat extends FixedForwardPipe {
 
 	private String direction=null;

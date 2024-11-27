@@ -18,7 +18,7 @@ package org.frankframework.configuration.filters;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-
+import org.frankframework.util.StringUtil;
 import org.frankframework.xml.FullXmlFilter;
 
 public class InitialCapsFilter extends FullXmlFilter {
@@ -42,7 +42,7 @@ public class InitialCapsFilter extends FullXmlFilter {
 	}
 
 	protected String initialCap(String elementName) {
-		return Character.toUpperCase(elementName.charAt(0))+elementName.substring(1);
+		return StringUtil.ucFirst(elementName);
 	}
 
 	protected String initialCapQname(String qname) {

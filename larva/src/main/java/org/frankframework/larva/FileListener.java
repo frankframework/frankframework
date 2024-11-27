@@ -23,16 +23,17 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
+import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.StreamUtil;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * File listener for the Test Tool.
@@ -144,7 +145,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 			if (file != null && file.exists()) {
 				StringBuilder stringBuilder = new StringBuilder();
 				try (InputStream fileInputStream = new FileInputStream(file)) {
-					byte[] buffer = new byte[StreamUtil.BUFFERSIZE];
+					byte[] buffer = new byte[StreamUtil.BUFFER_SIZE];
 					int length = fileInputStream.read(buffer);
 					while (length != -1) {
 						stringBuilder.append(new String(buffer, 0, length, StandardCharsets.UTF_8));

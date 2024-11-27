@@ -14,6 +14,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import lombok.extern.log4j.Log4j2;
+
+import nl.nn.adapterframework.dispatcher.DispatcherException;
+import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
@@ -27,6 +36,7 @@ import org.frankframework.core.PipeLineExits;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.jdbc.MessageStoreListener;
 import org.frankframework.jta.narayana.NarayanaJtaTransactionManager;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.FixedForwardPipe;
@@ -38,11 +48,6 @@ import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.RunState;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class ReceiverSubAdapterTest {
@@ -54,15 +59,19 @@ public class ReceiverSubAdapterTest {
 	@BeforeEach
 	void setup() {
 		// Create a TestConfiguration and stop it so that we can configure new adapters in it
-		configuration = new TestConfiguration();
-		configuration.stop();
-		configuration.getAdapterManager().close();
+		configuration = new TestConfiguration(false);
 	}
 
 	@AfterEach
 	void tearDown() {
 		log.info("*>>> Test done, wrapping up and destroying");
+		// In case JavaListener didn't close after end of test, deregister the service.
 		ServiceDispatcher.getInstance().unregisterServiceClient(SERVICE_NAME);
+		try {
+			DispatcherManagerFactory.getDispatcherManager().unregister(SERVICE_NAME);
+		} catch (DispatcherException e) {
+			// Ignore
+		}
 	}
 
 	private FailurePipe createFailurePipe() throws ConfigurationException {
@@ -82,8 +91,8 @@ public class ReceiverSubAdapterTest {
 		failure.setState(PipeLine.ExitState.ERROR);
 
 		PipeLineExits exits = new PipeLineExits();
-		exits.registerPipeLineExit(success);
-		exits.registerPipeLineExit(failure);
+		exits.addPipeLineExit(success);
+		exits.addPipeLineExit(failure);
 		pl.setPipeLineExits(exits);
 
 		CorePipeLineProcessor plp = new CorePipeLineProcessor();
@@ -93,27 +102,29 @@ public class ReceiverSubAdapterTest {
 		return pl;
 	}
 
-	private JavaListener<String> createJavaListener(TestConfiguration configuration, Receiver<String> receiver) throws Exception {
-		JavaListener<String> listener = configuration.createBean(JavaListener.class);
+	private JavaListener<Serializable> createJavaListener(TestConfiguration configuration, Receiver<Serializable> receiver) {
+		@SuppressWarnings("unchecked")
+		JavaListener<Serializable> listener = configuration.createBean(JavaListener.class);
 		listener.setName(receiver.getName());
 		listener.setHandler(receiver);
 
 		receiver.setListener(listener);
 		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
 
-		listener.open();
+		listener.start();
 		return listener;
 	}
 
-	private Receiver<String> createReceiver(TestConfiguration configuration, PipeLine pipeline, String name, NarayanaJtaTransactionManager txManager) throws Exception {
+	private Receiver<Serializable> createReceiver(TestConfiguration configuration, PipeLine pipeline, String name, NarayanaJtaTransactionManager txManager) throws Exception {
 		Adapter adapter = configuration.createBean(Adapter.class);
-		Receiver<String> receiver = configuration.createBean(Receiver.class);
+		@SuppressWarnings("unchecked")
+		Receiver<Serializable> receiver = configuration.createBean(Receiver.class);
 		receiver.setName(name);
 		adapter.setName(name);
 
-		configuration.registerAdapter(adapter);
+		configuration.addAdapter(adapter);
 
-		adapter.registerReceiver(receiver);
+		adapter.addReceiver(receiver);
 
 		receiver.setApplicationContext(configuration);
 		receiver.setAdapter(adapter);
@@ -122,7 +133,7 @@ public class ReceiverSubAdapterTest {
 		return receiver;
 	}
 
-	private MessageSendingPipe createMessageSendingPipe(TestConfiguration configuration, JavaListener<String> javaListener) {
+	private MessageSendingPipe createMessageSendingPipe(TestConfiguration configuration, JavaListener<?> javaListener) {
 		IbisLocalSender sender = new IbisLocalSender();
 		sender.setIsolated(false);
 		sender.setSynchronous(true);
@@ -143,14 +154,11 @@ public class ReceiverSubAdapterTest {
 		return pipe;
 	}
 
-	private IListener<String> createMockListener(Receiver<String> receiver) throws ListenerException {
-		IListener<String> listener = mock();
+	private IListener<Serializable> createMockListener(Receiver<Serializable> receiver) throws ListenerException {
+		MessageStoreListener listener = mock();
 		receiver.setListener(listener);
 
-		when(listener.extractMessage(any(), any())).thenAnswer(params -> {
-			RawMessageWrapper<String> rawMessageWrapper = params.getArgument(0);
-			return Message.asMessage(rawMessageWrapper.getRawMessage());
-		});
+		when(listener.extractMessage(any(), any())).thenCallRealMethod();
 		when(listener.getName()).thenReturn(receiver.getName());
 		when(listener.getApplicationContext()).thenReturn(receiver.getApplicationContext());
 		when(listener.getConfigurationClassLoader()).thenReturn(receiver.getConfigurationClassLoader());
@@ -158,7 +166,7 @@ public class ReceiverSubAdapterTest {
 		return listener;
 	}
 
-	private ITransactionalStorage<Serializable> createMockErrorStorage(Receiver<String> receiver) throws Exception {
+	private ITransactionalStorage<Serializable> createMockErrorStorage(Receiver<?> receiver) throws Exception {
 		ITransactionalStorage<Serializable> errorStorage = mock();
 
 		Map<String, Serializable> storedMessages = new HashMap<>();
@@ -171,7 +179,11 @@ public class ReceiverSubAdapterTest {
 		});
 		when(errorStorage.getMessage(any())).thenAnswer(params -> {
 			String msgId = params.getArgument(0);
-			return new RawMessageWrapper<>(storedMessages.get(msgId));
+			Serializable message = storedMessages.get(msgId);
+			if (message instanceof MessageWrapper<?> messageWrapper) {
+				return messageWrapper;
+			}
+			return new RawMessageWrapper<>(message);
 		});
 
 		receiver.setErrorStorage(errorStorage);
@@ -185,16 +197,16 @@ public class ReceiverSubAdapterTest {
 
 		FailurePipe failurePipe = createFailurePipe();
 		PipeLine subAdapterPipeLine = createPipeLine(configuration, failurePipe);
-		Receiver<String> subAdapterReceiver = createReceiver(configuration, subAdapterPipeLine, "TEST-FAIL", txManager);
-		JavaListener<String> javaListener = createJavaListener(configuration, subAdapterReceiver);
+		Receiver<Serializable> subAdapterReceiver = createReceiver(configuration, subAdapterPipeLine, "TEST-FAIL", txManager);
+		JavaListener<Serializable> javaListener = createJavaListener(configuration, subAdapterReceiver);
 		subAdapterReceiver.setMaxRetries(1);
 
 		MessageSendingPipe messageSendingPipe = createMessageSendingPipe(configuration, javaListener);
 		PipeLine mainAdapterPipeLine = createPipeLine(configuration, messageSendingPipe);
-		Receiver<String> mainAdapterReceiver = createReceiver(configuration, mainAdapterPipeLine, "TEST", txManager);
+		Receiver<Serializable> mainAdapterReceiver = createReceiver(configuration, mainAdapterPipeLine, "TEST", txManager);
 
 		ITransactionalStorage<Serializable> mockErrorStorage = createMockErrorStorage(mainAdapterReceiver);
-		IListener<String> mockListener = createMockListener(mainAdapterReceiver);
+		IListener<Serializable> mockListener = createMockListener(mainAdapterReceiver);
 
 		log.info("*>>> Starting Configuration");
 		configuration.configure();
@@ -203,7 +215,7 @@ public class ReceiverSubAdapterTest {
 		waitForState(mainAdapterReceiver, RunState.STARTED);
 		waitForState(subAdapterReceiver, RunState.STARTED);
 
-		RawMessageWrapper<String> rawMessage = new RawMessageWrapper<>("TEST MESSAGE", "msg-id", "cid");
+		RawMessageWrapper<Serializable> rawMessage = new RawMessageWrapper<>("TEST MESSAGE", "msg-id", "cid");
 
 		// Act 1 -- initial message
 
@@ -246,8 +258,8 @@ public class ReceiverSubAdapterTest {
 		AtomicInteger succeeds = new AtomicInteger();
 
 		FailurePipe() throws ConfigurationException {
-			registerForward(failureForward);
-			registerForward(successForward);
+			addForward(failureForward);
+			addForward(successForward);
 			setName("fail");
 		}
 

@@ -14,10 +14,7 @@
    limitations under the License.
 */
 package org.frankframework.management.bus.endpoints;
-
-import javax.annotation.security.RolesAllowed;
-
-import org.frankframework.configuration.IbisManager;
+import jakarta.annotation.security.RolesAllowed;
 import org.frankframework.core.Adapter;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
@@ -53,7 +50,7 @@ public class AdapterStatistics extends BusEndpointBase {
 	@ActionSelector(BusAction.STATUS)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getStatistics(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, BusMessageUtils.ALL_CONFIGS_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 

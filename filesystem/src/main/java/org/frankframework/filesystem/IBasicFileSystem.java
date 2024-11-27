@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
@@ -41,19 +41,20 @@ import org.frankframework.stream.Message;
  *
  * @param <F> Representation of file and folder.
  */
-public interface IBasicFileSystem<F> extends HasPhysicalDestination{
+public interface IBasicFileSystem<F> extends HasPhysicalDestination, AutoCloseable {
 
 	void configure() throws ConfigurationException;
 	void open() throws FileSystemException;
+	@Override
 	void close() throws FileSystemException;
 
 	boolean isOpen();
 
 	/**
-	 * Lists all files in 'folder' or in the 'root' of the filesystem (when folder is null).
-	 * Should list only 'files', no folders.
+	 * Lists files, directories or both, from a 'folder' or in the 'root' of the filesystem (when folder is null).
+	 * Only lists the objects as defined by the type filter.
 	 */
-	DirectoryStream<F> listFiles(String folder) throws FileSystemException;
+	DirectoryStream<F> list(String folder, TypeFilter filter) throws FileSystemException;
 	int getNumberOfFilesInFolder(String folder) throws FileSystemException;
 	/**
 	 * Get a string representation of an identification of a file.
@@ -66,12 +67,13 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 	 * Get a file 'F' representation of an identification of a file.
 	 * Must pair up with the implementation of {@link #getName(Object)}.
 	 */
-	F toFile(@Nonnull String filename) throws FileSystemException;
+	F toFile(@Nullable String filename) throws FileSystemException;
 	/**
 	 * Creates a reference to a file. If filename is not absolute, it will be created in 'defaultFolder'.
 	 */
-	F toFile(String defaultFolder, @Nonnull String filename) throws FileSystemException;
+	F toFile(@Nullable String defaultFolder, @Nullable String filename) throws FileSystemException;
 	boolean exists(F f) throws FileSystemException;
+	boolean isFolder(F f) throws FileSystemException;
 
 	boolean folderExists(String folder) throws FileSystemException;
 	Message readFile(F f, String charset) throws FileSystemException, IOException;
@@ -81,23 +83,15 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 	 * Moves the file to another folder.
 	 * Does not need to check for existence of the source or non-existence of the destination.
 	 * Returns the moved file, or null if no file was moved or there is no reference to the moved file.<br/>
-	 * If the reference to the moved file is unknown after the move, then:<br/>
-	 *   if <code>resultantMustBeReturned</code> is set, then an Exception must be thrown, preferably before the file is moved;<br/>
-	 *   if <code>resultantMustBeReturned</code> is not set, then a null result returned might also mean the file was moved successfully, but with unknown destination;<br/>
-	 * @param resultantMustBeReturned TODO
 	 */
-	F moveFile(F f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException;
+	F moveFile(F f, String destinationFolder, boolean createFolder) throws FileSystemException;
 
 	/**
 	 * Copies the file to another folder.
 	 * Does not need to check for existence of the source or non-existence of the destination.
 	 * Returns the copied file, or null if no file was copied or there is no reference to the copied file.
-	 * If the reference to the copied file is unknown after the copy, then:<br/>
-	 *   if <code>resultantMustBeReturned</code> is set, then an Exception must be thrown, preferably before the file is copied;<br/>
-	 *   if <code>resultantMustBeReturned</code> is not set, then a null result returned might also mean the file was copied successfully, but with unknown destination;<br/>
-	 * @param resultantMustBeReturned TODO
 	 */
-	F copyFile(F f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException;
+	F copyFile(F f, String destinationFolder, boolean createFolder) throws FileSystemException;
 
 	void createFolder(String folder) throws FileSystemException;
 	void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException;
@@ -106,7 +100,25 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 	long getFileSize(F f) throws FileSystemException;
 	String getCanonicalName(F f) throws FileSystemException;
 	Date getModificationTime(F f) throws FileSystemException;
-
+	@Nullable
 	Map<String, Object> getAdditionalFileProperties(F f) throws FileSystemException;
+
+	/**
+	 * Safe method to get a string representing the canonical name of a file, or an error message
+	 * if the canonical name could not be established.
+	 *
+	 * Because this method is not guaranteed to return the actual canonical name, it should be used
+	 * only for error messages and logging.
+	 *
+	 * @param f File for which to try to get canonical name
+	 * @return Either the canonical name of the file, or an error.
+	 */
+	default String getCanonicalNameOrErrorMessage(F f) {
+		try {
+			return getCanonicalName(f);
+		} catch (FileSystemException e) {
+			return "<Cannot get true canonical name, error: [" + e.getMessage() + "]>";
+		}
+	}
 
 }

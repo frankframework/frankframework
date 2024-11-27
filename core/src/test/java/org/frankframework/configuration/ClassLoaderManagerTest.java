@@ -11,14 +11,6 @@ import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.List;
 
-import org.frankframework.configuration.classloaders.ClassLoaderBase;
-import org.frankframework.dbms.GenericDbmsSupport;
-import org.frankframework.jdbc.FixedQuerySender;
-import org.frankframework.jms.JmsRealm;
-import org.frankframework.jms.JmsRealmFactory;
-import org.frankframework.testutil.MatchUtils;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.StreamUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,6 +19,15 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
+
+import org.frankframework.configuration.classloaders.AbstractClassLoader;
+import org.frankframework.dbms.GenericDbmsSupport;
+import org.frankframework.jdbc.FixedQuerySender;
+import org.frankframework.jms.JmsRealm;
+import org.frankframework.jms.JmsRealmFactory;
+import org.frankframework.testutil.MatchUtils;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.StreamUtil;
 
 public class ClassLoaderManagerTest extends Mockito {
 
@@ -126,7 +127,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		JmsRealm jmsRealm = spy(new JmsRealm());
 		jmsRealm.setDatasourceName("fake");
 		jmsRealm.setRealmName("myRealm");
-		JmsRealmFactory.getInstance().registerJmsRealm(jmsRealm);
+		JmsRealmFactory.getInstance().addJmsRealm(jmsRealm);
 		FixedQuerySender fq = mock(FixedQuerySender.class);
 		doReturn(new GenericDbmsSupport()).when(fq).getDbmsSupport();
 
@@ -157,7 +158,7 @@ public class ClassLoaderManagerTest extends Mockito {
 
 	private ClassLoader getClassLoader(String testConfiguration) throws Exception {
 		ClassLoader config = manager.get(testConfiguration);
-		if(config instanceof ClassLoaderBase base) {
+		if(config instanceof AbstractClassLoader base) {
 			base.setBasePath(".");
 		}
 		return config;

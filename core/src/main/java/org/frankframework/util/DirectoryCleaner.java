@@ -20,12 +20,16 @@ import java.io.File;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
+
 /**
  * Cleans up a directory.
  *
  *
  * @author Peter Leeuwenburgh
  */
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class DirectoryCleaner {
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -37,14 +41,12 @@ public class DirectoryCleaner {
 
 	public void cleanup() {
 		if (StringUtils.isNotEmpty(getDirectory())) {
-			log.debug("Cleanup directory [" + getDirectory() + "]");
+			log.debug("Cleanup directory [{}]", getDirectory());
 			File dir = new File(getDirectory());
 			if (dir.exists() && dir.isDirectory()) {
 				long lastModifiedDelta = Misc.parseAge(getRetention(), -1);
 				if (lastModifiedDelta < 0) {
-					log.error("retention [" + getRetention()
-							+ "] could not be parsed, cleaning up directory ["
-							+ getDirectory() + "] is skipped");
+					log.error("retention [{}] could not be parsed, cleaning up directory [{}] is skipped", getRetention(), getDirectory());
 				} else {
 					File[] files = dir.listFiles();
 					if (files != null) {
@@ -55,7 +57,7 @@ public class DirectoryCleaner {
 					}
 				}
 			} else if (isNotExistWarn()) {
-					log.warn("directory [" + getDirectory()	+ "] does not exists or is not a directory");
+				log.warn("directory [{}] does not exists or is not a directory", getDirectory());
 			}
 		}
 	}
@@ -63,7 +65,7 @@ public class DirectoryCleaner {
 	private void cleanupFile(File file, long lastModifiedDelta) {
 		if (file.isDirectory()) {
 			if (subdirectories) {
-				log.debug("Cleanup subdirectory [" + file.getAbsolutePath()	+ "]");
+				log.debug("Cleanup subdirectory [{}]", file.getAbsolutePath());
 				File[] files = file.listFiles();
 				if (files != null) {
 					for (int i = 0; i < files.length; i++) {
@@ -75,9 +77,9 @@ public class DirectoryCleaner {
 			if (deleteEmptySubdirectories) {
 				if (file.list().length == 0) {
 					if (file.delete()) {
-						log.info("deleted empty subdirectory [" + file.getAbsolutePath() + "]");
+						log.info("deleted empty subdirectory [{}]", file.getAbsolutePath());
 					} else {
-						log.warn("could not delete empty subdirectory [" + file.getAbsolutePath() + "]");
+						log.warn("could not delete empty subdirectory [{}]", file.getAbsolutePath());
 					}
 				}
 			}
@@ -88,9 +90,9 @@ public class DirectoryCleaner {
 							+ "] with age [" + Misc.getAge(file.lastModified())
 							+ "]";
 					if (file.delete()) {
-						log.info("deleted " + fileStr);
+						log.info("deleted {}", fileStr);
 					} else {
-						log.warn("could not delete file " + fileStr);
+						log.warn("could not delete file {}", fileStr);
 					}
 				}
 			}

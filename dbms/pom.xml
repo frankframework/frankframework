@@ -35,7 +35,7 @@
 		<dependency> <!-- for version number compare -->
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-artifact</artifactId>
-			<version>3.9.6</version>
+			<version>3.9.9</version>
 		</dependency>
 
 		<dependency>
@@ -52,6 +52,11 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency> <!-- to prevent this module from seeing the api as test scoped as well, add it explicitly -->
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 

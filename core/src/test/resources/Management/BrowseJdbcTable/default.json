@@ -1,0 +1,42 @@
+{
+    "result": [
+        {
+            "ACTIVECONFIG": "false",
+            "RNUM": "1",
+            "AUTORELOAD": "false",
+            "RUSER": "",
+            "VERSION": "001_20201112-1300",
+            "LENGTH CONFIG": "888",
+            "CRE_TYDST": "2022-09-27 17:58:27",
+            "FILENAME": "buildInfoZip_001.jar",
+            "NAME": "DBTEST"
+        },
+        {
+            "ACTIVECONFIG": "false",
+            "RNUM": "2",
+            "AUTORELOAD": "false",
+            "RUSER": "IbisTester",
+            "VERSION": "003_20201112-1500",
+            "LENGTH CONFIG": "888",
+            "CRE_TYDST": "2022-10-12 11:10:55",
+            "FILENAME": "buildInfoZip_003.jar",
+            "NAME": "DBTEST"
+        },
+        {
+            "ACTIVECONFIG": "true",
+            "RNUM": "3",
+            "AUTORELOAD": "false",
+            "RUSER": "",
+            "VERSION": "002_20201112-1400",
+            "LENGTH CONFIG": "888",
+            "CRE_TYDST": "2022-09-27 15:11:03",
+            "FILENAME": "buildInfoZip_002.jar",
+            "NAME": "DBTEST"
+        }
+    ],
+    "query": "SELECT * FROM (SELECT ROW_NUMBER() OVER (ORDER BY (SELECT 1)) AS rnum, * FROM testTable) AS x WHERE x.rnum BETWEEN 1 AND 100",
+    "fielddefinition": {
+        "RNUM": "INTEGER(0)"
+    },
+    "table": "testTable"
+}

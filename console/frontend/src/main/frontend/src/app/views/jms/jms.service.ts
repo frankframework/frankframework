@@ -39,21 +39,13 @@ export class JmsService {
   getJms(): Observable<{
     connectionFactories: string[];
   }> {
-    return this.http.get<{ connectionFactories: string[] }>(
-      `${this.appService.absoluteApiPath}jms`,
-    );
+    return this.http.get<{ connectionFactories: string[] }>(`${this.appService.absoluteApiPath}jms`);
   }
 
   postJmsBrowse(formData: JmsBrowseForm): Observable<JmsBrowseResponse> {
-    return this.http.post<JmsBrowseResponse>(
-      `${this.appService.absoluteApiPath}jms/browse`,
-      formData,
-    );
+    return this.http.post<JmsBrowseResponse>(`${this.appService.absoluteApiPath}jms/browse`, formData);
   }
   postJmsMessage(formData: FormData): Observable<object> {
-    return this.http.post(
-      `${this.appService.absoluteApiPath}jms/message`,
-      formData,
-    );
+    return this.http.post(`${this.appService.absoluteApiPath}jms/message`, formData);
   }
 }

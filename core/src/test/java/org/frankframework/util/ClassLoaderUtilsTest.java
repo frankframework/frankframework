@@ -11,12 +11,13 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.jar.JarFile;
 
-import org.frankframework.configuration.classloaders.JarFileClassLoader;
-import org.frankframework.core.IScopeProvider;
-import org.frankframework.testutil.TestScopeProvider;
 import org.junit.jupiter.api.MethodOrderer.MethodName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+
+import org.frankframework.configuration.classloaders.JarFileClassLoader;
+import org.frankframework.core.IScopeProvider;
+import org.frankframework.testutil.TestScopeProvider;
 
 /**
  * @author Niels Meijer

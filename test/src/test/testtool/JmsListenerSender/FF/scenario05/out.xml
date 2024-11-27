@@ -1,6 +1,6 @@
 <throwable>
   <class>org.frankframework.core.SenderException</class>
-  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-JmsFFSenderWithDatasource]: (RequestProcessorException) RequestProcessor [ibis4test-JmsFFSenderWithDatasource] caught exception: Pipe [exception] &lt;request action=&quot;exception&quot;&gt;
+  <message>exception processing message using request processor [ibis4test-JmsFFSenderWithDatasource]: (RequestProcessorException) RequestProcessor [ibis4test-JmsFFSenderWithDatasource] caught exception: Pipe [exception] &lt;request action=&quot;exception&quot;&gt;
 	&lt;value&gt;test&lt;/value&gt;
 &lt;/request&gt;</message>
   <cause>

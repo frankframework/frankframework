@@ -15,6 +15,8 @@
  */
 package org.frankframework.jms;
 
+import jakarta.annotation.Nonnull;
+
 import org.w3c.dom.Element;
 
 import org.frankframework.core.IMessageBrowsingIterator;
@@ -24,7 +26,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jms.JMSFacade.DestinationType;
-import org.frankframework.senders.SenderWithParametersBase;
+import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.XmlBuilder;
@@ -41,64 +43,55 @@ import org.frankframework.util.XmlUtils;
  * </p>
  * <p>
  * <b>example (input):</b>
- * <code>
- * <pre>
- *   &lt;browse&gt;
- *      &lt;jmsRealm&gt;qcf&lt;/jmsRealm&gt;
- *      &lt;destinationName&gt;jms/GetPolicyDetailsRequest&lt;/destinationName&gt;
- *      &lt;destinationType&gt;QUEUE&lt;/destinationType&gt;
- *   &lt;/browse>
- * </pre>
- * </code>
+ * <pre>{@code
+ * <browse>
+ *    <jmsRealm>qcf</jmsRealm>
+ *    <destinationName>jms/GetPolicyDetailsRequest</destinationName>
+ *    <destinationType>QUEUE</destinationType>
+ * </browse>
+ * }</pre>
  * </p>
- *
- *
  * <p>
  * <b>example (browse output):</b>
- * <code>
- * <pre>
- *   &lt;result&gt;
- *	    &lt;items count="2"&gt;
- *	       &lt;item&gt;
- *	          &lt;timestamp&gt;Thu Nov 20 13:36:31 CET 2014&lt;/timestamp&gt;
- *	          &lt;messageId&gt;ID:LPAB00000003980-61959-1416486781822-3:5:33:1:1&lt;/messageId&gt;
- *	          &lt;correlationId&gt;...&lt;/correlationId&gt;
- *	          &lt;message&gt;&lt;![CDATA[...]]&gt;&lt;/message&gt;
- *	       &lt;/item&gt;
- *	       &lt;item&gt;
- *	          &lt;timestamp&gt;Thu Dec 12 11:59:22 CET 2014&lt;/timestamp&gt;
- *	          &lt;messageId&gt;ID:LPAB00000003980-58359-1721486799722-3:4:19:1:1&lt;/messageId&gt;
- *	          &lt;correlationId&gt;...&lt;/correlationId&gt;
- *	          &lt;message&gt;&lt;![CDATA[...]]&gt;&lt;/message&gt;
- *	       &lt;/item&gt;
- *	    &lt;/items&gt;
- *   &lt;/result&gt;
- * </pre>
- * </code>
+ * <pre>{@code
+ * <result>
+ *   <items count="2">
+ *      <item>
+ *         <timestamp>Thu Nov 20 13:36:31 CET 2014</timestamp>
+ *         <messageId>ID:LPAB00000003980-61959-1416486781822-3:5:33:1:1</messageId>
+ *         <correlationId>...</correlationId>
+ *         <message><![CDATA[...]]></message>
+ *      </item>
+ *      <item>
+ *         <timestamp>Thu Dec 12 11:59:22 CET 2014</timestamp>
+ *         <messageId>ID:LPAB00000003980-58359-1721486799722-3:4:19:1:1</messageId>
+ *         <correlationId>...</correlationId>
+ *         <message><![CDATA[...]]></message>
+ *      </item>
+ * 	 </items>
+ * </result>
+ * }</pre>
  * </p>
  *
  * <p>
  * <b>example (remove output):</b>
- * <code>
- * <pre>
- *   &lt;result&gt;
- *	    &lt;itemsRemoved&gt;2&lt;/itemsRemoved&gt;
- *   &lt;/result&gt;
- * </pre>
- * </code>
- * </p>
+ * <pre>{@code
+ * <result>
+ *     <itemsRemoved>2</itemsRemoved>
+ * </result>
+ * }</pre>
  *
  * @author  Peter Leeuwenburgh
  */
-public class XmlJmsBrowserSender extends SenderWithParametersBase {
+public class XmlJmsBrowserSender extends AbstractSenderWithParameters {
 
 	@SuppressWarnings("unchecked")
-	public JmsBrowser<javax.jms.Message> createJmsBrowser() {
+	public JmsBrowser<jakarta.jms.Message> createJmsBrowser() {
 		return createBean(JmsBrowser.class);
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		Element queueBrowserElement;
 		String root = null;
 		String jmsRealm = null;
@@ -113,10 +106,10 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 			destinationName = XmlUtils.getChildTagAsString(queueBrowserElement, "destinationName");
 			destinationType = EnumUtils.parse(DestinationType.class,XmlUtils.getChildTagAsString(queueBrowserElement, "destinationType"));
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
+			throw new SenderException("got exception parsing [" + message + "]", e);
 		}
 
-		JmsBrowser<javax.jms.Message> jmsBrowser = createJmsBrowser();
+		JmsBrowser<jakarta.jms.Message> jmsBrowser = createJmsBrowser();
 		jmsBrowser.setName("XmlQueueBrowserSender");
 		if (jmsRealm != null) {
 			jmsBrowser.setJmsRealm(jmsRealm);
@@ -136,8 +129,7 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 			if ("remove".equalsIgnoreCase(root)) {
 				remove = true;
 			} else {
-				throw new SenderException(getLogPrefix()
-						+ "unknown root element [" + root + "]");
+				throw new SenderException("unknown root element [" + root + "]");
 			}
 		}
 
@@ -187,18 +179,16 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 			}
 			result.addSubElement(items);
 		} catch (ListenerException e) {
-			throw new SenderException(getLogPrefix()
-					+ "got exception browsing messages", e);
+			throw new SenderException("got exception browsing messages", e);
 		} finally {
 			try {
 				if (it != null) {
 					it.close();
 				}
 			} catch (ListenerException e) {
-				log.warn(getLogPrefix()
-						+ "exception on closing message browser iterator", e);
+				log.warn("exception on closing message browser iterator", e);
 			}
 		}
-		return new SenderResult(result.toXML());
+		return new SenderResult(result.asMessage());
 	}
 }

@@ -16,7 +16,8 @@
 package org.frankframework.pipes;
 
 import jcifs.smb.SmbFile;
-import org.frankframework.filesystem.FileSystemPipe;
+
+import org.frankframework.filesystem.AbstractFileSystemPipe;
 import org.frankframework.filesystem.smb.Samba1FileSystem;
 import org.frankframework.filesystem.smb.Samba1FileSystemDelegator;
 
@@ -25,7 +26,7 @@ import org.frankframework.filesystem.smb.Samba1FileSystemDelegator;
  * <br/>
  * Only supports NTLM authentication.
  */
-public class Samba1Pipe extends FileSystemPipe<SmbFile, Samba1FileSystem> implements Samba1FileSystemDelegator {
+public class Samba1Pipe extends AbstractFileSystemPipe<SmbFile, Samba1FileSystem> implements Samba1FileSystemDelegator {
 
 	public Samba1Pipe() {
 		setFileSystem(new Samba1FileSystem());

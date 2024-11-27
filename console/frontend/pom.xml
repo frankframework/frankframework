@@ -30,8 +30,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
@@ -40,34 +40,38 @@
 		<defaultGoal>generate-resources</defaultGoal>
 		<plugins>
 			<plugin>
-				<groupId>com.github.eirslett</groupId>
-				<artifactId>frontend-maven-plugin</artifactId>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.5.0</version>
+				<configuration>
+					<workingDirectory>${frontend.source.location}</workingDirectory>
+				</configuration>
 				<executions>
-					<execution>
-						<id>install node and npm</id>
-						<goals>
-							<goal>install-node-and-npm</goal>
-						</goals>
-						<phase>generate-resources</phase>
-					</execution>
 					<execution>
 						<id>npm install</id>
 						<goals>
-							<goal>npm</goal>
+							<goal>exec</goal>
 						</goals>
 						<phase>generate-resources</phase>
 						<configuration>
-							<arguments>install</arguments>
+							<executable>npm</executable>
+							<arguments>
+								<argument>ci</argument>
+							</arguments>
 						</configuration>
 					</execution>
 					<execution>
 						<id>npm build</id>
 						<goals>
-							<goal>npx</goal>
+							<goal>exec</goal>
 						</goals>
 						<phase>generate-resources</phase>
 						<configuration>
-							<arguments>ng build -c development</arguments>
+							<executable>npm</executable>
+							<arguments>
+								<argument>run</argument>
+								<argument>build</argument>
+							</arguments>
 						</configuration>
 					</execution>
 				</executions>
@@ -94,6 +98,40 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.glassfish.copyright</groupId>
+				<artifactId>glassfish-copyright-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>Check-CopyRight-Notice</id>
+						<phase>none</phase>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>verify-code-style</id>
+						<phase>none</phase>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>enforce-lib-ban</id>
+						<phase>none</phase>
+					</execution>
+					<execution>
+						<id>enforce-classpath-lib-ban</id>
+						<phase>none</phase>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
@@ -107,21 +145,6 @@
 							<pluginExecutions>
 								<pluginExecution>
 									<pluginExecutionFilter>
-										<groupId>com.github.eirslett</groupId>
-										<artifactId>frontend-maven-plugin</artifactId>
-										<versionRange>[1.12,)</versionRange>
-										<goals>
-											<goal>install-node-and-npm</goal>
-											<goal>npm</goal>
-											<goal>npx</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore />
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
 										<groupId>com.github.hazendaz.maven</groupId>
 										<artifactId>directory-maven-plugin</artifactId>
 										<versionRange>[1,)</versionRange>
@@ -133,66 +156,26 @@
 										<ignore />
 									</action>
 								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.codehaus.mojo</groupId>
+										<artifactId>exec-maven-plugin</artifactId>
+										<versionRange>[1,)</versionRange>
+										<goals>
+											<goal>exec</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
 				</plugin>
-				<plugin>
-					<groupId>com.github.eirslett</groupId>
-					<artifactId>frontend-maven-plugin</artifactId>
-					<version>1.15.0</version>
-					<configuration>
-						<nodeVersion>v20.11.1</nodeVersion>
-						<workingDirectory>${frontend.source.location}</workingDirectory><!-- frontend resources -->
-						<installDirectory>${project.build.directory}</installDirectory><!-- npm + npx install folder -->
-					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.glassfish.copyright</groupId>
-					<artifactId>glassfish-copyright-maven-plugin</artifactId>
-					<executions>
-						<execution>
-							<id>Check-CopyRight-Notice</id>
-							<configuration>
-								<skip>true</skip>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-checkstyle-plugin</artifactId>
-					<executions>
-						<execution>
-							<id>verify-code-style</id>
-							<configuration>
-								<skip>true</skip>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-enforcer-plugin</artifactId>
-					<executions>
-						<execution>
-							<id>enforce-lib-ban</id>
-							<configuration>
-								<skip>true</skip>
-							</configuration>
-						</execution>
-						<execution>
-							<id>enforce-classpath-lib-ban</id>
-							<configuration>
-								<skip>true</skip>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
-
 	<reporting>
 		<plugins>
 			<plugin>
@@ -226,58 +209,4 @@
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 	</developers>
-
-	<profiles>
-		<profile>
-			<id>ci</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>com.github.eirslett</groupId>
-						<artifactId>frontend-maven-plugin</artifactId>
-						<configuration>
-							<skip>true</skip>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<version>3.2.0</version>
-						<configuration>
-							<workingDirectory>${frontend.source.location}</workingDirectory>
-						</configuration>
-						<executions>
-							<execution>
-								<id>npm install</id>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-								<phase>generate-resources</phase>
-								<configuration>
-									<executable>npm</executable>
-									<arguments>
-										<argument>install</argument>
-									</arguments>
-								</configuration>
-							</execution>
-							<execution>
-								<id>ng build</id>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-								<phase>generate-resources</phase>
-								<configuration>
-									<executable>npx</executable>
-									<arguments>
-										<argument>ng</argument>
-										<argument>build</argument>
-									</arguments>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 </project>

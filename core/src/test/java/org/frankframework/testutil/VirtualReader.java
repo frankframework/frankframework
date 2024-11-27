@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.concurrent.atomic.LongAdder;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

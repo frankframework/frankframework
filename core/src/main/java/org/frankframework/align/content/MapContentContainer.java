@@ -36,9 +36,9 @@ import org.frankframework.util.LogUtil;
 public class MapContentContainer<V> implements DocumentContainer {
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
-	private final String attributeSeparator = ".";
-	private final String indexSeparator = ".";
-	private static final String arrayValueSeparator = ",";
+	private static final String ATTRIBUTE_SEPARATOR = ".";
+	private static final String INDEX_SEPARATOR = ".";
+	private static final String ARRAY_VALUE_SEPARATOR = ",";
 	private final Map<String, List<V>> data;
 
 	private String currentName;
@@ -106,7 +106,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 
 	@Override
 	public void setAttribute(String name, String value, XSSimpleTypeDefinition attTypeDefinition) {
-		setValue(currentName+attributeSeparator+name,stringToValue(value),false);
+		setValue(currentName+ATTRIBUTE_SEPARATOR+name,stringToValue(value),false);
 	}
 
 	@Override
@@ -114,7 +114,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 		String rawValue=new String(ch,start,length);
 		if (currentName==null) {
 			if (rawValue.trim().length()>0) {
-				log.warn("no name to set characters ["+rawValue+"]");
+				log.warn("no name to set characters [{}]", rawValue);
 			}
 		} else {
 			String value=ESCAPE_JSON.translate(rawValue);
@@ -142,6 +142,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 
 	@Override
 	public void endElementGroup(String localName) {
+		// NO OP
 	}
 
 	public Map<String,V> flattenedVertical() {
@@ -150,7 +151,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 		for(String key:data.keySet()) {
 			List<V> entry=data.get(key);
 			for(int i=0;i<entry.size();i++) {
-				result.put(key+indexSeparator+(i+1), entry.get(i));
+				result.put(key+INDEX_SEPARATOR+(i+1), entry.get(i));
 			}
 		}
 		return result;
@@ -163,7 +164,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 			List<V> entry=data.get(key);
 			String value="";
 			for(int i=0;i<entry.size();i++) {
-				if (i>0) value+=arrayValueSeparator;
+				if (i>0) value+=ARRAY_VALUE_SEPARATOR;
 				value+=valueToString(entry.get(i));
 			}
 			result.put(key, value);
@@ -190,7 +191,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 		Map<String,List<String>> result=new LinkedHashMap<>();
 		for (String key:map.keySet()) {
 			String value=map.get(key);
-			result.put(key, Arrays.asList(value.split(arrayValueSeparator,-1)));
+			result.put(key, Arrays.asList(value.split(ARRAY_VALUE_SEPARATOR,-1)));
 		}
 		return result;
 	}

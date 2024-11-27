@@ -10,12 +10,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.LocalFileSystemSender;
 import org.frankframework.stream.Message;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSystemSender, Path, LocalFileSystem>{
 
@@ -37,7 +38,7 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 
 	@Test
 	public void testRename() throws Exception {
-		Path folder1 = Paths.get(folder.toAbsolutePath().toString() + "/one");
+		Path folder1 = Paths.get(folder.toAbsolutePath() + "/one");
 		Files.createDirectories(folder1);
 		File src = new File(folder1+"/aa.txt");
 		File dest = new File(folder1+"/bb.txt");
@@ -51,10 +52,10 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 		sender.setNumberOfBackups(1);
 		autowireByName(sender);
 		sender.configure();
-		sender.open();
+		sender.start();
 
-		try (FileOutputStream fout = new FileOutputStream(src)) {
-			fout.write("tja".getBytes());
+		try (FileOutputStream stream = new FileOutputStream(src)) {
+			stream.write("tja".getBytes());
 		}
 
 		Message result = sender.sendMessageOrThrow(Message.nullMessage(), null);
@@ -65,8 +66,8 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 
 	@Test
 	public void testRenameToOtherFolder() throws Exception {
-		Path folder1 = Paths.get(folder.toAbsolutePath().toString() + "/one");
-		Path folder2 = Paths.get(folder.toAbsolutePath().toString() + "/two");
+		Path folder1 = Paths.get(folder.toAbsolutePath() + "/one");
+		Path folder2 = Paths.get(folder.toAbsolutePath() + "/two");
 		Files.createDirectories(folder1);
 		Files.createDirectories(folder2);
 		File src = new File(folder1+"/aa.txt");
@@ -81,10 +82,10 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 		sender.addParameter(new Parameter("destination", dest.getPath()));
 		sender.setNumberOfBackups(1);
 		sender.configure();
-		sender.open();
+		sender.start();
 
-		try (FileOutputStream fout = new FileOutputStream(src)) {
-			fout.write("tja".getBytes());
+		try (FileOutputStream stream = new FileOutputStream(src)) {
+			stream.write("tja".getBytes());
 		}
 		Message result = sender.sendMessageOrThrow(Message.nullMessage(), null);
 

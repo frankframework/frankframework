@@ -1,5 +1,7 @@
 package org.frankframework.filesystem.ftp;
 
+import org.junit.jupiter.api.BeforeEach;
+
 import org.frankframework.filesystem.FileSystemSenderTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.filesystem.LocalFileSystemTestHelper;
@@ -7,7 +9,6 @@ import org.frankframework.senders.FtpFileSystemSender;
 import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileServer.FileSystemType;
 import org.frankframework.testutil.junit.LocalFileSystemMock;
-import org.junit.jupiter.api.BeforeEach;
 
 /**
  * This test class is created to test both FtpFileSystem and FtpFileSystemSender classes.

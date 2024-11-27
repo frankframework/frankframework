@@ -7,13 +7,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
 import javax.naming.NamingException;
 
-import org.frankframework.jms.IConnectionFactoryFactory;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageListener;
 
 import com.mockrunner.jms.ConfigurationManager;
 import com.mockrunner.jms.DestinationManager;
@@ -24,6 +22,8 @@ import com.mockrunner.mock.jms.MockSession;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.jms.IConnectionFactoryFactory;
 
 @Log4j2
 public class MockRunnerConnectionFactoryFactory implements IConnectionFactoryFactory {
@@ -55,7 +55,7 @@ public class MockRunnerConnectionFactoryFactory implements IConnectionFactoryFac
 		return Collections.singletonList(MOCK_CONNECTION_FACTORY_NAME);
 	}
 
-	public javax.jms.Message getLastMessageFromQueue(String queueName) {
+	public jakarta.jms.Message getLastMessageFromQueue(String queueName) {
 		MockQueue queue = getDestinationManager().getQueue(queueName);
 		@SuppressWarnings("unchecked")
 		List<MockMessage> receivedMessageList = queue.getReceivedMessageList();
@@ -85,7 +85,7 @@ public class MockRunnerConnectionFactoryFactory implements IConnectionFactoryFac
 		session.setMessageListener(ml);
 	}
 
-	public void addMessageOnQueue(String queueName, Message message) throws JMSException {
+	public void addMessageOnQueue(String queueName, jakarta.jms.Message message) throws JMSException {
 		destinationManager.getQueue(queueName).addMessage(message);
 	}
 }

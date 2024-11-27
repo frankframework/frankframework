@@ -17,13 +17,13 @@ package org.frankframework.core;
 
 import java.util.Map;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.doc.ElementType;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
-import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
@@ -35,15 +35,14 @@ import org.frankframework.stream.Message;
  * @since   4.2
  */
 @FrankDocGroup(FrankDocGroupValue.LISTENER)
-@ElementType(ElementTypes.LISTENER)
+@EnterpriseIntegrationPattern(Type.LISTENER)
 public interface IListener<M> extends IConfigurable {
 
 	/**
 	 * <code>configure()</code> is called once at startup of the framework in the <code>configure()</code> method
 	 * of the owner of this listener.
 	 * Purpose of this method is to reduce creating connections to databases etc. in the {@link IPullingListener#getRawMessage(Map)} method.
-	 * As much as possible class-instantiating should take place in the
-	 * <code>configure()</code> or <code>open()</code> method, to improve performance.
+	 * As much as possible class-instantiating should take place in the <code>configure()</code> or {@link #start()} method, to improve performance.
 	 */
 	@Override
 	void configure() throws ConfigurationException;
@@ -52,13 +51,13 @@ public interface IListener<M> extends IConfigurable {
 	 * Prepares the listener for receiving messages.
 	 * <code>open()</code> is called once each time the listener is started.
 	 */
-	void open() throws ListenerException;
+	void start();
 
 	/**
 	 * Close all resources used for listening.
 	 * Called once each time the listener is stopped.
 	 */
-	void close() throws ListenerException;
+	void stop();
 
 	/**
 	 * Extracts data from message obtained from {@link IPullingListener#getRawMessage(Map)} or

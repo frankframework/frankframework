@@ -25,11 +25,13 @@ import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
-import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 /**
@@ -91,8 +93,7 @@ public class KubernetesCredentialFactory implements ICredentialFactory {
 	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
 		if (StringUtils.isNotEmpty(alias)) {
 			return getCredentials().stream()
-					.filter(credential -> credential.getAlias() != null)
-					.filter(credential -> credential.getAlias().equalsIgnoreCase(alias))
+					.filter(credential -> alias.equalsIgnoreCase(credential.getAlias()))
 					.findFirst()
 					.orElseThrow(() -> new NoSuchElementException("cannot obtain credentials from authentication alias [" + alias + "]: alias not found"));
 		}

@@ -36,7 +36,7 @@ public class SubstitutionNode<V> {
 	}
 
 	public void registerSubstitute(String path, V value) {
-		if (log.isDebugEnabled()) log.debug("register override ["+path+"]=["+value+"]");
+		if (log.isDebugEnabled()) log.debug("register override [{}]=[{}]", path, value);
 		String[] elements = path.split("/");
 		registerSubstitute(elements, elements.length, value);
 	}

@@ -67,7 +67,7 @@ public class ClassLoaderManager {
 		if(classLoaderType.indexOf(".") == -1)
 			className = "org.frankframework.configuration.classloaders." + classLoaderType;
 
-		LOG.debug("trying to create classloader of type["+className+"]");
+		LOG.debug("trying to create classloader of type[{}]", className);
 
 		ClassLoader classLoader = null;
 		try {
@@ -78,7 +78,7 @@ public class ClassLoaderManager {
 		catch (Exception e) {
 			throw new ClassLoaderException("invalid classLoaderType ["+className+"]", e);
 		}
-		LOG.debug("successfully instantiated classloader ["+ClassUtils.nameOf(classLoader)+"] with parent classloader ["+ClassUtils.nameOf(parentClassLoader)+"]");
+		LOG.debug("successfully instantiated classloader [{}] with parent classloader [{}]", ClassUtils.nameOf(classLoader), ClassUtils.nameOf(parentClassLoader));
 
 		//If the classLoader implements IClassLoader, configure it
 		if(classLoader instanceof IConfigurationClassLoader loader) {
@@ -96,7 +96,8 @@ public class ClassLoaderManager {
 
 				//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
 				Object castValue = getCastValue(method.getParameterTypes()[0], value);
-				LOG.debug("trying to set property ["+parentProperty+setter+"] with value ["+value+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+ClassUtils.nameOf(loader)+"]");
+				LOG.debug("trying to set property [{}{}] with value [{}] of type [{}] on [{}]", parentProperty, setter, value, castValue.getClass()
+						.getCanonicalName(), ClassUtils.nameOf(loader));
 
 				try {
 					method.invoke(loader, castValue);
@@ -128,7 +129,7 @@ public class ClassLoaderManager {
 				//Break here, we cannot continue when there are ConfigurationExceptions!
 				return null;
 			}
-			LOG.info("configured classloader ["+ClassUtils.nameOf(loader)+"]");
+			LOG.info("configured classloader [{}]", ClassUtils.nameOf(loader));
 		}
 
 		return classLoader;
@@ -159,7 +160,7 @@ public class ClassLoaderManager {
 			}
 		}
 
-		LOG.info("attempting to create new ClassLoader of type ["+classLoaderType+"] for configuration ["+configurationName+"]");
+		LOG.info("attempting to create new ClassLoader of type [{}] for configuration [{}]", classLoaderType, configurationName);
 
 		ClassLoader classLoader;
 		if(StringUtils.isNotEmpty(parentConfig)) {
@@ -167,7 +168,7 @@ public class ClassLoaderManager {
 				throw new ClassLoaderException("failed to locate parent configuration ["+parentConfig+"]");
 
 			classLoader = createClassloader(configurationName, classLoaderType, get(parentConfig));
-			LOG.debug("created a new classLoader ["+ClassUtils.nameOf(classLoader)+"] with parentConfig ["+parentConfig+"]");
+			LOG.debug("created a new classLoader [{}] with parentConfig [{}]", ClassUtils.nameOf(classLoader), parentConfig);
 		}
 		else
 			classLoader = createClassloader(configurationName, classLoaderType);
@@ -208,7 +209,7 @@ public class ClassLoaderManager {
 			throw new IllegalStateException("shutting down");
 		}
 
-		LOG.debug("get configuration ClassLoader ["+configurationName+"]");
+		LOG.debug("get configuration ClassLoader [{}]", configurationName);
 		ClassLoader classLoader = classLoaders.get(configurationName);
 		if (classLoader == null) {
 			classLoader = init(configurationName, classLoaderType);
@@ -229,7 +230,7 @@ public class ClassLoaderManager {
 		if (classLoader != null) {
 			reload(classLoader);
 		} else {
-			LOG.warn("classloader for configuration ["+configurationName+"] not found, ignoring reload");
+			LOG.warn("classloader for configuration [{}] not found, ignoring reload", configurationName);
 		}
 	}
 
@@ -253,7 +254,7 @@ public class ClassLoaderManager {
 		if (classLoader instanceof IConfigurationClassLoader loader) {
 			loader.reload();
 		} else {
-			LOG.warn("classloader ["+ClassUtils.nameOf(classLoader)+"] does not derive from IConfigurationClassLoader, ignoring reload");
+			LOG.warn("classloader [{}] does not derive from IConfigurationClassLoader, ignoring reload", ClassUtils.nameOf(classLoader));
 		}
 	}
 
@@ -273,13 +274,13 @@ public class ClassLoaderManager {
 			if(classLoader instanceof IConfigurationClassLoader loader) {
 				loader.destroy();
 			} else {
-				LOG.warn("classloader ["+ClassUtils.nameOf(classLoader)+"] does not derive from IConfigurationClassLoader, ignoring destroy");
+				LOG.warn("classloader [{}] does not derive from IConfigurationClassLoader, ignoring destroy", ClassUtils.nameOf(classLoader));
 			}
 			iterator.remove();
-			LOG.info("removed classloader ["+ClassUtils.nameOf(classLoader)+"]");
+			LOG.info("removed classloader [{}]", ClassUtils.nameOf(classLoader));
 		}
 		if(classLoaders.size() > 0) {
-			LOG.warn("not all ClassLoaders where removed. Removing references to remaining classloaders "+classLoaders);
+			LOG.warn("not all ClassLoaders where removed. Removing references to remaining classloaders {}", classLoaders);
 
 			classLoaders.clear();
 		}

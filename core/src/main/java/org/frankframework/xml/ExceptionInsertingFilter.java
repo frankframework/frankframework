@@ -44,7 +44,7 @@ public class ExceptionInsertingFilter extends FullXmlFilter {
 
 	public void insertException(SAXException exception) {
 		if(insertedException != null) {
-			log.error("exception ("+exception.getClass().getCanonicalName()+") ["+exception.getMessage()+"] overwrites existing exception", insertedException);
+			log.error("exception ({}) [{}] overwrites existing exception", exception.getClass().getCanonicalName(), exception.getMessage(), insertedException);
 		}
 
 		insertedException = exception;

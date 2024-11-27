@@ -10,16 +10,9 @@
   <div class="row">
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
-        <div
-          (click)="filterBoxExpanded = !filterBoxExpanded"
-          class="ibox-title pointer"
-        >
+        <div (click)="filterBoxExpanded = !filterBoxExpanded" class="ibox-title pointer">
           <div class="ibox-tools pull-right">
-            <a>
-              <i
-                class="fa fa-chevron-{{ filterBoxExpanded ? 'up' : 'down' }}"
-              ></i
-            ></a>
+            <a> <i class="fa fa-chevron-{{ filterBoxExpanded ? 'up' : 'down' }}"></i></a>
           </div>
           <div class="row full-width">
             <div class="col-lg-6 col-md-12 clear">
@@ -43,7 +36,6 @@
                   <td>
                     <input
                       disabled
-                      icheck
                       type="checkbox"
                       name="id"
                       (change)="updateFilter('id')"
@@ -51,18 +43,13 @@
                     />
                   </td>
                   <td>
-                    <input
-                      type="text"
-                      class="full-width"
-                      [(ngModel)]="search['id']"
-                    />
+                    <input type="text" class="full-width" [(ngModel)]="search['id']" />
                   </td>
                 </tr>
                 <tr>
                   <th>Timestamp (From)</th>
                   <td>
                     <input
-                      icheck
                       type="checkbox"
                       (change)="updateFilter('insertDate')"
                       [(ngModel)]="displayColumn.insertDate"
@@ -92,80 +79,51 @@
                 <tr>
                   <th>Host</th>
                   <td>
-                    <input
-                      icheck
-                      type="checkbox"
-                      (change)="updateFilter('host')"
-                      [(ngModel)]="displayColumn.host"
-                    />
+                    <input type="checkbox" (change)="updateFilter('host')" [(ngModel)]="displayColumn.host" />
                   </td>
                   <td>
-                    <input
-                      type="text"
-                      class="full-width"
-                      [(ngModel)]="search['host']"
-                    />
+                    <input type="text" class="full-width" [(ngModel)]="search['host']" />
                   </td>
                 </tr>
                 <tr>
                   <th>Original ID</th>
                   <td>
                     <input
-                      icheck
                       type="checkbox"
                       (change)="updateFilter('originalId')"
                       [(ngModel)]="displayColumn.originalId"
                     />
                   </td>
                   <td>
-                    <input
-                      type="text"
-                      class="full-width"
-                      [(ngModel)]="search['messageId']"
-                    />
+                    <input type="text" class="full-width" [(ngModel)]="search['messageId']" />
                   </td>
                 </tr>
                 <tr>
                   <th>Correlation ID</th>
                   <td>
                     <input
-                      icheck
                       type="checkbox"
                       (change)="updateFilter('correlationId')"
                       [(ngModel)]="displayColumn.correlationId"
                     />
                   </td>
                   <td>
-                    <input
-                      type="text"
-                      class="full-width"
-                      [(ngModel)]="search['correlationId']"
-                    />
+                    <input type="text" class="full-width" [(ngModel)]="search['correlationId']" />
                   </td>
                 </tr>
                 <tr>
                   <th>Comment</th>
                   <td>
-                    <input
-                      icheck
-                      type="checkbox"
-                      (change)="updateFilter('comment')"
-                      [(ngModel)]="displayColumn.comment"
-                    />
+                    <input type="checkbox" (change)="updateFilter('comment')" [(ngModel)]="displayColumn.comment" />
                   </td>
                   <td>
-                    <input
-                      type="text"
-                      class="full-width"
-                      [(ngModel)]="search['comment']"
-                    />
+                    <input type="text" class="full-width" [(ngModel)]="search['comment']" />
                   </td>
                 </tr>
                 <tr>
                   <th>Expires</th>
                   <td>
                     <input
-                      icheck
                       type="checkbox"
                       (change)="updateFilter('expiryDate')"
                       [(ngModel)]="displayColumn.expiryDate"
@@ -176,42 +134,24 @@
                 <tr>
                   <th>Label</th>
                   <td>
-                    <input
-                      icheck
-                      type="checkbox"
-                      (change)="updateFilter('label')"
-                      [(ngModel)]="displayColumn.label"
-                    />
+                    <input type="checkbox" (change)="updateFilter('label')" [(ngModel)]="displayColumn.label" />
                   </td>
                   <td>
-                    <input
-                      type="text"
-                      class="full-width"
-                      [(ngModel)]="search['label']"
-                    />
+                    <input type="text" class="full-width" [(ngModel)]="search['label']" />
                   </td>
                 </tr>
                 <tr>
                   <th>Message</th>
                   <td>&nbsp;</td>
                   <td>
-                    <input
-                      type="text"
-                      class="full-width"
-                      [(ngModel)]="search['message']"
-                    />
+                    <input type="text" class="full-width" [(ngModel)]="search['message']" />
                   </td>
                 </tr>
                 <tr>
                   <th>&nbsp;</th>
                   <td>&nbsp;</td>
                   <td>
-                    <button
-                      [ladda]="searching"
-                      (click)="searchUpdated()"
-                      class="btn btn-info btn-sm"
-                      type="button"
-                    >
+                    <button [ladda]="searching" (click)="searchUpdated()" class="btn btn-info btn-sm" type="button">
                       <i class="fa fa-search" aria-hidden="true"></i> Search
                     </button>
                     <button
@@ -251,14 +191,12 @@
             </button>
           </div>
           <h4>
-            Browse messages<span
-              *ngIf="storageParams.storageSource !== 'pipes'"
-            >
+            Browse messages<span *ngIf="storageParams.storageSource !== 'pipes'">
               in state [{{ storageParams.processState }}]</span
             >
-            of {{ storageParams.storageSource | dropLastChar }} [{{
-              storageParams.storageSourceName
-            }}] of adapter [{{ storageParams.adapterName }}]
+            of {{ storageParams.storageSource | dropLastChar }} [{{ storageParams.storageSourceName }}] of adapter [{{
+              storageParams.adapterName
+            }}]
           </h4>
         </div>
         <div class="ibox-content">
@@ -266,11 +204,7 @@
             <button
               [title]="truncateButtonText"
               (click)="truncate()"
-              [ngClass]="
-                truncated
-                  ? 'btn btn-info btn-sm space-it-out'
-                  : 'btn btn-default btn-sm space-it-out'
-              "
+              [ngClass]="truncated ? 'btn btn-info btn-sm space-it-out' : 'btn btn-default btn-sm space-it-out'"
               type="button"
             >
               {{ truncateButtonText }}
@@ -299,9 +233,7 @@
                 class="btn btn-default btn-sm space-it-out"
                 type="button"
               >
-                <i
-                  class="fa {{ getProcessStateIconFn(targetState.value.name) }}"
-                ></i>
+                <i class="fa {{ getProcessStateIconFn(targetState.value.name) }}"></i>
                 Move to {{ targetState.value.name }}
               </button>
             </span>
@@ -338,51 +270,11 @@
               <i class="fa fa-times"></i> Delete Selected
             </button>
           </div>
-          <ng-template
-            #storageListDt
-            let-data="adtData"
-            let-emitter="captureEvents"
-            let-userData="userData"
-          >
-            <app-storage-list-dt
-              [message]="data"
-              [userData]="userData"
-              (emitter)="emitter($event)"
-            ></app-storage-list-dt>
-          </ng-template>
-          <ng-template
-            #dateDt
-            let-data="adtData"
-            let-columnId="userData.column"
-          >
-            <span *ngIf="data[columnId]" appToDate [time]="data[columnId]">{{
-              data[columnId]
-            }}</span>
-          </ng-template>
-          <!-- <table id="datatable" class="table table-striped table-hover" #datatable> -->
-          <table
-            id="datatable"
-            class="table table-striped table-hover"
-            datatable
-            [dtOptions]="dtOptions"
-            [dtTrigger]="dtTrigger"
-          >
-            <thead>
-              <tr>
-                <th style="width: 120px">&nbsp;</th>
-                <th>No.</th>
-                <th>Storage ID</th>
-                <th>Timestamp</th>
-                <th>Host</th>
-                <th>Original ID</th>
-                <th>Correlation ID</th>
-                <th>Comment</th>
-                <th>Expires</th>
-                <th>Label</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
+          <app-datatable [datasource]="datasource" [displayColumns]="displayedColumns" [truncate]="truncated">
+            <ng-template appDtContent let-element="rowElement">
+              <app-storage-list-dt [message]="element"></app-storage-list-dt>
+            </ng-template>
+          </app-datatable>
         </div>
       </div>
     </div>

@@ -14,20 +14,14 @@
 				<exit path="ERROR" state="error"/>
 			</exits>
 
-			<pipe
-				name="Delay"
-				className="org.frankframework.pipes.DelayPipe" >
-				<forward name="success" path="fixedresult"/>
-			</pipe>
-            <pipe
-                className="org.frankframework.pipes.FixedResultPipe"
-                name="fixedresult"
-                filename="cache/resultTemplate.xml"
-            >
-				<param name="input" />
-                 <forward name="success" path="READY"/>
-            </pipe>
+			<DelayPipe name="Delay" />
 
+			<FixedResultPipe name="fixedResult" filename="cache/resultTemplate.xml" />
+
+			<pipe name="replaceVars" className="org.frankframework.pipes.ReplacerPipe">
+				<param name="input" sessionKey="originalMessage" />
+				<forward name="success" path="READY"/>
+			</pipe>
 		</pipeline>
 	</adapter>
 	<adapter name="Cache-Internal Helper" >
@@ -44,20 +38,14 @@
 				<exit path="ERROR" state="error"/>
 			</exits>
 
-			<pipe
-				name="Delay"
-				className="org.frankframework.pipes.DelayPipe" >
-				<forward name="success" path="fixedresult"/>
-			</pipe>
-            <pipe
-                className="org.frankframework.pipes.FixedResultPipe"
-                name="fixedresult"
-                filename="cache/resultTemplate.xml"
-            >
-				<param name="input" />
-                 <forward name="success" path="READY"/>
-            </pipe>
+			<DelayPipe name="Delay" />
 
+            <FixedResultPipe name="fixedResult" filename="cache/resultTemplate.xml" />
+
+			<pipe name="replaceVars" className="org.frankframework.pipes.ReplacerPipe">
+				<param name="input" sessionKey="originalMessage" />
+				<forward name="success" path="READY"/>
+			</pipe>
 		</pipeline>
 	</adapter>
 	<adapter name="Cache-Sender" >

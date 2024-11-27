@@ -19,13 +19,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
 import com.sendgrid.Client;
 import com.sendgrid.Method;
 import com.sendgrid.Request;
@@ -37,9 +30,14 @@ import com.sendgrid.helpers.mail.objects.Attachments.Builder;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
 import com.sendgrid.helpers.mail.objects.Personalization;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.ReferTo;
@@ -47,7 +45,9 @@ import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.HttpSession;
-import org.frankframework.http.HttpSessionBase;
+import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.util.XmlUtils;
 
 /**
  * Sender that sends a mail via SendGrid v3 (cloud-based SMTP provider).
@@ -55,10 +55,10 @@ import org.frankframework.http.HttpSessionBase;
  * Sample XML file can be found in the path: iaf-core/src/test/resources/emailSamplesXML/emailSample.xml
  * @author alisihab
  */
-public class SendGridSender extends MailSenderBase implements HasKeystore, HasTruststore {
+public class SendGridSender extends AbstractMailSender implements HasKeystore, HasTruststore {
 
 	private SendGrid sendGrid;
-	private HttpSessionBase httpSession;
+	private AbstractHttpSession httpSession;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -71,27 +71,26 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	public void open() throws SenderException {
-		super.open();
+	public void start() {
+		super.start();
 		httpSession.start();
 
 		CloseableHttpClient httpClient = httpSession.getHttpClient();
 		if(httpClient == null)
-			throw new SenderException("no HttpClient found, did it initialize properly?");
+			throw new LifecycleException("no HttpClient found, did it initialize properly?");
 
 		Client client = new Client(httpClient);
 		sendGrid = new SendGrid(getCredentialFactory().getPassword(), client);
 	}
 
 	@Override
-	public void close() throws SenderException {
-		super.close();
+	public void stop() {
+		super.stop();
 		httpSession.stop();
 	}
 
 	@Override
-	public String sendEmail(MailSessionBase mailSession) throws SenderException {
-		String result;
+	public void sendEmail(MailSessionBase mailSession) throws SenderException {
 		Mail mail;
 
 		try {
@@ -107,18 +106,12 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 				request.setEndpoint("mail/send");
 				request.setBody(mail.build());
 				Response response = sendGrid.api(request);
-				result = response.getBody();
-				log.debug("Mail send result: [{}]", result);
-				return result;
+				log.debug("SendGrid mail result: [{}]", response::getBody);
 			} catch (Exception e) {
-				throw new SenderException(
-						getLogPrefix() + "exception sending mail with subject [" + mail.getSubject() + "]", e);
+				throw new SenderException("exception sending mail with subject [" + mail.getSubject() + "]", e);
 			}
 		} else {
-			if (log.isDebugEnabled()) {
-				log.debug("No recipients left after whitelisting, mail is not send");
-			}
-			return "Mail not send, no recipients left after whitelisting";
+			log.debug("no recipients left after whitelisting, mail is not send");
 		}
 	}
 
@@ -156,7 +149,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	 * Sets header of mail object if header exists
 	 * @param mail {@link Mail} address to send to
 	 * @param personalization {@link Personalization} options of the mail
-	 * @param headers Mail headers, as {@link Collection<Node>}
+	 * @param headers Mail headers, as {@link Collection}
 	 */
 	private void setHeader(Mail mail, Personalization personalization, Collection<Node> headers) {
 		if (headers != null && !headers.isEmpty()) {
@@ -255,55 +248,55 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	//Properties inherited from HttpSessionBase
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setTimeout(int i) {
 		super.setTimeout(i);
 		httpSession.setTimeout(i);
 	}
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setMaxConnections(int i) {
 		httpSession.setMaxConnections(i);
 	}
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setMaxExecuteRetries(int i) {
 		httpSession.setMaxExecuteRetries(i);
 	}
 
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setProxyHost(String string) {
 		httpSession.setProxyHost(string);
 	}
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setProxyPort(int i) {
 		httpSession.setProxyPort(i);
 	}
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setProxyAuthAlias(String string) {
 		httpSession.setProxyAuthAlias(string);
 	}
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setProxyUsername(String string) {
 		httpSession.setProxyUsername(string);
 	}
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setProxyPassword(String string) {
 		httpSession.setProxyPassword(string);
 	}
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setProxyRealm(String string) {
 		httpSession.setProxyRealm(string);
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setKeystore(String keystore) {
 		httpSession.setKeystore(keystore);
 	}
@@ -314,7 +307,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setKeystoreType(KeystoreType keystoreType) {
 		httpSession.setKeystoreType(keystoreType);
 	}
@@ -325,7 +318,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
 		httpSession.setKeystoreAuthAlias(keystoreAuthAlias);
 	}
@@ -336,7 +329,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setKeystorePassword(String keystorePassword) {
 		httpSession.setKeystorePassword(keystorePassword);
 	}
@@ -347,7 +340,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setKeystoreAlias(String keystoreAlias) {
 		httpSession.setKeystoreAlias(keystoreAlias);
 	}
@@ -358,7 +351,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
 		httpSession.setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
 	}
@@ -369,7 +362,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
 		httpSession.setKeystoreAliasPassword(keystoreAliasPassword);
 	}
@@ -380,7 +373,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		httpSession.setKeyManagerAlgorithm(keyManagerAlgorithm);
 	}
@@ -391,7 +384,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setTruststore(String truststore) {
 		httpSession.setTruststore(truststore);
 	}
@@ -402,7 +395,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setTruststoreType(KeystoreType truststoreType) {
 		httpSession.setTruststoreType(truststoreType);
 	}
@@ -413,7 +406,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
 		httpSession.setTruststoreAuthAlias(truststoreAuthAlias);
 	}
@@ -424,7 +417,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setTruststorePassword(String truststorePassword) {
 		httpSession.setTruststorePassword(truststorePassword);
 	}
@@ -435,7 +428,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		httpSession.setTrustManagerAlgorithm(trustManagerAlgorithm);
 	}
@@ -445,7 +438,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setVerifyHostname(boolean verifyHostname) {
 		httpSession.setVerifyHostname(verifyHostname);
 	}
@@ -455,7 +448,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {
 		httpSession.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
 	}
@@ -465,7 +458,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
 		httpSession.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
 	}
@@ -474,23 +467,23 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 		return httpSession.isIgnoreCertificateExpiredException();
 	}
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setFollowRedirects(boolean b) {
 		httpSession.setFollowRedirects(b);
 	}
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setStaleChecking(boolean b) {
 		httpSession.setStaleChecking(b);
 	}
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setStaleTimeout(int timeout) {
 		httpSession.setStaleTimeout(timeout);
 	}
 
 
-	@ReferTo(HttpSessionBase.class)
+	@ReferTo(AbstractHttpSession.class)
 	public void setProtocol(String protocol) {
 		httpSession.setProtocol(protocol);
 	}

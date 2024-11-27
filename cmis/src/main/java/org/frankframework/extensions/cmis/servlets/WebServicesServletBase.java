@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden, 2022-2023 WeAreFrank!
+   Copyright 2018-2020 Nationale-Nederlanden, 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,18 @@
 */
 package org.frankframework.extensions.cmis.servlets;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+
 import org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet;
 
+import org.frankframework.http.AbstractHttpServlet;
 import org.frankframework.lifecycle.DynamicRegistration;
 
 /**
@@ -28,18 +35,37 @@ import org.frankframework.lifecycle.DynamicRegistration;
  *
  * @author Niels Meijer
  */
-public abstract class WebServicesServletBase extends CmisWebServicesServlet implements DynamicRegistration.ServletWithParameters {
+public abstract class WebServicesServletBase extends AbstractHttpServlet implements DynamicRegistration.ServletWithParameters {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
+	private transient CmisWebServicesServlet servlet;
 	protected abstract String getCmisVersion();
+
+	@Override
+	public void init(ServletConfig config) throws ServletException {
+		servlet = new CmisWebServicesServlet();
+		servlet.init(config);
+		super.init(config);
+	}
+
+	@Override
+	public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
+		servlet.service(req, res);
+	}
 
 	@Override
 	public Map<String, String> getParameters() {
 		Map<String, String> returnMap = new HashMap<>();
-		returnMap.put(PARAM_CMIS_VERSION, getCmisVersion());
+		returnMap.put(CmisWebServicesServlet.PARAM_CMIS_VERSION, getCmisVersion());
 
 		return returnMap;
+	}
+
+	@Override
+	public void destroy() {
+		servlet.destroy();
+		super.destroy();
 	}
 
 	@Override

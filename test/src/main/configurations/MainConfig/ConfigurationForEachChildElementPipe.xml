@@ -23,13 +23,13 @@
 				<exit path="ERROR" state="error" />
 			</exits>
 			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" xpathExpression="request" />
-			<pipe name="hello" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;reply&gt;goodbye&lt;/reply&gt;">
+			<pipe name="hello" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="&lt;reply&gt;goodbye&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe name="hi" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;reply&gt;ha&lt;/reply&gt;">
+			<pipe name="hi" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="&lt;reply&gt;ha&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe name="errorState" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;reply&gt;errorStateResult&lt;/reply&gt;">
+			<pipe name="errorState" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="&lt;reply&gt;errorStateResult&lt;/reply&gt;">
 				<forward name="success" path="ERROR" />
 			</pipe>
 			<pipe name="exception" className="org.frankframework.pipes.ExceptionPipe">

@@ -18,9 +18,11 @@ package org.frankframework.processors;
 
 import java.util.Map;
 
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.AdapterManager;
-import org.frankframework.core.IAdapter;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IPipeLineExitHandler;
@@ -37,9 +39,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.XmlException;
 import org.frankframework.util.XmlUtils;
 
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
-
 /**
  * @author Jaco de Groot
  */
@@ -53,16 +52,16 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 		if (message.isEmpty() && StringUtils.isNotEmpty(pipeLine.getAdapterToRunBeforeOnEmptyInput())) {
 			log.debug("running adapterBeforeOnEmptyInput");
-			IAdapter adapter = adapterManager.getAdapter(pipeLine.getAdapterToRunBeforeOnEmptyInput());
+			Adapter adapter = adapterManager.getAdapter(pipeLine.getAdapterToRunBeforeOnEmptyInput());
 			if (adapter == null) {
-				log.warn("adapterToRunBefore with specified name [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] could not be retrieved");
+				log.warn("adapterToRunBefore with specified name [{}] could not be retrieved", pipeLine.getAdapterToRunBeforeOnEmptyInput());
 			} else {
-				PipeLineResult plr = adapter.processMessage(messageId, message, pipeLineSession);
+				PipeLineResult plr = adapter.processMessageDirect(messageId, message, pipeLineSession);
 				if (plr == null || !plr.isSuccessful()) {
 					throw new PipeRunException(null, "adapterToRunBefore [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] ended with state [" + (plr==null?"null":plr.getState()) + "]");
 				}
 				message = plr.getResult();
-				log.debug("input after running adapterBeforeOnEmptyInput [" + message + "]");
+				log.debug("input after running adapterBeforeOnEmptyInput [{}]", message);
 			}
 		}
 
@@ -80,7 +79,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			if (validationResult!=null) {
 				if (!validationResult.isSuccessful()) {
 					forwardTarget = pipeLine.resolveForward(inputValidator, validationResult.getPipeForward());
-					log.warn("forwarding execution flow to ["+forwardTarget.getName()+"] due to validation fault");
+					log.warn("forwarding execution flow to [{}] due to validation fault", forwardTarget.getName());
 					inputValidateError = true;
 				}
 				Message validatedMessage = validationResult.getResult();
@@ -100,11 +99,11 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				}
 				if (!wrapResult.isSuccessful()) {
 					forwardTarget = pipeLine.resolveForward(inputWrapper, wrapResult.getPipeForward());
-					log.warn("forwarding execution flow to ["+forwardTarget.getName()+"] due to wrap fault");
+					log.warn("forwarding execution flow to [{}] due to wrap fault", forwardTarget.getName());
 				} else {
 					message = wrapResult.getResult();
 				}
-				log.debug("input after wrapping [" + message + "]");
+				log.debug("input after wrapping [{}]", message);
 			}
 		}
 
@@ -146,13 +145,14 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 								}
 								if (!wrapResult.isSuccessful()) {
 									forwardTarget = pipeLine.resolveForward(outputWrapper, wrapResult.getPipeForward());
-									log.warn("forwarding execution flow to ["+forwardTarget.getName()+"] due to wrap fault");
+									log.warn("forwarding execution flow to [{}] due to wrap fault", forwardTarget.getName());
 									outputWrapError = true;
 								} else {
 									log.debug("wrap succeeded");
 									message = wrapResult.getResult();
 								}
-								if(log.isDebugEnabled()) log.debug("PipeLineResult after wrapping: " + (message==null?"<null>":"("+message.getClass().getSimpleName()+") ["+message +"]" ));
+								if(log.isDebugEnabled()) log.debug("PipeLineResult after wrapping: {}", message == null ? "<null>" : "(" + message.getClass()
+										.getSimpleName() + ") [" + message + "]");
 							}
 						}
 
@@ -170,9 +170,9 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 									if (!outputValidationFailed) {
 										outputValidationFailed=true;
 										forwardTarget = pipeLine.resolveForward(outputValidator, validationResult.getPipeForward());
-										log.warn("forwarding execution flow to ["+forwardTarget.getName()+"] due to validation fault");
+										log.warn("forwarding execution flow to [{}] due to validation fault", forwardTarget.getName());
 									} else {
-										log.warn("validation of error message by validator ["+outputValidator.getName()+"] failed, returning result anyhow"); // to avoid endless looping
+										log.warn("validation of error message by validator [{}] failed, returning result anyhow", outputValidator.getName()); // to avoid endless looping
 										message = validationResult.getResult();
 										ready=true;
 									}
@@ -206,8 +206,10 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 								Object value = entry.getValue();
 								skString.append("\n ").append(key).append("=[").append(value).append("]");
 							}
-							log.debug("Available session keys at finishing pipeline of adapter [" + pipeLine.getOwner().getName() + "]:" + skString);
-							log.debug("Pipeline of adapter ["+ pipeLine.getOwner().getName()+ "] finished processing messageId ["+messageId+"] result: " + (message==null?"<null>":"("+message.getClass().getSimpleName()+") ["+message +"]" ) + " with exit-state ["+state+"]");
+							log.debug("Available session keys at finishing pipeline of adapter [{}]:{}", pipeLine.getOwner().getName(), skString);
+							log.debug("Pipeline of adapter [{}] finished processing messageId [{}] result: {} with exit-state [{}]", pipeLine.getOwner()
+									.getName(), messageId, message == null ? "<null>" : "(" + message.getClass()
+									.getSimpleName() + ") [" + message + "]", state);
 						}
 					}
 				} else {
@@ -225,10 +227,10 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			for (int i=0; i<pipeLine.getExitHandlers().size(); i++) {
 				IPipeLineExitHandler exitHandler = pipeLine.getExitHandlers().get(i);
 				try {
-					if (log.isDebugEnabled()) log.debug("processing ExitHandler ["+exitHandler.getName()+"]");
+					if (log.isDebugEnabled()) log.debug("processing ExitHandler [{}]", exitHandler.getName());
 					exitHandler.atEndOfPipeLine(messageId,pipeLineResult,pipeLineSession);
 				} catch (Throwable t) {
-					log.warn("Caught Exception processing ExitHandler ["+exitHandler.getName()+"]",t);
+					log.warn("Caught Exception processing ExitHandler [{}]", exitHandler.getName(), t);
 				}
 			}
 		}

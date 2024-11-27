@@ -96,16 +96,16 @@ public abstract class Handler extends DefaultHandler {
 
 	protected void endStringField(String localName, JCoRecord record) {
 		if (record.getMetaData().hasField(localName)) {
-			if(log.isTraceEnabled()) log.trace("setting field [" + localName + "] to value [" + stringFieldValue + "]");
+			if(log.isTraceEnabled()) log.trace("setting field [{}] to value [{}]", localName, stringFieldValue);
 			record.setValue(localName,stringFieldValue.toString());
 		} else {
-			log.warn("unknown field [" + localName + "] for value [" + stringFieldValue + "]");
+			log.warn("unknown field [{}] for value [{}]", localName, stringFieldValue);
 		}
 		parsedStringField = false;
 	}
 
 	protected void finished(String localName) {
-		if(log.isTraceEnabled()) log.trace("finished parsing '" + localName + "'");
+		if(log.isTraceEnabled()) log.trace("finished parsing '{}'", localName);
 		done = true;
 	}
 
@@ -119,7 +119,7 @@ public abstract class Handler extends DefaultHandler {
 	}
 
 	protected Handler getHandler(JCoParameterList jcoParameterList) {
-		if(log.isDebugEnabled()) log.debug("new ParameterListHandler for '" + jcoParameterList.getMetaData().getName() + "'");
+		if(log.isDebugEnabled()) log.debug("new ParameterListHandler for '{}'", jcoParameterList.getMetaData().getName());
 		return new ParameterListHandler(jcoParameterList);
 	}
 
@@ -130,15 +130,15 @@ public abstract class Handler extends DefaultHandler {
 	protected Handler getHandler(JCoRecord jcoRecord, String fieldName, boolean warnWhenNoHandler) {
 		int jcoMetaDataType = jcoRecord.getMetaData().getType(fieldName);
 		if (jcoMetaDataType == JCoMetaData.TYPE_TABLE) {
-			if(log.isTraceEnabled()) log.trace("new TableHandler for '" + fieldName + "'");
+			if(log.isTraceEnabled()) log.trace("new TableHandler for '{}'", fieldName);
 			return new TableHandler(jcoRecord.getTable(fieldName));
 		} else if (jcoMetaDataType == JCoMetaData.TYPE_STRUCTURE) {
-			if(log.isTraceEnabled()) log.trace("new StructureHandler for '" + fieldName + "'");
+			if(log.isTraceEnabled()) log.trace("new StructureHandler for '{}'", fieldName);
 			return new StructureHandler(jcoRecord.getStructure(fieldName));
 		} else {
 			if (warnWhenNoHandler) {
 				String type = jcoRecord.getMetaData().getTypeAsString(fieldName);
-				log.warn("no handler for type '"+type+"'");
+				log.warn("no handler for type '{}'", type);
 			}
 			return null;
 		}

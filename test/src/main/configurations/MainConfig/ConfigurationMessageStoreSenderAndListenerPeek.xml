@@ -3,6 +3,9 @@
 		<receiver transactionAttribute="Required" pollInterval="1">
 			<listener className="org.frankframework.jdbc.MessageStoreListener" name="MessageStoreListener" slotId="${applicationId}/MessageStoreListener" />
 		</receiver>
+		<receiver transactionAttribute="RequiresNew" pollInterval="1">
+			<listener className="org.frankframework.jdbc.MessageStoreListener" name="MessageStoreListenerTxRequiresNew" slotId="${applicationId}/MessageStoreListenerTXRequiresNew" />
+		</receiver>
 		<pipeline firstPipe="echoPipe">
 			<exits>
 				<exit path="EXIT" state="success" />
@@ -20,7 +23,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch" xpathExpression="request/@action"></pipe>
+			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch" xpathExpression="request/@action"/>
 			<pipe name="store" className="org.frankframework.pipes.SenderPipe"> <!-- this message will be picked up by MessageStoreListener, and then turned into an 'A' record -->
 				<sender className="org.frankframework.jdbc.MessageStoreSender" slotId="${applicationId}/MessageStoreListener" />
 				<forward name="success" path="okReply" />
@@ -29,7 +32,11 @@
 				<sender className="org.frankframework.jdbc.MessageStoreSender" slotId="${applicationId}/MessageStoreListener2" />
 				<forward name="success" path="okReply" />
 			</pipe>
-			<pipe name="okReply" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;reply&gt;ok&lt;/reply&gt;">
+			<pipe name="store3" className="org.frankframework.pipes.SenderPipe"> <!-- this message will remain on this table -->
+				<sender className="org.frankframework.jdbc.MessageStoreSender" slotId="${applicationId}/MessageStoreListenerTXRequiresNew" />
+				<forward name="success" path="okReply" />
+			</pipe>
+			<pipe name="okReply" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="&lt;reply&gt;ok&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

@@ -8,138 +8,165 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Iterator;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.http.apache.ApacheHttpClient;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3ClientBuilder;
+import software.amazon.awssdk.services.s3.S3Configuration;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.Delete;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
+import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
+import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
+import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Object;
+
 import org.frankframework.testutil.PropertyUtil;
 import org.frankframework.util.StringUtil;
-
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-
-import io.findify.s3mock.S3Mock;
-import lombok.Getter;
 
 public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 
 	protected String accessKey = PropertyUtil.getProperty("AmazonS3.properties", "accessKey");
 	protected String secretKey = PropertyUtil.getProperty("AmazonS3.properties", "secretKey");
 
-	protected @Getter String bucketName = PropertyUtil.getProperty("AmazonS3.properties", "bucketName");
+	protected @Getter String defaultBucketName = PropertyUtil.getProperty("AmazonS3.properties", "bucketName");
 
-	private final Regions clientRegion = Regions.EU_WEST_1;
-	public static final int S3_PORT = 19090;
-	private final String serviceEndpoint = "http://localhost:" + S3_PORT;
+	private final Region clientRegion = Region.EU_WEST_1;
+	private final String serviceEndpoint;
 	private final boolean runLocalStub = StringUtils.isBlank(accessKey) && StringUtils.isBlank(secretKey);
 
-	private @Getter AmazonS3 s3Client;
+	private @Getter S3Client s3Client;
 
 	public Path tempFolder;
 
-	private S3Mock s3Mock;
-
-	public AmazonS3FileSystemTestHelper(Path tempFolder) {
+	public AmazonS3FileSystemTestHelper(Path tempFolder, String serviceEndpoint) {
 		this.tempFolder = tempFolder;
+		this.serviceEndpoint = serviceEndpoint;
 	}
 
 	@Override
 	public void setUp() {
-		if(runLocalStub) {
-			s3Mock = new S3Mock.Builder().withPort(S3_PORT).withInMemoryBackend().build();
-			s3Mock.start();
-		}
-
 		s3Client = createS3Client();
-		if(!runLocalStub) {
-			cleanUpFolder(null);
-		}
 
-		if (!s3Client.doesBucketExistV2(bucketName)) {
-			s3Client.createBucket(bucketName);
+		try {
+			// Test whether the bucket exists
+			s3Client.headBucket(HeadBucketRequest.builder().bucket(defaultBucketName).build());
+
+			// If the bucket exists, clean up the folder
+			cleanUpFolder(null);
+		} catch (NoSuchBucketException noSuchBucketException) {
+			// Create the bucket if it doesn't exist
+			s3Client.createBucket(CreateBucketRequest.builder().bucket(defaultBucketName).build());
 		}
 	}
 
-	//For testing purposes
-	public AmazonS3 createS3Client() {
-		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
-				.withChunkedEncodingDisabled(false)
-				.withForceGlobalBucketAccessEnabled(false)
-				.withClientConfiguration(new ClientConfiguration().withSocketTimeout(1000).withConnectionTimeout(1000))
-				.enablePathStyleAccess();
+	/**
+	 * @return a configured S3Client based on the settings found in AmazonS3.properties or a local testcontainer instance if not present
+	 */
+	public S3Client createS3Client() {
+		S3Configuration.Builder s3Configuration = S3Configuration.builder()
+				.chunkedEncodingEnabled(true)
+				.multiRegionEnabled(false);
 
-		BasicAWSCredentials awsCreds;
-		if(runLocalStub) {
-			awsCreds = new BasicAWSCredentials("user", "pass");
-			s3ClientBuilder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, clientRegion.getName()));
+		S3ClientBuilder s3ClientBuilder = S3Client.builder()
+				.forcePathStyle(true)
+				.serviceConfiguration(s3Configuration.build())
+				.httpClientBuilder(ApacheHttpClient.builder().socketTimeout(Duration.ofMillis(1000L)).connectionTimeout(Duration.ofMillis(1000L)))
+				.region(clientRegion);
+
+		AwsCredentials awsCredentials;
+		if (runLocalStub) {
+			awsCredentials = AwsBasicCredentials.create("user", "pass");
+
+			s3ClientBuilder.endpointOverride(URI.create(serviceEndpoint));
 		} else {
-			awsCreds = new BasicAWSCredentials(accessKey, secretKey);
-			s3ClientBuilder.withRegion(clientRegion);
+			awsCredentials = AwsBasicCredentials.create(accessKey, secretKey);
 		}
-		s3ClientBuilder.withCredentials(new AWSStaticCredentialsProvider(awsCreds));
+		s3ClientBuilder.credentialsProvider(StaticCredentialsProvider.create(awsCredentials));
 
 		return s3ClientBuilder.build();
 	}
 
 	@Override
 	public void tearDown() {
-		if(s3Mock != null) {
-			s3Mock.shutdown();
-		}
+		// not needed
 	}
 
 	@Override
 	public boolean _fileExists(String folder, String filename) {
 		String objectName;
-		if(filename == null) {
+		if (filename == null) {
 			objectName = folder;
-		}else {
-			objectName = folder == null ? filename : folder +"/"+ filename;
+		} else {
+			objectName = folder == null ? filename : folder + "/" + filename;
 		}
+		return _fileExistsInBucket(objectName, defaultBucketName);
+	}
+
+	public boolean _fileExistsInBucket(String objectName, String bucketName) {
 		try {
-			return s3Client.doesObjectExist(bucketName, objectName);
-		} catch(AmazonS3Exception e) {
+			HeadObjectResponse headObjectResponse = s3Client.headObject(HeadObjectRequest.builder()
+					.key(objectName)
+					.bucket(bucketName)
+					.build());
+			return headObjectResponse != null;
+		} catch (NoSuchKeyException e) {
 			return false;
 		}
 	}
 
 	@Override
 	public void _deleteFile(String folder, String filename) {
-		String filePath = folder == null ? filename : folder +"/" + filename;
-		s3Client.deleteObject(bucketName, filePath);
+		String filePath = folder == null ? filename : folder + "/" + filename;
+		s3Client.deleteObject(DeleteObjectRequest.builder().bucket(defaultBucketName).key(filePath).build());
 	}
 
 	@Override
-	public OutputStream _createFile(final String foldername, final String filename) throws IOException {
-
-		String fileName = tempFolder.toAbsolutePath()+"tempFile";
+	public OutputStream _createFile(final String folderName, final String filename) throws IOException {
+		String fileName = tempFolder.toAbsolutePath() + "tempFile";
 
 		final File file = new File(fileName);
 		final FileOutputStream fos = new FileOutputStream(file);
 		return new BufferedOutputStream(fos) {
-
 			@Override
 			public void close() throws IOException {
 				super.close();
 
 				FileInputStream fis = new FileInputStream(file);
-				ObjectMetadata metaData = new ObjectMetadata();
-				metaData.setContentLength(file.length());
-				String filePath = foldername == null ? filename : foldername + "/" + filename;
-				s3Client.putObject(bucketName, filePath, fis, metaData);
+				String filePath = folderName == null ? filename : folderName + "/" + filename;
+				s3Client.putObject(PutObjectRequest.builder()
+						.bucket(defaultBucketName)
+						.key(filePath)
+						.metadata(Map.of("Content-Length", String.valueOf(file.length())))
+						.build(), RequestBody.fromInputStream(fis, file.length()));
 
 				fis.close();
-				file.delete();
+				Files.delete(file.toPath());
 			}
 		};
 	}
@@ -147,27 +174,39 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	@Override
 	public InputStream _readFile(String folder, String filename) {
 		String path = StringUtil.concatStrings(folder, "/", filename);
-		final S3Object file = s3Client.getObject(bucketName, path);
-		InputStream is = file.getObjectContent();
-		FilterInputStream fos = new FilterInputStream(is) {
+		ResponseInputStream<GetObjectResponse> inputStream = s3Client.getObject(GetObjectRequest.builder()
+				.bucket(defaultBucketName)
+				.key(path)
+				.build());
+
+		// Workaround for https://github.com/aws/aws-sdk-java-v2/issues/3538
+		if (inputStream.response().contentLength() == 0) {
+			inputStream = new ResponseInputStream<>(inputStream.response(), InputStream.nullInputStream());
+		}
+
+		ResponseInputStream<GetObjectResponse> finalInputStream = inputStream;
+
+		return new FilterInputStream(finalInputStream) {
 			@Override
 			public void close() throws IOException {
 				super.close();
-				file.close();
+				finalInputStream.close();
 			}
 		};
-
-		return fos;
 	}
 
 	@Override
-	public void _createFolder(String folderName) {
-		String foldername = folderName.endsWith("/") ? folderName : folderName +"/";
-		s3Client.putObject(bucketName, foldername, "");
+	public void _createFolder(String folderNameInput) {
+		String folderName = folderNameInput.endsWith("/") ? folderNameInput : folderNameInput + "/";
+		PutObjectRequest request = PutObjectRequest.builder()
+				.bucket(defaultBucketName)
+				.key(folderName)
+				.build();
+		s3Client.putObject(request, RequestBody.empty());
 	}
 
 	@Override
-	public boolean _folderExists(String folderName) throws Exception {
+	public boolean _folderExists(String folderName) {
 		String foldername = folderName.endsWith("/") ? folderName : folderName + "/";
 		return _fileExists(foldername, null);
 	}
@@ -175,29 +214,39 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	@Override
 	public void _deleteFolder(String folderName) throws Exception {
 		String folder = null;
-		if(folderName != null) {
+		if (folderName != null) {
 			folder = folderName.endsWith("/") ? folderName : folderName + "/";
 		}
 		cleanUpFolder(folder);
 	}
 
-	private void cleanUpFolder(String foldername) {
-		ObjectListing objectListing = foldername!=null ? s3Client.listObjects(bucketName, foldername) : s3Client.listObjects(bucketName);
-		while (true) {
-			Iterator<S3ObjectSummary> objIter = objectListing.getObjectSummaries().iterator();
-			while (objIter.hasNext()) {
-				s3Client.deleteObject(bucketName, objIter.next().getKey());
+	public void cleanUpFolder(String foldername) {
+		cleanUpFolder(defaultBucketName, foldername);
+	}
+
+	public void cleanUpFolder(String bucketName, String foldername) {
+		ListObjectsResponse listResponse;
+		do {
+			// If the bucket contains many objects, the listObjects() call might not return all the objects in the first listing. Check to see whether
+			// the listing was truncated. If so, continue until all objects have been deleted.
+			listResponse = s3Client.listObjects(ListObjectsRequest.builder().bucket(bucketName).prefix(foldername).build());
+			List<S3Object> listObjects = listResponse.contents();
+
+			if (listObjects == null || listObjects.isEmpty()) {
+				return;
 			}
 
-			// If the bucket contains many objects, the listObjects() call
-			// might not return all the objects in the first listing. Check to
-			// see whether the listing was truncated. If so, retrieve the next page of objects
-			// and delete them.
-			if (objectListing.isTruncated()) {
-				objectListing = s3Client.listNextBatchOfObjects(objectListing);
-			} else {
-				break;
+			List<ObjectIdentifier> objectsToDelete = new ArrayList<>();
+			for (S3Object s3Object : listObjects) {
+				objectsToDelete.add(ObjectIdentifier.builder().key(s3Object.key()).build());
 			}
-		}
+
+			DeleteObjectsRequest deleteObjectsRequest = DeleteObjectsRequest.builder()
+					.bucket(bucketName)
+					.delete(Delete.builder().objects(objectsToDelete).build())
+					.build();
+
+			s3Client.deleteObjects(deleteObjectsRequest);
+		} while (listResponse.isTruncated());
 	}
 }

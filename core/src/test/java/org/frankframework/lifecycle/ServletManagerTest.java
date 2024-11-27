@@ -14,19 +14,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.servlet.MultipartConfigElement;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletRegistration.Dynamic;
-import javax.servlet.ServletSecurityElement;
-import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
-import javax.servlet.http.HttpServlet;
+import jakarta.servlet.MultipartConfigElement;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.ServletRegistration.Dynamic;
+import jakarta.servlet.ServletSecurityElement;
+import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
+import jakarta.servlet.http.HttpServlet;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.frankframework.lifecycle.servlets.IAuthenticator;
-import org.frankframework.lifecycle.servlets.SecuritySettings;
-import org.frankframework.lifecycle.servlets.ServletConfiguration;
-import org.frankframework.util.UUIDUtil;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +37,11 @@ import org.springframework.security.web.SecurityFilterChain;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.frankframework.lifecycle.servlets.IAuthenticator;
+import org.frankframework.lifecycle.servlets.SecuritySettings;
+import org.frankframework.lifecycle.servlets.ServletConfiguration;
+import org.frankframework.util.UUIDUtil;
+
 
 public class ServletManagerTest {
 	private static ServletManager manager;
@@ -51,7 +52,7 @@ public class ServletManagerTest {
 		ServletContext context = new MockServletContext() {
 			private Map<String, Dynamic> dynamic = new HashMap<>();
 			@Override
-			public Dynamic addServlet(String servletName, javax.servlet.Servlet servlet) {
+			public Dynamic addServlet(String servletName, jakarta.servlet.Servlet servlet) {
 				return dynamic.compute(servletName, (k,v) -> new DynamicServletRegistration(servletName, servlet));
 			}
 			@Override
@@ -182,23 +183,7 @@ public class ServletManagerTest {
 	}
 
 	@Test
-	public void testTransportGuaranteeGlobal1() {
-		MockEnvironment properties = new MockEnvironment();
-		properties.setProperty(SecuritySettings.HTTPS_ENABLED_KEY, "none");
-		SecuritySettings.setupDefaultSecuritySettings(properties);
-
-		String name = UUIDUtil.createNumericUUID();
-
-		DummyServletImpl servlet = new DummyServletImpl();
-		servlet.setUrlMapping(name);
-		DynamicServletRegistration sdr = createAndRegister(name, servlet);
-
-		assertEquals("[/"+name+"]", sdr.getMappings().toString());
-		assertEquals(TransportGuarantee.NONE, sdr.getServletSecurity().getTransportGuarantee());
-	}
-
-	@Test
-	public void testTransportGuaranteeGlobal2() {
+	public void testTransportGuaranteeGlobal() {
 		MockEnvironment properties = new MockEnvironment();
 		properties.setProperty(SecuritySettings.HTTPS_ENABLED_KEY, "confidential");
 		SecuritySettings.setupDefaultSecuritySettings(properties);
@@ -210,19 +195,7 @@ public class ServletManagerTest {
 	}
 
 	@Test
-	public void testTransportGuaranteeGlobalLOC1() {
-		MockEnvironment properties = new MockEnvironment();
-		properties.setProperty("dtap.stage", "LOC");
-		SecuritySettings.setupDefaultSecuritySettings(properties);
-
-		DummyServletImpl servlet = new DummyServletImpl();
-		DynamicServletRegistration sdr = createAndRegister(servlet);
-
-		assertEquals(TransportGuarantee.NONE, sdr.getServletSecurity().getTransportGuarantee());
-	}
-
-	@Test
-	public void testTransportGuaranteeGlobalLOC2() {
+	public void testTransportGuaranteeGlobalLOC() {
 		MockEnvironment properties = new MockEnvironment();
 		properties.setProperty("dtap.stage", "LOC");
 		properties.setProperty(SecuritySettings.HTTPS_ENABLED_KEY, "confidential");
@@ -250,7 +223,7 @@ public class ServletManagerTest {
 		return (DynamicServletRegistration) manager.getServletContext().getServletRegistration(name);
 	}
 
-	//Mock classes used to test the ServletManagers functionality
+	// Mock classes used to test the ServletManager functionality
 
 	private static class DummyServletImpl extends HttpServlet implements DynamicRegistration.Servlet {
 		private @Getter @Setter String name;
@@ -279,7 +252,7 @@ public class ServletManagerTest {
 		private @Getter DummyServletImpl servlet;
 		private @Getter ServletSecurityElement servletSecurity;
 
-		public DynamicServletRegistration(String servletName, javax.servlet.Servlet servlet) {
+		public DynamicServletRegistration(String servletName, jakarta.servlet.Servlet servlet) {
 			this.name = servletName;
 			this.servlet = (DummyServletImpl) servlet;
 		}

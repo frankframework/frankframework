@@ -17,13 +17,14 @@ package org.frankframework.receivers;
 
 import jakarta.mail.Message;
 import jakarta.mail.internet.MimeBodyPart;
+
 import org.frankframework.doc.Category;
 import org.frankframework.doc.ReferTo;
 import org.frankframework.filesystem.ImapFileSystem;
-import org.frankframework.filesystem.MailListener;
+import org.frankframework.filesystem.AbstractMailListener;
 
-@Category("Advanced")
-public class ImapListener extends MailListener<Message, MimeBodyPart, ImapFileSystem> {
+@Category(Category.Type.ADVANCED)
+public class ImapListener extends AbstractMailListener<Message, MimeBodyPart, ImapFileSystem> {
 
 	@Override
 	protected ImapFileSystem createFileSystem() {
@@ -40,7 +41,6 @@ public class ImapListener extends MailListener<Message, MimeBodyPart, ImapFileSy
 		getFileSystem().setPort(port);
 	}
 
-
 	@ReferTo(ImapFileSystem.class)
 	public void setAuthAlias(String authAlias) {
 		getFileSystem().setAuthAlias(authAlias);
@@ -56,17 +56,14 @@ public class ImapListener extends MailListener<Message, MimeBodyPart, ImapFileSy
 		getFileSystem().setPassword(password);
 	}
 
-
 	@ReferTo(ImapFileSystem.class)
 	public void setBaseFolder(String baseFolder) {
 		getFileSystem().setBaseFolder(baseFolder);
 	}
 
-
 	@ReferTo(ImapFileSystem.class)
 	public void setReplyAddressFields(String replyAddressFields) {
 		getFileSystem().setReplyAddressFields(replyAddressFields);
 	}
-
 
 }

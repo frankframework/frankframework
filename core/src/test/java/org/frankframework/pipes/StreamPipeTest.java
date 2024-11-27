@@ -9,15 +9,16 @@ import java.net.URL;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockMultipartHttpServletRequest;
+
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.util.ClassLoaderUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
 class StreamPipeTest extends PipeTestBase<StreamPipe> {
 
@@ -96,7 +97,7 @@ class StreamPipeTest extends PipeTestBase<StreamPipe> {
 		pipe.setCheckAntiVirus(true);
 		PipeForward pipeAntiVirusFailedForward = new PipeForward();
 		pipeAntiVirusFailedForward.setName(StreamPipe.ANTIVIRUS_FAILED_FORWARD);
-		pipe.registerForward(pipeAntiVirusFailedForward);
+		pipe.addForward(pipeAntiVirusFailedForward);
 		MockMultipartHttpServletRequest request = createMultipartHttpRequest(pipe, true, true);
 		pipe.addParameter(createHttpRequestParameter(request, session));
 		pipe.configure();

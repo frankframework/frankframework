@@ -3,8 +3,8 @@
 	<errorMessage timestamp="Mon Dec 14 17:48:42 CET 2020" originator="IAF_ss9 7.6-SNAPSHOT" message="SenderPipe [LocalHttp] msgId [Test Tool correlation id]: (SocketTimeoutException) Read timed out">
 		<location class="org.frankframework.pipes.SenderPipe" name="LocalHttp"/>
 		<details>org.frankframework.core.TimeoutException: (SocketTimeoutException) Read timed out
-            at org.frankframework.http.HttpSenderBase.sendMessage(HttpSenderBase.java:700)
-            at org.frankframework.http.HttpSenderBase$$FastClassBySpringCGLIB$$f73d91f3.invoke(&lt;generated&gt;)
+            at org.frankframework.http.AbstractHttpSender.sendMessage(HttpSenderBase.java:700)
+            at org.frankframework.http.AbstractHttpSender$$FastClassBySpringCGLIB$$f73d91f3.invoke(&lt;generated&gt;)
             at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:204)
             at
             org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:736)
@@ -161,7 +161,7 @@
             at org.apache.http.impl.execchain.RedirectExec.execute(RedirectExec.java:111)
             at org.apache.http.impl.client.InternalHttpClient.doExecute(InternalHttpClient.java:185)
             at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:72)
-            at org.frankframework.http.HttpSenderBase.sendMessage(HttpSenderBase.java:663)
+            at org.frankframework.http.AbstractHttpSender.sendMessage(HttpSenderBase.java:663)
             ... 101 more</details>
 		<originalMessage messageId="Test Tool correlation id">&lt;HttpListerSenderREQ/&gt;</originalMessage>
 	</errorMessage>

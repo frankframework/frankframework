@@ -17,6 +17,8 @@ package org.frankframework.extensions.afm;
 
 import java.text.DecimalFormat;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Document;
@@ -25,6 +27,7 @@ import org.w3c.dom.NodeList;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -41,10 +44,10 @@ import org.frankframework.util.XmlUtils;
  *
  * @author Erik van de Wetering, fine tuned and wrapped for Ibis by Gerrit van Brakel
  */
-@Category("NN-Special")
+@Category(Category.Type.NN_SPECIAL)
 public class Afm2EdiFactSender implements ISender {
 	protected Logger logger = LogUtil.getLogger(this);
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	public static final String VERWERKTAG = "VRWRKCD";
@@ -66,20 +69,15 @@ public class Afm2EdiFactSender implements ISender {
 	}
 
 	@Override
-	public void open() {
+	public void start() {
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 	}
 
 	@Override
-	public boolean isSynchronous() {
-		return true;
-	}
-
-	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 		try {
 			return new SenderResult(execute(message.asString()));
 		} catch (Exception e) {
@@ -101,10 +99,7 @@ public class Afm2EdiFactSender implements ISender {
 	}
 	private boolean bevatWaarde(Node aNode) {
 		String lWaarde = getWaardeForNode(aNode);
-		boolean lRes = false;
-		if ((lWaarde != null) && (!"".equalsIgnoreCase(lWaarde))) {
-			lRes = true;
-		}
+		boolean lRes = (lWaarde != null) && (!"".equalsIgnoreCase(lWaarde));
 		if (!lRes) {
 			NodeList lList = aNode.getChildNodes();
 			for (int i = 0; i <= lList.getLength() - 1; i++) {
@@ -126,7 +121,7 @@ public class Afm2EdiFactSender implements ISender {
 	}
 	private void closeList(StringBuilder aRes, int regelTeller) {
 		// UNT
-		char untRegel[] = new char[21];
+		char[] untRegel = new char[21];
 		for (int i = 0; i < 21; i++)
 			untRegel[i] = ' ';
 		"UNT".getChars(0, "UNT".length(), untRegel, 0);
@@ -161,7 +156,7 @@ public class Afm2EdiFactSender implements ISender {
 	}
 	public char[] getCloseResultaat() {
 		// UNZ
-		char unzRegel[] = new char[23];
+		char[] unzRegel = new char[23];
 		for (int i = 0; i < 23; i++)
 			unzRegel[i] = ' ';
 		"UNZ000001".getChars(0, "UNZ000001".length(), unzRegel, 0);
@@ -170,7 +165,7 @@ public class Afm2EdiFactSender implements ISender {
 
 	public char[] getInitResultaat() {
 		// UNB
-		char unbRegel[] = new char[206];
+		char[] unbRegel = new char[206];
 		for (int i = 0; i < 206; i++)
 			unbRegel[i] = ' ';
 		String lStart = "UNBUNOC1INFONET " + getDestination() + "     TP";
@@ -195,7 +190,7 @@ public class Afm2EdiFactSender implements ISender {
 		return lRes;
 	}
 	private char[] getNewDocInit() {
-		char unhRegel[] = new char[74];
+		char[] unhRegel = new char[74];
 		for (int i = 0; i < 74; i++)
 			unhRegel[i] = ' ';
 		"UNH".getChars(0, "UNH".length(), unhRegel, 0);
@@ -315,7 +310,7 @@ public class Afm2EdiFactSender implements ISender {
 	}
 
 	public void setTpnummer(String newTpnummer) {
-		logger.info("Tpnr: " + newTpnummer);
+		logger.info("Tpnr: {}", newTpnummer);
 		tpnummer = newTpnummer;
 	}
 	public String getTpnummer() {

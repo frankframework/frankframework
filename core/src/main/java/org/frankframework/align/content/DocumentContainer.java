@@ -18,8 +18,7 @@ package org.frankframework.align.content;
 import org.apache.xerces.xs.XSTypeDefinition;
 
 public interface DocumentContainer extends ElementGroupContainer {
+	void startElementGroup(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition);
 
-	public void startElementGroup(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition);
-	public void endElementGroup(String localName);
-
+	void endElementGroup(String localName);
 }

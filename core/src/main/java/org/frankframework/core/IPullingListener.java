@@ -17,7 +17,7 @@ package org.frankframework.core;
 
 import java.util.Map;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import org.frankframework.receivers.RawMessageWrapper;
 
@@ -43,7 +43,7 @@ public interface IPullingListener<M> extends IListener<M> {
 	/**
 	 * Finalizes a message receiving thread.
 	 * Called once for each thread that listens for messages, just before
-	 * {@link #close()} is called.
+	 * {@link #stop()} is called.
 	 */
 	void closeThread(@Nonnull Map<String,Object> threadContext) throws ListenerException;
 

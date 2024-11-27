@@ -17,7 +17,7 @@ package org.frankframework.errormessageformatters;
 
 import org.frankframework.configuration.ConfigurationWarning;
 
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.7.0")
 @ConfigurationWarning("Use FixedErrorMessageFormatter instead")
 public class FixedErrorMessage extends FixedErrorMessageFormatter {
 }

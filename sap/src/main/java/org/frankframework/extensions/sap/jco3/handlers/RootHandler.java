@@ -50,7 +50,7 @@ public class RootHandler extends Handler {
 				}
 			}
 			if (childHandler == null) {
-				log.warn("parameter list '"+localName+"' does not exist");
+				log.warn("parameter list '{}' does not exist", localName);
 				unknownElementDepth = 1;
 			}
 		}

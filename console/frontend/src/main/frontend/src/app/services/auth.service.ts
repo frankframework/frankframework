@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
-import { Base64Service } from './base64.service';
-import { AppService, ConsoleState } from '../app.service';
+import { AppService } from '../app.service';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
@@ -9,19 +7,15 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class AuthService {
-  private authToken?: string;
-  private consoleState: ConsoleState;
+  private loggedIn = false;
 
   constructor(
     private http: HttpClient,
-    private router: Router,
     private appService: AppService,
-    private Base64: Base64Service,
-  ) {
-    this.consoleState = this.appService.CONSOLE_STATE;
-  }
+  ) {}
 
-  login(username: string, password: string): void {
+  /* Currently not being used because servlet handles basic auth */
+  /* login(username: string, password: string): void {
     if (username != 'anonymous') {
       this.authToken = this.Base64.encode(`${username}:${password}`);
       sessionStorage.setItem('authToken', this.authToken);
@@ -30,10 +24,8 @@ export class AuthService {
     const absUrl = window.location.href.split('login')[0];
     window.location.href = absUrl + location;
     window.location.reload();
-  }
-
-  loggedin(): void {
-    const token = this.getAuthToken();
+  } */
+  /* loggedin(): void {
     if (token != null && token != 'null') {
       if (this.router.url.includes('login'))
         this.router.navigateByUrl(
@@ -46,14 +38,21 @@ export class AuthService {
         this.router.navigateByUrl('login');
       }
     }
+  } */
+
+  setLoggedIn(username?: string): void {
+    if (username && username != 'anonymous') {
+      this.loggedIn = true;
+    }
+  }
+
+  isLoggedIn(): boolean {
+    return this.loggedIn;
   }
 
   logout(): Observable<object> {
     sessionStorage.clear();
+    this.loggedIn = false;
     return this.http.get(`${this.appService.getServerPath()}iaf/api/logout`);
-  }
-
-  getAuthToken(): string | null {
-    return sessionStorage.getItem('authToken');
   }
 }

@@ -18,6 +18,7 @@ package org.frankframework.extensions.esb;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -29,6 +30,7 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLine;
 import org.frankframework.doc.Category;
 import org.frankframework.jms.JmsException;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.receivers.Receiver;
@@ -237,7 +239,7 @@ import org.frankframework.util.StringUtil;
  * </p>
  * @author Peter Leeuwenburgh
  */
-@Category("NN-Special")
+@Category(Category.Type.NN_SPECIAL)
 public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationValidator {
 	protected static final String OUTPUTNAMESPACEBASEURI = "http://nn.nl/XSD";
 	protected static final String BUSINESSDOMAIN_PARAMETER_NAME = "businessDomain";
@@ -290,7 +292,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 			if (cmhVersion == 0) {
 				cmhVersion = 1;
 			} else if (cmhVersion < 0 || cmhVersion > 2) {
-				ConfigurationWarnings.add(this, log, "cmhVersion ["+cmhVersion+"] for mode ["+getMode().toString()+"] should be set to '1' or '2', assuming '1'");
+				ConfigurationWarnings.add(this, log, "cmhVersion [" + cmhVersion + "] for mode [" + getMode() + "] should be set to '1' or '2', assuming '1'");
 				cmhVersion = 1;
 			}
 		} else {
@@ -345,7 +347,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 	}
 
 	private String getParameterValue(String key) {
-		Parameter p = getParameterList().findParameter(key);
+		IParameter p = getParameterList().findParameter(key);
 		return p != null ? p.getValue() : "";
 	}
 
@@ -378,7 +380,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 	}
 
 	public String getDestination() {
-		Parameter p = getParameterList().findParameter(DESTINATION_PARAMETER_NAME);
+		IParameter p = getParameterList().findParameter(DESTINATION_PARAMETER_NAME);
 		return p == null ? null : p.getValue();
 	}
 
@@ -404,8 +406,8 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 
 	private void stripDestination() {
 		ParameterList parameterList = getParameterList();
-		Parameter pd = parameterList.findParameter(DESTINATION_PARAMETER_NAME);
-		Parameter ppd = parameterList.findParameter(PHYSICALDESTINATION_PARAMETER_NAME);
+		IParameter pd = parameterList.findParameter(DESTINATION_PARAMETER_NAME);
+		IParameter ppd = parameterList.findParameter(PHYSICALDESTINATION_PARAMETER_NAME);
 		String destination = null;
 		if (isRetrievePhysicalDestination()) {
 			if (ppd!=null) {
@@ -418,7 +420,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 				destination = pd.getValue();
 			}
 		}
-		Parameter p;
+		IParameter p;
 		if (StringUtils.isNotEmpty(destination)) {
 			if(destination.startsWith("ESB.") || destination.startsWith("P2P.")
 					|| (StringUtils.isNotEmpty(esbAlias) && destination.startsWith(esbAlias + "."))
@@ -537,13 +539,13 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 	private void addParameters() {
 		ParameterList parameterList = getParameterList();
 		Parameter p;
-		if (parameterList.findParameter(FROMID_PARAMETER_NAME)==null) {
+		if (!parameterList.hasParameter(FROMID_PARAMETER_NAME)) {
 			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName(FROMID_PARAMETER_NAME);
 			p.setValue(AppConstants.getInstance().getProperty("instance.name", ""));
 			addParameter(p);
 		}
-		if (getMode() != Mode.BIS && parameterList.findParameter(CPAID_PARAMETER_NAME)==null) {
+		if (getMode() != Mode.BIS && !parameterList.hasParameter(CPAID_PARAMETER_NAME)) {
 			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName(CPAID_PARAMETER_NAME);
 			p.setSessionKey(getSoapHeaderSessionKey());
@@ -552,7 +554,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 			p.setDefaultValue("n/a");
 			addParameter(p);
 		}
-		if (parameterList.findParameter(CONVERSATIONID_PARAMETER_NAME)==null) {
+		if (!parameterList.hasParameter(CONVERSATIONID_PARAMETER_NAME)) {
 			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName(CONVERSATIONID_PARAMETER_NAME);
 			p.setSessionKey(getSoapHeaderSessionKey());
@@ -566,7 +568,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 			p.setDefaultValueMethods("pattern");
 			addParameter(p);
 		}
-		if (parameterList.findParameter(MESSAGEID_PARAMETER_NAME)==null) {
+		if (!parameterList.hasParameter(MESSAGEID_PARAMETER_NAME)) {
 			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName(MESSAGEID_PARAMETER_NAME);
 			if (isUseFixedValues()) {
@@ -576,7 +578,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 			}
 			addParameter(p);
 		}
-		if (parameterList.findParameter(EXTERNALREFTOMESSAGEID_PARAMETER_NAME)==null) {
+		if (!parameterList.hasParameter(EXTERNALREFTOMESSAGEID_PARAMETER_NAME)) {
 			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName(EXTERNALREFTOMESSAGEID_PARAMETER_NAME);
 			p.setSessionKey(getSoapHeaderSessionKey());
@@ -588,11 +590,11 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 			p.setRemoveNamespaces(true);
 			addParameter(p);
 		}
-		if (getMode() != Mode.BIS && parameterList.findParameter(CORRELATIONID_PARAMETER_NAME)==null) {
+		if (getMode() != Mode.BIS && !parameterList.hasParameter(CORRELATIONID_PARAMETER_NAME)) {
 			String paradigm;
-			p = parameterList.findParameter(PARADIGM_PARAMETER_NAME);
-			if (p!=null) {
-				paradigm = p.getValue();
+			IParameter ppn = parameterList.findParameter(PARADIGM_PARAMETER_NAME);
+			if (ppn!=null) {
+				paradigm = ppn.getValue();
 				if ("Response".equals(paradigm)) {
 					p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 					p.setName(CORRELATIONID_PARAMETER_NAME);
@@ -603,7 +605,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 				}
 			}
 		}
-		if (parameterList.findParameter(TIMESTAMP_PARAMETER_NAME)==null) {
+		if (!parameterList.hasParameter(TIMESTAMP_PARAMETER_NAME)) {
 			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName(TIMESTAMP_PARAMETER_NAME);
 			if (isUseFixedValues()) {
@@ -613,13 +615,13 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 			}
 			addParameter(p);
 		}
-		if (parameterList.findParameter(FIXRESULTNAMESPACE_PARAMETER_NAME)==null) {
+		if (!parameterList.hasParameter(FIXRESULTNAMESPACE_PARAMETER_NAME)) {
 			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName(FIXRESULTNAMESPACE_PARAMETER_NAME);
 			p.setValue(String.valueOf(isFixResultNamespace()));
 			addParameter(p);
 		}
-		if (parameterList.findParameter(TRANSACTIONID_PARAMETER_NAME)==null) {
+		if (!parameterList.hasParameter(TRANSACTIONID_PARAMETER_NAME)) {
 			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName(TRANSACTIONID_PARAMETER_NAME);
 			p.setSessionKey(getSoapHeaderSessionKey());

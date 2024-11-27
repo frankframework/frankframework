@@ -1,0 +1,6 @@
+<matches>
+	<match index="1" value="Hello name!">
+		<group index="1">Hello </group>
+		<group index="2">name!</group>
+	</match>
+</matches>

@@ -1,14 +1,14 @@
-version: '3.8'
+version: ''
 
 services:
-    ff-test:
-        environment:
-            jdbc.dbms.default: db2-xa
-            jdbc.hostname: db2
-            jdbc.migrator.datasource: jdbc/ibis4test-db2
+  ff-test:
+    environment:
+      jdbc.dbms.default: db2-xa
+      jdbc.hostname: db2
+      jdbc.migrator.datasource: jdbc/ibis4test-db2
 
-    db2:
-        image: private.docker.nexus.frankframework.org/ff-test/dbms/db2
-        privileged: true
-        ports:
-            - "50000:50000"
+  db2:
+    image: private.docker.nexus.frankframework.org/ff-test/dbms/db2
+    privileged: true
+    ports:
+      - "50000:50000"

@@ -3,13 +3,14 @@ package org.frankframework.pipes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
-import org.junit.jupiter.api.Test;
 
 class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 
@@ -21,9 +22,9 @@ class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 	public CompareStringPipe createPipe() throws ConfigurationException {
 		CompareStringPipe pipe = new CompareStringPipe();
 
-		pipe.registerForward(new PipeForward(LESS_THAN, null));
-		pipe.registerForward(new PipeForward(GREATER_THAN, null));
-		pipe.registerForward(new PipeForward(EQUALS, null));
+		pipe.addForward(new PipeForward(LESS_THAN, null));
+		pipe.addForward(new PipeForward(GREATER_THAN, null));
+		pipe.addForward(new PipeForward(EQUALS, null));
 
 		return pipe;
 	}

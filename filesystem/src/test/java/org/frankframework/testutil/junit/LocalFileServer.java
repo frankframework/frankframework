@@ -44,13 +44,14 @@ import org.filesys.smb.server.SMBConfigSection;
 import org.filesys.smb.server.SMBServer;
 import org.filesys.smb.server.SMBSrvSession;
 import org.filesys.smb.server.disk.original.JavaFileDiskDriver;
+import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.element.GenericConfigElement;
+
 import org.frankframework.filesystem.smb.Samba2FileSystemTest;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
-import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
-import org.springframework.extensions.config.ConfigElement;
-import org.springframework.extensions.config.element.GenericConfigElement;
 
 /**
  * Will create a local FS with share 'home' @ 'localhost' : 'automatically-calculated-port'.
@@ -59,7 +60,7 @@ import org.springframework.extensions.config.element.GenericConfigElement;
  * @author Niels Meijer
  */
 public class LocalFileServer implements AutoCloseable, CloseableResource {
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 	// Default memory pool settings
 	private static final int[] DefaultMemoryPoolBufSizes = { 256, 4096, 16384, 65536 };
@@ -80,7 +81,7 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 	private final String domain = "dummyDomain.org";
 	private final String license;
 	private final Path testDirectory; // path in which the tests are executed
-	private ServerConfiguration serverConfig;
+	private final ServerConfiguration serverConfig;
 
 
 	public enum FileSystemType {

@@ -1,13 +1,23 @@
-version: '3.8'
+version: ''
+
+name: tomcat-narayana
 
 services:
-    ff-test:
-        volumes:
-            - ../test/src/test/testtool:/opt/frank/testtool-ext
-        image: private.docker.nexus.frankframework.org/ff-test:${VERSION:-latest}-tomcat
-        build: Tomcat/test
-        ports:
-            - "8080:8080"
-        environment:
-            application.server.type.custom: NARAYANA
-            larva.adapter.active: false
+  ff-test:
+    volumes:
+      - "../test/src/test/testtool:/opt/frank/testtool-ext"
+      - "../core/target/frankframework-core-$VERSION.jar:/usr/local/tomcat/webapps/iaf-test/WEB-INF/lib/frankframework-core-$VERSION.jar:ro"
+    image: private.docker.nexus.frankframework.org/ff-test:${VERSION:-latest}-tomcat
+    build: Tomcat/test
+    ports:
+      - "8080:8080"
+      - "8001:8001"
+    entrypoint: /usr/local/tomcat/bin/catalina.sh
+    command:
+      - jpda
+      - run
+    environment:
+      application.server.type.custom: NARAYANA
+      larva.adapter.active: false
+      JPDA_ADDRESS: \*:8001
+      JPDA_TRANSPORT: dt_socket

@@ -23,8 +23,8 @@
 			</pipe>
 			<pipe name="DirectQuerySender-TwoParam" getInputFromSessionKey="query">
 				<sender className="org.frankframework.jdbc.DirectQuerySender" queryType="select" scalar="true" >
-					<param name="param1" value="1" type="integer" />
-					<param name="param2" value="10" type="integer" />
+					<NumberParam name="param1" value="1" />
+					<NumberParam name="param2" value="10" />
 				</sender>
 				<forward name="success" path="EXIT" />
 			</pipe>

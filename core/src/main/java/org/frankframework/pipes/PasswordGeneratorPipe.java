@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2023 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,85 +22,74 @@ import java.util.Collections;
 import java.util.List;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.stream.Message;
+import org.frankframework.util.UUIDUtil;
 
 
 /**
- * Returns random password.
+ * Generates a random password.
  *
- * @author  Milan Tomc
- * @since   4.5
+ * @author Milan Tomc
+ * @since 4.5
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class PasswordGeneratorPipe extends FixedForwardPipe {
 
-	private String lCharacters="abcdefghijklmnopqrstuvwxyz";
-	private String uCharacters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	private String numbers="0123456789";
-	private String signs=";:_%$#@!><";
+	private String lCharacters = "abcdefghijklmnopqrstuvwxyz";
+	private String uCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	private String numbers = "0123456789";
+	private String signs = ";:_%$#@!><";
 
-	private SecureRandom random;
-	private boolean useSecureRandom = true; // more secure but much slower
+	private static SecureRandom random; // different algorithm than standard Random
 
-	int numOfLCharacters=2;
-	int numOfUCharacters=2;
-	int numOfDigits=2;
-	int numOfSigns=2;
+	int numOfLCharacters = 2;
+	int numOfUCharacters = 2;
+	int numOfDigits = 2;
+	int numOfSigns = 2;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if (useSecureRandom){
+		if (random == null) {
 			try {
-				random= SecureRandom.getInstance("SHA1PRNG");
+				random = SecureRandom.getInstance("SHA1PRNG");
 			} catch (NoSuchAlgorithmException e) {
-				try{
-					random= SecureRandom.getInstance("IBMSecureRandom");
-				}
-				catch (NoSuchAlgorithmException ex){
-					throw new ConfigurationException("PasswordGeneratorPipe: ", ex);
-				}
+				random = UUIDUtil.RANDOM; // fallback to shared UUIDUtil random
 			}
 		}
 	}
 
-
 	@Override
-	public PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result;
 		try {
-				//generate password containing: 2 LC-letters, 2 UC-letters, 2 symbols and 2 numbers
-				result =  generate(getNumOfLCharacters(),getNumOfUCharacters(),getNumOfSigns(),getNumOfDigits());
-			} catch (Exception e) {
-				throw new PipeRunException(this, "failed to generate password",e);
-			}
+			//generate password containing: 2 LC-letters, 2 UC-letters, 2 symbols and 2 numbers
+			result = generate(getNumOfLCharacters(), getNumOfUCharacters(), getNumOfSigns(), getNumOfDigits());
+		} catch (Exception e) {
+			throw new PipeRunException(this, "failed to generate password", e);
+		}
 
-		return new PipeRunResult(getSuccessForward(),result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	protected  String generate(int numOfLCharacters, int numOfUCharacters, int numOfSigns, int numOfNumbers){
-		StringBuilder result = new StringBuilder();
-		result.append(getRandomElementsOfString(getLCharacters(), numOfLCharacters));
-		result.append(getRandomElementsOfString(getUCharacters(), numOfUCharacters));
-		result.append(getRandomElementsOfString(getSigns(), numOfSigns));
-		result.append(getRandomElementsOfString(getNumbers(), numOfNumbers));
-		return garbleString(result.toString());
+	protected String generate(int numOfLCharacters, int numOfUCharacters, int numOfSigns, int numOfNumbers) {
+		String result = getRandomElementsOfString(getLCharacters(), numOfLCharacters) +
+				getRandomElementsOfString(getUCharacters(), numOfUCharacters) +
+				getRandomElementsOfString(getSigns(), numOfSigns) +
+				getRandomElementsOfString(getNumbers(), numOfNumbers);
+		return garbleString(result);
 	}
 
-	protected  String getRandomElementsOfString(String input, int count){
-		StringBuilder resultSb=new StringBuilder();
-		for (int i=0; i<count;i++){
-			int rnd;
-			if (useSecureRandom)
-				rnd=random.nextInt(input.length());
-			else
-				rnd = Double.valueOf((Math.random() * input.length() - 0.5)).intValue();
+	protected String getRandomElementsOfString(String input, int count) {
+		StringBuilder resultSb = new StringBuilder();
+		for (int i = 0; i < count; i++) {
+			int rnd = random.nextInt(input.length());
 			resultSb.append(input.charAt(rnd));
 		}
 		return resultSb.toString();
@@ -124,17 +113,15 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 		return resultSb.toString();
 	}
 
-
-	public boolean isUseSecureRandom() {
-		return useSecureRandom;
-	}
-
 	/**
-	 * whether the securerandom algorithm is to be used (slower)
+	 * Whether the secureRandom algorithm is used.
 	 * @ff.default true
+	 * @deprecated the current implementation always uses SecureRandom. Please remove this attribute from the Configuration.
 	 */
+	@Deprecated(forRemoval = true, since = "8.2.0")
+	@ConfigurationWarning("the current implementation always uses SecureRandom. Please remove this attribute from the Configuration.")
 	public void setUseSecureRandom(boolean b) {
-		useSecureRandom = b;
+		// do nothing
 	}
 
 	public String getLCharacters() {
@@ -142,7 +129,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * the lowercase characters to use
+	 * The lowercase characters to use.
 	 * @ff.default ('a'..'z')
 	 */
 	public void setLCharacters(String lCharacters) {
@@ -154,7 +141,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * the uppercase characters to use
+	 * The uppercase characters to use.
 	 * @ff.default ('A'..'Z')
 	 */
 	public void setUCharacters(String uCharacters) {
@@ -166,7 +153,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * the numbers to use
+	 * The numbers to use.
 	 * @ff.default ('0'..'9')
 	 */
 	public void setNumbers(String numbers) {
@@ -178,7 +165,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * the signs to use
+	 * The signs to use.
 	 * @ff.default (;:_%$#@!&gt;&lt;)
 	 */
 	public void setSigns(String signs) {
@@ -202,7 +189,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * the number of lowercase characters in the generated password
+	 * The number of lowercase characters in the generated password.
 	 * @ff.default 2
 	 */
 	public void setNumOfLCharacters(int i) {
@@ -210,7 +197,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * the number of digits in the generated password
+	 * The number of digits in the generated password.
 	 * @ff.default 2
 	 */
 	public void setNumOfDigits(int i) {
@@ -218,7 +205,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * the number of sign characters in the generated password
+	 * The number of sign characters in the generated password.
 	 * @ff.default 2
 	 */
 	public void setNumOfSigns(int i) {
@@ -226,7 +213,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * the number of uppercase characters in the generated password
+	 * The number of uppercase characters in the generated password.
 	 * @ff.default 2
 	 */
 	public void setNumOfUCharacters(int i) {

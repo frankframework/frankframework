@@ -23,11 +23,12 @@ import java.util.Vector;
 /**
  * Implementation of a FilenameFilter to support wildcards. <br/>
  * <b>use:</b><br/>
- * <code><pre>
+ * <pre>{@code
  * WildCardFilter filter = new WildCardFilter("*.java");
  * File currDir = new File(".");
  * String files[] = currDir.list(filter);
- * </pre></code> <br/>
+ * }</pre>
+ * <br/>
  * Examples:
  * <ul>
  * <li>*.java</li>
@@ -37,7 +38,6 @@ import java.util.Vector;
  *
  * @author Johan Verrips IOS
  **/
-
 public class WildCardFilter implements FilenameFilter {
 
 	String wildPattern = null;

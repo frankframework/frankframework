@@ -17,6 +17,10 @@ export type Monitor = {
   alarm: Alarm;
 };
 
+export type NewMonitor = {
+  name: string;
+};
+
 export type Alarm = {
   source: string;
   severity: string;
@@ -61,26 +65,18 @@ export class MonitorsService {
     private appService: AppService,
   ) {}
 
-  getUrl(
-    selectedConfiguration: string,
-    monitor: Monitor,
-    trigger?: Trigger,
-  ): string {
+  getUrl(selectedConfiguration: string, monitor: Monitor, trigger?: Trigger): string {
     let url = `${this.appService.absoluteApiPath}configurations/${selectedConfiguration}/monitors/${monitor.name}`;
     if (trigger) url += `/triggers/${trigger.id}`;
     return url;
   }
 
-  getTriggerUrl(
-    selectedConfiguration: string,
-    monitorName: string,
-    triggerId: number,
-  ): string {
-    return `${
+  getTriggerUrl(selectedConfiguration: string, monitorName: string, triggerId: number): string {
+    let url = `${
       this.appService.absoluteApiPath
-    }configurations/${selectedConfiguration}/monitors/${monitorName}/triggers/${
-      triggerId > -1 ? triggerId : ''
-    }`;
+    }configurations/${selectedConfiguration}/monitors/${monitorName}/triggers`;
+    if (triggerId > -1) url += `/${triggerId}`;
+    return url;
   }
 
   getMonitors(selectedConfiguration: string): Observable<MonitorsResponse> {
@@ -89,13 +85,14 @@ export class MonitorsService {
     );
   }
 
-  getTrigger(
-    selectedConfiguration: string,
-    monitorName: string,
-    triggerId: number,
-  ): Observable<TriggerResponse> {
-    return this.http.get<TriggerResponse>(
-      this.getTriggerUrl(selectedConfiguration, monitorName, triggerId),
+  getTrigger(selectedConfiguration: string, monitorName: string, triggerId: number): Observable<TriggerResponse> {
+    return this.http.get<TriggerResponse>(this.getTriggerUrl(selectedConfiguration, monitorName, triggerId));
+  }
+
+  postMonitor(selectedConfiguration: string, monitor: NewMonitor): Observable<object> {
+    return this.http.post<object>(
+      `${this.appService.absoluteApiPath}configurations/${selectedConfiguration}/monitors`,
+      monitor,
     );
   }
 
@@ -105,10 +102,7 @@ export class MonitorsService {
     triggerId: number,
     trigger: Trigger,
   ): Observable<object> {
-    return this.http.post(
-      this.getTriggerUrl(selectedConfiguration, monitorName, triggerId),
-      trigger,
-    );
+    return this.http.post(this.getTriggerUrl(selectedConfiguration, monitorName, triggerId), trigger);
   }
 
   putMonitorOrTriggerAction(
@@ -142,19 +136,10 @@ export class MonitorsService {
     triggerId: number,
     trigger: Trigger,
   ): Observable<object> {
-    return this.http.put(
-      this.getTriggerUrl(selectedConfiguration, monitorName, triggerId),
-      trigger,
-    );
+    return this.http.put(this.getTriggerUrl(selectedConfiguration, monitorName, triggerId), trigger);
   }
 
-  deleteMonitorOrTrigger(
-    selectedConfiguration: string,
-    monitor: Monitor,
-    trigger?: Trigger,
-  ): Observable<object> {
-    return this.http.delete(
-      this.getUrl(selectedConfiguration, monitor, trigger),
-    );
+  deleteMonitorOrTrigger(selectedConfiguration: string, monitor: Monitor, trigger?: Trigger): Observable<object> {
+    return this.http.delete(this.getUrl(selectedConfiguration, monitor, trigger));
   }
 }

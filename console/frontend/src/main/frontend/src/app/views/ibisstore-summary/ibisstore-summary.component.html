@@ -1,6 +1,3 @@
-<!-- Angular Router Outlet -->
-<div ui-view></div>
-
 <div class="wrapper wrapper-content animated fadeInRight">
   <div class="alert alert-warning" role="alert" type="warning" *ngIf="error">
     <span class="ng-binding ng-scope" [innerHTML]="error"></span>
@@ -12,21 +9,12 @@
           <h4>IbisStore Summary</h4>
         </div>
         <div class="ibox-content">
-          <form role="ngForm">
+          <form>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30"
-                >Datasource</label
-              >
+              <label class="col-sm-3 control-label label-height-30">Datasource</label>
               <div class="col-sm-9">
-                <select
-                  class="form-control"
-                  name="datasource"
-                  [(ngModel)]="form['datasource']"
-                >
-                  <option
-                    *ngFor="let datasource of datasources"
-                    [value]="datasource"
-                  >
+                <select class="form-control" name="datasource" [(ngModel)]="form.datasource">
+                  <option *ngFor="let datasource of datasources" [value]="datasource">
                     {{ datasource }}
                   </option>
                 </select>
@@ -34,22 +22,10 @@
             </div>
             <div class="row form-group">
               <div class="col-sm-3 m-t-md">
-                <button
-                  class="btn btn-info btn-w-m font-bold"
-                  type="button"
-                  (click)="reset()"
-                >
-                  Reset
-                </button>
+                <button class="btn btn-info btn-w-m font-bold" type="button" (click)="reset()">Reset</button>
               </div>
               <div class="col-sm-3 m-t-md">
-                <button
-                  class="btn btn-primary btn-w-m font-bold"
-                  type="submit"
-                  (click)="submit(form)"
-                >
-                  Send
-                </button>
+                <button class="btn btn-primary btn-w-m font-bold" type="submit" (click)="submit(form)">Send</button>
               </div>
             </div>
           </form>
@@ -73,9 +49,7 @@
                   <th>Receiver/Sender</th>
                   <th title="number of messages in this slot">#</th>
                   <th>Date</th>
-                  <th title="number of messages in this slot on this date">
-                    #
-                  </th>
+                  <th title="number of messages in this slot on this date">#</th>
                 </tr>
               </thead>
               <tbody *ngFor="let t of result">
@@ -96,10 +70,7 @@
                   <td *ngIf="s.adapter; else noSlotAdapter">{{ s.adapter }}</td>
                   <ng-template #noSlotAdapter>-</ng-template>
                   <td *ngIf="s.receiver">
-                    <span
-                      class="text-success"
-                      title="View Messages Processed by {{ s.receiver }}"
-                    >
+                    <span class="text-success" title="View Messages Processed by {{ s.receiver }}">
                       <button
                         *ngIf="t.type === 'A'"
                         [routerLink]="[
@@ -118,10 +89,7 @@
                         <i class="fa fa-sign-in"></i>
                       </button>
                     </span>
-                    <span
-                      class="text-danger"
-                      title="View Messages in Error in {{ s.receiver }}"
-                    >
+                    <span class="text-danger" title="View Messages in Error in {{ s.receiver }}">
                       <button
                         *ngIf="t.type === 'E'"
                         [routerLink]="[
@@ -144,30 +112,15 @@
                   </td>
                   <td *ngIf="s.pipe">
                     <span
-                      [ngClass]="
-                        t.type === 'M' ? 'text-primary' : 'text-success'
-                      "
+                      [ngClass]="t.type === 'M' ? 'text-primary' : 'text-success'"
                       title="View Messages Processed by {{ s.pipe }}"
                     >
                       <button
-                        [routerLink]="[
-                          '',
-                          s.configuration,
-                          'adapters',
-                          s.adapter,
-                          'pipes',
-                          s.pipe,
-                          'stores',
-                          'Done'
-                        ]"
+                        [routerLink]="['', s.configuration, 'adapters', s.adapter, 'pipes', s.pipe, 'stores', 'Done']"
                         class="btn btn-xs btn-default m-l-xs"
                         type="button"
                       >
-                        <i
-                          [ngClass]="
-                            t.type === 'M' ? 'fa fa-sign-out' : 'fa fa-database'
-                          "
-                        ></i>
+                        <i [ngClass]="t.type === 'M' ? 'fa fa-sign-out' : 'fa fa-database'"></i>
                       </button>
                     </span>
                     {{ s.pipe }}

@@ -1,6 +1,6 @@
 <!-- This adapter creates a large file by reading and appending the content of a small file.
 	 Adapter gets the JVM maxMemory and calculates how many times can append the file content in the SetEndIndex pipe.
-	 In the calculation 160 is substracted from the max memory this is the average expected memory the framework occupies.
+	 In the calculation 160 is subtracted from the max memory this is the average expected memory the framework occupies.
 	 32 is the calculated common factor
 	 size of the file to be created - corresponding JVM max memory - expected duration(tested on the specified hardware CPU-Intel i7-7700HQ@2.8GHz ; RAM 8GB):
 
@@ -27,14 +27,17 @@
 				filename="CreateLargeFile/input_small.txt">
 				<forward name="success" path="CreateFile" />
 			</pipe>
-			<pipe name="CreateFile" actions="create"
-				className="org.frankframework.pipes.FilePipe"
-				directory="${log.dir}" filename="input_big.xml">
+			<pipe name="CreateFile" action="create"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				inputFolder="${log.dir}"
+				filename="input_big.xml"
+				overwrite="true">
 				<forward name="success" path="WriteFile" />
 			</pipe>
-			<pipe name="WriteFile" actions="write"
-				className="org.frankframework.pipes.FilePipe"
-				directory="${log.dir}" getInputFromFixedValue="&lt;dummy&gt;"
+			<pipe name="WriteFile" action="read"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				inputFolder="${log.dir}"
+				getInputFromFixedValue="&lt;dummy&gt;"
 				filename="input_big.xml">
 				<forward name="success" path="SetStartIndex" />
 			</pipe>
@@ -51,13 +54,14 @@
 			<pipe name="SetEndIndex"
 				className="org.frankframework.pipes.XsltPipe"
 				getInputFromSessionKey="metrics"
-				xpathExpression="floor((number(substring(processMetrics/properties/property[@name='maxMemory'], 0, string-length(processMetrics/properties/property[@name='maxMemory'])))-160) div 32)"
+				xpathExpression="floor((number(substring(processMetrics/properties/property[@name='heapSize'], 0, string-length(processMetrics/properties/property[@name='heapSize']) - 2))) div 32)"
 				sessionKey="endIndex">
 				<forward name="success" path="AppendFile" />
 			</pipe>
-			<pipe name="AppendFile" actions="write_append"
-				className="org.frankframework.pipes.FilePipe"
-				directory="${log.dir}" filename="input_big.xml"
+			<pipe name="AppendFile" action="append"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				inputFolder="${log.dir}"
+				filename="input_big.xml"
 				getInputFromSessionKey="fileContent">
 				<forward name="success" path="IncrementIndex" />
 			</pipe>
@@ -66,15 +70,17 @@
 				sessionKey="index">
 				<forward name="success" path="CompareValues" />
 			</pipe>
-			<pipe name="AppendTag" actions="write_append"
-				className="org.frankframework.pipes.FilePipe"
-				directory="${log.dir}" filename="input_big.xml"
+			<pipe name="AppendTag" action="append"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+				inputFolder="${log.dir}"
+				filename="input_big.xml"
 				getInputFromFixedValue="&lt;/dummy&gt;">
 				<forward name="success" path="IncrementIndex" />
 			</pipe>
 			<pipe name="CompareValues"
-				className="org.frankframework.pipes.CompareIntegerPipe"
-				sessionKey1="index" sessionKey2="endIndex">
+				className="org.frankframework.pipes.CompareIntegerPipe">
+				<param name="operand1" sessionKey="index"/>
+				<param name="operand2" sessionKey="endIndex"/>
 				<forward name="lessthan" path="AppendFile" />
 				<forward name="equals" path="AppendTag" />
 				<forward name="greaterthan" path="Echo" />

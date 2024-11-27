@@ -18,17 +18,26 @@ type ServiceListenerResult = {
   styleUrls: ['./test-service-listener.component.scss'],
 })
 export class TestServiceListenerComponent implements OnInit {
-  state: AlertState[] = [];
-  file: File | null = null;
-  services: string[] = [];
-  processingMessage = false;
-  result = '';
+  protected state: AlertState[] = [];
+  protected services: string[] = [];
+  protected processingMessage = false;
+  protected result = '';
 
-  form = {
+  protected form = {
     service: '',
     encoding: '',
     message: '',
   };
+
+  protected readonly editorActions = {
+    ctrlEnter: {
+      id: 'submit',
+      label: 'Submit Form',
+      run: (): void => this.submit(),
+    },
+  };
+
+  private file: File | null = null;
 
   constructor(
     private http: HttpClient,
@@ -53,8 +62,8 @@ export class TestServiceListenerComponent implements OnInit {
     this.file = file;
   }
 
-  submit(event: SubmitEvent): void {
-    event.preventDefault();
+  submit(event?: SubmitEvent): void {
+    event?.preventDefault();
     this.result = '';
     this.state = [];
     if (this.form.service === '') {
@@ -66,15 +75,8 @@ export class TestServiceListenerComponent implements OnInit {
     if (this.form.service !== '') fd.append('service', this.form.service);
     if (this.form.encoding !== '') fd.append('encoding', this.form.encoding);
     if (this.form.message !== '') {
-      const encoding =
-        this.form.encoding && this.form.encoding != ''
-          ? `;charset=${this.form.encoding}`
-          : '';
-      fd.append(
-        'message',
-        new Blob([this.form.message], { type: `text/plain${encoding}` }),
-        'message',
-      );
+      const encoding = this.form.encoding && this.form.encoding != '' ? `;charset=${this.form.encoding}` : '';
+      fd.append('message', new Blob([this.form.message], { type: `text/plain${encoding}` }), 'message');
     }
     if (this.file) fd.append('file', this.file, this.file.name);
 
@@ -84,23 +86,18 @@ export class TestServiceListenerComponent implements OnInit {
     }
 
     this.processingMessage = true;
-    this.http
-      .post<ServiceListenerResult>(
-        `${this.appService.absoluteApiPath}test-servicelistener`,
-        fd,
-      )
-      .subscribe({
-        next: (returnData) => {
-          let warnLevel = 'success';
-          if (returnData.state == 'ERROR') warnLevel = 'danger';
-          this.addNote(warnLevel, returnData.state);
-          this.result = returnData.result;
-          this.processingMessage = false;
-        },
-        error: (returnData) => {
-          this.result = returnData.result;
-          this.processingMessage = false;
-        },
-      });
+    this.http.post<ServiceListenerResult>(`${this.appService.absoluteApiPath}test-servicelistener`, fd).subscribe({
+      next: (returnData) => {
+        let warnLevel = 'success';
+        if (returnData.state == 'ERROR') warnLevel = 'danger';
+        this.addNote(warnLevel, returnData.state);
+        this.result = returnData.result;
+        this.processingMessage = false;
+      },
+      error: (returnData) => {
+        this.result = returnData.result;
+        this.processingMessage = false;
+      },
+    });
   }
 }

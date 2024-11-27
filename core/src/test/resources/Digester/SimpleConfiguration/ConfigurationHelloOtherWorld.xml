@@ -18,12 +18,11 @@ http://schemas.ibissource.org/ibisdoc.xsd, OK
 		<Pipeline firstPipe="HelloOtherWorld">
 			<!-- First test config to use name attribute instead of path attribute for Exit. Keep path attribute in other configs for now so backports to 7.7 for issues that need it are easier -->
 			<Exit name="EXIT" state="success"/>
-			<FixedResultPipe
+			<EchoPipe
 				name="HelloOtherWorld"
-				returnString="Hello Other World ${digester.property} [${secret}] &lt;@quot;&gt;"
-				>
+				getInputFromFixedValue="Hello Other World ${digester.property} [${secret}] &lt;@quot;&gt;">
 				<Forward name="success" path="EXIT"/>
-			</FixedResultPipe>
+			</EchoPipe>
 		</Pipeline>
 	</Adapter>
 </root>

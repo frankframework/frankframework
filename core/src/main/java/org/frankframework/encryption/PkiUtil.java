@@ -45,7 +45,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
@@ -151,9 +150,9 @@ public class PkiUtil {
 		log.debug("Initializing key manager");
 		if (StringUtils.isEmpty(algorithm)) {
 			algorithm=KeyManagerFactory.getDefaultAlgorithm();
-			log.debug("using default KeyManager algorithm ["+algorithm+"]");
+			log.debug("using default KeyManager algorithm [{}]", algorithm);
 		} else {
-			log.debug("using configured KeyManager algorithm ["+algorithm+"]");
+			log.debug("using configured KeyManager algorithm [{}]", algorithm);
 		}
 		KeyManagerFactory kmfactory = KeyManagerFactory.getInstance(algorithm);
 		kmfactory.init(keystore, password != null ? password.toCharArray(): null);
@@ -167,9 +166,9 @@ public class PkiUtil {
 		log.debug("Initializing trust manager");
 		if (StringUtils.isEmpty(algorithm)) {
 			algorithm=TrustManagerFactory.getDefaultAlgorithm();
-			log.debug("using default TrustManager algorithm ["+algorithm+"]");
+			log.debug("using default TrustManager algorithm [{}]", algorithm);
 		} else {
-			log.debug("using configured TrustManager algorithm ["+algorithm+"]");
+			log.debug("using configured TrustManager algorithm [{}]", algorithm);
 		}
 		TrustManagerFactory tmfactory = TrustManagerFactory.getInstance(algorithm);
 		tmfactory.init(keystore);
@@ -181,21 +180,21 @@ public class PkiUtil {
 		if (url == null) {
 			throw new IllegalArgumentException("Keystore url for "+purpose+" may not be null");
 		}
-		log.info("Initializing keystore for "+purpose+" from "+url.toString());
+		log.info("Initializing keystore for {} from {}", purpose, url);
 		KeyStore keystore  = KeyStore.getInstance(keystoreType.name());
 		keystore.load(url.openStream(), password != null ? password.toCharArray(): null);
 		if (log.isInfoEnabled()) {
 			Enumeration<String> aliases = keystore.aliases();
 			while (aliases.hasMoreElements()) {
 				String alias = aliases.nextElement();
-				log.info("alias [" + alias + "] for "+purpose+":");
+				log.info("alias [{}] for {}:", alias, purpose);
 				Certificate trustedcert = keystore.getCertificate(alias);
 				if (trustedcert != null && trustedcert instanceof X509Certificate cert) {
-					log.info("  Subject DN: " + cert.getSubjectDN());
-					log.info("  Signature Algorithm: " + cert.getSigAlgName());
-					log.info("  Valid from: " + cert.getNotBefore() );
-					log.info("  Valid until: " + cert.getNotAfter());
-					log.info("  Issuer: " + cert.getIssuerDN());
+					log.info("  Subject DN: {}", cert.getSubjectDN());
+					log.info("  Signature Algorithm: {}", cert.getSigAlgName());
+					log.info("  Valid from: {}", cert.getNotBefore());
+					log.info("  Valid until: {}", cert.getNotAfter());
+					log.info("  Issuer: {}", cert.getIssuerDN());
 				}
 			}
 		}

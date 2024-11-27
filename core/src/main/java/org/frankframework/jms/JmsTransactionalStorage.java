@@ -18,9 +18,9 @@ package org.frankframework.jms;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.jms.JMSException;
-import javax.jms.ObjectMessage;
-import javax.jms.Session;
+import jakarta.jms.JMSException;
+import jakarta.jms.ObjectMessage;
+import jakarta.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -52,7 +52,7 @@ import org.frankframework.receivers.RawMessageWrapper;
  * @author  Gerrit van Brakel
  * @since   4.1
  */
-public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageBrowser<S, ObjectMessage> implements ITransactionalStorage<S> {
+public class JmsTransactionalStorage<S extends Serializable> extends AbstractJmsMessageBrowser<S, ObjectMessage> implements ITransactionalStorage<S> {
 
 	public static final String FIELD_TYPE="type";
 	public static final String FIELD_ORIGINAL_ID="originalId";
@@ -125,9 +125,6 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 		}
 	}
 
-
-
-
 	@Override
 	public String getSelector() {
 		if (StringUtils.isEmpty(getSlotId())) {
@@ -136,12 +133,12 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 		return FIELD_SLOTID+"='"+getSlotId()+"'";
 	}
 
-
 	@Override
 	@ReferTo(ITransactionalStorage.class)
 	public void setSlotId(String string) {
 		slotId = string;
 	}
+
 	@Override
 	public String getSlotId() {
 		return slotId;
@@ -152,6 +149,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 	public void setType(String string) {
 		type = string;
 	}
+
 	@Override
 	public String getType() {
 		return type;

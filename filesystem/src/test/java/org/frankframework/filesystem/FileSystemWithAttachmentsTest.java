@@ -5,13 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttachments<F,A>> extends HelperedBasicFileSystemTest<F,FS> {
+public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IMailFileSystem<F,A>> extends HelperedBasicFileSystemTest<F,FS> {
 
 	protected IFileSystemWithAttachmentsTestHelper<A> getHelper() {
 		return (IFileSystemWithAttachmentsTestHelper<A>)helper;
@@ -31,7 +32,7 @@ public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttach
 		String attachmentFileName="testAttachmentFileName";
 		String attachmentContentType="testAttachmentContentType";
 		String attachmentContents="attachmentContents";
-		byte[] attachmentContentsBytes=attachmentContents.getBytes("UTF-8");
+		byte[] attachmentContentsBytes=attachmentContents.getBytes(StandardCharsets.UTF_8);
 
 		fileSystem.configure();
 		fileSystem.open();
@@ -66,7 +67,7 @@ public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttach
 		String attachmentFileName="testAttachmentFileName";
 		String attachmentContentType="testAttachmentContentType";
 		String attachmentContents="attachmentContents";
-		byte[] attachmentContentsBytes=attachmentContents.getBytes("UTF-8");
+		byte[] attachmentContentsBytes=attachmentContents.getBytes(StandardCharsets.UTF_8);
 		String propname1="propname1";
 		String propname2="propname2";
 		String propvalue1="propvalue1";

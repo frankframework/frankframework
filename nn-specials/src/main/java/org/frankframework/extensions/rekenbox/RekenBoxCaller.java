@@ -16,7 +16,9 @@
 package org.frankframework.extensions.rekenbox;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -50,7 +52,7 @@ import org.frankframework.util.StreamUtil;
  *
  * @author Gerrit van Brakel
  */
-@Category("NN-Special")
+@Category(Category.Type.NN_SPECIAL)
 public class RekenBoxCaller extends FixedForwardPipe {
 
 	private String runPath="";
@@ -192,7 +194,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 				child.waitFor();
 
 				// read output
-				result = StreamUtil.fileToString(outputFileName, "\n", true);
+				result = fileToString(outputFileName, "\n", true);
 			}
 			log.debug("completed call. Process exit code is: {}", child.exitValue());
 
@@ -207,6 +209,16 @@ public class RekenBoxCaller extends FixedForwardPipe {
 				new File(inputFileName).delete();
 				new File(outputFileName).delete();
 			}
+		}
+	}
+
+	/**
+	 * Please consider using {@link StreamUtil#resourceToString(URL, String, boolean)} instead of relying on files.
+	 */
+	@Deprecated
+	public static String fileToString(String fileName, String endOfLineString, boolean xmlEncode) throws IOException {
+		try (FileReader reader = new FileReader(fileName)) {
+			return StreamUtil.readerToString(reader, endOfLineString, xmlEncode);
 		}
 	}
 
@@ -294,6 +306,4 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	public long getMaxRequestNumber() {
 		return maxRequestNumber;
 	}
-
-
 }

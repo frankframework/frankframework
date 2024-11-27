@@ -20,8 +20,8 @@ import org.springframework.transaction.TransactionException;
 
 public interface IThreadConnectableTransactionManager<T,R> extends PlatformTransactionManager{
 
-	public T getCurrentTransaction() throws TransactionException;
+	T getCurrentTransaction() throws TransactionException;
 
-	public R suspendTransaction(T transaction);
-	public void resumeTransaction(T transaction, R resources);
+	R suspendTransaction(T transaction);
+	void resumeTransaction(T transaction, R resources);
 }

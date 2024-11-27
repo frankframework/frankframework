@@ -17,13 +17,14 @@ package org.frankframework.jms;
 
 import java.util.Map;
 
-import javax.jms.Destination;
-import javax.jms.Message;
+import jakarta.jms.Destination;
+import jakarta.jms.Message;
 
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.IKnowsDeliveryCount;
@@ -60,7 +61,7 @@ import org.frankframework.util.CredentialFactory;
  * <code>transacted</code>="true" for the enclosing Receiver. Do not use jmsTransacted for any new situation.
  *
  * </p><p>
- * Setting {@link #setAcknowledgeMode(String) listener.acknowledgeMode} to "auto" means that messages are allways acknowledged (removed from
+ * Setting {@link #setAcknowledgeMode(AcknowledgeMode) listener.acknowledgeMode} to "auto" means that messages are allways acknowledged (removed from
  * the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
  * when the state of the Adapter equals the success state.
  * The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
@@ -68,7 +69,7 @@ import org.frankframework.util.CredentialFactory;
  * In cases where the client is tolerant of duplicate messages, some enhancement in performance can be achieved using this mode,
  * since a session has lower overhead in trying to prevent duplicate messages.
  * </p>
- * <p>The setting for {@link #setAcknowledgeMode(String) listener.acknowledgeMode} will only be processed if
+ * <p>The setting for {@link #setAcknowledgeMode(AcknowledgeMode) listener.acknowledgeMode} will only be processed if
  * the setting for {@link #setTransacted(boolean) listener.transacted} as well as for
  * {@link #setJmsTransacted(boolean) listener.jmsTransacted} is false.</p>
  *
@@ -79,13 +80,13 @@ import org.frankframework.util.CredentialFactory;
  * whatever it is configured to.</p>
  *
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
- * {@link javax.jms.TextMessage}s and {@link javax.jms.BytesMessage}<br/><br/>
+ * {@link jakarta.jms.TextMessage}s and {@link jakarta.jms.BytesMessage}<br/><br/>
  * </p>
  *
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class PushingJmsListener extends JmsListenerBase implements IPortConnectedListener<Message>, IThreadCountControllable, IKnowsDeliveryCount<Message> {
+public class PushingJmsListener extends AbstractJmsListener implements IPortConnectedListener<Message>, IThreadCountControllable, IKnowsDeliveryCount<Message> {
 
 	private @Getter CacheMode cacheMode;
 	private @Getter long pollGuardInterval = Long.MIN_VALUE;
@@ -128,26 +129,20 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	}
 
 	@Override
-	public void open() throws ListenerException {
-		super.open();
+	public void start() {
+		super.start();
 		jmsConnector.start();
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		try {
 			jmsConnector.stop();
 		} catch (Exception e) {
-			log.warn(getLogPrefix() + "caught exception stopping listener", e);
+			log.warn("{}caught exception stopping listener", getLogPrefix(), e);
 		} finally {
-			super.close();
+			super.stop();
 		}
-	}
-
-
-	@Override
-	public IListenerConnector<Message> getListenerPortConnector() {
-		return jmsConnector;
 	}
 
 	@Override
@@ -218,13 +213,13 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 			// false). Hence when set is has a value of 2 or higher. When not
 			// set a NumberFormatException is thrown.
 			int value = message.getIntProperty("JMSXDeliveryCount");
-			if (log.isDebugEnabled()) log.debug("determined delivery count ["+value+"]");
+			if (log.isDebugEnabled()) log.debug("determined delivery count [{}]", value);
 			return value;
 		} catch (NumberFormatException nfe) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"NumberFormatException in determination of DeliveryCount");
+			if (log.isDebugEnabled()) log.debug("{}NumberFormatException in determination of DeliveryCount", getLogPrefix());
 			return -1;
 		} catch (Exception e) {
-			log.error(getLogPrefix()+"exception in determination of DeliveryCount", e);
+			log.error("{}exception in determination of DeliveryCount", getLogPrefix(), e);
 			return -1;
 		}
 	}

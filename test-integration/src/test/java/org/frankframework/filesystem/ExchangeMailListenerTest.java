@@ -1,19 +1,22 @@
 package org.frankframework.filesystem;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-org.frankframework.core.PipeLine.ExitState;
-		org.frankframework.core.PipeLineResult;
+import org.frankframework.core.PipeLine.ExitState;
+import org.frankframework.core.PipeLineResult;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.receivers.ExchangeMailListener;
+import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAssertions;
-
 import org.frankframework.util.XmlUtils;
 
 public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
@@ -24,7 +27,7 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 	}
 
 	@Test
-	public void testExtractMessageWithAttachments() {
+	public void testExtractMessageWithAttachments() throws Exception {
 		String targetFolder="MessageWithAttachments";
 		String recipient=mailaddress_fancy;
 		String from=recipient;
@@ -33,7 +36,7 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 		configureAndOpen(targetFolder,null);
 
 		Map<String,Object> threadContext=new HashMap<>();
-		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
+		RawMessageWrapper rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 
@@ -47,7 +50,7 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 	}
 
 	@Test
-	public void testExtractMessageWithNestedAttachments() {
+	public void testExtractMessageWithNestedAttachments() throws Exception {
 		String targetFolder="MessageWithNestedAttachments";
 		String recipient=mailaddress_fancy;
 		String from=recipient;
@@ -56,7 +59,7 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 		configureAndOpen(targetFolder,null);
 
 		Map<String,Object> threadContext=new HashMap<>();
-		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
+		RawMessageWrapper rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 
@@ -69,9 +72,8 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 		//TestAssertions.assertXpathValueEquals(subject, message, "/email/subject");
 	}
 	@Test
-	@Ignore
-	public void moveAndCopyToFolders() {
-		String baseFolder=basefolder2;
+	@Disabled
+	public void moveAndCopyToFolders() throws Exception {
 		String targetFolder="FileWithAttachments";
 		String processedFolder = "processedFolder";
 		String logFolder = "logFolder";
@@ -80,7 +82,7 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 //		String filename = "readFile";
 //		String contents = "Tekst om te lezen";
 
-		mailListener.setBaseFolder(baseFolder);
+		mailListener.setBaseFolder(basefolder1);
 		mailListener.setProcessedFolder(processedFolder);
 		mailListener.setLogFolder(logFolder);
 		mailListener.setCreateFolders(true);
@@ -91,9 +93,9 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 //			waitForActionToFinish();
 //		}
 
-		Map<String,Object> threadContext=new HashMap<>();
-		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
-		assertNotNull("no message found", rawMessage);
+		PipeLineSession threadContext=new PipeLineSession();
+		RawMessageWrapper rawMessage = mailListener.getRawMessage(threadContext);
+		assertNotNull(rawMessage, "no message found");
 
 		PipeLineResult plr = new PipeLineResult();
 		plr.setState(ExitState.SUCCESS);

@@ -195,8 +195,8 @@
 		</xs:complexType>
 	</xs:element>
 </xs:schema>
-		<!-- v0.2.1 -->
 		<xsd:schema xmlns="http://nn.nl/XSD/Generic/MessageHeader/2" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://nn.nl/XSD/Generic/MessageHeader/2">
+		<!-- v0.2.1 -->
 	<xsd:element name="MessageHeader" type="MessageHeaderType"/>
 	<xsd:element name="Result" type="ResultType"/>
 	<xsd:complexType name="MessageHeaderType">

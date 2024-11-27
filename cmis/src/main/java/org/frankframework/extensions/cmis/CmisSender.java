@@ -27,7 +27,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+
+import jakarta.annotation.Nonnull;
 
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
@@ -52,6 +53,11 @@ import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisNotSupportedException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
@@ -59,16 +65,19 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.doc.Forward;
 import org.frankframework.doc.Mandatory;
+import org.frankframework.doc.Unsafe;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import org.frankframework.extensions.cmis.server.CmisEvent;
 import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
-import org.frankframework.http.HttpSessionBase;
+import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.senders.SenderWithParametersBase;
+import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.AppConstants;
@@ -77,54 +86,49 @@ import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
-import lombok.Getter;
 
 /**
  * Sender to obtain information from and write to a CMIS application.
  *
- *
  * <p>
- * When <code>action</code>=<code>get</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
+ * When <code>action=get</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
  * </p>
  * <p>
  * <b>Example:</b>
- * <pre><code>
- *   &lt;cmis&gt;
- *      &lt;id&gt;documentId&lt;/id&gt;
- *   &lt;/cmis&gt;
- * </code></pre>
+ * <pre>{@code
+ * <cmis>
+ *     <id>documentId</id>
+ * </cmis>
+ * }</pre>
  * </p>
  * <p>
- * When <code>action</code>=<code>delete</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
- * </p>
- * <p>
- * <b>Example:</b>
- * <pre><code>
- *   &lt;cmis&gt;
- *      &lt;id&gt;documentId&lt;/id&gt;
- *   &lt;/cmis&gt;
- * </code></pre>
- * </p>
- * <p>
- * When <code>action</code>=<code>create</code> the input (xml string) indicates document properties to set. This input is optional.
+ * When <code>action=delete</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
  * </p>
  * <p>
  * <b>Example:</b>
- * <pre><code>
- *   &lt;cmis&gt;
- *      &lt;name&gt;Offerte&lt;/name&gt;
- *      &lt;objectTypeId&gt;NNB_Geldlening&lt;/objectTypeId&gt;
- *      &lt;mediaType&gt;application/pdf&lt;/mediaType&gt;
- *      &lt;properties&gt;
- *         &lt;property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz"&gt;2014-11-27T16:43:01.268+0100&lt;/property&gt;
- *         &lt;property name="ArrivedBy"&gt;HDN&lt;/property&gt;
- *         &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
- *      &lt;/properties&gt;
- *   &lt;/cmis&gt;
- * </code></pre>
+ * <pre>{@code
+ * <cmis>
+ *     <id>documentId</id>
+ * </cmis>
+ * }</pre>
+ * </p>
+ * <p>
+ * When <code>action=create</code> the input (xml string) indicates document properties to set. This input is optional.
+ * </p>
+ * <p>
+ * <b>Example:</b>
+ * <pre>{@code
+ * <cmis>
+ *     <name>Offerte</name>
+ *     <objectTypeId>NNB_Geldlening</objectTypeId>
+ *     <mediaType>application/pdf</mediaType>
+ *     <properties>
+ *         <property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz">2014-11-27T16:43:01.268+0100</property>
+ *         <property name="ArrivedBy">HDN</property>
+ *         <property name="DocumentType">Geldlening</property>
+ *     </properties>
+ * </cmis>
+ * }</pre>
  * </p>
  *
  * <p>
@@ -147,54 +151,54 @@ import lombok.Getter;
  * </table>
  * </p>
  * <p>
- * When <code>action</code>=<code>find</code> the input (xml string) indicates the query to perform.
+ * When <code>action=find</code> the input (xml string) indicates the query to perform.
  * </p>
  * <p>
  * <b>Example:</b>
- * <pre><code>
- *   &lt;query&gt;
- *      &lt;statement&gt;select * from cmis:document&lt;/statement&gt;
- *      &lt;maxItems&gt;10&lt;/maxItems&gt;
- *      &lt;skipCount&gt;0&lt;/skipCount&gt;
- *      &lt;searchAllVersions&gt;true&lt;/searchAllVersions&gt;
- *      &lt;includeAllowableActions&gt;true&lt;/includeAllowableActions&gt;
- *   &lt;/query&gt;
- * </code></pre>
+ * <pre>{@code
+ * <query>
+ *    <statement>select * from cmis:document</statement>
+ *    <maxItems>10</maxItems>
+ *    <skipCount>0</skipCount>
+ *    <searchAllVersions>true</searchAllVersions>
+ *    <includeAllowableActions>true</includeAllowableActions>
+ * </query
+ * }</pre>
  * </p>
  * <p>
- * When <code>action</code>=<code>update</code> the input (xml string) indicates document properties to update.
+ * When <code>action=update</code> the input (xml string) indicates document properties to update.
  * </p>
  * <p>
  * <b>Example:</b>
- * <pre><code>
- *   &lt;cmis&gt;
- *      &lt;id&gt;123456789&lt;/id&gt;
- *      &lt;properties&gt;
- *         &lt;property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz"&gt;2014-11-27T16:43:01.268+0100&lt;/property&gt;
- *         &lt;property name="ArrivedBy"&gt;HDN&lt;/property&gt;
- *         &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
- *      &lt;/properties&gt;
- *   &lt;/cmis&gt;
- * </code></pre>
+ * <pre>{@code
+ * <cmis>
+ *    <id>123456789</id>
+ *    <properties>
+ *       <property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz">2014-11-27T16:43:01.268+0100</property>
+ *       <property name="ArrivedBy">HDN</property>
+ *       <property name="DocumentType">Geldlening</property>
+ *    </properties>
+ * </cmis>
+ * }</pre>
  * </p>
  *
  * <p>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>id</td><td>mandatory property "cmis:objectId" which indicates the document to update</td><td>&nbsp;</td></tr>
- * <tr><td>property</td><td>custom document property to update. See <code>action</code>=<code>create</code> for possible attributes</td><td>&nbsp;</td></tr>
+ * <tr><td>property</td><td>custom document property to update. See <code>action=create</code> for possible attributes</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  *
  * @ff.parameter authAlias overrides authAlias specified by the attribute <code>authAlias</code>
  * @ff.parameter username overrides username specified by the attribute <code>username</code>
  * @ff.parameter password overrides password specified by the attribute <code>password</code>
- * @ff.forward   notFound if the requested object could not be found for actions GET, UPDATE and DELETE
  *
  * @author	Peter Leeuwenburgh
  * @author	Niels Meijer
  */
-public class CmisSender extends SenderWithParametersBase implements HasKeystore, HasTruststore {
+@Forward(name = "notFound", description = "if the requested object could not be found for actions GET, UPDATE and DELETE")
+public class CmisSender extends AbstractSenderWithParameters implements HasKeystore, HasTruststore {
 
 	private static final String NOT_FOUND_FORWARD_NAME="notFound";
 
@@ -224,14 +228,12 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	private @Getter boolean getDocumentContent = true;
 	private @Getter boolean useRootFolder = true;
 	private @Getter String resultOnNotFound;
-
-
 	private boolean runtimeSession = false;
 	private @Getter boolean keepSession = true;
 
 	private CloseableCmisSession globalSession;
 
-	private final @Getter CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this);
+	private final CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this);
 
 	private @Getter String fileSessionKey;
 
@@ -251,7 +253,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 		if (getParameterList() != null) {
 			// Legacy; check if the session should be created runtime (and thus for each call)
-			if(getParameterList().findParameter("authAlias") != null || getParameterList().findParameter("username") != null ) {
+			if(getParameterList().hasParameter("authAlias") || getParameterList().hasParameter("username")) {
 				runtimeSession = true;
 			}
 
@@ -265,7 +267,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		}
 
 		if (runtimeSession) {
-			log.info("{} using runtime session", getLogPrefix());
+			log.info("using runtime session");
 		}
 	}
 
@@ -280,12 +282,10 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		CredentialFactory cf = new CredentialFactory(cfAuthAlias, cfUsername, cdPassword);
 		try {
 			Map<String, String> headers = new HashMap<>();
-			if(pvl != null) {
-				for(Entry<String, Object> entry : pvl.getValueMap().entrySet()) {
-					if(entry.getKey().startsWith(HEADER_PARAM_PREFIX)) {
-						headers.put(entry.getKey(), parseAsString(entry));
-					}
-				}
+			if (pvl != null) {
+				pvl.stream()
+						.filter(pv -> pv.getName().startsWith(HEADER_PARAM_PREFIX))
+						.forEach(pv -> headers.put(pv.getName(), pv.asStringValue()));
 			}
 			return getSessionBuilder().build(cf.getUsername(), cf.getPassword(), headers);
 		}
@@ -294,42 +294,33 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		}
 	}
 
-	private String parseAsString(Entry<String, Object> entry) throws SenderException {
-		try {
-			return Message.asString(entry.getValue());
-		} catch (IOException e) {
-			throw new SenderException("unable to convert parameter ["+entry.getKey()+"] value to String", e);
-		}
-	}
-
 	protected CmisSessionBuilder getSessionBuilder() {
 		return sessionBuilder;
 	}
 
 	@Override
-	public void open() throws SenderException {
+	public void start() {
 		// If we don't need to create the session at JVM runtime, create to test the connection
 		if (!runtimeSession) {
 			try {
 				globalSession = getSessionBuilder().build();
-			}
-			catch (CmisSessionException e) {
-				throw new SenderException("unable to create cmis session", e);
+			} catch (CmisSessionException e) {
+				throw new LifecycleException("unable to create cmis session", e);
 			}
 		}
 	}
 
 	@Override
-	public void close() {
+	public void stop() {
 		if (globalSession != null) {
-			log.debug("{} Closing global CMIS session", getLogPrefix());
+			log.debug("Closing global CMIS session");
 			globalSession.close();
 			globalSession = null;
 		}
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		CloseableCmisSession cmisSession = null;
 		try {
 			ParameterValueList pvl=null;
@@ -337,7 +328,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				try {
 					pvl = getParameterList().getValues(message, session);
 				} catch (ParameterException e) {
-					throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
+					throw new SenderException("Sender [" + getName() + "] caught exception evaluating parameters", e);
 				}
 			}
 
@@ -364,11 +355,11 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 					return sendMessageForDynamicActions(cmisSession, message, session);
 
 				default:
-					throw new SenderException(getLogPrefix() + "unknown action [" + getAction() + "]");
+					throw new SenderException("unknown action [" + getAction() + "]");
 			}
 		} finally {
 			if (cmisSession != null && runtimeSession) {
-				log.debug("{} Closing CMIS runtime session", getLogPrefix());
+				log.debug("Closing CMIS runtime session");
 				session.scheduleCloseOnSessionExit(cmisSession, getLogPrefix());
 				cmisSession = null;
 			}
@@ -377,7 +368,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 	private SenderResult sendMessageForActionGet(Session cmisSession, Message message, PipeLineSession session, ParameterValueList pvl) throws SenderException {
 		if (Message.isEmpty(message)) {
-			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
+			throw new SenderException("input string cannot be empty but must contain a documentId");
 		}
 
 		CmisObject object;
@@ -386,7 +377,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		} catch (CmisObjectNotFoundException e) {
 			String errorMessage= "document with id [" + message + "] not found";
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info(getLogPrefix() + errorMessage, e);
+				log.info("{}", errorMessage, e);
 				return new SenderResult(getResultOnNotFound());
 			}
 			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);
@@ -418,7 +409,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			}
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(propertiesXml);
-			return new SenderResult(cmisXml.toXML());
+			return new SenderResult(cmisXml.asMessage());
 		}
 
 		Message content = getMessageFromContentStream(document.getContentStream());
@@ -475,7 +466,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				processProperties(propertiesElement, props);
 			}
 		} catch (DomBuilderException e) {
-			throw new SenderException(getLogPrefix() + "exception parsing [" + message + "]", e);
+			throw new SenderException("exception parsing [" + message + "]", e);
 		}
 
 		if (StringUtils.isEmpty(mediaType)) {
@@ -495,11 +486,11 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		if (isUseRootFolder()) {
 			Folder folder = cmisSession.getRootFolder();
 			Document document = folder.createDocument(props, contentStream, VersioningState.NONE);
-			log.debug(getLogPrefix() + "created new document [ " + document.getId() + "]");
+			log.debug("created new document [{}]", document.getId());
 			return new SenderResult(document.getId());
 		}
 		ObjectId objectId = cmisSession.createDocument(props, null, contentStream, VersioningState.NONE);
-		log.debug(getLogPrefix() + "created new document [ " + objectId.getId() + "]");
+		log.debug("created new document [{}]", objectId.getId());
 		return new SenderResult(objectId.getId());
 	}
 
@@ -543,25 +534,25 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 						Date date = df.parse(property);
 						calendar.setTime(date);
 					} catch (ParseException e) {
-						throw new SenderException(getLogPrefix() + "exception parsing date [" + property + "] using formatString [" + formatStringAttr + "]", e);
+						throw new SenderException("exception parsing date [" + property + "] using formatString [" + formatStringAttr + "]", e);
 					}
 					props.put(nameAttr, calendar);
 				} else {
-					log.warn(getLogPrefix() + "unknown type ["+ typeAttr +"], assuming 'string'");
+					log.warn("unknown type [{}], assuming 'string'", typeAttr);
 					props.put(nameAttr, property);
 				}
 				if (log.isDebugEnabled()) {
-					log.debug(getLogPrefix() + "set property name ["+ nameAttr +"] value ["+ property +"]");
+					log.debug("set property name [{}] value [{}]", nameAttr, property);
 				}
 			} else {
-				log.debug(getLogPrefix() + "empty property found, ignoring");
+				log.debug("empty property found, ignoring");
 			}
 		}
 	}
 
 	private SenderResult sendMessageForActionDelete(Session cmisSession, Message message, PipeLineSession session) throws SenderException {
 		if (Message.isEmpty(message)) {
-			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
+			throw new SenderException("input string cannot be empty but must contain a documentId");
 		}
 		CmisObject object = null;
 		try {
@@ -569,7 +560,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		} catch (CmisObjectNotFoundException e) {
 			String errorMessage="document with id [" + message + "] not found";
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info(getLogPrefix() + errorMessage, e);
+				log.info(errorMessage, e);
 				return new SenderResult(getResultOnNotFound());
 			}
 			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);
@@ -582,7 +573,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 		}
 		//// You can't delete
-		throw new SenderException(getLogPrefix() + "Document cannot be deleted");
+		throw new SenderException("Document cannot be deleted");
 	}
 
 	private SenderResult sendMessageForActionFind(Session cmisSession, Message message) throws SenderException {
@@ -639,7 +630,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			cmisXml.addAttribute("totalNumItems", q.getTotalNumItems());
 			cmisXml.addSubElement(rowsetXml);
 		}
-		return new SenderResult(cmisXml.toXML());
+		return new SenderResult(cmisXml.asMessage());
 	}
 
 	private CmisObject getCmisObject(Session cmisSession, Message message) throws SenderException, CmisObjectNotFoundException {
@@ -875,7 +866,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				throw new CmisNotSupportedException("Operation not implemented");
 		}
 
-		return new SenderResult(resultXml.toXML());
+		return new SenderResult(resultXml.asMessage());
 	}
 
 	private SenderResult sendMessageForActionUpdate(Session cmisSession, Message message) throws SenderException{
@@ -895,7 +886,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				processProperties(propertiesElement, props);
 			}
 		} catch (DomBuilderException e) {
-			throw new SenderException(getLogPrefix() + "exception parsing [" + message + "]", e);
+			throw new SenderException("exception parsing [" + message + "]", e);
 		}
 
 		CmisObject object = null;
@@ -904,7 +895,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		} catch (CmisObjectNotFoundException e) {
 			String errorMessage="document with id [" + message + "] not found";
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info(getLogPrefix() + errorMessage, e);
+				log.info(errorMessage, e);
 				return new SenderResult(getResultOnNotFound());
 			}
 			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);
@@ -930,7 +921,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 	/**
 	 * READ_TIMEOUT timeout in MS.
-	 * Defaults to 10000, inherited from {@link HttpSessionBase#setTimeout(int) HttpSender#setTimeout}.
+	 * Defaults to 10000, inherited from {@link AbstractHttpSession#setTimeout(int) HttpSender#setTimeout}.
 	 * @ff.default 10000
 	 */
 	public void setTimeout(int i) {
@@ -973,18 +964,18 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		sessionBuilder.setBindingType(bindingType);
 	}
 
-	/** If <code>action</code>=<code>create</code> the sessionKey that contains the file to use. If <code>action</code>=<code>get</code> and <code>getProperties</code>=<code>true</code> the sessionKey to store the result in */
+	/** If <code>action=create</code> the sessionKey that contains the file to use. If <code>action=get</code> and <code>getProperties=true</code> the sessionKey to store the result in */
 	public void setFileSessionKey(String string) {
 		fileSessionKey = string;
 	}
 
-	/** If <code>action</code>=<code>create</code> the session key that contains the name of the file to use. If not set, the value of the property <code>filename</code> from the input message is used */
+	/** If <code>action=create</code> the session key that contains the name of the file to use. If not set, the value of the property <code>filename</code> from the input message is used */
 	public void setFilenameSessionKey(String string) {
 		filenameSessionKey = string;
 	}
 
 	/**
-	 * If <code>action</code>=<code>create</code> the mime type used to store the document when it's not set in the input message by a property
+	 * If <code>action=create</code> the mime type used to store the document when it's not set in the input message by a property
 	 * @ff.default 'application/octet-stream'
 	 */
 	public void setDefaultMediaType(String string) {
@@ -992,7 +983,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	/**
-	 * (Only used when <code>action</code>=<code>get</code>). If true, the content of the document is put to <code>FileSessionKey</code> and all document properties are put in the result as a xml string
+	 * (Only used when <code>action=get</code>). If true, the content of the document is put to <code>FileSessionKey</code> and all document properties are put in the result as a xml string
 	 * @ff.default false
 	 */
 	public void setGetProperties(boolean b) {
@@ -1000,7 +991,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	/**
-	 * (Only used when <code>action</code>=<code>get</code>). If true, the attachment for the document is the sender result or, if set, stored in <code>FileSessionKey</code>. If false, only the properties are returned
+	 * (Only used when <code>action=get</code>). If true, the attachment for the document is the sender result or, if set, stored in <code>fileSessionKey</code>. If false, only the properties are returned
 	 * @ff.default true
 	 */
 	public void setGetDocumentContent(boolean getDocumentContent) {
@@ -1008,15 +999,15 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	/**
-	 * (Only used when <code>action</code>=<code>create</code>). If true, the document is created in the root folder of the repository. Otherwise the document is created in the repository
+	 * (Only used when <code>action=create</code>). If true, the document is created in the root folder of the repository. Otherwise the document is created in the repository
 	 * @ff.default true
 	 */
 	public void setUseRootFolder(boolean b) {
 		useRootFolder = b;
 	}
 
-	/** (Only used when <code>action</code>=<code>get</code>) result returned when no document was found for the given id (e.g. '[not_found]'). If empty then 'notFound' is returned as forward name */
-	@Deprecated
+	/** (Only used when <code>action=get</code>) result returned when no document was found for the given id (e.g. '[not_found]'). If empty then 'notFound' is returned as forward name */
+	@Deprecated(forRemoval = true, since = "7.9.0")
 	@ConfigurationWarning("configure forward 'notFound' instead")
 	public void setResultOnNotFound(String string) {
 		resultOnNotFound = string;
@@ -1154,6 +1145,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		return sessionBuilder.getTrustManagerAlgorithm();
 	}
 
+	@Unsafe
 	@Override
 	public void setVerifyHostname(boolean verifyHostname) {
 		sessionBuilder.setVerifyHostname(verifyHostname);
@@ -1163,6 +1155,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		return sessionBuilder.isVerifyHostname();
 	}
 
+	@Unsafe
 	@Override
 	public void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {
 		sessionBuilder.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
@@ -1172,6 +1165,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		return sessionBuilder.isAllowSelfSignedCertificates();
 	}
 
+	@Unsafe
 	@Override
 	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
 		sessionBuilder.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);

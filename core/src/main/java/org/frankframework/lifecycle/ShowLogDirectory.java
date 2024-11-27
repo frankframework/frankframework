@@ -16,9 +16,12 @@
 package org.frankframework.lifecycle;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusException;
@@ -30,23 +33,36 @@ import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.JsonDirectoryInfo;
+import org.frankframework.util.SpringUtils;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.dsl.IntegrationFlow;
-import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.filter.MessageFilter;
+import org.springframework.integration.handler.MessageHandlerChain;
+import org.springframework.integration.handler.MessageProcessor;
+import org.springframework.integration.handler.MethodInvokingMessageProcessor;
 import org.springframework.integration.handler.ServiceActivatingHandler;
+import org.springframework.integration.selector.MessageSelectorChain;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
 /**
  * Logging should work even when the application failed to start which is why it's not wired through the {@link MessageDispatcher}.
  */
 @IbisInitializer
-public class ShowLogDirectory {
+public class ShowLogDirectory implements ApplicationContextAware {
 
-	private String defaultLogDirectory;
-	private String defaultLogWildcard = AppConstants.getInstance().getProperty("log.viewer.wildcard");
-	private boolean showDirectories = AppConstants.getInstance().getBoolean("log.viewer.showdirectories", true);
-	private int maxItems = AppConstants.getInstance().getInt("log.viewer.maxitems", 500);
+	private final String defaultLogDirectory;
+	private final String defaultLogWildcard = AppConstants.getInstance().getProperty("log.viewer.wildcard");
+	private final boolean showDirectories = AppConstants.getInstance().getBoolean("log.viewer.showdirectories", true);
+	private final int maxItems = AppConstants.getInstance().getInt("log.viewer.maxitems", 500);
+
+	private @Setter @Autowired MessageChannel nullChannel;
+	private @Setter ApplicationContext applicationContext;
 
 	public ShowLogDirectory() {
 		String logdir = AppConstants.getInstance().getProperty("log.dir");
@@ -62,16 +78,30 @@ public class ShowLogDirectory {
 	 */
 	@Bean
 	public IntegrationFlow wireLogging() {
-		return IntegrationFlows.from("frank-management-bus")
-				.filter(MessageDispatcher.headerSelector(BusTopic.LOGGING, BusTopic.TOPIC_HEADER_NAME))
-				.filter(MessageDispatcher.headerSelector(BusAction.GET, BusAction.ACTION_HEADER_NAME))
-				.handle(getHandler()).get();
+		return IntegrationFlow.from("frank-management-bus").handle(getHandler()).get();
 	}
 
 	public MessageHandler getHandler() {
-		ServiceActivatingHandler serviceActivator = new ServiceActivatingHandler(this, "getLogDirectory");
+		MessageSelectorChain selectors = new MessageSelectorChain();
+		selectors.add(MessageDispatcher.headerSelector(BusTopic.LOGGING, BusTopic.TOPIC_HEADER_NAME));
+		selectors.add(MessageDispatcher.headerSelector(BusAction.GET, BusAction.ACTION_HEADER_NAME));
+		MessageFilter filter = new MessageFilter(selectors);
+		filter.setDiscardChannel(nullChannel); // this prevents countless warnings in the log
+
+		List<MessageHandler> handlers = new ArrayList<>();
+		handlers.add(filter);
+
+		MessageProcessor<?> mimp = new MethodInvokingMessageProcessor<>(this, "getLogDirectory");
+		SpringUtils.autowireByType(applicationContext, mimp);
+		ServiceActivatingHandler serviceActivator = new ServiceActivatingHandler(mimp);
 		serviceActivator.setRequiresReply(true);
-		return serviceActivator;
+
+		handlers.add(serviceActivator);
+
+		MessageHandlerChain chain = new MessageHandlerChain();
+		chain.setHandlers(handlers);
+		chain.setComponentName("showLoggingComponent");
+		return chain;
 	}
 
 	/**

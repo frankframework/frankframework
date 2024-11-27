@@ -18,6 +18,9 @@ package org.frankframework.core;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import lombok.Getter;
+
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.FixedResultPipe;
@@ -43,6 +46,7 @@ import org.frankframework.pipes.FixedResultPipe;
  *
  */
 // Looking up the next pipe or exit is done by method AbstractPipe.findForward(String)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class PipeForward {
 
 	public static final String SUCCESS_FORWARD_NAME = "success";

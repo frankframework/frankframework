@@ -15,9 +15,17 @@
 */
 package org.frankframework.receivers;
 
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.doc.Category;
 
-@Category("Advanced")
+/**
+ * This class is an alias for {@link Samba2Listener}, which should be used instead.
+ *
+ * {@inheritDoc}
+ */
+@Deprecated(since = "9.0")
+@ConfigurationWarning("Class SambaListener is an alias for Samba2Listener. Use Samba2Listener instead.")
+@Category(Category.Type.ADVANCED)
 public class SambaListener extends Samba2Listener {
 
 }

@@ -1,2 +1,1 @@
-<request action="delete file">
-</request>
+test1.txt

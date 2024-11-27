@@ -18,9 +18,9 @@ package org.frankframework.http;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IPushingListener;
-import org.frankframework.core.ListenerException;
 import org.frankframework.http.rest.ApiListener;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ServiceDispatcher;
@@ -34,34 +34,34 @@ import org.frankframework.receivers.ServiceDispatcher;
  * @author  Gerrit van Brakel
  * @since   4.4.x (still experimental)
  */
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.8.0")
 public class HttpListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
 	private final @Getter String domain = "Http";
 	private @Getter String serviceName;
 
 	@Override
-	public void open() throws ListenerException {
+	public void start() {
 		if (StringUtils.isEmpty(getServiceName())) {
-			log.debug("registering listener ["+getName()+"] with ServiceDispatcher");
+			log.debug("registering listener [{}] with ServiceDispatcher", getName());
 			ServiceDispatcher.getInstance().registerServiceClient(getName(), this);
 		} else {
-			log.debug("registering listener ["+getName()+"] with ServiceDispatcher by serviceName ["+getServiceName()+"]");
+			log.debug("registering listener [{}] with ServiceDispatcher by serviceName [{}]", getName(), getServiceName());
 			ServiceDispatcher.getInstance().registerServiceClient(getServiceName(), this);
 		}
 
-		super.open();
+		super.start();
 	}
 
 	@Override
-	public void close() {
-		super.close();
+	public void stop() {
+		super.stop();
 
 		if (StringUtils.isEmpty(getServiceName())) {
-			log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher");
+			log.debug("unregistering listener [{}] from ServiceDispatcher", getName());
 			ServiceDispatcher.getInstance().unregisterServiceClient(getName());
 		} else {
-			log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher by serviceName ["+getServiceName()+"]");
+			log.debug("unregistering listener [{}] from ServiceDispatcher by serviceName [{}]", getName(), getServiceName());
 			ServiceDispatcher.getInstance().unregisterServiceClient(getServiceName());
 		}
 	}

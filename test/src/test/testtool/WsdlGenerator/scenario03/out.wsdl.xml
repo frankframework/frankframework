@@ -5,7 +5,7 @@
 		<xsd:schema xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/2" xmlns="http://nn.nl/XSD/CustomerAdministration/Party/Party/1/FindBPPensions/1" xmlns:ns1="http://nn.nl/XSD/Generic/MessageHeader/2" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://nn.nl/XSD/CustomerAdministration/Party/Party/1/FindBPPensions/1">
 			<xsd:import namespace="http://nn.nl/XSD/Generic/MessageHeader/2"/>
 	<!--xsd:import namespace="http://nn.nl/XSD/Generic/MessageHeader/2" schemaLocation="CommonMessageHeader_2.xsd"/-->
-	
+
 	<!--Request-->
 	<xsd:element name="RequestFindBPPensionsREQ" type="RequestFindBPPensionsREQ"/>
 	<xsd:complexType name="RequestFindBPPensionsREQ">
@@ -170,8 +170,8 @@
 		</xsd:sequence>
 	</xsd:complexType>
 </xsd:schema>
-		<!-- v0.2.1 -->
 		<xsd:schema xmlns="http://nn.nl/XSD/Generic/MessageHeader/2" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://nn.nl/XSD/Generic/MessageHeader/2">
+		<!-- v0.2.1 -->
 	<xsd:element name="MessageHeader" type="MessageHeaderType"/>
 	<xsd:element name="Result" type="ResultType"/>
 	<xsd:complexType name="MessageHeaderType">
@@ -391,7 +391,7 @@
 	<xsd:complexType name="TraceHeaderListType">
 		<xsd:annotation>
 			<xsd:documentation>
-				The TraceHeaderList part of the message is used to carry over parts of the header while invoking another operation or service. When a service is composed of multiple other services each header that is received will make up one element in the TraceHeaderList. A new TraceHeader entry is added to the bottom of the list. The newest entry is the lowest entry in a list. 
+				The TraceHeaderList part of the message is used to carry over parts of the header while invoking another operation or service. When a service is composed of multiple other services each header that is received will make up one element in the TraceHeaderList. A new TraceHeader entry is added to the bottom of the list. The newest entry is the lowest entry in a list.
 			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:sequence>
@@ -485,7 +485,7 @@
 			<xsd:element name="Code" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
-						Canonical error code with fixed value. 
+						Canonical error code with fixed value.
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>

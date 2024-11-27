@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPageTree;
@@ -184,7 +185,7 @@ public class PDFUtil {
    */
 	public int getPageCount(String file) throws IOException{
 		logger.fine("file :" + file);
-		PDDocument doc = PDDocument.load(new File(file));
+		PDDocument doc = Loader.loadPDF(new File(file));
 		int pageCount = doc.getNumberOfPages();
 		logger.fine("pageCount :" + pageCount);
 		doc.close();
@@ -234,7 +235,7 @@ public class PDFUtil {
 
 		logger.info("file : " + file + ", startPage: " + startPage + ", endPage: " + endPage);
 
-		PDDocument doc = PDDocument.load(new File(file));
+		PDDocument doc = Loader.loadPDF(new File(file));
 
 		PDFTextStripper localStripper = new PDFTextStripper();
 		if(null!=this.stripper){
@@ -377,7 +378,7 @@ public class PDFUtil {
 	}
 
    /**
-   * This method saves the each page of the pdf as image
+	* This method saves each page of the pdf as image
    */
 	private List<String> saveAsImage(String file, int startPage, int endPage) throws IOException{
 
@@ -392,7 +393,7 @@ public class PDFUtil {
 
 			String fileName = sourceFile.getName().replace(".pdf", "");
 
-			PDDocument document = PDDocument.load(sourceFile);
+			PDDocument document = Loader.loadPDF(sourceFile);
 			PDFRenderer pdfRenderer = new PDFRenderer(document);
 			for (int iPage = this.startPage - 1; iPage < this.endPage; iPage++) {
 				logger.fine("Page No : " + (iPage+1));
@@ -457,8 +458,8 @@ public class PDFUtil {
 
 		double result = 0d;
 
-		try (PDDocument doc1 = PDDocument.load(new File(file1));
-			PDDocument doc2 = PDDocument.load(new File(file2))) {
+		try (PDDocument doc1 = Loader.loadPDF(new File(file1));
+			 PDDocument doc2 = Loader.loadPDF(new File(file2))) {
 
 			PDFRenderer pdfRenderer1 = new PDFRenderer(doc1);
 			PDFRenderer pdfRenderer2 = new PDFRenderer(doc2);
@@ -535,7 +536,7 @@ public class PDFUtil {
 			this.createImageDestinationDirectory(file);
 			String fileName = this.getFileName(file).replace(".pdf", "_resource");
 
-			PDDocument document = PDDocument.load(new File(file));
+			PDDocument document = Loader.loadPDF(new File(file));
 			PDPageTree list = document.getPages();
 
 			this.updateStartAndEndPages(file, startPage, endPage);
@@ -586,7 +587,7 @@ public class PDFUtil {
 
 	private void updateStartAndEndPages(String file, int start, int end) throws IOException{
 
-		PDDocument document = PDDocument.load(new File(file));
+		PDDocument document = Loader.loadPDF(new File(file));
 		int pagecount = document.getNumberOfPages();
 		logger.fine("Page Count : " + pagecount + ", Given start page: " + start + ", Given end page: " + end);
 

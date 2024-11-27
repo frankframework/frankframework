@@ -1,6 +1,6 @@
 <throwable>
   <class>org.frankframework.core.SenderException</class>
-  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-TransactionTimeoutHandlingNonTransacted]: (RequestProcessorException) RequestProcessor [ibis4test-TransactionTimeoutHandlingNonTransacted] caught exception: Pipe [delay] delay interrupted: (InterruptedException) sleep interrupted</message>
+  <message>exception processing message using request processor [ibis4test-TransactionTimeoutHandlingNonTransacted]: (RequestProcessorException) RequestProcessor [ibis4test-TransactionTimeoutHandlingNonTransacted] caught exception: Pipe [delay] delay interrupted: (InterruptedException) sleep interrupted</message>
   <cause>
     <throwable>
       <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>

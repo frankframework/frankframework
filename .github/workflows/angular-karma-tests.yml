@@ -4,14 +4,16 @@ on:
   push:
     paths:
       - 'console/frontend/**'
-      - '.github/workflows/*.yml'
+      - '.github/workflows/angular-karma-tests.yml'
     branches:
       - master
       - '[0-9]+.[0-9]+-release'
+      - 'release/[0-9]+.[0-9]+'
   pull_request:
     branches:
       - master
       - '[0-9]+.[0-9]+-release'
+      - 'release/[0-9]+.[0-9]+'
 
 jobs:
   build:
@@ -26,8 +28,10 @@ jobs:
     - name: Set timezone
       run: sudo timedatectl set-timezone Europe/Amsterdam
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v2
+    - name: Set up Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
 
     - name: Install dependencies
       run: npm install

@@ -27,11 +27,12 @@ import org.apache.http.HttpHost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
+
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.testutil.TestFileUtils;
 
-public abstract class HttpSenderTestBase<S extends HttpSenderBase> extends SenderTestBase<S> {
+public abstract class HttpSenderTestBase<S extends AbstractHttpSender> extends SenderTestBase<S> {
 	private final String BASEDIR = "/Http/Responses/";
 
 	public S getSender() throws Exception {

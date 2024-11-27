@@ -1,32 +1,27 @@
 <div class="row border-bottom">
-  <nav
-    class="navbar navbar-static-top"
-    role="navigation"
-    style="margin-bottom: 0"
-  >
+  <nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0">
     <div class="navbar-header">
       <app-hamburger />
-      <span class="m-r-sm text-muted iaf-info"></span>
+      <span class="m-r-sm text-muted iaf-info">Loading Application...</span>
     </div>
     <ul class="nav navbar-top-links navbar-right">
-      <li class="m-r-sm rating" title="Please rate us!">
-        <i
-          *ngFor="let _ of [1, 2, 3, 4, 5]; let index = index"
-          (click)="openFeedback(index)"
-          (mouseover)="hoverFeedback(index)"
-          (mouseleave)="hoverFeedback(-1)"
-          class="fa fa-star-o rating{{ index }}"
-          aria-hidden="true"
-        ></i>
+      <li title="Star frankframework/frankframework on GitHub">
+        <a
+          class="text-muted"
+          target="_blank"
+          href="https://github.com/frankframework/frankframework"
+          aria-label="Star frankframework/frankframework on GitHub"
+          ><i class="fa fa-github"></i>Star on Github</a
+        >
       </li>
       <li>
-        <span class="m-r-sm text-muted serverTime">{{ serverTime }}</span>
+        <span class="m-r-sm text-muted serverTime">{{ serverTimeService.getCurrentTimeFormatted() }}</span>
       </li>
       <li>
         <span class="m-r-sm stage">{{ dtapStage }}</span>
       </li>
       <li *ngIf="dtapSide !== ''">
-        <span class="m-r-sm stage">({{ dtapSide }})</span>
+        <span class="stage">({{ dtapSide }})</span>
       </li>
       <li ngbDropdown (click)="resetNotificationCount()">
         <a class="count-info" ngbDropdownToggle>
@@ -36,34 +31,51 @@
           }}</span>
         </a>
         <ul class="dropdown-alerts" ngbDropdownMenu>
-          <ng-template
-            ngFor
-            let-message
-            [ngForOf]="notificationList"
-            let-last="last"
-          >
+          <ng-container *ngFor="let message of notificationList; last as last">
             <li ngbDropdownItem>
               <a routerLink="/notifications" [queryParams]="{ id: message.id }">
                 <div>
                   <i class="fa {{ message.icon }} fa-fw"></i>
                   {{ message.title }}
-                  <span
-                    class="pull-right text-muted small"
-                    appTimeSince
-                    [time]="message.time"
-                  ></span>
+                  <span class="pull-right text-muted small" appTimeSince [time]="message.time"></span>
                 </div>
               </a>
             </li>
             <li class="divider" *ngIf="!last"></li>
-          </ng-template>
-          <li class="text-center" *ngIf="notificationList.length <= 0">
-            No notifications
-          </li>
+          </ng-container>
+          <li class="text-center" *ngIf="notificationList.length <= 0">No notifications</li>
         </ul>
       </li>
+      <li *ngIf="clusterMembers.length > 0">
+        <!-- <span>
+          <select
+            class="cluster-member-selector"
+            name="selectedClusterMember"
+            [(ngModel)]="selectedClusterMember"
+            (ngModelChange)="selectClusterMember()">
+            <option
+              *ngFor="let member of clusterMembers"
+              [ngValue]="member"
+              title="{{ member.name }}&#013;{{ member.id }}"
+            >
+              {{ member.address }}
+            </option>
+          </select>
+          <i class="fa fa-chevron-down" aria-hidden="true"></i>
+        </span> -->
+        <select
+          class="cluster-member-selector"
+          name="selectedClusterMember"
+          [(ngModel)]="selectedClusterMember"
+          (ngModelChange)="selectClusterMember()"
+        >
+          <option *ngFor="let member of clusterMembers" [ngValue]="member" [title]="getClusterMemberTitle(member)">
+            {{ member.address }}
+          </option>
+        </select>
+      </li>
       <li *ngIf="userName">{{ userName }}</li>
-      <li *ngIf="loggedin">
+      <li *ngIf="loggedIn">
         <a routerLink="/logout">
           <i title="Logout" class="fa fa-sign-out"></i>
         </a>

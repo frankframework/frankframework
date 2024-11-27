@@ -56,14 +56,7 @@
 
 	<bean name="adapterFlowProcessor" class="org.frankframework.util.flow.FlowDiagramAdapterWrapper" parent="adapterLifecycleWrapper"/>
 
-	<bean
-		name="flowDiagramManager"
-		class="org.frankframework.util.flow.FlowDiagramManager"
-		autowire="no"
-		scope="singleton"
-		lazy-init="true"
-		>
-	</bean>
+	<bean name="flowDiagramManager" class="org.frankframework.util.flow.FlowDiagramManager" lazy-init="true" />
 
 	<bean name="applicationWarnings" class="org.frankframework.configuration.ApplicationWarnings" />
 
@@ -256,6 +249,9 @@
 	>
 		<property name="threadFactory" ref="namedThreadFactory"/>
 		<property name="queueCapacity" value="0"/>
+		<property name="phase" value="-2147483648"/>
+		<property name="acceptTasksAfterContextClose" value="true"/>
+		<property name="waitForTasksToCompleteOnShutdown" value="true"/>
 	</bean>
 
 	<bean

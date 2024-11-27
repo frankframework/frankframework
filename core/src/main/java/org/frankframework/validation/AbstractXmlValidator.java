@@ -25,29 +25,27 @@ import java.util.Map;
 
 import javax.xml.validation.ValidatorHandler;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSModel;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.XmlUtils;
-import org.springframework.context.ApplicationContext;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.helpers.XMLFilterImpl;
-
-import lombok.Getter;
-import lombok.Setter;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.stream.Message;
+import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.XmlUtils;
+import org.springframework.context.ApplicationContext;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.helpers.XMLFilterImpl;
 
 /**
  * baseclass for validating input message against a XML Schema.
@@ -66,14 +64,14 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		VALID_WITH_WARNINGS("valid XML with warnings"),
 		VALID("valid XML");
 
-		private @Getter String event;
+		private final @Getter String event;
 
-		private ValidationResult(String event) {
+		ValidationResult(String event) {
 			this.event = event;
 		}
 	}
 
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter IConfigurationAware owner;
 
@@ -117,7 +115,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 
 	public void start() throws ConfigurationException {
 		if(isStarted()) {
-			log.info("already started " + ClassUtils.nameOf(this));
+			log.info("already started {}", ClassUtils.nameOf(this));
 		}
 
 		started = true;
@@ -129,15 +127,15 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		}
 	}
 
-	public ValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
+	public AbstractValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
 		// clear session variables
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
-			log.debug(logPrefix + " removing contents of sessionKey [" + getReasonSessionKey() + "]");
+			log.debug("{} removing contents of sessionKey [{}]", logPrefix, getReasonSessionKey());
 			session.remove(getReasonSessionKey());
 		}
 
 		if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
-			log.debug(logPrefix + " removing contents of sessionKey [" + getXmlReasonSessionKey() + "]");
+			log.debug("{} removing contents of sessionKey [{}]", logPrefix, getXmlReasonSessionKey());
 			session.remove(getXmlReasonSessionKey());
 		}
 		return null;
@@ -152,7 +150,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	 * @return the result event, e.g. 'valid XML' or 'Invalid XML'
 	 * @throws XmlValidatorException, when configured to do so
 	 */
-	public ValidationResult finalizeValidation(ValidationContext context, PipeLineSession session, Throwable t) throws XmlValidatorException {
+	public ValidationResult finalizeValidation(AbstractValidationContext context, PipeLineSession session, Throwable t) throws XmlValidatorException {
 		XmlValidatorErrorHandler xmlValidatorErrorHandler = context.getErrorHandler();
 		ValidationResult result;
 		if (t != null) {
@@ -172,21 +170,21 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 
 		String fullReasons = xmlValidatorErrorHandler.getReasons();
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
-			log.debug(getLogPrefix(session) + "storing reasons under sessionKey [" + getReasonSessionKey() + "]");
+			log.debug("{}storing reasons under sessionKey [{}]", getLogPrefix(session), getReasonSessionKey());
 			session.put(getReasonSessionKey(), fullReasons);
 		}
 		if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
-			log.debug(getLogPrefix(session) + "storing reasons (in xml format) under sessionKey [" + getXmlReasonSessionKey() + "]");
+			log.debug("{}storing reasons (in xml format) under sessionKey [{}]", getLogPrefix(session), getXmlReasonSessionKey());
 			session.put(getXmlReasonSessionKey(), xmlValidatorErrorHandler.getXmlReasons());
 		}
 		if (isThrowException()) {
 			throw new XmlValidatorException(fullReasons, t);
 		}
-		log.warn(getLogPrefix(session) + "validation failed: " + fullReasons, t);
+		log.warn("{}validation failed: {}", getLogPrefix(session), fullReasons, t);
 		return result;
 	}
 
-	public abstract ValidatorHandler getValidatorHandler(PipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException;
+	public abstract ValidatorHandler getValidatorHandler(PipeLineSession session, AbstractValidationContext context) throws ConfigurationException, PipeRunException;
 	public abstract List<XSModel> getXSModels();
 
 	/**
@@ -195,13 +193,13 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	 * @return ValidationResult
 	 * @throws XmlValidatorException when <code>isThrowException</code> is true and a validationerror occurred.
 	 */
-	public ValidationResult validate(Object input, PipeLineSession session, String logPrefix, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws XmlValidatorException, PipeRunException, ConfigurationException {
-		ValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
+	public ValidationResult validate(Object input, PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws XmlValidatorException, PipeRunException, ConfigurationException {
+		AbstractValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
 		ValidatorHandler validatorHandler = getValidatorHandler(session, context);
 		return validate(input, session, validatorHandler, null, context);
 	}
 
-	public ValidationResult validate(Object input, PipeLineSession session, ValidatorHandler validatorHandler, XMLFilterImpl filter, ValidationContext context) throws XmlValidatorException {
+	public ValidationResult validate(Object input, PipeLineSession session, ValidatorHandler validatorHandler, XMLFilterImpl filter, AbstractValidationContext context) throws XmlValidatorException {
 
 		if (filter != null) {
 			// If a filter is present, connect its output to the context.contentHandler.
@@ -218,7 +216,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		return validate(is, validatorHandler, session, context);
 	}
 
-	public ValidationResult validate(InputSource inputSource, ValidatorHandler validatorHandler, PipeLineSession session, ValidationContext context) throws XmlValidatorException {
+	public ValidationResult validate(InputSource inputSource, ValidatorHandler validatorHandler, PipeLineSession session, AbstractValidationContext context) throws XmlValidatorException {
 		try {
 			XmlUtils.parseXml(inputSource, validatorHandler, context.getErrorHandler());
 		} catch (IOException | SAXException e) {
@@ -226,8 +224,6 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		}
 		return finalizeValidation(context, session, null);
 	}
-
-
 
 	protected String getLogPrefix(PipeLineSession session) {
 		StringBuilder sb = new StringBuilder();

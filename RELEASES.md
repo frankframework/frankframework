@@ -4,32 +4,59 @@ Frank!Framework Release Notes
 [Tags](https://github.com/frankframework/frankframework/releases)
 [JavaDocs](https://javadoc.frankframework.org/)
 
-Upcoming (8.2)
+Upcoming (9.0)
 --------------
-[Commits](https://github.com/frankframework/frankframework/compare/8.1-release...HEAD)
+[Commits](https://github.com/frankframework/frankframework/compare/8.3-release...HEAD)
 
+- The SenderPipe no longer accepts a `Listener`, when using asynchronous messaging (sender/listener combination) please use the `AsyncSenderWithListenerPipe` instead. No other attributes need to be modified!
+- The default `ldap-role-mapping.properties` file and `ldap.auth.<role name>` properties have been removed.
+- Receiver configuration property `maxDeliveries` has been deprecated. Instead, configure `maxRetries`. For backwards compatibility, if you have configured `maxDeliveries` this will set `maxRetries` to the same value. See the Frank!Doc for these properties in the Receiver for more information.
+- Fix the exponential delay after errors in message processing. This feature has not worked for an unknown time. There might be potential problems with transactions having an unexpected timeout due to this increased delay, which could result in an unrecoverable error situation. For this reason the delay is maximum half of the configured transaction timeout duration. However, this might not always be sufficient for each process and the transaction timeout can not always be determined so please watch out for transaction timeout errors that might happen after a number of retries and see the next bullet point for remediation.
+- To avoid the above unexpected transaction timeouts, the maximum delay after errors has been made configurable. This can be configured for the whole configuration with the property `receiver.defaultMaxBackoffDelay`, or per receiver with the attribute `maxBackoffDelay`. The value is in seconds. The default is 100 seconds.
+
+
+8.3.0 - Oct 10th, 2024
+--------------
+[Commits](https://github.com/frankframework/frankframework/compare/v8.2.0...v8.3.0)
+
+- WebServiceListeners now use a different way of returning Multipart Attachments. The old behavior can be restored by setting 'WebServiceListener.backwardsCompatibleMultipartNotation=true'.
+- The `messageType` attribute of IMapListener, ExchangeMailListener, DirectoryListener, FtpFileSystemListener, FtpsFileSystemListener, SambaListener and Samba2Listener is an enum and no longer supports a custom value to search for attributes in the file. This can be achieved by using the `INFO` `messageType` with a xpath expression.
+- The `HttpListener` endpoint has been disabled by default.
+
+8.2.0 - Jul 12th, 2024
+--------------
+[Commits](https://github.com/frankframework/frankframework/compare/v8.1.0...v8.2.0)
+
+Moved to Spring 6 and Spring Boot 3. Requires Jakarta package names.
 Requires JDK 17 or later, tested on JDK 17 and 21.
 Changed default log level from DEBUG to INFO, for environments that are not configured with `dtap.stage` at value: `ACC` or `PRD`. These are by default on WARN level.
 
 ### Non backwards compatible changes
 - Transaction Manager BTM is removed. Switch over to Narayana Transaction Manager.
+- Only supports Tomcat 10.x or later. Tomcat 9.x or lower version, are no longer supported.
+- FileSystemPipes and FileSystemSenders now have new forwards for `fileNotFound`, `folderNotFound`, `fileAlreadyExists`, `folderAlreadyExists`. Some actions, such as removing a non-existing folder, were previously ignored but can now trigger one of these forwards. If such a forward is not defined, then the pipe or sender will go to the `exception` forward or if that is not defined either, trigger an exception, which was previously ignored. Adding the specific exception forward and pointing it to the next pipe will solve this.
+- The `MoveFilePipe` was deprecated for a while and has been removed now. Please use the `LocalFileSystemPipe` if you need to move a file.
+- In the FixedResultPipe, the deprecated `setUseOldSubstitutionStartDelimiter` has been removed. This enforced using the `${..}` syntax, but now only the `?{..}` is supported.
 
-Upcoming (8.1.0) - April 2024
+8.1.0 - May 22nd, 2024
 --------------
-[Commits](https://github.com/frankframework/frankframework/compare/v8.0.0...8.1-release)
+[Commits](https://github.com/frankframework/frankframework/compare/v8.0.0...v8.1.0)
 
 Requires JDK 17 or later, tested on JDK 17 and 21.
 
 ### Non backwards compatible changes
 - Larva package is renamed from `testtool` to `larva`. References inside the Larva property files to the `testtool` package should be updated to larva. Such as: `org.frankframework.testtool.FileSender` -> `org.frankframework.larva.FileSender`. It still works with the old package name in 8.1, as a compatibility feature.
+- CompressPipe pattern attributes have been deprecated, please use the appropriate parameters and resolve the pattern in there instead. The result has now also by default been changed to the file/zip-entry instead of a file location.
+- By default, the Param substitution delimiter has been changed from `${` to `?{` so it's consistent with the `FixedQuerySender`. Backwards compatibility key `useOldSubstitutionStartDelimiter` has been added so minimal change is required during upgrades. Note that when using caches in combination with `diskPersistent="true"` you may need to purge your cache!
 
 8.0.0 - December 23rd, 2023
 --------------
-[Commits](https://github.com/frankframework/frankframework/compare/v7.9-RC1...v7.9.0)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.9-RC1...v8.0.0)
 
 Requires JDK 11 or later, tested on JDK 11, 17 and 21.
 Package `nl.nn.adapterframework` is renamed to `org.frankframework`.
 Removed many deprecated features.
+Inside Larva configuration XML files, the `nl.nn.adapterframework.` package must be replaced with `org.frankframework.`. This is due to the package name change in the framework.
 
 ### Non backwards compatible changes
 - CreateRestViewPipe has been removed. It is no longer possible to open the old (blue) user interface.
@@ -37,7 +64,6 @@ Removed many deprecated features.
 - IbisTester class has been moved from the CORE module to LARVA
 - IteratingPipes with `parallel=true` now throws exceptions. In order to suppress this behaviour please set `ignoreExceptions=true`.
 - Remove support for Maven Jetty plugin
-- Inside Larva configuration XML files, the `nl.nn.adapterframework.` package should be replaced with `org.frankframework.`. This is due to the package name change in the framework. Still works in 8.0 as a compatibility feature.
 
 7.9.1 - March 1st, 2024
 ---
@@ -1239,7 +1265,7 @@ Performance enhancements
 ### Non backwards compatible changes
 
 - Don't add namespace to schema by default when targetNamespace present and default namespace is not. This is probably rarely the case. It doesn't make sense to change the default value in this case (only). Explicitly set addNamespaceToSchema to true when needed
-	- ``src-resolve.4.1: Error resolving component '...'. It was detected that '...' has no namespace, but components with no target namespace are not referenceable from schema document 'null'. If '...' is intended to have a namespace, perhaps a prefix needs to be provided. If it is intended that '...' has no namespace, then an 'import' without a "namespace" attribute should be added to 'null'.``  
+  - ``src-resolve.4.1: Error resolving component '...'. It was detected that '...' has no namespace, but components with no target namespace are not referenceable from schema document 'null'. If '...' is intended to have a namespace, perhaps a prefix needs to be provided. If it is intended that '...' has no namespace, then an 'import' without a "namespace" attribute should be added to 'null'.``  
 - When present remove springIbisTestTool[name].xml and add property ibistesttool.custom=[name] to DeploymentSpecifics.properties. The springIbisTestTool[name].xml should now be present in IAF jars, mail springIbisTestTool[name].xml to Jaco or Peter to double check
 
 
@@ -1422,12 +1448,12 @@ Performance enhancements
 ### Non backwards compatible changes
 
 - The use of 'xsd:import' and 'xsd:include' in xsd files in XmlValidator (and subclasses) has become more strictly.
-	- ~~``sch-props-correct.2: A schema cannot contain two global components with the same name; this schema contains two occurrences of 'http://nn/nl/XSD/Generic/MessageHeader/1, ...'.``  
-	When using the EsbSoapValidator, don't import the CommonMessageHeader xsd in a main xsd but only import the namespace (because this xsd already exists within IAF). For using a deviating CommonMessageHeader xsd, use the SoapValidator.~~
-	- ``src-resolve: Cannot resolve the name 'cmh:Result' to a(n) 'element declaration' component.``  
-	For validating ESB SOAP messages use the EsbSoapValidator and not the XmlValidator.
-	- ``Circural dependencies between schemas.``  
-	Unused imported or included schemas can be ignored by using the validator attributes importedSchemaLocationsToIgnore and importedNamespacesToIgnore.
+  - ~~``sch-props-correct.2: A schema cannot contain two global components with the same name; this schema contains two occurrences of 'http://nn/nl/XSD/Generic/MessageHeader/1, ...'.``  
+  When using the EsbSoapValidator, don't import the CommonMessageHeader xsd in a main xsd but only import the namespace (because this xsd already exists within IAF). For using a deviating CommonMessageHeader xsd, use the SoapValidator.~~
+  - ``src-resolve: Cannot resolve the name 'cmh:Result' to a(n) 'element declaration' component.``  
+  For validating ESB SOAP messages use the EsbSoapValidator and not the XmlValidator.
+  - ``Circural dependencies between schemas.``  
+  Unused imported or included schemas can be ignored by using the validator attributes importedSchemaLocationsToIgnore and importedNamespacesToIgnore.
 - The use of 'xsd:redefine' doesn't work for schemaLocation anymore (still works for schema). It's deprecated in the latest specification (http://www.w3.org/TR/xmlschema11-1/#modify-schema) and difficult to support in WSDL generation.
 - (from RC5) From now all files in the log directory are in lower cases. This can affect applications which are case sensitive and use one or more files from the IBIS log directory.
 

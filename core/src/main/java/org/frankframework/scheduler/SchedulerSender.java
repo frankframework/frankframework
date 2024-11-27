@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2019 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2013, 2015, 2019 Nationale-Nederlanden, 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package org.frankframework.scheduler;
 
 import static org.quartz.JobBuilder.newJob;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -26,19 +28,21 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.senders.SenderWithParametersBase;
+import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
 
 /**
- * Registers a trigger in the scheduler so that the message is send to a javalistener
+ * Registers a trigger in the scheduler so that the message is sent to a {@link org.frankframework.receivers.JavaListener}
  * at a scheduled time.
  *
  * @author John Dekker
  */
-public class SchedulerSender extends SenderWithParametersBase {
+@Deprecated(forRemoval = true, since = "9.0")
+public class SchedulerSender extends AbstractSenderWithParameters {
 
 	private String javaListener;
 	private String cronExpressionPattern;
@@ -70,12 +74,12 @@ public class SchedulerSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public void open() throws SenderException {
-		super.open();
+	public void start() {
+		super.start();
 		try {
 			schedulerHelper.startScheduler();
 		} catch (SchedulerException e) {
-			throw new SenderException("Could not start Scheduler", e);
+			throw new LifecycleException("Could not start Scheduler", e);
 		}
 	}
 
@@ -85,9 +89,9 @@ public class SchedulerSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 		try {
-			String correlationID = session==null ? "" : session.getCorrelationId();
+			String correlationID = session.getCorrelationId();
 			ParameterValueList values = paramList.getValues(message, session);
 			String jobName = getName() + correlationID;
 			String cronExpression = values.get("_cronexpression").asStringValue();
@@ -104,7 +108,6 @@ public class SchedulerSender extends SenderWithParametersBase {
 	}
 
 	private void schedule(String jobName, String cronExpression, String correlationId, String message) throws Exception {
-
 		JobDataMap jobDataMap = new JobDataMap();
 		jobDataMap.put(ServiceJob.JAVALISTENER_KEY, javaListener);
 		jobDataMap.put(ServiceJob.MESSAGE_KEY, message);
@@ -116,9 +119,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 				.build();
 
 		schedulerHelper.scheduleJob(jobDetail, cronExpression);
-		if (log.isDebugEnabled()) {
-			log.debug("SchedulerSender ["+ getName() +"] has send job [" + jobName + "] to the scheduler");
-		}
+		log.debug("SchedulerSender [{}] has send job [{}] to the scheduler", getName(), jobName);
 	}
 
 	/** expression that generates the cron trigger */

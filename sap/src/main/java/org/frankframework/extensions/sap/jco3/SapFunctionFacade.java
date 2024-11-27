@@ -18,13 +18,6 @@ package org.frankframework.extensions.sap.jco3;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.frankframework.extensions.sap.ISapFunctionFacade;
-import org.frankframework.extensions.sap.SapException;
-import org.frankframework.extensions.sap.jco3.handlers.Handler;
-import org.springframework.context.ApplicationContext;
-
 import com.sap.conn.jco.JCoFunction;
 import com.sap.conn.jco.JCoFunctionTemplate;
 import com.sap.conn.jco.JCoParameterList;
@@ -32,12 +25,18 @@ import com.sap.conn.jco.JCoStructure;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.extensions.sap.ISapFunctionFacade;
+import org.frankframework.extensions.sap.SapException;
+import org.frankframework.extensions.sap.jco3.handlers.Handler;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.XmlUtils;
+import org.springframework.context.ApplicationContext;
 /**
  * Wrapper round SAP-functions, either SAP calling Ibis, or Ibis calling SAP.
  *
@@ -51,7 +50,7 @@ import org.frankframework.util.XmlUtils;
 public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	private final @Getter String domain = "SAP";
 	protected static Logger log = LogUtil.getLogger(SapFunctionFacade.class);
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter String name;
@@ -89,14 +88,14 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	public void openFacade() throws SapException {
 		if (sapSystem!=null) {
 			sapSystem.openSystem();
-			log.info("open SapSystem ["+sapSystem.toString()+"]");
+			log.info("open SapSystem [{}]", sapSystem.toString());
 
 			//Something has changed, so remove the cached templates
 			SapSystemDataProvider.getInstance().updateSystem(sapSystem);
 
 			if (StringUtils.isNotEmpty(getFunctionName())) { //Listeners and IdocSenders don't use a functionName
 				ftemplate = getFunctionTemplate(sapSystem, getFunctionName());
-				log.debug("found JCoFunctionTemplate ["+ftemplate.toString()+"]");
+				log.debug("found JCoFunctionTemplate [{}]", ftemplate.toString());
 				try {
 					calculateStaticFieldIndices(ftemplate);
 				} catch (Exception e) {
@@ -163,7 +162,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	 * @param ft
 	 */
 	protected void calculateStaticFieldIndices(JCoFunctionTemplate ft) {
-		log.info("calculate static field indexes for JCOFunctionTemplate ["+(ft!=null?ft.getName():"unknown")+"]");
+		log.info("calculate static field indexes for JCOFunctionTemplate [{}]", ft != null ? ft.getName() : "unknown");
 		if (getRequestFieldIndex()== 0) {
 			if (StringUtils.isEmpty(getRequestFieldName())) {
 				setRequestFieldIndex(-1);
@@ -171,7 +170,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 			} else {
 				if (ft!=null) {
 					setRequestFieldIndex(1+ft.getImportParameterList().indexOf(getRequestFieldName()));
-					log.debug("searching for requestFieldName ["+getRequestFieldName()+"] in JCOFunctionTemplate Parameters ["+ft.getImportParameterList()+"]");
+					log.debug("searching for requestFieldName [{}] in JCOFunctionTemplate Parameters [{}]", getRequestFieldName(), ft.getImportParameterList());
 				}
 			}
 		}
@@ -182,7 +181,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 			} else {
 				if (ft!=null) {
 					setReplyFieldIndex(1+ft.getExportParameterList().indexOf(getReplyFieldName()));
-					log.debug("searching for replyFieldName ["+getReplyFieldName()+"] in JCOFunctionTemplate Parameters ["+ft.getImportParameterList()+"]");
+					log.debug("searching for replyFieldName [{}] in JCOFunctionTemplate Parameters [{}]", getReplyFieldName(), ft.getImportParameterList());
 				}
 			}
 		}
@@ -193,7 +192,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 			} else {
 				if (ft!=null) {
 					setCorrelationIdFieldIndex(1+ft.getImportParameterList().indexOf(getCorrelationIdFieldName()));
-					log.debug("searching for correlationIdFieldName ["+getCorrelationIdFieldName()+"] in JCOFunctionTemplate Parameters ["+ft.getImportParameterList()+"]");
+					log.debug("searching for correlationIdFieldName [{}] in JCOFunctionTemplate Parameters [{}]", getCorrelationIdFieldName(), ft.getImportParameterList());
 				}
 			}
 		}
@@ -208,7 +207,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	 */
 	protected int findFieldIndex(JCoParameterList params, int index, String name) {
 		if(name != null && params != null && log.isTraceEnabled())
-			log.trace("find FieldIndex for name ["+name+"] in JCoParameterList ["+params.toString()+"]");
+			log.trace("find FieldIndex for name [{}] in JCoParameterList [{}]", name, params);
 
 		if (index!=0 || StringUtils.isEmpty(name)) {
 			return index;
@@ -216,7 +215,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 		try {
 			return 1+params.getListMetaData().indexOf(name);
 		} catch (Exception e) {
-			log.warn("["+getName()+"] exception finding FieldIndex for name ["+name+"]", e);
+			log.warn("[{}] exception finding FieldIndex for name [{}]", getName(), name, e);
 			return 0;
 		}
 	}
@@ -334,7 +333,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 		return ftemplate;
 	}
 
-	protected JCoFunctionTemplate getFunctionTemplate(SapSystemImpl sapSystem, String functionName) throws SapException {
+	public JCoFunctionTemplate getFunctionTemplate(SapSystemImpl sapSystem, String functionName) throws SapException {
 		JCoFunctionTemplate functionTemplate;
 		try {
 			functionTemplate = sapSystem.getJcoRepository().getFunctionTemplate(functionName);

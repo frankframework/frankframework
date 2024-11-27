@@ -15,18 +15,17 @@
 */
 package org.frankframework.configuration;
 
-import java.util.Date;
-
-import org.springframework.context.ApplicationContext;
+import java.time.Instant;
 
 import lombok.Getter;
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.lifecycle.ApplicationMessageEvent;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.MessageKeeperMessage;
+import org.springframework.context.ApplicationContext;
 
 public class ConfigurationMessageEvent extends ApplicationMessageEvent {
-	private @Getter MessageKeeperMessage messageKeeperMessage;
+	private final @Getter MessageKeeperMessage messageKeeperMessage;
 
 	public ConfigurationMessageEvent(IConfigurationAware source, String message) {
 		this(source, message, MessageKeeperLevel.INFO);
@@ -58,11 +57,11 @@ public class ConfigurationMessageEvent extends ApplicationMessageEvent {
 		StringBuilder m = new StringBuilder();
 
 		String configurationName = getSource().getName();
-		m.append("Configuration [" + configurationName + "] ");
+		m.append("Configuration [").append(configurationName).append("] ");
 
 		String version = getSource().getVersion();
 		if (version != null) {
-			m.append("[" + version + "] ");
+			m.append("[").append(version).append("] ");
 		}
 
 		m.append(message);
@@ -77,10 +76,9 @@ public class ConfigurationMessageEvent extends ApplicationMessageEvent {
 		}
 
 		if (e != null) {
-			m.append(": " + e.getMessage());
+			m.append(": ").append(e.getMessage());
 		}
 
-		Date date = new Date(getTimestamp());
-		messageKeeperMessage = new MessageKeeperMessage(m.toString(), date, level);
+		messageKeeperMessage = new MessageKeeperMessage(m.toString(), Instant.ofEpochMilli(getTimestamp()), level);
 	}
 }

@@ -22,9 +22,9 @@ import java.io.OutputStream;
 
 public interface CypherInterface
 {
-    public void decrypt(OutputStream decodedStream, byte[] data, String password) throws IOException;
-    public byte[] decrypt(byte[] encryptedData, String password) throws IOException;
-    public void encrypt(OutputStream encodedStream, byte[] data, String password)  throws IOException;
-    public byte[] encrypt(byte[] data, String password)  throws IOException;
-    public String infoLine();
+    void decrypt(OutputStream decodedStream, byte[] data, String password) throws IOException;
+    byte[] decrypt(byte[] encryptedData, String password) throws IOException;
+    void encrypt(OutputStream encodedStream, byte[] data, String password)  throws IOException;
+    byte[] encrypt(byte[] data, String password)  throws IOException;
+    String infoLine();
 }

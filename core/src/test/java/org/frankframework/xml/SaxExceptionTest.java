@@ -12,12 +12,13 @@ import java.io.IOException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.core.SenderException;
 import org.hamcrest.core.IsInstanceOf;
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+
+import org.frankframework.core.SenderException;
 
 public class SaxExceptionTest {
 

@@ -19,8 +19,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
+import jakarta.activation.DataHandler;
+import jakarta.activation.DataSource;
 
 public class SourceClosingDataHandler extends DataHandler {
 

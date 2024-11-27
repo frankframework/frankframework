@@ -21,24 +21,23 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.Resource;
+import org.frankframework.util.XmlUtils;
+import org.frankframework.xml.BodyOnlyFilter;
+import org.frankframework.xml.ClassLoaderURIResolver;
+import org.frankframework.xml.FullXmlFilter;
+import org.frankframework.xml.SaxException;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
-import org.frankframework.util.XmlUtils;
-import org.frankframework.xml.BodyOnlyFilter;
-import org.frankframework.xml.ClassLoaderURIResolver;
-import org.frankframework.xml.FullXmlFilter;
-import org.frankframework.xml.SaxException;
-
 public class IncludeFilter extends FullXmlFilter {
 
-	private final char[] NEWLINE="\n".toCharArray();
+	private static final char[] NEWLINE = "\n".toCharArray();
 
-	private final String targetElement = "Include";
-	private final String targetAttribute = "ref";
+	private static final String TARGET_ELEMENT = "Include";
+	private static final String TARGET_ATTRIBUTE = "ref";
 
 	private final Resource resource;
 	private final ClassLoaderURIResolver uriResolver;
@@ -55,8 +54,8 @@ public class IncludeFilter extends FullXmlFilter {
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-		if (localName.equals(targetElement)) {
-			String ref = atts.getValue(targetAttribute);
+		if (localName.equals(TARGET_ELEMENT)) {
+			String ref = atts.getValue(TARGET_ATTRIBUTE);
 			characters(NEWLINE, 0, 1);
 			comment("start include '"+ref+"'");
 			characters(NEWLINE, 0, 1);
@@ -99,7 +98,7 @@ public class IncludeFilter extends FullXmlFilter {
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		if (localName.equals(targetElement)) {
+		if (localName.equals(TARGET_ELEMENT)) {
 			return;
 		}
 		super.endElement(uri, localName, qName);

@@ -16,19 +16,19 @@
 
 package net.wedjaa.ansible.vault.crypto.data;
 
+import java.io.IOException;
+
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
-
-import java.io.IOException;
 
 public class VaultContent {
 	private static final Log logger = LogFactory.getLog(VaultContent.class);
 
 	private final static String CHAR_ENCODING = "UTF-8";
 
-	private byte[] salt;
-	private byte[] hmac;
-	private byte[] data;
+	private final byte[] salt;
+	private final byte[] hmac;
+	private final byte[] data;
 
 	public VaultContent(byte[] encryptedVault) throws IOException {
 		byte[][] vaultContents = splitData(encryptedVault);

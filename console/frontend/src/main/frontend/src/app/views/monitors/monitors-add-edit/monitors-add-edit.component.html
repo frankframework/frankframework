@@ -21,23 +21,13 @@
             <div class="form-group">
               <label class="col-sm-3 control-label">Monitor</label>
               <div class="col-sm-9">
-                <input
-                  class="form-control m-b"
-                  name="name"
-                  type="text"
-                  [(ngModel)]="monitor"
-                  [disabled]="disabled"
-                />
+                <input class="form-control m-b" name="name" type="text" [(ngModel)]="monitor" [disabled]="disabled" />
               </div>
             </div>
             <div class="form-group">
               <label class="col-sm-3 control-label">Type</label>
               <div class="col-sm-9">
-                <select
-                  class="form-control m-b"
-                  name="triggerType"
-                  [(ngModel)]="trigger.type"
-                >
+                <select class="form-control m-b" name="triggerType" [(ngModel)]="trigger.type">
                   <option value="ALARM">Alarm</option>
                   <option value="CLEARING">Clearing</option>
                 </select>
@@ -45,16 +35,10 @@
             </div>
             <div class="form-group">
               <label class="col-sm-3 control-label"
-                >Events
-                <small><br />(Hint: use ctrl to multi-select)</small></label
+                >Events <small><br />(Hint: use ctrl to multi-select)</small></label
               >
               <div class="col-sm-9">
-                <select
-                  class="form-control m-b"
-                  multiple
-                  name="events"
-                  [(ngModel)]="trigger.events"
-                >
+                <select class="form-control m-b" multiple name="events" [(ngModel)]="trigger.events">
                   <option *ngFor="let event of eventsOptions" [value]="event">
                     {{ event }}
                   </option>
@@ -63,66 +47,32 @@
             </div>
             <div class="form-group">
               <label class="col-sm-3 control-label">Filtering</label>
-              <div class="col-sm-9">
-                <span class="form-control m-b" style="border: none"
-                  ><input
-                    icheck
-                    type="radio"
-                    name="filter"
-                    value="NONE"
-                    [(ngModel)]="trigger.filter"
-                  />
-                  None</span
+              <div class="col-sm-9 filtering">
+                <span class="form-control m-b"
+                  ><input type="radio" name="filter" value="NONE" [(ngModel)]="trigger.filter" /> None</span
                 >
-                <span class="form-control m-b" style="border: none"
-                  ><input
-                    icheck
-                    type="radio"
-                    name="filter"
-                    value="ADAPTER"
-                    [(ngModel)]="trigger.filter"
-                  />
-                  By Adapter</span
+                <span class="form-control m-b"
+                  ><input type="radio" name="filter" value="ADAPTER" [(ngModel)]="trigger.filter" /> By Adapter</span
                 >
-                <span class="form-control m-b" style="border: none"
-                  ><input
-                    icheck
-                    type="radio"
-                    name="filter"
-                    value="SOURCE"
-                    [(ngModel)]="trigger.filter"
-                  />
-                  By Source</span
+                <span class="form-control m-b"
+                  ><input type="radio" name="filter" value="SOURCE" [(ngModel)]="trigger.filter" /> By Source</span
                 >
               </div>
             </div>
             <div class="form-group" *ngIf="trigger.filter === 'ADAPTER'">
               <label class="col-sm-3 control-label">Adapters</label>
               <div class="col-sm-9">
-                <select
-                  class="form-control m-b"
-                  multiple
-                  name="adapter"
-                  [(ngModel)]="trigger.adapters"
-                >
-                  <option
-                    *ngFor="let adapter of getAdaptersForEvents(trigger.events)"
-                  >
+                <select class="form-control m-b" multiple name="adapter" [(ngModel)]="trigger.adapters">
+                  <option *ngFor="let adapter of getAdaptersForEvents(trigger.events)">
                     {{ adapter }}
                   </option>
-                  <!-- not really used?? misses value -->
                 </select>
               </div>
             </div>
             <div class="form-group" *ngIf="trigger.filter === 'SOURCE'">
               <label class="col-sm-3 control-label">Sources</label>
               <div class="col-sm-9">
-                <select
-                  class="form-control m-b"
-                  multiple
-                  name="adapter"
-                  [value]="trigger.changedSources"
-                >
+                <select class="form-control m-b" multiple name="adapter" [value]="trigger.changedSources">
                   <option
                     *ngFor="let source of getSourceForEvents(trigger.events)"
                     [ngValue]="source.adapter + '$$' + source.source"
@@ -135,11 +85,7 @@
             <div class="form-group">
               <label class="col-sm-3 control-label">Severity</label>
               <div class="col-sm-9">
-                <select
-                  class="form-control m-b"
-                  name="severity"
-                  [(ngModel)]="trigger.severity"
-                >
+                <select class="form-control m-b" name="severity" [(ngModel)]="trigger.severity">
                   <option *ngFor="let severity of severities">
                     {{ severity }}
                   </option>
@@ -173,13 +119,7 @@
               </div>
             </div>
             <div class="col-lg-9 m-t-md">
-              <button
-                class="btn btn-primary btn-w-m font-bold"
-                type="submit"
-                (click)="submit(trigger)"
-              >
-                Save
-              </button>
+              <button class="btn btn-primary btn-w-m font-bold" type="submit" (click)="submit(trigger)">Save</button>
             </div>
           </form>
         </div>

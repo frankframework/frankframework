@@ -25,23 +25,23 @@ import org.springframework.jndi.JndiLocatorSupport;
 
 public interface IDataSourceFactory {
 
-	public static final String DEFAULT_DATASOURCE_NAME_PROPERTY = "jdbc.datasource.default";
-	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty(DEFAULT_DATASOURCE_NAME_PROPERTY);
+	String DEFAULT_DATASOURCE_NAME_PROPERTY = "jdbc.datasource.default";
+	String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty(DEFAULT_DATASOURCE_NAME_PROPERTY);
 
 	/**
 	 * Look up a DataSource from the JNDI
 	 */
-	public DataSource getDataSource(String dataSourceName) throws IllegalStateException;
+	DataSource getDataSource(String dataSourceName) throws IllegalStateException;
 
 	/**
 	 * Set the JNDI environment to use for JNDI lookups.
 	 * <p>Uses a Spring JndiTemplate with the given environment settings.
 	 * @see JndiLocatorSupport#setJndiTemplate
 	 */
-	public DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws IllegalStateException;
+	DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws IllegalStateException;
 
 	/**
 	 * Return all known/registered DataSources
 	 */
-	public List<String> getDataSourceNames();
+	List<String> getDataSourceNames();
 }

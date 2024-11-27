@@ -23,10 +23,10 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-import javax.jms.BytesMessage;
-import javax.jms.JMSException;
-import javax.jms.Session;
+import jakarta.annotation.Nonnull;
+import jakarta.jms.BytesMessage;
+import jakarta.jms.JMSException;
+import jakarta.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -98,7 +98,7 @@ public class IMSSender extends MQSender {
 
 	@Nonnull
 	@Override
-	public javax.jms.Message createMessage(Session session, String correlationID, Message message, MessageClass messageClass) throws JMSException {
+	public jakarta.jms.Message createMessage(Session session, String correlationID, Message message, MessageClass messageClass) throws JMSException {
 		BytesMessage bytesMessage;
 		bytesMessage = session.createBytesMessage();
 
@@ -150,12 +150,12 @@ public class IMSSender extends MQSender {
 	}
 
 	@Override
-	public Message extractMessage(javax.jms.Message rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, IOException {
+	public Message extractMessage(jakarta.jms.Message rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, IOException {
 		BytesMessage message;
 		try {
 			message = (BytesMessage)rawMessage;
 		} catch (ClassCastException e) {
-			log.error("message received by listener on ["+ getDestinationName()+ "] was not of type BytesMessage, but ["+rawMessage.getClass().getName()+"]", e);
+			log.error("message received by listener on [{}] was not of type BytesMessage, but [{}]", getDestinationName(), rawMessage.getClass().getName(), e);
 			return null;
 		}
 

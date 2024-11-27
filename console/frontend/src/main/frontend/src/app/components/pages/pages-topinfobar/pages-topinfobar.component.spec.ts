@@ -10,11 +10,7 @@ describe('PagesTopinfobarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        RouterTestingModule,
-        HttpClientTestingModule,
-        PagesTopinfobarComponent,
-      ],
+      imports: [RouterTestingModule, HttpClientTestingModule, PagesTopinfobarComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PagesTopinfobarComponent);

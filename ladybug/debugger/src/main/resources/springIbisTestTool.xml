@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/task    http://www.springframework.org/schema/task/spring-task.xsd
+		http://www.springframework.org/schema/util    http://www.springframework.org/schema/util/spring-util.xsd
+	">
+
+	<!-- scan both the original and overridden configuration -->
+	<context:component-scan base-package="org.frankframework.ladybug" />
+	<context:component-scan base-package="nl.nn.testtool"/>
+
+	<!-- enable (AppConstants) properties -->
+	<context:property-placeholder/>
+
+	<!-- disables the spring boot auto-configure 'wire all filters automatically' magic -->
+	<bean class="org.springframework.boot.web.servlet.FilterRegistrationBean">
+		<property name="filter" ref="springSecurityFilterChain" />
+		<property name="enabled" value="false" />
+	</bean>
+
+	<bean
+		name="lowerCasePropertySourcePostProcessor"
+		class="org.frankframework.configuration.LowerCasePropertySourcePostProcessor"
+		autowire="byName"
+	/>
+
+	<bean class="org.frankframework.ladybug.DeploymentSpecificsBeanPostProcessor"/>
+
+	<bean name="reportGenerator" class="org.frankframework.ladybug.LadybugReportGenerator" />
+	<bean name="pipeDescriptionProvider" class="org.frankframework.ladybug.PipeDescriptionProvider" />
+
+	<!-- used by multiple beans -->
+	<bean name="maxMessageLength" class="java.lang.Integer">
+		<constructor-arg value="${ibistesttool.maxMessageLength}"/>
+	</bean>
+
+	<bean name="testTool" class="nl.nn.testtool.TestTool" autowire="byName">
+		<property name="maxCheckpoints" value="${ibistesttool.maxCheckpoints}" />
+		<property name="maxMemoryUsage" value="${ibistesttool.maxMemoryUsage}" />
+		<property name="maxMessageLength"><ref bean="maxMessageLength" /></property>
+		<property name="regexFilter" value="${ibistesttool.regexFilter}" />
+		<property name="securityLoggerName" value="SEC" />
+		<!-- Prevent threads that didn't start and aren't cancelled from keeping reports in progress -->
+		<property name="closeThreads" value="true" />
+		<property name="closeNewThreadsOnly" value="true" />
+		<!-- See comment on closeReportsTask -->
+		<property name="closeMessageCapturers" value="false" />
+	</bean>
+
+	<import resource="springTestToolCommon.xml"/>
+
+	<bean name="xsltResource" class="java.lang.String">
+		<constructor-arg value="${ibistesttool.reportTransformation}"/>
+	</bean>
+
+	<bean name="messageEncoder" class="org.frankframework.ladybug.MessageEncoder" autowire="byName"/>
+	<bean name="messageCapturer" class="org.frankframework.ladybug.MessageCapturer" autowire="byName"/>
+	<bean name="messageTransformer" class="org.frankframework.ladybug.transform.HideRegexMessageTransformer"/>
+
+
+	<!--
+	Prevent streams for which close method isn't invoked from keeping reports in progress. It would be possible to set
+	closeMessageCapturers to true on the testTool bean but in some cases that would close the report too soon as a
+	stream can be read after the pipeline has finished (e.g. when Base64Pipe is the last pipe Ladybug would show an
+	empty string while test a pipeline would show the correct result).
+	-->
+	<bean name="closeReportsTask" class="nl.nn.testtool.CloseReportsTask" autowire="byName">
+		<property name="messageCapturersTime" value="60000"/>
+		<property name="threadsTime" value="-1"/>
+	</bean>
+
+	<bean name="customReportAction" class="org.frankframework.ibistesttool.larva.ConvertToLarvaAction"/>
+
+	<task:scheduler id="closeReportsScheduler"/>
+
+	<task:scheduled-tasks scheduler="closeReportsScheduler">
+		<task:scheduled ref="closeReportsTask" method="closeReports" fixed-delay="10000"/>
+	</task:scheduled-tasks>
+
+
+	<!-- Storage Profiles -->
+	<beans profile="ladybug.file">
+		<bean name="debugStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName">
+			<property name="name" value="FileDebugStorage"/>
+			<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
+			<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
+		</bean>
+
+		<bean name="testStorage" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName">
+			<property name="name" value="FileTestStorage"/>
+			<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
+			<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
+		</bean>
+	</beans>
+
+	<beans profile="ladybug.database">
+		<bean name="dataSourceName" class="java.lang.String">
+			<constructor-arg value="${ladybug.jdbc.datasource:}"/>
+		</bean>
+
+		<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
+
+		<!-- Find DataSources in resources.yml and JNDI -->
+		<bean id="resourceObjectLocator" class="org.frankframework.jdbc.datasource.ResourceObjectLocator">
+			<property name="resourceFile" value="${ladybug.jdbc.resourceFile:resources.yml}"/>
+		</bean>
+		<bean id="jndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator" />
+		<bean name="dataSourceFactory" class="org.frankframework.ladybug.jdbc.LadyBugDataSourceFactory" autowire="byType" />
+
+		<!-- Bean will be wired to ladybugJdbcTemplate (see Config class of Ladybug) -->
+		<bean name="ladybugDataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
+			<constructor-arg value="${ladybug.jdbc.datasource:}"/>
+		</bean>
+
+		<bean name="debugStorage" class="nl.nn.testtool.storage.database.DatabaseLogStorage" autowire="byName"
+			depends-on="ladybugDatabaseChangelog"
+			>
+			<property name="name" value="DatabaseDebugStorage"/>
+		</bean>
+		<bean name="testStorage" class="nl.nn.testtool.storage.database.DatabaseTestStorage" autowire="byName"
+			depends-on="ladybugDatabaseChangelog"
+			>
+			<property name="name" value="Test"/>
+		</bean>
+
+		<bean
+			name="ladybugDatabaseChangelog"
+			class="liquibase.integration.spring.SpringLiquibase"
+			depends-on="databaseStartupValidator"
+			>
+			<property name="dataSource" ref="ladybugDataSource"/>
+			<property name="changeLog" value="classpath:ladybug/DatabaseChangelog.xml"/>
+			<property name="uiService">
+				<!-- Show "Running Changeset: ..." in System.out -->
+				<value type="liquibase.ui.UIServiceEnum">CONSOLE</value>
+			</property>
+			<property name="showSummaryOutput">
+				<!-- Don't show "UPDATE SUMMARY" in System.out -->
+				<value type="liquibase.UpdateSummaryOutputEnum">LOG</value>
+			</property>
+		</bean>
+
+		<bean name="databaseStartupValidator" class="org.springframework.jdbc.support.DatabaseStartupValidator">
+			<property name="timeout" value="60"/>
+			<property name="interval" value="5"/>
+			<property name="dataSource" ref="ladybugDataSource"/>
+		</bean>
+	</beans>
+
+	<!-- XML only for the test-tab storage. Configured last so it can overwrite either the File or Database Storage. -->
+	<beans profile="ladybug.xml">
+		<bean name="testStorage" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName">
+			<property name="name" value="XmlTestStorage"/>
+			<property name="metadataFile" value="${log.dir}/testtool4${instance.name.lc}.metadata.xml"/><!-- cache file -->
+			<property name="reportsFolder" value="${ibistesttool.directory}"/><!-- contains the reports, may be stored in Git -->
+		</bean>
+	</beans>
+</beans>

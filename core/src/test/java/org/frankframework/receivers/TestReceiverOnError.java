@@ -23,13 +23,25 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.spy;
 
 import java.util.concurrent.TimeUnit;
 
-import org.frankframework.configuration.AdapterManager;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.Adapter;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
@@ -45,28 +57,22 @@ import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.util.RunState;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
+@Tag("slow")
 public class TestReceiverOnError {
 	private static final TestConfiguration configuration = TransactionManagerType.DATASOURCE.create(false);
-	private TestAppender appender;
+	private String adapterName;
+
+	@BeforeEach
+	public void beforeEach(TestInfo testInfo) {
+		adapterName = testInfo.getDisplayName().replace('/', '_');
+	}
 
 	@AfterEach
 	void tearDown() throws Exception {
 		log.info("!> tearing down test");
-		if (appender != null) {
-			TestAppender.removeAppender(appender);
-			appender = null;
-		}
 		configuration.stop();
-		configuration.getBean("adapterManager", AdapterManager.class).close();
 		configuration.getBean("configurationMetrics", MetricsInitializer.class).destroy(); //Meters are cached...
 		log.info("!> Configuration Context for [{}] has been cleaned up.", TransactionManagerType.DATASOURCE);
 	}
@@ -77,8 +83,9 @@ public class TestReceiverOnError {
 
 	private Receiver<String> setupReceiver(MockListenerBase listener) {
 		@SuppressWarnings("unchecked")
-		Receiver<String> receiver = configuration.createBean(Receiver.class);
+		Receiver<String> receiver = spy(configuration.createBean(Receiver.class));
 		configuration.autowireByName(listener);
+		doNothing().when(receiver).suspendReceiverThread(anyInt());
 		receiver.setListener(listener);
 		receiver.setName("receiver");
 		receiver.setStartTimeout(2);
@@ -90,7 +97,7 @@ public class TestReceiverOnError {
 
 	private <M> Adapter setupAdapter(Receiver<M> receiver) throws Exception {
 		Adapter adapter = spy(configuration.createBean(Adapter.class));
-		adapter.setName("ReceiverTestAdapterName");
+		adapter.setName(adapterName);
 
 		doAnswer(invocation -> {
 			Message m = invocation.getArgument(1);
@@ -116,11 +123,11 @@ public class TestReceiverOnError {
 		PipeLineExit ple = new PipeLineExit();
 		ple.setName("success");
 		ple.setState(ExitState.SUCCESS);
-		pl.registerPipeLineExit(ple);
+		pl.addPipeLineExit(ple);
 		adapter.setPipeLine(pl);
 
-		adapter.registerReceiver(receiver);
-		configuration.registerAdapter(adapter);
+		adapter.addReceiver(receiver);
+		configuration.addAdapter(adapter);
 		return adapter;
 	}
 
@@ -170,7 +177,7 @@ public class TestReceiverOnError {
 		assertTrue(System.currentTimeMillis() + 200 > receiver.getLastMessageDate());
 	}
 
-	@ParameterizedTest
+	@ParameterizedTest(name = "{index} - {0}")
 	@CsvSource({
 		"getRawMessageException, Receiver [receiver] caught Exception retrieving message, will continue retrieving messages",
 		"extractMessageException, Receiver [receiver] caught Exception processing message, will continue processing next message",
@@ -181,19 +188,18 @@ public class TestReceiverOnError {
 		Receiver<String> receiver = startReceiver(listener);
 		receiver.setOnError(OnError.CONTINUE); //Luckily we can change this runtime...
 
-		appender = TestAppender.newBuilder().build();
-		TestAppender.addToRootLogger(appender);
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
+			// Act
+			listener.offerMessage(message);
+			await()
+					.atMost(30, TimeUnit.SECONDS)
+					.pollInterval(100, TimeUnit.MILLISECONDS)
+					.until(() -> appender.contains(logMessage));
 
-		// Act
-		listener.offerMessage(message);
-		await()
-			.atMost(30, TimeUnit.SECONDS)
-			.pollInterval(100, TimeUnit.MILLISECONDS)
-			.until(() -> appender.contains(logMessage));
-
-		// Assert the Receiver state
-		assertEquals(RunState.STARTED, receiver.getRunState());
-		assertTrue(System.currentTimeMillis() + 200 > receiver.getLastMessageDate());
+			// Assert the Receiver state
+			assertEquals(RunState.STARTED, receiver.getRunState());
+			assertTrue(System.currentTimeMillis() + 200 > receiver.getLastMessageDate());
+		}
 	}
 
 	@ParameterizedTest
@@ -203,24 +209,23 @@ public class TestReceiverOnError {
 		"processMessageException, Receiver [receiver] exception occurred while processing message, stopping receiver",
 	})
 	public void testPullingListenerWithExceptionAndOnErrorClose(final String message, final String logMessage) throws Exception {
-		MockListenerBase listener = createListener(MockPullingListener.class);
-		Receiver<String> receiver = startReceiver(listener);
-		receiver.setOnError(OnError.CLOSE); //Luckily we can change this runtime...
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
+			MockListenerBase listener = createListener(MockPullingListener.class);
+			Receiver<String> receiver = startReceiver(listener);
+			receiver.setOnError(OnError.CLOSE); //Luckily we can change this runtime...
 
-		appender = TestAppender.newBuilder().build();
-		TestAppender.addToRootLogger(appender);
+			// Act
+			listener.offerMessage(message);
+			await()
+					.atMost(30, TimeUnit.SECONDS)
+					.pollInterval(100, TimeUnit.MILLISECONDS)
+					.until(() -> appender.contains(logMessage));
 
-		// Act
-		listener.offerMessage(message);
-		await()
-			.atMost(30, TimeUnit.SECONDS)
-			.pollInterval(100, TimeUnit.MILLISECONDS)
-			.until(() -> appender.contains(logMessage));
-
-		// Assert the Receiver state
-		waitWhileInState(receiver, RunState.STARTED);
-		waitForState(receiver, RunState.STOPPING, RunState.STOPPED);
-		assertEquals(RunState.STOPPED, receiver.getRunState());
+			// Assert the Receiver state
+			waitWhileInState(receiver, RunState.STARTED);
+			waitForState(receiver, RunState.STOPPING, RunState.STOPPED);
+			assertEquals(RunState.STOPPED, receiver.getRunState());
+		}
 	}
 
 	@Test
@@ -235,6 +240,7 @@ public class TestReceiverOnError {
 		// Assert the Receiver state
 		assertEquals(RunState.STARTED, receiver.getRunState());
 		assertTrue(System.currentTimeMillis() + 200 > receiver.getLastMessageDate());
+		assertEquals(ExitState.ERROR, listener.getLastExitState());
 	}
 
 	@Test
@@ -250,5 +256,6 @@ public class TestReceiverOnError {
 		waitWhileInState(receiver, RunState.STARTED);
 		waitForState(receiver, RunState.STOPPING, RunState.STOPPED);
 		assertEquals(RunState.STOPPED, receiver.getRunState());
+		assertEquals(ExitState.ERROR, listener.getLastExitState());
 	}
 }

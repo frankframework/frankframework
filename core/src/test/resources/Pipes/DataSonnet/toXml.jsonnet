@@ -1,0 +1,5 @@
+{
+  "root": {
+    "my-element": payload
+  }
+}

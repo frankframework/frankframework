@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,49 +15,49 @@
 */
 package org.frankframework.senders;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.collections.map.LRUMap;
+import jakarta.annotation.Nonnull;
+
+import lombok.Getter;
+import lombok.Setter;
+import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.stream.xml.XmlTap;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.ParameterException;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SenderException;
+import org.frankframework.core.SenderResult;
+import org.frankframework.documentbuilder.xml.XmlTap;
+import org.frankframework.jta.IThreadConnectableTransactionManager;
+import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.parameters.IParameter;
+import org.frankframework.parameters.ParameterList;
+import org.frankframework.parameters.ParameterType;
+import org.frankframework.parameters.ParameterValueList;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
+import org.frankframework.threading.IThreadCreator;
+import org.frankframework.threading.ThreadConnector;
+import org.frankframework.threading.ThreadLifeCycleEventListener;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.FileUtils;
+import org.frankframework.util.EnumUtils;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.SkipEmptyTagsFilter;
 import org.frankframework.xml.TransformerFilter;
 import org.frankframework.xml.XmlWriter;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-
-import lombok.Getter;
-import lombok.Setter;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
-import org.frankframework.core.SenderResult;
-import org.frankframework.jta.IThreadConnectableTransactionManager;
-import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.Parameter.ParameterType;
-import org.frankframework.parameters.ParameterList;
-import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.stream.IThreadCreator;
-import org.frankframework.stream.Message;
-import org.frankframework.stream.PathMessage;
-import org.frankframework.stream.StreamingException;
-import org.frankframework.stream.ThreadConnector;
-import org.frankframework.stream.ThreadLifeCycleEventListener;
-import org.frankframework.util.EnumUtils;
 
 /**
  * Perform an XSLT transformation with a specified stylesheet or XPath-expression.
@@ -67,12 +67,12 @@ import org.frankframework.util.EnumUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class XsltSender extends SenderWithParametersBase implements IThreadCreator {
+public class XsltSender extends AbstractSenderWithParameters implements IThreadCreator {
 
 	public final TransformerPool.OutputType DEFAULT_OUTPUT_METHOD= TransformerPool.OutputType.XML;
 	public final TransformerPool.OutputType DEFAULT_XPATH_OUTPUT_METHOD= TransformerPool.OutputType.TEXT;
-	public final boolean DEFAULT_INDENT=false; // some existing ibises expect default for indent to be false
-	public final boolean DEFAULT_OMIT_XML_DECLARATION=false;
+	public static final boolean DEFAULT_INDENT = false; // some existing FF expect default for indent to be false
+	public static final boolean DEFAULT_OMIT_XML_DECLARATION = false;
 
 	private @Getter String styleSheetName;
 	private @Getter String styleSheetNameSessionKey=null;
@@ -107,7 +107,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 		super.configure();
 
 		if(streamingXslt == null) streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, false);
-		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap(transformerPoolMapSize));
+		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap<>(transformerPoolMapSize));
 
 		if(StringUtils.isNotEmpty(getXpathExpression()) && getOutputType()==null) {
 			setOutputType(DEFAULT_XPATH_OUTPUT_METHOD);
@@ -120,16 +120,16 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 			transformerPool = TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !omitXmlDeclaration, getParameterList(), getXsltVersion());
 		}
 		else if(StringUtils.isEmpty(getStyleSheetNameSessionKey())) {
-			throw new ConfigurationException(getLogPrefix()+" one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
+			throw new ConfigurationException("one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
 		}
 
 		if (getXsltVersion()>=2) {
 			ParameterList parameterList = getParameterList();
 			if (parameterList!=null) {
 				for (int i=0; i<parameterList.size(); i++) {
-					Parameter parameter = parameterList.getParameter(i);
+					IParameter parameter = parameterList.getParameter(i);
 					if (parameter.getType()==ParameterType.NODE) {
-						throw new ConfigurationException(getLogPrefix() + "type '"+ParameterType.NODE+" is not permitted in combination with XSLT 2.0, use type '"+ParameterType.DOMDOC+"'");
+						throw new ConfigurationException("type '"+ParameterType.NODE+" is not permitted in combination with XSLT 2.0, use type '"+ParameterType.DOMDOC+"'");
 					}
 				}
 			}
@@ -137,21 +137,21 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 	}
 
 	@Override
-	public void open() throws SenderException {
-		super.open();
+	public void start() {
+		super.start();
 
 		if (transformerPool!=null) {
 			try {
 				transformerPool.open();
 			} catch (Exception e) {
-				throw new SenderException(getLogPrefix()+"cannot start TransformerPool", e);
+				throw new LifecycleException("cannot start TransformerPool", e);
 			}
 		}
 	}
 
 	@Override
-	public void close() throws SenderException {
-		super.close();
+	public void stop() {
+		super.stop();
 
 		if (transformerPool!=null) {
 			transformerPool.close();
@@ -164,22 +164,20 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 		}
 	}
 
-
 	protected ContentHandler filterInput(ContentHandler input, PipeLineSession session) {
 		return input; // TODO might be necessary to do something about namespaceaware
 	}
 
-
 	protected boolean isDisableOutputEscaping(TransformerPool poolToUse) throws TransformerException, IOException {
 		Boolean disableOutputEscaping = getDisableOutputEscaping();
-		if (log.isTraceEnabled()) log.trace("Configured disableOutputEscaping ["+disableOutputEscaping+"]");
+		if (log.isTraceEnabled()) log.trace("Configured disableOutputEscaping [{}]", disableOutputEscaping);
 		if (disableOutputEscaping == null) {
 			disableOutputEscaping = poolToUse.getDisableOutputEscaping();
-			if (log.isTraceEnabled()) log.trace("Detected disableOutputEscaping ["+disableOutputEscaping+"]");
+			if (log.isTraceEnabled()) log.trace("Detected disableOutputEscaping [{}]", disableOutputEscaping);
 		}
 		if (disableOutputEscaping == null) {
 			disableOutputEscaping = false;
-			if (log.isTraceEnabled()) log.trace("Default disableOutputEscaping ["+disableOutputEscaping+"]");
+			if (log.isTraceEnabled()) log.trace("Default disableOutputEscaping [{}]", disableOutputEscaping);
 		}
 		return disableOutputEscaping;
 	}
@@ -203,52 +201,55 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 		return poolToUse;
 	}
 
-	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, File tempFile) throws StreamingException {
+	protected ContentHandler createHandler(Message input, ThreadConnector<Object> threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws TransformerException {
+		ParameterValueList pvl = null;
 		try {
-			ParameterValueList pvl=null;
 			if (paramList!=null) {
 				pvl = paramList.getValues(input, session);
 			}
+		} catch (ParameterException e) {
+			throw new TransformerException("unable to resolve input parameters for transformerHandler", e);
+		}
 
+		try {
 			TransformerPool.OutputType outputType = getOutputType();
-			if (log.isTraceEnabled()) log.trace("Configured outputmethod ["+outputType+"]");
+			if (log.isTraceEnabled()) log.trace("Configured outputmethod [{}]", outputType);
 			if (outputType == null) {
 				String parsedOutputType = poolToUse.getOutputMethod();
 				if (StringUtils.isNotEmpty(parsedOutputType)) {
 					outputType = EnumUtils.parse(TransformerPool.OutputType.class, parsedOutputType);
 				}
-				if (log.isTraceEnabled()) log.trace("Detected outputmethod ["+parsedOutputType+"]");
+				if (log.isTraceEnabled()) log.trace("Detected outputmethod [{}]", parsedOutputType);
 			}
 			if (outputType == null) {
 				outputType = DEFAULT_OUTPUT_METHOD;
-				if (log.isTraceEnabled()) log.trace("Default outputmethod ["+outputType+"]");
+				if (log.isTraceEnabled()) log.trace("Default outputmethod [{}]", outputType);
 			}
 
 			boolean disableOutputEscaping = isDisableOutputEscaping(poolToUse);
 
 			Boolean indentXml = getIndentXml();
-			if (log.isTraceEnabled()) log.trace("Configured indentXml ["+indentXml+"]");
+			if (log.isTraceEnabled()) log.trace("Configured indentXml [{}]", indentXml);
 			if (indentXml==null) {
 				indentXml = poolToUse.getIndent();
-				if (log.isTraceEnabled()) log.trace("Detected indentXml ["+indentXml+"]");
+				if (log.isTraceEnabled()) log.trace("Detected indentXml [{}]", indentXml);
 			}
 			if (indentXml==null) {
 				indentXml = DEFAULT_INDENT;
-				if (log.isTraceEnabled()) log.trace("Default indentXml ["+indentXml+"]");
+				if (log.isTraceEnabled()) log.trace("Default indentXml [{}]", indentXml);
 			}
 
 			if (handler == null || disableOutputEscaping) {
-				XmlWriter xmlWriter = new XmlWriter(Files.newBufferedWriter(tempFile.toPath()));
-				xmlWriter.setCloseWriterOnEndDocument(true);
+				XmlWriter xmlWriter = messageBuilder.asXmlWriter();
 				Boolean omitXmlDeclaration = getOmitXmlDeclaration();
-				if (log.isTraceEnabled()) log.trace("Configured omitXmlDeclaration [" + omitXmlDeclaration + "]");
+				if (log.isTraceEnabled()) log.trace("Configured omitXmlDeclaration [{}]", omitXmlDeclaration);
 				if (outputType == TransformerPool.OutputType.XML) {
 					if (omitXmlDeclaration == null) {
 						omitXmlDeclaration = poolToUse.getOmitXmlDeclaration();
-						if (log.isTraceEnabled()) log.trace("Detected omitXmlDeclaration [" + omitXmlDeclaration + "]");
+						if (log.isTraceEnabled()) log.trace("Detected omitXmlDeclaration [{}]", omitXmlDeclaration);
 						if (omitXmlDeclaration == null) {
 							omitXmlDeclaration = DEFAULT_OMIT_XML_DECLARATION;
-							if (log.isTraceEnabled()) log.trace("Default omitXmlDeclaration [" + omitXmlDeclaration + "]");
+							if (log.isTraceEnabled()) log.trace("Default omitXmlDeclaration [{}]", omitXmlDeclaration);
 						}
 					}
 					xmlWriter.setIncludeXmlDeclaration(!omitXmlDeclaration);
@@ -275,8 +276,8 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 			handler=filterInput(mainFilter, session);
 
 			return handler;
-		} catch (Exception e) {
-			throw new StreamingException(getLogPrefix()+"Exception on creating transformerHandler chain", e);
+		} catch (IOException e) {
+			throw new TransformerException("exception on creating transformerHandler chain", e);
 		}
 	}
 
@@ -290,30 +291,27 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 	 * alternative implementation of send message, that should do the same as the original, but reuses the streaming content handler
 	 */
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
-		if (message == null) {
-			throw new SenderException(getLogPrefix() + "got null input");
-		}
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 
-		try (ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, "sendMessage", threadLifeCycleEventListener, txManager, session) : null) {
+		try (ThreadConnector<Object> threadConnector = streamingXslt ? new ThreadConnector<>(this, "sendMessage", threadLifeCycleEventListener, txManager, session) : null) {
 			TransformerPool poolToUse = getTransformerPoolToUse(session);
-			File tempFile = FileUtils.createTempFile();
-			ContentHandler handler = createHandler(message, threadConnector, session, poolToUse, null, tempFile);
+			MessageBuilder messageBuilder = new MessageBuilder();
+			ContentHandler handler = createHandler(message, threadConnector, session, poolToUse, null, messageBuilder);
 			if (isDebugInput() && log.isDebugEnabled()) {
 				handler = new XmlTap(handler) {
 					@Override
 					public void endDocument() throws SAXException {
 						super.endDocument();
-						log.debug(getLogPrefix() + " xml input [" + getWriter() + "]");
+						log.debug("xml input [{}]", getWriter());
 					}
 				};
 			}
 			XMLReader reader = getXmlReader(session, handler);
 			InputSource source = message.asInputSource();
 			reader.parse(source);
-			return new SenderResult(PathMessage.asTemporaryMessage(tempFile.toPath()));
+			return new SenderResult(messageBuilder.build());
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix() + "Cannot transform input", e);
+			throw new SenderException("Cannot transform input", e);
 		}
 	}
 
@@ -323,11 +321,6 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 	 */
 	public void setStreamingXslt(Boolean streamingActive) {
 		this.streamingXslt = streamingActive;
-	}
-
-	@Override
-	public boolean isSynchronous() {
-		return true;
 	}
 
 	/** Location of stylesheet to apply to the input message */

@@ -19,8 +19,6 @@
 
 	<bean primary="true" name="configurationDigester" class="org.frankframework.testutil.mock.ConfigurationDigesterMock" />
 
-	<bean primary="true" name="jdbcMigrator" class="org.frankframework.testutil.mock.DatabaseMigratorMock" scope="prototype" lazy-init="true" />
-
 	<bean name="eventPublisher" class="org.frankframework.monitoring.EventPublisher" />
 	<bean name="monitorManager" class="org.frankframework.monitoring.MonitorManager" />
 

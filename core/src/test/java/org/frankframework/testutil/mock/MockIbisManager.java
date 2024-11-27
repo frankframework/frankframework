@@ -17,9 +17,10 @@ package org.frankframework.testutil.mock;
 
 import static org.mockito.Mockito.spy;
 
+import org.springframework.context.ApplicationContextAware;
+
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.unmanaged.DefaultIbisManager;
-import org.springframework.context.ApplicationContextAware;
 
 public class MockIbisManager extends DefaultIbisManager implements ApplicationContextAware {
 

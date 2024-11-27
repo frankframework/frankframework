@@ -18,16 +18,16 @@ package org.frankframework.http;
 import java.io.IOException;
 import java.net.URI;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
 
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.Protected;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
@@ -35,7 +35,6 @@ import org.frankframework.util.CredentialFactory;
 
 /**
  * Sender that sends a message via a WebService.
- *
  *
  * @author Gerrit van Brakel
  * @author Niels Meijer
@@ -59,8 +58,8 @@ public class WebServiceSender extends HttpSender {
 
 	private SoapWrapper soapWrapper;
 	private CredentialFactory wsscf=null;
-	private Parameter soapActionParameter;
-	private Parameter serviceNamespaceURIParameter;
+	private IParameter soapActionParameter;
+	private IParameter serviceNamespaceURIParameter;
 
 	public WebServiceSender() {
 		super();
@@ -69,17 +68,12 @@ public class WebServiceSender extends HttpSender {
 	}
 
 	@Override
-	public String getLogPrefix() {
-		return "WebServiceSender ["+getName()+"] to ["+getPhysicalDestinationName()+"] ";
-	}
-
-	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
 		if (isSoap()) {
 			//ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			//String msg = getLogPrefix()+"the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
+			//String msg = "the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
 			//configWarnings.add(log, msg);
 		}
 		soapWrapper = SoapWrapper.getInstance();
@@ -99,7 +93,7 @@ public class WebServiceSender extends HttpSender {
 
 		if (StringUtils.isNotEmpty(getWssAuthAlias()) || StringUtils.isNotEmpty(getWssUserName())) {
 			wsscf = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());
-			log.debug(getLogPrefix()+"created CredentialFactory for username=["+wsscf.getUsername()+"]");
+			log.debug("created CredentialFactory for username=[{}]", wsscf::getUsername);
 		}
 	}
 
@@ -128,16 +122,16 @@ public class WebServiceSender extends HttpSender {
 				soapmsg = message;
 			}
 		} catch (IOException e) {
-			throw new SenderException(getLogPrefix()+"error reading message", e);
+			throw new SenderException("error reading message", e);
 		}
 
-		if (wsscf!=null) {
+		if (wsscf != null) {
 			soapmsg = soapWrapper.signMessage(soapmsg, wsscf.getUsername(), wsscf.getPassword(), isWssPasswordDigest());
 		}
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"SOAPMSG [" + soapmsg + "]");
+		log.debug("SOAPMSG [{}]", soapmsg);
 
 		HttpRequestBase method = super.getMethod(uri, soapmsg, parameters, session);
-		log.debug(getLogPrefix()+"setting SOAPAction header ["+soapActionURI+"]");
+		log.debug("setting SOAPAction header [{}]", soapActionURI);
 		method.setHeader("SOAPAction", soapActionURI);
 		return method;
 	}
@@ -183,13 +177,13 @@ public class WebServiceSender extends HttpSender {
 		super.setMethodType(method);
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.6.0")
 	@ConfigurationWarning("the attribute 'soapActionURI' has been renamed to 'soapAction'")
 	public void setSoapActionURI(String soapAction) {
 		setSoapAction(soapAction);
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.6.0")
 	@ConfigurationWarning("the attribute 'soapActionURIParam' has been renamed to 'soapActionParam'")
 	public void setSoapActionURIParam(String soapActionParam) {
 		setSoapActionParam(soapActionParam);
@@ -206,7 +200,7 @@ public class WebServiceSender extends HttpSender {
 		this.soapActionParam = soapActionParam;
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.6.0")
 	@ConfigurationWarning("the attribute 'encodingStyleURI' has been renamed to 'encodingStyle'")
 	public void setEncodingStyleURI(String encodingStyle) {
 		setEncodingStyle(encodingStyle);
@@ -225,7 +219,7 @@ public class WebServiceSender extends HttpSender {
 		throwApplicationFaults = b;
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.6.0")
 	@ConfigurationWarning("the attribute 'serviceNamespaceURI' has been renamed to 'serviceNamespace'")
 	public void setServiceNamespaceURI(String serviceNamespace) {
 		setServiceNamespace(serviceNamespace);
@@ -236,7 +230,7 @@ public class WebServiceSender extends HttpSender {
 		this.serviceNamespace = serviceNamespace;
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true, since = "7.6.0")
 	@ConfigurationWarning("the attribute 'serviceNamespaceURIParam' has been renamed to 'serviceNamespaceParam'")
 	public void setServiceNamespaceURIParam(String serviceNamespaceParam) {
 		setServiceNamespaceParam(serviceNamespaceParam);

@@ -18,7 +18,7 @@ package org.frankframework.soap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.soap.SOAPConstants;
+import jakarta.xml.soap.SOAPConstants;
 
 import org.frankframework.validation.RootValidation;
 

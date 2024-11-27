@@ -1,34 +1,38 @@
 package org.frankframework.pipes;
 
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.IOException;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.NullSource;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.Parameter.ParameterType;
+import org.frankframework.parameters.ParameterType;
 import org.frankframework.stream.Message;
-import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
+import org.frankframework.testutil.XmlParameterBuilder;
+import org.frankframework.util.CloseUtils;
 
-public class XmlIfTest extends PipeTestBase<XmlIf>{
+public class XmlIfTest extends PipeTestBase<XmlIf> {
 
 	private final String pipeForwardThen = "then";
 	private final String pipeForwardElse = "else";
 	private PipeRunResult pipeRunResult;
 
+	@Override
 	@AfterEach
-	public void tearDown() throws InterruptedException, IOException {
-		if (pipeRunResult != null) pipeRunResult.getResult().close();
+	public void tearDown() {
+		CloseUtils.closeSilently(pipeRunResult);
 	}
 
 	@Override
@@ -36,13 +40,13 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		XmlIf xmlIf = new XmlIf();
 
 		//Add default pipes
-		xmlIf.registerForward(new PipeForward(pipeForwardThen, null));
-		xmlIf.registerForward(new PipeForward(pipeForwardElse, null));
+		xmlIf.addForward(new PipeForward(pipeForwardThen, null));
+		xmlIf.addForward(new PipeForward(pipeForwardElse, null));
 		return xmlIf;
 	}
 
 	@Test
-	void nullXPathExpressionTest() throws Exception{
+	void nullXPathExpressionTest() throws Exception {
 		pipe.setXpathExpression(null);
 		pipe.configure();
 		pipe.start();
@@ -81,22 +85,37 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
 	}
 
-	@Test
-	void emptySessionKeyNullInputTest() throws Exception {
+	@ParameterizedTest
+	@NullSource
+	@EmptySource
+	void emptySessionKeyNullInputTest(String message) throws Exception {
 		pipe.setSessionKey("");
 		configureAndStartPipe();
 
-		pipeRunResult = doPipe(pipe, null, session);
+		pipeRunResult = doPipe(pipe, message, session);
 		assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
 	}
 
 	@Test
-	void invalidXPathExpressionTest() throws Exception {
+	void invalidXMLInputTest() throws Exception {
+		// xpath expression is set, XmlIf treats the input as xml
 		pipe.setXpathExpression("someexpression");
 		configureAndStartPipe();
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "test", session));
-		assertThat(e.getMessage(), Matchers.containsString("cannot evaluate expression"));
+		// but will fail because "test" is not valid xml (SaxParseException wrapped in PipeRunException)
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "test", session));
+		assertThat(e.getMessage(), Matchers.endsWith("Content is not allowed in prolog."));
+	}
+
+	@Test
+	void invalidXPathExpressionTest() throws Exception {
+		// xpath expression is set, but will not match anything in the xml
+		pipe.setXpathExpression("someexpression");
+		configureAndStartPipe();
+
+		// No match, assert the 'else' is returned
+		pipeRunResult = doPipe(pipe, "<test/>", session);
+		assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
 	}
 
 	@Test
@@ -115,6 +134,47 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.start();
 
 		pipeRunResult = doPipe(pipe, "test", session);
+		assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
+	}
+
+	@Test
+	void testInputRegexTest() throws Exception {
+		pipe.setRegex("(hoi)+");
+		pipe.configure();
+		pipe.start();
+
+		String input = "hoihoihoi"; // Note that 'hoi a hoi' input is not a match!
+
+		// Act & Assert 1: Test with matching regex
+		pipeRunResult = doPipe(pipe, input, session);
+		assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
+
+		// Act & Assert 2: Test with non-matching regex
+		pipe.setRegex("(test3)+");
+		pipeRunResult = doPipe(pipe, input, session);
+		assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
+	}
+
+	@Test
+	@Disabled("Current regex implementation does not support multiline input. See #6963")
+	void realWorldMultilineInputRegexTest() throws Exception {
+		pipe.setRegex("(test1)+");
+		pipe.configure();
+		pipe.start();
+
+		String input = """
+				<directory>
+					<file name="test1.txt"/>
+					<file name="test2.txt"/>
+				</directory>""";
+
+		// Act & Assert 1: Test with matching regex
+		pipeRunResult = doPipe(pipe, input, session);
+		assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
+
+		// Act & Assert 2: Test with non-matching regex
+		pipe.setRegex("(test3)+");
+		pipeRunResult = doPipe(pipe, input, session);
 		assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -168,22 +228,11 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	void testWithInvalidThenPipe() throws Exception {
 		String pipeName = "someText";
 		pipe.setThenForwardName(pipeName);
-		pipe.registerForward(new PipeForward(pipeName,null));
+		pipe.addForward(new PipeForward(pipeName, null));
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, "<test123", session);
 		assertEquals(pipeName, pipeRunResult.getPipeForward().getName());
-	}
-
-	@Test
-	void testWithInvalidElsePipe() throws Exception {
-		String pipeName = "someText";
-		pipe.setElseForwardName(pipeName);
-		pipe.registerForward(new PipeForward(pipeName,null));
-		configureAndStartPipe();
-
-		pipeRunResult = doPipe(pipe, "<test123", session);
-		assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
 
 	@Test
@@ -208,7 +257,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	void someXMLInputNotEqualtoExpressionValue() throws Exception {
+	void someXMLInputNotEqualToExpressionValue() throws Exception {
 		pipe.setXpathExpression("/root");
 		pipe.setExpressionValue("test");
 		configureAndStartPipe();
@@ -259,7 +308,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	void xsltVersion1Error() throws Exception {
+	void xsltVersion1Error() {
 		assertThrows(ConfigurationException.class, () -> {
 			pipe.setXpathExpression("number(count(/results/result[contains(@name , lower-case('test'))]))>1");
 			pipe.setXsltVersion(1); //current default
@@ -281,28 +330,25 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	void dummyNamedElsePipe() throws Exception {
+	void dummyNamedElsePipe() {
 		pipe.setXpathExpression("/test");
 		pipe.setElseForwardName("test");
-		configureAndStartPipe();
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "<root>test123</root>", session));
-		assertThat(e.getMessage(), Matchers.containsString("cannot find forward or pipe named [test]"));
+		ConfigurationException configurationException = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
+		assertThat(configurationException.getMessage(), Matchers.endsWith("has no forward with name [test]"));
 	}
 
 	@Test
-	void dummyNamedThenPipe() throws Exception {
+	void dummyNamedThenPipe() {
 		pipe.setXpathExpression("/root");
 		pipe.setThenForwardName("test");
-		configureAndStartPipe();
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "<root>test123</root>", session));
-		assertThat(e.getMessage(), Matchers.containsString("cannot find forward or pipe named [test]"));
+		ConfigurationException configurationException = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
+		assertThat(configurationException.getMessage(), Matchers.endsWith("has no forward with name [test]"));
 	}
 
 	@Test
 	void spaceInputOnValidThenPipeTest() throws Exception {
-		pipe.setThenForwardName("then");
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, " <test1", session);
@@ -310,18 +356,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	void spaceInputOnInvalidThenPipeTest() throws Exception {
-		String pipeName = "test123";
-		pipe.setThenForwardName(pipeName);
-		configureAndStartPipe();
-
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, " <test1", session));
-		assertThat(e.getMessage(), Matchers.endsWith("cannot find forward or pipe named [test123]"));
-	}
-
-	@Test
 	void tabInputOnValidThenPipeTest() throws Exception {
-		pipe.setThenForwardName("then");
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, "	<test1", session);
@@ -329,19 +364,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	void tabInputOnInvalidThenPipeTest() throws Exception {
-		String pipeName = "test1";
-		pipe.setThenForwardName(pipeName);
-		configureAndStartPipe();
-
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "	<test1", session));
-		assertThat(e.getMessage(), Matchers.endsWith("cannot find forward or pipe named [test1]"));
-	}
-
-	@Test
 	void emptyNamespaceDefsTest() {
-		String pipeName = "test1";
-		pipe.setThenForwardName(pipeName);
 		pipe.setXpathExpression("xs:boolean(count(/root/dummy) > 1)");
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
@@ -351,52 +374,46 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	@Test
 	void namespaceDefsTestTrue() throws Exception {
 		String input = "<root><dummy>true</dummy><dummy>true</dummy></root>";
-		String pipeName = "test1";
-		pipe.setThenForwardName(pipeName);
-		pipe.registerForward(new PipeForward(pipeName,null));
+
 		pipe.setXpathExpression("xs:boolean(count(/root/dummy) > 1)");
 		pipe.setNamespaceDefs("xs=http://www.w3.org/2001/XMLSchema");
+
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, input, session);
-		assertEquals(pipeName, pipeRunResult.getPipeForward().getName());
+		assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
 
 	@Test
 	void namespaceDefsTestFalse() throws Exception {
 		String input = "<root><dummy>true</dummy><dummy>true</dummy></root>";
-		String pipeName = "test1";
-		pipe.setElseForwardName(pipeName);
-		pipe.registerForward(new PipeForward(pipeName,null));
+
 		pipe.setXpathExpression("xs:boolean(count(/root/dummy) > 2)");
 		pipe.setNamespaceDefs("xs=http://www.w3.org/2001/XMLSchema");
+
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, input, session);
-		assertEquals(pipeName, pipeRunResult.getPipeForward().getName());
+		assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
 	}
 
 	@Test
-	void namespaceDefsTestEmptyBooleanCheck() throws Exception {
-		String pipeName = "test1";
-		pipe.setElseForwardName(pipeName);
-		pipe.registerForward(new PipeForward(pipeName,null));
+	void namespaceDefsTestEmptyBooleanCheck() {
 		pipe.setXpathExpression("xs:boolean()");
 		pipe.setNamespaceDefs("xs=http://www.w3.org/2001/XMLSchema");
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
-		assertThat(e.getMessage(), Matchers.containsString("could not create transformer from xpathExpression"));
+		assertThat(e.getMessage(), Matchers.containsString("Cannot create TransformerPool for XPath expression"));
 	}
 
-	@Test
-	void testNullInput() throws Exception {
-		String pipeName = "test1";
-		pipe.setElseForwardName(pipeName);
-		pipe.registerForward(new PipeForward(pipeName,null));
+	@ParameterizedTest
+	@NullSource
+	@EmptySource
+	void testNullInput(String message) throws Exception {
 		configureAndStartPipe();
 
-		pipeRunResult = doPipe(pipe, new Message((String)null), session);
-		assertEquals(pipeName, pipeRunResult.getPipeForward().getName());
+		pipeRunResult = doPipe(pipe, new Message(message), session);
+		assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
 	}
 
 	@Test
@@ -405,8 +422,8 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		String thenPipeName = "test2";
 		pipe.setElseForwardName(elsePipeName);
 		pipe.setThenForwardName(thenPipeName);
-		pipe.registerForward(new PipeForward(elsePipeName, null));
-		pipe.registerForward(new PipeForward(thenPipeName, null));
+		pipe.addForward(new PipeForward(elsePipeName, null));
+		pipe.addForward(new PipeForward(thenPipeName, null));
 		pipe.addParameter(new Parameter("param", "value"));
 		pipe.setXpathExpression("contains(/root/test, $param)");
 		String input = "<root><test>value is present</test></root>";
@@ -423,11 +440,11 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		String thenPipeName = "test2";
 		pipe.setElseForwardName(elsePipeName);
 		pipe.setThenForwardName(thenPipeName);
-		pipe.registerForward(new PipeForward(elsePipeName, null));
-		pipe.registerForward(new PipeForward(thenPipeName, null));
-		Parameter p = new Parameter("param", "<root><test>value</test></root>");
-		p.setType(ParameterType.DOMDOC);
-		pipe.addParameter(p);
+		pipe.addForward(new PipeForward(elsePipeName, null));
+		pipe.addForward(new PipeForward(thenPipeName, null));
+		XmlParameterBuilder parameter = XmlParameterBuilder.create("param", "<root><test>value</test></root>")
+				.withType(ParameterType.DOMDOC);
+		pipe.addParameter(parameter);
 		pipe.setXpathExpression("$param/root/test='value'");
 
 		configureAndStartPipe();
@@ -442,15 +459,21 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		String thenPipeName = "test2";
 		pipe.setElseForwardName(elsePipeName);
 		pipe.setThenForwardName(thenPipeName);
-		pipe.registerForward(new PipeForward(elsePipeName, null));
-		pipe.registerForward(new PipeForward(thenPipeName, null));
-		Parameter p = new Parameter("param", "<root><test>value</test></root>");
-		p.setType(ParameterType.DOMDOC);
-		pipe.addParameter(p);
+		pipe.addForward(new PipeForward(elsePipeName, null));
+		pipe.addForward(new PipeForward(thenPipeName, null));
 
-		p = new Parameter("param2", "<root><test>value2</test></root>");
-		p.setType(ParameterType.DOMDOC);
-		pipe.addParameter(p);
+		XmlParameterBuilder parameter1 = XmlParameterBuilder.create()
+				.withName("param")
+				.withValue("<root><test>value</test></root>")
+				.withType(ParameterType.DOMDOC);
+		pipe.addParameter(parameter1);
+
+		XmlParameterBuilder parameter2 = XmlParameterBuilder.create()
+				.withName("param2")
+				.withValue("<root><test>value2</test></root>")
+				.withType(ParameterType.DOMDOC);
+
+		pipe.addParameter(parameter2);
 		pipe.setXpathExpression("$param2/root/test='value2'");
 
 		configureAndStartPipe();
@@ -465,14 +488,14 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		String thenPipeName = "test2";
 		pipe.setElseForwardName(elsePipeName);
 		pipe.setThenForwardName(thenPipeName);
-		pipe.registerForward(new PipeForward(elsePipeName, null));
-		pipe.registerForward(new PipeForward(thenPipeName, null));
-		Parameter p = ParameterBuilder.create("param", "<root><test>value</test></root>").withType(ParameterType.DOMDOC);
-		pipe.addParameter(p);
+		pipe.addForward(new PipeForward(elsePipeName, null));
+		pipe.addForward(new PipeForward(thenPipeName, null));
+		XmlParameterBuilder parameter = XmlParameterBuilder.create("param", "<root><test>value</test></root>").withType(ParameterType.DOMDOC);
+		pipe.addParameter(parameter);
 
-		p = ParameterBuilder.create().withName("param2").withType(ParameterType.DOMDOC);
-		p.setXpathExpression("/request/b");
-		pipe.addParameter(p);
+		parameter = XmlParameterBuilder.create().withName("param2").withType(ParameterType.DOMDOC);
+		parameter.setXpathExpression("/request/b");
+		pipe.addParameter(parameter);
 
 		pipe.setXpathExpression("/request/b=$param2");
 

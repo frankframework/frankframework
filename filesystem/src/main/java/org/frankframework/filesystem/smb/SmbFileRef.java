@@ -15,8 +15,8 @@
 */
 package org.frankframework.filesystem.smb;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -27,8 +27,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class SmbFileRef {
-	private @Getter String filename;
-	private @Getter String folder;
+	private @Nonnull @Getter String filename;
+	private @Nullable @Getter String folder;
 	private @Nullable @Getter @Setter FileAllInformation attributes = null;
 
 	/**
@@ -40,9 +40,9 @@ public class SmbFileRef {
 
 	/**
 	 * @param name A canonical name might be provided, strip the path when present and only use the actual file name.
-	 * @param folder The directory the file. This always has presedence over the canonical path provided by the name.
+	 * @param folder The directory the file. This always has precedence over the canonical path provided by the name.
 	 */
-	public SmbFileRef(@Nonnull String name, String folder) {
+	public SmbFileRef(@Nonnull String name, @Nullable String folder) {
 		setName(name);
 		setFolder(folder);
 	}
@@ -68,7 +68,6 @@ public class SmbFileRef {
 
 	@Override
 	public String toString() {
-		return new StringBuilder("SMBFile name [").append(filename)
-				.append("] in folder [").append(folder).append("]").toString();
+		return "SMBFile name [" + filename + "] in folder [" + folder + "]";
 	}
 }

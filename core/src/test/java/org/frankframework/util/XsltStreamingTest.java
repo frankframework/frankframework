@@ -7,18 +7,20 @@ import java.io.ByteArrayInputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.frankframework.util.TransformerPool.OutputType;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.XMLFilterImpl;
+
+import org.frankframework.util.TransformerPool.OutputType;
 
 public class XsltStreamingTest {
 
@@ -156,7 +158,7 @@ public class XsltStreamingTest {
 		ByteArrayInputStream bais = new ByteArrayInputStream(input.toString().getBytes());
 		Source source = new StreamSource(new LoggingInputStream(bais, sc));
 
-		tp.transform(source, result);
+		tp.transform(source, result, (Map<String,Object>) null);
 		assertTrue(sc.count>2, "switch count ["+sc.count+"] should be larger than 2");
 	}
 }

@@ -19,33 +19,21 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
-import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.http.HttpSessionBase;
-import org.frankframework.task.TimeoutGuard;
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.StreamUtil;
-import org.frankframework.util.StringUtil;
 
 import com.nimbusds.oauth2.sdk.AccessTokenResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationGrant;
@@ -58,20 +46,29 @@ import com.nimbusds.oauth2.sdk.TokenRequest;
 import com.nimbusds.oauth2.sdk.TokenResponse;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
+import com.nimbusds.oauth2.sdk.auth.ClientSecretPost;
 import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.http.HTTPRequest;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 
+import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.task.TimeoutGuard;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.StreamUtil;
+import org.frankframework.util.StringUtil;
+
 public class OAuthAccessTokenManager {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private URI tokenEndpoint;
+	private final URI tokenEndpoint;
 	private final Scope scope;
 	private final CredentialFactory clientCredentialFactory;
 	private final boolean useClientCredentials;
-	private final HttpSessionBase httpSession;
+	private final AbstractHttpSession httpSession;
 	private final int expiryMs;
 	private final AuthenticationType authenticationType;
 
@@ -82,7 +79,7 @@ public class OAuthAccessTokenManager {
 		AUTHENTICATION_HEADER, REQUEST_PARAMETER
 	}
 
-	public OAuthAccessTokenManager(String tokenEndpoint, String scope, CredentialFactory clientCF, boolean useClientCredentials, AuthenticationType authType, HttpSessionBase httpSession, int expiry) throws HttpAuthenticationException {
+	public OAuthAccessTokenManager(String tokenEndpoint, String scope, CredentialFactory clientCF, boolean useClientCredentials, AuthenticationType authType, AbstractHttpSession httpSession, int expiry) throws HttpAuthenticationException {
 		try {
 			this.tokenEndpoint = new URI(tokenEndpoint);
 		} catch (URISyntaxException e) {
@@ -128,9 +125,9 @@ public class OAuthAccessTokenManager {
 	protected TokenRequest createRequest(Credentials credentials) {
 		AuthorizationGrant grant;
 
-		if (useClientCredentials) { //Client authentication is required
+		if (useClientCredentials) { // Client authentication is required
 			grant = new ClientCredentialsGrant();
-		} else { //Client authentication required only for confidential clients
+		} else { // Client authentication required only for confidential clients
 			String username = credentials.getUserPrincipal().getName();
 			Secret password = new Secret(credentials.getPassword());
 			grant = new ResourceOwnerPasswordCredentialsGrant(username, password);
@@ -139,9 +136,21 @@ public class OAuthAccessTokenManager {
 		// The credentials to authenticate the client at the token endpoint
 		ClientID clientID = new ClientID(clientCredentialFactory.getUsername());
 		Secret clientSecret = new Secret(clientCredentialFactory.getPassword());
-		ClientAuthentication clientAuth = new ClientSecretBasic(clientID, clientSecret);
+		ClientAuthentication clientAuthentication = getClientAuthentication(clientID, clientSecret);
 
-		return new TokenRequest(tokenEndpoint, clientAuth, grant, scope);
+		return new TokenRequest(tokenEndpoint, clientAuthentication, grant, scope);
+	}
+
+	private ClientAuthentication getClientAuthentication(ClientID clientID, Secret clientSecret) {
+		if (authenticationType == AuthenticationType.REQUEST_PARAMETER) {
+			// When using request parameter, we need to use ClientSecretPost which will convert the secret to a queryString
+			return new ClientSecretPost(clientID, clientSecret);
+		} else if (authenticationType == AuthenticationType.AUTHENTICATION_HEADER) {
+			// When using authentication header, we need to use ClientSecretBasic because that will set the needed authentication header
+			return new ClientSecretBasic(clientID, clientSecret);
+		}
+
+		throw new IllegalStateException("Illegal authentication type: " + authenticationType);
 	}
 
 	private void parseResponse(HTTPResponse httpResponse) throws HttpAuthenticationException {
@@ -176,12 +185,6 @@ public class OAuthAccessTokenManager {
 		HttpRequestBase apacheHttpRequest;
 		String query = httpRequest.getQuery(); //This is the POST BODY, don't ask me why they called it QUERY...
 
-		if(authenticationType == AuthenticationType.REQUEST_PARAMETER) {
-			List<NameValuePair> clientInfo = new LinkedList<>();
-			clientInfo.add(new BasicNameValuePair("client_id", clientCredentialFactory.getUsername()));
-			clientInfo.add(new BasicNameValuePair("client_secret", clientCredentialFactory.getPassword()));
-			query = StringUtil.concatStrings(query, "&", URLEncodedUtils.format(clientInfo, "UTF-8"));
-		}
 		switch (httpRequest.getMethod()) {
 			case GET:
 				String url = StringUtil.concatStrings(httpRequest.getURL().toExternalForm(), "?", query);
@@ -196,11 +199,12 @@ public class OAuthAccessTokenManager {
 			default:
 				throw new IllegalStateException("Illegal Method, must be GET or POST");
 		}
+
 		httpRequest.getHeaderMap().forEach((k,l) -> l.forEach(v -> apacheHttpRequest.addHeader(k, v)));
 		return apacheHttpRequest;
 	}
 
-	private HTTPResponse convertFromApacheHttpResponse(CloseableHttpResponse apacheHttpResponse) throws HttpAuthenticationException, UnsupportedOperationException, IOException {
+	protected HTTPResponse convertFromApacheHttpResponse(CloseableHttpResponse apacheHttpResponse) throws HttpAuthenticationException, UnsupportedOperationException, IOException {
 		StatusLine statusLine = apacheHttpResponse.getStatusLine();
 
 		String responseBody = null;

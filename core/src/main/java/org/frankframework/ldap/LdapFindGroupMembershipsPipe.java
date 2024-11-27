@@ -24,6 +24,7 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 
 import lombok.Getter;
+
 import org.frankframework.cache.ICache;
 import org.frankframework.cache.ICacheEnabled;
 import org.frankframework.configuration.ConfigurationException;
@@ -59,7 +60,7 @@ import org.frankframework.util.XmlBuilder;
  *
  * @author Gerrit van Brakel
  */
-public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements ICacheEnabled<String,Set<String>> {
+public class LdapFindGroupMembershipsPipe extends AbstractLdapQueryPipe implements ICacheEnabled<String,Set<String>> {
 
 	private @Getter boolean recursiveSearch = true;
 
@@ -111,9 +112,9 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 		Set<String> memberships;
 		try {
 			if (isRecursiveSearch()) {
-				memberships= ldapClient.searchRecursivelyViaAttributes(searchedDN, getBaseDN(), "memberOf");
+				memberships = searchRecursivelyViaAttributes(searchedDN);
 			} else {
-				memberships= ldapClient.searchObjectForMultiValuedAttribute(searchedDN, getBaseDN(), "memberOf");
+				memberships = searchObjectForMultiValuedAttribute(searchedDN);
 			}
 			XmlBuilder result = new XmlBuilder("ldap");
 			result.addSubElement("entryName", searchedDN);
@@ -125,10 +126,18 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 				attribute.setValue(membership,true);
 				attributes.addSubElement(attribute);
 			}
-			return new PipeRunResult(getSuccessForward(), result.toXML());
+			return new PipeRunResult(getSuccessForward(), result.asMessage());
 		} catch (NamingException e) {
 			throw new PipeRunException(this, "exception on ldap lookup", e);
 		}
+	}
+
+	public Set<String> searchRecursivelyViaAttributes(String searchedDN) throws NamingException {
+		return ldapClient.searchRecursivelyViaAttributes(searchedDN, getBaseDN(), "memberOf");
+	}
+
+	public Set<String> searchObjectForMultiValuedAttribute(String searchedDN) throws NamingException {
+		return ldapClient.searchObjectForMultiValuedAttribute(searchedDN, getBaseDN(), "memberOf");
 	}
 
 

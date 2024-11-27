@@ -1,8 +1,8 @@
 package org.frankframework.testutil;
 
-import org.frankframework.core.IScopeProvider;
-
 import lombok.Getter;
+
+import org.frankframework.core.IScopeProvider;
 
 public class TestScopeProvider implements IScopeProvider {
 

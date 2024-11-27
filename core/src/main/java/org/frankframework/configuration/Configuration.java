@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,29 +19,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
-import org.frankframework.configuration.extensions.SapSystems;
-import org.frankframework.core.Adapter;
-import org.frankframework.core.IConfigurable;
-import org.frankframework.doc.Protected;
-import org.frankframework.jdbc.migration.DatabaseMigratorBase;
-import org.frankframework.jms.JmsRealm;
-import org.frankframework.jms.JmsRealmFactory;
-import org.frankframework.lifecycle.ConfigurableLifecycle;
-import org.frankframework.lifecycle.LazyLoadingEventListener;
-import org.frankframework.lifecycle.SpringContextScope;
-import org.frankframework.monitoring.MonitorManager;
-import org.frankframework.receivers.Receiver;
-import org.frankframework.scheduler.JobDef;
-import org.frankframework.scheduler.job.IJob;
-import org.frankframework.scheduler.job.Job;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
-import org.frankframework.util.RunState;
-import org.frankframework.util.flow.FlowDiagramManager;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
@@ -58,6 +40,27 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
+import org.frankframework.configuration.extensions.SapSystems;
+import org.frankframework.core.Adapter;
+import org.frankframework.core.IConfigurable;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.doc.Protected;
+import org.frankframework.jms.JmsRealm;
+import org.frankframework.jms.JmsRealmFactory;
+import org.frankframework.lifecycle.ConfigurableLifecycle;
+import org.frankframework.lifecycle.LazyLoadingEventListener;
+import org.frankframework.lifecycle.SpringContextScope;
+import org.frankframework.monitoring.MonitorManager;
+import org.frankframework.receivers.Receiver;
+import org.frankframework.scheduler.AbstractJobDef;
+import org.frankframework.scheduler.job.IJob;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
+import org.frankframework.util.RunState;
+
 /**
  * Container of {@link Adapter Adapters} that belong together.
  * A configuration may be deployed independently from other configurations.
@@ -71,6 +74,7 @@ import lombok.Setter;
  *
  * @author Johan Verrips
  */
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware, ConfigurableLifecycle {
 	protected Logger log = LogUtil.getLogger(this);
 	private static final Logger secLog = LogUtil.getLogger("SEC");
@@ -79,8 +83,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private Boolean autoStart = null;
 	private final boolean enabledAutowiredPostProcessing = false;
 
-	private @Getter @Setter AdapterManager adapterManager; //We have to manually inject the AdapterManager bean! See refresh();
-	private @Getter ScheduleManager scheduleManager; //We have to manually inject the ScheduleManager bean! See refresh();
+	private @Getter @Setter AdapterManager adapterManager; // We have to manually inject the AdapterManager bean! See refresh();
+	private @Getter ScheduleManager scheduleManager; // We have to manually inject the ScheduleManager bean! See refresh();
 
 	private @Getter RunState state = RunState.STOPPED;
 
@@ -93,11 +97,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private @Getter ConfigurationException configurationException = null;
 
 	public Configuration() {
-		setConfigLocation(SpringContextScope.CONFIGURATION.getContextFile()); //Don't call the super(..), it will trigger a refresh.
+		setConfigLocation(SpringContextScope.CONFIGURATION.getContextFile()); // Don't call the super(..), it will trigger a refresh.
 	}
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) throws BeansException {
 		setParent(applicationContext);
 	}
 
@@ -112,33 +116,33 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 */
 	@Override
 	public void afterPropertiesSet() {
-		if(!(getClassLoader() instanceof IConfigurationClassLoader)) {
+		if (!(getClassLoader() instanceof IConfigurationClassLoader)) {
 			throw new IllegalStateException("No IConfigurationClassLoader set");
 		}
-		if(ibisManager == null) {
+		if (ibisManager == null) {
 			throw new IllegalStateException("No IbisManager set");
 		}
-		if(StringUtils.isEmpty(getVersion())) {
+		if (StringUtils.isEmpty(getVersion())) {
 			log.info("unable to determine [configuration.version] for configuration [{}]", this::getName);
 		} else {
 			log.debug("configuration [{}] found currentConfigurationVersion [{}]", this::getName, this::getVersion);
 		}
 
-		if(StringUtils.isNotEmpty(AppConstants.getInstance().getProperty("frankframework-ladybug.version"))) {
-			this.getEnvironment().addActiveProfile("aop"); //Makes this configurable depending on if the ladybug is present on the classpath.
+		if (StringUtils.isNotEmpty(AppConstants.getInstance().getProperty("frankframework-ladybug-debugger.version"))) {
+			this.getEnvironment().addActiveProfile("aop"); // Makes this configurable depending on if the ladybug is present on the classpath.
 		}
 
-		super.afterPropertiesSet(); //Triggers a context refresh
+		super.afterPropertiesSet(); // Triggers a context refresh
 
-		if(enabledAutowiredPostProcessing) {
-			//Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
+		if (enabledAutowiredPostProcessing) {
+			// Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
 			AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
 			postProcessor.setAutowiredAnnotationType(Autowired.class);
 			postProcessor.setBeanFactory(getBeanFactory());
 			getBeanFactory().addBeanPostProcessor(postProcessor);
 		}
 
-		ibisManager.addConfiguration(this); //Only if successfully refreshed, add the configuration
+		ibisManager.addConfiguration(this); // Only if successfully refreshed, add the configuration
 		log.info("initialized Configuration [{}] with ClassLoader [{}]", this::toString, this::getClassLoader);
 	}
 
@@ -178,7 +182,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void start() {
 		log.info("starting configuration [{}]", this::getName);
-		if(!isConfigured()) {
+		if (!isConfigured()) {
 			throw new IllegalStateException("cannot start configuration that's not configured");
 		}
 
@@ -187,8 +191,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/*
-	 * Opposed to close you do not need to reconfigure the configuration.
-	 * Allows you to stop and start Configurations.
+	 * Opposed to close you do not need to reconfigure the configuration. Allows you to stop and start Configurations.
 	 */
 	@Override
 	public void stop() {
@@ -207,71 +210,41 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void configure() throws ConfigurationException {
 		log.info("configuring configuration [{}]", this::getId);
-		if(getName().contains("/")) {
-			throw new ConfigurationException("It is not allowed to have '/' in configuration name ["+getName()+"]");
+		if (getName().contains("/")) {
+			throw new ConfigurationException("It is not allowed to have '/' in configuration name [" + getName() + "]");
 		}
 		state = RunState.STARTING;
 		long start = System.currentTimeMillis();
 
 		try {
-			runMigrator();
-
 			ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 			configurationDigester.digest();
 
-			generateConfigurationFlow();
-
-			//Trigger a configure on all Lifecycle beans
+			// Trigger a configure on all (Configurable) Lifecycle beans
 			LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
-			if(lifecycle instanceof ConfigurableLifecycle configurableLifecycle) {
-				configurableLifecycle.configure();
+			if (!(lifecycle instanceof ConfigurableLifecycle configurableLifecycle)) {
+				throw new ConfigurationException("wrong lifecycle processor found, unable to configure beans");
 			}
+
+			configurableLifecycle.configure();
 		} catch (ConfigurationException e) {
 			state = RunState.STOPPED;
-			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; "+ e.getMessage()));
+			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; " + e.getMessage()));
+			applicationLog.info("Configuration [{}] [{}] was not able to startup", getName(), getVersion());
 			throw e;
 		}
 		configured = true;
 
 		String msg;
-		if (isAutoStart()) {
+		if (isAutoStartup()) {
 			start();
 			msg = "startup in " + (System.currentTimeMillis() - start) + " ms";
-		}
-		else {
+		} else {
 			msg = "configured in " + (System.currentTimeMillis() - start) + " ms";
 		}
 		secLog.info("Configuration [{}] [{}] {}", getName(), getVersion(), msg);
 		applicationLog.info("Configuration [{}] [{}] {}", getName(), getVersion(), msg);
 		publishEvent(new ConfigurationMessageEvent(this, msg));
-	}
-
-	/**
-	 * Generate a flow over the digested {@link Configuration}.
-	 * Uses {@link Configuration#getLoadedConfiguration()}.
-	 */
-	private void generateConfigurationFlow() {
-		FlowDiagramManager flowDiagramManager = getBean(FlowDiagramManager.class);
-		try {
-			flowDiagramManager.generate(this);
-		} catch (Exception e) { //Don't throw an exception when generating the flow fails
-			ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
-		}
-	}
-
-	/** Execute any database changes before calling {@link #configure()}. */
-	protected void runMigrator() {
-		// For now explicitly call configure, fix this once ConfigurationDigester implements ConfigurableLifecycle
-		DatabaseMigratorBase databaseMigrator = getBean("jdbcMigrator", DatabaseMigratorBase.class);
-		if(databaseMigrator.isEnabled()) {
-			try {
-				if(databaseMigrator.validate()) {
-					databaseMigrator.update();
-				}
-			} catch (Exception e) {
-				log("unable to run JDBC migration", e);
-			}
-		}
 	}
 
 	@Override
@@ -288,7 +261,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	// capture ContextClosedEvent which is published during AbstractApplicationContext#doClose()
 	@Override
 	public void publishEvent(ApplicationEvent event) {
-		if(event instanceof ContextClosedEvent) {
+		if (event instanceof ContextClosedEvent) {
 			applicationLog.info("Configuration [{}] [{}] closed", this::getName, this::getVersion);
 			publishEvent(new ConfigurationMessageEvent(this, "closed"));
 		}
@@ -330,20 +303,21 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return getState() == state;
 	}
 
-	/** If the Configuration should automatically start all {@link Adapter Adapters} and {@link Job Scheduled Jobs}. */
+	/** If the Configuration should automatically start all {@link Adapter Adapters} and {@link IJob Scheduled Jobs}. */
 	public void setAutoStart(boolean autoStart) {
 		this.autoStart = autoStart;
 	}
 
-	public boolean isAutoStart() {
-		if(autoStart == null && getClassLoader() != null) {
+	@Override
+	public boolean isAutoStartup() {
+		if (autoStart == null && getClassLoader() != null) {
 			autoStart = AppConstants.getInstance(getClassLoader()).getBoolean("configurations.autoStart", true);
 		}
 		return autoStart;
 	}
 
 	public boolean isStubbed() {
-		if(getClassLoader() instanceof IConfigurationClassLoader) {
+		if (getClassLoader() instanceof IConfigurationClassLoader) {
 			return ConfigurationUtils.isConfigurationStubbed(getClassLoader());
 		}
 
@@ -353,10 +327,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	/**
 	 * Get a registered adapter by its name through {@link AdapterManager#getAdapter(String)}
 	 * @param name the adapter to retrieve
-	 * @return IAdapter
+	 * @return Adapter
 	 */
 	public Adapter getRegisteredAdapter(String name) {
-		if(adapterManager == null || !isActive()) {
+		if (adapterManager == null || !isActive()) {
 			return null;
 		}
 
@@ -364,7 +338,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public List<Adapter> getRegisteredAdapters() {
-		if(adapterManager == null || !isActive()) {
+		if (adapterManager == null || !isActive()) {
 			return Collections.emptyList();
 		}
 		return adapterManager.getAdapterList();
@@ -389,16 +363,16 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	/**
 	 * Include the referenced Module in this configuration
 	 */
-	public void registerInclude(Include module) {
+	public void addInclude(Include module) {
 		// method exists to trigger FrankDoc.
 	}
 
 	/**
 	 * Add adapter.
 	 */
-	public void registerAdapter(Adapter adapter) {
+	public void addAdapter(Adapter adapter) {
 		adapter.setConfiguration(this);
-		adapterManager.registerAdapter(adapter);
+		adapterManager.addAdapter(adapter);
 
 		log.debug("Configuration [{}] registered adapter [{}]", this::getName, adapter::toString);
 	}
@@ -412,19 +386,19 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/**
-	 * Register an {@link IJob job} for scheduling at the configuration.
+	 * Add an {@link IJob job} for scheduling at the configuration.
 	 * The configuration will create an {@link IJob AdapterJob} instance and a JobDetail with the
 	 * information from the parameters, after checking the
 	 * parameters of the job. (basically, it checks whether the adapter and the
 	 * receiver are registered.
 	 * <p>See the <a href="https://www.quartz-scheduler.org/">Quartz scheduler</a> documentation</p>
 	 * @param jobdef a JobDef object
-	 * @see JobDef for a description of Cron triggers
+	 * @see AbstractJobDef for a description of Cron triggers
 	 * @since 4.0
 	 */
 	@Deprecated // deprecated to force use of Scheduler element
-	public void registerScheduledJob(IJob jobdef) {
-		scheduleManager.registerScheduledJob(jobdef);
+	public void addScheduledJob(IJob jobdef) {
+		scheduleManager.addScheduledJob(jobdef);
 	}
 
 	/**
@@ -466,12 +440,17 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * If no ClassLoader has been set it tries to fall back on the `configurations.xxx.classLoaderType` property.
 	 * Because of this, it may not always represent the correct or accurate type.
 	 */
+	@Nullable
 	public String getClassLoaderType() {
 		if(!(getClassLoader() instanceof IConfigurationClassLoader)) { //Configuration has not been loaded yet
 			String type = AppConstants.getInstance().getProperty("configurations."+getName()+".classLoaderType");
 			if(StringUtils.isNotEmpty(type)) { //We may not return an empty String
 				return type;
 			}
+			return null;
+		}
+
+		if (getClassLoader() == null) {
 			return null;
 		}
 
@@ -529,6 +508,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		// SapSystems self register;
 	}
 
+	// TODO
 	// Dummy setter to allow JmsRealms being added to Configurations via Frank!Config XSD
 	public void setJmsRealms(JmsRealmFactory realm) {
 		// JmsRealm-objects self register in JmsRealmFactory;
@@ -536,24 +516,25 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	// Dummy setter to allow JmsRealms being added to Configurations via Frank!Config XSD
 	@Deprecated
-	public void registerJmsRealm(JmsRealm realm) {
-		JmsRealmFactory.getInstance().registerJmsRealm(realm); // For backwards compatibility to support old ibisdoc xsd
+	public void addJmsRealm(JmsRealm realm) {
+		JmsRealmFactory.getInstance().addJmsRealm(realm); // For backwards compatibility to support old ibisdoc xsd
 	}
 
 	/**
 	 * Container for monitor objects
 	 */
 	public void setMonitoring(MonitorManager monitorManager) {
-		// Monitors self register in MonitorManager;
+		// Dummy Frank!Doc setter
+		// Monitors self register in MonitorManager
 	}
-	// above comment is used in FrankDoc
-	// Dummy setter to allow Monitors being added to Configurations via Frank!Config XSD
+
 	@Deprecated
 	public void registerMonitoring(MonitorManager factory) {
+		// Dummy setter to allow Monitors being added to Configurations via Frank!Config XSD
 	}
 
 	public void setSharedResources(SharedResources resource) {
-		//Dummy Frank!Doc setter
+		// Dummy Frank!Doc setter
 	}
 
 	/**

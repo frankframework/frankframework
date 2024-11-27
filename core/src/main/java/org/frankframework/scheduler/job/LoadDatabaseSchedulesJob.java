@@ -24,6 +24,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.impl.matchers.GroupMatcher;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
@@ -31,14 +36,10 @@ import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.scheduler.IbisJobDetail;
 import org.frankframework.scheduler.IbisJobDetail.JobType;
-import org.frankframework.scheduler.JobDef;
+import org.frankframework.scheduler.AbstractJobDef;
 import org.frankframework.scheduler.SchedulerHelper;
 import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.impl.matchers.GroupMatcher;
 
 /**
  * 1. This method first stores all database jobs that can are found in the Quartz Scheduler in a Map.
@@ -48,10 +49,15 @@ import org.quartz.impl.matchers.GroupMatcher;
  *    If it is not present it add the job to the scheduler.
  * 4. Once it's looped through all the database jobs, loop through the remaining jobs in the Map.
  *    Since they have been removed from the database, remove them from the Quartz Scheduler
+ * 
+ * 
+ * Frank!Framework job which periodically looks in the {@literal IBISSCHEDULES} table to see if a new {@link DatabaseJob} should be loaded.
+ * 
+ * @ff.info This is a default job that can be controlled with the property {@literal loadDatabaseSchedules.active} and {@literal loadDatabaseSchedules.interval}.
  *
  * @author Niels Meijer
  */
-public class LoadDatabaseSchedulesJob extends JobDef {
+public class LoadDatabaseSchedulesJob extends AbstractJobDef {
 
 	@Override
 	public void execute() {
@@ -80,7 +86,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 
 		try {
 			qs.configure();
-			qs.open();
+			qs.start();
 			try (Connection conn = qs.getConnection()) {
 				try (PreparedStatement stmt = conn.prepareStatement("SELECT JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY FROM IBISSCHEDULES")) {
 					try (ResultSet rs = stmt.executeQuery()) {
@@ -134,7 +140,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 							if(databaseJobDetails.containsKey(key)) {
 								IbisJobDetail oldJobDetails = databaseJobDetails.get(key);
 								if(!oldJobDetails.compareWith(jobdef)) {
-									log.debug("updating DatabaseSchedule ["+key+"]");
+									log.debug("updating DatabaseSchedule [{}]", key);
 									try {
 										sh.scheduleJob(jobdef);
 									} catch (SchedulerException e) {
@@ -145,7 +151,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 								databaseJobDetails.remove(key);
 							} else {
 								// The job was not found in the databaseJobDetails Map, which indicates it's new and has to be added
-								log.debug("add DatabaseSchedule ["+key+"]");
+								log.debug("add DatabaseSchedule [{}]", key);
 								try {
 									sh.scheduleJob(jobdef);
 								} catch (SchedulerException e) {
@@ -159,12 +165,12 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 		} catch (Exception e) { // Only catch database related exceptions!
 			getMessageKeeper().add("unable to retrieve schedules from database", e);
 		} finally {
-			qs.close();
+			qs.stop();
 		}
 
 		// Loop through all remaining databaseJobDetails, which were not present in the database. Since they have been removed, unschedule them!
 		for(JobKey key : databaseJobDetails.keySet()) {
-			log.debug("delete DatabaseSchedule ["+key+"]");
+			log.debug("delete DatabaseSchedule [{}]", key);
 			try {
 				scheduler.deleteJob(key);
 			} catch (SchedulerException e) {

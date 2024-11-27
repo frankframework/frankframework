@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021,2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,4 +29,19 @@ public enum RunState {
 	EXCEPTION_STOPPING,
 	STOPPED;
 
+	public boolean isStopped() {
+		switch (this) {
+			case STARTING:
+			case EXCEPTION_STARTING:
+			case STARTED:
+			case STOPPING:
+				return false;
+			case STOPPED:
+			case EXCEPTION_STOPPING:
+			case ERROR:
+				return true;
+			default:
+				throw new IllegalStateException("Unhandled receiver run-state [" + this + "]");
+		}
+	}
 }

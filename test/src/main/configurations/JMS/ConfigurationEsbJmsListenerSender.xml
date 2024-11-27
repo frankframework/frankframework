@@ -81,8 +81,8 @@
 			</pipe>
 			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch"
 				xpathExpression="request/@action" getInputFromSessionKey="originalMessage" />
-			<pipe name="echo" className="org.frankframework.pipes.FixedResultPipe"
-				returnString="&lt;reply&gt;ok&lt;/reply&gt;">
+			<pipe name="echo" className="org.frankframework.pipes.EchoPipe"
+				getInputFromFixedValue="&lt;reply&gt;ok&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="exception" className="org.frankframework.pipes.ExceptionPipe">
@@ -132,8 +132,8 @@
 				</sender>
 				<forward name="success" path="exception" />
 			</pipe>
-			<pipe name="echo" className="org.frankframework.pipes.FixedResultPipe"
-				returnString="&lt;reply&gt;ok&lt;/reply&gt;">
+			<pipe name="echo" className="org.frankframework.pipes.EchoPipe"
+				getInputFromFixedValue="&lt;reply&gt;ok&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="exception" className="org.frankframework.pipes.ExceptionPipe">
@@ -164,8 +164,8 @@
 					mode="i2t" addOutputNamespace="true" />
 				<forward name="success" path="okReply" />
 			</pipe>
-			<pipe name="okReply" className="org.frankframework.pipes.FixedResultPipe"
-				returnString="&lt;reply&gt;ok&lt;/reply&gt;">
+			<pipe name="okReply" className="org.frankframework.pipes.EchoPipe"
+				getInputFromFixedValue="&lt;reply&gt;ok&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

@@ -20,13 +20,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
 
-import org.frankframework.util.StreamUtil;
-import org.frankframework.xml.XmlWriter;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
+
+import org.frankframework.util.StreamUtil;
+import org.frankframework.xml.XmlWriter;
 
 public class XmlWriterTest {
 

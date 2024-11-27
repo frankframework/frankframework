@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016, 2018, 2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,29 +28,20 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.binder.DigesterLoader;
 import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.digester.FrankDigesterRules;
 import org.frankframework.configuration.digester.IncludeFilter;
 import org.frankframework.configuration.filters.ElementRoleFilter;
 import org.frankframework.configuration.filters.InitialCapsFilter;
 import org.frankframework.configuration.filters.OnlyActiveFilter;
 import org.frankframework.configuration.filters.SkipContainersFilter;
+import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
-import org.frankframework.stream.xml.XmlTee;
+import org.frankframework.documentbuilder.xml.XmlTee;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.LogUtil;
@@ -66,6 +57,18 @@ import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.SaxException;
 import org.frankframework.xml.TransformerFilter;
 import org.frankframework.xml.XmlWriter;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * The configurationDigester reads the configuration.xml and the digester rules
@@ -78,19 +81,19 @@ import org.frankframework.xml.XmlWriter;
  * means that you may specify entities that will be resolved during parsing.
  * </p>
  * Example:
- * <code><pre>
-&lt;?xml version="1.0"?&gt;
-&lt;!DOCTYPE configuration
-[
-&lt;!ENTITY HelloWorld SYSTEM "./ConfigurationHelloWorld.xml"&gt;
-]&gt;
-
-&lt;configuration name="HelloWorld"&gt;
-
-&HelloWorld;
-
-&lt;/configuration&gt;
-</pre></code>
+ * <pre>{@code
+ * <?xml version="1.0"?>
+ * <!DOCTYPE configuration
+ * [
+ * <!ENTITY HelloWorld SYSTEM "./ConfigurationHelloWorld.xml">
+ * ]>
+ *
+ * <configuration name="HelloWorld">
+ *
+ * &HelloWorld;
+ *
+ * </configuration>
+ * }</pre>
  * @author Johan Verrips
  * @see Configuration
  */
@@ -109,7 +112,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	private final boolean validation = AppConstants.getInstance().getBoolean("configurations.validation", true);
 
 	private class XmlErrorHandler implements ErrorHandler  {
-		private String schema;
+		private final String schema;
 		public XmlErrorHandler(String schema) {
 			this.schema = schema;
 		}
@@ -137,40 +140,44 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		}
 	}
 
-	private Digester getDigester(Configuration configuration) throws ConfigurationException, ParserConfigurationException, SAXException {
-		XMLReader reader = XmlUtils.getXMLReader(configuration);
-		Digester digester = new Digester(reader) {
-			// override Digester.createSAXException() implementations to obtain a clear unduplicated message and a properly nested stacktrace on IBM JDK
-			@Override
-			public SAXException createSAXException(String message, Exception e) {
-				return SaxException.createSaxException(message, getDocumentLocator(), e);
-			}
-			@Override
-			public SAXException createSAXException(Exception e) {
-				return SaxException.createSaxException(null, getDocumentLocator(), e);
-			}
-		};
+	private Digester getDigester(Configuration configuration) throws ConfigurationException {
+		try {
+			XMLReader reader = XmlUtils.getXMLReader(configuration);
+			Digester digester = new Digester(reader) {
+				// override Digester.createSAXException() implementations to obtain a clear unduplicated message and a properly nested stacktrace on IBM JDK
+				@Override
+				public SAXException createSAXException(String message, Exception e) {
+					return SaxException.createSaxException(message, getDocumentLocator(), e);
+				}
+				@Override
+				public SAXException createSAXException(Exception e) {
+					return SaxException.createSaxException(null, getDocumentLocator(), e);
+				}
+			};
 
-		digester.setUseContextClassLoader(true);
-		digester.push(configuration);
+			digester.setClassLoader(configuration.getClassLoader());
+			digester.push(configuration);
 
-		Resource digesterRulesResource = Resource.getResource(configuration, getDigesterRuleFile());
-		loadDigesterRules(digester, digesterRulesResource);
+			Resource digesterRulesResource = Resource.getResource(configuration, getDigesterRuleFile());
+			loadDigesterRules(digester, digesterRulesResource);
 
-		if (validation) {
-			digester.setValidating(true);
-			digester.setNamespaceAware(true);
-			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
-			URL xsdUrl = ClassLoaderUtils.getResourceURL(CONFIGURATION_VALIDATION_SCHEMA);
-			if (xsdUrl==null) {
-				throw new ConfigurationException("cannot get URL from ["+CONFIGURATION_VALIDATION_SCHEMA+"]");
+			if (validation) {
+				digester.setValidating(true);
+				digester.setNamespaceAware(true);
+				digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
+
+				URL xsdUrl = ClassLoaderUtils.getResourceURL(CONFIGURATION_VALIDATION_SCHEMA);
+				if (xsdUrl==null) {
+					throw new ConfigurationException("cannot get URL from ["+CONFIGURATION_VALIDATION_SCHEMA+"]");
+				}
+				digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", xsdUrl.toExternalForm());
+				XmlErrorHandler xeh = new XmlErrorHandler(CONFIGURATION_VALIDATION_SCHEMA);
+				digester.setErrorHandler(xeh);
 			}
-			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", xsdUrl.toExternalForm());
-			XmlErrorHandler xeh = new XmlErrorHandler(CONFIGURATION_VALIDATION_SCHEMA);
-			digester.setErrorHandler(xeh);
+			return digester;
+		} catch (ParserConfigurationException | SAXException e) {
+			throw new ConfigurationException("unable to create configuration parser", e);
 		}
-
-		return digester;
 	}
 
 	private void loadDigesterRules(Digester digester, Resource digesterRulesResource) {
@@ -182,27 +189,22 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	}
 
 	public void digest() throws ConfigurationException {
-		if(!(applicationContext instanceof Configuration)) {
+		if(!(applicationContext instanceof Configuration configuration)) {
 			throw new IllegalStateException("no suitable Configuration found");
 		}
-		Configuration configurationContext = (Configuration)applicationContext;
 
-		digestConfiguration(configurationContext);
-	}
-
-	private void digestConfiguration(Configuration configuration) throws ConfigurationException {
-		String configurationFile = ConfigurationUtils.getConfigurationFile(configuration.getClassLoader(), configuration.getName());
-		Digester digester = null;
-
-		Resource configurationResource = Resource.getResource(configuration, configurationFile);
-		if (configurationResource == null) {
-			throw new ConfigurationException("Configuration file ["+configurationFile+"] not found in ClassLoader ["+configuration.getClassLoader()+"]");
+		Resource configurationResource = getConfigurationResource(configuration);
+		if(configurationResource == null) {
+			return;
 		}
 
-		try {
-			digester = getDigester(configuration);
+		digestConfiguration(configuration, configurationResource);
+	}
 
-			if (log.isDebugEnabled()) log.debug("digesting configuration ["+configuration.getName()+"] configurationFile ["+configurationFile+"]");
+	private void digestConfiguration(Configuration configuration, Resource configurationResource) throws ConfigurationException {
+		Digester digester = getDigester(configuration);
+		try {
+			log.debug("digesting configuration [{}] configurationFile [{}]", configuration::getName, configurationResource::getSystemId);
 
 			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
 			parseAndResolveEntitiesAndProperties(digester, configuration, configurationResource, appConstants);
@@ -216,8 +218,25 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			}
 			Locator locator = digester.getDocumentLocator();
 			String location = locator!=null ? " systemId ["+locator.getSystemId()+"] line ["+locator.getLineNumber()+"] column ["+locator.getColumnNumber()+"]":"";
-			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile + "] "+location+" with digester-rules-file ["+getDigesterRuleFile()+"] in element ["+currentElementName+"]", t);
+			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationResource + "] "+location+" with digester-rules-file ["+getDigesterRuleFile()+"] in element ["+currentElementName+"]", t);
 		}
+	}
+
+	@Nullable
+	private Resource getConfigurationResource(Configuration configuration) throws ConfigurationException {
+		String configurationFile = ConfigurationUtils.getConfigurationFile(configuration.getClassLoader(), configuration.getName());
+
+		Resource configurationResource = Resource.getResource(configuration, configurationFile);
+		if (configurationResource != null) {
+			return configurationResource;
+		}
+
+		if(ConfigurationUtils.isConfigurationXmlOptional(configuration)) {
+			configuration.log("no configuration file found, skipping xml digest");
+			return null;
+		}
+
+		throw new ConfigurationException("Configuration file ["+configurationFile+"] not found in ClassLoader ["+configuration.getClassLoader()+"]");
 	}
 
 	/**
@@ -232,7 +251,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		handler = new AttributePropertyResolver(handler, properties, getPropsToHide(properties));
 		handler = new XmlTee(digester, handler);
 
-		handler = getStub4TesttoolContentHandler(handler, properties);
+		handler = getStub4TesttoolContentHandler(handler, configuration, properties);
 		handler = getConfigurationCanonicalizer(handler);
 		handler = new OnlyActiveFilter(handler, properties);
 		handler = new ElementPropertyResolver(handler, properties);
@@ -286,9 +305,10 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	 * Get the contenthandler to stub configurations
 	 * If stubbing is disabled, the input ContentHandler is returned as-is
 	 */
-	public ContentHandler getStub4TesttoolContentHandler(ContentHandler handler, PropertyLoader properties) throws IOException, TransformerConfigurationException {
+	public ContentHandler getStub4TesttoolContentHandler(ContentHandler handler, IScopeProvider scope, PropertyLoader properties) throws IOException, TransformerConfigurationException {
 		if (properties.getBoolean(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, false)) {
-			Resource xslt = Resource.getResource(ConfigurationUtils.STUB4TESTTOOL_XSLT);
+			String stubFile = properties.getString(ConfigurationUtils.STUB4TESTTOOL_XSLT_KEY, ConfigurationUtils.STUB4TESTTOOL_XSLT_DEFAULT);
+			Resource xslt = Resource.getResource(scope, stubFile);
 			TransformerPool tp = TransformerPool.getInstance(xslt);
 
 			TransformerFilter filter = tp.getTransformerFilter(null, handler);

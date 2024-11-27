@@ -15,13 +15,10 @@
 */
 package org.frankframework.management.bus.endpoints;
 
-import javax.annotation.security.RolesAllowed;
-
 import org.frankframework.management.bus.TopicSelector;
 import org.springframework.messaging.Message;
-
-import org.frankframework.configuration.IbisManager;
-import org.frankframework.management.IbisAction;
+import jakarta.annotation.security.RolesAllowed;
+import org.frankframework.management.Action;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
@@ -33,8 +30,8 @@ public class HandleIbisManagerAction extends BusEndpointBase {
 	@TopicSelector(BusTopic.IBISACTION)
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public void handleIbisAction(Message<?> message) {
-		IbisAction action = BusMessageUtils.getEnumHeader(message, "action", IbisAction.class);
-		String configurationName = BusMessageUtils.getHeader(message, "configuration", IbisManager.ALL_CONFIGS_KEY);
+		Action action = BusMessageUtils.getEnumHeader(message, "action", Action.class);
+		String configurationName = BusMessageUtils.getHeader(message, "configuration", BusMessageUtils.ALL_CONFIGS_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, "adapter");
 		String receiverName = BusMessageUtils.getHeader(message, "receiver");
 		String userPrincipalName = BusMessageUtils.getUserPrincipalName();

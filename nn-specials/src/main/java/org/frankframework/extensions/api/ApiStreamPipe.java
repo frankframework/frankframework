@@ -21,6 +21,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.PipeLineSession;
@@ -34,16 +39,12 @@ import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
-
 /**
  * Extension to StreamPipe for API Management.
  * <p>
  * In {@link StreamPipe} for parameter <code>httpRequest</code> and attribute
  * <code>extractFirstStringPart=true</code> the first part is returned to the pipeline.
- * In this class the first part is checked. If it contains a 'MessageID' with namespace "http://www.w3.org/2005/08/addressing",
+ * In this class the first part is checked. If it contains a 'MessageID' with <a href="http://www.w3.org/2005/08/addressing">namespace</a>,
  * then the message to return to the pipeline is retrieved from the MessageStore.
  * </p><p>
  * This class is created for applications which can not perform one multipart call with a business request in the first (string) part
@@ -149,10 +150,10 @@ public class ApiStreamPipe extends StreamPipe {
 	}
 
 	private String selectMessage(String messageKey) throws JdbcException {
-		String query = "SELECT MESSAGE FROM IBISSTORE WHERE MESSAGEKEY='" + messageKey + "'";
+		String query = "SELECT MESSAGE FROM IBISSTORE WHERE MESSAGEKEY='?'";
 		Connection conn = dummyQuerySender.getConnection();
 		try {
-			return executeBlobQuery(dummyQuerySender.getDbmsSupport(), conn, query);
+			return executeBlobQuery(dummyQuerySender.getDbmsSupport(), conn, query, messageKey);
 		} finally {
 			if (conn != null) {
 				try {
@@ -165,17 +166,19 @@ public class ApiStreamPipe extends StreamPipe {
 	}
 
 	private void deleteMessage(String messageKey) throws JdbcException {
-		String query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY='" + messageKey + "'";
+		String query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY='?'";
 		try (Connection connection = dummyQuerySender.getConnection(); PreparedStatement stmt = connection.prepareStatement(query)) {
+			stmt.setString(1, messageKey);
 			stmt.execute();
 		} catch (Exception e) {
 			throw new JdbcException("could not execute query [" + query + "]", e);
 		}
 	}
 
-	private static String executeBlobQuery(IDbmsSupport dbmsSupport, Connection connection, String query) throws JdbcException {
+	private static String executeBlobQuery(IDbmsSupport dbmsSupport, Connection connection, String query, String messageKey) throws JdbcException {
 		if (log.isDebugEnabled()) log.debug("prepare and execute query [{}]", query);
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
+			stmt.setString(1, messageKey);
 			try (ResultSet rs = stmt.executeQuery()) {
 				if (!rs.next()) {
 					return null;

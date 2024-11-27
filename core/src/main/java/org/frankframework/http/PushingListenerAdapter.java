@@ -17,7 +17,7 @@ package org.frankframework.http;
 
 import java.util.Map;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
@@ -26,6 +26,7 @@ import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
@@ -43,11 +44,11 @@ import org.frankframework.util.LogUtil;
 /**
  * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link Receiver}
  * to receive messages from Servlets.
- * </table>
+ *
  * @author  Gerrit van Brakel
  * @since   4.12
  */
-public abstract class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient {
+public class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter String name;
@@ -56,8 +57,9 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 
 	private IMessageHandler<Message> handler;
 
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
+
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
@@ -69,11 +71,12 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 	}
 
 	@Override
-	public void open() throws ListenerException {
+	public void start() {
 		setRunning(true);
 	}
+
 	@Override
-	public void close() {
+	public void stop() {
 		setRunning(false);
 	}
 

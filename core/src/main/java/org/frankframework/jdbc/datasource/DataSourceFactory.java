@@ -18,20 +18,22 @@ package org.frankframework.jdbc.datasource;
 import java.util.List;
 import java.util.Properties;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
-import org.frankframework.jdbc.IDataSourceFactory;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
+
+import org.frankframework.jdbc.IDataSourceFactory;
 
 /**
  * Factory through which (TX-enabled) DataSources can be retrieved.
  * Default implementation, does not use pooling, wraps the DataSource in a TransactionAwareDataSourceProxy.
  *
  */
-public class DataSourceFactory extends ObjectFactoryBase<CommonDataSource> implements IDataSourceFactory {
+public class DataSourceFactory extends ObjectFactory<CommonDataSource> implements IDataSourceFactory {
 
 	public DataSourceFactory() {
 		super(CommonDataSource.class);

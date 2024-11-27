@@ -1,0 +1,20 @@
+<entries>
+	<entry name="cn=Application Developer">
+		<attributes>
+			<attribute name="createTimestamp" value="20241016085325.683Z"/>
+			<attribute name="entryUUID" value="62b5f9a6-198f-49ef-bacf-42d6744aeb8c"/>
+		</attributes>
+	</entry>
+	<entry name="cn=LEA Administrator">
+		<attributes>
+			<attribute name="createTimestamp" value="20241016085325.683Z"/>
+			<attribute name="entryUUID" value="7c147fb5-4bef-4c72-8141-37520e5165cf"/>
+		</attributes>
+	</entry>
+	<entry name="cn=Realm Administrator">
+		<attributes>
+			<attribute name="createTimestamp" value="20241016085325.683Z"/>
+			<attribute name="entryUUID" value="7b5c16be-5a24-40cd-8170-9631f2d9ef35"/>
+		</attributes>
+	</entry>
+</entries>

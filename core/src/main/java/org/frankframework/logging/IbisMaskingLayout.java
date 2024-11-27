@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,18 @@
 */
 package org.frankframework.logging;
 
+import java.io.Serial;
 import java.nio.charset.Charset;
+import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Configuration;
@@ -29,7 +36,7 @@ import org.apache.logging.log4j.core.layout.AbstractStringLayout;
 import org.apache.logging.log4j.message.Message;
 import org.apache.logging.log4j.message.SimpleMessage;
 import org.apache.logging.log4j.util.StackLocatorUtil;
-
+import org.frankframework.threading.ThreadConnector;
 import org.frankframework.util.StringUtil;
 
 /**
@@ -58,12 +65,12 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	 * Set of regex strings to hide locally, meaning for specific threads/adapters.
 	 * This is required to be set for each thread individually.
 	 */
-	private static final ThreadLocal<Set<String>> threadLocalReplace = new ThreadLocal<>();
+	private static final ThreadLocal<Deque<Pattern>> threadLocalReplace = new ThreadLocal<>();
 
 	/**
 	 * Set of regex strings to hide globally, meaning for every thread/adapter.
 	 */
-	private static Set<String> globalReplace = new HashSet<>();
+	private static Set<Pattern> globalReplace = new HashSet<>();
 
 	/**
 	 * @param config
@@ -80,8 +87,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		String message = msg.getFormattedMessage();
 
 		if (StringUtils.isNotEmpty(message)) {
-			message = StringUtil.hideAll(message, globalReplace);
-			message = StringUtil.hideAll(message, threadLocalReplace.get());
+			message = maskSensitiveInfo(message);
 
 			int length = message.length();
 			if (maxLength > 0 && length > maxLength) {
@@ -97,13 +103,22 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		return serializeEvent(event);
 	}
 
+	public static String maskSensitiveInfo(String message) {
+		if (StringUtils.isBlank(message)) {
+			return message;
+		}
+		String tmpResult = StringUtil.hideAll(message, globalReplace);
+		return StringUtil.hideAll(tmpResult, threadLocalReplace.get());
+	}
+
 	/**
 	 * Wrapper around SimpleMessage so we can persist throwables, if any.
 	 */
 	private static class LogMessage extends SimpleMessage {
+		@Serial
 		private static final long serialVersionUID = 3907571033273707664L;
 
-		private Throwable throwable;
+		private final Throwable throwable;
 
 		public LogMessage(String message, Throwable throwable) {
 			super(message);
@@ -118,10 +133,10 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 
 	/**
 	 * When converting from a (Log4jLogEvent) to a mutable LogEvent ensure to not invoke any getters but assign the fields directly.
-	 *
+	 * <br/>
 	 * Directly calling RewriteAppender.append(LogEvent) can do 44 million ops/sec, but when calling rewriteLogger.debug(msg) to invoke
 	 * a logger that calls this appender, all of a sudden throughput drops to 37 thousand ops/sec. That's 1000x slower.
-	 *
+	 * <br/>
 	 * Rewriting the event ({@link MutableLogEvent#initFrom(LogEvent)}) includes invoking caller location information, {@link LogEvent#getSource()}
 	 * This is done by taking a snapshot of the stack and walking it, see {@link StackLocatorUtil#calcLocation(String)}).
 	 * Hence avoid this at all costs, fixed from version 2.6 (LOG4J2-1382) use a builder instance to update the @{link Message}.
@@ -170,68 +185,104 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	}
 
 	public static void addToGlobalReplace(String regex) {
+		globalReplace.add(Pattern.compile(regex));
+	}
+
+	public static void addToGlobalReplace(Pattern regex) {
 		globalReplace.add(regex);
 	}
 
-	public static void removeFromGlobalReplace(String regex) {
-		globalReplace.remove(regex);
-	}
-
-	public static Set<String> getGlobalReplace() {
+	public static Set<Pattern> getGlobalReplace() {
 		return globalReplace;
 	}
 
-	public static void cleanGlobalReplace() {
+	public static void clearGlobalReplace() {
 		globalReplace = new HashSet<>();
 	}
 
-	public static void addToThreadLocalReplace(Collection<String> collection) {
-		if(collection == null) return;
+	/**
+	 * Replace all thread-local hideRegexes. Always clears the current stack, even if the
+	 * new collection is null or empty.
+	 * This method should be used to initialize the stack of hideregexes at the start of a new thread
+	 * when there might be hideregexes to be carried over from a calling thread.
+	 *
+	 * @see ThreadConnector
+	 *
+	 * @param hideRegexCollection Collection of new hideRegexes. Can be null or empty.
+	 */
+	public static void setThreadLocalReplace(@Nullable Collection<Pattern> hideRegexCollection) {
+		clearThreadLocalReplace();
+		if (hideRegexCollection == null || hideRegexCollection.isEmpty()) return;
 
-		if (threadLocalReplace.get() == null)
-			createThreadLocalReplace();
-
-		threadLocalReplace.get().addAll(collection);
+		Deque<Pattern> stack = getOrCreateThreadLocalReplace();
+		stack.addAll(hideRegexCollection);
 	}
 
 	/**
-	 * Add regex to hide locally, meaning for specific threads/adapters.
-	 * This used to be LogUtil.setThreadHideRegex(String hideRegex)
+	 * Collection of regex strings to hide locally, meaning for specific threads/adapters.
+	 * Can return null when not used/initialized!
 	 */
-	public static void addToThreadLocalReplace(String regex) {
-		if(StringUtils.isEmpty(regex)) return;
+	@Nullable
+	public static Collection<Pattern> getThreadLocalReplace() {
+		Deque<Pattern> stack = threadLocalReplace.get();
+		if (stack == null) return null;
+		return Collections.unmodifiableCollection(stack);
+	}
 
-		if (threadLocalReplace.get() == null)
-			createThreadLocalReplace();
-		threadLocalReplace.get().add(regex);
+	@Nonnull
+	private static Deque<Pattern> getOrCreateThreadLocalReplace() {
+		Deque<Pattern> stack = threadLocalReplace.get();
+		if (stack == null) {
+			return createThreadLocalReplace();
+		}
+		return stack;
+	}
+
+	@Nonnull
+	private static Deque<Pattern> createThreadLocalReplace() {
+		Deque<Pattern> stack = new ArrayDeque<>();
+		threadLocalReplace.set(stack);
+		return stack;
 	}
 
 	/**
-	 * Remove regex to hide locally, meaning for specific threads/adapters.
-	 * When the last item is removed the Set will be removed as well.
+	 * Clear all thread-local hide-regexes.
 	 */
-	public static void removeFromThreadLocalReplace(String regex) {
-		if(StringUtils.isEmpty(regex)) return;
-
-		threadLocalReplace.get().remove(regex);
-
-		if(threadLocalReplace.get().isEmpty())
-			removeThreadLocalReplace();
-	}
-
-	/**
-	 * Set of regex strings to hide locally, meaning for specific threads/adapters.
-	 * Can return null when not used/initalized!
-	 */
-	public static Set<String> getThreadLocalReplace() {
-		return threadLocalReplace.get();
-	}
-
-	private static void createThreadLocalReplace() {
-		threadLocalReplace.set(new HashSet<>());
-	}
-
-	public static void removeThreadLocalReplace() {
+	public static void 	clearThreadLocalReplace() {
 		threadLocalReplace.remove();
+	}
+
+	/**
+	 * Push a hide-regex pattern to the ThreadLocal replace-hideregex stack and
+	 * return a {@link HideRegexContext} that can be closed to pop the pattern from the
+	 * stack again.
+	 * This is meant to be used in try-with-resources construct.
+	 *
+	 * @param pattern Pattern used to find strings in loglines that need to be hidden.
+	 * @return {@link HideRegexContext} that can be closed to remove above pattern from the stack again.
+	 */
+	@Nonnull
+	public static HideRegexContext pushToThreadLocalReplace(@Nullable Pattern pattern) {
+		if (pattern == null) {
+			return () -> {
+				// No-op
+			};
+		}
+		Deque<Pattern> stack = getOrCreateThreadLocalReplace();
+		stack.push(pattern);
+		return stack::pop;
+	}
+
+	/**
+	 * Interface overrides {@link AutoCloseable#close()} to remove the exception so this
+	 * can be used in a try-with-resources without having to handle any exceptions, however
+	 * does not need to add any extra methods.
+	 * <br/>
+	 * Is used in the return value of {@link IbisMaskingLayout#pushToThreadLocalReplace(Pattern)}, instances
+	 * are lambdas or method references.
+	 */
+	public interface HideRegexContext extends AutoCloseable {
+		@Override
+		void close();
 	}
 }

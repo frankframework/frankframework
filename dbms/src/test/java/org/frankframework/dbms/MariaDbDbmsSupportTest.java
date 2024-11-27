@@ -16,7 +16,7 @@ class MariaDbDbmsSupportTest {
 	}
 
 	@ParameterizedTest
-	@CsvSource({"10.6.0", "10.6.1", "5.5.5-10.6.5-MariaDB-1:10.6.5+maria~focal", "5.5.5-10.6.26-MariaDB-log"})
+	@CsvSource({"11.3.2", "11.3.2-MariaDB-1:11.3.2+maria~ubu2204", "10.6.0", "10.6.1", "5.5.5-10.6.5-MariaDB-1:10.6.5+maria~focal", "5.5.5-10.6.26-MariaDB-log"})
 	void testHasSkipLocked(String version) {
 		MariaDbDbmsSupport d = new MariaDbDbmsSupport(version);
 		assertTrue(d.hasSkipLockedFunctionality());

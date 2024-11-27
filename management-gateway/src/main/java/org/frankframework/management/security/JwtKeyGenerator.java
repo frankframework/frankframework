@@ -21,12 +21,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.util.Environment;
-import org.frankframework.util.UUIDUtil;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
@@ -48,6 +46,9 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
 import lombok.Getter;
+
+import org.frankframework.util.Environment;
+import org.frankframework.util.UUIDUtil;
 
 public class JwtKeyGenerator implements InitializingBean {
 	public static final Curve JWT_DEFAULT_CURVE = Curve.P_384;

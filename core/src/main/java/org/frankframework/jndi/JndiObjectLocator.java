@@ -38,7 +38,6 @@ import lombok.extern.log4j.Log4j2;
  *
  * @author Niels Meijer
  *
- * @param <O> Object class used by clients
  */
 @Log4j2
 public class JndiObjectLocator implements IObjectLocator, ApplicationContextAware {
@@ -47,6 +46,7 @@ public class JndiObjectLocator implements IObjectLocator, ApplicationContextAwar
 
 	/**
 	 * Attempt to lookup the Object in the JNDI. If it cannot find the object, attempt to try again (without a JNDI-prefix).
+	 * @param <O> Object class used by clients
 	 */
 	@Override
 	public <O> O lookup(String jndiName, Properties jndiEnvironment, Class<O> lookupClass) throws NamingException {

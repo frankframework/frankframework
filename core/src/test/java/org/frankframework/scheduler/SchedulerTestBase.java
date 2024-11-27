@@ -21,8 +21,6 @@ import static org.quartz.JobBuilder.newJob;
 
 import java.text.ParseException;
 
-import org.frankframework.scheduler.job.IJob;
-import org.frankframework.testutil.TestConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.quartz.JobDataMap;
@@ -30,6 +28,9 @@ import org.quartz.JobDetail;
 import org.quartz.JobKey;
 import org.quartz.SchedulerException;
 import org.quartz.impl.StdSchedulerFactory;
+
+import org.frankframework.scheduler.job.IJob;
+import org.frankframework.testutil.TestConfiguration;
 
 public abstract class SchedulerTestBase {
 

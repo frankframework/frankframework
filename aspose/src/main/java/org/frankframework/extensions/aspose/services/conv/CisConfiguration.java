@@ -18,10 +18,10 @@ package org.frankframework.extensions.aspose.services.conv;
 import lombok.Getter;
 
 public class CisConfiguration {
-	private @Getter String fontsDirectory;
-	private @Getter String pdfOutputLocation;
-	private @Getter String charset;
-	private @Getter boolean loadExternalResources;
+	private final @Getter String fontsDirectory;
+	private final @Getter String pdfOutputLocation;
+	private final @Getter String charset;
+	private final @Getter boolean loadExternalResources;
 
 	public CisConfiguration(boolean loadExternalResources, String pdfOutputLocation, String charset, String fontsDirectory){
 		this.fontsDirectory = fontsDirectory;

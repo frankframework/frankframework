@@ -3,21 +3,26 @@ package org.frankframework.validation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
+import java.io.StringReader;
+
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
+
 import org.frankframework.align.Json2Xml;
 import org.frankframework.align.Xml2Json;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.pipes.Json2XmlValidator;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.LogUtil;
-import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
 
 public class Json2XmlValidatorSmileyTest {
 	private final Logger log = LogUtil.getLogger(this);
@@ -41,7 +46,7 @@ public class Json2XmlValidatorSmileyTest {
 		json2xml.setSchema(xsd);
 		json2xml.setRoot("x");
 		json2xml.setThrowException(true);
-		json2xml.registerForward(new PipeForward("success",null));
+		json2xml.addForward(new PipeForward("success",null));
 		json2xml.configure();
 		json2xml.start();
 		PipeLineSession pipeLineSession = new PipeLineSession();
@@ -50,7 +55,8 @@ public class Json2XmlValidatorSmileyTest {
 	}
 
 	public String jsonToXml(String json) throws SAXException {
-		return Json2Xml.translate(json, TestFileUtils.getTestFileURL("/"+xsd), true, "x", "");
+		JsonStructure jsonStructure = Json.createReader(new StringReader(json)).read();
+		return Json2Xml.translate(jsonStructure, TestFileUtils.getTestFileURL("/"+xsd), true, "x", "");
 	}
 
 	public String xmlToJsonViaPipe(String xml) throws Exception {
@@ -60,7 +66,7 @@ public class Json2XmlValidatorSmileyTest {
 		json2xml.setRoot("x");
 		json2xml.setOutputFormat(DocumentFormat.JSON);
 		json2xml.setThrowException(true);
-		json2xml.registerForward(new PipeForward("success",null));
+		json2xml.addForward(new PipeForward("success",null));
 		json2xml.configure();
 		json2xml.start();
 		PipeLineSession pipeLineSession = new PipeLineSession();

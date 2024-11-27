@@ -15,15 +15,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.SenderException;
-import org.frankframework.core.TimeoutException;
-import org.frankframework.http.HttpSender;
-import org.frankframework.http.HttpSender.PostType;
-import org.frankframework.http.HttpSenderBase.HttpMethod;
-import org.frankframework.senders.SenderTestBase;
-import org.frankframework.stream.Message;
-import org.frankframework.testutil.ParameterBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -33,6 +24,16 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 
 import lombok.Getter;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.SenderException;
+import org.frankframework.core.TimeoutException;
+import org.frankframework.http.HttpSender;
+import org.frankframework.http.HttpSender.PostType;
+import org.frankframework.http.AbstractHttpSender.HttpMethod;
+import org.frankframework.senders.SenderTestBase;
+import org.frankframework.stream.Message;
+import org.frankframework.testutil.ParameterBuilder;
 
 public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	private final boolean useMockServer = true;
@@ -80,7 +81,9 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 
 	@Override
 	public HttpSender createSender() throws Exception {
-		return new HttpSender();
+		HttpSender httpSender = new HttpSender();
+		httpSender.setName("senderAuthenticationTest");
+		return httpSender;
 	}
 
 	//Send message
@@ -92,13 +95,13 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	private Message sendNonRepeatableMessage() throws SenderException, TimeoutException, IOException {
 		if(sender.getHttpMethod() == HttpMethod.GET) fail("method not allowed when using no HttpEntity");
 		InputStream is = new Message("dummy-string").asInputStream();
-		return sendMessage(Message.asMessage(new FilterInputStream(is) {}));
+		return sendMessage(new Message(new FilterInputStream(is) {}));
 	}
 
 	//Send repeatable message
 	private Message sendRepeatableMessage() throws SenderException, TimeoutException, IOException {
 		if(sender.getHttpMethod() == HttpMethod.GET) fail("method not allowed when using no HttpEntity");
-		return sendMessage(Message.asMessage(new Message("dummy-string").asByteArray()));
+		return sendMessage(new Message(new Message("dummy-string").asByteArray()));
 	}
 
 	@Test
@@ -109,7 +112,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setPassword(MockTokenServer.CLIENT_SECRET);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage();
 		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
@@ -124,7 +127,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setPassword(MockTokenServer.CLIENT_SECRET);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage();
 		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
@@ -137,7 +140,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage();
 		assertEquals("401", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
@@ -155,7 +158,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage();
 		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
@@ -172,7 +175,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setAuthenticatedTokenRequest(true);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage();
 		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
@@ -188,7 +191,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage();
 		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
@@ -214,7 +217,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage();
 		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
@@ -231,7 +234,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage();
 		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
@@ -248,7 +251,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage();
 		assertEquals("401", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
@@ -263,7 +266,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setPassword(MockTokenServer.CLIENT_SECRET);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage();
 		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
@@ -276,7 +279,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage();
 		assertEquals("401", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
@@ -292,7 +295,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		result = sendMessage();
 		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
@@ -308,7 +311,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setPassword(MockTokenServer.CLIENT_SECRET);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		authenticatedService.setScenarioState(MockAuthenticatedService.SCENARIO_CONNECTION_RESET, MockAuthenticatedService.SCENARIO_STATE_RESET_CONNECTION);
 
@@ -327,7 +330,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		authenticatedService.setScenarioState(MockAuthenticatedService.SCENARIO_CONNECTION_RESET, MockAuthenticatedService.SCENARIO_STATE_RESET_CONNECTION);
 
@@ -349,7 +352,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setMethodType(HttpMethod.POST);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		authenticatedService.setScenarioState(MockAuthenticatedService.SCENARIO_CONNECTION_RESET, MockAuthenticatedService.SCENARIO_STATE_RESET_CONNECTION);
 
@@ -371,7 +374,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setMethodType(HttpMethod.POST);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		authenticatedService.setScenarioState(MockAuthenticatedService.SCENARIO_CONNECTION_RESET, MockAuthenticatedService.SCENARIO_STATE_RESET_CONNECTION);
 
@@ -406,7 +409,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setMethodType(HttpMethod.POST);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		authenticatedService.setScenarioState(MockAuthenticatedService.SCENARIO_CONNECTION_RESET, MockAuthenticatedService.SCENARIO_STATE_RESET_CONNECTION);
 
@@ -424,7 +427,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setClientId(MockTokenServer.CLIENT_ID);
 		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
-		Message nonRepeatableMessage = Message.asMessage(new FilterInputStream(new Message("dummy-string").asInputStream()) {});
+		Message nonRepeatableMessage = new Message(new FilterInputStream(new Message("dummy-string").asInputStream()) {});
 		session.put("binaryPart", nonRepeatableMessage);
 		sender.addParameter(ParameterBuilder.create("xml-part", "<ik><ben/><xml/></ik>"));
 		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
@@ -433,7 +436,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setMethodType(HttpMethod.POST);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		authenticatedService.setScenarioState(MockAuthenticatedService.SCENARIO_CONNECTION_RESET, MockAuthenticatedService.SCENARIO_STATE_RESET_CONNECTION);
 
@@ -452,9 +455,9 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
-		Message repeatableMessage = Message.asMessage("dummy-string".getBytes());
+		Message repeatableMessage = new Message("dummy-string".getBytes());
 		session.put("binaryPart", repeatableMessage);
 		sender.addParameter(ParameterBuilder.create("xml-part", "<ik><ben/><xml/></ik>"));
 		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
@@ -463,7 +466,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setMethodType(HttpMethod.POST);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		authenticatedService.setScenarioState(MockAuthenticatedService.SCENARIO_CONNECTION_RESET, MockAuthenticatedService.SCENARIO_STATE_RESET_CONNECTION);
 
@@ -481,9 +484,9 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
-		Message nonRepeatableMessage = Message.asMessage(new FilterInputStream(new Message("dummy-string").asInputStream()) {});
+		Message nonRepeatableMessage = new Message(new FilterInputStream(new Message("dummy-string").asInputStream()) {});
 		session.put("binaryPart", nonRepeatableMessage);
 		sender.addParameter(ParameterBuilder.create("xml-part", "<ik><ben/><xml/></ik>"));
 		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
@@ -492,7 +495,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setMethodType(HttpMethod.POST);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		authenticatedService.setScenarioState(MockAuthenticatedService.SCENARIO_CONNECTION_RESET, MockAuthenticatedService.SCENARIO_STATE_RESET_CONNECTION);
 
@@ -511,7 +514,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setTimeout(100000);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		tokenServer.setScenarioState(MockTokenServer.SCENARIO_CONNECTION_RESET, MockTokenServer.SCENARIO_STATE_RESET_CONNECTION);
 

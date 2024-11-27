@@ -4,11 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.jms.JMSFacade.AcknowledgeMode;
 import org.frankframework.jms.JMSFacade.DeliveryMode;
 import org.frankframework.jms.JMSFacade.DestinationType;
 import org.frankframework.jms.JMSFacade.SubscriberType;
-import org.junit.jupiter.api.Test;
 
 public class JmsFacadeDocumentedEnumTest {
 

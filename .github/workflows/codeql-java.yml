@@ -7,6 +7,9 @@ name: "CodeQL - Java"
 
 env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  PROFILES: frankframework,ci
+  USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'frankframework') && github.actor != 'dependabot[bot]' }}
+  MAVEN_GOALS: package
 
 on:
   push:
@@ -50,21 +53,35 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Cache local Maven repository
-      uses: actions/cache@v3
+    - name: Create cached directories
+      run: |
+        mkdir -p ~/.m2/repository
+        mkdir -p ~/.sonar/cache
+        mkdir -p console/frontend/src/main/frontend/node_modules
+
+    - name: Restore cached directories
+      uses: actions/cache/restore@v4
       with:
-        path: ~/.m2/repository
-        key: maven-dependencies
+        path: |
+          ~/.m2/repository
+          ~/.sonar/cache
+          console/frontend/src/main/frontend/node_modules
+        key: project-cache-
 
     - name: Set up JDK ${{ matrix.java }}
       uses: actions/setup-java@v3
       with:
-        distribution: 'zulu'
+        distribution: 'temurin'
         java-version: ${{ matrix.java }}
+
+    - name: Set up Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
         # If you wish to specify custom queries, you can do so here or in a config file.
@@ -72,14 +89,13 @@ jobs:
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-      # Use Maven Wrapper, so we can build with an older version of Maven, see PR #4579.
+    # Use Maven Wrapper, so we can build with an older version of Maven, see PR #4579.
     - name: Build with Maven
       env:
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
-        jdk11: true # allows the use of the JDK11 profile, when running JDK11
-      run: ./mvnw -B -V -T1 package -Pibissource
+      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}}
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl
@@ -93,4 +109,4 @@ jobs:
     #   make release
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3

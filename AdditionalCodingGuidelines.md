@@ -1,6 +1,13 @@
 Code Style Guidelines
 =====================
 
+The code style has been defined in a few different formats:
+* `.editorconfig`
+* `Frank_Framework_CodeStyle IntelliJ.xml`
+* `Frank_Framework_CodeStyle Eclipse.xml`
+
+Please apply the appropriate file to the project if it's not picked up automatically.
+
 I want to suggest a few additional code style guidelines.
 
 Aim of these code style guidelines is to promote code that is:
@@ -9,6 +16,7 @@ Aim of these code style guidelines is to promote code that is:
 - Maintainable
 - Has fewer bugs
 - Make it easier to reason about what the code does
+- Documented
 
 Guidelines
 ----------
@@ -95,15 +103,20 @@ final String x = (condition) ? "value" : null;
 	 - The idea is to put focus the actual operations your code does instead of burying that
 		in the ceremony around it.
 
-
-8. Java Optionals.
+8. Usage of 'var'
+	Since Java 9, the usage of `var` is supported. This is still strongly typed, but notation is less verbose:
+	`String string = new String()` can become `var string = new String()`.
+	This can become less readable when using the return type of a method. To keep code as readable as possible, we only use 
+	this when the type is clear, such as a direct assignment of a string or scalar value or constructor. Try to avoid using `var` for variables assigned from method return values, this makes code less readable
+	when not using an IDE.
+9. Abstract classes	
+   
+	When creating abstract classes, name them like `AbstractClass` and don't use `ClassBase`. When using a base/abstract super class, combined with interfaces, see if a `default` interface method might suffice.
+10. Java Optionals.
 
 	You can use Java `Optional` to indicate that the return value of a method can be `null`.
-	It is not custom to use this for parameters, only for return-values.
-	However I find that code is not necessarily more readable when using `Optional` so use
-	them at your own discretion, and see if you find the code calling your methods becomes
-	either more readable, or safer (as in, less likely to do the wrong thing when a value
-	could be null).
+	Optional should not be used for parameters.
+	When working with streams and extracting methods to integrate in the streams, working with Optional return values makes code easier to understand. Refactoring existing code might not be that easy. 
 	If you do not use `Optional` then it is a good idea to annotate your methods with `@Nonnull`
 	and companions.
 	One good scenario for using `Optional` is for avoiding re-assigning variables which could
@@ -304,3 +317,13 @@ fun registerApplicationModules(modules: List<String>) =
 			 log.info { "Loading IAF module [$version] version [$module]" }
 		 }
 ```
+
+### Documentation
+Since javadoc is used for generating documentation in the Frank!Doc, it's important to provide usable information in the class for Frank Developers.
+
+* Please provide documentation in the javadoc if there's been a (breaking) change and offer an example in the documentation. See [FixedResultPipe.java](https://github.com/frankframework/frankframework/blob/master/core/src/main/java/org/frankframework/pipes/FixedResultPipe.java) for instance.  
+* When using multiline Code examples, please use `<pre>{@code ... }</pre>` blocks.
+* When referring to classes, please use `{@link ClassName}`
+* Frank!Doc treats {@value} and {@literal} differently, please use them like this:
+  * When referring to a class value, please use `{@value #VALUE}`
+  * When referring to a value (of a parameter, variable, etc), please use `{@literal null}`

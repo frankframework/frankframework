@@ -36,7 +36,7 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.ObjectId;
@@ -130,7 +130,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import org.frankframework.core.PipeLineSession;
-
 import org.frankframework.extensions.cmis.server.CmisSecurityHandler;
 import org.frankframework.http.HttpSecurityHandler;
 import org.frankframework.util.AppConstants;
@@ -320,7 +319,7 @@ public class CmisUtils {
 							gregorian.setTimeZone(TimeZone.getTimeZone(timezoneAttr));
 						}
 					} catch (ParseException e) {
-						log.warn("exception parsing date [" + propertyValue + "] using formatString [" + formatStringAttr + "]", e);
+						log.warn("exception parsing date [{}] using formatString [{}]", propertyValue, formatStringAttr, e);
 					}
 				}
 				properties.addProperty(new PropertyDateTimeImpl(addStandardDefinitions(new PropertyDateTimeDefinitionImpl(), propertyElement, propertyType), gregorian));
@@ -346,11 +345,11 @@ public class CmisUtils {
 				properties.addProperty(new PropertyHtmlImpl(addStandardDefinitions(new PropertyHtmlDefinitionImpl(), propertyElement, propertyType), propertyValue));
 				break;
 			default:
-				log.warn("unparsable type [" + typeAttr + "] for property ["+propertyValue+"]");
+				log.warn("unparsable type [{}] for property [{}]", typeAttr, propertyValue);
 				continue; //Skip all and continue with the next property!
 			}
 
-			log.debug("set property name [" + nameAttr + "] value [" + propertyValue + "]");
+			log.debug("set property name [{}] value [{}]", nameAttr, propertyValue);
 		}
 
 		return properties;

@@ -22,9 +22,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.management.bus.ActionSelector;
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusAware;
+import org.frankframework.management.bus.BusException;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
+import org.frankframework.scheduler.ConfiguredJob;
+import org.frankframework.scheduler.IbisJobDetail;
+import org.frankframework.scheduler.SchedulerHelper;
+import org.frankframework.scheduler.job.DatabaseJob;
+import org.frankframework.scheduler.job.IJob;
+import org.frankframework.util.Locker;
+import org.frankframework.util.MessageKeeperMessage;
 import org.quartz.CronTrigger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -38,22 +52,6 @@ import org.quartz.Trigger.TriggerState;
 import org.quartz.TriggerKey;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.messaging.Message;
-
-import org.frankframework.management.bus.ActionSelector;
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusAware;
-import org.frankframework.management.bus.BusException;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.BusTopic;
-import org.frankframework.scheduler.ConfiguredJob;
-import org.frankframework.scheduler.IbisJobDetail;
-import org.frankframework.scheduler.SchedulerHelper;
-import org.frankframework.scheduler.job.DatabaseJob;
-import org.frankframework.scheduler.job.IJob;
-import org.frankframework.util.Locker;
-import org.frankframework.util.MessageKeeperMessage;
-
-import javax.annotation.security.RolesAllowed;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.SCHEDULER)
@@ -189,7 +187,7 @@ public class GetSchedules extends BusEndpointBase {
 		if (StringUtils.isNotEmpty(job.getDescription()))
 			description = job.getDescription();
 		jobData.put("description", description);
-		jobData.put("stateful", job.isPersistJobDataAfterExecution() && job.isConcurrentExectionDisallowed());
+		jobData.put("stateful", job.isPersistJobDataAfterExecution() && job.isConcurrentExecutionDisallowed());
 		jobData.put("durable",job.isDurable());
 		jobData.put("jobClass", job.getJobClass().getSimpleName());
 
@@ -268,7 +266,7 @@ public class GetSchedules extends BusEndpointBase {
 				map.put(propertyName, date.getTime());
 			}
 		} catch (Exception e) {
-			log.debug("error parsing date for property ["+propertyName+"]", e);
+			log.debug("error parsing date for property [{}]", propertyName, e);
 		}
 	}
 
@@ -303,7 +301,7 @@ public class GetSchedules extends BusEndpointBase {
 			MessageKeeperMessage job = jobdef.getMessageKeeper().getMessage(t);
 
 			message.put("text", job.getMessageText());
-			message.put("date", job.getMessageDate());
+			message.put("date", Date.from(job.getMessageDate()));
 			message.put("level", job.getMessageLevel());
 
 			messages.add(message);

@@ -80,35 +80,20 @@ export class JdbcService {
   }
 
   postJdbcBrowse(formData: JdbcBrowseForm): Observable<JdbcBrowseReturnData> {
-    return this.http.post<JdbcBrowseReturnData>(
-      `${this.appService.absoluteApiPath}jdbc/browse`,
-      formData,
-    );
+    return this.http.post<JdbcBrowseReturnData>(`${this.appService.absoluteApiPath}jdbc/browse`, formData);
   }
 
   postJdbcQuery(formData: JdbcQueryForm): Observable<string> {
-    return this.http.post(
-      `${this.appService.absoluteApiPath}jdbc/query`,
-      formData,
-      { responseType: 'text' },
-    );
+    return this.http.post(`${this.appService.absoluteApiPath}jdbc/query`, formData, { responseType: 'text' });
   }
 
-  postJdbcSummary(
-    formData: JdbcSummaryForm,
-  ): Observable<JdbcSummaryReturnData> {
-    return this.http.post<JdbcSummaryReturnData>(
-      `${this.appService.absoluteApiPath}jdbc/summary`,
-      formData,
-    );
+  postJdbcSummary(formData: JdbcSummaryForm): Observable<JdbcSummaryReturnData> {
+    return this.http.post<JdbcSummaryReturnData>(`${this.appService.absoluteApiPath}jdbc/summary`, formData);
   }
 
   postJdbcLiquibase(formData: FormData): Observable<{
     result: string;
   }> {
-    return this.http.post<{ result: string }>(
-      `${this.appService.absoluteApiPath}jdbc/liquibase`,
-      formData,
-    );
+    return this.http.post<{ result: string }>(`${this.appService.absoluteApiPath}jdbc/liquibase`, formData);
   }
 }

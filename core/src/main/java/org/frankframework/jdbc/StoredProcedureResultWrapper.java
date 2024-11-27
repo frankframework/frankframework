@@ -42,18 +42,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-
 import org.frankframework.dbms.IDbmsSupport;
-import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.util.JdbcUtil;
+
+import jakarta.annotation.Nonnull;
 
 public class StoredProcedureResultWrapper implements ResultSet {
 
 	@Nonnull private final IDbmsSupport dbmsSupport;
 	@Nonnull private final CallableStatement delegate;
 	@Nonnull private final ParameterMetaData parameterMetaData;
-	@Nonnull private final List<Map.Entry<Integer, Parameter>> parameterPositions;
+	@Nonnull private final List<Map.Entry<Integer, IParameter>> parameterPositions;
+
+	private static final UnsupportedOperationException CANNOT_UPDATE_RESULTS_EXCEPTION = new UnsupportedOperationException("Cannot update results from Callable Statement");
 
 	private boolean hasNext;
 
@@ -66,7 +68,7 @@ public class StoredProcedureResultWrapper implements ResultSet {
 	 */
 	public StoredProcedureResultWrapper(
 			@Nonnull IDbmsSupport dbmsSupport,
-			@Nonnull CallableStatement delegate, @Nonnull ParameterMetaData parameterMetaData, @Nonnull Map<Integer, Parameter> parameterPositions) {
+			@Nonnull CallableStatement delegate, @Nonnull ParameterMetaData parameterMetaData, @Nonnull Map<Integer, IParameter> parameterPositions) {
 		this.dbmsSupport = dbmsSupport;
 		this.delegate = delegate;
 		this.parameterMetaData = parameterMetaData;
@@ -289,7 +291,7 @@ public class StoredProcedureResultWrapper implements ResultSet {
 	@Override
 	public int findColumn(String columnLabel) throws SQLException {
 		int idx = 1;
-		for (Map.Entry<Integer, Parameter> entry : parameterPositions) {
+		for (Map.Entry<Integer, IParameter> entry : parameterPositions) {
 			if (entry.getValue().getName().equalsIgnoreCase(columnLabel)) {
 				return idx;
 			}
@@ -425,227 +427,227 @@ public class StoredProcedureResultWrapper implements ResultSet {
 
 	@Override
 	public void updateNull(int columnIndex) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateBoolean(int columnIndex, boolean x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateByte(int columnIndex, byte x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateShort(int columnIndex, short x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateInt(int columnIndex, int x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateLong(int columnIndex, long x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateFloat(int columnIndex, float x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateDouble(int columnIndex, double x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateBigDecimal(int columnIndex, BigDecimal x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateString(int columnIndex, String x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateBytes(int columnIndex, byte[] x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateDate(int columnIndex, Date x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateTime(int columnIndex, Time x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateTimestamp(int columnIndex, Timestamp x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateAsciiStream(int columnIndex, InputStream x, int length) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateBinaryStream(int columnIndex, InputStream x, int length) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateCharacterStream(int columnIndex, Reader x, int length) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateObject(int columnIndex, Object x, int scaleOrLength) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateObject(int columnIndex, Object x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateNull(String columnLabel) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateBoolean(String columnLabel, boolean x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateByte(String columnLabel, byte x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateShort(String columnLabel, short x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateInt(String columnLabel, int x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateLong(String columnLabel, long x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateFloat(String columnLabel, float x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateDouble(String columnLabel, double x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateBigDecimal(String columnLabel, BigDecimal x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateString(String columnLabel, String x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateBytes(String columnLabel, byte[] x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateDate(String columnLabel, Date x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateTime(String columnLabel, Time x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateTimestamp(String columnLabel, Timestamp x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateAsciiStream(String columnLabel, InputStream x, int length) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateBinaryStream(String columnLabel, InputStream x, int length) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateCharacterStream(String columnLabel, Reader reader, int length) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateObject(String columnLabel, Object x, int scaleOrLength) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateObject(String columnLabel, Object x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void insertRow() {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateRow() {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void deleteRow() {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void refreshRow() {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void cancelRowUpdates() {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void moveToInsertRow() {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void moveToCurrentRow() {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
@@ -745,42 +747,42 @@ public class StoredProcedureResultWrapper implements ResultSet {
 
 	@Override
 	public void updateRef(int columnIndex, Ref x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateRef(String columnLabel, Ref x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateBlob(int columnIndex, Blob x) throws SQLException {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateBlob(String columnLabel, Blob x) throws SQLException {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateClob(int columnIndex, Clob x) throws SQLException {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateClob(String columnLabel, Clob x) throws SQLException {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateArray(int columnIndex, Array x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateArray(String columnLabel, Array x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
@@ -795,12 +797,12 @@ public class StoredProcedureResultWrapper implements ResultSet {
 
 	@Override
 	public void updateRowId(int columnIndex, RowId x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateRowId(String columnLabel, RowId x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
@@ -815,22 +817,22 @@ public class StoredProcedureResultWrapper implements ResultSet {
 
 	@Override
 	public void updateNString(int columnIndex, String nString) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateNString(String columnLabel, String nString) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateNClob(int columnIndex, NClob nClob) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateNClob(String columnLabel, NClob nClob) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
@@ -855,12 +857,12 @@ public class StoredProcedureResultWrapper implements ResultSet {
 
 	@Override
 	public void updateSQLXML(int columnIndex, SQLXML xmlObject) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateSQLXML(String columnLabel, SQLXML xmlObject) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
@@ -885,142 +887,142 @@ public class StoredProcedureResultWrapper implements ResultSet {
 
 	@Override
 	public void updateNCharacterStream(int columnIndex, Reader x, long length) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateNCharacterStream(String columnLabel, Reader reader, long length) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateAsciiStream(int columnIndex, InputStream x, long length) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateBinaryStream(int columnIndex, InputStream x, long length) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateCharacterStream(int columnIndex, Reader x, long length) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateAsciiStream(String columnLabel, InputStream x, long length) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateBinaryStream(String columnLabel, InputStream x, long length) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateCharacterStream(String columnLabel, Reader reader, long length) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateBlob(int columnIndex, InputStream inputStream, long length) throws SQLException {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateBlob(String columnLabel, InputStream inputStream, long length) throws SQLException {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateClob(int columnIndex, Reader reader, long length) throws SQLException {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateClob(String columnLabel, Reader reader, long length) throws SQLException {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateNClob(int columnIndex, Reader reader, long length) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateNClob(String columnLabel, Reader reader, long length) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateNCharacterStream(int columnIndex, Reader x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateNCharacterStream(String columnLabel, Reader reader) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateAsciiStream(int columnIndex, InputStream x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateBinaryStream(int columnIndex, InputStream x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateCharacterStream(int columnIndex, Reader x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateAsciiStream(String columnLabel, InputStream x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateBinaryStream(String columnLabel, InputStream x) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateCharacterStream(String columnLabel, Reader reader) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateBlob(int columnIndex, InputStream inputStream) throws SQLException {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateBlob(String columnLabel, InputStream inputStream) throws SQLException {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateClob(int columnIndex, Reader reader) throws SQLException {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateClob(String columnLabel, Reader reader) throws SQLException {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateNClob(int columnIndex, Reader reader) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
 	public void updateNClob(String columnLabel, Reader reader) {
-		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
+		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override

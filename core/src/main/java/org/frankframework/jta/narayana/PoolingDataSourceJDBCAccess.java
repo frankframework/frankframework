@@ -22,20 +22,19 @@ import java.util.StringTokenizer;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp2.ConnectionFactory;
-import org.apache.commons.dbcp2.DataSourceConnectionFactory;
-import org.apache.commons.dbcp2.PoolableConnection;
-import org.apache.commons.dbcp2.PoolableConnectionFactory;
-import org.apache.commons.dbcp2.PoolingDataSource;
-import org.apache.commons.pool2.ObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.springframework.jndi.JndiTemplate;
-
 import com.arjuna.ats.arjuna.exceptions.FatalError;
 import com.arjuna.ats.arjuna.objectstore.jdbc.JDBCAccess;
 import com.arjuna.ats.internal.arjuna.objectstore.jdbc.accessors.DataSourceJDBCAccess;
 
 import lombok.extern.log4j.Log4j2;
+import org.apache.tomcat.dbcp.dbcp2.ConnectionFactory;
+import org.apache.tomcat.dbcp.dbcp2.DataSourceConnectionFactory;
+import org.apache.tomcat.dbcp.dbcp2.PoolableConnection;
+import org.apache.tomcat.dbcp.dbcp2.PoolableConnectionFactory;
+import org.apache.tomcat.dbcp.dbcp2.PoolingDataSource;
+import org.apache.tomcat.dbcp.pool2.ObjectPool;
+import org.apache.tomcat.dbcp.pool2.impl.GenericObjectPool;
+import org.springframework.jndi.JndiTemplate;
 
 /**
  * Alternative to {@link DataSourceJDBCAccess} that adds connection pooling, instead of doing a JNDI lookup each time a connection is called.

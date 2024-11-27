@@ -26,7 +26,7 @@ import org.frankframework.util.Locker;
 /**
  * @author Jaco de Groot
  */
-public class LockerPipeLineProcessor extends PipeLineProcessorBase {
+public class LockerPipeLineProcessor extends AbstractPipeLineProcessor {
 
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
@@ -40,7 +40,7 @@ public class LockerPipeLineProcessor extends PipeLineProcessorBase {
 				throw new PipeRunException(null, "error while setting lock ["+locker+"]", e);
 			}
 			if (objectId == null) {
-				log.info("could not obtain lock ["+locker+"]");
+				log.info("could not obtain lock [{}]", locker);
 				pipeLineResult = new PipeLineResult();
 				pipeLineResult.setState(ExitState.SUCCESS);
 			} else {

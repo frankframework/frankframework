@@ -1,6 +1,7 @@
 package org.frankframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
@@ -13,16 +14,24 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.parameters.Parameter.ParameterType;
+import org.frankframework.parameters.DateParameter.DateFormatType;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.parameters.ParameterType;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.DateParameterBuilder;
 import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.MatchUtils;
+import org.frankframework.testutil.NumberParameterBuilder;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
@@ -32,10 +41,6 @@ import org.frankframework.testutil.VirtualReader;
 import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.SaxElementBuilder;
 import org.frankframework.xml.XmlWriter;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
 
 public class JdbcUtilTest {
 	private static final String H2_CONNECTION_STRING = "jdbc:h2:mem:test";
@@ -92,10 +97,10 @@ public class JdbcUtilTest {
 		// Arrange
 		query = "INSERT INTO TEMP (TKEY, TVARCHAR, TINT, TDATETIME, TCLOB, TBLOB) VALUES (?, ?, ?, ?, ?, ?)";
 		ParameterList params = new ParameterList();
-		params.add(ParameterBuilder.create().withValue("6").withType(ParameterType.INTEGER));
+		params.add(NumberParameterBuilder.create().withValue(6));
 		params.add(ParameterBuilder.create().withValue("5th text"));
-		params.add(ParameterBuilder.create().withValue("15092002").withType(ParameterType.INTEGER));
-		params.add(ParameterBuilder.create().withValue("2018-04-12 03:05:06").withType(ParameterType.DATETIME));
+		params.add(ParameterBuilder.create().withValue("15092002"));
+		params.add(DateParameterBuilder.create().withValue("2018-04-12 03:05:06").withFormatType(DateFormatType.DATETIME));
 		params.add(ParameterBuilder.create().withSessionKey("clobParam").withType(ParameterType.CHARACTER));
 		params.add(ParameterBuilder.create().withSessionKey("blobParam").withType(ParameterType.BINARY));
 
@@ -145,7 +150,7 @@ public class JdbcUtilTest {
 		// Arrange
 		query = "SELECT TVARCHAR2, TDATETIME FROM TEMP WHERE TKEY = ?";
 		params = new ParameterList();
-		params.add(ParameterBuilder.create().withValue("3").withType(ParameterType.INTEGER));
+		params.add(ParameterBuilder.create().withValue("3"));
 
 		// Act
 		List<Object> listResult = (List<Object>) JdbcTestUtil.executeQuery(dbmsSupport, connection, query, ParameterBuilder.getPVL(params), session);
@@ -165,13 +170,44 @@ public class JdbcUtilTest {
 	}
 
 	@Test
+	public void testBytesCase() throws Exception {
+		// Arrange
+		String query = "INSERT INTO TEMP (TKEY, TBLOB) VALUES (?, ?)";
+
+		ParameterList params = new ParameterList();
+		params.add(NumberParameterBuilder.create().withValue(1));
+		params.add(ParameterBuilder.create().withSessionKey("binaryParam").withType(ParameterType.BYTES));
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("binaryParam", new ThrowingAfterCloseInputStream(new VirtualInputStream(20_000)));
+
+		params.configure();
+		ParameterValueList parameterValues = params.getValues(Message.nullMessage(), session);
+
+		// Act
+		JdbcTestUtil.executeStatement(dbmsSupport, connection, query, parameterValues, session);
+
+		// Assert
+		ParameterList resultParams = new ParameterList();
+		resultParams.add(NumberParameterBuilder.create().withValue(1));
+
+		Object result = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT TBLOB FROM TEMP WHERE TKEY = ?",
+				ParameterBuilder.getPVL(resultParams), session);
+
+		assertNotNull(result);
+
+		Blob blob = (Blob) result;
+		assertEquals(20_000, blob.length());
+	}
+
+	@Test
 	@SuppressWarnings("unchecked")
 	public void testLargeLobs() throws Exception {
 		// Arrange
 		String query = "INSERT INTO TEMP (TKEY, TCLOB, TBLOB) VALUES (?, ?, ?)";
 
 		ParameterList params = new ParameterList();
-		params.add(ParameterBuilder.create().withValue("1").withType(ParameterType.INTEGER));
+		params.add(NumberParameterBuilder.create().withValue(1));
 		params.add(ParameterBuilder.create().withSessionKey("clobParam").withType(ParameterType.CHARACTER));
 		params.add(ParameterBuilder.create().withSessionKey("blobParam").withType(ParameterType.BINARY));
 
@@ -187,7 +223,7 @@ public class JdbcUtilTest {
 
 		// Assert
 		ParameterList resultParams = new ParameterList();
-		resultParams.add(ParameterBuilder.create().withValue("1").withType(ParameterType.INTEGER));
+		resultParams.add(NumberParameterBuilder.create().withValue(1));
 
 		List<Object> result = (List<Object>) JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT TCLOB, TBLOB FROM TEMP WHERE TKEY = ?", ParameterBuilder.getPVL(resultParams), session);
 

@@ -166,7 +166,7 @@ public class SchedulerAdapter {
 			SchedulerMetaData smd = theScheduler.getMetaData();
 
 			xbRoot.addAttribute("schedulerName", smd.getSchedulerName());
-			xbRoot.addAttribute("schedulerInstanceId", smd.getSchedulerInstanceId().toString());
+			xbRoot.addAttribute("schedulerInstanceId", smd.getSchedulerInstanceId());
 			xbRoot.addAttribute("version", smd.getVersion());
 			xbRoot.addAttribute("isPaused", smd.isInStandbyMode());
 			xbRoot.addAttribute("isSchedulerRemote", smd.isSchedulerRemote());
@@ -232,7 +232,7 @@ public class SchedulerAdapter {
 			description = jobDetail.getDescription();
 
 		xbRoot.addAttribute("description", description);
-		xbRoot.addAttribute("isStateful", (jobDetail.isConcurrentExectionDisallowed() && jobDetail.isPersistJobDataAfterExecution()));
+		xbRoot.addAttribute("isStateful", (jobDetail.isConcurrentExecutionDisallowed() && jobDetail.isPersistJobDataAfterExecution()));
 		xbRoot.addAttribute("isDurable", jobDetail.isDurable());
 		xbRoot.addAttribute("jobClass", jobDetail.getJobClass().getName());
 

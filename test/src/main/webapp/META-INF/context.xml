@@ -92,7 +92,7 @@
 		password="${testiaf_user/password:-testiaf_user00}"
 	/>
 
-	<!-- Postgres XA does not work without Narayana, gives ClassCastException casting the XA datasource to Java datasource, so add non-XA for those cases -->
+	<!-- Add Postgres non-XA/normal DataSource to tests without a TransactionManager -->
 	<Resource name="jdbc/ibis4test-postgres" auth="Container"
 			  type="javax.sql.DataSource"
 			  driverClassName="org.postgresql.Driver"
@@ -114,7 +114,7 @@
 		password="${testiaf_user/password:-testiaf_user00}"
 	/>
 
-	<!-- DB2 XA does not work without Narayana, gives ClassCastException casting the XA datasource to Java datasource, so add non-XA for those cases -->
+	<!-- Add DB2 non-XA/normal DataSource to tests without a TransactionManager -->
 	<Resource name="jdbc/ibis4test-db2" auth="Container"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="com.ibm.db2.jcc.DB2SimpleDataSource"
@@ -130,7 +130,7 @@
 		name="mongodb/ibis4test"
 		type="com.mongodb.MongoClient"
 		factory="com.mongodb.client.MongoClientFactory"
-		connectionString="mongodb://testiaf_user:testiaf_user00@${jdbc.hostname:-localhost}"
+		connectionString="mongodb://mongodb:27017"
 		auth="Container"
 		singleton="true"
 	/>
@@ -197,7 +197,7 @@
 	<!-- The queues configured in the queues attribute will be created if they do not exist -->
 	<Resource name="jms/qcf-aws_sqs"
 		factory="org.frankframework.jms.AmazonSqsFactory"
-		type="javax.jms.ConnectionFactory"
+		type="jakarta.jms.ConnectionFactory"
 
 		region="eu-west-1"
 		authAlias="aws"

@@ -3,13 +3,12 @@
 		<receiver
 			checkForDuplicates="true"
 			checkForDuplicatesMethod="CORRELATIONID"
-			processResultCacheSize="0"
-			>
+			processResultCacheSize="0">
 			<listener
 				name="SimpleInsertListener"
 				className="org.frankframework.http.rest.ApiListener"
 				uriPattern="insert"
-				method="post"
+				methods="post,put"
 			/>
 			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="ApiListenerDuplicateCheck" />
 		</receiver>
@@ -23,17 +22,13 @@
 					<param name="tvarchar" sessionKey="messageId" />
 				</sender>
 			</pipe>
-
-			<pipe name="FixedResultPipe" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;success/&gt;">
+			<pipe name="echo" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="&lt;success/&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
-
 		</pipeline>
 	</adapter>
 	<adapter name="ApiListener_SimpleGet">
-		<receiver
-			processResultCacheSize="0"
-			>
+		<receiver processResultCacheSize="0">
 			<listener
 				name="SimpleGetListener"
 				className="org.frankframework.http.rest.ApiListener"
@@ -41,19 +36,16 @@
 			/>
 		</receiver>
 		<pipeline>
-
-			<pipe name="FixedResultPipe" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;success/&gt;">
+			<pipe name="echo" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="&lt;success/&gt;">
 				<forward name="success" path="READY" />
 			</pipe>
-
 		</pipeline>
 	</adapter>
 	<adapter name="ApiListener_SimpleInsertWithTransactedException">
 		<receiver
 			checkForDuplicates="true"
 			processResultCacheSize="0"
-			transactionAttribute="Required"
-			>
+			transactionAttribute="Required">
 			<listener
 				name="SimpleInsertListener"
 				className="org.frankframework.http.rest.ApiListener"
@@ -81,8 +73,7 @@
 		<receiver
 			checkForDuplicates="true"
 			processResultCacheSize="0"
-			elementToMove="content"
-			>
+			elementToMove="content">
 			<listener
 				name="SimpleInsertListener"
 				className="org.frankframework.http.rest.ApiListener"
@@ -129,12 +120,12 @@
 		<receiver>
 			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-CallApiListener" />
 		</receiver>
-		<pipeline firstPipe="callApiListener">
+		<pipeline firstPipe="${callApiListener}">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="callApiListener"
+			<pipe name="${callApiListener}"
 				className="org.frankframework.pipes.SenderPipe">
 				<sender className="org.frankframework.http.HttpSender"
 					urlParam="url_param" methodType="POST" resultStatusCodeSessionKey="statusCode"
@@ -144,7 +135,7 @@
 					headersParams="Message-Id"
 				>
 					<param name="url_param" xpathExpression="*/@uri" /> <!-- use pipeline input -->
-					<param name="Message-Id" sessionKey="cid" /> <!-- use well known value for messageId, to be able to test duplicate check -->
+					<param name="${Message-Id}" sessionKey="cid" /> <!-- use well known value for messageId, to be able to test duplicate check -->
 				</sender>
 			</pipe>
 
@@ -155,7 +146,7 @@
 				<forward name="500" path="FixedResultOnException" />
 			</pipe>
 
-			<pipe name="FixedResultOnException" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;error/&gt;">
+			<pipe name="FixedResultOnException" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="&lt;error/&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -166,7 +157,6 @@
 			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-CallApiListenermMultipleTimes" />
 		</receiver>
 		<pipeline firstPipe="forEachElement">
-
 			<ForEachChildElementPipe name="forEachElement" elementXPathExpression="/requests/request">
 				<HttpSender urlParam="url_param" allowSelfSignedCertificates="true" verifyHostname="false" authAlias="${framework.api.user.alias}" headersParams="Message-Id, Correlation-Id">
 					<param name="url_param" xpathExpression="*/@uri" /> <!-- use pipeline input -->
@@ -174,14 +164,11 @@
 					<param name="Correlation-Id" pattern="{uuid}" />
 				</HttpSender>
 			</ForEachChildElementPipe>
-
 		</pipeline>
 	</adapter>
 
 	<adapter name="ApiListener_LargeStreamProducer">
-		<receiver
-			processResultCacheSize="0"
-		>
+		<receiver processResultCacheSize="0">
 			<listener
 				name="LargeStreamProducer"
 				className="org.frankframework.http.rest.ApiListener"
@@ -217,5 +204,62 @@
 			/>
 		</pipeline>
 	</adapter>
+	<adapter name="ApiListener_MultiVerb">
+		<receiver processResultCacheSize="0">
+			<listener
+				name="MultiVerbListener"
+				className="org.frankframework.http.rest.ApiListener"
+				uriPattern="multiVerb"
+				methods="POST,PUT,PATCH"
+			/>
+		</receiver>
+		<pipeline>
+			<pipe name="echo" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="&lt;success/&gt;">
+				<forward name="success" path="READY" />
+			</pipe>
+		</pipeline>
+	</adapter>
 
+	<adapter name="ApiListener_MultiVerb_Client">
+		<receiver>
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-ApiListener-MultiVerb" />
+		</receiver>
+
+		<pipeline firstPipe="SwitchMethod">
+			<exits>
+				<exits>
+					<exit state="success" path="EXIT" />
+				</exits>
+			</exits>
+			<pipe name="SwitchMethod" className="org.frankframework.pipes.XmlSwitch" xpathExpression="*/@method" />
+
+			<pipe name="post" className="org.frankframework.pipes.SenderPipe">
+				<HttpSender urlParam="url_param" allowSelfSignedCertificates="true" verifyHostname="false" authAlias="${framework.api.user.alias}"
+					headersParams="Message-Id, Correlation-Id" methodType="POST">
+					<param name="url_param" xpathExpression="*/@uri" />
+					<param name="Message-Id" pattern="{uuid}" />
+					<param name="Correlation-Id" pattern="{uuid}" />
+				</HttpSender>
+				<forward name="success" path="EXIT"/>
+			</pipe>
+			<pipe name="put" className="org.frankframework.pipes.SenderPipe">
+				<HttpSender urlParam="url_param" allowSelfSignedCertificates="true" verifyHostname="false" authAlias="${framework.api.user.alias}"
+					headersParams="Message-Id, Correlation-Id" methodType="PUT">
+					<param name="url_param" xpathExpression="*/@uri" />
+					<param name="Message-Id" pattern="{uuid}" />
+					<param name="Correlation-Id" pattern="{uuid}" />
+				</HttpSender>
+				<forward name="success" path="EXIT"/>
+			</pipe>
+			<pipe name="patch" className="org.frankframework.pipes.SenderPipe">
+				<HttpSender urlParam="url_param" allowSelfSignedCertificates="true" verifyHostname="false" authAlias="${framework.api.user.alias}"
+					headersParams="Message-Id, Correlation-Id" methodType="PATCH">
+					<param name="url_param" xpathExpression="*/@uri" />
+					<param name="Message-Id" pattern="{uuid}" />
+					<param name="Correlation-Id" pattern="{uuid}" />
+				</HttpSender>
+				<forward name="success" path="EXIT"/>
+			</pipe>
+		</pipeline>
+	</adapter>
 </module>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,12 +21,11 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
@@ -38,8 +37,8 @@ import org.frankframework.stream.Message;
  */
 public class ParameterValueList implements Iterable<ParameterValue> {
 
-	List<ParameterValue> list;
-	Map<String, ParameterValue> map;
+	private final List<ParameterValue> list;
+	private final Map<String, ParameterValue> map;
 
 	public ParameterValueList() {
 		super();
@@ -48,27 +47,23 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	}
 
 	public static ParameterValueList get(ParameterList params, Message message, PipeLineSession session) throws ParameterException {
-		if (params==null) {
+		if (params == null) {
 			return null;
 		}
 		return params.getValues(message, session);
 	}
 
 	protected void add(ParameterValue pv) {
-		if(pv == null || pv.getDefinition() == null) {
+		if (pv == null || pv.getDefinition() == null) {
 			throw new IllegalStateException("No parameter defined");
 		}
-		if(StringUtils.isEmpty(pv.getDefinition().getName())) {
+		if (StringUtils.isEmpty(pv.getDefinition().getName())) {
 			throw new IllegalStateException("Parameter must have a name");
 		}
 		list.add(pv);
-		map.put(pv.getDefinition().getName(),pv);
+		map.put(pv.getDefinition().getName(), pv);
 	}
 
-	@Deprecated //Fix this in a separate PR
-	public ParameterValue getParameterValue(String name) {
-		return get(name);
-	}
 	/** Get a specific {@link ParameterValue} */
 	public ParameterValue get(String name) {
 		return map.get(name);
@@ -114,7 +109,7 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		Map<String, ParameterValue> paramValuesMap = getParameterValueMap();
 
 		// convert map with parameterValue to map with value
-		Map<String,Object> result = new LinkedHashMap<>(paramValuesMap.size());
+		Map<String, Object> result = new LinkedHashMap<>(paramValuesMap.size());
 		for (ParameterValue pv : paramValuesMap.values()) {
 			result.put(pv.getDefinition().getName(), pv.getValue());
 		}
@@ -133,16 +128,16 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	}
 
 	public static String getValue(ParameterValueList pvl, String name, String defaultValue) {
-		if (pvl!=null) {
+		if (pvl != null) {
 			ParameterValue pv = pvl.get(name);
-			if (pv!=null) {
+			if (pv != null) {
 				return pv.asStringValue(defaultValue);
 			}
 		}
 		return defaultValue;
 	}
 
-	/////// List implementations, can differ in size from Map implementation when multiple ParameterValues with the same name exist!
+	// >> List implementations, can differ in size from Map implementation when multiple ParameterValues with the same name exist!
 
 	/**
 	 * @return The list size, should only be used in combination with {@link ParameterValueList#iterator()}!
@@ -162,7 +157,12 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	 * Returns the {@code List} iterator which may contain {@link Parameter Parameters} with the same name!
 	 */
 	@Override
+	@Nonnull
 	public Iterator<ParameterValue> iterator() {
 		return list.iterator();
+	}
+
+	public Stream<ParameterValue> stream() {
+		return list.stream();
 	}
 }

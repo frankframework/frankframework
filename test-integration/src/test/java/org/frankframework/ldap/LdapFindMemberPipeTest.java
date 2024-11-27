@@ -1,13 +1,14 @@
 package org.frankframework.ldap;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
-org.frankframework.core.PipeForward;
-		org.frankframework.core.PipeLineSession;
-		org.frankframework.core.PipeRunException;
-		org.frankframework.core.PipeRunResult;
-		org.frankframework.core.PipeStartException;
+import org.frankframework.core.PipeForward;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunException;
+import org.frankframework.core.PipeRunResult;
+import org.frankframework.core.PipeStartException;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.PropertyUtil;
 
@@ -25,10 +26,10 @@ public class LdapFindMemberPipeTest {
 
 	private LdapFindMemberPipe pipe;
 
-	@Before
+	@BeforeAll
 	public void setUp() throws ConfigurationException {
 		pipe = new LdapFindMemberPipe();
-		pipe.registerForward(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, null));
+		pipe.addForward(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, null));
 		pipe.setHost(host);
 		pipe.setPort(port);
 		pipe.setUseSsl(useSSL);
@@ -54,7 +55,6 @@ public class LdapFindMemberPipeTest {
 		String input = bindDN;
 
 		PipeRunResult prr = pipe.doPipe(new Message(input), session);
-
 	}
 
 }

@@ -15,10 +15,8 @@
 */
 package org.frankframework.pipes;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,14 +24,19 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Phaser;
 
-import javax.annotation.Nonnull;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+
+import jakarta.annotation.Nonnull;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.task.TaskExecutor;
+import org.xml.sax.SAXException;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IBlockEnabledSender;
 import org.frankframework.core.IDataIterator;
@@ -44,25 +47,22 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.Forward;
+import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.receivers.ResourceLimiter;
 import org.frankframework.senders.ParallelSenderExecutor;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.PathMessage;
-import org.frankframework.util.FileUtils;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
-import org.springframework.core.task.TaskExecutor;
-import org.xml.sax.SAXException;
 
 /**
- * Abstract base class to send a message to a Sender for each item returned by a configurable iterator.
- *
- * <br/>
+ * Base class to send a message to a Sender for each item returned by a configurable iterator.
+* <br/>
  * The output of each of the processing of each of the elements is returned in XML as follows:
  * <pre>
  *  &lt;results count="num_of_elements"&gt;
@@ -72,7 +72,6 @@ import org.xml.sax.SAXException;
  *  &lt;/results&gt;
  * </pre>
  *
- *
  * For more configuration options, see {@link MessageSendingPipe}.
  * <br/>
  * use parameters like:
@@ -81,13 +80,12 @@ import org.xml.sax.SAXException;
  *	&lt;param name="value-of-current-item"         xpathExpression="/*" /&gt;
  * </pre>
  *
- * @ff.forward maxItemsReached The iteration stopped when the configured maximum number of items was processed.
- * @ff.forward stopConditionMet The iteration stopped when the configured condition expression became true.
- *
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-@ElementType(ElementTypes.ITERATOR)
+@Forward(name = "maxItemsReached", description = "the iteration stopped when the configured maximum number of items was processed")
+@Forward(name = "stopConditionMet", description = "the iteration stopped when the configured condition expression became true")
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ITERATOR)
 public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 	protected static final String MAX_ITEMS_REACHED_FORWARD = "maxItemsReached";
@@ -272,28 +270,23 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			}
 			String itemResult=null;
 			totalItems++;
-			if (StringUtils.isNotEmpty(getItemNoSessionKey())) {
-				session.put(getItemNoSessionKey(),""+totalItems);
-			}
-			Message message=itemToMessage(item);
-			// TODO check for bug: sessionKey params not resolved when only parameters set on sender. Next line should check sender.parameterlist too.
-			if (msgTransformerPool!=null) {
-				try {
-					long preprocessingStartTime = System.currentTimeMillis();
 
-					Map<String,Object>parameterValueMap = getParameterList()!=null?getParameterList().getValues(message, session).getValueMap():null;
-					String transformedMsg=msgTransformerPool.transform(message.asSource(),parameterValueMap);
-					log.debug("iteration [{}] transformed item [{}] into [{}]", totalItems, message, transformedMsg);
-					message=new Message(transformedMsg);
-					long preprocessingEndTime = System.currentTimeMillis();
-					long preprocessingDuration = preprocessingEndTime - preprocessingStartTime;
-					getStatisticsKeeper("message preprocessing").record(preprocessingDuration);
-				} catch (Exception e) {
-					throw new SenderException("cannot transform item",e);
-				}
+			if (StringUtils.isNotEmpty(getItemNoSessionKey())) {
+				session.put(getItemNoSessionKey(), ""+totalItems);
+			}
+
+			Message message = itemToMessage(item);
+			// TODO check for bug: sessionKey params not resolved when only parameters set on sender. Next line should check sender.parameterlist too.
+			if (msgTransformerPool != null) {
+				Message transformedMessage = transformMessage(message);
+				log.debug("iteration [{}] transformed item [{}] into [{}]", totalItems, message, transformedMessage);
+				message.close();
+				message = transformedMessage;
 			} else {
 				log.debug("iteration [{}] item [{}]", totalItems, message);
 			}
+			message.closeOnCloseOf(session, "iteratingPipeItem"+totalItems);
+
 			if (childLimiter != null) {
 				try {
 					childLimiter.acquire();
@@ -392,6 +385,20 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				}
 			}
 		}
+
+		private Message transformMessage(Message message) throws SenderException {
+			try {
+				long preprocessingStartTime = System.currentTimeMillis();
+				ParameterValueList parameterValueList = getParameterList() != null ? getParameterList().getValues(message, session) : null;
+				Message transformedMsg = msgTransformerPool.transform(message, parameterValueList);
+				long preprocessingDuration = System.currentTimeMillis() - preprocessingStartTime;
+				getStatisticsKeeper("message preprocessing").record(preprocessingDuration);
+				return transformedMsg;
+			} catch (Exception e) {
+				throw new SenderException("cannot transform item", e);
+			}
+		}
+
 		private void addResult(int count, Message message, String itemResult) throws IOException {
 			if (isRemoveXmlDeclarationInResults()) {
 				log.debug("removing XML declaration from [{}]", itemResult);
@@ -449,13 +456,14 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	protected PipeRunResult sendMessage(Message input, PipeLineSession session, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeoutException, IOException {
 		// sendResult has a messageID for async senders, the result for sync senders
 		StopReason stopReason;
-		File tempFile = FileUtils.createTempFile();
+		MessageBuilder messageBuilder = new MessageBuilder();
 		try {
-			try (Writer resultWriter = Files.newBufferedWriter(tempFile.toPath())) {
-				ItemCallback callback = createItemCallBack(session,sender, resultWriter);
+			try (Writer resultWriter = messageBuilder.asWriter()) {
+				ItemCallback callback = createItemCallBack(session, sender, resultWriter);
 				stopReason = iterateOverInput(input,session,threadContext, callback);
 			}
-			PipeRunResult prr = new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath()));
+
+			PipeRunResult prr = new PipeRunResult(getSuccessForward(), messageBuilder.build());
 			if(stopReason != null) {
 				PipeForward forward = getForwards().get(stopReason.getForwardName());
 				if(forward != null) {

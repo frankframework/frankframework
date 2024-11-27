@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
-import javax.annotation.Nonnull;
 
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -185,7 +183,7 @@ public class FileUtils {
 
 	public static boolean copyFile(File orgFile, File destFile, boolean append) {
 		try {
-			byte[] buf = new byte[StreamUtil.BUFFERSIZE];
+			byte[] buf = new byte[StreamUtil.BUFFER_SIZE];
 			try (FileInputStream fis = new FileInputStream(orgFile); FileOutputStream fos = new FileOutputStream(destFile, append)) {
 				int len;
 				while ((len = fis.read(buf)) > 0) {
@@ -197,69 +195,6 @@ public class FileUtils {
 			log.warn("Could not copy file [{}] to [{}]", orgFile.getPath(), destFile.getPath(), e);
 			return false;
 		}
-	}
-
-	/**
-	 * Creates a temporary file inside the ${ibis.tmpdir} using the default '.tmp' extension.
-	 */
-	public static File createTempFile() throws IOException {
-		return createTempFile(null);
-	}
-
-	/**
-	 * Creates a temporary file inside the ${ibis.tmpdir} using the specified extension.
-	 */
-	public static File createTempFile(final String extension) throws IOException {
-		final File directory = new File( getTempDirectory() );
-		final String suffix = StringUtils.isNotEmpty(extension) ? extension : ".tmp";
-		final String prefix = "frank";
-		log.debug("creating tempfile prefix [{}] suffix [{}] directory [{}]", prefix, suffix, directory);
-		return File.createTempFile(prefix, suffix, directory);
-	}
-
-	/**
-	 * If the ${ibis.tmpdir} is relative it will turn it into an absolute path
-	 * @return The absolute path of ${ibis.tmpdir} or IOException if it cannot be resolved
-	 */
-	public static @Nonnull String getTempDirectory() {
-		String directory = AppConstants.getInstance().getProperty("ibis.tmpdir");
-
-		if (StringUtils.isNotEmpty(directory)) {
-			File file = new File(directory);
-			if (!file.isAbsolute()) {
-				String absPath = new File("").getAbsolutePath();
-				file = new File(absPath, directory);
-			}
-			if(!file.exists()) {
-				file.mkdirs();
-			}
-			String fileDir = file.getPath();
-			if(StringUtils.isEmpty(fileDir) || !file.isDirectory()) {
-				throw new IllegalStateException("unknown or invalid path ["+(StringUtils.isEmpty(fileDir)?"NULL":fileDir)+"]");
-			}
-			directory = file.getAbsolutePath();
-		}
-		log.debug("resolved temp directory to [{}]", directory);
-
-		//Directory may be NULL but not empty. The directory has to valid, available and the IBIS must have read+write access to it.
-		if(StringUtils.isEmpty(directory)) {
-			log.error("unable to determine ibis temp directory, falling back to [java.io.tmpdir]");
-			return System.getProperty("java.io.tmpdir");
-		}
-		return directory;
-	}
-
-	/**
-	 * @return the ${ibis.tmpdir}/folder or IOException if it cannot be resolved.
-	 * If the ${ibis.tmpdir} is relative it will turn it into an absolute path
-	 */
-	public static File getTempDirectory(String folder) throws IOException {
-		String tempDir = getTempDirectory();
-		File newDir = new File(tempDir, folder);
-		if (!newDir.exists() && !newDir.mkdirs()) {
-			throw new IOException("unable to create temp directory [" + newDir.getPath() + "]");
-		}
-		return newDir;
 	}
 
 	protected static void makeBackups(File targetFile, int numBackups)  {

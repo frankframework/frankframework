@@ -15,16 +15,29 @@
 */
 package org.frankframework.receivers;
 
-import org.frankframework.filesystem.FileSystemListener;
-import org.frankframework.filesystem.ftp.FtpFileSystem;
+import org.frankframework.filesystem.AbstractFileSystemListener;
 import org.frankframework.filesystem.ftp.FTPFileRef;
+import org.frankframework.filesystem.ftp.FtpFileSystem;
 import org.frankframework.filesystem.ftp.FtpFileSystemDelegator;
 
-public class FtpFileSystemListener extends FileSystemListener<FTPFileRef, FtpFileSystem> implements FtpFileSystemDelegator {
+/**
+ * File listener for an FTP connection.
+ *
+ * {@inheritDoc}
+ */
+public class FtpFileSystemListener extends AbstractFileSystemListener<FTPFileRef, FtpFileSystem> implements FtpFileSystemDelegator {
 
 	@Override
 	public FtpFileSystem createFileSystem() {
 		return FtpFileSystemDelegator.super.createFileSystem();
+	}
+
+	/**
+	 * Determines the contents of the message that is sent to the pipeline. The value of the attribute matching the searchKey is returned when using <code>ATTRIBUTE</code>
+	 * @ff.default PATH
+	 */
+	public void setMessageType(MessageType messageType) {
+		super.setMessageType(messageType);
 	}
 
 }

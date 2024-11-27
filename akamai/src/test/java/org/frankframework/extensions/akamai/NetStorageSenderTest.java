@@ -21,13 +21,13 @@ import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 
-import org.frankframework.extensions.akamai.NetStorageSender.Action;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
+import org.frankframework.extensions.akamai.NetStorageSender.Action;
 import org.frankframework.http.HttpResponseHandler;
 import org.frankframework.http.HttpSenderTestBase;
 import org.frankframework.parameters.Parameter;
@@ -46,7 +46,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 
 	@Override
 	@AfterEach
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		AppConstants.getInstance().remove("http.headers.messageid");
 	}
 
@@ -87,7 +87,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("duAction.txt"), result.trim());
@@ -95,7 +95,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -111,7 +111,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("duAction.txt"), result.trim());
@@ -119,7 +119,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -134,7 +134,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("dirAction.txt"), result.trim());
@@ -142,7 +142,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -157,7 +157,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("deleteAction.txt"), result.trim());
@@ -165,7 +165,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -183,7 +183,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			pls.put("fileMessage", file);
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("uploadAction.txt"), result.trim());
@@ -191,7 +191,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -210,7 +210,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			pls.put("fileMessage", file);
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("uploadActionMD5.txt"), result.trim());
@@ -218,7 +218,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -238,7 +238,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			pls.put("fileMessage", file);
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("uploadActionMD5.txt"), result.replace("----", "").trim());
@@ -246,7 +246,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -265,7 +265,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			pls.put("fileMessage", file);
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("uploadActionSHA1.txt"), result.trim());
@@ -273,7 +273,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -293,7 +293,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			pls.put("fileMessage", file);
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("uploadActionSHA1.txt"), result.replace("----", "").trim());
@@ -301,7 +301,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -320,7 +320,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			pls.put("fileMessage", file);
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("uploadActionSHA256.txt"), result.trim());
@@ -328,7 +328,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -348,7 +348,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			pls.put("fileMessage", file);
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("uploadActionSHA256.txt"), result.replace("----", "").trim());
@@ -356,7 +356,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -371,7 +371,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("mkdirAction.txt"), result.trim());
@@ -379,7 +379,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -394,7 +394,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("rmdirAction.txt"), result.trim());
@@ -402,7 +402,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -418,7 +418,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("renameAction.txt"), result.trim());
@@ -426,7 +426,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -442,7 +442,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("mtimeAction.txt"), result.trim());
@@ -450,7 +450,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}
@@ -465,7 +465,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.configure();
-			sender.open();
+			sender.start();
 
 			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("downloadAction.txt"), result.trim());
@@ -473,7 +473,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			throw e.getCause();
 		} finally {
 			if (sender != null) {
-				sender.close();
+				sender.stop();
 			}
 		}
 	}

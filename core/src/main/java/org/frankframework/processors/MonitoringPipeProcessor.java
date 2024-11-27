@@ -15,9 +15,9 @@
 */
 package org.frankframework.processors;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import io.micrometer.core.instrument.DistributionSummary;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.IPipe;
@@ -26,17 +26,14 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
-import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 
-import io.micrometer.core.instrument.DistributionSummary;
-
 /**
  * @author Jaco de Groot
  */
-public class MonitoringPipeProcessor extends PipeProcessorBase {
+public class MonitoringPipeProcessor extends AbstractPipeProcessor {
 	private final Logger durationLog = LogUtil.getLogger("LongDurationMessages");
 
 	@Override
@@ -58,7 +55,7 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 			summary.record(pipeDuration);
 
 			if (pipe.getDurationThreshold() >= 0 && pipeDuration > pipe.getDurationThreshold()) {
-				durationLog.info("Pipe [" + pipe.getName() + "] of [" + pipeLine.getOwner().getName() + "] duration [" + pipeDuration + "] ms exceeds max [" + pipe.getDurationThreshold() + "], message [" + message + "]");
+				durationLog.info("Pipe [{}] of [{}] duration [{}] ms exceeds max [{}], message [{}]", pipe::getName, () -> pipeLine.getOwner().getName(), () -> pipeDuration, pipe::getDurationThreshold, () -> message);
 				pipe.throwEvent(IPipe.LONG_DURATION_MONITORING_EVENT);
 			}
 		}
@@ -73,10 +70,8 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 		sb.append("Pipeline of adapter [").append(ownerName).append("] messageId [").append(pipeLineSession.getMessageId()).append("] is about to call pipe [").append(pipe.getName()).append("]");
 
 		boolean lir = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", false);
-		if (pipe instanceof AbstractPipe ap) {
-			if (StringUtils.isNotEmpty(ap.getLogIntermediaryResults())) {
-				lir = Boolean.parseBoolean(ap.getLogIntermediaryResults());
-			}
+		if (StringUtils.isNotEmpty(pipe.getLogIntermediaryResults())) {
+			lir = Boolean.parseBoolean(pipe.getLogIntermediaryResults());
 		}
 		if (lir) {
 			sb.append(" current result ").append(message == null ? "<null>" : "(" + message.getClass().getSimpleName() + ") [" + message + "]").append(" ");

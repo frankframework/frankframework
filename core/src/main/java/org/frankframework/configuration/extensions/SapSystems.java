@@ -15,10 +15,18 @@
 */
 package org.frankframework.configuration.extensions;
 
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.util.SapSystemListItem;
+
+import static org.frankframework.util.SapSystemListItem.registerItem;
+
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class SapSystems {
 
-	public void registerSapSystem(ISapSystem sapSystem) {
-		//SapSystems selfRegister, this method only exists for the FrankDoc;
+	public void addSapSystem(ISapSystem sapSystem) {
+		registerItem((SapSystemListItem) sapSystem);
+		SapSystemFactory.getInstance().addSapSystem(sapSystem, sapSystem.getName());
 	}
 
 }

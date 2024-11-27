@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.util.DateFormatUtils;
 
 
@@ -59,11 +60,6 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 	@Override
 	public String getDateAndOffset(String dateValue, int daysOffset) {
 		return "DATE_ADD(" + dateValue + ", INTERVAL " + daysOffset + " DAY)";
-	}
-
-	@Override
-	public String getClobFieldType() {
-		return "LONGTEXT";
 	}
 
 	@Override
@@ -112,17 +108,17 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) {
 		StringBuilder query = new StringBuilder("select count(*) from information_schema.statistics is1");
 		for (int i = 2; i <= columns.size(); i++) {
-			query.append(", information_schema.statistics is" + i);
+			query.append(", information_schema.statistics is").append(i);
 		}
-		query.append(" where is1.TABLE_SCHEMA='" + schemaOwner + "' and is1.TABLE_NAME='" + tableName + "'");
+		query.append(" where is1.TABLE_SCHEMA='").append(schemaOwner).append("' and is1.TABLE_NAME='").append(tableName).append("'");
 		for (int i = 2; i <= columns.size(); i++) {
-			query.append(" and is1.TABLE_CATALOG=is" + i + ".TABLE_CATALOG");
-			query.append(" and is1.INDEX_SCHEMA=is" + i + ".INDEX_SCHEMA");
-			query.append(" and is1.INDEX_NAME=is" + i + ".INDEX_NAME");
+			query.append(" and is1.TABLE_CATALOG=is").append(i).append(".TABLE_CATALOG");
+			query.append(" and is1.INDEX_SCHEMA=is").append(i).append(".INDEX_SCHEMA");
+			query.append(" and is1.INDEX_NAME=is").append(i).append(".INDEX_NAME");
 		}
 		for (int i = 1; i <= columns.size(); i++) {
-			query.append(" and is" + i + ".COLUMN_NAME='" + columns.get(i - 1) + "'");
-			query.append(" and is" + i + ".SEQ_IN_INDEX=" + i);
+			query.append(" and is").append(i).append(".COLUMN_NAME='").append(columns.get(i - 1)).append("'");
+			query.append(" and is").append(i).append(".SEQ_IN_INDEX=").append(i);
 		}
 		try {
 			return DbmsUtil.executeIntQuery(conn, query.toString()) >= 1;
@@ -142,8 +138,4 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 		return "INT AUTO_INCREMENT";
 	}
 
-	@Override
-	public String getInsertedAutoIncrementValueQuery(String sequenceName) {
-		return "SELECT LAST_INSERT_ID()";
-	}
 }

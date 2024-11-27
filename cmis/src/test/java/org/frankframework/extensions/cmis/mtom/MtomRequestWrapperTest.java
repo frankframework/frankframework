@@ -53,7 +53,7 @@ public class MtomRequestWrapperTest {
 		String result = StreamUtil.streamToString(wrapper.getInputStream());
 
 		String boundary = getBoundary(contentType);
-		assertNotNull("no boundary found", boundary);
+		assertNotNull(boundary, "no boundary found");
 		result = result.replace(boundary, "IGNORE"); //Replace the multipart boundary with IGNORE
 
 		TestAssertions.assertEqualsIgnoreCRLF(getOutputFile(testFileName), result);

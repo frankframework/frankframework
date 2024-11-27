@@ -17,6 +17,6 @@ package org.frankframework.core;
 
 public interface IRedeliveringListener<M> extends IListener<M> {
 
-	boolean messageWillBeRedeliveredOnExitStateError(PipeLineSession pipeLineSession);
+	boolean messageWillBeRedeliveredOnExitStateError();
 
 }

@@ -15,10 +15,9 @@
 */
 package org.frankframework.lifecycle;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.ResourceUtils;
-
-import lombok.Getter;
 
 public enum SpringContextScope {
 	STANDALONE("SpringStandaloneContext.xml"), // Standalone Jar Environment
@@ -27,7 +26,7 @@ public enum SpringContextScope {
 	CONFIGURATION("SpringConfigurationContext.xml"); //Configurations
 
 	private final @Getter String contextFile;
-	private SpringContextScope(String contextFile) {
+	SpringContextScope(String contextFile) {
 		this.contextFile = ResourceUtils.CLASSPATH_URL_PREFIX + "/" + contextFile;
 	}
 

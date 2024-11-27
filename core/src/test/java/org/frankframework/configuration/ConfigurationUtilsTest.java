@@ -14,16 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
-import org.frankframework.configuration.classloaders.DatabaseClassLoader;
-import org.frankframework.configuration.classloaders.DirectoryClassLoader;
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
-import org.frankframework.dbms.GenericDbmsSupport;
-import org.frankframework.jdbc.FixedQuerySender;
-import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder;
-import org.frankframework.testutil.mock.PreparedStatementMock;
-import org.frankframework.util.AppConstants;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -37,6 +27,17 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
+
+import org.frankframework.configuration.classloaders.DatabaseClassLoader;
+import org.frankframework.configuration.classloaders.DirectoryClassLoader;
+import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
+import org.frankframework.dbms.GenericDbmsSupport;
+import org.frankframework.jdbc.FixedQuerySender;
+import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder;
+import org.frankframework.testutil.mock.PreparedStatementMock;
+import org.frankframework.util.AppConstants;
 
 public class ConfigurationUtilsTest extends Mockito {
 
@@ -112,7 +113,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
 		assertNotNull(zip, "BuildInfoZip not found");
 		String filename = FilenameUtils.getName(zip.getFile());
-		assertNotNull("filename cannot be determined", filename);
+		assertNotNull(filename, "filename cannot be determined");
 
 		boolean result = ConfigurationUtils.addConfigToDatabase(applicationContext, "fakeDataSource", false, false, "ConfigurationName", "001_20191002-1300", filename, zip.openStream(), "dummy-user");
 		assertTrue(result, "file uploaded to mock database");
@@ -131,10 +132,10 @@ public class ConfigurationUtilsTest extends Mockito {
 		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
 		assertNotNull(zip, "BuildInfoZip not found");
 		String filename = FilenameUtils.getName(zip.getFile());
-		assertNotNull("filename cannot be determined", filename);
+		assertNotNull(filename, "filename cannot be determined");
 
 		String result = ConfigurationUtils.addConfigToDatabase(applicationContext, "fakeDataSource", false, false, filename, zip.openStream(), "dummy-user");
-		assertNotNull("file uploaded to mock database", result);
+		assertNotNull(result, "file uploaded to mock database");
 		Map<String, Object> parameters = stmt.getNamedParameters();
 
 		assertEquals("ConfigurationName", parameters.get("NAME"), "buildInfo name does not match");
@@ -149,11 +150,11 @@ public class ConfigurationUtilsTest extends Mockito {
 		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
 		assertNotNull(zip, "BuildInfoZip not found");
 		String filename = FilenameUtils.getName(zip.getFile());
-		assertNotNull("filename cannot be determined", filename);
+		assertNotNull(filename, "filename cannot be determined");
 
 		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "_SC";
 		String result = ConfigurationUtils.addConfigToDatabase(applicationContext, "fakeDataSource", false, false, filename, zip.openStream(), "dummy-user");
-		assertNotNull("file uploaded to mock database", result);
+		assertNotNull(result, "file uploaded to mock database");
 		Map<String, Object> parameters = stmt.getNamedParameters();
 
 		assertEquals("ConfigurationName", parameters.get("NAME"), "buildInfo name does not match");
@@ -168,11 +169,11 @@ public class ConfigurationUtilsTest extends Mockito {
 		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
 		assertNotNull(zip, "BuildInfoZip not found");
 		String filename = FilenameUtils.getName(zip.getFile());
-		assertNotNull("filename cannot be determined", filename);
+		assertNotNull(filename, "filename cannot be determined");
 
 		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "_SPECIAL";
 		String result = ConfigurationUtils.addConfigToDatabase(applicationContext, "fakeDataSource", false, false, filename, zip.openStream(), "dummy-user");
-		assertNotNull("file uploaded to mock database", result);
+		assertNotNull(result, "file uploaded to mock database");
 		Map<String, Object> parameters = stmt.getNamedParameters();
 
 		assertEquals("ConfigurationName", parameters.get("NAME"), "buildInfo name does not match");

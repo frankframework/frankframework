@@ -146,6 +146,10 @@ public class MessageContext implements Serializable {
 
 		return this;
 	}
+
+	public MimeType getMimeType() {
+		return (MimeType) get(METADATA_MIMETYPE);
+	}
 	public MessageContext withSize(long size) {
 		if (size >= 0) {
 			put(METADATA_SIZE, size);

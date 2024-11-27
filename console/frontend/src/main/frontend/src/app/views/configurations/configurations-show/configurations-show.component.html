@@ -1,23 +1,10 @@
-<!-- Angular ui-router hack-->
-<div ui-view></div>
-
 <div class="wrapper wrapper-content animated fadeInRight">
   <div class="row">
-    <div class="col-lg-12 tabs-container">
-      <ul class="nav nav-tabs" role="menu">
-        <li [ngClass]="{ active: selectedConfiguration === 'All' }">
-          <a (click)="changeConfiguration('All')">All</a>
-        </li>
-        <li
-          *ngFor="let configuration of configurations"
-          [ngClass]="{ active: selectedConfiguration === configuration.name }"
-        >
-          <a (click)="changeConfiguration(configuration.name)">{{
-            configuration.name
-          }}</a>
-        </li>
-      </ul>
-    </div>
+    <app-configuration-tab-list
+      [configurations]="configurations"
+      [showAll]="true"
+      (selectedTabChange)="changeConfiguration($event)"
+    ></app-configuration-tab-list>
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
         <div class="ibox-title summary">
@@ -42,17 +29,14 @@
           </div>
           <br />
           <div class="pull-right">
-            <button
-              (click)="clipboard()"
-              class="btn btn-default btn-xs"
-              title="Copy Configuration"
-              type="button"
-            >
+            <button (click)="clipboard()" class="btn btn-default btn-xs" title="Copy Configuration" type="button">
               Copy <i class="fa fa-clipboard"></i>
             </button>
           </div>
           <div class="clearfix"></div>
-          <pre [text]="configuration" appFormatCode></pre>
+        </div>
+        <div class="summary editor">
+          <app-monaco-editor #editor [options]="{ readOnly: true }"></app-monaco-editor>
         </div>
       </div>
     </div>

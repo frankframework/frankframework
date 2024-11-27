@@ -7,9 +7,9 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="SetLocalValue" className="org.frankframework.pipes.FixedResultPipe" returnString="LocalValueParent" storeResultInSessionKey="localValue" preserveInput="true" />
+			<pipe name="SetLocalValue" className="org.frankframework.pipes.PutInSession" value="LocalValueParent" sessionKey="localValue" preserveInput="true" />
 			<pipe name="SwitchCallerType" className="org.frankframework.pipes.XmlSwitch" preserveInput="true" xpathExpression="request/@callerType" />
-			<pipe name="GuardAgainstFallThrough" className="org.frankframework.pipes.FixedResultPipe" returnString="Oops">
+			<pipe name="GuardAgainstFallThrough" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="Oops">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
@@ -98,12 +98,12 @@
 				<exit path="FAIL"  state="error" code="400" />
 				<exit path="EXCEPTION"  state="error" />
 			</exits>
-			<pipe name="SetReturnCode" className="org.frankframework.pipes.FixedResultPipe" returnString="NOT_OK" storeResultInSessionKey="returnCode" />
-			<pipe name="SetReasonCode" className="org.frankframework.pipes.FixedResultPipe" returnString="INTERNAL_ERROR" storeResultInSessionKey="reasonCode" />
-			<pipe name="SetLocalValue" className="org.frankframework.pipes.FixedResultPipe" returnString="LocalValueChild" storeResultInSessionKey="localValue" />
-			<pipe name="SessionKeyBase64" className="org.frankframework.pipes.FixedResultPipe" returnString="U2Vzc2lvbktleSB2YWx1ZSBmcm9tIGlucHV0U3RyZWFt" />
+			<pipe name="SetReturnCode" className="org.frankframework.pipes.PutInSession" value="NOT_OK" sessionKey="returnCode" />
+			<pipe name="SetReasonCode" className="org.frankframework.pipes.PutInSession" value="INTERNAL_ERROR" sessionKey="reasonCode" />
+			<pipe name="SetLocalValue" className="org.frankframework.pipes.PutInSession" value="LocalValueChild" sessionKey="localValue" />
+			<pipe name="SessionKeyBase64" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="U2Vzc2lvbktleSB2YWx1ZSBmcm9tIGlucHV0U3RyZWFt" />
 			<pipe name="decodeKey" className="org.frankframework.pipes.Base64Pipe" direction="decode" preserveInput="true" storeResultInSessionKey="dataStream" />
-			<pipe name="ResultBase64" className="org.frankframework.pipes.FixedResultPipe" returnString="PHJvb3Q+UGlwZUxpbmUgcmVzdWx0IGZyb20gaW5wdXRTdHJlYW08L3Jvb3Q+" />
+			<pipe name="ResultBase64" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="PHJvb3Q+UGlwZUxpbmUgcmVzdWx0IGZyb20gaW5wdXRTdHJlYW08L3Jvb3Q+" />
 			<pipe name="decodeResult" className="org.frankframework.pipes.Base64Pipe" direction="decode" />
 			<pipe name="SwitchThrowException" className="org.frankframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage" preserveInput="true"
                   xpathExpression="request/@exit" notFoundForwardName="ThrowExceptionFalse">

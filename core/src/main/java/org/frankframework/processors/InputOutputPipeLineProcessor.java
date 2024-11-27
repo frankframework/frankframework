@@ -25,14 +25,14 @@ import org.frankframework.util.UUIDUtil;
 /**
  * @author Jaco de Groot
  */
-public class InputOutputPipeLineProcessor extends PipeLineProcessorBase {
+public class InputOutputPipeLineProcessor extends AbstractPipeLineProcessor {
 
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		// reset the PipeLineSession and store the message and its id in the session
 		if (messageId==null) {
 				messageId= UUIDUtil.createSimpleUUID();
-				log.error("null value for messageId, setting to ["+messageId+"]");
+			log.error("null value for messageId, setting to [{}]", messageId);
 
 		}
 		if (message == null) {

@@ -39,7 +39,7 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.8
  */
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.6.0")
 @ConfigurationWarning("Please replace with XmlSwitch with an xpathExpression or serviceSelectionStylesheetFilename")
 public class FilenameSwitch extends AbstractPipe {
 

@@ -10,7 +10,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.stream.Stream;
 
-import javax.xml.soap.SOAPConstants;
+import jakarta.xml.soap.SOAPConstants;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -49,7 +49,6 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 	private final String soapMessageSoap11 = "<soapenv:Envelope xmlns:soapenv=\"" + SoapVersion.SOAP11.namespace + "\">" + messageBody;
 	private final String soapMessageSoap12 = "<soapenv:Envelope xmlns:soapenv=\"" + SoapVersion.SOAP12.namespace + "\">" + messageBody;
 
-
 	@Override
 	public SoapWrapperPipe createPipe() {
 		return new SoapWrapperPipe();
@@ -82,7 +81,6 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 	@Test
 	public void testShouldKeepPipeSoapConfigurationSoap11VersionWhileWrapping() throws Exception {
 		pipe.setDirection(Direction.UNWRAP);
-		pipe.registerForward(new PipeForward("pipe2", "READY"));
 		pipe.setRemoveOutputNamespaces(true);
 		configureAndStartPipe();
 
@@ -107,7 +105,6 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 	@Test
 	public void testShouldKeepPipeSoapConfigurationSoap12VersionWhileWrapping() throws Exception {
 		pipe.setDirection(Direction.UNWRAP);
-		pipe.registerForward(new PipeForward("pipe2", "READY"));
 		pipe.setRemoveOutputNamespaces(true);
 		pipe.configure();
 		pipe.start();
@@ -233,7 +230,13 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 	public void testWrap() throws Exception {
 		pipe.setOutputNamespace(TARGET_NAMESPACE);
 		pipe.setName(PipeLine.INPUT_WRAPPER_NAME);
-		pipeline.addPipe(pipe);
+
+		// pipeline with validator requires at least 1 pipe to be present.
+		EchoPipe echo = new EchoPipe();
+		echo.setName("dummy-first-pipe");
+		pipeline.addPipe(echo);
+		pipeline.setFirstPipe("dummy-first-pipe");
+
 		configureAndStartPipe();
 
 		String input = "<root>\n<attrib>1</attrib>\n<attrib>2</attrib>\n</root>";
@@ -255,7 +258,13 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		pipe.setOutputNamespace(TARGET_NAMESPACE);
 		pipe.setSoapVersion(SoapVersion.SOAP12);
 		pipe.setName(PipeLine.INPUT_WRAPPER_NAME);
-		pipeline.addPipe(pipe);
+
+		// pipeline with validator requires at least 1 pipe to be present.
+		EchoPipe echo = new EchoPipe();
+		echo.setName("dummy-first-pipe");
+		pipeline.addPipe(echo);
+		pipeline.setFirstPipe("dummy-first-pipe");
+
 		configureAndStartPipe();
 
 		String input = "<root>\n<attrib>1</attrib>\n<attrib>2</attrib>\n</root>";
@@ -294,7 +303,13 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		pipe.setOutputNamespace(TARGET_NAMESPACE);
 		pipe.setName(PipeLine.INPUT_WRAPPER_NAME);
 		pipe.setOmitXmlDeclaration(false);
-		pipeline.addPipe(pipe);
+
+		// pipeline with validator requires at least 1 pipe to be present.
+		EchoPipe echo = new EchoPipe();
+		echo.setName("dummy-first-pipe");
+		pipeline.addPipe(echo);
+		pipeline.setFirstPipe("dummy-first-pipe");
+
 		configureAndStartPipe();
 
 		String input = "<root>\n<attrib>1</attrib>\n<attrib>2</attrib>\n</root>";
@@ -317,6 +332,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 	static Stream<Arguments> testReadMessageAsInputSourceWithISO_8859_1_Charset() throws IOException, URISyntaxException {
 		return MessageTestUtils.readFileInDifferentWays("/Util/MessageUtils/iso-8859-1.xml");
 	}
+
 	@ParameterizedTest
 	@MethodSource
 	void testReadMessageAsInputSourceWithISO_8859_1_Charset(Message message) throws Exception {
@@ -324,7 +340,13 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		pipe.setOutputNamespace(TARGET_NAMESPACE);
 		pipe.setName(PipeLine.INPUT_WRAPPER_NAME);
 		pipe.setOmitXmlDeclaration(false);
-		pipeline.addPipe(pipe);
+
+		// pipeline with validator requires at least 1 pipe to be present.
+		EchoPipe echo = new EchoPipe();
+		echo.setName("dummy-first-pipe");
+		pipeline.addPipe(echo);
+		pipeline.setFirstPipe("dummy-first-pipe");
+
 		configureAndStartPipe();
 
 		// Act
@@ -538,7 +560,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		SoapWrapperPipe outputWrapper = createWrapperSoapPipe(SoapVersion.SOAP11, true);
 
 		// Act: message through unwrap & wrap pipes
-		PipeRunResult pipeRunResult1 = doPipe(pipe, Message.asMessage(soapMessageSoap12), session);
+		PipeRunResult pipeRunResult1 = doPipe(pipe, new Message(soapMessageSoap12), session);
 		PipeRunResult pipeRunResult2 = doPipe(outputWrapper, pipeRunResult1.getResult(), session);
 
 		// Assert: message is determined as SOAP 1.2
@@ -559,7 +581,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		session = new PipeLineSession();
 
 		// Act: message SOAP11 through unwrap & wrap pipes
-		PipeRunResult pipeRunResult1 = doPipe(pipe, Message.asMessage(soapMessageSoap11), session);
+		PipeRunResult pipeRunResult1 = doPipe(pipe, new Message(soapMessageSoap11), session);
 		PipeRunResult pipeRunResult2 = doPipe(outputWrapper, pipeRunResult1.getResult(), session);
 
 		// Assert: but the output is determined as SOAP 1.2 instead, as configured
@@ -577,7 +599,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		session = new PipeLineSession();
 
 		// Act: message SOAP12 through unwrap & wrap pipes
-		PipeRunResult pipeRunResult1 = doPipe(pipe, Message.asMessage(soapMessageSoap12), session);
+		PipeRunResult pipeRunResult1 = doPipe(pipe, new Message(soapMessageSoap12), session);
 		PipeRunResult pipeRunResult2 = doPipe(outputWrapper, pipeRunResult1.getResult(), session);
 
 		// Assert: but the output is determined as SOAP 1.2 instead, as configured
@@ -604,7 +626,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		// Arrange: inputWrapper 2 - wrap
 		SoapWrapperPipe outputWrapper = createPipe();
 		autowireByType(outputWrapper);
-		outputWrapper.registerForward(new PipeForward("success", PipeLine.OUTPUT_WRAPPER_NAME + "2"));
+		outputWrapper.addForward(new PipeForward("success", PipeLine.OUTPUT_WRAPPER_NAME + "2"));
 		outputWrapper.setName(PipeLine.OUTPUT_WRAPPER_NAME + "1");
 		outputWrapper.setSoapVersion(SoapVersion.SOAP11);
 		pipeline.addPipe(outputWrapper);
@@ -616,7 +638,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		outputWrapper2.setName(PipeLine.OUTPUT_WRAPPER_NAME + "2");
 		outputWrapper2.setDirection(Direction.UNWRAP);
 		outputWrapper2.setRemoveOutputNamespaces(true);
-		outputWrapper2.registerForward(new PipeForward("success", "READY"));
+		outputWrapper2.addForward(new PipeForward("success", "READY"));
 		outputWrapper2.configure();
 		outputWrapper2.start();
 		pipeline.addPipe(outputWrapper2);
@@ -624,7 +646,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		session = new PipeLineSession();
 
 		// Act: message SOAP12 through pipes
-		PipeRunResult pipeRunResult1 = doPipe(pipe, Message.asMessage(soapMessageSoap12), session);
+		PipeRunResult pipeRunResult1 = doPipe(pipe, new Message(soapMessageSoap12), session);
 		PipeRunResult pipeRunResult2 = doPipe(outputWrapper, pipeRunResult1.getResult(), session);
 		PipeRunResult pipeRunResult3 = doPipe(outputWrapper2, pipeRunResult2.getResult(), session);
 
@@ -641,7 +663,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		SoapWrapperPipe wrapPipeSoap = createPipe();
 		wrapPipeSoap.setDirection(Direction.WRAP);
 		autowireByType(wrapPipeSoap);
-		wrapPipeSoap.registerForward(new PipeForward("success", "READY"));
+		wrapPipeSoap.addForward(new PipeForward("success", "READY"));
 		wrapPipeSoap.setName(PipeLine.OUTPUT_WRAPPER_NAME);
 		wrapPipeSoap.setSoapVersion(soapVersion);
 		pipeline.addPipe(wrapPipeSoap);

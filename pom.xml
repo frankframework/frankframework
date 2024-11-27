@@ -7,53 +7,56 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<revision>8.2.0-SNAPSHOT</revision>
+		<revision>9.0.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>17</maven.compiler.target>
 		<maven.compiler.source>17</maven.compiler.source>
-		<log4j2.version>2.23.1</log4j2.version>
+		<log4j2.version>2.24.2</log4j2.version>
 
 		<sonar.organization>frank-framework</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
-		<jackson.version>2.17.0</jackson.version>
-		<cxf.version>3.6.3</cxf.version>
-		<spring.version>5.3.34</spring.version>
-		<spring-security.version>5.8.12</spring-security.version>
-		<spring-integration.version>5.5.20</spring-integration.version>
-		<spring.boot.version>2.7.18</spring.boot.version>
+		<junit.excludedTags></junit.excludedTags>
+		<junit.includedTags></junit.includedTags>
 
-		<narayana.version>5.13.1.Final</narayana.version>
-		<jboss-logging.version>3.4.3.Final</jboss-logging.version>
-		<micrometer.version>1.12.5</micrometer.version>
+		<jackson.version>2.18.1</jackson.version>
+		<cxf.version>4.0.5</cxf.version>
+		<spring.version>6.2.0</spring.version>
+		<spring-security.version>6.4.1</spring-security.version>
+		<spring-integration.version>6.4.0</spring-integration.version>
+		<spring.boot.version>3.3.5</spring.boot.version>
+		<tomcat.version>10.1.33</tomcat.version>
+		<bouncycastle.version>1.79</bouncycastle.version>
+
+		<narayana.version>7.1.0.Final</narayana.version>
+		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
+		<micrometer.version>1.14.1</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
-		<frankdoc.version>3.1</frankdoc.version>
-		<javadoc-plugin.version>3.6.3</javadoc-plugin.version>
+		<frankdoc.version>3.2</frankdoc.version>
+		<javadoc-plugin.version>3.11.1</javadoc-plugin.version>
 
 		<!-- DB Driver Versions -->
-		<h2.driver.version>2.2.224</h2.driver.version>
+		<h2.driver.version>2.3.232</h2.driver.version>
 		<db2.driver.version>11.5.9.0</db2.driver.version>
-		<oracle.driver.version>23.3.0.23.09</oracle.driver.version>
+		<oracle.driver.version>23.6.0.24.10</oracle.driver.version>
 		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
-		<mssql.driver.version>12.6.1.jre11</mssql.driver.version>
-		<mysql.driver.version>8.3.0</mysql.driver.version>
+		<mssql.driver.version>12.8.1.jre11</mssql.driver.version>
+		<mysql.driver.version>9.1.0</mysql.driver.version>
 		<!-- Should upgrade to new MariaDB driver 3.1.4, 3.2.0 or newer for JDK17 support but currently not working with XA transaction managers in the framework. -->
-		<mariadb.driver.version>3.3.3</mariadb.driver.version>
-		<postgresql.driver.version>42.7.3</postgresql.driver.version>
-		<mongodb.driver.version>4.11.2</mongodb.driver.version>
+		<mariadb.driver.version>3.5.1</mariadb.driver.version>
+		<postgresql.driver.version>42.7.4</postgresql.driver.version>
+		<mongodb.driver.version>5.2.1</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
-		<activemq.driver.version>5.18.3</activemq.driver.version> <!-- this minor version is the last using the javax api -->
-		<artemis.driver.version>2.32.0</artemis.driver.version>
-		<geronimo.jta.spec.version>1.1.1</geronimo.jta.spec.version>
-		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
+		<activemq.driver.version>6.1.4</activemq.driver.version>
+		<artemis.driver.version>2.38.0</artemis.driver.version>
 
-		<aws.java.sdk.version>2.25.19</aws.java.sdk.version>
+		<aws.java.sdk.version>2.29.1</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
-		<mockito.version>5.11.0</mockito.version>
-		<junit.version>5.10.2</junit.version>
+		<mockito.version>5.14.2</mockito.version>
+		<junit.version>5.11.3</junit.version>
 	</properties>
 
 	<name>Frank!Framework parent</name>
@@ -87,6 +90,12 @@
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 		<developer>
+			<name>Erik van Dongen</name>
+			<email>erik@frankframework.org</email>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
+		</developer>
+		<developer>
 			<name>Ali Sihab Akcan</name>
 			<email>ali@ibissource.org</email>
 			<organization>Frank!Framework</organization>
@@ -109,6 +118,21 @@
 	<dependencyManagement>
 		<dependencies>
 			<!-- Lock transient dependency versions to fix CVE's -->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore</artifactId>
+			<version>4.4.16</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.14</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpmime</artifactId>
+			<version>4.5.14</version>
+		</dependency>
 			<dependency>
 				<groupId>commons-beanutils</groupId>
 				<artifactId>commons-beanutils</artifactId>
@@ -132,17 +156,12 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.26.1</version>
-			</dependency>
-			<dependency>
-				<groupId>io.netty</groupId>
-				<artifactId>netty-transport-native-epoll</artifactId>
-				<version>4.1.109.Final</version>
+				<version>4.28.3</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>33.1.0-jre</version>
+				<version>33.3.1-jre</version>
 			</dependency>
 			<dependency><!-- needed for io.fabric8:kubernetes-client transitive deps -->
 				<groupId>com.squareup.okhttp3</groupId>
@@ -152,7 +171,7 @@
 			<dependency>
 				<groupId>com.nimbusds</groupId>
 				<artifactId>nimbus-jose-jwt</artifactId>
-				<version>9.37.3</version>
+				<version>9.47</version>
 			</dependency>
 			<!-- End Lock transient deps -->
 
@@ -266,6 +285,21 @@
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
+				<artifactId>frankframework-ladybug-common</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.frankframework</groupId>
+				<artifactId>frankframework-ladybug-rerunner</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.frankframework</groupId>
+				<artifactId>frankframework-ladybug-debugger</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.frankframework</groupId>
 				<artifactId>frankframework-aspose</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -313,15 +347,34 @@
 				<type>pom</type>
 			</dependency>
 
-			<dependency><!-- explicit dependency to force version 1.2.2 which handles javax.activation.* imports, compatible with the IBM JRE -->
+			<!-- API's are to compile, implementations should be provided by the application server -->
+			<dependency>
 				<groupId>jakarta.activation</groupId>
 				<artifactId>jakarta.activation-api</artifactId>
-				<version>1.2.2</version>
+				<version>2.1.3</version>
 			</dependency>
-			<dependency><!-- this dependency handles jakarta.activation.* imports -->
-				<groupId>com.sun.activation</groupId>
-				<artifactId>jakarta.activation</artifactId>
+			<dependency>
+				<groupId>jakarta.transaction</groupId>
+				<artifactId>jakarta.transaction-api</artifactId>
 				<version>2.0.1</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>jakarta.servlet</groupId>
+				<artifactId>jakarta.servlet-api</artifactId>
+				<version>6.1.0</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>jakarta.jms</groupId>
+				<artifactId>jakarta.jms-api</artifactId>
+				<version>3.1.0</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>jakarta.annotation</groupId>
+				<artifactId>jakarta.annotation-api</artifactId>
+				<version>3.0.0</version>
 			</dependency>
 
 			<!-- SPRING to force versions -->
@@ -349,6 +402,14 @@
 				<scope>import</scope>
 			</dependency>
 
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-bom</artifactId>
+				<version>4.1.115.Final</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
 			<!-- explicitly define Spring dependencies, to avoid version conflicts with Spring Security (https://www.baeldung.com/spring-security-with-maven) -->
 			<dependency>
 				<groupId>org.springframework.security</groupId>
@@ -370,7 +431,7 @@
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
-				<version>2.0.13</version>
+				<version>2.0.16</version>
 			</dependency>
 
 			<dependency>
@@ -381,50 +442,41 @@
 				<scope>import</scope>
 			</dependency>
 
+			<!-- the bcpg depends on the other two modules, however to ensure we're using the latest version, explicitly define them here, dependabot will take care of the rest -->
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcprov-jdk18on</artifactId>
+				<version>${bouncycastle.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcutil-jdk18on</artifactId>
+				<version>${bouncycastle.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcpg-jdk18on</artifactId>
+				<version>${bouncycastle.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcpkix-jdk18on</artifactId>
+				<version>${bouncycastle.version}</version>
+			</dependency>
+
 			<!-- Jackson dependencies -->
 			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-core</artifactId>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
 				<version>${jackson.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.jaxrs</groupId>
-				<artifactId>jackson-jaxrs-json-provider</artifactId>
-				<version>${jackson.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>jakarta.activation</groupId>
-						<artifactId>jakarta.activation-api</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.dataformat</groupId>
-				<artifactId>jackson-dataformat-cbor</artifactId>
-				<version>${jackson.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-databind</artifactId>
-				<version>${jackson.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-annotations</artifactId>
-				<version>${jackson.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 
 			<dependency>
-				<groupId>javax.servlet</groupId>
-				<artifactId>javax.servlet-api</artifactId>
-				<version>3.1.0</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>jakarta.jms</groupId>
-				<artifactId>jakarta.jms-api</artifactId>
-				<version>2.0.3</version>
-				<scope>provided</scope>
+				<groupId>org.glassfish.jaxb</groupId>
+				<artifactId>jaxb-runtime</artifactId>
+				<version>4.0.5</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
@@ -449,7 +501,7 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-lang3</artifactId>
-				<version>3.14.0</version>
+				<version>3.17.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
@@ -459,7 +511,7 @@
 			<dependency>
 				<groupId>commons-codec</groupId>
 				<artifactId>commons-codec</artifactId>
-				<version>1.17.0</version>
+				<version>1.17.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
@@ -469,22 +521,27 @@
 			<dependency>
 				<groupId>commons-net</groupId>
 				<artifactId>commons-net</artifactId>
-				<version>3.10.0</version>
+				<version>3.11.1</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
-				<version>2.16.1</version>
+				<version>2.18.0</version>
 			</dependency>
 			<dependency>
-				<groupId>com.sun.mail</groupId>
-				<artifactId>jakarta.mail</artifactId>
-				<version>2.0.1</version>
+				<groupId>jakarta.mail</groupId>
+				<artifactId>jakarta.mail-api</artifactId>
+				<version>2.1.3</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.angus</groupId>
+				<artifactId>angus-mail</artifactId>
+				<version>2.0.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
-				<version>1.18.32</version>
+				<version>1.18.36</version>
 				<scope>provided</scope>
 			</dependency>
 
@@ -515,16 +572,16 @@
 			</dependency>
 
 			<!-- contains Tomcat for executable WAR archives -->
-			<dependency><!-- fixes a CVE, must be defined before the spring boot dependency -->
+			<dependency>
 				<groupId>org.apache.tomcat.embed</groupId>
 				<artifactId>tomcat-embed-core</artifactId>
-				<version>9.0.88</version>
+				<version>${tomcat.version}</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.tomcat.embed</groupId>
 				<artifactId>tomcat-embed-el</artifactId>
-				<version>9.0.88</version>
+				<version>${tomcat.version}</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -532,13 +589,6 @@
 				<artifactId>spring-boot-starter-tomcat</artifactId>
 				<version>${spring.boot.version}</version>
 				<scope>provided</scope>
-				<exclusions>
-					<!-- contains a CVE and we don't use websockets anyways -->
-					<exclusion>
-						<groupId>org.apache.tomcat.embed</groupId>
-						<artifactId>tomcat-embed-websocket</artifactId>
-					</exclusion>
-				</exclusions>
 			</dependency>
 
 			<!-- contains the class and application 'loaders' for executable archives -->
@@ -549,12 +599,6 @@
 				<scope>provided</scope>
 			</dependency>
 			<!-- aggregates all loggers to SLF4J -->
-			<dependency><!-- fixes a CVE, must be defined before the spring boot dependency -->
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-classic</artifactId>
-				<version>1.5.6</version>
-				<scope>provided</scope>
-			</dependency>
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-logging</artifactId>
@@ -566,6 +610,12 @@
 			<dependency>
 				<groupId>org.junit.jupiter</groupId>
 				<artifactId>junit-jupiter</artifactId>
+				<version>${junit.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter-engine</artifactId>
 				<version>${junit.version}</version>
 				<scope>test</scope>
 			</dependency>
@@ -596,13 +646,13 @@
 			<dependency>
 				<groupId>org.awaitility</groupId>
 				<artifactId>awaitility</artifactId>
-				<version>4.2.1</version>
+				<version>4.2.2</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
-				<groupId>com.mockrunner</groupId>
+				<groupId>net.oneandone.mockrunner</groupId>
 				<artifactId>mockrunner-jms</artifactId>
-				<version>2.0.7</version>
+				<version>3.0.1</version>
 				<scope>test</scope>
 				<exclusions>
 					<exclusion>
@@ -614,6 +664,13 @@
 						<artifactId>ant</artifactId>
 					</exclusion>
 				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>org.testcontainers</groupId>
+				<artifactId>testcontainers-bom</artifactId>
+				<version>1.20.4</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -675,28 +732,24 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.2.5</version>
+				<version>3.5.2</version>
 				<configuration>
 					<redirectTestOutputToFile>true</redirectTestOutputToFile>
+					<excludedGroups>${junit.excludedTags}</excludedGroups>
+					<groups>${junit.includedTags}</groups>
 					<reuseForks>true</reuseForks>
-					<includes>
-						<include>**/*.java</include>
-					</includes>
-					<excludes>
-						<exclude>it.**</exclude>
-					</excludes>
-					<argLine>@{argLine} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED</argLine>
+					<argLine>@{argLine} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI</argLine>
 				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-deploy-plugin</artifactId>
-				<version>3.1.1</version>
+				<version>3.1.3</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
-				<version>3.0.1</version>
+				<version>3.1.1</version>
 				<configuration>
 					<goals>deploy</goals>
 					<tagNameFormat>v@{project.version}</tagNameFormat>
@@ -731,7 +784,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
-					<version>3.4.1</version>
+					<version>3.4.2</version>
 					<configuration>
 						<archive>
 							<addMavenDescriptor>true</addMavenDescriptor>
@@ -781,7 +834,7 @@
 						<dependency>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
-							<version>1.18.32</version>
+							<version>1.18.36</version>
 						</dependency>
 					</dependencies>
 					<executions>
@@ -814,7 +867,7 @@
 					<configuration>
 						<excludeFile>${iaf.rootdir}/copyrightExcludeFile.txt</excludeFile>
 						<exclude>
-							DataSourceXAResourceRecoveryHelper.java,NarayanaRecoveryManager.java,FilenameUtils.java,PasswordHash.java,FrankJ2V8LibraryLoader.java
+							DataSourceXAResourceRecoveryHelper.java,NarayanaRecoveryManager.java,PasswordHash.java,FrankJ2V8LibraryLoader.java,ReplacingVariablesInputStream.java,ReplacingInputStream.java
 						</exclude>
 						<ignoreYear>true</ignoreYear>
 						<useDash>true</useDash>
@@ -824,7 +877,7 @@
 				<plugin>
 					<groupId>com.github.hazendaz.maven</groupId>
 					<artifactId>directory-maven-plugin</artifactId>
-					<version>1.1.2</version>
+					<version>1.2.0</version>
 					<executions>
 						<execution>
 							<id>find-project-root-directory</id>
@@ -929,16 +982,17 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-site-plugin</artifactId>
-					<version>3.12.1</version>
+					<version>3.21.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-checkstyle-plugin</artifactId>
-					<version>3.3.1</version>
+					<version>3.6.0</version>
 					<configuration>
 						<configLocation>${iaf.rootdir}/checkstyle.xml</configLocation>
 						<propertyExpansion>config_loc=${iaf.rootdir}</propertyExpansion>
 						<logViolationsToConsole>true</logViolationsToConsole>
+						<includeTestSourceDirectory>true</includeTestSourceDirectory>
 					</configuration>
 					<executions>
 						<execution>
@@ -953,7 +1007,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>10.16.0</version>
+							<version>10.20.1</version>
 						</dependency>
 					</dependencies>
 				</plugin>
@@ -1051,7 +1105,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.4.1</version>
+					<version>3.5.0</version>
 					<executions>
 						<execution>
 							<id>enforce-lib-ban</id>
@@ -1063,8 +1117,10 @@
 									<bannedDependencies>
 										<excludes>
 											<exclude>com.sun.mail:javax.mail</exclude><!-- Java Mail was renamed to the Jakarta Mail -->
+											<exclude>org.eclipse.angus:angus-mail:[1.0.0]</exclude><!-- don't use com.sun.mail packages anymore -->
 											<exclude>javax.transaction:javax.transaction-api</exclude><!-- javax.transaction-api was renamed to the jakarta.transaction-api -->
 											<exclude>org.glassfish:javax.json</exclude>
+											<exclude>com.google.code.findbugs:jsr305</exclude>
 										</excludes>
 										<message>use jakarta packages instead</message>
 									</bannedDependencies>
@@ -1080,9 +1136,9 @@
 									</bannedDependencies>
 									<bannedDependencies>
 										<!-- the jms api now finally officially exists, no need to use geronimo anymore -->
-										<!-- also excludes version 3 which uses the jakarta namespaces -->
+										<!-- also excludes version 2 which uses the old javax namespaces -->
 										<excludes>
-											<exclude>jakarta.jms:jakarta.jms-api:3.*</exclude>
+											<exclude>jakarta.jms:jakarta.jms-api:[2.0.2],[2.0.3]</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_1.1_spec</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_2.0_spec</exclude>
 										</excludes>
@@ -1100,9 +1156,10 @@
 										<excludes>
 											<exclude>javax.activation:javax.activation-api</exclude>
 											<exclude>com.sun.activation:javax.activation</exclude>
+											<exclude>com.sun.activation:jakarta.activation</exclude>
 											<exclude>javax.activation:activation</exclude>
 										</excludes>
-										<message>Don't though versions, we should use javax.activation:1.2.2 and jakarta.activation:2.0.1</message>
+										<message>Don't touch versions, we should use jakarta.activation-api:2.1.3</message>
 									</bannedDependencies>
 									<bannedDependencies>
 										<excludes>
@@ -1117,6 +1174,13 @@
 										</excludes>
 										<message>use the newer 'org.bouncycastle:*-jdk18on' version of org.bouncycastle</message>
 									</bannedDependencies>
+									<bannedDependencies>
+										<excludes>
+											<exclude>com.sun.xml.bind:jaxb-core</exclude>
+											<exclude>com.sun.xml.bind:jaxb-impl</exclude>
+										</excludes>
+										<message>Dont use com.sun but glassfish instead</message>
+									</bannedDependencies>
 								</rules>
 							</configuration>
 						</execution>
@@ -1130,6 +1194,7 @@
 									<bannedDependencies>
 										<excludes>
 											<exclude>ant:ant</exclude>
+											<!-- Once testcontainers finally starts using junit5 remove this comment.. <exclude>junit:junit</exclude>-->
 											<exclude>jakarta.jms:jakarta.jms-api:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_1.1_spec:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_2.0_spec:*:jar:compile</exclude>
@@ -1155,7 +1220,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>3.5.0</version>
+				<version>3.8.0</version>
 				<reportSets>
 					<reportSet>
 						<reports>
@@ -1245,7 +1310,7 @@
 					<plugin>
 						<groupId>org.sonatype.plugins</groupId>
 						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.6.13</version>
+						<version>1.7.0</version>
 						<extensions>true</extensions>
 						<configuration>
 							<serverId>ossrh</serverId>
@@ -1444,6 +1509,8 @@
 								<additionalOption>${project.build.directory}/frankdoc</additionalOption>
 								<additionalOption>-digesterRulesPath</additionalOption>
 								<additionalOption>${project.basedir}/core/src/main/resources/digester-rules.xml</additionalOption>
+								<additionalOption>-propertyFilePath</additionalOption>
+								<additionalOption>${project.basedir}/core/src/main/resources/AppConstants.properties</additionalOption>
 								<additionalOption>-rootClass</additionalOption>
 								<additionalOption>org.frankframework.configuration.Configuration</additionalOption>
 								<additionalOption>-frankFrameworkVersion</additionalOption>

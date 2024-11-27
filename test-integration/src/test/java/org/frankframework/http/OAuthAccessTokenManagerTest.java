@@ -3,13 +3,15 @@ package org.frankframework.http;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.SenderException;
 import org.frankframework.http.authentication.HttpAuthenticationException;
 import org.frankframework.http.authentication.OAuthAccessTokenManager;
-
 import org.frankframework.util.CredentialFactory;
 
 public class OAuthAccessTokenManagerTest {
@@ -27,8 +29,8 @@ public class OAuthAccessTokenManagerTest {
 	private HttpSender httpSender = new HttpSender();
 	private final int expiry = 60;
 
-	@Before
-	public void setup() {
+	@BeforeEach
+	public void setup() throws ConfigurationException, SenderException {
 		httpSender = new HttpSender();
 		httpSender.setUrl("https://dummy");
 		httpSender.configure();
@@ -36,7 +38,7 @@ public class OAuthAccessTokenManagerTest {
 	}
 
 	@Test
-	public void testRetrieveAccessToken() {
+	public void testRetrieveAccessToken() throws HttpAuthenticationException {
 		String tokenEndpoint = TOKENENDPOINT;
 		String scope = "email";
 		String clientId = clientClientId;
@@ -52,7 +54,7 @@ public class OAuthAccessTokenManagerTest {
 	}
 
 	@Test
-	public void testRetrieveAccessTokenNoScope() {
+	public void testRetrieveAccessTokenNoScope() throws HttpAuthenticationException {
 		String tokenEndpoint = TOKENENDPOINT;
 		String scope = null;
 		String clientId = clientClientId;
@@ -68,7 +70,7 @@ public class OAuthAccessTokenManagerTest {
 	}
 
 	@Test
-	public void testRetrieveAccessTokenWrongCredentials() {
+	public void testRetrieveAccessTokenWrongCredentials() throws HttpAuthenticationException {
 		String tokenEndpoint = TOKENENDPOINT;
 		String scope = "email";
 		String clientId = clientClientId;
@@ -83,7 +85,7 @@ public class OAuthAccessTokenManagerTest {
 	}
 
 	@Test
-	public void testRetrieveAccessTokenWrongTokenEndpoint() {
+	public void testRetrieveAccessTokenWrongTokenEndpoint() throws HttpAuthenticationException {
 		String tokenEndpoint = TOKENENDPOINT+"x";
 		String scope = "email";
 		String clientId = clientClientId;

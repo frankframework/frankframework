@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,18 +19,18 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.frankframework.core.ISender;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.stream.Message;
-import org.frankframework.util.FileUtils;
-import org.frankframework.util.flow.ResultHandler;
-
 import com.eclipsesource.v8.JavaCallback;
 import com.eclipsesource.v8.JavaVoidCallback;
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.V8Value;
+
+import org.frankframework.core.ISender;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.stream.Message;
+import org.frankframework.util.TemporaryDirectoryUtils;
+import org.frankframework.util.flow.ResultHandler;
 
 public class J2V8 implements JavascriptEngine<V8> {
 
@@ -52,7 +52,7 @@ public class J2V8 implements JavascriptEngine<V8> {
 	 */
 	@Override
 	public void startRuntime() throws JavascriptException {
-		String tempDirectory = FileUtils.getTempDirectory();
+		String tempDirectory = TemporaryDirectoryUtils.getTempDirectory().toString();
 
 		// preload the library to avoid having to set ALL FILES execute permission
 		if (!j2v8LibraryLoaded) {
@@ -62,7 +62,7 @@ public class J2V8 implements JavascriptEngine<V8> {
 					// now update the private boolean field in the ancestor that indicates that the library has been loaded.
 					try {
 						Field privateField = V8.class.getDeclaredField("nativeLibraryLoaded");
-						privateField.setAccessible(true); // it additional permissions might be required for this
+						privateField.setAccessible(true); // additional permissions might be required for this
 						privateField.set(null, true);
 					} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
 						throw new JavascriptException("Cannot indicate that native J2V8 library has been loaded", e);

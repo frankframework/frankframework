@@ -7,6 +7,8 @@ import java.io.OutputStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
+import org.frankframework.util.CloseUtils;
+
 public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 
 	protected IFileSystemTestHelper helper;
@@ -81,8 +83,8 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 
 	@AfterEach
 	@Override
-	public void tearDown() throws Exception {
-		if (helper!=null) helper.tearDown();
+	public void tearDown() {
+		CloseUtils.closeSilently(helper);
 		super.tearDown();
 	}
 

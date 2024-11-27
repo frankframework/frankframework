@@ -9,8 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.frankframework.testutil.ParameterBuilder;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.testutil.ParameterBuilder;
 
 public class ParameterValueListTest {
 
@@ -38,7 +39,7 @@ public class ParameterValueListTest {
 		assertSame(key2, list.remove("key2"));
 		assertNull(list.remove("doesnt-exist"));
 
-		assertEquals("value3", list.getParameterValue("key3").getValue());
+		assertEquals("value3", list.get("key3").getValue());
 		assertEquals("value1", list.getParameterValue(0).getValue());
 		assertEquals("value4", list.getParameterValue(1).getValue());
 		assertEquals("value3", list.getParameterValue(2).getValue());

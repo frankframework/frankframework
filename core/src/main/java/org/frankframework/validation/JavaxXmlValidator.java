@@ -38,16 +38,15 @@ import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XSGrammar;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSModel;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * Straightforward XML-validation based on javax.validation. This is work in programs.
@@ -123,21 +122,20 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public ValidatorHandler getValidatorHandler(PipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException {
+	public ValidatorHandler getValidatorHandler(PipeLineSession session, AbstractValidationContext context) throws ConfigurationException, PipeRunException {
 		Schema schema=getSchemaObject(context.getSchemasId(), schemasProvider.getSchemas(session));
 		return schema.newValidatorHandler();
 	}
-
-
 
 	/**
 	 * Returns the {@link Schema} associated with this validator. This is an XSD schema containing knowledge about the
 	 * schema source as returned by {@link #getSchemaSources(List)}
 	 */
-	protected synchronized Schema getSchemaObject(String schemasId, List<org.frankframework.validation.Schema> schemas) throws  ConfigurationException {
+	protected synchronized Schema getSchemaObject(String schemasId, List<org.frankframework.validation.Schema> schemas) throws ConfigurationException {
 		Schema schema = javaxSchemas.get(schemasId);
 		if (schema == null) {
 			SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+
 			factory.setErrorHandler(new ErrorHandler() {
 				@Override
 				public void warning(SAXParseException e) {
@@ -165,6 +163,8 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 			});
 			factory.setResourceResolver((s, s1, s2, s3, s4) -> null);
 			try {
+				factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+
 				Collection<Source> sources = getSchemaSources(schemas);
 				schema = factory.newSchema(sources.toArray(new Source[sources.size()]));
 				javaxSchemas.put(schemasId, schema);
@@ -200,7 +200,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	}
 }
 
-class JavaxValidationContext extends ValidationContext {
+class JavaxValidationContext extends AbstractValidationContext {
 
 	String schemasId;
 	Schema schema;

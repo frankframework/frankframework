@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,26 +31,31 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+
 import org.frankframework.configuration.classloaders.DatabaseClassLoader;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
+import org.frankframework.configuration.classloaders.WebAppClassLoader;
 import org.frankframework.core.IbisTransaction;
-import org.frankframework.core.SenderException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.lifecycle.ApplicationMessageEvent;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.LogUtil;
@@ -58,10 +63,6 @@ import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
-import org.springframework.context.ApplicationContext;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
  * Functions to manipulate the configuration.
@@ -75,12 +76,14 @@ public class ConfigurationUtils {
 	public static final String STUB4TESTTOOL_CONFIGURATION_KEY = "stub4testtool.configuration";
 	public static final String STUB4TESTTOOL_VALIDATORS_DISABLED_KEY = "validators.disabled";
 	public static final String STUB4TESTTOOL_XSLT_VALIDATORS_PARAM = "disableValidators";
-	public static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
+	public static final String STUB4TESTTOOL_XSLT_KEY = "stub4testtool.xsl";
+	public static final String STUB4TESTTOOL_XSLT_DEFAULT = "/xml/xsl/stub4testtool.xsl";
 
 	public static final String FRANK_CONFIG_XSD = "/xml/xsd/FrankConfig-compatibility.xsd";
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.database.autoLoad", false);
 	private static final boolean CONFIG_AUTO_FS_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.directory.autoLoad", false);
+	private static final String INSTANCE_NAME = AppConstants.getInstance().getProperty("instance.name", null);
 	private static final String CONFIGURATIONS = APP_CONSTANTS.getProperty("configurations.names.application");
 	public static final String DEFAULT_CONFIGURATION_FILE = "Configuration.xml";
 
@@ -91,6 +94,12 @@ public class ConfigurationUtils {
 	 */
 	public static boolean isConfigurationStubbed(ClassLoader classLoader) {
 		return AppConstants.getInstance(classLoader).getBoolean(STUB4TESTTOOL_CONFIGURATION_KEY, false);
+	}
+
+	public static boolean isConfigurationXmlOptional(Configuration configuration) {
+		return CONFIG_AUTO_FS_CLASSLOADER &&
+				configuration.getClassLoader() instanceof WebAppClassLoader &&
+				configuration.getName().equals(INSTANCE_NAME);
 	}
 
 	public static String getConfigurationFile(ClassLoader classLoader, String currentConfigurationName) {
@@ -111,8 +120,7 @@ public class ConfigurationUtils {
 	}
 
 	/**
-	 * Get the version (configuration.version + configuration.timestmap)
-	 * from the configuration's AppConstants
+	 * Get the version (configuration.version + configuration.timestamp) from the configuration's AppConstants.
 	 */
 	public static String getConfigurationVersion(ClassLoader classLoader) {
 		return getConfigurationVersion(AppConstants.getInstance(classLoader));
@@ -140,6 +148,33 @@ public class ConfigurationUtils {
 		return version;
 	}
 
+	public static List<Map<String, Object>> getActiveConfigsFromDatabase(ApplicationContext applicationContext, String dataSourceName) throws ConfigurationException {
+		String workdataSourceName = dataSourceName;
+		if (StringUtils.isEmpty(workdataSourceName)) {
+			workdataSourceName = IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
+		}
+
+		if(log.isInfoEnabled()) log.info("trying to fetch all active configurations from database with dataSourceName [{}]", workdataSourceName);
+
+		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
+		qs.setDatasourceName(workdataSourceName);
+		qs.setQuery(DUMMY_SELECT_QUERY);
+		qs.configure();
+		try {
+			qs.start();
+			try(Connection conn = qs.getConnection()) {
+				String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
+				try (PreparedStatement stmt = conn.prepareStatement(query)) {
+					return extractConfigurationsFromResultSet(stmt);
+				}
+			}
+		} catch (LifecycleException | JdbcException | SQLException e) {
+			throw new ConfigurationException(e);
+		} finally {
+			qs.stop();
+		}
+	}
+
 	public static Map<String, Object> getActiveConfigFromDatabase(ApplicationContext applicationContext, String name, String dataSourceName) throws ConfigurationException {
 		return getConfigFromDatabase(applicationContext, name, dataSourceName, null);
 	}
@@ -159,13 +194,13 @@ public class ConfigurationUtils {
 		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
 		try {
-			qs.open();
+			qs.start();
 			try(Connection conn = qs.getConnection()) {
-				if(version == null) {//Return active config
+				if (version == null) { // Return active config
 					String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
 					try (PreparedStatement stmt = conn.prepareStatement(query)) {
 						stmt.setString(1, name);
-						return extractConfigurationFromResultSet(stmt, name, version);
+						return extractConfigurationFromResultSet(stmt, name, null);
 					}
 				}
 				else {
@@ -177,30 +212,49 @@ public class ConfigurationUtils {
 					}
 				}
 			}
-		} catch (SenderException | JdbcException | SQLException e) {
+		} catch (LifecycleException | JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
+			qs.stop();
+		}
+	}
+
+	private static Map<String, Object> extractConfigurationFromResultSetRow (ResultSet rs) throws SQLException {
+		Map<String, Object> configuration = new HashMap<>(5);
+		byte[] jarBytes = rs.getBytes(1);
+		if (jarBytes == null) return null;
+
+		configuration.put("CONFIG", jarBytes);
+		configuration.put("VERSION", rs.getString(2));
+		configuration.put("FILENAME", rs.getString(3));
+		configuration.put("CREATED", rs.getString(4));
+		configuration.put("USER", rs.getString(5));
+		return configuration;
+	}
+
+	private static List<Map<String, Object>> extractConfigurationsFromResultSet(PreparedStatement stmt) throws SQLException {
+		try(ResultSet rs = stmt.executeQuery()) {
+			List<Map<String, Object>> configs = new ArrayList<>();
+
+			while (rs.next()) {
+				Map<String, Object> rowConfig = extractConfigurationFromResultSetRow(rs);
+				if(rowConfig != null) {
+					configs.add(rowConfig);
+				}
+			}
+
+			return configs;
 		}
 	}
 
 	private static Map<String, Object> extractConfigurationFromResultSet(PreparedStatement stmt, String name, String version) throws SQLException {
 		try(ResultSet rs = stmt.executeQuery()) {
 			if (!rs.next()) {
-				log.error("no configuration found in database with name ["+name+"] " + (version!=null ? "version ["+version+"]" : "activeconfig [TRUE]"));
+				log.error("no configuration found in database with name [{}] {}", name, version != null ? "version [" + version + "]" : "activeconfig [TRUE]");
 				return null;
 			}
 
-			Map<String, Object> configuration = new HashMap<>(5);
-			byte[] jarBytes = rs.getBytes(1);
-			if (jarBytes == null) return null;
-
-			configuration.put("CONFIG", jarBytes);
-			configuration.put("VERSION", rs.getString(2));
-			configuration.put("FILENAME", rs.getString(3));
-			configuration.put("CREATED", rs.getString(4));
-			configuration.put("USER", rs.getString(5));
-			return configuration;
+			return extractConfigurationFromResultSetRow(rs);
 		}
 	}
 
@@ -227,7 +281,7 @@ public class ConfigurationUtils {
 						String configName = ConfigurationUtils.addConfigToDatabase(applicationContext, datasource, activate_config, automatic_reload, entryName, StreamUtil.dontClose(zipInputStream), ruser);
 						result.put(configName, "loaded");
 					} catch (ConfigurationException e) {
-						log.error("an error occurred while trying to store new configuration using datasource ["+datasource+"]", e);
+						log.error("an error occurred while trying to store new configuration using datasource [{}]", datasource, e);
 						result.put(entryName, e.getMessage());
 					}
 				}
@@ -243,7 +297,6 @@ public class ConfigurationUtils {
 		}
 
 		Connection conn = null;
-		ResultSet rs = null;
 		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery(DUMMY_SELECT_QUERY);
@@ -253,7 +306,7 @@ public class ConfigurationUtils {
 		TransactionDefinition txDef = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 		IbisTransaction itx = new IbisTransaction(txManager , txDef, "add config ["+name+"] to database");
 		try {
-			qs.open();
+			qs.start();
 			conn = qs.getConnection();
 			int updated = 0;
 
@@ -289,13 +342,13 @@ public class ConfigurationUtils {
 
 				return stmt.executeUpdate() > 0;
 			}
-		} catch (SenderException | JdbcException | SQLException e) {
+		} catch (LifecycleException | JdbcException | SQLException e) {
 			itx.setRollbackOnly();
 			throw new ConfigurationException(e);
 		} finally {
 			itx.complete();
-			JdbcUtil.fullClose(conn, rs);
-			qs.close();
+			JdbcUtil.close(conn);
+			qs.stop();
 		}
 	}
 
@@ -310,7 +363,7 @@ public class ConfigurationUtils {
 		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
 		try {
-			qs.open();
+			qs.start();
 			try (Connection conn = qs.getConnection()) {
 				String query = "DELETE FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
 				try (PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -319,17 +372,17 @@ public class ConfigurationUtils {
 					stmt.execute();
 				}
 			}
-		} catch (SenderException | JdbcException | SQLException e) {
+		} catch (LifecycleException | JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
+			qs.stop();
 		}
 	}
 
 	/**
 	 * Set the all ACTIVECONFIG to false and specified version to true
 	 */
-	public static boolean activateConfig(ApplicationContext applicationContext, String name, String version, String dataSourceName) throws SenderException, ConfigurationException, JdbcException, SQLException {
+	public static boolean activateConfig(ApplicationContext applicationContext, String name, String version, String dataSourceName) throws ConfigurationException, JdbcException, SQLException {
 		String workdataSourceName = dataSourceName;
 		if (StringUtils.isEmpty(workdataSourceName)) {
 			workdataSourceName = IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
@@ -344,7 +397,7 @@ public class ConfigurationUtils {
 		String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
 
 		try {
-			qs.open();
+			qs.start();
 			conn = qs.getConnection();
 			int updated;
 
@@ -373,7 +426,7 @@ public class ConfigurationUtils {
 			}
 		} finally {
 			JdbcUtil.close(conn);
-			qs.close();
+			qs.stop();
 		}
 		return false;
 	}
@@ -381,7 +434,7 @@ public class ConfigurationUtils {
 	/**
 	 * Toggle AUTORELOAD
 	 */
-	public static boolean autoReloadConfig(ApplicationContext applicationContext, String name, String version, boolean booleanValue, String dataSourceName) throws SenderException, ConfigurationException, JdbcException, SQLException {
+	public static boolean autoReloadConfig(ApplicationContext applicationContext, String name, String version, boolean booleanValue, String dataSourceName) throws ConfigurationException, JdbcException, SQLException {
 		String workdataSourceName = dataSourceName;
 		if (StringUtils.isEmpty(workdataSourceName)) {
 			workdataSourceName = IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
@@ -393,9 +446,8 @@ public class ConfigurationUtils {
 		qs.configure();
 
 		try {
-			qs.open();
+			qs.start();
 			try (Connection conn = qs.getConnection()) {
-
 				String selectQuery = "SELECT NAME FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
 				try (PreparedStatement selectStmt = conn.prepareStatement(selectQuery)) {
 					selectStmt.setString(1, name);
@@ -414,20 +466,19 @@ public class ConfigurationUtils {
 				}
 			}
 		} finally {
-			qs.close();
+			qs.stop();
 		}
 		return false;
 	}
 
 	/**
-	 *
 	 * @return A map with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType)
 	 */
 	public static Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames(ApplicationContext applicationContext) {
 		return retrieveAllConfigNames(applicationContext, CONFIG_AUTO_FS_CLASSLOADER, CONFIG_AUTO_DB_CLASSLOADER);
 	}
 
-	//protected because of jUnit tests
+	// protected because of jUnit tests
 	protected static Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames(ApplicationContext applicationContext, boolean directoryConfigurations, boolean databaseConfigurations) {
 		Map<String, Class<? extends IConfigurationClassLoader>> allConfigNameItems = new LinkedHashMap<>();
 
@@ -445,7 +496,7 @@ public class ConfigurationUtils {
 					if (allConfigNameItems.get(name) == null) {
 						allConfigNameItems.put(name, DirectoryClassLoader.class);
 					} else {
-						log.warn("config ["+name+"] already exists in "+allConfigNameItems+", cannot add same config twice");
+						log.warn("config [{}] already exists in {}, cannot add same config twice", name, allConfigNameItems);
 					}
 				}
 			} catch (IOException e) {
@@ -460,7 +511,7 @@ public class ConfigurationUtils {
 					if (allConfigNameItems.get(dbConfigName) == null) {
 						allConfigNameItems.put(dbConfigName, DatabaseClassLoader.class);
 					} else {
-						log.warn("config ["+dbConfigName+"] already exists in "+allConfigNameItems+", cannot add same config twice");
+						log.warn("config [{}] already exists in {}, cannot add same config twice", dbConfigName, allConfigNameItems);
 					}
 				}
 			}
@@ -469,13 +520,13 @@ public class ConfigurationUtils {
 			}
 		}
 
-		log.info("found configurations to load ["+allConfigNameItems+"]");
+		log.info("found configurations to load [{}]", allConfigNameItems);
 
 		return sort(allConfigNameItems);
 	}
 
 	private static <T> Map<String, T> sort(final Map<String, T> allConfigNameItems) {
-		List<String> sortedConfigurationNames = new LinkedList<>(allConfigNameItems.keySet());
+		List<String> sortedConfigurationNames = new ArrayList<>(allConfigNameItems.keySet());
 		sortedConfigurationNames.sort(new ParentConfigComparator());
 
 		Map<String, T> sortedConfigurations = new LinkedHashMap<>();
@@ -496,7 +547,6 @@ public class ConfigurationUtils {
 			}
 			return configName1.equals(configName2) ? 0 : 1;
 		}
-
 	}
 
 	@Nonnull
@@ -528,7 +578,7 @@ public class ConfigurationUtils {
 		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
 		try {
-			qs.open();
+			qs.start();
 			try (Connection conn = qs.getConnection()) {
 				if(!qs.getDbmsSupport().isTablePresent(conn, "IBISCONFIG")) {
 					log.warn("unable to load configurations from database, table [IBISCONFIG] is not present");
@@ -546,10 +596,10 @@ public class ConfigurationUtils {
 					return Collections.unmodifiableList(configurationNames);
 				}
 			}
-		} catch (SenderException | JdbcException | SQLException e) {
+		} catch (LifecycleException | JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			qs.close();
+			qs.stop();
 		}
 	}
 }

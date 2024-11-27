@@ -3,13 +3,14 @@ package org.frankframework.scheduler;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.scheduler.job.SendMessageJob;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class IbisJobDetailTest {
 
@@ -23,12 +24,12 @@ public class IbisJobDetailTest {
 		jobDef1 = SpringUtils.createBean(configuration, SendMessageJob.class);
 		jobDef1.setName("fakeName");
 		jobDef1.setJavaListener("fakeListener");
-		configuration.registerScheduledJob(jobDef1);
+		configuration.addScheduledJob(jobDef1);
 
 		jobDef2 = SpringUtils.createBean(configuration, SendMessageJob.class);
 		jobDef2.setName("fakeName2");
 		jobDef2.setJavaListener("fakeListener");
-		configuration.registerScheduledJob(jobDef2);
+		configuration.addScheduledJob(jobDef2);
 }
 
 	@Test

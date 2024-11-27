@@ -3,30 +3,44 @@ package org.frankframework.filesystem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.testutil.PropertyUtil;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.S3Object;
+import com.adobe.testing.s3mock.testcontainers.S3MockContainer;
 
-public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3FileSystem> {
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.testutil.PropertyUtil;
+import org.frankframework.testutil.ThrowingAfterCloseInputStream;
+
+@Testcontainers(disabledWithoutDocker = true)
+public class AmazonS3FileSystemTest extends FileSystemTest<S3FileRef, AmazonS3FileSystem> {
 
 	private static final int WAIT_TIMEOUT_MILLIS = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
+
+	@Container
+	private static final S3MockContainer s3Mock = new S3MockContainer("latest");
 
 	@TempDir
 	private Path tempdir;
 
 	@Override
-	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new AmazonS3FileSystemTestHelper(tempdir);
+	protected AmazonS3FileSystemTestHelper getFileSystemTestHelper() {
+		return new AmazonS3FileSystemTestHelper(tempdir, s3Mock.getHttpEndpoint());
 	}
 
 	@Override
@@ -35,13 +49,52 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		AmazonS3FileSystemTestHelper awsHelper = (AmazonS3FileSystemTestHelper) this.helper;
 		AmazonS3FileSystem s3 = new AmazonS3FileSystem() {
 			@Override
-			public AmazonS3 createS3Client() {
+			public S3Client createS3Client() {
 				return awsHelper.createS3Client();
 			}
 		};
 
-		s3.setBucketName(awsHelper.getBucketName());
+		s3.setBucketName(awsHelper.getDefaultBucketName());
 		return s3;
+	}
+
+	@Test
+	public void writableFileSystemTestRenameToOtherFolderWithBucketNamePrefix() throws Exception {
+		String destinationFile = "fileRenamed.txt";
+		String bucketName = "other-bucket123";
+		String filename = bucketName+"|"+destinationFile;
+		String contents = "regeltje tekst";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		AmazonS3FileSystemTestHelper awsHelper = (AmazonS3FileSystemTestHelper) helper;
+		S3Client s3Client = awsHelper.getS3Client();
+		try {
+			s3Client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
+
+			assertFalse(awsHelper._fileExistsInBucket(destinationFile, bucketName)); // Actual check to see if the file is there or not
+			assertFalse(fileSystem.exists(new S3FileRef(destinationFile, bucketName))); // Extra sanity check that this also works correctly
+
+			S3FileRef file = fileSystem.toFile(filename);
+			assertEquals(bucketName, file.getBucketName());
+
+			fileSystem.createFile(file, new ThrowingAfterCloseInputStream(new ByteArrayInputStream(contents.getBytes())));
+			waitForActionToFinish();
+
+			// test
+			assertFalse(awsHelper._fileExistsInBucket(destinationFile, awsHelper.getDefaultBucketName()));
+			assertFalse(fileSystem.exists(new S3FileRef(destinationFile, awsHelper.getDefaultBucketName())));
+			assertTrue(awsHelper._fileExistsInBucket(destinationFile, bucketName));
+			assertTrue(fileSystem.exists(new S3FileRef(destinationFile, bucketName)));
+		} finally {
+			try {
+				awsHelper.cleanUpFolder(bucketName, null);
+				s3Client.deleteBucket(DeleteBucketRequest.builder().bucket(bucketName).build());
+			} catch (Exception e) {
+				log.error("unable to remove bucket", e);
+			}
+		}
 	}
 
 	@Test
@@ -71,9 +124,9 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		fileSystem.setSecretKey("456");
 
 		fileSystem.configure();
-		AWSCredentials credentials = fileSystem.getCredentialProvider().getCredentials();
-		assertEquals("123", credentials.getAWSAccessKeyId());
-		assertEquals("456", credentials.getAWSSecretKey());
+		AwsCredentials credentials = fileSystem.getCredentialProvider().resolveCredentials();
+		assertEquals("123", credentials.accessKeyId());
+		assertEquals("456", credentials.secretAccessKey());
 	}
 
 	@Test
@@ -81,8 +134,8 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		fileSystem.setAuthAlias("alias1");
 
 		fileSystem.configure();
-		AWSCredentials credentials = fileSystem.getCredentialProvider().getCredentials();
-		assertEquals("username1", credentials.getAWSAccessKeyId());
+		AwsCredentials credentials = fileSystem.getCredentialProvider().resolveCredentials();
+		assertEquals("username1", credentials.accessKeyId());
 	}
 
 	@Test
@@ -98,7 +151,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		fileSystem.setBucketName("tr/89/**-alala");
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, fileSystem::configure);
-		assertEquals("invalid or empty bucketName [tr/89/**-alala] please visit AWS to see correct bucket naming", e.getMessage());
+		assertEquals("invalid or empty bucketName [tr/89/**-alala] please visit AWS documentation to see correct bucket naming", e.getMessage());
 	}
 
 	@Disabled
@@ -138,7 +191,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		String combinedFilename = bucketname +"|" + filename;
 
 		// act
-		S3Object ref = fileSystem.toFile(combinedFilename);
+		S3FileRef ref = fileSystem.toFile(combinedFilename);
 
 		// assert
 		assertEquals(bucketname, ref.getBucketName());
@@ -155,10 +208,41 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		String combinedFilename = bucketname +"|" + foldername +"/"+ filename;
 
 		// act
-		S3Object ref = fileSystem.toFile(combinedFilename);
+		S3FileRef ref = fileSystem.toFile(combinedFilename);
 
 		// assert
 		assertEquals(bucketname, ref.getBucketName());
 		assertEquals(foldername +"/"+ filename, ref.getKey());
+	}
+
+	@Test
+	public void basicFileSystemTestGetCanonicalFileName() throws Exception {
+		String filename = "readName" + FILE1;
+		String contents = "Tekst om te lezen";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+
+		S3FileRef file = fileSystem.toFile(filename);
+		// test
+		assertEquals(file.getBucketName()+"|"+filename, fileSystem.getCanonicalName(file));
+	}
+
+	@Test
+	public void basicFileSystemTestGetCanonicalFolderName() throws Exception {
+		String foldername = "dummy/folder/";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		_createFolder(foldername);
+		waitForActionToFinish();
+
+		S3FileRef file = fileSystem.toFile(foldername);
+		// test
+		assertEquals(file.getBucketName()+"|"+foldername, fileSystem.getCanonicalName(file));
 	}
 }

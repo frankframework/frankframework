@@ -18,9 +18,9 @@ package org.frankframework.extensions.cmis.mtom;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
@@ -30,7 +30,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.DependsOn;
 
 import org.frankframework.configuration.ApplicationWarnings;
-import org.frankframework.http.HttpServletBase;
+import org.frankframework.http.AbstractHttpServlet;
 import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.lifecycle.ServletManager;
@@ -41,8 +41,8 @@ import org.frankframework.util.StringUtil;
 
 @IbisInitializer
 @DependsOn({"webServices10", "webServices11"})
-@Deprecated // remove this class, use default webservices endpoints in combination with the CmisFilter
-public class MtomProxy extends HttpServletBase implements InitializingBean, ApplicationContextAware {
+@Deprecated(forRemoval = true, since = "7.6.0") // remove this class, use default webservices endpoints in combination with the CmisFilter
+public class MtomProxy extends AbstractHttpServlet implements InitializingBean, ApplicationContextAware {
 
 	private final Logger log = LogUtil.getLogger(this);
 	private static final long serialVersionUID = 3L;
@@ -80,7 +80,7 @@ public class MtomProxy extends HttpServletBase implements InitializingBean, Appl
 		ServletConfiguration config = servletManager.getServlet(PROXY_SERVLET);
 
 		if(cmisWebServiceServlet == null || config == null) {
-			log.warn("unable to find servlet [" + PROXY_SERVLET + "]");
+			log.warn("unable to find servlet [{}]", PROXY_SERVLET);
 			throw new IllegalStateException("proxied servlet ["+PROXY_SERVLET+"] not found");
 		}
 		if(config.getLoadOnStartup() < 0) {

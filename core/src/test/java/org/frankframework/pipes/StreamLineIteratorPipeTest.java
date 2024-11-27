@@ -40,7 +40,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		String expectedLog = TestFileUtils.getTestFile(expectedLogFile);
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = Message.asString(prr.getResult());
+		String actual = prr.getResult().asString();
 
 		assertEquals(expectedLog, resultLog.toString().trim(), expectedLogFile);
 		assertEquals(expected, actual);
@@ -81,7 +81,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		String expectedLog = TestFileUtils.getTestFile(expectedLogFile);
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = Message.asString(prr.getResult());
+		String actual = prr.getResult().asString();
 
 		assertEquals(expectedLog, resultLog.toString().trim(), expectedLogFile);
 		assertEquals(expected, actual, expectedFile);
@@ -141,7 +141,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultInBlocksOfFour.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = Message.asString(prr.getResult());
+		String actual = prr.getResult().asString();
 
 		assertEquals(expected, actual);
 	}
@@ -161,7 +161,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesResultInBlocksOfFour.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = Message.asString(prr.getResult());
+		String actual = prr.getResult().asString();
 
 		assertEquals(expected, actual);
 	}
@@ -174,7 +174,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		pipe.setLinePrefix("{");
 		pipe.setLineSuffix("}");
 		pipe.setCombineBlocks(true);
-		pipe.registerForward(new PipeForward(StopReason.MAX_ITEMS_REACHED.getForwardName(),"dummy"));
+		pipe.addForward(new PipeForward(StopReason.MAX_ITEMS_REACHED.getForwardName(), "dummy"));
 		configurePipe();
 		pipe.start();
 
@@ -182,7 +182,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesResultInBlocksOfFour.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = Message.asString(prr.getResult());
+		String actual = prr.getResult().asString();
 
 		assertEquals(StopReason.MAX_ITEMS_REACHED.getForwardName(), prr.getPipeForward().getName());
 		assertEquals(expected, actual);
@@ -203,7 +203,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesResultInBlocksOfFour.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = Message.asString(prr.getResult());
+		String actual = prr.getResult().asString();
 
 		assertEquals(PipeForward.SUCCESS_FORWARD_NAME, prr.getPipeForward().getName());
 		assertEquals(expected, actual);
@@ -224,7 +224,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultInKeyBlocks.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = Message.asString(prr.getResult());
+		String actual = prr.getResult().asString();
 
 		assertEquals(expected, actual);
 	}
@@ -234,7 +234,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		pipe.setSender(getElementRenderer());
 		pipe.setStartPosition(4);
 		pipe.setEndPosition(5);
-		pipe.registerForward(new PipeForward(StopReason.STOP_CONDITION_MET.getForwardName(), "dummy"));
+		pipe.addForward(new PipeForward(StopReason.STOP_CONDITION_MET.getForwardName(), "dummy"));
 		pipe.setStopConditionXPathExpression("/block='key 4 nine'");
 		pipe.setCombineBlocks(true);
 		configurePipe();
@@ -244,7 +244,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultStopConditionXpath.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = Message.asString(prr.getResult());
+		String actual = prr.getResult().asString();
 
 		assertEquals(expected, actual);
 		assertEquals(StopReason.STOP_CONDITION_MET.getForwardName(), prr.getPipeForward().getName());
@@ -260,7 +260,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultWithoutXmlCharsEscaped.txt");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = Message.asString(prr.getResult());
+		String actual = prr.getResult().asString();
 
 		assertEquals(expected, actual);
 	}
@@ -276,7 +276,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultWithXmlCharsEscaped.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = Message.asString(prr.getResult());
+		String actual = prr.getResult().asString();
 
 		assertEquals(expected, actual);
 	}
@@ -292,7 +292,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		String expected = TestFileUtils.getTestFile("/Pipes/StreamLineIteratorPipe/EndMarkedResult.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = Message.asString(prr.getResult());
+		String actual = prr.getResult().asString();
 
 		assertXmlEquals(expected, actual);
 	}
@@ -309,7 +309,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		String expected = TestFileUtils.getTestFile("/Pipes/StreamLineIteratorPipe/BeginMarkedResult.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = Message.asString(prr.getResult());
+		String actual = prr.getResult().asString();
 
 		assertXmlEquals(expected, actual);
 		assertEquals("3", session.getString("itemNo"));
@@ -326,7 +326,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		String expected = "<results/>";
 
 		PipeRunResult prr = doPipe(pipe, input, session);
-		String actual = Message.asString(prr.getResult());
+		String actual = prr.getResult().asString();
 
 		assertXmlEquals(expected, actual);
 		assertEquals("0", session.getString("itemNo"));

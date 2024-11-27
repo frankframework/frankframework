@@ -18,7 +18,7 @@ package org.frankframework.core;
 import org.frankframework.parameters.Parameter;
 
 /**
- * The <code>ISenderWithParameters</code> allows Senders to declare that they accept and may use {@link Parameter parameters}
+ * Allows Senders to declare that they accept and may use {@link Parameter parameters}
  *
  * @author  Gerrit van Brakel
  */

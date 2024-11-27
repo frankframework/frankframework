@@ -18,10 +18,9 @@ package org.frankframework.processors;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import io.micrometer.core.instrument.DistributionSummary;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeLine;
@@ -36,7 +35,7 @@ import org.frankframework.stream.Message;
  * Processor that limits the number of parallel pipe threads.
  * @author Jaco de Groot
  */
-public class LimitingParallelExecutionPipeProcessor extends PipeProcessorBase {
+public class LimitingParallelExecutionPipeProcessor extends AbstractPipeProcessor {
 
 	private final Map<IPipe, ResourceLimiter> pipeThreadCounts = new ConcurrentHashMap<>();
 

@@ -23,13 +23,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.frankframework.credentialprovider.util.CredentialConstants;
-import org.frankframework.util.StreamUtil;
-
 import net.wedjaa.ansible.vault.crypto.data.Util;
 import net.wedjaa.ansible.vault.crypto.data.VaultInfo;
 
-public class AnsibleVaultCredentialFactory extends MapCredentialFactory {
+import org.frankframework.credentialprovider.util.CredentialConstants;
+import org.frankframework.util.StreamUtil;
+
+public class AnsibleVaultCredentialFactory extends AbstractMapCredentialFactory {
 
 	public static final String PROPERTY_BASE = "credentialFactory.ansibleVault";
 

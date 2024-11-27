@@ -17,11 +17,11 @@ package org.frankframework.senders;
 
 import java.io.IOException;
 
+import jakarta.annotation.Nonnull;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -39,8 +39,8 @@ import org.frankframework.util.LogUtil;
  * @author Gerrit van Brakel
  * @since  4.9
  */
-@Category("Advanced")
-public class LogSender extends SenderWithParametersBase {
+@Category(Category.Type.ADVANCED)
+public class LogSender extends AbstractSenderWithParameters {
 	private @Getter String logLevel = "info";
 	private Level defaultLogLevel = Level.DEBUG;
 	private String logCategory = null;
@@ -66,14 +66,14 @@ public class LogSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl = getParameterValueList(message, session);
 		String calculatedLevel = getParameterOverriddenAttributeValue(pvl, LOG_LEVEL_ATTRIBUTE_NAME, logLevel);
 		Level level = Level.toLevel(calculatedLevel, defaultLogLevel);
 		try {
 			logger.log(level, message.asString());
 		} catch (IOException io) {
-			log.warn("unable to log message: " + message.toString());
+			log.warn("unable to log message: {}", message);
 		}
 		if (getParameterList() != null && pvl != null) {
 			for (ParameterValue param : pvl) {
@@ -113,7 +113,7 @@ public class LogSender extends SenderWithParametersBase {
 
 	@Override
 	public String toString() {
-		String level = getParameterList() != null && getParameterList().findParameter(LOG_LEVEL_ATTRIBUTE_NAME)!=null ? "dynamic" : logLevel;
+		String level = getParameterList() != null && getParameterList().hasParameter(LOG_LEVEL_ATTRIBUTE_NAME) ? "dynamic" : logLevel;
 		return "LogSender ["+getName()+"] logLevel ["+level+"] logCategory ["+logCategory+"]";
 	}
 

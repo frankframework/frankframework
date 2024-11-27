@@ -26,7 +26,6 @@ import org.apache.chemistry.opencmis.commons.spi.Holder;
 import org.w3c.dom.Element;
 
 import org.frankframework.core.PipeLineSession;
-
 import org.frankframework.extensions.cmis.CmisUtils;
 import org.frankframework.extensions.cmis.server.CmisEvent;
 import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
@@ -80,7 +79,7 @@ public class IbisDiscoveryService implements DiscoveryService {
 
 			PipeLineSession context = new PipeLineSession();
 			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.QUERY, cmisXml.toXML(), context);
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.QUERY, cmisXml.asXmlString(), context);
 			Element typesXml = XmlUtils.getFirstChildTag(cmisResult, "objectList");
 
 			return CmisUtils.xml2ObjectList(typesXml, context);

@@ -28,7 +28,7 @@ import org.frankframework.core.SenderException;
  *
  * @author Jaco de Groot
  */
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.8.0")
 @ConfigurationWarning("It is no longer necessary to use the DummyTransactionalStorage")
 public class DummyTransactionalStorage<S extends Serializable> extends JdbcTransactionalStorage<S> {
 

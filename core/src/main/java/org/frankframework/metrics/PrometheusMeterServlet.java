@@ -16,12 +16,12 @@
 package org.frankframework.metrics;
 
 import java.io.IOException;
-import java.io.Writer;
+import java.io.OutputStream;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,21 +29,21 @@ import org.springframework.util.Assert;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
-import io.prometheus.client.exporter.common.TextFormat;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import lombok.Setter;
-import org.frankframework.http.HttpServletBase;
+
+import org.frankframework.http.AbstractHttpServlet;
 import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 
 @IbisInitializer
-public class PrometheusMeterServlet extends HttpServletBase {
+public class PrometheusMeterServlet extends AbstractHttpServlet {
 	private static final boolean ACTIVE = AppConstants.getInstance().getBoolean("management.metrics.export.prometheus.enabled", false);
 
 	private PrometheusMeterRegistry prometheusRegistry = null;
 	private transient @Setter @Autowired MeterRegistry registry;
-	private static final transient Logger LOG = LogUtil.getLogger(PrometheusMeterServlet.class);
+	private static final Logger LOG = LogUtil.getLogger(PrometheusMeterServlet.class);
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
@@ -64,14 +64,12 @@ public class PrometheusMeterServlet extends HttpServletBase {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		resp.setContentType(TextFormat.CONTENT_TYPE_004); // see https://github.com/prometheus/prometheus/issues/6499
-
 		try {
 			if (prometheusRegistry==null) {
 				resp.sendError(501, "Prometheus registry not found");
 			} else {
-				try (Writer writer = resp.getWriter()) {
-					prometheusRegistry.scrape(writer);
+				try (OutputStream stream = resp.getOutputStream()) {
+					prometheusRegistry.scrape(stream);
 				}
 			}
 		} catch (IOException e) {

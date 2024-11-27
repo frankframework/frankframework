@@ -19,32 +19,33 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.configuration.SuppressKeys;
-import org.frankframework.core.HasPhysicalDestination;
-import org.frankframework.core.ListenerException;
-import org.frankframework.doc.Default;
-import org.frankframework.http.HttpSenderBase;
-import org.frankframework.http.PushingListenerAdapter;
-import org.frankframework.jwt.JwtValidator;
-import org.frankframework.lifecycle.ServletManager;
-import org.frankframework.lifecycle.servlets.ServletConfiguration;
-import org.frankframework.receivers.Receiver;
-import org.frankframework.receivers.ReceiverAware;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.EnumUtils;
-import org.frankframework.util.StringUtil;
 import org.springframework.util.MimeType;
 
 import com.nimbusds.jose.proc.SecurityContext;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.SuppressKeys;
+import org.frankframework.core.HasPhysicalDestination;
+import org.frankframework.doc.Default;
+import org.frankframework.http.AbstractHttpSender;
+import org.frankframework.http.PushingListenerAdapter;
+import org.frankframework.jwt.JwtValidator;
+import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.lifecycle.ServletManager;
+import org.frankframework.lifecycle.servlets.ServletConfiguration;
+import org.frankframework.receivers.Receiver;
+import org.frankframework.receivers.ReceiverAware;
+import org.frankframework.stream.Message;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.StringUtil;
 
 // TODO: Link to https://swagger.io/specification/ when anchors are supported by the Frank!Doc.
 
@@ -77,7 +78,7 @@ import lombok.Setter;
  *
  * @author Niels Meijer
  */
-public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, ReceiverAware<String> {
+public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, ReceiverAware<Message> {
 
 	private static final Pattern VALID_URI_PATTERN_RE = Pattern.compile("([^/]\\*|\\*[^/\\n])");
 
@@ -100,10 +101,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter MimeType contentType;
 	private String multipartBodyName = null;
 
-	private @Getter @Setter Receiver<String> receiver;
+	private @Getter @Setter Receiver<Message> receiver;
 
-	private @Getter String messageIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.messageIdHeader", HttpSenderBase.MESSAGE_ID_HEADER);
-	private @Getter String correlationIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.correlationIdHeader", HttpSenderBase.CORRELATION_ID_HEADER);
+	private @Getter String messageIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.messageIdHeader", AbstractHttpSender.MESSAGE_ID_HEADER);
+	private @Getter String correlationIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.correlationIdHeader", AbstractHttpSender.CORRELATION_ID_HEADER);
 	private @Getter String headerParams = null;
 	private @Getter String contentDispositionHeaderSessionKey;
 	private @Getter String charset = null;
@@ -149,6 +150,9 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			if (hasMethod(HttpMethod.DELETE))
 				throw new ConfigurationException("cannot set consumes attribute when using method [DELETE]");
 		}
+		if (getConsumes() == MediaTypes.DETECT) {
+			throw new ConfigurationException("cannot set consumes attribute to [DETECT]");
+		}
 
 		if (getAuthenticationMethod() == AuthenticationMethods.JWT) {
 			if (StringUtils.isEmpty(getJwksUrl())) {
@@ -169,7 +173,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		if (StringUtils.isNotEmpty(claimAttributeToValidate)) {
 			List<String> invalidClaims = StringUtil.splitToStream(claimAttributeToValidate)
 					.filter(claim -> StringUtil.split(claim, "=").size() != 2)
-					.collect(Collectors.toList());
+					.toList();
 
 			if (!invalidClaims.isEmpty()) {
 				String partialMessage = invalidClaims.size() == 1 ? "is not a valid key/value pair" : "are not valid key/value pairs";
@@ -178,24 +182,23 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		}
 	}
 
-
 	@Override
-	public void open() throws ListenerException {
+	public void start() {
 		ApiServiceDispatcher.getInstance().registerServiceClient(this);
 		if (getAuthenticationMethod() == AuthenticationMethods.JWT) {
 			try {
 				jwtValidator = new JwtValidator<>();
 				jwtValidator.init(getJwksUrl(), getRequiredIssuer());
 			} catch (Exception e) {
-				throw new ListenerException("unable to initialize jwtSecurityHandler", e);
+				throw new LifecycleException("unable to initialize jwtSecurityHandler", e);
 			}
 		}
-		super.open();
+		super.start();
 	}
 
 	@Override
-	public void close() {
-		super.close();
+	public void stop() {
+		super.stop();
 		ApiServiceDispatcher.getInstance().unregisterServiceClient(this);
 	}
 
@@ -206,7 +209,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			if (config != null) {
 				List<String> modifiedUrls = config.getUrlMapping().stream()
 						.map(url -> url.replace("/*", ""))
-						.collect(Collectors.toList());
+						.toList();
 				if (modifiedUrls.size() == 1) {
 					// Replace /api/* with /api. Doing this in ApiListenerServlet.getUrlMapping() is not possible.
 					builder.append(modifiedUrls.get(0));
@@ -216,7 +219,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			}
 		}
 		builder.append(getUriPattern());
-		builder.append("; method: ").append(getMethods());
+		builder.append("; method: ").append(getAllMethods().stream().map(Enum::name).collect(Collectors.joining(",")));
 
 		if (MediaTypes.ANY != consumes) {
 			builder.append("; consumes: ").append(getConsumes());
@@ -229,7 +232,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	private boolean hasMethod(HttpMethod method) {
-		return this.methods.contains(method);
+		return methods.contains(method);
 	}
 
 	/**
@@ -265,32 +268,24 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * @ff.default GET
 	 */
 	public void setMethod(HttpMethod method) {
-		setMethods(method.name());
+		setMethods(method);
+	}
+
+	// Can not rename this method to getMethods (or use @Getter), as it will conflict with the types (List vs varargs)
+	public List<HttpMethod> getAllMethods() {
+		return methods;
 	}
 
 	/**
-	 * HTTP method(s) to listen to, separated by comma
+	 * HTTP method(s) to listen to. Inside XML Configurations: for multiple values, use a comma as separator.
 	 *
 	 * @ff.default GET
 	 */
-	public void setMethods(String methods) { // Using an Enum array would be better (issue #6149).
-		this.methods = StringUtil.splitToStream(methods)
-				.map(s -> EnumUtils.parse(HttpMethod.class, s))
-				.collect(Collectors.toList());
-
+	public void setMethods(HttpMethod... methods) {
+		this.methods = List.of(methods);
 		if (hasMethod(HttpMethod.OPTIONS)) {
 			throw new IllegalArgumentException("method OPTIONS should not be added manually");
 		}
-	}
-
-	public String getMethods() {
-		return methods.stream()
-				.map(HttpMethod::name)
-				.collect(Collectors.joining(","));
-	}
-
-	public List<HttpMethod> getAllMethods() {
-		return methods;
 	}
 
 	/**
@@ -310,7 +305,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * The required contentType on requests, if it doesn't match a <code>415 Unsupported Media Type</code> is replied
+	 * The required contentType on requests, if it doesn't match a <code>415</code> status (Unsupported Media Type) is returned.
 	 *
 	 * @ff.default ANY
 	 */
@@ -319,7 +314,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * The specified contentType on response. When <code>ANY</code> the response will determine the content type based on the return data.
+	 * The specified contentType on response. When <code>ANY</code> the response will determine the content-type when it's known and will never calculate it. If no match is found <code>*&#47;*</code> will be used.
+	 * When <code>DETECT</code> the framework attempts to detect the MimeType (as well as charset) when not known.
 	 *
 	 * @ff.default ANY
 	 */
@@ -351,7 +347,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	//TODO add authenticationType
 
 	/**
-	 * Enables security for this listener. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityRoles=IbisTester,IbisWebService` property
+	 * Enables security for this listener. If you wish to use the application servers authorization roles [AUTHROLE], you need to enable them globally for all ApiListeners with the <code>servlet.ApiListenerServlet.securityRoles=IbisTester,IbisWebService</code> property
 	 *
 	 * @ff.default <code>NONE</code>
 	 */
@@ -360,7 +356,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * Only active when AuthenticationMethod=AUTHROLE. Comma separated list of authorization roles which are granted for this service, eq. IbisTester,IbisObserver", ""})
+	 * Only active when AuthenticationMethod=AUTHROLE. Comma separated list of authorization roles which are granted for this service, eq. <code>IbisTester,IbisObserver</code>
 	 */
 	public void setAuthenticationRoles(String authRoles) {
 		this.authenticationRoles = StringUtil.split(authRoles, ",;");
@@ -389,7 +385,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	/**
 	 * Name of the header which contains the Message-Id.
 	 */
-	@Default(HttpSenderBase.MESSAGE_ID_HEADER)
+	@Default(AbstractHttpSender.MESSAGE_ID_HEADER)
 	public void setMessageIdHeader(String messageIdHeader) {
 		this.messageIdHeader = messageIdHeader;
 	}
@@ -397,7 +393,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	/**
 	 * Name of the header which contains the Correlation-Id.
 	 */
-	@Default(HttpSenderBase.CORRELATION_ID_HEADER)
+	@Default(AbstractHttpSender.CORRELATION_ID_HEADER)
 	public void setCorrelationIdHeader(String correlationIdHeader) {
 		this.correlationIdHeader = correlationIdHeader;
 	}

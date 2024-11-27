@@ -15,18 +15,17 @@
 */
 package org.frankframework.lifecycle;
 
-import java.util.Date;
-
-import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.event.ApplicationContextEvent;
+import java.time.Instant;
 
 import lombok.Getter;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.MessageKeeperMessage;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.ApplicationContextEvent;
 
 public class ApplicationMessageEvent extends ApplicationContextEvent {
 	private @Getter MessageKeeperMessage messageKeeperMessage;
@@ -54,11 +53,11 @@ public class ApplicationMessageEvent extends ApplicationContextEvent {
 		StringBuilder m = new StringBuilder();
 
 		String applicationName = source.getId();
-		m.append("Application [" + applicationName + "] ");
+		m.append("Application [").append(applicationName).append("] ");
 
 		String version = ConfigurationUtils.getApplicationVersion();
 		if (version != null) {
-			m.append("[" + version + "] ");
+			m.append("[").append(version).append("] ");
 		}
 
 		m.append(message);
@@ -73,10 +72,9 @@ public class ApplicationMessageEvent extends ApplicationContextEvent {
 		}
 
 		if (e != null) {
-			m.append(": (" + ClassUtils.nameOf(e) +") "+ e.getMessage());
+			m.append(": (").append(ClassUtils.nameOf(e)).append(") ").append(e.getMessage());
 		}
 
-		Date date = new Date(getTimestamp());
-		messageKeeperMessage = new MessageKeeperMessage(m.toString(), date, level);
+		messageKeeperMessage = new MessageKeeperMessage(m.toString(), Instant.ofEpochMilli(getTimestamp()), level);
 	}
 }

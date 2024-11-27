@@ -18,17 +18,18 @@ package org.frankframework.jms;
 import java.util.List;
 import java.util.Properties;
 
-import javax.jms.ConnectionFactory;
 import javax.naming.NamingException;
+
+import jakarta.jms.ConnectionFactory;
 
 public interface IConnectionFactoryFactory {
 
-	public ConnectionFactory getConnectionFactory(String connectionFactoryName) throws NamingException;
-	public ConnectionFactory getConnectionFactory(String connectionFactoryName, Properties jndiEnvironment) throws NamingException;
+	ConnectionFactory getConnectionFactory(String connectionFactoryName) throws NamingException;
+	ConnectionFactory getConnectionFactory(String connectionFactoryName, Properties jndiEnvironment) throws NamingException;
 
 	/**
 	 * Return all known/registered ConnectionFactories
 	 */
-	public List<String> getConnectionFactoryNames();
+	List<String> getConnectionFactoryNames();
 
 }

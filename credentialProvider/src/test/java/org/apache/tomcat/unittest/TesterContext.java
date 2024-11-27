@@ -28,12 +28,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.management.ObjectName;
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRegistration.Dynamic;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletSecurityElement;
-import javax.servlet.descriptor.JspConfigDescriptor;
+
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRegistration.Dynamic;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletSecurityElement;
+import jakarta.servlet.descriptor.JspConfigDescriptor;
 
 import org.apache.catalina.AccessLog;
 import org.apache.catalina.Authenticator;
@@ -437,6 +438,16 @@ public class TesterContext implements Context {
 	}
 
 	@Override
+	public boolean getUsePartitioned() {
+		return false;
+	}
+
+	@Override
+	public void setUsePartitioned(boolean b) {
+		// NO-OP
+	}
+
+	@Override
 	public String getSessionCookieDomain() {
 		return null;
 	}
@@ -788,8 +799,6 @@ public class TesterContext implements Context {
 		// NO-OP
 	}
 
-
-
 	@Override
 	public void addServletMappingDecoded(String pattern, String name, boolean jspWildcard) {
 		// NO-OP
@@ -837,11 +846,6 @@ public class TesterContext implements Context {
 
 	@Override
 	public ErrorPage findErrorPage(int errorCode) {
-		return null;
-	}
-
-	@Override
-	public ErrorPage findErrorPage(String exceptionType) {
 		return null;
 	}
 
@@ -897,16 +901,6 @@ public class TesterContext implements Context {
 
 	@Override
 	public String[] findServletMappings() {
-		return null;
-	}
-
-	@Override
-	public String findStatusPage(int status) {
-		return null;
-	}
-
-	@Override
-	public int[] findStatusPages() {
 		return null;
 	}
 
@@ -1222,7 +1216,8 @@ public class TesterContext implements Context {
 
 	@Override
 	public void setContainerSciFilter(String containerSciFilter) {
-		/* NO-OP */ }
+		// NO-OP
+	}
 
 	@Override
 	public String getContainerSciFilter() {
@@ -1236,7 +1231,8 @@ public class TesterContext implements Context {
 
 	@Override
 	public void setThreadBindingListener(ThreadBindingListener threadBindingListener) {
-		/* NO-OP */ }
+		// NO-OP
+	}
 
 	@Override
 	public ClassLoader bind(boolean usePrivilegedAction, ClassLoader originalClassLoader) {
@@ -1255,7 +1251,8 @@ public class TesterContext implements Context {
 
 	@Override
 	public void setCookieProcessor(CookieProcessor cookieProcessor) {
-		/* NO-OP */ }
+		// NO-OP
+	}
 
 	@Override
 	public CookieProcessor getCookieProcessor() {
@@ -1294,7 +1291,8 @@ public class TesterContext implements Context {
 
 	@Override
 	public void setUseRelativeRedirects(boolean useRelativeRedirects) {
-		/* NO-OP */ }
+		// NO-OP
+	}
 
 	@Override
 	public boolean getUseRelativeRedirects() {
@@ -1303,7 +1301,8 @@ public class TesterContext implements Context {
 
 	@Override
 	public void setDispatchersUseEncodedPaths(boolean dispatchersUseEncodedPaths) {
-		/* NO-OP */ }
+		// NO-OP
+	}
 
 	@Override
 	public boolean getDispatchersUseEncodedPaths() {
@@ -1312,7 +1311,8 @@ public class TesterContext implements Context {
 
 	@Override
 	public void setRequestCharacterEncoding(String encoding) {
-		/* NO-OP */ }
+		// NO-OP
+	}
 
 	@Override
 	public String getRequestCharacterEncoding() {
@@ -1321,7 +1321,8 @@ public class TesterContext implements Context {
 
 	@Override
 	public void setResponseCharacterEncoding(String encoding) {
-		/* NO-OP */ }
+		// NO-OP
+	}
 
 	@Override
 	public String getResponseCharacterEncoding() {
@@ -1340,15 +1341,18 @@ public class TesterContext implements Context {
 
 	@Override
 	public void incrementInProgressAsyncCount() {
-		/* NO-OP */ }
+		// NO-OP
+	}
 
 	@Override
 	public void decrementInProgressAsyncCount() {
-		/* NO-OP */ }
+		// NO-OP
+	}
 
 	@Override
 	public void setCreateUploadTargets(boolean createUploadTargets) {
-		/* NO-OP */}
+		// NO-OP
+	}
 
 	@Override
 	public boolean getCreateUploadTargets() {
@@ -1356,9 +1360,50 @@ public class TesterContext implements Context {
 	}
 
 	@Override
+	public boolean getAlwaysAccessSession() {
+		return false;
+	}
+
+	@Override
+	public void setAlwaysAccessSession(boolean b) {
+		// NO-OP
+	}
+
+	@Override
+	public boolean getContextGetResourceRequiresSlash() {
+		return false;
+	}
+
+	@Override
+	public void setContextGetResourceRequiresSlash(boolean b) {
+		// NO-OP
+	}
+
+	@Override
+	public boolean getDispatcherWrapsSameObject() {
+		return false;
+	}
+
+	@Override
+	public void setDispatcherWrapsSameObject(boolean b) {
+		// NO-OP
+	}
+
+	@Override
+	public boolean getSuspendWrappedResponseAfterForward() {
+		return false;
+	}
+
+	@Override
+	public void setSuspendWrappedResponseAfterForward(boolean b) {
+		// NO-OP
+	}
+
+	@Override
 	public boolean isParallelAnnotationScanning() {
 		return false;
 	}
+
 	@Override
 	public boolean getParallelAnnotationScanning() {
 		return isParallelAnnotationScanning();

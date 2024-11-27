@@ -1,5 +1,7 @@
 package org.frankframework.filesystem.smb;
 
+import org.junit.jupiter.api.BeforeEach;
+
 import org.frankframework.filesystem.FileSystemSenderTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.filesystem.LocalFileSystemTestHelper;
@@ -8,7 +10,6 @@ import org.frankframework.senders.Samba2Sender;
 import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileServer.FileSystemType;
 import org.frankframework.testutil.junit.LocalFileSystemMock;
-import org.junit.jupiter.api.BeforeEach;
 
 public class Samba2SenderTest extends FileSystemSenderTest<Samba2Sender, SmbFileRef, Samba2FileSystem> {
 

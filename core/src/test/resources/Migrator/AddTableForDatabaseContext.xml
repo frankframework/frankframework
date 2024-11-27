@@ -1,0 +1,22 @@
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd"
+	objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+
+	<changeSet id="DbmsSupportTest:1:${tableName}" author="Erik van Dongen" dbms="mssql">
+		<comment>Add ${tableName} Table</comment>
+		<createTable tableName="${tableName}">
+			<column name="myKey" type="java.sql.Types.INTEGER"/>
+			<column name="myValue" type="java.sql.Types.INTEGER"/>
+			<column name="RV" type="rowversion"/>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="DbmsSupportTest:2:${tableName}" author="Erik van Dongen" dbms="mssql">
+		<sql>
+			INSERT INTO TestTable (myKey, myValue) VALUES (1, 0)
+		</sql>
+	</changeSet>
+</databaseChangeLog>

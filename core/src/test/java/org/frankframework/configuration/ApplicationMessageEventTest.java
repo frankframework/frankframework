@@ -3,11 +3,12 @@ package org.frankframework.configuration;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.lifecycle.ApplicationMessageEvent;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.MessageKeeper;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
 
 public class ApplicationMessageEventTest {
 

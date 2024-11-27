@@ -48,7 +48,7 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.validation.IXSD;
 import org.frankframework.validation.SchemaUtils;
-import org.frankframework.validation.XSD;
+import org.frankframework.validation.AbstractXSD;
 import org.frankframework.validation.xsd.ResourceXsd;
 
 /**
@@ -254,19 +254,19 @@ public class WsdlGenerator {
 		rootXsds = new HashSet<>();
 		Set<IXSD> inputRootXsds = new HashSet<>(getXsds(inputValidator));
 		rootXsds.addAll(inputRootXsds);
-		Set<IXSD> inputXsds = new HashSet<>(XSD.getXsdsRecursive(inputRootXsds));
+		Set<IXSD> inputXsds = new HashSet<>(AbstractXSD.getXsdsRecursive(inputRootXsds));
 		xsds.addAll(inputXsds);
 		if (outputValidator != null) {
 			Set<IXSD> outputRootXsds = new HashSet<>(getXsds(outputValidator));
 			rootXsds.addAll(outputRootXsds);
-			outputXsds.addAll(XSD.getXsdsRecursive(outputRootXsds));
+			outputXsds.addAll(AbstractXSD.getXsdsRecursive(outputRootXsds));
 			xsds.addAll(outputXsds);
 		}
 		prefixByXsd = new LinkedHashMap<>();
 		namespaceByPrefix = new LinkedHashMap<>();
 		int prefixCount = 1;
 		xsdsGroupedByNamespace =
-				SchemaUtils.getXsdsGroupedByNamespace(xsds, true);
+				SchemaUtils.groupXsdsByNamespace(xsds, true);
 		for (Map.Entry<String, Set<IXSD>> entry: xsdsGroupedByNamespace.entrySet()) {
 			// When a schema has targetNamespace="http://www.w3.org/XML/1998/namespace"
 			// it needs to be ignored as prefix xml is the only allowed prefix
@@ -376,7 +376,8 @@ public class WsdlGenerator {
 					ZipEntry xsdEntry = new ZipEntry(zipName);
 					out.putNextEntry(xsdEntry);
 					XMLStreamWriter writer = WsdlGeneratorUtils.getWriter(out, false);
-					SchemaUtils.xsdToXmlStreamWriter(xsd, writer);
+					SchemaUtils.writeStandaloneXsd(xsd, writer);
+					writer.flush();
 					out.closeEntry();
 				} else {
 					warn("Duplicate xsds in " + this + " " + xsd + " " + xsds);
@@ -453,7 +454,7 @@ public class WsdlGenerator {
 		w.writeStartElement(WSDL_NAMESPACE, "types");
 		if (isUseIncludes()) {
 			SchemaUtils.mergeRootXsdsGroupedByNamespaceToSchemasWithIncludes(
-					SchemaUtils.getXsdsGroupedByNamespace(rootXsds, true), w);
+					SchemaUtils.groupXsdsByNamespace(rootXsds, true), w);
 		}  else {
 			SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(pipeLine, xsdsGroupedByNamespace, w);
 		}

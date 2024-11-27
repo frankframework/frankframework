@@ -3,14 +3,16 @@ package org.frankframework.testutil;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import javax.xml.parsers.SAXParserFactory;
-import javax.xml.soap.MessageFactory;
-import javax.xml.soap.SOAPException;
 import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 
-import org.frankframework.xml.StaxParserFactory;
+import jakarta.xml.soap.MessageFactory;
+import jakarta.xml.soap.SOAPException;
+
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.xml.StaxParserFactory;
 
 /**
  * This class only tests whether the required factory's are created directly with the iaf-core module.
@@ -26,7 +28,7 @@ public class TestMetaInfServices {
 
 	@Test //Original sun.com MessageFactory used for creating SOAP messages
 	public void testMessageFactory() throws SOAPException {
-		Class<?> messageFactory = com.sun.xml.messaging.saaj.soap.MessageFactoryImpl.class;
+		Class<?> messageFactory = com.sun.xml.messaging.saaj.soap.dynamic.SOAPMessageFactoryDynamicImpl.class;
 		assertEquals(messageFactory, MessageFactory.newInstance().getClass());
 	}
 

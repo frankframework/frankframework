@@ -30,9 +30,10 @@ import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Setter;
+
 import org.frankframework.util.ClassUtils;
 
-public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase {
+public class ActiveDirectoryAuthenticator extends AbstractServletAuthenticator {
 
 	private @Setter String domainName = null;
 
@@ -98,7 +99,7 @@ public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase {
 
 		http.authenticationProvider(provider);
 		String realmName = StringUtils.isNotEmpty(domainName) ? domainName : url;
-		http.httpBasic().realmName(realmName);
+		http.httpBasic(basic -> basic.realmName(realmName));
 		return http.build();
 	}
 }

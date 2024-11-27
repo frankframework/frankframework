@@ -35,7 +35,7 @@ import org.frankframework.util.FileHandler;
  * @deprecated Please use {@link LocalFileSystemPipe} instead
  *
  */
-@Deprecated
+@Deprecated(forRemoval = true, since = "7.6.0")
 @ConfigurationWarning("Please use LocalFileSystemPipe instead, or when retrieving files from the classpath use the FixedResultPipe")
 public class FilePipe extends FixedForwardPipe {
 	FileHandler fileHandler;

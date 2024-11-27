@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -69,12 +69,12 @@ public interface JavascriptEngine<E> {
 	E getEngine();
 
 	/**
-	 * Only used by J2V8, allows for senders to be called by the javascript function. Sender needs to be given in the adapter configuration,
-	 * a javascript function can call the sender using the name of the sender as a function call.
+	 * Allows for senders to be called by the Javascript function. Sender needs to be given in the adapter configuration,
+	 * a Javascript function can call the sender, using the name of the sender as a function call.
 	 *
 	 * @param sender		The sender given in the adapter configuration
 	 */
-	public void registerCallback(ISender sender, PipeLineSession session);
+	void registerCallback(ISender sender, PipeLineSession session);
 
 	/**
 	 * Registers the result and error functions to be handled by the given result handler.

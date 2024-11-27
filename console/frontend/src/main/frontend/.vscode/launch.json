@@ -3,6 +3,34 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "start IAF-Example",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "start"
+      ],
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "console": "integratedTerminal",
+    },
+    {
+      "name": "start IAF-Test",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "start:test"
+      ],
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "console": "integratedTerminal",
+    },
+    {
       "name": "ng serve",
       "type": "chrome",
       "request": "launch",

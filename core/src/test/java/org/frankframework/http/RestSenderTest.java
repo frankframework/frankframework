@@ -20,12 +20,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.spy;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.http.HttpSenderBase.HttpMethod;
-import org.frankframework.stream.Message;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.http.AbstractHttpSender.HttpMethod;
+import org.frankframework.stream.Message;
 
 public class RestSenderTest extends HttpSenderTestBase<RestSender> {
 
@@ -55,7 +56,7 @@ public class RestSenderTest extends HttpSenderTestBase<RestSender> {
 		sender.setMethodType(HttpMethod.GET);
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sender.sendMessageOrThrow(input, pls).asString().replace("&#xD;", "\r");
 		assertEqualsIgnoreCRLF(getFile("simpleMockedRestGet.txt"), result.trim());
@@ -71,7 +72,7 @@ public class RestSenderTest extends HttpSenderTestBase<RestSender> {
 		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
 
 		sender.configure();
-		sender.open();
+		sender.start();
 
 		String result = sender.sendMessageOrThrow(input, pls).asString().replace("&#xD;", "\r");
 		assertEqualsIgnoreCRLF(getFile("simpleMockedRestPost.txt"), result.trim());

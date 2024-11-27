@@ -3,19 +3,19 @@ package org.frankframework.pipes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
-import org.junit.jupiter.api.Test;
 
 public class CounterSwitchPipeTest extends PipeTestBase<CounterSwitchPipe> {
 
 	@Override
 	public CounterSwitchPipe createPipe() throws ConfigurationException {
 		CounterSwitchPipe pipe = new CounterSwitchPipe();
-		pipe.registerForward(new PipeForward("1", null));
-		pipe.registerForward(new PipeForward("2", null));
-		pipe.registerForward(new PipeForward("", null));
+		pipe.addForward(new PipeForward("1", null));
+		pipe.addForward(new PipeForward("2", null));
 		return pipe;
 	}
 
@@ -30,7 +30,8 @@ public class CounterSwitchPipeTest extends PipeTestBase<CounterSwitchPipe> {
 	@Test
 	public void testDivisorLessThanTwo() throws Exception {
 		pipe.setDivisor(1);
-		assertThrows(ConfigurationException.class, this::configureAndStartPipe);
+		ConfigurationException ex = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
+		assertEquals("Exception configuring CounterSwitchPipe [CounterSwitchPipe under test]: divisor [1] should be greater than or equal to 2", ex.getMessage());
 	}
 
 	@Test
@@ -44,6 +45,7 @@ public class CounterSwitchPipeTest extends PipeTestBase<CounterSwitchPipe> {
 	@Test
 	public void testNonExistingForward() throws Exception {
 		pipe.setDivisor(3);
-		assertThrows(ConfigurationException.class, this::configureAndStartPipe);
+		ConfigurationException ex = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
+		assertEquals("Exception configuring CounterSwitchPipe [CounterSwitchPipe under test]: forward [3] is not defined", ex.getMessage());
 	}
 }

@@ -19,7 +19,7 @@ describe('SearchFilterPipe', () => {
     expect(pipe.transform([], 'test')).toEqual([]);
   });
 
-  it('returns an array of filtered values', () => {
+  it('returns an object with filtered values', () => {
     const originalRecords = {
       a: '1djwja',
       b: 'duduahd1iid',
@@ -27,7 +27,16 @@ describe('SearchFilterPipe', () => {
       d: 'kjwajdkwajd',
       one1: 'one',
     };
-    const expectedList = ['1djwja', 'duduahd1iid'];
+    const expectedList = {
+      a: '1djwja',
+      b: 'duduahd1iid',
+    };
     expect(pipe.transform(originalRecords, '1')).toEqual(expectedList);
+  });
+
+  it('returns an array of filtered values', () => {
+    const originalArray = ['1djwja', 'duduahd1iid', '', 'kjwajdkwajd', 'one'];
+    const expectedList = ['1djwja', 'duduahd1iid'];
+    expect(pipe.transform(originalArray, '1')).toEqual(expectedList);
   });
 });

@@ -26,9 +26,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
-import org.frankframework.extensions.aspose.services.conv.CisConversionService;
 import org.springframework.http.MediaType;
 
 import com.aspose.email.Attachment;
@@ -53,6 +50,9 @@ import com.aspose.words.Shape;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.extensions.aspose.ConversionOption;
+import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
+import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
+import org.frankframework.extensions.aspose.services.conv.CisConversionService;
 import org.frankframework.extensions.aspose.services.util.ConvertorUtil;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
@@ -104,12 +104,12 @@ class MailConvertor extends AbstractConvertor {
 		AttachmentCollection attachments = eml.getAttachments();
 
 		if (log.isDebugEnabled()) {
-			log.debug("cc : [" + toString(eml.getCC()) + "]");
-			log.debug("bcc : [" + toString(eml.getBcc()) + "]");
-			log.debug("sender : [" + toString(eml.getSender()) + "]");
-			log.debug("from : [" + toString(eml.getFrom()) + "]");
-			log.debug("to : [" + toString(eml.getTo()) + "]");
-			log.debug("subject : [" + eml.getSubject() + "]");
+			log.debug("cc : [{}]", toString(eml.getCC()));
+			log.debug("bcc : [{}]", toString(eml.getBcc()));
+			log.debug("sender : [{}]", toString(eml.getSender()));
+			log.debug("from : [{}]", toString(eml.getFrom()));
+			log.debug("to : [{}]", toString(eml.getTo()));
+			log.debug("subject : [{}]", eml.getSubject());
 		}
 
 		// Overrules the default documentname.

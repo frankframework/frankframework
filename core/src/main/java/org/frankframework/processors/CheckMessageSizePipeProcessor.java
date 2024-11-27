@@ -14,9 +14,7 @@
    limitations under the License.
 */
 package org.frankframework.processors;
-
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
@@ -31,7 +29,7 @@ import io.micrometer.core.instrument.DistributionSummary;
 /**
  * @author Jaco de Groot
  */
-public class CheckMessageSizePipeProcessor extends PipeProcessorBase {
+public class CheckMessageSizePipeProcessor extends AbstractPipeProcessor {
 
 	@Override
 	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {

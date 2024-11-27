@@ -32,7 +32,7 @@ public class AdapterFilter {
 
 	private String adapter;
 
-	private List<String> subObjectList=new ArrayList<>();
+	private final List<String> subObjectList=new ArrayList<>();
 
 	/**
 	 * Set the name of the Adapter that this AdapterFilter filters on.
@@ -49,9 +49,9 @@ public class AdapterFilter {
 	}
 
 	/**
-	 * Register the name of a SubObject (such as a Pipe) to be included in the filter.
+	 * Add the name of a SubObject (such as a Pipe) to be included in the filter.
 	 */
-	public void registerSubObject(String name) {
+	public void addSubObjectText(String name) {
 		subObjectList.add(name);
 	}
 	/**

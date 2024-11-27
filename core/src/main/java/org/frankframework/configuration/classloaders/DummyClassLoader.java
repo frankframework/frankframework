@@ -36,7 +36,7 @@ import org.frankframework.util.XmlEncodingUtils;
  * @author Peter Leeuwenburgh
  */
 
-public class DummyClassLoader extends ClassLoaderBase {
+public class DummyClassLoader extends AbstractClassLoader {
 
 	public DummyClassLoader(ClassLoader parent) {
 		super(parent);

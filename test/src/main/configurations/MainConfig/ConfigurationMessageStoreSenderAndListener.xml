@@ -49,4 +49,36 @@
 			</XsltPipe>
 		</Pipeline>
 	</Adapter>
+
+	<Adapter name="testMessageStoreNoMessageLog">
+		<Receiver name="WriteToMessageStoreNoLog">
+			<JavaListener name="WriteToMessageStoreNoLog" serviceName="ibis4test-WriteToMessageStoreNoLog"  />
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" code="200" />
+			</Exits>
+
+			<SenderPipe name="sendMessagePipe">
+				<MessageStoreSender
+					slotId="TestMessageStoreSenderAndListener-NoLog" />
+				<Forward name="success" path="EXIT" />
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+	<Adapter name="testReadMessageStoreNoMessageLog">
+		<Receiver name="testReadMessageStoreNoMessageLog" pollInterval="1" maxRetries="0">
+			<MessageStoreListener name="testReadMessageStoreNoMessageLog"
+				slotId="TestMessageStoreSenderAndListener-NoLog"
+				moveToMessageLog="false" />
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" code="200" />
+				<Exit name="EXCEPTION" state="ERROR" />
+			</Exits>
+
+			<ExceptionPipe name="error" />
+		</Pipeline>
+	</Adapter>
 </Module>

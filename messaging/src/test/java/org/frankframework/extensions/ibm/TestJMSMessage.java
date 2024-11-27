@@ -17,7 +17,7 @@ package org.frankframework.extensions.ibm;
 
 import java.nio.charset.StandardCharsets;
 
-import javax.jms.BytesMessage;
+import jakarta.jms.BytesMessage;
 
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;

@@ -22,20 +22,21 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.sql.DataSource;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StringResolver;
 import org.frankframework.util.StringUtil;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-
-import lombok.Getter;
-import lombok.Setter;
 
 public class FrankResources {
 
@@ -43,6 +44,7 @@ public class FrankResources {
 
 	private @Setter List<Resource> jdbc;
 	private @Setter List<Resource> jms;
+	private @Setter List<Resource> other;
 
 	@Getter @Setter
 	public static class Resource {
@@ -68,7 +70,7 @@ public class FrankResources {
 
 		Resource resource = findResource(name);
 		if(resource == null) {
-			return null; //If the lookup returns null, fail-fast to allow other ResourceFactories to locate the object.
+			return null; // If the lookup returns null, fail-fast to allow other ResourceFactories to locate the object.
 		}
 		if(StringUtils.isEmpty(resource.getUrl())) {
 			throw new IllegalStateException("field url is required");
@@ -76,40 +78,39 @@ public class FrankResources {
 
 		Properties properties = getConnectionProperties(resource, environment);
 		String url = StringResolver.substVars(resource.getUrl(), APP_CONSTANTS);
-		Class<?> clazz = ClassUtils.loadClass(resource.getType());
+		String type = StringResolver.substVars(resource.getType(), APP_CONSTANTS);
+		Class<?> clazz = ClassUtils.loadClass(type);
 
-		if(lookupClass.isAssignableFrom(DataSource.class) && Driver.class.isAssignableFrom(clazz)) { //It's also possible to use the native drivers instead of the DataSources directy.
+		if(lookupClass.isAssignableFrom(DataSource.class) && Driver.class.isAssignableFrom(clazz)) { // It's also possible to use the native drivers instead of the DataSources directly.
 			return (O) loadDataSourceThroughDriver(clazz, url, properties);
 		}
 		if(lookupClass.isAssignableFrom(clazz)) {
 			return (O) createInstance(clazz, url, properties);
 		}
 
-		throw new IllegalStateException("class is not of required type ["+resource.getType()+"]");
+		throw new IllegalStateException("class is not of required type ["+type+"]");
 	}
 
 	/**
-	 * Ensure that the driver is loaded, else the DriverManagerDataSource can't it.
+	 * Ensure that the driver is loaded, else the DriverManagerDataSource can not load it.
 	 */
 	private DataSource loadDataSourceThroughDriver(Class<?> clazz, String url, Properties properties) {
 		DriverManagerDataSource dmds = new DriverManagerDataSource(url, properties);
-		dmds.setDriverClassName(clazz.getCanonicalName()); //Initialize the JDBC Driver
+		dmds.setDriverClassName(clazz.getCanonicalName()); // Initialize the JDBC Driver
 		return dmds;
 	}
 
 	private @Nullable Resource findResource(@Nonnull String name) {
-		List<String> parts = StringUtil.split(name, "/");
-		String prefix = parts.remove(0);
-		String resourceName = String.join("/", parts);
+		int slashPos = name.indexOf('/');
+		String prefix = name.substring(0, slashPos);
+		String resourceName = name.substring(slashPos + 1);
 
-		switch (prefix) {
-			case "jdbc":
-				return findResource(jdbc, resourceName);
-			case "jms":
-				return findResource(jms, resourceName);
-			default:
-				throw new IllegalArgumentException("unexpected lookup type: " + prefix);
-		}
+		return switch (prefix) {
+			case "jdbc" -> findResource(jdbc, resourceName);
+			case "jms" -> findResource(jms, resourceName);
+			case "mongodb" -> findResource(other, resourceName);
+			default -> throw new IllegalArgumentException("unexpected lookup type: " + prefix);
+		};
 	}
 
 	private @Nullable Resource findResource(@Nullable List<Resource> resources, @Nonnull String name) {
@@ -118,7 +119,7 @@ public class FrankResources {
 		}
 
 		Optional<Resource> optional = resources.stream().filter(e -> name.equals(e.getName())).findFirst();
-		return optional.isPresent() ? optional.get() : null;
+		return optional.orElse(null);
 	}
 
 	/**

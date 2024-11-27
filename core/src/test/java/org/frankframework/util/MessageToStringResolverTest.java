@@ -7,10 +7,11 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.frankframework.functional.ThrowingSupplier;
-import org.frankframework.stream.Message;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.functional.ThrowingSupplier;
+import org.frankframework.stream.Message;
 
 class MessageToStringResolverTest {
 
@@ -22,7 +23,7 @@ class MessageToStringResolverTest {
 	void setUp() {
 		propsA = new HashMap<>();
 		propsB = new HashMap<>();
-		message = Message.asMessage("My Message");
+		message = new Message("My Message");
 		propsA.put("msg", message);
 		propsB.put("msg", "Not My Message");
 	}

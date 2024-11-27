@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:jms="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS" xmlns:jndi="http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi" xmlns:tns="http://nn.nl/WSDL/AccountInformation/AccountInformation/1/GetPaymentReferenceAndPayLink/1" xmlns:ns1="http://nn.nl/XSD/AccountInformation/AccountInformation/1/GetPaymentReferenceAndPayLink/1" xmlns:ns2="http://nn.nl/XSD/AccountInformation/DomainValues" xmlns:ns3="http://nn.nl/XSD/Generic/MessageHeader/2" targetNamespace="http://nn.nl/WSDL/AccountInformation/AccountInformation/1/GetPaymentReferenceAndPayLink/1">
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:jms="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS"
+	xmlns:jndi="http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi" xmlns:tns="http://nn.nl/WSDL/AccountInformation/AccountInformation/1/GetPaymentReferenceAndPayLink/1"
+	xmlns:ns1="http://nn.nl/XSD/AccountInformation/AccountInformation/1/GetPaymentReferenceAndPayLink/1"
+	xmlns:ns3="http://nn.nl/XSD/Generic/MessageHeader/2" targetNamespace="http://nn.nl/WSDL/AccountInformation/AccountInformation/1/GetPaymentReferenceAndPayLink/1">
 	<wsdl:documentation>IGNORE</wsdl:documentation>
 	<wsdl:types>
 		<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/2" xmlns:mtp="http://nn.nl/XSD/AccountInformation/DomainValues" xmlns="http://nn.nl/XSD/AccountInformation/AccountInformation/1/GetPaymentReferenceAndPayLink/1" targetNamespace="http://nn.nl/XSD/AccountInformation/AccountInformation/1/GetPaymentReferenceAndPayLink/1" attributeFormDefault="unqualified" elementFormDefault="qualified">
@@ -225,8 +228,8 @@
 		</xs:restriction>
 	</xs:simpleType>
 </xs:schema>
-		<!-- v0.2.1 -->
 		<xsd:schema xmlns="http://nn.nl/XSD/Generic/MessageHeader/2" targetNamespace="http://nn.nl/XSD/Generic/MessageHeader/2" attributeFormDefault="unqualified" elementFormDefault="qualified">
+		<!-- v0.2.1 -->
 	<xsd:element name="MessageHeader" type="MessageHeaderType"/>
 	<xsd:element name="Result" type="ResultType"/>
 	<xsd:complexType name="MessageHeaderType">

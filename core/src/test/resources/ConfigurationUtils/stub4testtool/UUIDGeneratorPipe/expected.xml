@@ -17,18 +17,18 @@
 				        <exit path="EXIT" state="success"/>
 			      </exits>
 			      <pipe name="UUIDGeneratorPipe-numeric"
-               className="org.frankframework.pipes.FixedResultPipe"
-               returnString="1234567890123456789012345678901">
+               className="org.frankframework.pipes.EchoPipe"
+			   getInputFromFixedValue="1234567890123456789012345678901">
 				        <forward name="success" path="UUIDGeneratorPipe-alphanumeric"/>
 			      </pipe>
 			      <pipe name="UUIDGeneratorPipe-alphanumeric"
-               className="org.frankframework.pipes.FixedResultPipe"
-               returnString="0a4544b6-37489ec0_15ad0f006ae_-7ff3">
+               className="org.frankframework.pipes.EchoPipe"
+			   getInputFromFixedValue="0a4544b6-37489ec0_15ad0f006ae_-7ff3">
 				        <forward name="success" path="UUIDGeneratorPipe-default"/>
 			      </pipe>
 			      <pipe name="UUIDGeneratorPipe-default"
-               className="org.frankframework.pipes.FixedResultPipe"
-               returnString="0a4544b6-37489ec0_15ad0f006ae_-7ff3">
+               className="org.frankframework.pipes.EchoPipe"
+			   getInputFromFixedValue="0a4544b6-37489ec0_15ad0f006ae_-7ff3">
 				        <forward name="success" path="EXIT"/>
 			      </pipe>
 		    </pipeline>

@@ -1,6 +1,7 @@
 {
   "/iaf/api": {
     "target": "http://localhost:8080/iaf-test/",
-    "secure": false
+    "secure": false,
+    "ws": true
   }
 }

@@ -15,8 +15,8 @@
 */
 package org.frankframework.jta;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.UserTransaction;
 
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.jta.JtaTransactionManager;

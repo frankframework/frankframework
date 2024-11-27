@@ -1,9 +1,9 @@
 package org.frankframework.extensions.cmis;
 
-import org.frankframework.extensions.cmis.server.CmisEvent;
-import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.extensions.cmis.server.CmisEvent;
+import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
 import org.frankframework.testutil.TestAssertions;
 
 public class CmisDynamicAction extends CmisSenderTestBase {

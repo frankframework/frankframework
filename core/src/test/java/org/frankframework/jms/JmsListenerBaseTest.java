@@ -3,17 +3,18 @@ package org.frankframework.jms;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import javax.jms.JMSException;
+import jakarta.jms.JMSException;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.testutil.mock.ConnectionFactoryFactoryMock;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.testutil.mock.ConnectionFactoryFactoryMock;
+
 class JmsListenerBaseTest {
 
-	private static class JmsListenerBaseImpl extends JmsListenerBase {
+	private static class JmsListenerBaseImpl extends AbstractJmsListener {
 	}
 
 	private JmsListenerBaseImpl jmsListener;
@@ -29,7 +30,7 @@ class JmsListenerBaseTest {
 
 	@AfterEach
 	void tearDown() {
-		jmsListener.close();
+		jmsListener.stop();
 	}
 
 	@Test

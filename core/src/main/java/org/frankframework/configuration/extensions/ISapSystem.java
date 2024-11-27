@@ -15,8 +15,11 @@
 */
 package org.frankframework.configuration.extensions;
 
-public interface ISapSystem {
+import org.frankframework.core.INamedObject;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 
-	public void registerItem(Object dummyParent);
-
+@FrankDocGroup(FrankDocGroupValue.OTHER)
+public interface ISapSystem extends INamedObject {
+	String getDestinationAsString();
 }
