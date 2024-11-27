@@ -183,10 +183,8 @@ public class OAuthAccessTokenManagerRequestTest {
 		httpSender.configure();
 		httpSender.start();
 
-		SamlAssertionOauth oauthAuthenticator = (SamlAssertionOauth) AbstractHttpSession.AuthenticationMethod.SAML_ASSERTION.newAuthenticator(httpSender);
+		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.AuthenticationMethod.SAML_ASSERTION.newAuthenticator(httpSender);
 		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials());
-
-		assertEquals("a", oauthAuthenticator.createAssertion());
 
 		String body = StreamUtil.streamToString(request.getEntity().getContent(), "\n", "UTF-8");
 		int bodyLength = body.length();
@@ -207,8 +205,6 @@ public class OAuthAccessTokenManagerRequestTest {
 		assertNotNull(urlEncodedAssertion);
 		String base64EncodedAssertion = URLDecoder.decode(urlEncodedAssertion, StandardCharsets.UTF_8);
 		assertNotNull(base64EncodedAssertion);
-
-		assertEquals("", base64EncodedAssertion);
 	}
 
 	public void assertHeaderPresent(HttpRequestBase method, String header, String expectedValue) {

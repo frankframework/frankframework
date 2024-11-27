@@ -81,7 +81,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		}
 	}
 
-	public String createAssertion() throws Exception {
+	private String createAssertion() throws Exception {
 		// Clean up the PEM content
 		String privateKeyPem = session.getPrivateKey().replace("-----BEGIN PRIVATE KEY-----", "")
 				.replace("-----END PRIVATE KEY-----", "")
@@ -113,11 +113,8 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 	private static final String namespaceURI = "urn:oasis:names:tc:SAML:2.0:assertion";
 
 	private Document generateSAMLAssertion() throws Exception {
-		// TODO
-		int expireInSeconds = 600 * 60;
-
 		String NotBefore = java.time.Instant.now().minusSeconds(60).toString();
-		String NotOnOrAfter = java.time.Instant.now().plusSeconds(expireInSeconds).toString();
+		String NotOnOrAfter = java.time.Instant.now().plusSeconds(session.getAssertionExpiry()).toString();
 		String now = java.time.Instant.now().toString();
 
 		// Create a new XML Document
@@ -144,7 +141,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		// Add Subject
 		Element subject = doc.createElementNS(namespaceURI, "saml2:Subject");
 		Element nameID = doc.createElementNS(namespaceURI, "saml2:NameID");
-		nameID.setTextContent(session.getClientId());
+		nameID.setTextContent(session.getNameId());
 		nameID.setAttribute("Format", "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
 		subject.appendChild(nameID);
 		assertion.appendChild(subject);

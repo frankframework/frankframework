@@ -206,7 +206,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private @Getter String nameId;
 	private @Getter String issuer;
 	private @Getter String audience;
-	private @Getter int samlAssertionExpiry;
+	private @Getter int assertionExpiry; // [s]
 
 	private @Getter AuthenticationMethod authenticationMethod;
 	private @Getter IAuthenticator authenticator;
@@ -776,9 +776,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		this.authenticationMethod = authenticationMethod;
 	}
 
-	/**
-	 *
-	 */
+	// TODO: move this to a keyStore.
 	public void setPrivateKey(String privateKey) {
 		this.privateKey = privateKey;
 	}
@@ -787,20 +785,34 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		this.certificate = certificate;
 	}
 
+
+
+	/**
+	 * The nameId to be added during the creation of the SAML assertion.
+	 */
 	public void setNameId(String nameId) {
 		this.nameId = nameId;
 	}
 
+	/**
+	 * The issuer to be added during the creation of the SAML assertion.
+	 */
 	public void setIssuer(String issuer) {
 		this.issuer = issuer;
 	}
 
+	/**
+	 * The audience to be added during the creation of the SAML assertion.
+	 */
 	public void setAudience(String audience) {
 		this.audience = audience;
 	}
 
-	public void setSamlAssertionExpiry(int expiry) {
-		this.samlAssertionExpiry = expiry;
+	/**
+	 * The time (in seconds) until the generated SAML assertion should be valid. A new assertion will be generated when the previous assertion is no longer valid.
+	 */
+	public void setAssertionExpiry(int expiry) {
+		this.assertionExpiry = expiry;
 	}
 
 	/** Proxy host */
