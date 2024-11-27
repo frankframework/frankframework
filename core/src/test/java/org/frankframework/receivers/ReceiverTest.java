@@ -82,7 +82,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.SimpleApplicationEventMulticaster;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -92,6 +95,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import lombok.Lombok;
 
 import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.SpringEventErrorHandler;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IListenerConnector;
@@ -113,6 +117,16 @@ import org.frankframework.jms.MessagingSource;
 import org.frankframework.jms.PushingJmsListener;
 import org.frankframework.jta.narayana.NarayanaJtaTransactionManager;
 import org.frankframework.management.Action;
+import org.frankframework.monitoring.AdapterFilter;
+import org.frankframework.monitoring.EventType;
+import org.frankframework.monitoring.IMonitorDestination;
+import org.frankframework.monitoring.ITrigger;
+import org.frankframework.monitoring.Monitor;
+import org.frankframework.monitoring.MonitorManager;
+import org.frankframework.monitoring.Severity;
+import org.frankframework.monitoring.SourceFiltering;
+import org.frankframework.monitoring.Trigger;
+import org.frankframework.monitoring.events.FireMonitorEvent;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
@@ -604,6 +618,69 @@ public class ReceiverTest {
 
 		// Assert
 		verify(jmsMessage, atLeastOnce()).acknowledge();
+	}
+
+	@Test
+	void testStopReceiverWithFaultyMonitor() throws Exception {
+		// Arrange
+		configuration = buildConfiguration(null);
+		IListener<Serializable> listener = setupMessageStoreListener();
+		Receiver<Serializable> receiver = setupReceiver(listener);
+
+		IMonitorDestination destination = mock(IMonitorDestination.class);
+		when(destination.getName()).thenReturn("dummy-destination-name");
+
+		Monitor monitor = new Monitor();
+		monitor.setApplicationContext(configuration);
+		monitor.setName("test-monitor");
+		monitor.setType(EventType.TECHNICAL);
+
+		MonitorManager monitorManager = new MonitorManager();
+		monitorManager.setApplicationContext(configuration);
+		monitorManager.addMonitor(monitor);
+		monitorManager.addDestination(destination);
+		monitor.setDestinations(destination.getName());
+
+		Trigger badTrigger = spy(new Trigger());
+		doThrow(IllegalStateException.class).when(badTrigger).onApplicationEvent(any(FireMonitorEvent.class));
+		badTrigger.setSeverity(Severity.WARNING);
+		badTrigger.setTriggerType(ITrigger.TriggerType.ALARM);
+		badTrigger.setEventCode(Receiver.RCV_SHUTDOWN_MONITOR_EVENT);
+
+		monitor.addTrigger(badTrigger);
+
+		ConfigurableListableBeanFactory beanFactory = configuration.getBeanFactory();
+		SimpleApplicationEventMulticaster eventMulticaster = beanFactory.getBean(AbstractApplicationContext.APPLICATION_EVENT_MULTICASTER_BEAN_NAME, SimpleApplicationEventMulticaster.class);
+		eventMulticaster.setErrorHandler(new SpringEventErrorHandler());
+
+		Adapter adapter = setupAdapter(receiver, ExitState.ERROR);
+
+		badTrigger.setSourceFiltering(SourceFiltering.ADAPTER);
+		AdapterFilter af = new AdapterFilter();
+		af.setAdapter(adapter.getName());
+		badTrigger.addAdapterFilter(af);
+
+		// start adapter
+		monitorManager.configure();
+		configuration.configure();
+		configuration.start();
+
+		waitWhileInState(adapter, RunState.STOPPED);
+		waitWhileInState(adapter, RunState.STARTING);
+		waitWhileInState(receiver, RunState.STOPPED);
+		waitWhileInState(receiver, RunState.STARTING);
+
+		LOG.info("Adapter RunState: {}", adapter.getRunState());
+		LOG.info("Receiver RunState: {}", receiver.getRunState());
+
+		// Act
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
+			adapter.stopRunning();
+
+			waitForState(adapter, RunState.STOPPED);
+
+			assertThat(appender.getLogLines(), hasItem(containsString("Error handling event")));
+		}
 	}
 
 	@Test

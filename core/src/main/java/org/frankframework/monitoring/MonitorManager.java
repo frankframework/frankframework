@@ -127,16 +127,12 @@ public class MonitorManager extends AbstractConfigurableLifecyle implements Appl
 		return monitors.get(index);
 	}
 	public Monitor findMonitor(String name) {
-		if(name == null) {
+		if (name == null) {
 			return null;
 		}
-
-		for (Monitor monitor : monitors) {
-			if (name.equals(monitor.getName())) {
-				return monitor;
-			}
-		}
-		return null;
+		return monitors.stream()
+				.filter(monitor -> name.equals(monitor.getName()))
+				.findFirst().orElse(null);
 	}
 
 	public List<Monitor> getMonitors() {

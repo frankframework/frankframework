@@ -25,9 +25,12 @@ import java.util.Map;
 import java.util.Queue;
 
 import jakarta.annotation.Nonnull;
+
+import org.apache.logging.log4j.Logger;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.logging.log4j.Logger;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.monitoring.events.FireMonitorEvent;
@@ -82,6 +85,10 @@ public class Trigger implements ITrigger {
 			}
 		} else { // In case of a reconfigure
 			eventDates = null;
+		}
+
+		if (severity == null) {
+			throw new ConfigurationException("you must define a severity for the trigger");
 		}
 
 		configured = true;
