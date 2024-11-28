@@ -13,11 +13,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.ibistesttool.larva;
+package org.frankframework.ladybug.larva;
 
 import java.util.Comparator;
 
-public class CommonPropertiesComparator implements Comparator<String> {
+public class ScenarioPropertiesComparator implements Comparator<String> {
 
 	@Override
 	public int compare(String o1, String o2) {
@@ -28,18 +28,20 @@ public class CommonPropertiesComparator implements Comparator<String> {
 		s = s.trim();
 		String[] sParts = s.split("\\.");
 		switch (sParts[0]) {
-			case "include":
+			case "scenario":
 				return 0;
-			case "adapter":
+			case "include":
 				return 1;
-			case "stub":
-				return 2;
 			default:
-				if (sParts[0].startsWith("ignoreContentBetweenKeys")) {
-					String ignoreIdx = sParts[0].substring(24);
-					if (ignoreIdx.isEmpty()) return 3;
-					return 3 + 2 * Integer.parseInt(ignoreIdx) + Integer.parseInt(sParts[sParts.length - 1].substring(3));
+				if (sParts[0].startsWith("step")) {
+					return 3 + Integer.parseInt(sParts[0].substring(4));
 				}
+		}
+		//substring from second dot (or first if there is only 1);
+		int j = s.indexOf(".");
+		String s1 = s.substring(Math.max(s.indexOf(".", j + 1) + 1, j + 1));
+		if (s1.matches("^param\\d+\\.(name|value)$")) {
+			return 2;
 		}
 		return -1;
 	}

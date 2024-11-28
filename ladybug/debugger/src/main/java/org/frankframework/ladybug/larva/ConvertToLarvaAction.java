@@ -13,9 +13,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.ibistesttool.larva;
+package org.frankframework.ladybug.larva;
 
 import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.CheckpointType;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.extensions.CustomReportAction;
 import nl.nn.testtool.extensions.CustomReportActionResult;
@@ -219,7 +220,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 				if (skipUntilEndOfSender) {
 					//If we're currently stubbing a sender, and we haven't reached the end of it yet
 					String checkpointName = checkpoint.getName().substring(7);
-					if (checkpoint.getLevel() == skipUntilEndOfSenderLevel && checkpoint.getType() == Checkpoint.TYPE_ENDPOINT && checkpointName.equals(skipUntilEndOfSenderName)) {
+					if (checkpoint.getLevel() == skipUntilEndOfSenderLevel && checkpoint.getType() == CheckpointType.ENDPOINT.toInt() && checkpointName.equals(skipUntilEndOfSenderName)) {
 						String senderResponseMessage = checkpoint.getMessage();
 						String senderResponseFileName = getFileName(++current_step_nr, "stub", checkpointName, false, senderResponseMessage);
 						putScenarioProperty(
@@ -230,7 +231,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 						}
 						skipUntilEndOfSender = false;
 					}
-				} else if (checkpoint.getType() == Checkpoint.TYPE_STARTPOINT && checkpoint.getName().startsWith("Sender ")) {
+				} else if (checkpoint.getType() == CheckpointType.STARTPOINT.toInt() && checkpoint.getName().startsWith("Sender ")) {
 					if (!allowedSenders.contains(checkpoint.getSourceClassName())) {
 						//If sender should be stubbed:
 						String senderName = checkpoint.getName().substring(7, checkpoint.getName().length() - 7);
@@ -253,7 +254,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 						skipUntilEndOfSenderName = senderName;
 						skipUntilEndOfSenderLevel = checkpoint.getLevel() + 1;
 					}
-				} else if (checkpoint.getLevel() == 1 && checkpoint.getType() == Checkpoint.TYPE_INPUTPOINT && checkpoint.getName().startsWith("SessionKey ")) {
+				} else if (checkpoint.getLevel() == 1 && checkpoint.getType() == CheckpointType.INPUTPOINT.toInt() && checkpoint.getName().startsWith("SessionKey ")) {
 					//SessionKey for listener found
 					String sessionKeyName = checkpoint.getName().substring(11);
 					if (!ignoredSessionKeys.contains(sessionKeyName)) {
