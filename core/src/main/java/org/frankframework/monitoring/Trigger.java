@@ -100,6 +100,10 @@ public class Trigger implements ITrigger {
 			eventDates = null;
 		}
 
+		if (severity == null) {
+			throw new ConfigurationException("you must define a severity for the trigger");
+		}
+
 		configured = true;
 	}
 
