@@ -72,10 +72,8 @@ public class Trigger implements ITrigger {
 		if(monitor == null) {
 			throw new ValidationException("no monitor autowired");
 		}
-		if (threshold > 0) {
-			if(period < 1) {
-				throw new ValidationException("you must define a period when using threshold > 0");
-			}
+		if (threshold > 0 && period < 1) {
+			throw new ValidationException("you must define a period when using threshold > 0");
 		}
 
 		if (severity == null) {
