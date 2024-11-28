@@ -48,9 +48,9 @@ import org.frankframework.util.XmlBuilder;
  *    <Alarm severity="WARNING">
  *        <Event>Receiver Shutdown</Event>
  *    </Alarm>
- *    <Alarm severity="WARNING">
+ *    <Clearing severity="WARNING">
  *        <Event>Receiver Shutdown</Event>
- *    </Alarm>
+ *    </Clearing>
  * </Monitor>
  * }</pre>
  *
