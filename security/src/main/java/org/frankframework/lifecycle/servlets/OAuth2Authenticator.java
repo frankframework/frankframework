@@ -77,6 +77,9 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	/** eg. https://accounts.google.com */
 	private @Setter String issuerUri;
 
+	/** eg. external absolute URL (must start with `http(s)://`) */
+	private @Setter String baseUrl;
+
 	/** eg. https://www.googleapis.com/oauth2/v3/userinfo */
 	private @Setter String userInfoUri;
 
@@ -123,6 +126,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 		log.info("found rolemapping file [{}]", roleMappingURL);
 
 		oauthBaseUrl = computeBaseUrl();
+		log.debug("using oauth baseurl [{}]", oauthBaseUrl);
 		clientRepository = createClientRegistrationRepository();
 		SpringUtils.registerSingleton(getApplicationContext(), "clientRegistrationRepository", clientRepository);
 	}
@@ -168,13 +172,14 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	}
 
 	private String computeBaseUrl() {
-		String baseUrl = getApplicationContext().getEnvironment().getProperty("baseUrl");
 		if (StringUtils.isEmpty(baseUrl)) {
 			baseUrl = getPrivateEndpoints().stream().findFirst().orElse("");
+
+			if(baseUrl.endsWith("*")) { // Strip the '*' if the url ends with it
+				baseUrl = baseUrl.substring(0, baseUrl.length()-1);
+			}
 		}
-		if(baseUrl.endsWith("*")) { // Strip the '*' if the url ends with it
-			baseUrl = baseUrl.substring(0, baseUrl.length()-1);
-		}
+
 		if(baseUrl.endsWith("/")) { // Ensure the url does not end with a slash
 			baseUrl = baseUrl.substring(0, baseUrl.length()-1);
 		}
