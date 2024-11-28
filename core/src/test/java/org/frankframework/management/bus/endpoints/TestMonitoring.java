@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -311,27 +310,23 @@ public class TestMonitoring extends BusTestBase {
 		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
 		request.setHeader("monitor", TEST_MONITOR_NAME);
 
+		// Before the test make sure the state is as we expect
+		assertAll(
+				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
+				() -> assertEquals(1, getMonitorManager().getMonitor(0).getTriggers().size())
+		);
+
+
 		// Act
 		MessageHandlingException mhe = assertThrows(MessageHandlingException.class, ()-> callSyncGateway(request));
 
-		// Assert Exception
+		// Assert Exception and that state has not changed
 		assertInstanceOf(BusException.class, mhe.getCause());
 		BusException be = (BusException) mhe.getCause();
 		assertAll(
 				() -> assertEquals(400, be.getStatusCode()),
 				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
-				() -> assertEquals(2, getMonitorManager().getMonitor(0).getTriggers().size())
-			);
-
-		// Assert Trigger
-		ITrigger trigger = getMonitorManager().getMonitor(0).getTriggers().get(1);
-		assertAll(
-				() -> assertNull(trigger.getSeverity()),
-				() -> assertEquals(2, trigger.getPeriod()),
-				() -> assertEquals(1, trigger.getThreshold()),
-				() -> assertEquals(TriggerType.ALARM, trigger.getTriggerType()),
-				() -> assertThat(trigger.getEventCodes(), containsInAnyOrder("Receiver Configured")),
-				() -> assertEquals(SourceFiltering.NONE, trigger.getSourceFiltering())
+				() -> assertEquals(1, getMonitorManager().getMonitor(0).getTriggers().size())
 			);
 	}
 
