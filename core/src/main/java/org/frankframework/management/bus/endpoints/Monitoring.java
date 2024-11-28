@@ -29,6 +29,7 @@ import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ValidationException;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -111,28 +112,28 @@ public class Monitoring extends BusEndpointBase {
 		MonitorManager mm = getMonitorManager(configurationName);
 
 		Monitor monitor;
-		ITrigger trigger;
 		if(name != null) {
 			monitor = getMonitor(mm, name);
-			trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
-			updateTrigger(trigger, message);
-			monitor.addTrigger(trigger);
+			ITrigger trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
+			try {
+				updateTrigger(trigger, message);
+				monitor.addTrigger(trigger);
+			} catch (ValidationException e) {
+				// Rethrowing this as Warning / Bad Request
+				log.info("Trigger failed validation", e);
+				throw new BusException("trigger not added, validation failed: " + e.getMessage());
+			}
 		} else {
 			monitor = SpringUtils.createBean(getApplicationContext(), Monitor.class);
 			updateMonitor(monitor, message);
 			mm.addMonitor(monitor);
-			trigger = null;
 		}
 
 		try {
 			monitor.configure();
 		} catch (ConfigurationException e) {
-			if (trigger != null) {
-				monitor.removeTrigger(trigger);
-			}
-			log.info("Unable to (re)configure monitor [{}]", monitor.getName(), e);
-			// Throw this as Warning / Bad Request, not able to configure was likely due to bad user input and not due to internal server error
-			throw new BusException("unable to (re)configure Monitor: " + e.getMessage());
+			// If we cannot configure the monitor despite validation passing, rethrowing it as internal server error.
+			throw new BusException("unable to (re)configure Monitor: " + e.getMessage(), e);
 		}
 
 		return EmptyMessage.created();

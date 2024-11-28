@@ -32,6 +32,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ValidationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.monitoring.events.FireMonitorEvent;
 import org.frankframework.util.DateFormatUtils;
@@ -67,28 +68,38 @@ public class Trigger implements ITrigger {
 	private boolean configured = false;
 
 	@Override
-	public void configure() throws ConfigurationException {
+	public void validate() throws ValidationException {
 		if(monitor == null) {
-			throw new ConfigurationException("no monitor autowired");
+			throw new ValidationException("no monitor autowired");
+		}
+		if (threshold > 0) {
+			if(period < 1) {
+				throw new ValidationException("you must define a period when using threshold > 0");
+			}
 		}
 
+		if (severity == null) {
+			throw new ValidationException("you must define a severity for the trigger");
+		}
+	}
+
+	@Override
+	public void configure() throws ConfigurationException {
+		try {
+			validate();
+		} catch (ValidationException e) {
+			throw new ConfigurationException(e);
+		}
 		if (eventCodes.isEmpty()) {
 			log.warn("trigger of Monitor [{}] should have at least one eventCode specified", monitor::getName);
 		}
 
 		if (threshold > 0) {
-			if(period < 1) {
-				throw new ConfigurationException("you must define a period when using threshold > 0");
-			}
 			if (eventDates == null) {
 				eventDates = new ArrayDeque<>();
 			}
 		} else { // In case of a reconfigure
 			eventDates = null;
-		}
-
-		if (severity == null) {
-			throw new ConfigurationException("you must define a severity for the trigger");
 		}
 
 		configured = true;
