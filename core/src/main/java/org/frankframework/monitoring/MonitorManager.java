@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
@@ -126,13 +127,13 @@ public class MonitorManager extends AbstractConfigurableLifecyle implements Appl
 	public Monitor getMonitor(int index) {
 		return monitors.get(index);
 	}
-	public Monitor findMonitor(String name) {
+	public Optional<Monitor> findMonitor(String name) {
 		if (name == null) {
-			return null;
+			return Optional.empty();
 		}
 		return monitors.stream()
 				.filter(monitor -> name.equals(monitor.getName()))
-				.findFirst().orElse(null);
+				.findFirst();
 	}
 
 	public List<Monitor> getMonitors() {
