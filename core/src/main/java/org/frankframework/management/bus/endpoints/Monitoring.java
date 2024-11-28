@@ -17,7 +17,6 @@ package org.frankframework.management.bus.endpoints;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -348,10 +347,9 @@ public class Monitoring extends BusEndpointBase {
 		if(trigger.getAdapterFilters() != null) {
 			Map<String, List<String>> sources = new HashMap<>();
 			if(trigger.getSourceFiltering() != SourceFiltering.NONE) {
-				for(Iterator<String> it1 = trigger.getAdapterFilters().keySet().iterator(); it1.hasNext();) {
-					String adapterName = it1.next();
-
-					AdapterFilter af = trigger.getAdapterFilters().get(adapterName);
+				for (Map.Entry<String, AdapterFilter> entry : trigger.getAdapterFilters().entrySet()) {
+					String adapterName = entry.getKey();
+					AdapterFilter af = entry.getValue();
 					sources.put(adapterName, af.getSubObjectList());
 				}
 			}
