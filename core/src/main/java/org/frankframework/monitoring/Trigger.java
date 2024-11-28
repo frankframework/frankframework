@@ -199,6 +199,10 @@ public class Trigger implements ITrigger {
 	private void clearEventCodes() {
 		eventCodes.clear();
 	}
+
+	/**
+	 * Adds one or more events to the trigger. Example: <Event>Pipe Exception</Event>
+	 */
 	public void addEventCodeText(String code) {
 		eventCodes.add(code);
 	}
