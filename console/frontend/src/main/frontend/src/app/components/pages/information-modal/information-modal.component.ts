@@ -58,7 +58,7 @@ export class InformationModalComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.serverInfoService.refresh();
+    this.refresh();
     this.subscribeToServerInfo();
   }
 
@@ -92,6 +92,6 @@ export class InformationModalComponent implements OnInit, OnDestroy {
   }
 
   refresh(): void {
-    this.serverInfoService.refresh();
+    this.serverInfoService.refresh().subscribe();
   }
 }

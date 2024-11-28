@@ -20,6 +20,7 @@ module.exports = {
       rules: {
         'prefer-template': 'error',
         '@typescript-eslint/explicit-function-return-type': 'error',
+        '@typescript-eslint/triple-slash-reference': 'warn',
         'unicorn/prevent-abbreviations': 'warn',
         'unicorn/no-array-reduce': 'off',
         'unicorn/prefer-ternary': 'warn',

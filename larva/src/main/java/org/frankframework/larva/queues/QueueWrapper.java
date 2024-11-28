@@ -18,7 +18,6 @@ package org.frankframework.larva.queues;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +46,7 @@ import org.frankframework.larva.ListenerMessageHandler;
 import org.frankframework.larva.SenderThread;
 import org.frankframework.larva.XsltProviderListener;
 import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.DelaySender;
 import org.frankframework.stream.FileMessage;
@@ -128,22 +128,17 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	}
 
 	private void mapParameters(Properties properties) {
-		if(get() instanceof IWithParameters) {
-			Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, getSession());
-			Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
-			while (parameterNameIterator.hasNext()) {
-				String parameterName = parameterNameIterator.next();
-				Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
-				((IWithParameters) get()).addParameter(parameter);
-			}
+		if(get() instanceof IWithParameters withParameters) {
+			Map<String, IParameter> paramPropertiesMap = createParametersMapFromParamProperties(properties, getSession());
+			paramPropertiesMap.values().forEach(withParameters::addParameter);
 		}
 	}
 
-	public static Map<String, Object> createParametersMapFromParamProperties(Properties properties, PipeLineSession session) {
+	public static Map<String, IParameter> createParametersMapFromParamProperties(Properties properties, PipeLineSession session) {
 		final String _name = ".name";
 		final String _param = "param";
 		final String _type = ".type";
-		Map<String, Object> result = new HashMap<>();
+		Map<String, IParameter> result = new HashMap<>();
 		boolean processed = false;
 		int i = 1;
 		while (!processed) {

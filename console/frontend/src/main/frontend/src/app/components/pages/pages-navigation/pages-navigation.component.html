@@ -38,9 +38,7 @@
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemConfiguration.expanded }">
             <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-              <a routerLink="/configurations" [queryParams]="{ name: getConfigurationsQueryParam() }"
-                >Show Configurations</a
-              >
+              <a routerLink="/configurations">Show Configurations</a>
             </li>
             <li routerLinkActive="active">
               <a routerLink="/configurations/manage">Manage Configurations</a>

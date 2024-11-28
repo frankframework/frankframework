@@ -65,7 +65,6 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 		pipe.start();
 	}
 
-
 	/*
 	 * use these methods to execute pipe, instead of calling pipe.doPipe directly. This allows for
 	 * integrated testing of streaming.
