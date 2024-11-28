@@ -17,6 +17,12 @@
 
 	<import resource="springUnmanagedDeployment.xml"/>
 
+	<bean name="applicationEventMulticaster" class="org.springframework.context.event.SimpleApplicationEventMulticaster" autowire="byName">
+		<property name="errorHandler">
+			<bean class="org.frankframework.configuration.SpringEventErrorHandler"/>
+		</property>
+	</bean>
+
 	<bean
 		name="lowerCasePropertySourcePostProcessor"
 		class="org.frankframework.configuration.LowerCasePropertySourcePostProcessor"

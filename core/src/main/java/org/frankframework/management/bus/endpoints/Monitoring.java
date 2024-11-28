@@ -22,13 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.dto.MonitorDTO;
-import org.frankframework.management.bus.dto.TriggerDTO;
-import org.frankframework.management.bus.message.EmptyMessage;
-import org.frankframework.management.bus.message.JsonMessage;
-import org.frankframework.management.bus.message.StringMessage;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
@@ -40,6 +35,12 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.dto.MonitorDTO;
+import org.frankframework.management.bus.dto.TriggerDTO;
+import org.frankframework.management.bus.message.EmptyMessage;
+import org.frankframework.management.bus.message.JsonMessage;
+import org.frankframework.management.bus.message.StringMessage;
 import org.frankframework.monitoring.AdapterFilter;
 import org.frankframework.monitoring.EventThrowing;
 import org.frankframework.monitoring.EventType;
@@ -51,11 +52,8 @@ import org.frankframework.monitoring.Severity;
 import org.frankframework.monitoring.SourceFiltering;
 import org.frankframework.monitoring.Trigger;
 import org.frankframework.monitoring.events.ConsoleMonitorEvent;
-
 import org.frankframework.util.EnumUtils;
-
 import org.frankframework.util.JacksonUtils;
-
 import org.frankframework.util.SpringUtils;
 
 @BusAware("frank-management-bus")
@@ -70,11 +68,7 @@ public class Monitoring extends BusEndpointBase {
 	}
 
 	private Monitor getMonitor(MonitorManager mm, String monitorName) {
-		Monitor monitor = mm.findMonitor(monitorName);
-		if(monitor == null) {
-			throw new BusException("monitor not found");
-		}
-		return monitor;
+		return mm.findMonitor(monitorName).orElseThrow(()-> new BusException("monitor not found"));
 	}
 
 	private ITrigger getTrigger(Monitor monitor, int triggerId) {
@@ -117,21 +111,28 @@ public class Monitoring extends BusEndpointBase {
 		MonitorManager mm = getMonitorManager(configurationName);
 
 		Monitor monitor;
+		ITrigger trigger;
 		if(name != null) {
 			monitor = getMonitor(mm, name);
-			ITrigger trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
+			trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
 			updateTrigger(trigger, message);
 			monitor.addTrigger(trigger);
 		} else {
 			monitor = SpringUtils.createBean(getApplicationContext(), Monitor.class);
 			updateMonitor(monitor, message);
 			mm.addMonitor(monitor);
+			trigger = null;
 		}
 
 		try {
 			monitor.configure();
 		} catch (ConfigurationException e) {
-			throw new BusException("unable to (re)configure Monitor", e);
+			if (trigger != null) {
+				monitor.removeTrigger(trigger);
+			}
+			log.info("Unable to (re)configure monitor [{}]", monitor.getName(), e);
+			// Throw this as Warning / Bad Request, not able to configure was likely due to bad user input and not due to internal server error
+			throw new BusException("unable to (re)configure Monitor: " + e.getMessage());
 		}
 
 		return EmptyMessage.created();
