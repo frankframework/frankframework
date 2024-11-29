@@ -26,17 +26,15 @@ import java.util.Queue;
 
 import jakarta.annotation.Nonnull;
 
-import org.apache.logging.log4j.Logger;
-
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ValidationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.monitoring.events.FireMonitorEvent;
 import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.XmlBuilder;
 
 /**
@@ -46,9 +44,8 @@ import org.frankframework.util.XmlBuilder;
  * @since   4.9
  *
  */
+@Log4j2
 public class Trigger implements ITrigger {
-	protected Logger log = LogUtil.getLogger(this);
-
 	// The element names, which can be used as a Trigger.
 	private static final String ALARM_NAME = "AlarmTrigger";
 	private static final String CLEARING_NAME = "ClearingTrigger";
@@ -67,11 +64,32 @@ public class Trigger implements ITrigger {
 	private Queue<Instant> eventDates = null;
 	private boolean configured = false;
 
+	/**
+	 * Default Trigger constructor
+	 */
+	public Trigger() {
+		// No op
+	}
+
+	/**
+	 * Copy-constructor for trigger used to validate updates before applying them.
+	 *
+	 * @param trigger The {@link ITrigger} to be copied.
+	 */
+	public Trigger(ITrigger trigger) {
+		this.severity = trigger.getSeverity();
+		this.sourceFiltering = trigger.getSourceFiltering();
+		this.triggerType = trigger.getTriggerType();
+		this.eventCodes.addAll(trigger.getEventCodes());
+		this.threshold = trigger.getThreshold();
+		this.period = trigger.getPeriod();
+		if (trigger.getAdapterFilters() != null) {
+			this.adapterFilters.putAll(trigger.getAdapterFilters());
+		}
+	}
+
 	@Override
 	public void validate() throws ValidationException {
-		if(monitor == null) {
-			throw new ValidationException("no monitor autowired");
-		}
 		if (threshold > 0 && period < 1) {
 			throw new ValidationException("you must define a period when using threshold > 0");
 		}
@@ -83,10 +101,14 @@ public class Trigger implements ITrigger {
 
 	@Override
 	public void configure() throws ConfigurationException {
+		configured = false;
 		try {
 			validate();
 		} catch (ValidationException e) {
 			throw new ConfigurationException(e);
+		}
+		if (monitor == null) {
+			throw new ConfigurationException("no monitor autowired");
 		}
 		if (eventCodes.isEmpty()) {
 			log.warn("trigger of Monitor [{}] should have at least one eventCode specified", monitor::getName);
@@ -282,5 +304,4 @@ public class Trigger implements ITrigger {
 	public void destroy() throws Exception {
 		log.info("removing trigger [{}]", this);
 	}
-
 }

@@ -117,6 +117,7 @@ public class Monitoring extends BusEndpointBase {
 			ITrigger trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
 			try {
 				updateTrigger(trigger, message);
+				trigger.validate();
 				monitor.addTrigger(trigger);
 			} catch (ValidationException e) {
 				// Rethrowing this as Warning / Bad Request
@@ -125,7 +126,7 @@ public class Monitoring extends BusEndpointBase {
 			}
 		} else {
 			monitor = SpringUtils.createBean(getApplicationContext(), Monitor.class);
-			updateMonitor(monitor, message);
+			updateMonitor(monitor, message, true);
 			mm.addMonitor(monitor);
 		}
 
@@ -172,18 +173,56 @@ public class Monitoring extends BusEndpointBase {
 		Monitor monitor = getMonitor(mm, monitorName);
 
 		if(triggerId != null) {
-			ITrigger trigger = getTrigger(monitor, triggerId);
-			updateTrigger(trigger, message);
+			tryUpdateTrigger(message, monitor, triggerId);
 		} else {
 			String state = BusMessageUtils.getHeader(message, "state", "edit"); // raise / clear / edit
 			if("edit".equals(state)) {
-				updateMonitor(monitor, message);
+				tryUpdateMonitor(message, monitor);
 			} else {
 				changeMonitorState(monitor, "raise".equals(state));
 			}
 		}
 
 		return EmptyMessage.accepted();
+	}
+
+	private void tryUpdateMonitor(Message<?> message, Monitor monitor) {
+		// Copy info which might get modified by update
+		Monitor backup = new Monitor(monitor);
+		try {
+			updateMonitor(monitor, message, false);
+		} catch (IllegalArgumentException e) {
+			// Restore monitor to its backup state
+			monitor.setName(backup.getName());
+			monitor.setType(backup.getType());
+			monitor.setDestinations(backup.getDestinationsAsString());
+			throw new BusException("unable to update monitor: " + e.getMessage());
+		}
+	}
+
+	private void tryUpdateTrigger(Message<?> message, Monitor monitor, Integer triggerId) {
+		ITrigger trigger = getTrigger(monitor, triggerId);
+
+		// Create a copy of the trigger and update that, then validate the copy, to see
+		// if the submitted changes were valid before updating the actual trigger
+		ITrigger validateTrigger = new Trigger(trigger);
+		updateTrigger(validateTrigger, message);
+		try {
+			validateTrigger.validate();
+		} catch (ValidationException e) {
+			// Bad Request
+			throw new BusException("trigger not valid: " + e.getMessage());
+		}
+
+		// Since the changes were apparently valid, we can now update the actual trigger
+		// and re-configure it.
+		updateTrigger(trigger, message);
+		try {
+			trigger.configure();
+		} catch (ConfigurationException e) {
+			// Reconfigure should have succeeded. Internal Server Error.
+			throw new BusException("unable to (re)configure Trigger: " + e.getMessage(), e);
+		}
 	}
 
 	private void updateTrigger(ITrigger trigger, Message<?> message) {
@@ -237,7 +276,7 @@ public class Monitoring extends BusEndpointBase {
 		}
 	}
 
-	private void updateMonitor(Monitor monitor, Message<?> message) {
+	private void updateMonitor(Monitor monitor, Message<?> message, boolean isNewMonitor) {
 		MonitorDTO dto = JacksonUtils.convertToDTO(message.getPayload(), MonitorDTO.class);
 		if(StringUtils.isNotBlank(dto.getName())) {
 			monitor.setName(dto.getName());
@@ -246,7 +285,15 @@ public class Monitoring extends BusEndpointBase {
 			monitor.setType(dto.getType());
 		}
 		if(dto.getDestinations() != null) {
-			monitor.setDestinations(String.join(",", dto.getDestinations()));
+			if (isNewMonitor) {
+				// This call doesn't validate destinations; since we don't yet have
+				// MonitorManager we cannot yet do that validation.
+				monitor.setDestinations(String.join(",", dto.getDestinations()));
+			} else {
+				// This call validates each destination, can only do that on a monitor
+				// that has already been added to the monitor manager.
+				monitor.setDestinationSet(dto.getDestinations());
+			}
 		}
 	}
 
@@ -273,7 +320,7 @@ public class Monitoring extends BusEndpointBase {
 
 	private Message<String> getTrigger(MonitorManager manager, ITrigger trigger) {
 		Map<String, Object> returnMap = new HashMap<>();
-		returnMap.put("trigger", mapTrigger(trigger));
+		returnMap.put(TRIGGER_NAME_KEY, mapTrigger(trigger));
 		returnMap.put("severities", EnumUtils.getEnumList(Severity.class));
 		returnMap.put("events", manager.getEvents());
 

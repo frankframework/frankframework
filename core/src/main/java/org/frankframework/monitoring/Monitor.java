@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -30,6 +29,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ValidationException;
@@ -37,7 +37,6 @@ import org.frankframework.core.IConfigurable;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.monitoring.events.MonitorEvent;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlBuilder;
 
@@ -61,8 +60,8 @@ import org.frankframework.util.XmlBuilder;
  * @author Niels Meijer
  */
 @FrankDocGroup(FrankDocGroupValue.MONITORING)
+@Log4j2
 public class Monitor implements IConfigurable, DisposableBean {
-	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private @Getter String name;
@@ -83,6 +82,16 @@ public class Monitor implements IConfigurable, DisposableBean {
 	private final List<ITrigger> triggers = new ArrayList<>();
 	private final Set<String> destinations = new HashSet<>();
 	private @Getter @Setter ApplicationContext applicationContext;
+
+	public Monitor() {
+		// No-op
+	}
+
+	public Monitor(Monitor monitor) {
+		this.name = monitor.getName();
+		this.type = monitor.getType();
+		this.destinations.addAll(monitor.destinations);
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -183,15 +192,8 @@ public class Monitor implements IConfigurable, DisposableBean {
 	}
 
 	public String getDestinationsAsString() {
-		String result=null;
-		for(String destination : getDestinationSet()) {
-			if (result==null) {
-				result=destination;
-			} else {
-				result+=","+destination;
-			}
-		}
-		return result;
+		if (destinations.isEmpty()) return null;
+		return String.join(",", destinations);
 	}
 
 	//Digester setter
