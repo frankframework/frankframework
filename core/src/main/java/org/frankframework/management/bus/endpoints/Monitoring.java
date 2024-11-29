@@ -189,40 +189,40 @@ public class Monitoring extends BusEndpointBase {
 	private void updateTrigger(ITrigger trigger, Message<?> message) {
 		TriggerDTO dto = JacksonUtils.convertToDTO(message.getPayload(), TriggerDTO.class);
 
-		if(dto.getEvents() != null) {
+		if (dto.getEvents() != null) {
 			trigger.setEventCodes(dto.getEvents());
 		}
-		if(dto.getType() != null) {
+		if (dto.getType() != null) {
 			trigger.setTriggerType(dto.getType());
 		}
-		if(dto.getSeverity() != null) {
+		if (dto.getSeverity() != null) {
 			trigger.setSeverity(dto.getSeverity());
 		}
-		if(dto.getThreshold() != null) {
+		if (dto.getThreshold() != null) {
 			trigger.setThreshold(dto.getThreshold());
 		}
-		if(dto.getPeriod() != null) {
+		if (dto.getPeriod() != null) {
 			trigger.setPeriod(dto.getPeriod());
 		}
-		if(dto.getFilter() != null) {
+		if (dto.getFilter() != null) {
 			trigger.setSourceFiltering(dto.getFilter());
-		}
 
-		trigger.clearAdapterFilters();
-		if(SourceFiltering.ADAPTER == dto.getFilter()) {
-			for(String adapter : dto.getAdapters()) {
-				AdapterFilter adapterFilter = new AdapterFilter();
-				adapterFilter.setAdapter(adapter);
-				trigger.addAdapterFilter(adapterFilter);
-			}
-		} else if(SourceFiltering.SOURCE == dto.getFilter()) {
-			for(Map.Entry<String, List<String>> entry : dto.getSources().entrySet()) {
-				AdapterFilter adapterFilter = new AdapterFilter();
-				adapterFilter.setAdapter(entry.getKey());
-				for(String subObject : entry.getValue()) {
-					adapterFilter.addSubObjectText(subObject);
+			trigger.clearAdapterFilters();
+			if (SourceFiltering.ADAPTER == dto.getFilter()) {
+				for (String adapter : dto.getAdapters()) {
+					AdapterFilter adapterFilter = new AdapterFilter();
+					adapterFilter.setAdapter(adapter);
+					trigger.addAdapterFilter(adapterFilter);
 				}
-				trigger.addAdapterFilter(adapterFilter);
+			} else if (SourceFiltering.SOURCE == dto.getFilter()) {
+				for (Map.Entry<String, List<String>> entry : dto.getSources().entrySet()) {
+					AdapterFilter adapterFilter = new AdapterFilter();
+					adapterFilter.setAdapter(entry.getKey());
+					for (String subObject : entry.getValue()) {
+						adapterFilter.addSubObjectText(subObject);
+					}
+					trigger.addAdapterFilter(adapterFilter);
+				}
 			}
 		}
 	}
