@@ -18,6 +18,7 @@ package org.frankframework.management.bus.endpoints;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
@@ -323,10 +324,12 @@ public class Monitoring extends BusEndpointBase {
 
 		List<Map<String, Object>> triggers = new ArrayList<>();
 		List<ITrigger> listOfTriggers = monitor.getTriggers();
-		for(ITrigger trigger : listOfTriggers) {
+		for (ListIterator<ITrigger> iterator = listOfTriggers.listIterator(); iterator.hasNext(); ) {
+			int triggerIndex = iterator.nextIndex();
+			ITrigger trigger = iterator.next();
 
 			Map<String, Object> map = mapTrigger(trigger);
-			map.put("id", listOfTriggers.indexOf(trigger));
+			map.put("id", triggerIndex);
 
 			triggers.add(map);
 		}
@@ -344,9 +347,9 @@ public class Monitoring extends BusEndpointBase {
 		triggerMap.put("threshold", trigger.getThreshold());
 		triggerMap.put("period", trigger.getPeriod());
 
-		if(trigger.getAdapterFilters() != null) {
+		if (trigger.getAdapterFilters() != null) {
 			Map<String, List<String>> sources = new HashMap<>();
-			if(trigger.getSourceFiltering() != SourceFiltering.NONE) {
+			if (trigger.getSourceFiltering() != SourceFiltering.NONE) {
 				for (Map.Entry<String, AdapterFilter> entry : trigger.getAdapterFilters().entrySet()) {
 					String adapterName = entry.getKey();
 					AdapterFilter af = entry.getValue();
