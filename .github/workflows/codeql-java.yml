@@ -35,7 +35,7 @@ on:
     - cron: '0 23 * * 1'
 
 jobs:
-  analyze-java-code:
+  analyze:
     name: Analyze Java
     runs-on: ubuntu-latest
 
