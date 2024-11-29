@@ -19,7 +19,6 @@ import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.http.HttpSender;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.util.StreamUtil;
@@ -132,7 +131,6 @@ public class OAuthAccessTokenManagerRequestTest {
 	}
 
 	@Test
-	@Tag("testtesttest")
 	void testSamlAssertion() throws Exception {
 		httpSender.setTokenEndpoint("fakeEndpoint");
 		httpSender.setAuthenticationMethod(AbstractHttpSession.AuthenticationMethod.SAML_ASSERTION);
@@ -186,25 +184,28 @@ public class OAuthAccessTokenManagerRequestTest {
 		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.AuthenticationMethod.SAML_ASSERTION.newAuthenticator(httpSender);
 		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials());
 
-		String body = StreamUtil.streamToString(request.getEntity().getContent(), "\n", "UTF-8");
+		final String body = StreamUtil.streamToString(request.getEntity().getContent(), "\n", "UTF-8");
+		final String decodedBody = URLDecoder.decode(body, StandardCharsets.UTF_8);
 		int bodyLength = body.length();
 
 		assertEquals("POST", request.getMethod());
 		assertHeaderPresent(request, "Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
 
-		assertTrue(body.contains("grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Asaml2-bearer&client_id=fakeClientId&client_secret=fakeClientSecret&assertion="));
+		assertTrue(decodedBody.contains("grant_type=urn:ietf:params:oauth:grant-type:saml2-bearer&client_id=fakeClientId&client_secret=fakeClientSecret&assertion="));
 
 		assertEquals(String.format("[Content-Type: application/x-www-form-urlencoded; charset=UTF-8,Content-Length: %s,Chunked: false]", bodyLength), request.getEntity()
 				.toString());
 
 		Pattern pattern = Pattern.compile("(.*?)assertion=(.*?)($|&(.*?))");
-		Matcher matcher = pattern.matcher(body);
+		Matcher matcher = pattern.matcher(decodedBody);
 
 		assertTrue(matcher.find());
-		String urlEncodedAssertion = matcher.group(2);
-		assertNotNull(urlEncodedAssertion);
-		String base64EncodedAssertion = URLDecoder.decode(urlEncodedAssertion, StandardCharsets.UTF_8);
+		String base64EncodedAssertion = matcher.group(2);
 		assertNotNull(base64EncodedAssertion);
+
+		String assertion = new String(Base64.getDecoder().decode(base64EncodedAssertion));
+		assertNotNull(assertion);
+		assertTrue(assertion.length() > 50, "Assertion should be a long string");
 	}
 
 	public void assertHeaderPresent(HttpRequestBase method, String header, String expectedValue) {

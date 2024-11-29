@@ -22,8 +22,6 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
 import org.apache.http.message.BasicNameValuePair;
 
-import org.apache.xerces.impl.dv.util.Base64;
-
 import org.apache.xml.security.algorithms.MessageDigestAlgorithm;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -49,6 +47,7 @@ import java.security.PrivateKey;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Base64;
 import java.util.UUID;
 
 import java.util.ArrayList;
@@ -101,13 +100,19 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 
 		// Generate SAML Assertion
 		Document samlAssertion = generateSAMLAssertion();
+		String docAsXml = documentToString(samlAssertion);
 
-		// Sign the Assertion
-		Document signedAssertion = signAssertion(samlAssertion, privateKey, certificate);
+		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+		docFactory.setNamespaceAware(true);
+		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 
-		String signedAssertionAsXml = documentToString(signedAssertion);
+		Document document = docBuilder.parse(new ByteArrayInputStream(docAsXml.getBytes()));
 
-		return Base64.encode(signedAssertionAsXml.getBytes());
+		Document signedAssertion = signAssertion(document, privateKey, certificate);
+
+		String signedAssertionXml = documentToString(signedAssertion);
+
+		return Base64.getEncoder().encodeToString(signedAssertionXml.getBytes());
 	}
 
 	private static final String namespaceURI = "urn:oasis:names:tc:SAML:2.0:assertion";
@@ -227,30 +232,6 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 
 		return doc;
 	}
-
-
-//	private Document signAssertion(Document doc, PrivateKey privateKey, X509Certificate certificate) throws Exception {
-//		// Create XMLSignature object
-//		XMLSignature signature = new XMLSignature(doc, "", XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA256);
-//
-//		// Add transforms
-//		Transforms transforms = new Transforms(doc);
-//		transforms.addTransform(Transforms.TRANSFORM_ENVELOPED_SIGNATURE);
-//		transforms.addTransform(Transforms.TRANSFORM_C14N_EXCL_OMIT_COMMENTS);
-//		signature.addDocument("", transforms, "http://www.w3.org/2001/04/xmlenc#sha256");
-//
-//		// Add the key info
-//		signature.addKeyInfo(certificate);
-//		signature.addKeyInfo(certificate.getPublicKey());
-//
-//		Element root = doc.getDocumentElement();
-//		root.insertBefore(signature.getElement(), root.getChildNodes().item(1));
-//
-//		// Sign the document
-//		signature.sign(privateKey);
-//
-//		return doc;
-//	}
 
 	public String documentToString(Document document) throws Exception {
 		TransformerFactory transformerFactory = TransformerFactory.newInstance();
