@@ -44,7 +44,7 @@ public class PipeLineTest {
 	}
 
 	@Test
-	public void testDuplicateExits() throws ConfigurationException {
+	public void testDuplicateExits() {
 		Adapter adapter = new Adapter();
 		PipeLine pipeline = new PipeLine();
 		pipeline.setApplicationContext(configuration);

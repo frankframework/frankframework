@@ -238,14 +238,16 @@ public class ReceiverTest {
 
 	public MessageStoreListener<String> setupMessageStoreListener() throws Exception {
 		Connection connection = mock(Connection.class);
+
 		MessageStoreListener<String> listener = spy(new MessageStoreListener<>());
 		listener.setDataSourceFactory(new DataSourceFactoryMock());
 		listener.setConnectionsArePooled(true);
-		doReturn(connection).when(listener).getConnection();
+		listener.setName("messageStoreListener");
 		listener.setSessionKeys("ANY-KEY");
 		listener.extractSessionKeyList();
-		doReturn(false).when(listener).hasRawMessageAvailable();
 
+		doReturn(connection).when(listener).getConnection();
+		doReturn(false).when(listener).hasRawMessageAvailable();
 		doNothing().when(listener).configure();
 		doNothing().when(listener).start();
 
@@ -1338,6 +1340,9 @@ public class ReceiverTest {
 
 		// Assert
 		assertEquals(result, message);
+
+		assertTrue(message.getContext().containsKey(Receiver.CONTEXT_PIPELINE_CALLER));
+		assertEquals(listener.getName(), message.getContext().get(Receiver.CONTEXT_PIPELINE_CALLER));
 	}
 
 	@ParameterizedTest

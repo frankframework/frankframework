@@ -206,6 +206,7 @@ import org.frankframework.util.XmlUtils;
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
 public class Receiver<M> extends TransactionAttributes implements IManagable, IMessageHandler<M>, IProvidesMessageBrowsers<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable {
+	public static final String CONTEXT_PIPELINE_CALLER = "Pipeline.Caller";
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -1050,7 +1051,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			final Message result;
 			IbisTransaction itx = new IbisTransaction(txManager, getTxDef(), "Receiver ProcessRequest");
 			try {
-				result = processMessageInAdapter(messageWrapper, session, manualRetry, manualRetry); // If manual retry, history is checked by original caller
+				result = processMessageInAdapter(messageWrapper, session, manualRetry, manualRetry, origin.getName()); // If manual retry, history is checked by original caller
 			} catch (ListenerException e) {
 				exceptionThrown("exception processing message", e);
 				throw e;
@@ -1075,7 +1076,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		if (origin!=getListener()) {
 			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 		}
-		processRawMessage(rawMessage, session, false, retryStatusAlreadyChecked);
+
+		processRawMessage(rawMessage, session, false, retryStatusAlreadyChecked, origin.getName());
 	}
 
 	/**
@@ -1083,7 +1085,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * <br/>
 	 * The method assumes that a transaction has been started where necessary.
 	 */
-	private void processRawMessage(RawMessageWrapper<M> rawMessageWrapper, @Nonnull PipeLineSession session, boolean manualRetry, boolean retryStatusAlreadyChecked) throws ListenerException {
+	private void processRawMessage(RawMessageWrapper<M> rawMessageWrapper, @Nonnull PipeLineSession session, boolean manualRetry,
+								   boolean retryStatusAlreadyChecked, String listenerOriginName) throws ListenerException {
 		if (rawMessageWrapper == null) {
 			log.debug("{} Received null message, returning directly", this::getLogPrefix);
 			return;
@@ -1114,7 +1117,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				}
 			}
 
-			Message output = processMessageInAdapter(messageWrapper, session, manualRetry, retryStatusAlreadyChecked);
+			Message output = processMessageInAdapter(messageWrapper, session, manualRetry, retryStatusAlreadyChecked, listenerOriginName);
 			output.close();
 			log.debug("Closing result message [{}]", output);
 
@@ -1129,7 +1132,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		result.put(THREAD_CONTEXT_KEY_TYPE, ClassUtils.classNameOf(listener));
 		return result;
 	}
-
 
 	public void retryMessage(String storageKey) throws ListenerException {
 		if (!messageBrowsers.containsKey(ProcessState.ERROR)) {
@@ -1148,7 +1150,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				try {
 					RawMessageWrapper<?> msg = errorStorageBrowser.browseMessage(storageKey);
 					//noinspection unchecked
-					processRawMessage((RawMessageWrapper<M>) msg, session, true, false);
+					processRawMessage((RawMessageWrapper<M>) msg, session, true, false, null);
 				} catch (ListenerException e) {
 					itx.setRollbackOnly();
 					throw e;
@@ -1166,7 +1168,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				try {
 					msg = errorStorage.getMessage(storageKey);
 					//noinspection unchecked
-					processRawMessage((RawMessageWrapper<M>) msg, session, true, false);
+					processRawMessage((RawMessageWrapper<M>) msg, session, true, false, null);
 				} catch (ListenerException e) {
 					itx.setRollbackOnly();
 					throw e;
@@ -1205,9 +1207,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * <br/>
 	 * Assumes message is read, and when transacted, transaction is still open.
 	 */
-	private Message processMessageInAdapter(MessageWrapper<M> messageWrapperOriginal, PipeLineSession session, boolean manualRetry, boolean retryStatusAlreadyChecked) throws ListenerException {
+	private Message processMessageInAdapter(MessageWrapper<M> messageWrapperOriginal, PipeLineSession session, boolean manualRetry,
+											boolean retryStatusAlreadyChecked, String listenerOriginName) throws ListenerException {
 		final long startProcessingTimestamp = System.currentTimeMillis();
 		final String logPrefix = getLogPrefix();
+
 		// Add all hideRegexes at the same point so sensitive information is hidden in a consistent manner
 		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(getAdapter(), messageWrapperOriginal.getId(), session);
 			 final IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(hideRegexPattern);
@@ -1257,10 +1261,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 						log.debug("{} activating TimeoutGuard with transactionTimeout [{}]s", logPrefix, getTransactionTimeout());
 						tg.activateGuard(getTransactionTimeout());
 
+						setPipelineCallerInMessageContext(listenerOriginName, compactedMessage);
+
 						pipeLineResult = adapter.processMessageWithExceptions(messageId, compactedMessage, session);
 
 						session.setExitState(pipeLineResult);
-						result=pipeLineResult.getResult();
+						result = pipeLineResult.getResult();
 
 						errorMessage = "exitState ["+pipeLineResult.getState()+"], result [";
 						if(!Message.isEmpty(result) && result.isRepeatable() && result.size() > ITransactionalStorage.MAXCOMMENTLEN - errorMessage.length()) { //Since we can determine the size, assume the message is preserved
@@ -1371,7 +1377,15 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				}
 			}
 			if (log.isDebugEnabled()) log.debug("{} messageId [{}] correlationId [{}] returning result [{}]", logPrefix, messageId, businessCorrelationId, result);
+
 			return result;
+		}
+	}
+
+	private void setPipelineCallerInMessageContext(String listenerOriginName, Message message) {
+		if (listenerOriginName != null) {
+			// preserve the Listener called in the metadata/context
+			message.getContext().put(CONTEXT_PIPELINE_CALLER, listenerOriginName);
 		}
 	}
 
