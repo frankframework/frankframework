@@ -17,6 +17,9 @@ package org.frankframework.monitoring;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+
+import org.frankframework.doc.Mandatory;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -38,7 +41,7 @@ public abstract class AbstractMonitorDestination implements IMonitorDestination,
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	private @Getter @Setter String name;
+	private @Getter String name;
 	private String hostname;
 
 	protected AbstractMonitorDestination() {
@@ -48,14 +51,14 @@ public abstract class AbstractMonitorDestination implements IMonitorDestination,
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getName())) {
-			setName(ClassUtils.nameOf(this));
+			throw new ConfigurationException("name is required");
 		}
 
 		hostname = Misc.getHostname();
 	}
 
 	protected String makeXml(String monitorName, EventType eventType, Severity severity, String eventCode, MonitorEvent event) {
-		XmlBuilder eventXml = new XmlBuilder("event");
+		XmlBuilder eventXml = new XmlBuilder("Event");
 		eventXml.addAttribute("hostname", hostname);
 		eventXml.addAttribute("monitor", monitorName);
 		eventXml.addAttribute("source", event.getEventSourceName());
@@ -67,7 +70,7 @@ public abstract class AbstractMonitorDestination implements IMonitorDestination,
 
 	@Override
 	public XmlBuilder toXml() {
-		XmlBuilder destinationXml=new XmlBuilder("destination");
+		XmlBuilder destinationXml=new XmlBuilder("Destination");
 		destinationXml.addAttribute("name", getName());
 		destinationXml.addAttribute("className", getUserClass(this).getCanonicalName());
 		return destinationXml;
@@ -76,4 +79,10 @@ public abstract class AbstractMonitorDestination implements IMonitorDestination,
 	protected Class<?> getUserClass(Object clazz) {
 		return org.springframework.util.ClassUtils.getUserClass(clazz);
 	}
+
+	@Mandatory
+	public void setName(String name) {
+		this.name = name;
+	}
+
 }
