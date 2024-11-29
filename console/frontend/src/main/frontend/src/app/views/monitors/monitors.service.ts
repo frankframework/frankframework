@@ -12,7 +12,7 @@ export type Monitor = {
   lastHit: string;
   triggers: Trigger[];
   displayName: string;
-  activeDestinations: boolean[];
+  activeDestinations: { [key: string]: boolean };
   edit: boolean;
   alarm: Alarm;
 };
