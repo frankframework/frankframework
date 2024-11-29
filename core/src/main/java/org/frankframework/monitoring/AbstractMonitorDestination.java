@@ -58,7 +58,7 @@ public abstract class AbstractMonitorDestination implements IMonitorDestination,
 	}
 
 	protected String makeXml(String monitorName, EventType eventType, Severity severity, String eventCode, MonitorEvent event) {
-		XmlBuilder eventXml = new XmlBuilder("Event");
+		XmlBuilder eventXml = new XmlBuilder("event");
 		eventXml.addAttribute("hostname", hostname);
 		eventXml.addAttribute("monitor", monitorName);
 		eventXml.addAttribute("source", event.getEventSourceName());
@@ -70,7 +70,7 @@ public abstract class AbstractMonitorDestination implements IMonitorDestination,
 
 	@Override
 	public XmlBuilder toXml() {
-		XmlBuilder destinationXml=new XmlBuilder("Destination");
+		XmlBuilder destinationXml=new XmlBuilder("destination");
 		destinationXml.addAttribute("name", getName());
 		destinationXml.addAttribute("className", getUserClass(this).getCanonicalName());
 		return destinationXml;
