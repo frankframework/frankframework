@@ -102,13 +102,13 @@ public class Trigger implements ITrigger {
 	@Override
 	public void configure() throws ConfigurationException {
 		configured = false;
+		if (monitor == null) {
+			throw new ConfigurationException("no monitor autowired");
+		}
 		try {
 			validate();
 		} catch (ValidationException e) {
 			throw new ConfigurationException(e);
-		}
-		if (monitor == null) {
-			throw new ConfigurationException("no monitor autowired");
 		}
 		if (eventCodes.isEmpty()) {
 			log.warn("trigger of Monitor [{}] should have at least one eventCode specified", monitor::getName);
