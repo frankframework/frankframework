@@ -84,7 +84,6 @@ export class MonitorsComponent implements OnInit, OnDestroy {
           const destination = this.destinations[index];
           monitor.activeDestinations[destination] = monitor.destinations.includes(destination);
         }
-        console.log(monitor.activeDestinations);
       }
     });
   }
