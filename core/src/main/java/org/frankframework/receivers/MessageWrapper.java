@@ -20,17 +20,19 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OptionalDataException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.stream.Message;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.stream.Message;
 
 /**
  * Wrapper for messages that are not serializable.
@@ -42,7 +44,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializable {
 
-	private static final long serialVersionUID = -8251009650246241025L;
+	@Serial private static final long serialVersionUID = -8251009650246241025L;
 
 	private @Getter Message message;
 
@@ -71,6 +73,7 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 	/*
 	 * this method is used by Serializable, to serialize objects to a stream.
 	 */
+	@Serial
 	private void writeObject(ObjectOutputStream stream) throws IOException {
 		Map<String, Serializable> serializableData = context.entrySet().stream()
 				.filter(e -> {
@@ -87,6 +90,7 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 		stream.writeObject(correlationId);
 	}
 
+	@Serial
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		context = (Map<String, Object>) stream.readObject();
 		id = (String) stream.readObject();

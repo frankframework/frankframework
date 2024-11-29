@@ -16,24 +16,36 @@
 package org.frankframework.jdbc;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.Nonnull;
-import lombok.Getter;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.ListenerException;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
+import org.frankframework.dbms.JdbcException;
 import org.frankframework.doc.Default;
 import org.frankframework.doc.Optional;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
+import org.frankframework.util.JdbcUtil;
+import org.frankframework.util.RenamingObjectInputStream;
 import org.frankframework.util.StringUtil;
 
 /**
@@ -69,7 +81,7 @@ import org.frankframework.util.StringUtil;
  *
  * @author Jaco de Groot
  */
-public class MessageStoreListener<M> extends JdbcTableListener<M> {
+public class MessageStoreListener extends JdbcTableListener<Serializable> {
 
 	private static final String DEFAULT_TABLE_NAME="IBISSTORE";
 	private static final String DEFAULT_KEY_FIELD="MESSAGEKEY";
@@ -109,9 +121,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (sessionKeys != null) {
-			extractSessionKeyList();
-		}
+		extractSessionKeyList();
 		if (isMoveToMessageLog()) {
 			String setClause = "EXPIRYDATE = "+getDbmsSupport().getDateAndOffset(getDbmsSupport().getSysDate(),30);
 			setUpdateStatusQuery(ProcessState.DONE, createUpdateStatusQuery(getStatusValue(ProcessState.DONE),setClause));
@@ -122,28 +132,75 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	}
 
 	public void extractSessionKeyList() {
-		if (sessionKeys != null) {
-			sessionKeysList = StringUtil.split(sessionKeys);
-		}
+		sessionKeysList = StringUtil.split(sessionKeys);
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
-		if (sessionKeys != null) {
-			return convertToMessage(rawMessage, context);
+	protected RawMessageWrapper<Serializable> extractRawMessage(ResultSet rs) throws JdbcException {
+		try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed());
+		 ObjectInputStream ois = new RenamingObjectInputStream(blobStream)) {
+			String key = getStringFieldOrNull(rs, getKeyField());
+			String cid = getStringFieldOrNull(rs, getCorrelationIdField());
+			String mid = getStringFieldOrNull(rs, getMessageIdField());
+			Object rawMessage = ois.readObject();
+
+			if (rawMessage instanceof MessageWrapper<?>) {
+				//noinspection unchecked
+				return (MessageWrapper<Serializable>) rawMessage;
+			}
+
+			RawMessageWrapper<Serializable> rawMessageWrapper = new RawMessageWrapper<>((Serializable)rawMessage, mid != null ? mid : key, cid);
+			if (key != null) {
+				rawMessageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, key);
+			}
+			return rawMessageWrapper;
+		} catch (Exception e) {
+			throw new JdbcException(e);
 		}
-		return super.extractMessage(rawMessage, context);
+
 	}
 
-	private Message convertToMessage(@Nonnull RawMessageWrapper<M> rawMessageWrapper, Map<String, Object> threadContext) throws ListenerException {
+	private String getStringFieldOrNull(ResultSet rs, String columnLabel) throws SQLException {
+		int columnIdx;
+		try {
+			columnIdx = rs.findColumn(columnLabel);
+		} catch (SQLException e) {
+			return null;
+		}
+		return rs.getString(columnIdx);
+	}
+
+	@Override
+	public Message extractMessage(@Nonnull RawMessageWrapper<Serializable> rawMessageWrapper, @Nonnull Map<String, Object> context) throws ListenerException {
+		// If sessionKeys were set to be stored with message by the MessageStoreSender, they'll be in the context of
+		// the (Raw)MessageWrapper.
+		// If not, then the RawMessageWrapper context still contains some info we want to retain, such as MID, CID and Storage Key.
+		// So copying it here to thread context is always the right thing.
+		context.putAll(rawMessageWrapper.getContext());
+
+		// Now get or create the Message
+		if (rawMessageWrapper instanceof MessageWrapper<?> messageWrapper) {
+			return messageWrapper.getMessage();
+		}
+		Serializable rawMessage = rawMessageWrapper.getRawMessage();
+		if (rawMessage instanceof Message message) {
+			return message;
+		}
+		// Handle the Legacy CSV format
+		if (sessionKeysList != null && !sessionKeysList.isEmpty() && rawMessage instanceof String messageData) {
+			return convertFromCsv(messageData, context);
+		}
+		return Message.asMessage(rawMessage);
+	}
+
+	private Message convertFromCsv(@Nonnull String messageData, Map<String, Object> threadContext) throws ListenerException {
 		Message message;
-		String messageData = extractStringData(rawMessageWrapper);
 		try(CSVParser parser = CSVParser.parse(messageData, CSVFormat.DEFAULT)) {
 			CSVRecord csvRecord = parser.getRecords().get(0);
 			message = new Message(csvRecord.get(0));
-			for (int i=1; i<csvRecord.size();i++) {
-				if (sessionKeysList.size()>=i) {
-					threadContext.put(sessionKeysList.get(i-1), csvRecord.get(i));
+			for (int i = 1; i < csvRecord.size(); i++) {
+				if (sessionKeysList.size() >= i) {
+					threadContext.put(sessionKeysList.get(i - 1), csvRecord.get(i));
 				}
 			}
 		} catch (IOException e) {
@@ -152,20 +209,8 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 		return message;
 	}
 
-	private static String extractStringData(@Nonnull RawMessageWrapper<?> rawMessageWrapper) throws ListenerException {
-		if (rawMessageWrapper instanceof MessageWrapper wrapper) {
-			try {
-				return wrapper.getMessage().asString();
-			} catch (IOException e) {
-				throw new ListenerException("Exception extracting string data from message", e);
-			}
-		} else {
-			return rawMessageWrapper.getRawMessage().toString();
-		}
-	}
-
-	protected IMessageBrowser<M> augmentMessageBrowser(IMessageBrowser<M> browser) {
-		if (browser instanceof JdbcTableMessageBrowser jtmb) {
+	protected IMessageBrowser<Serializable> augmentMessageBrowser(IMessageBrowser<Serializable> browser) {
+		if (browser instanceof JdbcTableMessageBrowser<?> jtmb) {
 			jtmb.setExpiryDateField("EXPIRYDATE");
 			jtmb.setHostField("HOST");
 		}
@@ -173,8 +218,8 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	}
 
 	@Override
-	public IMessageBrowser<M> getMessageBrowser(ProcessState state) {
-		IMessageBrowser<M> browser = super.getMessageBrowser(state);
+	public IMessageBrowser<Serializable> getMessageBrowser(ProcessState state) {
+		IMessageBrowser<Serializable> browser = super.getMessageBrowser(state);
 		if (browser!=null) {
 			return augmentMessageBrowser(browser);
 		}

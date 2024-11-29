@@ -37,7 +37,7 @@ on:
 
 jobs:
   analyze:
-    name: Analyze
+    name: Analyze Front-End
     runs-on: ubuntu-latest
 
     strategy:

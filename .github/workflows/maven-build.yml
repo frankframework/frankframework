@@ -40,8 +40,8 @@ on:
       - "docker/**"
 
 jobs:
-  build:
-
+  build-maven-artifacts:
+    name: Build and Test Maven Artifacts
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

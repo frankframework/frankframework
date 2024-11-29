@@ -32,9 +32,9 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		HashMap<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
-		assertEquals(identifier.get("key1"), key1);
-		assertEquals(identifier.get("key2"), key2);
-		assertEquals(identifier.get("replaceNewlines"), replaceNewlines);
+		assertEquals(key1, identifier.get("key1"));
+		assertEquals(key2, identifier.get("key2"));
+		assertEquals(replaceNewlines, identifier.get("replaceNewlines"));
 	}
 
 	@Test
@@ -58,8 +58,8 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		HashMap<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
-		assertEquals(identifier.get("key1"), key1);
-		assertEquals(identifier.get("key2"), key2);
+		assertEquals(key1, identifier.get("key1"));
+		assertEquals(key2, identifier.get("key2"));
 	}
 
 	@Test
@@ -83,8 +83,8 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		HashMap<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
-		assertEquals(identifier.get("key1"), key1);
-		assertEquals(identifier.get("key2"), key2);
+		assertEquals(key1, identifier.get("key1"));
+		assertEquals(key2, identifier.get("key2"));
 	}
 
 	@Test
@@ -108,8 +108,8 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		HashMap<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
-		assertEquals(identifier.get("key1"), key1);
-		assertEquals(identifier.get("key2"), key2);
+		assertEquals(key1, identifier.get("key1"));
+		assertEquals(key2, identifier.get("key2"));
 	}
 
 	@Test
@@ -133,8 +133,8 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		HashMap<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
-		assertEquals(identifier.get("key1"), key1);
-		assertEquals(identifier.get("key2"), key2);
+		assertEquals(key1, identifier.get("key1"));
+		assertEquals(key2, identifier.get("key2"));
 	}
 
 	@Test
@@ -158,8 +158,8 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		HashMap<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
-		assertEquals(identifier.get("key1"), key1);
-		assertEquals(identifier.get("key2"), key2);
+		assertEquals(key1, identifier.get("key1"));
+		assertEquals(key2, identifier.get("key2"));
 	}
 
 	@Test
@@ -183,8 +183,8 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		HashMap<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
-		assertEquals(identifier.get("key1"), key1);
-		assertEquals(identifier.get("key2"), key2);
+		assertEquals(key1, identifier.get("key1"));
+		assertEquals(key2, identifier.get("key2"));
 	}
 
 	@Test
@@ -208,8 +208,8 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		HashMap<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
-		assertEquals(identifier.get("key1"), key1);
-		assertEquals(identifier.get("key2"), key2);
+		assertEquals(key1, identifier.get("key1"));
+		assertEquals(key2, identifier.get("key2"));
 	}
 
 	@Test
@@ -233,8 +233,8 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		HashMap<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
-		assertEquals(identifier.get("key1"), key1);
-		assertEquals(identifier.get("key2"), key2);
+		assertEquals(key1, identifier.get("key1"));
+		assertEquals(key2, identifier.get("key2"));
 	}
 
 	@Test
@@ -256,7 +256,7 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		HashMap<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
-		assertEquals(identifier.get("key"), key);
+		assertEquals(key, identifier.get("key"));
 	}
 
 	@Test
@@ -278,7 +278,7 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		HashMap<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
-		assertEquals(identifier.get("key"), key);
+		assertEquals(key, identifier.get("key"));
 	}
 
 	@Test
@@ -300,7 +300,7 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		HashMap<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
-		assertEquals(identifier.get("key"), key);
+		assertEquals(key, identifier.get("key"));
 	}
 
 	@Test
@@ -322,7 +322,7 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		HashMap<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
-		assertEquals(identifier.get("key"), key);
+		assertEquals(key, identifier.get("key"));
 	}
 
 	@Test
@@ -352,11 +352,11 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		HashMap<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
-		assertEquals(identifier.get("key1"), key1);
-		assertEquals(identifier.get("key2"), key2);
-		assertEquals(identifier.get("pattern"), pattern);
-		assertEquals(identifier.get("margin"), margin);
-		assertEquals(identifier.get("errorMessageOnRemainingString"), errorMessageOnRemainingString);
+		assertEquals(key1, identifier.get("key1"));
+		assertEquals(key2, identifier.get("key2"));
+		assertEquals(pattern, identifier.get("pattern"));
+		assertEquals(margin, identifier.get("margin"));
+		assertEquals(errorMessageOnRemainingString, identifier.get("errorMessageOnRemainingString"));
 	}
 
 	@Test
@@ -378,7 +378,7 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		HashMap<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
-		assertEquals(identifier.get("key"), key);
+		assertEquals(key, identifier.get("key"));
 	}
 
 	@Test
@@ -400,7 +400,7 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		HashMap<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
-		assertEquals(identifier.get("value"), value);
+		assertEquals(value, identifier.get("value"));
 	}
 
 	@Test
@@ -422,7 +422,7 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		HashMap<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
-		assertEquals(identifier.get("key"), key);
+		assertEquals(key, identifier.get("key"));
 	}
 
 	@Test
@@ -444,7 +444,7 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		HashMap<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
-		assertEquals(identifier.get("value"), value);
+		assertEquals(value, identifier.get("value"));
 	}
 
 }

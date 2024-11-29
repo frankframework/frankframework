@@ -17,6 +17,7 @@ export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
   protected environmentProperties: keyValueProperty[] = [];
   protected systemProperties: keyValueProperty[] = [];
   protected configurations: Configuration[] = [];
+  protected configurationNames: string[] = [];
 
   private _subscriptions = new Subscription();
   private appConstants: AppConstants = this.appService.APP_CONSTANTS;
@@ -30,8 +31,10 @@ export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
     this._subscriptions.add(appConstantsSubscription);
 
     this.configurations = this.appService.configurations;
+    this.configurationNames = this.configurations.map((configuration) => configuration.name);
     const configurationsSubscription = this.appService.configurations$.subscribe(() => {
       this.configurations = this.appService.configurations;
+      this.configurationNames = this.configurations.map((configuration) => configuration.name);
     });
     this._subscriptions.add(configurationsSubscription);
 

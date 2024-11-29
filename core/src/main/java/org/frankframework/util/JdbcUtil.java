@@ -49,10 +49,11 @@ import jakarta.jms.JMSException;
 import jakarta.jms.TextMessage;
 import jakarta.servlet.http.HttpServletResponse;
 
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -411,7 +412,7 @@ public class JdbcUtil {
 			String rawMessage;
 			if (objectOK) {
 				// TODO: Direct handling of JMS messages in here should be removed. I do not expect any current instances to actually store unwrapped JMS Messages?
-				if (result instanceof MessageWrapper wrapper) {
+				if (result instanceof MessageWrapper<?> wrapper) {
 					rawMessage = wrapper.getMessage().asString();
 				} else if (result instanceof TextMessage message) {
 					try {

@@ -272,6 +272,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private @Getter Integer maxRetries = null;
 	private Integer maxBackoffDelay = null;
 	private @Getter int processResultCacheSize = 100;
+
+	/**
+	 * supportProgrammaticRetry is set to {@code true} internally during configuration when the listener implements {@link IHasProcessState}, and is
+	 * configured with process state {@link ProcessState#INPROCESS}.
+	 * In all other circumstances, it is {@code false}.
+	 */
 	private @Getter boolean supportProgrammaticRetry=false;
 
 	private @Getter String correlationIDXPath;
@@ -1145,12 +1151,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			if (errorStorage == null) {
 				// if there is only a errorStorageBrowser, and no separate and transactional errorStorage,
 				// then the management of the errorStorage is left to the listener.
-				IMessageBrowser<?> errorStorageBrowser = messageBrowsers.get(ProcessState.ERROR);
 				IbisTransaction itx = new IbisTransaction(txManager, getTxDef(), "receiver [" + getName() + "]");
 				try {
-					RawMessageWrapper<?> msg = errorStorageBrowser.browseMessage(storageKey);
-					//noinspection unchecked
-					processRawMessage((RawMessageWrapper<M>) msg, session, true, false, null);
+					RawMessageWrapper<M> msg = getMessageToRetryFromErrorBrowser(storageKey);
+					processRawMessage(msg, session, true, false, null);
 				} catch (ListenerException e) {
 					itx.setRollbackOnly();
 					throw e;
@@ -1200,6 +1204,22 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				throw e;
 			}
 		}
+	}
+
+	private RawMessageWrapper<M> getMessageToRetryFromErrorBrowser(String storageKey) throws ListenerException {
+		IMessageBrowser<?> errorStorageBrowser = messageBrowsers.get(ProcessState.ERROR);
+
+		//noinspection unchecked
+		RawMessageWrapper<M> msg = (RawMessageWrapper<M>) errorStorageBrowser.browseMessage(storageKey);
+
+		// If the listener has process-states, then try to move the message back to "In Process" before retrying it.
+		// If we don't do that, and the message has again an error, some listeners might get confused trying to move a message from "Error" to "Error".
+		if (isSupportProgrammaticRetry()) {
+			//noinspection unchecked
+			IHasProcessState<M> hasProcessState = (IHasProcessState<M>) listener;
+			return hasProcessState.changeProcessState(msg, ProcessState.INPROCESS, "Message manually retried");
+		}
+		return msg;
 	}
 
 	/*

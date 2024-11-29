@@ -11,7 +11,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>17</maven.compiler.target>
 		<maven.compiler.source>17</maven.compiler.source>
-		<log4j2.version>2.23.1</log4j2.version>
+		<log4j2.version>2.24.2</log4j2.version>
 
 		<sonar.organization>frank-framework</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -19,18 +19,18 @@
 		<junit.excludedTags></junit.excludedTags>
 		<junit.includedTags></junit.includedTags>
 
-		<jackson.version>2.18.1</jackson.version>
+		<jackson.version>2.18.2</jackson.version>
 		<cxf.version>4.0.5</cxf.version>
-		<spring.version>6.1.14</spring.version>
-		<spring-security.version>6.3.4</spring-security.version>
-		<spring-integration.version>6.3.5</spring-integration.version>
+		<spring.version>6.2.0</spring.version>
+		<spring-security.version>6.4.1</spring-security.version>
+		<spring-integration.version>6.4.0</spring-integration.version>
 		<spring.boot.version>3.3.5</spring.boot.version>
 		<tomcat.version>10.1.33</tomcat.version>
 		<bouncycastle.version>1.79</bouncycastle.version>
 
 		<narayana.version>7.1.0.Final</narayana.version>
 		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
-		<micrometer.version>1.14.0</micrometer.version>
+		<micrometer.version>1.14.1</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>3.2</frankdoc.version>
@@ -44,7 +44,7 @@
 		<mssql.driver.version>12.8.1.jre11</mssql.driver.version>
 		<mysql.driver.version>9.1.0</mysql.driver.version>
 		<!-- Should upgrade to new MariaDB driver 3.1.4, 3.2.0 or newer for JDK17 support but currently not working with XA transaction managers in the framework. -->
-		<mariadb.driver.version>3.5.0</mariadb.driver.version>
+		<mariadb.driver.version>3.5.1</mariadb.driver.version>
 		<postgresql.driver.version>42.7.4</postgresql.driver.version>
 		<mongodb.driver.version>5.2.1</mongodb.driver.version>
 
@@ -156,7 +156,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.28.3</version>
+				<version>4.29.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
@@ -171,7 +171,7 @@
 			<dependency>
 				<groupId>com.nimbusds</groupId>
 				<artifactId>nimbus-jose-jwt</artifactId>
-				<version>9.46</version>
+				<version>9.47</version>
 			</dependency>
 			<!-- End Lock transient deps -->
 
@@ -526,7 +526,7 @@
 			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
-				<version>2.17.0</version>
+				<version>2.18.0</version>
 			</dependency>
 			<dependency>
 				<groupId>jakarta.mail</groupId>
@@ -668,7 +668,7 @@
 			<dependency>
 				<groupId>org.testcontainers</groupId>
 				<artifactId>testcontainers-bom</artifactId>
-				<version>1.20.3</version>
+				<version>1.20.4</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>

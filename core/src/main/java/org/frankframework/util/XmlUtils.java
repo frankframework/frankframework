@@ -35,8 +35,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
@@ -76,10 +76,6 @@ import jakarta.annotation.Nullable;
 import jakarta.xml.soap.MessageFactory;
 import jakarta.xml.soap.SOAPException;
 
-import com.ctc.wstx.api.ReaderConfig;
-import com.ctc.wstx.stax.WstxInputFactory;
-
-import net.sf.saxon.xpath.XPathFactoryImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -100,6 +96,11 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
+
+import com.ctc.wstx.api.ReaderConfig;
+import com.ctc.wstx.stax.WstxInputFactory;
+
+import net.sf.saxon.xpath.XPathFactoryImpl;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
@@ -788,7 +789,7 @@ public class XmlUtils {
 	 * @return An XSLT stylesheet generated to evaluate the XPath Expression
 	 */
 	@Nonnull
-	public static String createXPathEvaluatorSource(@Nonnull Function<String,String> xpathContainerSupplier, @Nonnull String xPathExpression, @Nonnull TransformerPool.OutputType outputMethod, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
+	public static String createXPathEvaluatorSource(@Nonnull UnaryOperator<String> xpathContainerSupplier, @Nonnull String xPathExpression, @Nonnull TransformerPool.OutputType outputMethod, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
 		if (StringUtils.isEmpty(xPathExpression)) {
 			throw new IllegalArgumentException("XPathExpression must be filled");
 		}

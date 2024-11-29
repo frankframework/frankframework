@@ -255,7 +255,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	 * Otherwise the message is loaded from the {@code rs} parameter and returned wrapped in a {@link MessageWrapper}.
 	 * @throws JdbcException If loading the message resulted in a database exception.
 	 */
-	protected MessageWrapper<M> extractRawMessage(ResultSet rs) throws JdbcException {
+	protected RawMessageWrapper<M> extractRawMessage(ResultSet rs) throws JdbcException {
 		// TODO: This needs to be reviewed, if all complications are needed. Some branches are never touched in tests.
 		try {
 			String key = rs.getString(getKeyField());

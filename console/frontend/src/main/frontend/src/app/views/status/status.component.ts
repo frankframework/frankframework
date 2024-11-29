@@ -81,7 +81,7 @@ export class StatusComponent implements OnInit, OnDestroy {
       }
 
       const configurationParameter = parameters.get('configuration');
-      if (configurationParameter && configurationParameter != 'All') this.changeConfiguration(configurationParameter);
+      if (configurationParameter) this.changeConfiguration(configurationParameter);
     });
 
     this.updateConfigurationFlowDiagram(this.selectedConfiguration);

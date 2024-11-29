@@ -36,7 +36,7 @@ on:
 
 jobs:
   analyze:
-    name: Analyze
+    name: Analyze Java
     runs-on: ubuntu-latest
 
     strategy:
