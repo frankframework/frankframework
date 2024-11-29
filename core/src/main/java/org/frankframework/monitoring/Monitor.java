@@ -45,12 +45,12 @@ import org.frankframework.util.XmlBuilder;
  * <p>Example configuration:</p>
  * <pre>{@code
  * <Monitor name="Receiver Shutdown" destinations="MONITOR_LOG">
- *    <Alarm severity="WARNING">
+ *    <AlarmTrigger severity="WARNING">
  *        <Event>Receiver Shutdown</Event>
- *    </Alarm>
- *    <Clearing severity="WARNING">
+ *    </AlarmTrigger>
+ *    <ClearingTrigger severity="WARNING">
  *        <Event>Receiver Shutdown</Event>
- *    </Clearing>
+ *    </ClearingTrigger>
  * </Monitor>
  * }</pre>
  *
