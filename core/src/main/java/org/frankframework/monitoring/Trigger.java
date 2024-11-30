@@ -201,7 +201,8 @@ public class Trigger implements ITrigger {
 	}
 
 	/**
-	 * Adds one or more events to the trigger. Example: <Event>Pipe Exception</Event>
+	 * Adds one or more events to the trigger. Example: <Event>Pipe Exception</Event>.
+  	 * Each event requires it's own xml tag. It is not a comma-separated field.
 	 */
 	public void addEventCodeText(String code) {
 		eventCodes.add(code);
@@ -223,11 +224,13 @@ public class Trigger implements ITrigger {
 		return Collections.unmodifiableList(eventCodes);
 	}
 
+	/** Amount of triggers required before sounding an alarm */
 	@Override
 	public void setThreshold(int i) {
 		threshold = i;
 	}
 
+	/** Amount of hits required within 'x' amount of seconds before it counts as a trigger */
 	@Override
 	public void setPeriod(int i) {
 		period = i;
