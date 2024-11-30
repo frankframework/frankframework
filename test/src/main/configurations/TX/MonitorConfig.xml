@@ -1,5 +1,5 @@
 <monitoring active="${monitoring.enabled}">
-	<destination name="MONITOR_LOG" className="org.frankframework.monitoring.SenderMonitorAdapter">
+	<destination name="MONITOR_LOG" className="org.frankframework.monitoring.MonitorDestination">
 		<sender className="org.frankframework.senders.LogSender" logCategory="monitoring"/>
 	</destination>
 	<monitor name="Internal adapter exception" destinations="MONITOR_LOG">

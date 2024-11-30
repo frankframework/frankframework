@@ -15926,7 +15926,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="AbstractMonitorDestinationDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.SenderMonitorAdapter" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.MonitorDestination" />
   </xs:complexType>
   <xs:group name="SenderMonitorAdapterDeclaredChildGroup">
     <xs:sequence>

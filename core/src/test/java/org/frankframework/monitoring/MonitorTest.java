@@ -48,7 +48,7 @@ public class MonitorTest {
 
 		manager.addMonitor(monitor);
 
-		SenderMonitorAdapter destination = configuration.createBean(SenderMonitorAdapter.class);
+		MonitorDestination destination = configuration.createBean(MonitorDestination.class);
 		destination.setName("myTestDestination");
 
 		MessageCapturingEchoSender sender = new  MessageCapturingEchoSender();

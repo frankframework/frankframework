@@ -25,7 +25,7 @@ public class SenderMonitorAdapterTest implements EventThrowing {
 	@Test
 	public void testSenderMonitorAdapter() throws Exception {
 		// Arrange
-		SenderMonitorAdapter destination = new SenderMonitorAdapter();
+		MonitorDestination destination = new MonitorDestination();
 		EchoSender sender = spy(EchoSender.class);
 		ArgumentCaptor<Message> messageCapture = ArgumentCaptor.forClass(Message.class);
 		destination.setSender(sender);
@@ -46,7 +46,7 @@ public class SenderMonitorAdapterTest implements EventThrowing {
 	@Test
 	public void testSenderMonitorAdapterWithMessage() throws Exception {
 		// Arrange
-		SenderMonitorAdapter destination = new SenderMonitorAdapter();
+		MonitorDestination destination = new MonitorDestination();
 		MessageCapturingEchoSender sender = new MessageCapturingEchoSender();
 		destination.setSender(sender);
 		destination.configure();
