@@ -93,7 +93,9 @@
               </div>
             </div>
             <div class="form-group">
-              <label class="col-sm-3 control-label">Threshold</label>
+              <label class="col-sm-3 control-label"
+                >Threshold <small><br />(Hint: Amount of triggers required before sounding an alarm)</small></label
+              >
               <div class="col-sm-9">
                 <input
                   class="form-control m-b"
@@ -101,12 +103,13 @@
                   type="number"
                   min="0"
                   [(ngModel)]="trigger.threshold"
-                  placeholder="Amount of triggers before sounding an alarm"
                 />
               </div>
             </div>
             <div class="form-group">
-              <label class="col-sm-3 control-label">Period</label>
+              <label class="col-sm-3 control-label"
+                >Period <small><br />(Hint: Amount of hits required within 'n' seconds to count as a trigger)</small></label
+              >
               <div class="col-sm-9">
                 <input
                   class="form-control m-b"
@@ -114,7 +117,6 @@
                   type="number"
                   min="0"
                   [(ngModel)]="trigger.period"
-                  placeholder="Amount of triggers within a period of time"
                 />
               </div>
             </div>
