@@ -150,7 +150,7 @@
                 <label class="col-sm-3 control-label">Destinations</label>
                 <div class="col-sm-2" *ngFor="let destination of destinations; index as index">
                   <span class="form-control m-b" style="border: none"
-                    ><input type="checkbox" name="destination" [(ngModel)]="monitor.activeDestinations[index]" />
+                    ><input type="checkbox" name="destination" [(ngModel)]="monitor.activeDestinations[destination]" />
                     {{ destination }}</span
                   >
                 </div>
