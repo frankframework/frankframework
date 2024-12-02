@@ -29,6 +29,7 @@ public class SenderMonitorAdapterTest implements EventThrowing {
 		EchoSender sender = spy(EchoSender.class);
 		ArgumentCaptor<Message> messageCapture = ArgumentCaptor.forClass(Message.class);
 		destination.setSender(sender);
+		destination.setName("dummy destination");
 		destination.configure();
 
 		when(sender.sendMessage(messageCapture.capture(), any(PipeLineSession.class))).thenCallRealMethod();
@@ -49,6 +50,7 @@ public class SenderMonitorAdapterTest implements EventThrowing {
 		SenderMonitorAdapter destination = new SenderMonitorAdapter();
 		MessageCapturingEchoSender sender = new MessageCapturingEchoSender();
 		destination.setSender(sender);
+		destination.setName("dummy destination");
 		destination.configure();
 		String eventText = "<ik>ben<xml/></ik>";
 

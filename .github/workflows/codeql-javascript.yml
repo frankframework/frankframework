@@ -36,7 +36,7 @@ on:
     - cron: '0 23 * * 1'
 
 jobs:
-  analyze-frontend-code:
+  analyze:
     name: Analyze Front-End
     runs-on: ubuntu-latest
 

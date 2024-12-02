@@ -42,14 +42,14 @@ import org.frankframework.util.XmlBuilder;
 /**
  * <p>Example configuration:</p>
  * <pre>{@code
- * <monitor name="Receiver Shutdown" destinations="MONITOR_LOG">
- *    <trigger className="org.frankframework.monitoring.Alarm" severity="WARNING">
- *        <event>Receiver Shutdown</event>
- *    </trigger>
- *    <trigger className="org.frankframework.monitoring.Clearing" severity="WARNING">
- *        <event>Receiver Shutdown</event>
- *    </trigger>
- * </monitor>
+ * <Monitor name="Receiver Shutdown" destinations="MONITOR_LOG">
+ *    <AlarmTrigger severity="WARNING">
+ *        <Event>Receiver Shutdown</Event>
+ *    </AlarmTrigger>
+ *    <ClearingTrigger severity="WARNING">
+ *        <Event>Receiver Shutdown</Event>
+ *    </ClearingTrigger>
+ * </Monitor>
  * }</pre>
  *
  * @author  Gerrit van Brakel

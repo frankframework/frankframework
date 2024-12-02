@@ -17,7 +17,7 @@ on:
 
 jobs:
   run-karma-tests:
-    name: Earning Good or Bad Karma For You
+    name: Karma Unit tests
     runs-on: ubuntu-latest
     defaults:
       run:
