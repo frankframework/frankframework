@@ -25,9 +25,11 @@ import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletException;
 
 import org.apache.logging.log4j.LogManager;
+import org.apache.tomcat.websocket.server.WsContextListener;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
@@ -77,6 +79,16 @@ public class IafTestInitializer {
 		}
 	}
 
+	/** Required to enable the use of WebSockets when starting as (Spring)Boot-able application. */
+	public static class WsSciWrapper implements ServletContextInitializer {
+
+		@Override
+		public void onStartup(ServletContext servletContext) throws ServletException {
+			WsContextListener sc = new WsContextListener();
+			sc.contextInitialized(new ServletContextEvent(servletContext));
+		}
+	}
+
 	public static class ConfigureAppConstants implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
 		@Override
@@ -102,7 +114,7 @@ public class IafTestInitializer {
 		app.addInitializers(new ConfigureAppConstants());
 		app.setWebApplicationType(WebApplicationType.SERVLET);
 		Set<String> set = new HashSet<>();
-		app.addPrimarySources(List.of(LadybugInitializerWrapper.class, ApplicationInitializerWrapper.class, ConsoleInitializerWrapper.class));
+		app.addPrimarySources(List.of(LadybugInitializerWrapper.class, ApplicationInitializerWrapper.class, ConsoleInitializerWrapper.class, WsSciWrapper.class));
 		set.add(SpringContextScope.ENVIRONMENT.getContextFile());
 		set.add("TestFrankContext.xml");
 		app.setSources(set);
