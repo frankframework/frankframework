@@ -17,7 +17,7 @@ import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.senders.EchoSender;
 import org.frankframework.stream.Message;
 
-public class SenderMonitorAdapterTest implements EventThrowing {
+public class MonitorDestinationTest implements EventThrowing {
 	private @Getter Adapter adapter;
 	private @Getter String eventSourceName = "MONITOR_DESTINATION_TEST";
 	private static final String EVENTCODE = "MONITOR_EVENT_CODE";
