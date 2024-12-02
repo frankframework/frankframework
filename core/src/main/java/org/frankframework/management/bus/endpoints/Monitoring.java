@@ -29,7 +29,6 @@ import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ValidationException;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -112,19 +111,14 @@ public class Monitoring extends BusEndpointBase {
 		MonitorManager mm = getMonitorManager(configurationName);
 
 		Monitor monitor;
+		ITrigger trigger;
 		if(name != null) {
 			monitor = getMonitor(mm, name);
-			ITrigger trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
-			try {
-				updateTrigger(trigger, message);
-				trigger.validate();
-				monitor.addTrigger(trigger);
-			} catch (ValidationException e) {
-				// Rethrowing this as Warning / Bad Request
-				log.info("Trigger failed validation", e);
-				throw new BusException("trigger not added, validation failed: " + e.getMessage());
-			}
+			trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
+			updateTrigger(trigger, message);
+			monitor.addTrigger(trigger);
 		} else {
+			trigger = null;
 			monitor = SpringUtils.createBean(getApplicationContext(), Monitor.class);
 			updateMonitor(monitor, message, true);
 			mm.addMonitor(monitor);
@@ -133,8 +127,12 @@ public class Monitoring extends BusEndpointBase {
 		try {
 			monitor.configure();
 		} catch (ConfigurationException e) {
-			// If we cannot configure the monitor despite validation passing, rethrowing it as internal server error.
-			throw new BusException("unable to (re)configure Monitor: " + e.getMessage(), e);
+			if (trigger != null) {
+				monitor.removeTrigger(trigger);
+			}
+			// Rethrowing this as Warning / Bad Request
+			log.info("Trigger failed validation", e);
+			throw new BusException("trigger not added, validation failed: " + e.getMessage());
 		}
 
 		return EmptyMessage.created();
@@ -188,14 +186,19 @@ public class Monitoring extends BusEndpointBase {
 
 	private void tryUpdateMonitor(Message<?> message, Monitor monitor) {
 		// Copy info which might get modified by update
-		Monitor backup = new Monitor(monitor);
+		String name = monitor.getName();
+		EventType type = monitor.getType();
+		String destinations = monitor.getDestinationsAsString();
+
 		try {
+			// Validates the relevant changes while updating
 			updateMonitor(monitor, message, false);
 		} catch (IllegalArgumentException e) {
 			// Restore monitor to its backup state
-			monitor.setName(backup.getName());
-			monitor.setType(backup.getType());
-			monitor.setDestinations(backup.getDestinationsAsString());
+			monitor.setName(name);
+			monitor.setType(type);
+			monitor.setDestinations(destinations);
+
 			throw new BusException("unable to update monitor: " + e.getMessage());
 		}
 	}
@@ -203,26 +206,45 @@ public class Monitoring extends BusEndpointBase {
 	private void tryUpdateTrigger(Message<?> message, Monitor monitor, Integer triggerId) {
 		ITrigger trigger = getTrigger(monitor, triggerId);
 
-		// Create a copy of the trigger and update that, then validate the copy, to see
-		// if the submitted changes were valid before updating the actual trigger
-		ITrigger validateTrigger = new Trigger(trigger);
-		updateTrigger(validateTrigger, message);
+
+		ITrigger.TriggerType type = trigger.getTriggerType();
+		int period = trigger.getPeriod();
+		int threshold = trigger.getThreshold();
+		Severity severity = trigger.getSeverity();
+		List<String> eventCodes = trigger.getEventCodes();
+		SourceFiltering sourceFiltering = trigger.getSourceFiltering();
+		Map<String, AdapterFilter> adapterFilters = trigger.getAdapterFilters();
+
+		updateTrigger(trigger, message);
 		try {
-			validateTrigger.validate();
-		} catch (ValidationException e) {
-			// Bad Request
+			trigger.configure();
+		} catch (ConfigurationException e) {
+			// Roll back changes
+			trigger.setTriggerType(type);
+			trigger.setPeriod(period);
+			trigger.setThreshold(threshold);
+			trigger.setSeverity(severity);
+			trigger.setEventCodes(eventCodes);
+			trigger.setSourceFiltering(sourceFiltering);
+			trigger.clearAdapterFilters();
+			for (AdapterFilter filter : adapterFilters.values()) {
+				trigger.addAdapterFilter(filter);
+			}
+
+			try {
+				trigger.configure();
+			} catch (ConfigurationException ee) {
+				// Reconfigure back to original value should have succeeded. Internal Server Error.
+				throw new BusException("unable to (re)configure Trigger: " + ee.getMessage(), ee);
+			}
+
+			// return Bad Request
 			throw new BusException("trigger not valid: " + e.getMessage());
 		}
 
 		// Since the changes were apparently valid, we can now update the actual trigger
 		// and re-configure it.
 		updateTrigger(trigger, message);
-		try {
-			trigger.configure();
-		} catch (ConfigurationException e) {
-			// Reconfigure should have succeeded. Internal Server Error.
-			throw new BusException("unable to (re)configure Trigger: " + e.getMessage(), e);
-		}
 	}
 
 	private void updateTrigger(ITrigger trigger, Message<?> message) {

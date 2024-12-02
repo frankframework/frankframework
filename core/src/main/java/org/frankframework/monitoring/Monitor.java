@@ -32,7 +32,6 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ValidationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
@@ -82,16 +81,6 @@ public class Monitor implements IConfigurable, DisposableBean {
 	private final List<ITrigger> triggers = new ArrayList<>();
 	private final Set<String> destinations = new HashSet<>();
 	private @Getter @Setter ApplicationContext applicationContext;
-
-	public Monitor() {
-		// No-op
-	}
-
-	public Monitor(Monitor monitor) {
-		this.name = monitor.getName();
-		this.type = monitor.getType();
-		this.destinations.addAll(monitor.destinations);
-	}
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -226,9 +215,8 @@ public class Monitor implements IConfigurable, DisposableBean {
 		}
 	}
 
-	public void addTrigger(ITrigger trigger) throws ValidationException {
+	public void addTrigger(ITrigger trigger) {
 		trigger.setMonitor(this);
-		trigger.validate();
 		triggers.add(trigger);
 	}
 

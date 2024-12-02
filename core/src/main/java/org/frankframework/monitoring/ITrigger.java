@@ -22,7 +22,6 @@ import java.util.Map;
 import org.springframework.beans.factory.DisposableBean;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ValidationException;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.lifecycle.LazyLoadingEventListener;
@@ -36,7 +35,6 @@ public interface ITrigger extends LazyLoadingEventListener<FireMonitorEvent>, Di
 		CLEARING
 	}
 
-	void validate() throws ValidationException;
 	boolean isAlarm();
 	void clearEvents();
 	void configure() throws ConfigurationException;
