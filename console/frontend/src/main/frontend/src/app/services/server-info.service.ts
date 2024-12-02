@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Observable, ReplaySubject, tap } from 'rxjs';
 import { AppService } from '../app.service';
 import { HttpClient } from '@angular/common/http';
 import { HumanFileSizePipe } from '../pipes/human-file-size.pipe';
+import { ServerTimeService } from './server-time.service';
 
 export type ServerInfo = {
   fileSystem: {
@@ -39,6 +40,7 @@ export type ServerInfo = {
   providedIn: 'root',
 })
 export class ServerInfoService {
+  private readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
   private serverInfoSubject = new ReplaySubject<ServerInfo>(1);
 
   serverInfo$ = this.serverInfoSubject.asObservable();
@@ -73,6 +75,7 @@ Running on **${this.serverInfo?.machineName}** using **${this.serverInfo?.applic
 Java Version: **${this.serverInfo?.javaVersion}**
 Heap size: **${humanFileSize.transform(this.serverInfo?.processMetrics.heapSize ?? 0)}**, total JVM memory: **${humanFileSize.transform(this.serverInfo?.processMetrics?.totalMemory ?? 0)}**
 Free memory: **${humanFileSize.transform(this.serverInfo?.processMetrics.freeMemory ?? 0)}**, max memory: **${humanFileSize.transform(this.serverInfo?.processMetrics.maxMemory ?? 0)}**
-Free disk space: **${humanFileSize.transform(this.serverInfo?.fileSystem.freeSpace ?? 0)}**, total disk space: **${humanFileSize.transform(this.serverInfo?.fileSystem.totalSpace ?? 0)}**`;
+Free disk space: **${humanFileSize.transform(this.serverInfo?.fileSystem.freeSpace ?? 0)}**, total disk space: **${humanFileSize.transform(this.serverInfo?.fileSystem.totalSpace ?? 0)}**
+Up since: **${this.serverTimeService.getIntialTime()}**, timezone: **${this.serverInfo?.serverTimezone}**`;
   }
 }
