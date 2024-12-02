@@ -18214,7 +18214,7 @@
   <xs:complexType name="SenderMonitorAdapterType">
     <xs:group ref="SenderMonitorAdapterDeclaredChildGroup" />
     <xs:attributeGroup ref="AbstractMonitorDestinationDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.SenderMonitorAdapter" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.MonitorDestination" use="prohibited" />
   </xs:complexType>
   <xs:group name="SenderMonitorAdapterDeclaredChildGroup">
     <xs:sequence>
