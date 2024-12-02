@@ -23,7 +23,7 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
 
 		<!-- Ignore all Spring annotations from the Ladybug module, they should be wired in their own context -->
-		<context:exclude-filter type="regex" expression="org\.frankframework\.ibistesttool\..*"/>
+		<context:exclude-filter type="regex" expression="org\.frankframework\.ladybug\..*"/>
 		<context:exclude-filter type="regex" expression="org\.frankframework\.web\..*"/>
 		<context:exclude-filter type="regex" expression="org\.frankframework\.console\..*"/>
 	</context:component-scan>

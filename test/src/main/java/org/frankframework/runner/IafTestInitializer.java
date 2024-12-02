@@ -35,6 +35,7 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 
+import org.frankframework.console.runner.ConsoleWarInitializer;
 import org.frankframework.ladybug.runner.LadybugWarInitializer;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.lifecycle.SpringContextScope;
@@ -67,6 +68,15 @@ public class IafTestInitializer {
 		}
 	}
 
+	public static class ConsoleInitializerWrapper implements ServletContextInitializer {
+		@Override
+		public void onStartup(ServletContext servletContext) throws ServletException {
+			ConsoleWarInitializer init = new ConsoleWarInitializer();
+			init.onStartup(servletContext);
+			LogManager.getLogger("APPLICATION").info("Started Console");
+		}
+	}
+
 	public static class ConfigureAppConstants implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
 		@Override
@@ -92,7 +102,7 @@ public class IafTestInitializer {
 		app.addInitializers(new ConfigureAppConstants());
 		app.setWebApplicationType(WebApplicationType.SERVLET);
 		Set<String> set = new HashSet<>();
-		app.addPrimarySources(List.of(LadybugInitializerWrapper.class, ApplicationInitializerWrapper.class));
+		app.addPrimarySources(List.of(LadybugInitializerWrapper.class, ApplicationInitializerWrapper.class, ConsoleInitializerWrapper.class));
 		set.add(SpringContextScope.ENVIRONMENT.getContextFile());
 		set.add("TestFrankContext.xml");
 		app.setSources(set);
