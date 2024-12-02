@@ -26,6 +26,7 @@ import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.processors.InputOutputPipeProcessor;
 import org.frankframework.processors.PipeProcessor;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
@@ -44,7 +45,6 @@ public class ConditionalPipelineCallerTest {
 		listener = setupJavaListener();
 		receiver = setupReceiver(listener);
 		adapter = setupAdapter(receiver);
-		// configuration.configure();
 		session = new PipeLineSession();
 	}
 
@@ -166,7 +166,7 @@ public class ConditionalPipelineCallerTest {
 
 		Parameter parameter = new Parameter();
 		parameter.setName("paramInput");
-		parameter.setContextKey(Receiver.CONTEXT_PIPELINE_CALLER);
+		parameter.setContextKey(MessageContext.CONTEXT_PIPELINE_CALLER);
 		parameter.configure();
 
 		echoPipe.addParameter(parameter);

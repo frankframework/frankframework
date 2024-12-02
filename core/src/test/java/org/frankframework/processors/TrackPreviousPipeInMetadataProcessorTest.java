@@ -29,6 +29,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.testutil.TestConfiguration;
 
 public class TrackPreviousPipeInMetadataProcessorTest {
@@ -61,7 +62,7 @@ public class TrackPreviousPipeInMetadataProcessorTest {
 
 	@Test
 	void testPreviousPipeValue() throws Exception {
-		EchoPipe pipe = getEchoPipe(null, "Echo pipe", "success", null);
+		EchoPipe pipe = getEchoPipe(getPipeLine(), "Echo pipe", "success", null);
 		pipe.configure();
 		pipe.start();
 
@@ -69,8 +70,8 @@ public class TrackPreviousPipeInMetadataProcessorTest {
 
 		PipeRunResult prr = processor.processPipe(getPipeLine(), pipe, input, session);
 
-		assertTrue(prr.getResult().getContext().containsKey(TrackPreviousPipeInMetadataProcessor.CONTEXT_PREVIOUS_PIPE));
-		assertEquals("Echo pipe", prr.getResult().getContext().get(TrackPreviousPipeInMetadataProcessor.CONTEXT_PREVIOUS_PIPE));
+		assertTrue(prr.getResult().getContext().containsKey(MessageContext.CONTEXT_PREVIOUS_PIPE));
+		assertEquals("Echo pipe", prr.getResult().getContext().get(MessageContext.CONTEXT_PREVIOUS_PIPE));
 		assertEquals(INPUT_MESSAGE_TEXT, prr.getResult().asString());
 	}
 
@@ -92,7 +93,7 @@ public class TrackPreviousPipeInMetadataProcessorTest {
 
 		Parameter parameter = new Parameter();
 		parameter.setName("paramInput");
-		parameter.setContextKey(TrackPreviousPipeInMetadataProcessor.CONTEXT_PREVIOUS_PIPE);
+		parameter.setContextKey(MessageContext.CONTEXT_PREVIOUS_PIPE);
 		parameter.configure();
 
 		getEchoPipe(pipeLine, "echo2", "exit", echoPipe -> {
@@ -112,7 +113,7 @@ public class TrackPreviousPipeInMetadataProcessorTest {
 		PipeLineResult pipeLineResult = cpp.processPipeLine(pipeLine, "id", new Message(INPUT_MESSAGE_TEXT), new PipeLineSession(), "echo1");
 
 		// assert here that the previous pipe value equals expectedPreviousPipeValue
-		assertEquals(expectedPreviousPipeValue, pipeLineResult.getResult().getContext().get(TrackPreviousPipeInMetadataProcessor.CONTEXT_PREVIOUS_PIPE));
+		assertEquals(expectedPreviousPipeValue, pipeLineResult.getResult().getContext().get(MessageContext.CONTEXT_PREVIOUS_PIPE));
 	}
 
 	private PipeLine getPipeLine() {

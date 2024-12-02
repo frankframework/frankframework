@@ -1417,9 +1417,6 @@ public class ReceiverTest {
 
 		// Assert
 		assertEquals(result, message);
-
-		assertTrue(message.getContext().containsKey(Receiver.CONTEXT_PIPELINE_CALLER));
-		assertEquals(listener.getName(), message.getContext().get(Receiver.CONTEXT_PIPELINE_CALLER));
 	}
 
 	@ParameterizedTest

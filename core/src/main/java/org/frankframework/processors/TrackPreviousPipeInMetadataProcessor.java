@@ -26,6 +26,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
 
 /**
  * Adds the current pipe to the message context / metadata to be able to use it as a param. This should be configured as the wrapping bean for
@@ -35,15 +36,13 @@ import org.frankframework.stream.Message;
  */
 public class TrackPreviousPipeInMetadataProcessor extends AbstractPipeProcessor {
 
-	public static final String CONTEXT_PREVIOUS_PIPE = "Pipeline.PreviousPipe";
-
 	@Override
 	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession,
 										@Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		PipeRunResult pipeRunResult = chain.apply(message);
 
 		if (logPreviousPipe(pipe, message, pipeLineSession)) {
-			message.getContext().put(CONTEXT_PREVIOUS_PIPE, pipe.getName());
+			message.getContext().put(MessageContext.CONTEXT_PREVIOUS_PIPE, pipe.getName());
 		}
 
 		return pipeRunResult;

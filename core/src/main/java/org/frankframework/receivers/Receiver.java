@@ -111,6 +111,7 @@ import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
@@ -206,7 +207,6 @@ import org.frankframework.util.XmlUtils;
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
 public class Receiver<M> extends TransactionAttributes implements IManagable, IMessageHandler<M>, IProvidesMessageBrowsers<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable {
-	public static final String CONTEXT_PIPELINE_CALLER = "Pipeline.Caller";
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -1405,7 +1405,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private void setPipelineCallerInMessageContext(String listenerOriginName, Message message) {
 		if (listenerOriginName != null) {
 			// preserve the Listener called in the metadata/context
-			message.getContext().put(CONTEXT_PIPELINE_CALLER, listenerOriginName);
+			message.getContext().put(MessageContext.CONTEXT_PIPELINE_CALLER, listenerOriginName);
 		}
 	}
 
