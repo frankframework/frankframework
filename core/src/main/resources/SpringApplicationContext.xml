@@ -190,10 +190,17 @@
 														>
 														<property name="pipeProcessor">
 															<bean
-																class="org.frankframework.processors.CorePipeProcessor"
+																class="org.frankframework.processors.TrackPreviousPipeInMetadataProcessor"
 																autowire="byName"
-																scope="prototype"
-															/>
+																scope="prototype">
+																<property name="pipeProcessor">
+																	<bean
+																		class="org.frankframework.processors.CorePipeProcessor"
+																		autowire="byName"
+																		scope="prototype"
+																	/>
+																</property>
+															</bean>
 														</property>
 													</bean>
 												</property>

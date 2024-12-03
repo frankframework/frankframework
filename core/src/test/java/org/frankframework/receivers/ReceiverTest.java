@@ -252,14 +252,16 @@ public class ReceiverTest {
 
 	public MessageStoreListener setupMessageStoreListener() throws Exception {
 		Connection connection = mock(Connection.class);
+
 		MessageStoreListener listener = spy(new MessageStoreListener());
 		listener.setDataSourceFactory(new DataSourceFactoryMock());
 		listener.setConnectionsArePooled(true);
-		doReturn(connection).when(listener).getConnection();
+		listener.setName("messageStoreListener");
 		listener.setSessionKeys("ANY-KEY");
 		listener.extractSessionKeyList();
-		doReturn(false).when(listener).hasRawMessageAvailable();
 
+		doReturn(connection).when(listener).getConnection();
+		doReturn(false).when(listener).hasRawMessageAvailable();
 		doNothing().when(listener).configure();
 		doNothing().when(listener).start();
 

@@ -83,7 +83,6 @@ public class JavaListenerTest {
 	}
 
 	<M> Adapter setupAdapter(Receiver<M> receiver) throws Exception {
-
 		Adapter adapter = spy(configuration.createBean(Adapter.class));
 		adapter.setName("ReceiverTestAdapterName");
 
@@ -138,7 +137,7 @@ public class JavaListenerTest {
 		String result = listener.processRequest("correlation-id", rawTestMessage, null);
 
 		// Assert
-		assertEquals("TEST", result);
+		assertEquals(rawTestMessage, result);
 	}
 
 	@Test
@@ -157,7 +156,7 @@ public class JavaListenerTest {
 		// Assert
 		assertTrue(result.requiresStream(), "Result message should be a stream");
 		assertTrue(result.isRequestOfType(Reader.class), "Result message should be of type Reader");
-		assertEquals("TEST", result.asString());
+		assertEquals(rawTestMessage, result.asString());
 		testMessage.close();
 	}
 
@@ -180,7 +179,7 @@ public class JavaListenerTest {
 		// Assert
 		assertTrue(result.requiresStream(), "Result message should be a stream");
 		assertTrue(result.isRequestOfType(Reader.class), "Result message should be of type Reader");
-		assertEquals("TEST", result.asString());
+		assertEquals(rawTestMessage, result.asString());
 		result.close();
 	}
 
@@ -236,8 +235,7 @@ public class JavaListenerTest {
 	@Test
 	public void testProcessRequestWithReturnSessionKeys() throws Exception {
 		// Arrange
-		String rawTestMessage = "TEST";
-		Message testMessage = new Message(new StringReader(rawTestMessage));
+		Message testMessage = new Message(new StringReader("TEST"));
 		session.put("copy-this", "original-value");
 
 		// start adapter
@@ -259,8 +257,7 @@ public class JavaListenerTest {
 	@Test
 	public void testProcessRequestWithReturnSessionKeysWhenNoneConfigured() throws Exception {
 		// Arrange
-		String rawTestMessage = "TEST";
-		Message testMessage = new Message(new StringReader(rawTestMessage));
+		Message testMessage = new Message(new StringReader("TEST"));
 		listener.setReturnedSessionKeys(null);
 		session.put("copy-this", "original-value");
 

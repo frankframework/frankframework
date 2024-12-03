@@ -100,7 +100,7 @@ class FrankListenerTest {
 	}
 
 	@Test
-	void startSuccess() throws ListenerException {
+	void startSuccess() {
 		// Arrange
 		listener.configure();
 
@@ -118,7 +118,7 @@ class FrankListenerTest {
 	}
 
 	@Test
-	void openAlreadyStart() throws ListenerException {
+	void openAlreadyStart() {
 		// Arrange
 		listener.configure();
 
