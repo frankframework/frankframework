@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Observable, of, tap } from 'rxjs';
 import { AppService, Certificate } from 'src/app/app.service';
 
@@ -45,7 +45,7 @@ export type supportedConnectionOptions = {
   cyphers: string[];
 };
 
-interface SecurityItems {
+export interface SecurityItems {
   securityRoles: SecurityRole[];
   datasources: Datasource[];
   authEntries: AuthEntry[];
@@ -165,11 +165,8 @@ export type Links = { links: Link[] };
 export class SecurityItemsService {
   private securityItemsCache: SecurityItems | null = null;
   private endpointsWithRolesCache: Links | null = null;
-
-  constructor(
-    private http: HttpClient,
-    private appService: AppService,
-  ) {}
+  private readonly http: HttpClient = inject(HttpClient);
+  private readonly appService: AppService = inject(AppService);
 
   getSecurityItems(): Observable<SecurityItems> {
     if (this.securityItemsCache) {
