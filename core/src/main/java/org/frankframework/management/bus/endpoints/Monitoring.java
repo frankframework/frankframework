@@ -17,8 +17,8 @@ package org.frankframework.management.bus.endpoints;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
@@ -118,10 +118,10 @@ public class Monitoring extends BusEndpointBase {
 			updateTrigger(trigger, message);
 			monitor.addTrigger(trigger);
 		} else {
-			monitor = SpringUtils.createBean(getApplicationContext(), Monitor.class);
-			updateMonitor(monitor, message);
-			mm.addMonitor(monitor);
 			trigger = null;
+			monitor = SpringUtils.createBean(getApplicationContext(), Monitor.class);
+			updateMonitor(monitor, message, true);
+			mm.addMonitor(monitor);
 		}
 
 		try {
@@ -130,9 +130,9 @@ public class Monitoring extends BusEndpointBase {
 			if (trigger != null) {
 				monitor.removeTrigger(trigger);
 			}
-			log.info("Unable to (re)configure monitor [{}]", monitor.getName(), e);
-			// Throw this as Warning / Bad Request, not able to configure was likely due to bad user input and not due to internal server error
-			throw new BusException("unable to (re)configure Monitor: " + e.getMessage());
+			// Rethrowing this as Warning / Bad Request
+			log.info("Trigger failed validation", e);
+			throw new BusException("trigger not added, validation failed: " + e.getMessage());
 		}
 
 		return EmptyMessage.created();
@@ -171,12 +171,11 @@ public class Monitoring extends BusEndpointBase {
 		Monitor monitor = getMonitor(mm, monitorName);
 
 		if(triggerId != null) {
-			ITrigger trigger = getTrigger(monitor, triggerId);
-			updateTrigger(trigger, message);
+			tryUpdateTrigger(message, monitor, triggerId);
 		} else {
 			String state = BusMessageUtils.getHeader(message, "state", "edit"); // raise / clear / edit
 			if("edit".equals(state)) {
-				updateMonitor(monitor, message);
+				tryUpdateMonitor(message, monitor);
 			} else {
 				changeMonitorState(monitor, "raise".equals(state));
 			}
@@ -185,43 +184,107 @@ public class Monitoring extends BusEndpointBase {
 		return EmptyMessage.accepted();
 	}
 
+	private void tryUpdateMonitor(Message<?> message, Monitor monitor) {
+		// Copy info which might get modified by update
+		String name = monitor.getName();
+		EventType type = monitor.getType();
+		String destinations = monitor.getDestinationsAsString();
+
+		try {
+			// Validates the relevant changes while updating
+			updateMonitor(monitor, message, false);
+			monitor.configure();
+		} catch (IllegalArgumentException | ConfigurationException e) {
+			// Restore monitor to its backup state
+			monitor.setName(name);
+			monitor.setType(type);
+			monitor.setDestinations(destinations);
+
+			throw new BusException("unable to update monitor: " + e.getMessage());
+		}
+	}
+
+	private void tryUpdateTrigger(Message<?> message, Monitor monitor, Integer triggerId) {
+		ITrigger trigger = getTrigger(monitor, triggerId);
+
+
+		ITrigger.TriggerType type = trigger.getTriggerType();
+		int period = trigger.getPeriod();
+		int threshold = trigger.getThreshold();
+		Severity severity = trigger.getSeverity();
+		List<String> eventCodes = trigger.getEventCodes();
+		SourceFiltering sourceFiltering = trigger.getSourceFiltering();
+		Map<String, AdapterFilter> adapterFilters = trigger.getAdapterFilters();
+
+		updateTrigger(trigger, message);
+		try {
+			trigger.configure();
+		} catch (ConfigurationException e) {
+			// Roll back changes
+			trigger.setTriggerType(type);
+			trigger.setPeriod(period);
+			trigger.setThreshold(threshold);
+			trigger.setSeverity(severity);
+			trigger.setEventCodes(eventCodes);
+			trigger.setSourceFiltering(sourceFiltering);
+			trigger.clearAdapterFilters();
+			for (AdapterFilter filter : adapterFilters.values()) {
+				trigger.addAdapterFilter(filter);
+			}
+
+			try {
+				trigger.configure();
+			} catch (ConfigurationException ee) {
+				// Reconfigure back to original value should have succeeded. Internal Server Error.
+				throw new BusException("unable to (re)configure Trigger: " + ee.getMessage(), ee);
+			}
+
+			// return Bad Request
+			throw new BusException("trigger not valid: " + e.getMessage());
+		}
+
+		// Since the changes were apparently valid, we can now update the actual trigger
+		// and re-configure it.
+		updateTrigger(trigger, message);
+	}
+
 	private void updateTrigger(ITrigger trigger, Message<?> message) {
 		TriggerDTO dto = JacksonUtils.convertToDTO(message.getPayload(), TriggerDTO.class);
 
-		if(dto.getEvents() != null) {
+		if (dto.getEvents() != null) {
 			trigger.setEventCodes(dto.getEvents());
 		}
-		if(dto.getType() != null) {
+		if (dto.getType() != null) {
 			trigger.setTriggerType(dto.getType());
 		}
-		if(dto.getSeverity() != null) {
+		if (dto.getSeverity() != null) {
 			trigger.setSeverity(dto.getSeverity());
 		}
-		if(dto.getThreshold() != null) {
+		if (dto.getThreshold() != null) {
 			trigger.setThreshold(dto.getThreshold());
 		}
-		if(dto.getPeriod() != null) {
+		if (dto.getPeriod() != null) {
 			trigger.setPeriod(dto.getPeriod());
 		}
-		if(dto.getFilter() != null) {
+		if (dto.getFilter() != null) {
 			trigger.setSourceFiltering(dto.getFilter());
-		}
 
-		trigger.clearAdapterFilters();
-		if(SourceFiltering.ADAPTER == dto.getFilter()) {
-			for(String adapter : dto.getAdapters()) {
-				AdapterFilter adapterFilter = new AdapterFilter();
-				adapterFilter.setAdapter(adapter);
-				trigger.addAdapterFilter(adapterFilter);
-			}
-		} else if(SourceFiltering.SOURCE == dto.getFilter()) {
-			for(Map.Entry<String, List<String>> entry : dto.getSources().entrySet()) {
-				AdapterFilter adapterFilter = new AdapterFilter();
-				adapterFilter.setAdapter(entry.getKey());
-				for(String subObject : entry.getValue()) {
-					adapterFilter.addSubObjectText(subObject);
+			trigger.clearAdapterFilters();
+			if (SourceFiltering.ADAPTER == dto.getFilter()) {
+				for (String adapter : dto.getAdapters()) {
+					AdapterFilter adapterFilter = new AdapterFilter();
+					adapterFilter.setAdapter(adapter);
+					trigger.addAdapterFilter(adapterFilter);
 				}
-				trigger.addAdapterFilter(adapterFilter);
+			} else if (SourceFiltering.SOURCE == dto.getFilter()) {
+				for (Map.Entry<String, List<String>> entry : dto.getSources().entrySet()) {
+					AdapterFilter adapterFilter = new AdapterFilter();
+					adapterFilter.setAdapter(entry.getKey());
+					for (String subObject : entry.getValue()) {
+						adapterFilter.addSubObjectText(subObject);
+					}
+					trigger.addAdapterFilter(adapterFilter);
+				}
 			}
 		}
 	}
@@ -236,7 +299,7 @@ public class Monitoring extends BusEndpointBase {
 		}
 	}
 
-	private void updateMonitor(Monitor monitor, Message<?> message) {
+	private void updateMonitor(Monitor monitor, Message<?> message, boolean isNewMonitor) {
 		MonitorDTO dto = JacksonUtils.convertToDTO(message.getPayload(), MonitorDTO.class);
 		if(StringUtils.isNotBlank(dto.getName())) {
 			monitor.setName(dto.getName());
@@ -245,7 +308,15 @@ public class Monitoring extends BusEndpointBase {
 			monitor.setType(dto.getType());
 		}
 		if(dto.getDestinations() != null) {
-			monitor.setDestinations(String.join(",", dto.getDestinations()));
+			if (isNewMonitor) {
+				// This call doesn't validate destinations; since we don't yet have
+				// MonitorManager we cannot yet do that validation.
+				monitor.setDestinations(String.join(",", dto.getDestinations()));
+			} else {
+				// This call validates each destination, can only do that on a monitor
+				// that has already been added to the monitor manager.
+				monitor.setDestinationSet(dto.getDestinations());
+			}
 		}
 	}
 
@@ -272,7 +343,7 @@ public class Monitoring extends BusEndpointBase {
 
 	private Message<String> getTrigger(MonitorManager manager, ITrigger trigger) {
 		Map<String, Object> returnMap = new HashMap<>();
-		returnMap.put("trigger", mapTrigger(trigger));
+		returnMap.put(TRIGGER_NAME_KEY, mapTrigger(trigger));
 		returnMap.put("severities", EnumUtils.getEnumList(Severity.class));
 		returnMap.put("events", manager.getEvents());
 
@@ -323,10 +394,12 @@ public class Monitoring extends BusEndpointBase {
 
 		List<Map<String, Object>> triggers = new ArrayList<>();
 		List<ITrigger> listOfTriggers = monitor.getTriggers();
-		for(ITrigger trigger : listOfTriggers) {
+		for (ListIterator<ITrigger> iterator = listOfTriggers.listIterator(); iterator.hasNext(); ) {
+			int triggerIndex = iterator.nextIndex();
+			ITrigger trigger = iterator.next();
 
 			Map<String, Object> map = mapTrigger(trigger);
-			map.put("id", listOfTriggers.indexOf(trigger));
+			map.put("id", triggerIndex);
 
 			triggers.add(map);
 		}
@@ -344,13 +417,12 @@ public class Monitoring extends BusEndpointBase {
 		triggerMap.put("threshold", trigger.getThreshold());
 		triggerMap.put("period", trigger.getPeriod());
 
-		if(trigger.getAdapterFilters() != null) {
+		if (trigger.getAdapterFilters() != null) {
 			Map<String, List<String>> sources = new HashMap<>();
-			if(trigger.getSourceFiltering() != SourceFiltering.NONE) {
-				for(Iterator<String> it1 = trigger.getAdapterFilters().keySet().iterator(); it1.hasNext();) {
-					String adapterName = it1.next();
-
-					AdapterFilter af = trigger.getAdapterFilters().get(adapterName);
+			if (trigger.getSourceFiltering() != SourceFiltering.NONE) {
+				for (Map.Entry<String, AdapterFilter> entry : trigger.getAdapterFilters().entrySet()) {
+					String adapterName = entry.getKey();
+					AdapterFilter af = entry.getValue();
 					sources.put(adapterName, af.getSubObjectList());
 				}
 			}

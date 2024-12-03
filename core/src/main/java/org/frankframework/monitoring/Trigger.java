@@ -26,16 +26,14 @@ import java.util.Queue;
 
 import jakarta.annotation.Nonnull;
 
-import org.apache.logging.log4j.Logger;
-
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.monitoring.events.FireMonitorEvent;
 import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.XmlBuilder;
 
 /**
@@ -45,9 +43,8 @@ import org.frankframework.util.XmlBuilder;
  * @since   4.9
  *
  */
+@Log4j2
 public class Trigger implements ITrigger {
-	protected Logger log = LogUtil.getLogger(this);
-
 	// The element names, which can be used as a Trigger.
 	private static final String ALARM_NAME = "AlarmTrigger";
 	private static final String CLEARING_NAME = "ClearingTrigger";
@@ -68,18 +65,22 @@ public class Trigger implements ITrigger {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if(monitor == null) {
+		configured = false;
+		if (monitor == null) {
 			throw new ConfigurationException("no monitor autowired");
 		}
+		if (threshold > 0 && period < 1) {
+			throw new ConfigurationException("you must define a period when using threshold > 0");
+		}
 
+		if (severity == null) {
+			throw new ConfigurationException("you must define a severity for the trigger");
+		}
 		if (eventCodes.isEmpty()) {
 			log.warn("trigger of Monitor [{}] should have at least one eventCode specified", monitor::getName);
 		}
 
 		if (threshold > 0) {
-			if(period < 1) {
-				throw new ConfigurationException("you must define a period when using threshold > 0");
-			}
 			if (eventDates == null) {
 				eventDates = new ArrayDeque<>();
 			}
@@ -276,5 +277,4 @@ public class Trigger implements ITrigger {
 	public void destroy() throws Exception {
 		log.info("removing trigger [{}]", this);
 	}
-
 }

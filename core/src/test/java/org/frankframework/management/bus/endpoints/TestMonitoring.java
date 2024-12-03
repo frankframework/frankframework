@@ -1,6 +1,8 @@
 package org.frankframework.management.bus.endpoints;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -220,6 +222,34 @@ public class TestMonitoring extends BusTestBase {
 	}
 
 	@Test
+	public void updateMonitorWithBadDestination() {
+		// Arrange
+		String requestJson = "{\"name\":\"newName\", \"type\":\"TECHNICAL\", \"destinations\":[\"badDestination\"]}";
+		MessageBuilder<String> request = createRequestMessage(requestJson, BusTopic.MONITORING, BusAction.MANAGE);
+		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
+		request.setHeader("monitor", TEST_MONITOR_NAME);
+
+		getMonitorManager().getMonitor(0).setDestinations("mockDestination");
+
+		// Act
+		MessageHandlingException mhe = assertThrows(MessageHandlingException.class, ()-> callSyncGateway(request));
+
+		// Assert Exception and that state has not changed
+		assertInstanceOf(BusException.class, mhe.getCause());
+		BusException be = (BusException) mhe.getCause();
+
+		// Assert
+		assertAll(
+				() -> assertEquals(400, be.getStatusCode()),
+				() -> assertThat(be.getMessage(), containsString("destination [badDestination] does not exist")),
+				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
+				() -> assertEquals(TEST_MONITOR_NAME, getMonitorManager().getMonitor(0).getName()),
+				() -> assertEquals(EventType.FUNCTIONAL, getMonitorManager().getMonitor(0).getType()),
+				() -> assertEquals("mockDestination", getMonitorManager().getMonitor(0).getDestinationsAsString())
+			);
+	}
+
+	@Test
 	public void deleteMonitor() {
 		// Arrange
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MONITORING, BusAction.DELETE);
@@ -363,6 +393,40 @@ public class TestMonitoring extends BusTestBase {
 				() -> assertThat(trigger.getAdapterFilters().keySet(), containsInAnyOrder("adapter1", "adapter2")),
 				() -> assertEquals(0, trigger.getAdapterFilters().get("adapter1").getSubObjectList().size()),
 				() -> assertEquals(0, trigger.getAdapterFilters().get("adapter2").getSubObjectList().size())
+			);
+	}
+
+	@Test
+	public void updateTriggerWithError() throws Exception {
+		// Arrange
+		String jsonInput = TestFileUtils.getTestFile("/Management/Monitoring/updateTriggerWithError.json");
+		MessageBuilder<String> request = createRequestMessage(jsonInput, BusTopic.MONITORING, BusAction.MANAGE);
+		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
+		request.setHeader("monitor", TEST_MONITOR_NAME);
+		request.setHeader("trigger", TEST_TRIGGER_ID);
+
+		// Act
+		MessageHandlingException mhe = assertThrows(MessageHandlingException.class, ()-> callSyncGateway(request));
+
+		// Assert Exception and that state has not changed
+		assertInstanceOf(BusException.class, mhe.getCause());
+		BusException be = (BusException) mhe.getCause();
+
+		assertAll(
+				() -> assertEquals(400, be.getStatusCode()),
+				() -> assertThat(be.getMessage(), containsString("you must define a period when using threshold > 0")),
+				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
+				() -> assertEquals(1, getMonitorManager().getMonitor(0).getTriggers().size())
+			);
+
+		// Assert Trigger
+		ITrigger trigger = getMonitorManager().getMonitor(0).getTriggers().get(0);
+		assertAll(
+				() -> assertEquals(Severity.HARMLESS, trigger.getSeverity()),
+				() -> assertEquals(42, trigger.getPeriod()),
+				() -> assertEquals(1337, trigger.getThreshold()),
+				() -> assertEquals(TriggerType.ALARM, trigger.getTriggerType()),
+				() -> assertThat(trigger.getEventCodes(), not(containsInAnyOrder("Pipe Exception1", "Pipe Exception2")))
 			);
 	}
 
