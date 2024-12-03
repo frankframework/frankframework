@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { AppService } from '../app.service';
 import { HttpClient } from '@angular/common/http';
-import { combineLatest, map, Observable, of, tap } from 'rxjs';
+import { combineLatest, map, Observable, of, tap, shareReplay } from 'rxjs';
 import {
   Link,
   LinkName,
@@ -18,11 +18,15 @@ export class AuthService {
   private readonly appService: AppService = inject(AppService);
   private readonly http: HttpClient = inject(HttpClient);
   private readonly securityItemsService: SecurityItemsService = inject(SecurityItemsService);
+  private readonly permissionsObservable$: Observable<void>;
 
   private loggedIn = false;
   private allowedRoles: string[] = [];
   private allowedLinks: Link[] = [];
-  private permissionsLoaded = false;
+
+  constructor() {
+    this.permissionsObservable$ = this.initializePermissionsObservable();
+  }
 
   setLoggedIn(username?: string): void {
     if (this.isNotAnonymous(username)) {
@@ -35,13 +39,14 @@ export class AuthService {
   }
 
   loadPermissions(): Observable<void> {
-    if (this.permissionsLoaded) {
-      return of();
-    }
+    return this.permissionsObservable$;
+  }
 
+  private initializePermissionsObservable(): Observable<void> {
     return this.fetchPermissionData().pipe(
       tap(([securityItems, links]) => this.updatePermissions(securityItems, links)),
       map(() => {}),
+      shareReplay(1),
     );
   }
 
@@ -55,7 +60,6 @@ export class AuthService {
   private updatePermissions(securityItems: SecurityItems, links: Links): void {
     this.allowedRoles = this.filterAllowedRoles(securityItems.securityRoles);
     this.allowedLinks = this.filterAllowedLinks(links);
-    this.permissionsLoaded = true;
   }
 
   private filterAllowedRoles(securityRoles: SecurityRole[]): string[] {
