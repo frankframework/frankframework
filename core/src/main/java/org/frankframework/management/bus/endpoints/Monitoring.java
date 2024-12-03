@@ -193,7 +193,8 @@ public class Monitoring extends BusEndpointBase {
 		try {
 			// Validates the relevant changes while updating
 			updateMonitor(monitor, message, false);
-		} catch (IllegalArgumentException e) {
+			monitor.configure();
+		} catch (IllegalArgumentException | ConfigurationException e) {
 			// Restore monitor to its backup state
 			monitor.setName(name);
 			monitor.setType(type);
