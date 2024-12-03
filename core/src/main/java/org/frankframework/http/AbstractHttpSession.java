@@ -359,12 +359,11 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
 
-		credentials = getCredentialFactory();
-
 		if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(getClientAuthAlias()) && StringUtils.isEmpty(getClientId())) {
 			throw new ConfigurationException("To obtain accessToken at tokenEndpoint ["+getTokenEndpoint()+"] a clientAuthAlias or ClientId and ClientSecret must be specified");
 		}
 
+		credentials = getCredentialFactory();
 
 		RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
 		requestConfigBuilder.setConnectTimeout(getTimeout());
