@@ -25,8 +25,8 @@ import java.util.Set;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IDataIterator;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.core.SenderException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.pipes.IteratingPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
@@ -48,13 +48,13 @@ public class ForEachAttachmentPipe<F, A, FS extends IMailFileSystem<F,A>> extend
 	}
 
 	@Override
-	public void start() throws PipeStartException {
+	public void start() {
 		super.start();
 		try {
-			FS fileSystem=getFileSystem();
+			FS fileSystem = getFileSystem();
 			fileSystem.open();
 		} catch (FileSystemException e) {
-			throw new PipeStartException("Cannot open fileSystem",e);
+			throw new LifecycleException("Cannot open fileSystem",e);
 		}
 	}
 

@@ -25,7 +25,6 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
@@ -71,13 +70,8 @@ public class PostboxRetrieverPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public void start() throws PipeStartException {
-		try {
-			getListener().start();
-		}
-		catch (Exception e) {
-			throw new PipeStartException(e);
-		}
+	public void start() {
+		getListener().start();
 	}
 
 	@Override

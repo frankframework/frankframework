@@ -23,8 +23,8 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
@@ -762,7 +762,7 @@ public abstract class FileSystemPipeTest<FSP extends AbstractFileSystemPipe<F, F
 		fileSystemPipe.setName("FSP");
 		fileSystemPipe.configure();
 
-		PipeStartException e = assertThrows(PipeStartException.class, fileSystemPipe::start);
+		LifecycleException e = assertThrows(LifecycleException.class, fileSystemPipe::start);
 		assertThat(e.getMessage(), startsWith("Pipe [FSP]: Cannot open fileSystem"));
 	}
 

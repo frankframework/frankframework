@@ -30,11 +30,11 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
 import org.frankframework.doc.ReferTo;
 import org.frankframework.documentbuilder.DocumentFormat;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.FixedForwardPipe;
@@ -75,14 +75,14 @@ public abstract class AbstractFileSystemPipe<F, FS extends IBasicFileSystem<F>> 
 	}
 
 	@Override
-	public void start() throws PipeStartException {
+	public void start() {
 		super.start();
 		try {
-			FS fileSystem=getFileSystem();
+			FS fileSystem = getFileSystem();
 			fileSystem.open();
 			actor.open();
 		} catch (FileSystemException e) {
-			throw new PipeStartException("Pipe [" + getName() + "]: Cannot open fileSystem",e);
+			throw new LifecycleException("Pipe [" + getName() + "]: Cannot open fileSystem",e);
 		}
 	}
 
@@ -99,7 +99,7 @@ public abstract class AbstractFileSystemPipe<F, FS extends IBasicFileSystem<F>> 
 
 	@Override
 	@Nullable
-	public PipeRunResult doPipe (@Nonnull Message message, @Nonnull PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@Nonnull Message message, @Nonnull PipeLineSession session) throws PipeRunException {
 		ParameterList paramList = getParameterList();
 		ParameterValueList pvl=null;
 		try {

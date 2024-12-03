@@ -77,7 +77,7 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 	}
 
 	@Override
-	public void start() throws PipeStartException {
+	public void start() {
 		// Should not do anything
 	}
 
