@@ -1,7 +1,6 @@
 import { Directive, inject, Input, TemplateRef, ViewContainerRef } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { LinkName } from '../views/security-items/security-items.service';
-import { lastValueFrom } from 'rxjs';
 
 @Directive({
   selector: '[appHasAccessToLink]',
@@ -9,7 +8,7 @@ import { lastValueFrom } from 'rxjs';
 })
 export class HasAccessToLinkDirective {
   private readonly authService: AuthService = inject(AuthService);
-  private readonly templateRef = inject(TemplateRef);
+  private readonly templateRef: TemplateRef<HTMLElement> = inject(TemplateRef);
   private readonly viewContainer: ViewContainerRef = inject(ViewContainerRef);
 
   @Input('appHasAccessToLink') set hasAccessToLink(linkName: LinkName | LinkName[]) {
