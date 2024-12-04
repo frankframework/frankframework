@@ -15,21 +15,22 @@
 */
 package org.frankframework.ladybug;
 
-import liquibase.integration.spring.SpringLiquibase;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.core.util.OptionConverter;
-import org.frankframework.management.bus.DebuggerStatusChangedEvent;
-import org.frankframework.util.AppConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 
+import liquibase.integration.spring.SpringLiquibase;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.storage.database.DatabaseStorage;
+
+import org.frankframework.management.bus.DebuggerStatusChangedEvent;
+import org.frankframework.util.AppConstants;
 
 /**
  * @author Jaco de Groot
@@ -44,7 +45,7 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 
 			// Contract for testtool state:
 			// - when the state changes a DebuggerStatusChangedEvent must be fired to notify others
-			// - to get notified of canges, components should listen to DebuggerStatusChangedEvents
+			// - to get notified of changes, components should listen to DebuggerStatusChangedEvents
 			// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
 
 			boolean testToolEnabled=true;

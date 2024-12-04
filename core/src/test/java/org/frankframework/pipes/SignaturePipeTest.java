@@ -20,9 +20,9 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.encryption.PkiUtil;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.SignaturePipe.Action;
 import org.frankframework.stream.Message;
@@ -31,9 +31,10 @@ import org.frankframework.util.ClassLoaderUtils;
 public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 	private final String testMessage = "xyz";
-	private final String testSignature = "JBKjNltZoFlQTsBgstpnIB4itBxzAohRXGpIWuIQh51F64P4WdT+R/55v+cHrPsQ2B49GhROeFUyy7kafOKTfMTjm7DQ5yT/srImFTlZZZbHbvQns2NWBE8DoQKt6SOYowDNIJY5qDV+82k6xY2BcTcZoiAPB53F3rEkfzz/QkxcFiCKvtg2voG1WyVkyoue10404UXIkSXv0ySYnRBRugdPO1DKyUwL6FS5tP2p8toBVzeRT6rMkEwuU3A5riQpdnEOi0ckeFvSNU3Cdgdah4HWd+48gXzBE6Uwu/BMOrD/5mRUnS0wmPn7dajkjHNC2r9+C1jxlFy3NIim1rS2iA==";
-	private final String multipasswordKSSignature = "0b5443UL24hO4WaMif2G9k0wcpxboEhdDQEldui22NZtNfLwHjiTMosCZcwi2E3JEk/ZRU5JNfjwKoRw4qjI+dWo+7b3Bliny0KTjVXpAJrpDIJJXn25TMW7q2U+mpWl05ygLs3p9jjLSukE+5pi0WofGsQ7hco4KjR+uzfp+TfEmkEyG3dsxhDaaxXa8OCbrchmPrzkoMT4sJHT7k7aTpKX4Wg/mGfUpuMBy0G90CWAW72pKbBhxsKrFa3mqrHCUtYQ9Zb1X0PJtFLaaj/iQD6BBmE4Vl4YGD5ZRSsMCyZ9p49oiD2skHkwEbozfQ8vyXa3Udf4Eo26eMaiMw5goA==";
 
+	private final String testSignature = "JBKjNltZoFlQTsBgstpnIB4itBxzAohRXGpIWuIQh51F64P4WdT+R/55v+cHrPsQ2B49GhROeFUyy7kafOKTfMTjm7DQ5yT/srImFTlZZZbHbvQns2NWBE8DoQKt6SOYowDNIJY5qDV+82k6xY2BcTcZoiAPB53F3rEkfzz/QkxcFiCKvtg2voG1WyVkyoue10404UXIkSXv0ySYnRBRugdPO1DKyUwL6FS5tP2p8toBVzeRT6rMkEwuU3A5riQpdnEOi0ckeFvSNU3Cdgdah4HWd+48gXzBE6Uwu/BMOrD/5mRUnS0wmPn7dajkjHNC2r9+C1jxlFy3NIim1rS2iA==";
+
+	private final String multipasswordKSSignature = "0b5443UL24hO4WaMif2G9k0wcpxboEhdDQEldui22NZtNfLwHjiTMosCZcwi2E3JEk/ZRU5JNfjwKoRw4qjI+dWo+7b3Bliny0KTjVXpAJrpDIJJXn25TMW7q2U+mpWl05ygLs3p9jjLSukE+5pi0WofGsQ7hco4KjR+uzfp+TfEmkEyG3dsxhDaaxXa8OCbrchmPrzkoMT4sJHT7k7aTpKX4Wg/mGfUpuMBy0G90CWAW72pKbBhxsKrFa3mqrHCUtYQ9Zb1X0PJtFLaaj/iQD6BBmE4Vl4YGD5ZRSsMCyZ9p49oiD2skHkwEbozfQ8vyXa3Udf4Eo26eMaiMw5goA==";
 
 	@Override
 	public SignaturePipe createPipe() {
@@ -106,7 +107,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		pipe.setKeystoreType(KeystoreType.JKS);
 		pipe.setKeystoreAlias("1");
 
-		PipeStartException e = assertThrows(PipeStartException.class, this::configureAndStartPipe);
+		LifecycleException e = assertThrows(LifecycleException.class, this::configureAndStartPipe);
 		assertThat(e.getMessage(), Matchers.containsString("Cannot obtain Private Key in alias [1]"));
 	}
 

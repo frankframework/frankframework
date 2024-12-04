@@ -38,15 +38,17 @@ import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XSGrammar;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSModel;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
+import org.frankframework.lifecycle.LifecycleException;
 
 /**
  * Straightforward XML-validation based on javax.validation. This is work in programs.
@@ -71,12 +73,16 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public void start() throws ConfigurationException {
+	public void start()  {
 		super.start();
-		String schemasId;
-		schemasId = schemasProvider.getSchemasId();
-		if (schemasId != null) {
-			getSchemaObject(schemasId, schemasProvider.getSchemas());
+
+		try {
+			String schemasId = schemasProvider.getSchemasId();
+			if (schemasId != null) {
+				getSchemaObject(schemasId, schemasProvider.getSchemas());
+			}
+		} catch (ConfigurationException e) {
+			throw new LifecycleException(e);
 		}
 	}
 

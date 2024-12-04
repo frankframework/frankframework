@@ -19,7 +19,6 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
@@ -60,7 +59,7 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 	/**
 	 * Configure and start the pipe
 	 */
-	protected void configureAndStartPipe() throws ConfigurationException, PipeStartException {
+	protected void configureAndStartPipe() throws ConfigurationException {
 		configurePipeline();
 		pipe.start();
 	}
