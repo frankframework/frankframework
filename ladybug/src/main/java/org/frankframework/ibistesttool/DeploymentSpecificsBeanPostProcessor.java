@@ -34,43 +34,48 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-		if (bean instanceof DatabaseStorage databaseStorage) {
+		if (bean instanceof DatabaseStorage) {
 			String maxStorageSize = APP_CONSTANTS.getProperty("ibistesttool.maxStorageSize");
 			if (maxStorageSize != null) {
+				DatabaseStorage databaseStorage = (DatabaseStorage)bean;
 				long maxStorageSizeLong = OptionConverter.toFileSize(maxStorageSize, databaseStorage.getMaxStorageSize());
 				databaseStorage.setMaxStorageSize(maxStorageSizeLong);
 			}
 		}
-
-		if (bean instanceof nl.nn.testtool.storage.file.Storage loggingStorage) {
+		if (bean instanceof nl.nn.testtool.storage.file.Storage) {
 			String maxFileSize = APP_CONSTANTS.getProperty("ibistesttool.maxFileSize");
 			if (maxFileSize != null) {
+				nl.nn.testtool.storage.file.Storage loggingStorage = (nl.nn.testtool.storage.file.Storage)bean;
 				long maxFileSizeLong = OptionConverter.toFileSize(maxFileSize, nl.nn.testtool.storage.file.Storage.DEFAULT_MAXIMUM_FILE_SIZE);
 				loggingStorage.setMaximumFileSize(maxFileSizeLong);
 			}
 			String maxBackupIndex = APP_CONSTANTS.getProperty("ibistesttool.maxBackupIndex");
 			if (maxBackupIndex != null) {
+				nl.nn.testtool.storage.file.Storage loggingStorage = (nl.nn.testtool.storage.file.Storage)bean;
 				int maxBackupIndexInt = Integer.parseInt(maxBackupIndex);
 				loggingStorage.setMaximumBackupIndex(maxBackupIndexInt);
 			}
 			String freeSpaceMinimum = APP_CONSTANTS.getProperty("ibistesttool.freeSpaceMinimum");
 			if (freeSpaceMinimum != null) {
+				nl.nn.testtool.storage.file.Storage loggingStorage = (nl.nn.testtool.storage.file.Storage)bean;
 				long freeSpaceMinimumLong = OptionConverter.toFileSize(freeSpaceMinimum, -1);
 				loggingStorage.setFreeSpaceMinimum(freeSpaceMinimumLong);
 			}
 		}
-		if (bean instanceof Views views) {
+		if (bean instanceof Views) {
 			String defaultView = APP_CONSTANTS.getProperty("ibistesttool.defaultView");
 			if (defaultView != null) {
+				Views views = (Views)bean;
 				View view = views.setDefaultView(defaultView);
 				if (view == null) {
 					throw new BeanCreationException("Default view '" + defaultView + "' not found");
 				}
 			}
 		}
-		if (bean instanceof SpringLiquibase springLiquibase) {
+		if (bean instanceof SpringLiquibase) {
 			boolean active = APP_CONSTANTS.getBoolean("ladybug.jdbc.migrator.active",
 					APP_CONSTANTS.getBoolean("jdbc.migrator.active", false));
+			SpringLiquibase springLiquibase = (SpringLiquibase)bean;
 			springLiquibase.setShouldRun(active);
 		}
 		return bean;
