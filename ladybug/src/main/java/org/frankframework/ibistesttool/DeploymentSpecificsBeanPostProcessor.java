@@ -15,18 +15,13 @@
 */
 package org.frankframework.ibistesttool;
 
-import org.apache.commons.lang3.StringUtils;
+import liquibase.integration.spring.SpringLiquibase;
 import org.apache.logging.log4j.core.util.OptionConverter;
-import org.frankframework.management.bus.DebuggerStatusChangedEvent;
 import org.frankframework.util.AppConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
 
-import liquibase.integration.spring.SpringLiquibase;
-import nl.nn.testtool.TestTool;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.storage.database.DatabaseStorage;
@@ -34,36 +29,11 @@ import nl.nn.testtool.storage.database.DatabaseStorage;
 /**
  * @author Jaco de Groot
  */
-public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, ApplicationEventPublisherAware {
-	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private ApplicationEventPublisher applicationEventPublisher;
+public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
+	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-		if (bean instanceof TestTool) {
-
-			// Contract for testtool state:
-			// - when the state changes a DebuggerStatusChangedEvent must be fired to notify others
-			// - to get notified of canges, components should listen to DebuggerStatusChangedEvents
-			// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
-
-			boolean testToolEnabled=true;
-			String testToolEnabledProperty=APP_CONSTANTS.getProperty("testtool.enabled");
-			if (StringUtils.isNotEmpty(testToolEnabledProperty)) {
-				testToolEnabled="true".equalsIgnoreCase(testToolEnabledProperty);
-			} else {
-				String stage = APP_CONSTANTS.getProperty("dtap.stage");
-				if ("ACC".equals(stage) || "PRD".equals(stage)) {
-					testToolEnabled=false;
-				}
-				APP_CONSTANTS.setProperty("testtool.enabled", testToolEnabled);
-			}
-			// notify other components of status of debugger
-			DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, testToolEnabled);
-			if (applicationEventPublisher != null) {
-				applicationEventPublisher.publishEvent(event);
-			}
-		}
 		if (bean instanceof DatabaseStorage) {
 			String maxStorageSize = APP_CONSTANTS.getProperty("ibistesttool.maxStorageSize");
 			if (maxStorageSize != null) {
@@ -114,10 +84,5 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 		return bean;
-	}
-
-	@Override
-	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-		this.applicationEventPublisher = applicationEventPublisher;
 	}
 }
