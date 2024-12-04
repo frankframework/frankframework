@@ -44,7 +44,7 @@ public class DebuggerActive implements ApplicationEventPublisherAware, Initializ
 	public void afterPropertiesSet() {
 		// Contract for testtool state:
 		// - when the state changes a DebuggerStatusChangedEvent must be fired to notify others
-		// - to get notified of canges, components should listen to DebuggerStatusChangedEvents
+		// - to get notified of changes, components should listen to DebuggerStatusChangedEvents
 		// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
 
 		boolean testToolEnabled = true;
