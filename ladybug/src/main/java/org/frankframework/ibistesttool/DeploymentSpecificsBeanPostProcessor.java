@@ -15,18 +15,13 @@
 */
 package org.frankframework.ibistesttool;
 
-import org.apache.commons.lang3.StringUtils;
+import liquibase.integration.spring.SpringLiquibase;
 import org.apache.logging.log4j.core.util.OptionConverter;
-import org.frankframework.management.bus.DebuggerStatusChangedEvent;
 import org.frankframework.util.AppConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
 
-import liquibase.integration.spring.SpringLiquibase;
-import nl.nn.testtool.TestTool;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
 import nl.nn.testtool.storage.database.DatabaseStorage;
@@ -34,78 +29,48 @@ import nl.nn.testtool.storage.database.DatabaseStorage;
 /**
  * @author Jaco de Groot
  */
-public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, ApplicationEventPublisherAware {
-	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private ApplicationEventPublisher applicationEventPublisher;
+public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
+	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-		if (bean instanceof TestTool) {
-
-			// Contract for testtool state:
-			// - when the state changes a DebuggerStatusChangedEvent must be fired to notify others
-			// - to get notified of canges, components should listen to DebuggerStatusChangedEvents
-			// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
-
-			boolean testToolEnabled=true;
-			String testToolEnabledProperty=APP_CONSTANTS.getProperty("testtool.enabled");
-			if (StringUtils.isNotEmpty(testToolEnabledProperty)) {
-				testToolEnabled="true".equalsIgnoreCase(testToolEnabledProperty);
-			} else {
-				String stage = APP_CONSTANTS.getProperty("dtap.stage");
-				if ("ACC".equals(stage) || "PRD".equals(stage)) {
-					testToolEnabled=false;
-				}
-				APP_CONSTANTS.setProperty("testtool.enabled", testToolEnabled);
-			}
-			// notify other components of status of debugger
-			DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, testToolEnabled);
-			if (applicationEventPublisher != null) {
-				applicationEventPublisher.publishEvent(event);
-			}
-		}
-		if (bean instanceof DatabaseStorage) {
+		if (bean instanceof DatabaseStorage databaseStorage) {
 			String maxStorageSize = APP_CONSTANTS.getProperty("ibistesttool.maxStorageSize");
 			if (maxStorageSize != null) {
-				DatabaseStorage databaseStorage = (DatabaseStorage)bean;
 				long maxStorageSizeLong = OptionConverter.toFileSize(maxStorageSize, databaseStorage.getMaxStorageSize());
 				databaseStorage.setMaxStorageSize(maxStorageSizeLong);
 			}
 		}
-		if (bean instanceof nl.nn.testtool.storage.file.Storage) {
+
+		if (bean instanceof nl.nn.testtool.storage.file.Storage loggingStorage) {
 			String maxFileSize = APP_CONSTANTS.getProperty("ibistesttool.maxFileSize");
 			if (maxFileSize != null) {
-				nl.nn.testtool.storage.file.Storage loggingStorage = (nl.nn.testtool.storage.file.Storage)bean;
 				long maxFileSizeLong = OptionConverter.toFileSize(maxFileSize, nl.nn.testtool.storage.file.Storage.DEFAULT_MAXIMUM_FILE_SIZE);
 				loggingStorage.setMaximumFileSize(maxFileSizeLong);
 			}
 			String maxBackupIndex = APP_CONSTANTS.getProperty("ibistesttool.maxBackupIndex");
 			if (maxBackupIndex != null) {
-				nl.nn.testtool.storage.file.Storage loggingStorage = (nl.nn.testtool.storage.file.Storage)bean;
 				int maxBackupIndexInt = Integer.parseInt(maxBackupIndex);
 				loggingStorage.setMaximumBackupIndex(maxBackupIndexInt);
 			}
 			String freeSpaceMinimum = APP_CONSTANTS.getProperty("ibistesttool.freeSpaceMinimum");
 			if (freeSpaceMinimum != null) {
-				nl.nn.testtool.storage.file.Storage loggingStorage = (nl.nn.testtool.storage.file.Storage)bean;
 				long freeSpaceMinimumLong = OptionConverter.toFileSize(freeSpaceMinimum, -1);
 				loggingStorage.setFreeSpaceMinimum(freeSpaceMinimumLong);
 			}
 		}
-		if (bean instanceof Views) {
+		if (bean instanceof Views views) {
 			String defaultView = APP_CONSTANTS.getProperty("ibistesttool.defaultView");
 			if (defaultView != null) {
-				Views views = (Views)bean;
 				View view = views.setDefaultView(defaultView);
 				if (view == null) {
 					throw new BeanCreationException("Default view '" + defaultView + "' not found");
 				}
 			}
 		}
-		if (bean instanceof SpringLiquibase) {
+		if (bean instanceof SpringLiquibase springLiquibase) {
 			boolean active = APP_CONSTANTS.getBoolean("ladybug.jdbc.migrator.active",
 					APP_CONSTANTS.getBoolean("jdbc.migrator.active", false));
-			SpringLiquibase springLiquibase = (SpringLiquibase)bean;
 			springLiquibase.setShouldRun(active);
 		}
 		return bean;
@@ -114,10 +79,5 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 		return bean;
-	}
-
-	@Override
-	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-		this.applicationEventPublisher = applicationEventPublisher;
 	}
 }
