@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool.OutputType;
@@ -27,7 +26,7 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 	}
 
 	@Test
-	public void basic() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void basic() throws ConfigurationException, IOException, PipeRunException {
 		pipe.setStyleSheetName("/Xslt3/orgchart.xslt");
 		pipe.configure();
 		pipe.start();
@@ -40,7 +39,7 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 	}
 
 	@Test
-	public void xmlOut() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void xmlOut() throws ConfigurationException, IOException, PipeRunException {
 		pipe.setStyleSheetName("/Xslt3/orgchart.xslt");
 		pipe.setJsonResult(false);
 		pipe.configure();
@@ -54,7 +53,7 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 	}
 
 	@Test
-	public void testXPath() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void testXPath() throws ConfigurationException, IOException, PipeRunException {
 		pipe.setXpathExpression("j:map/j:map/j:map[j:string[@key='department']='Security']/j:string[@key='firstname']");
 		pipe.setOutputType(OutputType.TEXT);
 		pipe.setJsonResult(false);
