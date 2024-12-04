@@ -18,7 +18,6 @@ package org.frankframework.lifecycle.servlets;
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -78,6 +77,9 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	/** eg. https://accounts.google.com */
 	private @Setter String issuerUri;
 
+	/** eg. external absolute URL (must start with `http(s)://`) */
+	private @Setter String baseUrl;
+
 	/** eg. https://www.googleapis.com/oauth2/v3/userinfo */
 	private @Setter String userInfoUri;
 
@@ -124,36 +126,27 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 		log.info("found rolemapping file [{}]", roleMappingURL);
 
 		oauthBaseUrl = computeBaseUrl();
+		log.debug("using oauth baseurl [{}]", oauthBaseUrl);
 		clientRepository = createClientRegistrationRepository();
 		SpringUtils.registerSingleton(getApplicationContext(), "clientRegistrationRepository", clientRepository);
 	}
 
 	public ClientRegistrationRepository createClientRegistrationRepository() {
 		Stream<String> providers = StringUtil.splitToStream(provider);
-		List<ClientRegistration> registrations = providers.map(this::getRegistration).collect(Collectors.toList());
+		List<ClientRegistration> registrations = providers.map(this::getRegistration).toList();
 
 		return new InMemoryClientRegistrationRepository(registrations);
 	}
 
 	private ClientRegistration getRegistration(String provider) {
-		ClientRegistration.Builder builder;
-
-		switch (provider.toLowerCase()) {
-			case "google":
-			case "github":
-			case "facebook":
-			case "okta":
+		ClientRegistration.Builder builder = switch (provider.toLowerCase()) {
+			case "google", "github", "facebook", "okta" -> {
 				CommonOAuth2Provider commonProvider = EnumUtils.parse(CommonOAuth2Provider.class, provider);
-				builder = commonProvider.getBuilder(provider);
-				break;
-
-			case "custom":
-				builder = createCustomBuilder(provider, provider.toLowerCase());
-				break;
-
-			default:
-				throw new IllegalStateException("unknown OAuth provider");
-		}
+				yield commonProvider.getBuilder(provider);
+			}
+			case "custom" -> createCustomBuilder(provider, provider.toLowerCase());
+			default -> throw new IllegalStateException("unknown OAuth provider");
+		};
 
 		builder.clientId(clientId).clientSecret(clientSecret);
 		builder.redirectUri("{baseUrl}/%s/oauth2/code/{registrationId}".formatted(oauthBaseUrl));
@@ -179,10 +172,14 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	}
 
 	private String computeBaseUrl() {
-		String baseUrl = getPrivateEndpoints().stream().findFirst().orElse("");
-		if(baseUrl.endsWith("*")) { // Strip the '*' if the url ends with it
-			baseUrl = baseUrl.substring(0, baseUrl.length()-1);
+		if (StringUtils.isEmpty(baseUrl)) {
+			baseUrl = getPrivateEndpoints().stream().findFirst().orElse("");
+
+			if(baseUrl.endsWith("*")) { // Strip the '*' if the url ends with it
+				baseUrl = baseUrl.substring(0, baseUrl.length()-1);
+			}
 		}
+
 		if(baseUrl.endsWith("/")) { // Ensure the url does not end with a slash
 			baseUrl = baseUrl.substring(0, baseUrl.length()-1);
 		}

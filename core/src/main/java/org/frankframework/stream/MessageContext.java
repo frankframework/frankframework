@@ -30,16 +30,15 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.StringUtil;
 import org.springframework.util.InvalidMimeTypeException;
 import org.springframework.util.MimeType;
 
-public class MessageContext implements Serializable {
-	private static final Logger LOG = LogManager.getLogger(MessageContext.class);
+import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.StringUtil;
 
-	private static final long serialVersionUID = 1L;
-	private static final long customSerializationVersion = 1L;
+public class MessageContext implements Serializable {
+	public static final String CONTEXT_PIPELINE_CALLER = "Pipeline.Caller";
+	public static final String CONTEXT_PREVIOUS_PIPE = "Pipeline.PreviousPipe";
 
 	public static final String HEADER_PREFIX = "Header.";
 
@@ -49,6 +48,11 @@ public class MessageContext implements Serializable {
 	public static final String METADATA_NAME = "Metadata.Name";
 	public static final String METADATA_LOCATION = "Metadata.Location";
 	public static final String METADATA_MIMETYPE = "Metadata.MimeType";
+
+	private static final Logger LOG = LogManager.getLogger(MessageContext.class);
+
+	private static final long serialVersionUID = 1L;
+	private static final long customSerializationVersion = 1L;
 
 	private Map<String, Object> data = new LinkedHashMap<>();
 

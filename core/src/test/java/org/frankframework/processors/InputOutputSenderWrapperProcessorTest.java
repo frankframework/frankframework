@@ -13,10 +13,9 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.senders.AbstractSender;
-import org.frankframework.senders.SenderSeries;
 import org.frankframework.senders.AbstractSenderWrapper;
+import org.frankframework.senders.SenderSeries;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 
@@ -35,7 +34,7 @@ public class InputOutputSenderWrapperProcessorTest {
 		sender = configuration.createBean(SenderSeries.class);
 		sender.addSender(new AbstractSender() {
 			@Override
-			public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+			public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 				try {
 					return new SenderResult("Sender 1: [" + message.asString() + "]");
 				} catch (IOException e) {
@@ -45,7 +44,7 @@ public class InputOutputSenderWrapperProcessorTest {
 		});
 		sender.addSender(new AbstractSender() {
 			@Override
-			public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+			public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 				try {
 					secondSenderOutput = "Sender 2: [" + message.asString() + "]";
 					return new SenderResult(secondSenderOutput);
@@ -59,13 +58,7 @@ public class InputOutputSenderWrapperProcessorTest {
 	private void testInputOutputSenderWrapperProcessor(AbstractSenderWrapper sender, String input, String expectedSecondSenderOutput, String expectedWrapperOutput, String expectedSessionKeyValue) throws Exception {
 		InputOutputSenderWrapperProcessor processor = new InputOutputSenderWrapperProcessor();
 
-		SenderWrapperProcessor target = new SenderWrapperProcessor() {
-
-			@Override
-			public SenderResult sendMessage(AbstractSenderWrapper abstractSenderWrapper, Message message, PipeLineSession session) throws SenderException, TimeoutException {
-				return abstractSenderWrapper.sendMessage(message, session);
-			}
-		};
+		SenderWrapperProcessor target = AbstractSenderWrapper::sendMessage;
 
 		processor.setSenderWrapperProcessor(target);
 

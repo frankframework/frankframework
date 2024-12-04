@@ -111,6 +111,7 @@ import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
@@ -271,6 +272,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private @Getter Integer maxRetries = null;
 	private Integer maxBackoffDelay = null;
 	private @Getter int processResultCacheSize = 100;
+
+	/**
+	 * supportProgrammaticRetry is set to {@code true} internally during configuration when the listener implements {@link IHasProcessState}, and is
+	 * configured with process state {@link ProcessState#INPROCESS}.
+	 * In all other circumstances, it is {@code false}.
+	 */
 	private @Getter boolean supportProgrammaticRetry=false;
 
 	private @Getter String correlationIDXPath;
@@ -1075,6 +1082,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		if (origin!=getListener()) {
 			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 		}
+
 		processRawMessage(rawMessage, session, false, retryStatusAlreadyChecked);
 	}
 
@@ -1083,7 +1091,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * <br/>
 	 * The method assumes that a transaction has been started where necessary.
 	 */
-	private void processRawMessage(RawMessageWrapper<M> rawMessageWrapper, @Nonnull PipeLineSession session, boolean manualRetry, boolean retryStatusAlreadyChecked) throws ListenerException {
+	private void processRawMessage(RawMessageWrapper<M> rawMessageWrapper, @Nonnull PipeLineSession session, boolean manualRetry,
+								   boolean retryStatusAlreadyChecked) throws ListenerException {
 		if (rawMessageWrapper == null) {
 			log.debug("{} Received null message, returning directly", this::getLogPrefix);
 			return;
@@ -1130,7 +1139,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		return result;
 	}
 
-
 	public void retryMessage(String storageKey) throws ListenerException {
 		if (!messageBrowsers.containsKey(ProcessState.ERROR)) {
 			throw new ListenerException(getLogPrefix()+"has no errorStorage, cannot retry storageKey ["+storageKey+"]");
@@ -1143,12 +1151,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			if (errorStorage == null) {
 				// if there is only a errorStorageBrowser, and no separate and transactional errorStorage,
 				// then the management of the errorStorage is left to the listener.
-				IMessageBrowser<?> errorStorageBrowser = messageBrowsers.get(ProcessState.ERROR);
 				IbisTransaction itx = new IbisTransaction(txManager, getTxDef(), "receiver [" + getName() + "]");
 				try {
-					RawMessageWrapper<?> msg = errorStorageBrowser.browseMessage(storageKey);
-					//noinspection unchecked
-					processRawMessage((RawMessageWrapper<M>) msg, session, true, false);
+					RawMessageWrapper<M> msg = getMessageToRetryFromErrorBrowser(storageKey);
+					processRawMessage(msg, session, true, false);
 				} catch (ListenerException e) {
 					itx.setRollbackOnly();
 					throw e;
@@ -1200,14 +1206,32 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		}
 	}
 
+	private RawMessageWrapper<M> getMessageToRetryFromErrorBrowser(String storageKey) throws ListenerException {
+		IMessageBrowser<?> errorStorageBrowser = messageBrowsers.get(ProcessState.ERROR);
+
+		//noinspection unchecked
+		RawMessageWrapper<M> msg = (RawMessageWrapper<M>) errorStorageBrowser.browseMessage(storageKey);
+
+		// If the listener has process-states, then try to move the message back to "In Process" before retrying it.
+		// If we don't do that, and the message has again an error, some listeners might get confused trying to move a message from "Error" to "Error".
+		if (isSupportProgrammaticRetry()) {
+			//noinspection unchecked
+			IHasProcessState<M> hasProcessState = (IHasProcessState<M>) listener;
+			return hasProcessState.changeProcessState(msg, ProcessState.INPROCESS, "Message manually retried");
+		}
+		return msg;
+	}
+
 	/*
 	 * All messages for the receiver eventually go through this method, this is the method that calls the Adapter.
 	 * <br/>
 	 * Assumes message is read, and when transacted, transaction is still open.
 	 */
-	private Message processMessageInAdapter(MessageWrapper<M> messageWrapperOriginal, PipeLineSession session, boolean manualRetry, boolean retryStatusAlreadyChecked) throws ListenerException {
+	private Message processMessageInAdapter(MessageWrapper<M> messageWrapperOriginal, PipeLineSession session, boolean manualRetry,
+											boolean retryStatusAlreadyChecked) throws ListenerException {
 		final long startProcessingTimestamp = System.currentTimeMillis();
 		final String logPrefix = getLogPrefix();
+
 		// Add all hideRegexes at the same point so sensitive information is hidden in a consistent manner
 		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(getAdapter(), messageWrapperOriginal.getId(), session);
 			 final IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(hideRegexPattern);
@@ -1257,10 +1281,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 						log.debug("{} activating TimeoutGuard with transactionTimeout [{}]s", logPrefix, getTransactionTimeout());
 						tg.activateGuard(getTransactionTimeout());
 
+						setPipelineCallerInMessageContext(getListener().getName(), compactedMessage);
+
 						pipeLineResult = adapter.processMessageWithExceptions(messageId, compactedMessage, session);
 
 						session.setExitState(pipeLineResult);
-						result=pipeLineResult.getResult();
+						result = pipeLineResult.getResult();
 
 						errorMessage = "exitState ["+pipeLineResult.getState()+"], result [";
 						if(!Message.isEmpty(result) && result.isRepeatable() && result.size() > ITransactionalStorage.MAXCOMMENTLEN - errorMessage.length()) { //Since we can determine the size, assume the message is preserved
@@ -1371,7 +1397,15 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				}
 			}
 			if (log.isDebugEnabled()) log.debug("{} messageId [{}] correlationId [{}] returning result [{}]", logPrefix, messageId, businessCorrelationId, result);
+
 			return result;
+		}
+	}
+
+	private void setPipelineCallerInMessageContext(String listenerOriginName, Message message) {
+		if (listenerOriginName != null) {
+			// preserve the Listener called in the metadata/context
+			message.getContext().put(MessageContext.CONTEXT_PIPELINE_CALLER, listenerOriginName);
 		}
 	}
 

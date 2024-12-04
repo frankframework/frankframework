@@ -48,6 +48,7 @@ import lombok.Lombok;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.gateway.HazelcastConfig.InstanceType;
 import org.frankframework.management.security.JwtVerifier;
 import org.frankframework.util.SpringUtils;
 
@@ -68,7 +69,7 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 	@Override
 	protected void onInit() {
 		Map<String, String> attributes = Map.of(HazelcastConfig.ATTRIBUTE_APPLICATION_KEY, instanceName);
-		hzInstance = HazelcastConfig.newHazelcastInstance("worker", attributes);
+		hzInstance = HazelcastConfig.newHazelcastInstance(InstanceType.WORKER, attributes);
 		SpringUtils.registerSingleton(getApplicationContext(), "hazelcastInboundInstance", hzInstance);
 		requestTopic = hzInstance.getTopic(requestTopicName);
 

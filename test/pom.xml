@@ -33,6 +33,56 @@
 			<type>war</type>
 		</dependency>
 
+		<!-- these runtime dependencies are required for the Spring Boot runner, so they are on the local classpath -->
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-filesystem</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-larva</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-ladybug-debugger</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-console-frontend</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-console-backend</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-akamai</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-cmis</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-aws</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-messaging</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-batch</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
 		<!-- provided scoped dependencies -->
 		<dependency>
 			<groupId>org.frankframework</groupId>
@@ -245,64 +295,6 @@
 	</reporting>
 
 	<profiles>
-		<profile>
-			<id>spring-boot</id>
-			<activation>
-				<!-- since this totally optional profile only forces all maven modules to be on the classpath it may alway be enabled -->
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<dependencies>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-filesystem</artifactId>
-					<scope>runtime</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-larva</artifactId>
-					<scope>runtime</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-ladybug-debugger</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-console-frontend</artifactId>
-					<scope>runtime</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-console-backend</artifactId>
-					<scope>runtime</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-akamai</artifactId>
-					<scope>runtime</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-cmis</artifactId>
-					<scope>runtime</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-aws</artifactId>
-					<scope>runtime</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-messaging</artifactId>
-					<scope>runtime</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-batch</artifactId>
-					<scope>runtime</scope>
-				</dependency>
-			</dependencies>
-		</profile>
 		<profile>
 			<id>database-drivers</id>
 			<activation>

@@ -1,17 +1,10 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   <div class="row">
-    <div class="col-lg-12 tabs-container">
-      <ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
-        <li [ngClass]="{ active: selectedConfiguration === 'All' }">
-          <a (click)="changeConfiguration('All')">Global</a>
-        </li>
-        <ng-container *ngFor="let configuration of this.configurations">
-          <li [ngClass]="{ active: selectedConfiguration === configuration.name }">
-            <a (click)="changeConfiguration(configuration.name)">{{ configuration.name }}</a>
-          </li>
-        </ng-container>
-      </ul>
-    </div>
+    <app-tab-list
+      allTabName="Global"
+      [tabs]="configurationNames"
+      (selectedTabChange)="changeConfiguration($event)"
+    ></app-tab-list>
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
         <div class="ibox-title summary">

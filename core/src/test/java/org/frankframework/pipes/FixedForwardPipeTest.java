@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
@@ -19,10 +18,9 @@ public class FixedForwardPipeTest extends PipeTestBase<FixedForwardPipe> {
 	public FixedForwardPipe createPipe() throws ConfigurationException {
 		return new FixedForwardPipe() {
 			@Override
-			public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+			public PipeRunResult doPipe(Message message, PipeLineSession session) {
 				return null;
 			}
-
 		};
 	}
 
@@ -31,7 +29,6 @@ public class FixedForwardPipeTest extends PipeTestBase<FixedForwardPipe> {
 		configureAndStartPipe();
 		assertFalse(pipe.skipPipe(null, session));
 	}
-
 
 	@Test
 	public void testSkipOnEmptyInput() throws Exception {
@@ -42,7 +39,6 @@ public class FixedForwardPipeTest extends PipeTestBase<FixedForwardPipe> {
 		assertTrue(pipe.skipPipe(new Message((String)null), session));
 		assertFalse(pipe.skipPipe(new Message("a"), session));
 	}
-
 
 	public void testSkipOnOnlyIfSessionKey(String onlyIfValue, String sessionKeyValue, boolean expected) throws Exception {
 		pipe.setOnlyIfSessionKey("onlyIfSessionKey");
@@ -140,7 +136,6 @@ public class FixedForwardPipeTest extends PipeTestBase<FixedForwardPipe> {
 	public void testUnlessSessionKeyNoIfValue2() throws Exception {
 		testSkipOnUnlessSessionKey(null, "a", true);
 	}
-
 
 	public void testSkipOnIfParam(String ifValue, String paramValue, boolean expected) throws Exception {
 		pipe.setIfParam("param");

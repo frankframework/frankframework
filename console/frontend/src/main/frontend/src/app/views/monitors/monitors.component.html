@@ -1,15 +1,11 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   <div class="row">
-    <div class="col-lg-12 tabs-container">
-      <ul class="nav nav-tabs" role="menu">
-        <li
-          *ngFor="let configuration of configurations"
-          [ngClass]="{ active: selectedConfiguration === configuration.name }"
-        >
-          <a (click)="changeConfiguration(configuration.name)">{{ configuration.name }}</a>
-        </li>
-      </ul>
-    </div>
+    <app-configuration-tab-list
+      queryParamName="configuration"
+      [showAllTab]="false"
+      [configurations]="configurations"
+      (selectedTabChange)="changeConfiguration($event)"
+    ></app-configuration-tab-list>
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
         <div *ngIf="monitors.length > 0; else noMonitorsFound" class="ibox-title summary">
@@ -154,7 +150,7 @@
                 <label class="col-sm-3 control-label">Destinations</label>
                 <div class="col-sm-2" *ngFor="let destination of destinations; index as index">
                   <span class="form-control m-b" style="border: none"
-                    ><input type="checkbox" name="destination" [(ngModel)]="monitor.activeDestinations[index]" />
+                    ><input type="checkbox" name="destination" [(ngModel)]="monitor.activeDestinations[destination]" />
                     {{ destination }}</span
                   >
                 </div>

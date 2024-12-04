@@ -16,8 +16,10 @@
 package org.frankframework.management.gateway;
 
 import java.util.Map;
-import java.util.Properties;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -50,8 +52,12 @@ public class HazelcastConfig {
 		System.setProperty("hazelcast.config.schema.validation.enabled", "false");
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		String resource = "ff-hazelcast.xml";
-		Properties properties = new PropertyLoader(classLoader, "hazelcast.properties");
+		PropertyLoader properties = new PropertyLoader(classLoader, "hazelcast.properties");
 		Config config = Config.loadFromClasspath(classLoader, resource, properties);
+
+		if (properties.getBoolean("hazelcast.liteMember", false)) {
+			config.setLiteMember(true);
+		}
 
 		// Not recommended for production environments, and frankly better to configure one's cluster properly to begin with.
 		config.getNetworkConfig().getJoin().getAutoDetectionConfig().setEnabled(false);
@@ -59,6 +65,12 @@ public class HazelcastConfig {
 		return config;
 	}
 
+	enum InstanceType {
+		/** outbound / controller */
+		CONTROLLER,
+		/** inbound / executor */
+		WORKER
+	}
 
 	private static String computeName() {
 		int instanceNum = FACTORY_ID_GEN.incrementAndGet();
@@ -68,24 +80,22 @@ public class HazelcastConfig {
 	/**
 	 * Type such as console, worker or flow
 	 */
-	static HazelcastInstance newHazelcastInstance(String type) {
-		return newHazelcastInstance(type, null);
-	}
-	static HazelcastInstance newHazelcastInstance(String type, Map<String, String> attributes) {
+	static HazelcastInstance newHazelcastInstance(@Nonnull InstanceType type, @Nonnull Map<String, String> attributes) {
+		Objects.requireNonNull(attributes);
+
 		Config config = HazelcastConfig.createHazelcastConfig();
 		String name = computeName();
 
-		config.getMemberAttributeConfig().setAttribute(ATTRIBUTE_TYPE_KEY, type);
+		config.getMemberAttributeConfig().setAttribute(ATTRIBUTE_TYPE_KEY, type.name());
 		config.getMemberAttributeConfig().setAttribute(ATTRIBUTE_NAME_KEY, name);
 		if(VERSION != null) { // this value will be present once the artifact has been created, tests will fail otherwise.
 			config.getMemberAttributeConfig().setAttribute(ATTRIBUTE_VERSION_KEY, VERSION);
 		}
-		if(attributes != null) {
-			attributes.entrySet().stream()
-				.filter(e -> StringUtils.isNotBlank(e.getValue()))
-				.forEach(e -> config.getMemberAttributeConfig().setAttribute(e.getKey(), e.getValue())
-			);
-		}
+
+		attributes.entrySet().stream()
+			.filter(e -> StringUtils.isNotBlank(e.getValue()))
+			.forEach(e -> config.getMemberAttributeConfig().setAttribute(e.getKey(), e.getValue())
+		);
 
 		return HazelcastInstanceFactory.newHazelcastInstance(config, name, new DefaultNodeContext());
 	}

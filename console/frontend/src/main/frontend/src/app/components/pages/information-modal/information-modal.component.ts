@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { copyToClipboard } from '../../../utils';
 import { ToastService } from '../../../services/toast.service';
@@ -8,6 +8,7 @@ import { ToDateDirective } from '../../to-date.directive';
 import { HumanFileSizePipe } from '../../../pipes/human-file-size.pipe';
 import { ServerInfoService } from '../../../services/server-info.service';
 import { Subscription } from 'rxjs';
+import { ServerTimeService } from '../../../services/server-time.service';
 
 @Component({
   selector: 'app-information-modal',
@@ -17,6 +18,7 @@ import { Subscription } from 'rxjs';
   imports: [CommonModule, TimeSinceDirective, ToDateDirective, HumanFileSizePipe],
 })
 export class InformationModalComponent implements OnInit, OnDestroy {
+  protected readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
   protected initialized: boolean = false;
   protected framework: {
     name: string;
@@ -49,16 +51,13 @@ export class InformationModalComponent implements OnInit, OnDestroy {
   };
   protected uptime: number = 0;
 
+  private activeModal: NgbActiveModal = inject(NgbActiveModal);
+  private toastService: ToastService = inject(ToastService);
+  private serverInfoService: ServerInfoService = inject(ServerInfoService);
   private serverInfoSubscription?: Subscription;
 
-  constructor(
-    private activeModal: NgbActiveModal,
-    private toastService: ToastService,
-    private serverInfoService: ServerInfoService,
-  ) {}
-
   ngOnInit(): void {
-    this.serverInfoService.refresh();
+    this.refresh();
     this.subscribeToServerInfo();
   }
 
@@ -92,6 +91,6 @@ export class InformationModalComponent implements OnInit, OnDestroy {
   }
 
   refresh(): void {
-    this.serverInfoService.refresh();
+    this.serverInfoService.refresh().subscribe();
   }
 }

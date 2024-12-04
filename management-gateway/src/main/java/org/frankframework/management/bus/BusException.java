@@ -15,6 +15,8 @@
 */
 package org.frankframework.management.bus;
 
+import java.io.Serial;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,12 +30,12 @@ import org.frankframework.core.IbisException;
 public class BusException extends RuntimeException {
 	private static final Logger LOG = LogManager.getLogger(BusException.class);
 
-	private static final long serialVersionUID = 1L;
+	private static final @Serial long serialVersionUID = 1L;
 
 	private final @Getter int statusCode;
 
 	/**
-	 * Seen as WARNING
+	 * Seen as WARNING / HTTP Bad Request
 	 */
 	public BusException(String message) {
 		this(message, 400);
@@ -47,7 +49,7 @@ public class BusException extends RuntimeException {
 	}
 
 	/**
-	 * Seen as ERROR
+	 * Seen as ERROR / HTTP Internal Server Error.
 	 * Stacktrace information is logged but not passed to the parent to limit sensitive information being sent over the 'bus'.
 	 */
 	public BusException(String message, Throwable exception) {

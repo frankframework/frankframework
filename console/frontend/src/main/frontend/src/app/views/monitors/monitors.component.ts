@@ -79,10 +79,10 @@ export class MonitorsComponent implements OnInit, OnDestroy {
       for (const monitor of this.monitors) {
         monitor.displayName = monitor.name;
         if (monitor.raised) this.totalRaised++;
-        monitor.activeDestinations = [];
+        monitor.activeDestinations = {};
         for (const index in this.destinations) {
           const destination = this.destinations[index];
-          monitor.activeDestinations[index] = monitor.destinations.includes(destination);
+          monitor.activeDestinations[destination] = monitor.destinations.includes(destination);
         }
       }
     });
