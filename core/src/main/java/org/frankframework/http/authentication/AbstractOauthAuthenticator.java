@@ -15,6 +15,8 @@
 */
 package org.frankframework.http.authentication;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
 
@@ -26,25 +28,23 @@ import org.apache.http.client.methods.HttpRequestBase;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.Logger;
 
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.JacksonUtils;
-import org.frankframework.util.LogUtil;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.frankframework.util.StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
-public abstract class AbstractOauthAuthenticator implements IAuthenticator {
-
-	protected final Logger log = LogUtil.getLogger(this);
+@Log4j2
+public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator {
 
 	protected final AbstractHttpSession session;
 	protected final URI authorizationEndpoint;
@@ -63,7 +63,7 @@ public abstract class AbstractOauthAuthenticator implements IAuthenticator {
 		this.overwriteExpiryMs = session.getTokenExpiry() * 1000;
 	}
 
-	protected abstract HttpEntityEnclosingRequestBase createRequest(Credentials credentials) throws HttpAuthenticationException;
+	protected abstract HttpEntityEnclosingRequestBase createRequest(Credentials credentials, List<NameValuePair> parameters) throws HttpAuthenticationException;
 
 	protected HttpEntityEnclosingRequestBase createPostRequestWithForm(URI uri, List<NameValuePair> formParameters) throws HttpAuthenticationException {
 		try {
@@ -80,7 +80,7 @@ public abstract class AbstractOauthAuthenticator implements IAuthenticator {
 	}
 
 	private void refreshAccessToken(Credentials credentials) throws HttpAuthenticationException {
-		HttpRequestBase request = createRequest(credentials);
+		HttpRequestBase request = createRequest(credentials, new ArrayList<>());
 
 		CloseableHttpClient apacheHttpClient = session.getHttpClient();
 		TimeoutGuard tg = new TimeoutGuard(1 + session.getTimeout() / 1000, "token retrieval") {

@@ -1,6 +1,8 @@
 package org.frankframework.http.authentication;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -16,8 +18,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.testutil.ParameterBuilder;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -172,7 +172,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setClientId(MockTokenServer.CLIENT_ID);
 		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
-		sender.setAuthenticationMethod(AbstractHttpSession.AuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH);
+		sender.setOauthAuthenticationMethod(AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH);
 
 		sender.configure();
 		sender.start();
@@ -241,7 +241,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH);
 
 		ConfigurationException exception = assertThrows(ConfigurationException.class, ()->sender.configure());
-		MatcherAssert.assertThat(exception.getMessage(), CoreMatchers.containsString("clientId is required"));
+		assertThat(exception.getMessage(), containsString("clientId is required"));
 	}
 
 	@Test

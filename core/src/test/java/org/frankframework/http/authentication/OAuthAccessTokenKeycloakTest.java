@@ -48,12 +48,12 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 
 	public static Stream<Arguments> parameters() {
 		return Stream.of(
-				Arguments.of(AbstractHttpSession.AuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH, true),
-				Arguments.of(AbstractHttpSession.AuthenticationMethod.CLIENT_CREDENTIALS_QUERY_PARAMETERS, true),
+				Arguments.of(AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH, true),
+				Arguments.of(AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_QUERY_PARAMETERS, true),
 
 				// Keycloak does not store passwords directly, so resource owner password credentials is impossible.
-				Arguments.of(AbstractHttpSession.AuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH, false),
-				Arguments.of(AbstractHttpSession.AuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS, false)
+				Arguments.of(AbstractHttpSession.OauthAuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH, false),
+				Arguments.of(AbstractHttpSession.OauthAuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS, false)
 		);
 	}
 
@@ -79,8 +79,8 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 
 	@MethodSource("parameters")
 	@ParameterizedTest
-	void testGetAccessToken(AbstractHttpSession.AuthenticationMethod authenticationMethod, boolean shouldResolveSuccessfully) throws Exception {
-		var authenticator = authenticationMethod.newAuthenticator(sender);
+	void testGetAccessToken(AbstractHttpSession.OauthAuthenticationMethod oauthAuthenticationMethod, boolean shouldResolveSuccessfully) throws Exception {
+		var authenticator = oauthAuthenticationMethod.newAuthenticator(sender);
 
 		if (shouldResolveSuccessfully) {
 			String accessToken = authenticator.getOrRefreshAccessToken(credentials, false);

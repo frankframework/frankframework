@@ -21,7 +21,7 @@ import org.frankframework.util.StreamUtil;
 /**
  * Tests whether tokenRequests are generated as expected according to the given input
  */
-public class OAuthAccessTokenManagerRequestTest {
+public class OAuthAccessTokenRequestTest {
 
 	private static final String CLIENT_ID = "fakeClientId";
 
@@ -49,7 +49,7 @@ public class OAuthAccessTokenManagerRequestTest {
 		httpSender.configure();
 		httpSender.start();
 
-		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.AuthenticationMethod.CLIENT_CREDENTIALS_QUERY_PARAMETERS.newAuthenticator(httpSender);
+		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_QUERY_PARAMETERS.newAuthenticator(httpSender);
 		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials());
 
 		assertEquals("POST", request.getMethod());
@@ -69,7 +69,7 @@ public class OAuthAccessTokenManagerRequestTest {
 		httpSender.configure();
 		httpSender.start();
 
-		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.AuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
+		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
 		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials());
 
 		assertEquals("POST", request.getMethod());
@@ -91,7 +91,7 @@ public class OAuthAccessTokenManagerRequestTest {
 		httpSender.configure();
 		httpSender.start();
 
-		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.AuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS.newAuthenticator(httpSender);
+		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS.newAuthenticator(httpSender);
 		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials());
 
 		assertEquals("POST", request.getMethod());
@@ -113,7 +113,7 @@ public class OAuthAccessTokenManagerRequestTest {
 		httpSender.configure();
 		httpSender.start();
 
-		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.AuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
+		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
 		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials());
 
 		assertEquals("POST", request.getMethod());

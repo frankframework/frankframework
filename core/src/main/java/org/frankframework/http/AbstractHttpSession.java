@@ -76,7 +76,7 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.http.authentication.ClientCredentialsBasicAuth;
 
 import org.frankframework.http.authentication.ClientCredentialsQueryParameters;
-import org.frankframework.http.authentication.IAuthenticator;
+import org.frankframework.http.authentication.IOauthAuthenticator;
 import org.frankframework.http.authentication.OAuthPreferringAuthenticationStrategy;
 
 import org.frankframework.http.authentication.ResourceOwnerPasswordCredentialsBasicAuth;
@@ -199,10 +199,10 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private @Getter String clientSecret;
 	private @Getter String scope;
 
-	private @Getter AuthenticationMethod authenticationMethod;
-	private @Getter IAuthenticator authenticator;
+	private @Getter OauthAuthenticationMethod oauthAuthenticationMethod;
+	private @Getter IOauthAuthenticator authenticator;
 
-	public enum AuthenticationMethod {
+	public enum OauthAuthenticationMethod {
 		/**
 		 * Requires {@literal tokenEndpoint}, {@literal clientId} and {@literal clientSecret} to be set.
 		 * Implements <a href="https://datatracker.ietf.org/doc/html/rfc6749#section-4.4">rfc6749</a>. The {@literal clientId} and {@literal clientSecret} are sent as basic authorization
@@ -233,7 +233,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		 */
 		RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS;
 
-		public IAuthenticator newAuthenticator(AbstractHttpSession session) throws HttpAuthenticationException {
+		public IOauthAuthenticator newAuthenticator(AbstractHttpSession session) throws HttpAuthenticationException {
 			return switch (this) {
 				case CLIENT_CREDENTIALS_BASIC_AUTH -> new ClientCredentialsBasicAuth(session);
 				case CLIENT_CREDENTIALS_QUERY_PARAMETERS -> new ClientCredentialsQueryParameters(session);
@@ -243,7 +243,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		}
 
 		@Nullable
-		public static AuthenticationMethod determineAuthenticationMethod(AbstractHttpSession session) {
+		public static OauthAuthenticationMethod determineOauthAuthenticationMethod(AbstractHttpSession session) {
 			if (session.getTokenEndpoint() == null) {
 				return null;
 			}
@@ -339,16 +339,16 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 			throw new ConfigurationException("maxConnections is set to ["+getMaxConnections()+"], which is not enough for adequate operation");
 		}
 
-		if (authenticationMethod == null) {
+		if (oauthAuthenticationMethod == null) {
 			if (getTokenEndpoint() != null) {
 				ConfigurationWarnings.add(this, log, "Use authenticationMethod to explicitly set the Oauth2 method to be used. This is currently automatically determined, but will be removed in the future.");
 			}
-			authenticationMethod = AuthenticationMethod.determineAuthenticationMethod(this);
+			oauthAuthenticationMethod = OauthAuthenticationMethod.determineOauthAuthenticationMethod(this);
 		}
 
-		if (authenticationMethod != null) {
+		if (oauthAuthenticationMethod != null) {
 			try {
-				authenticator = authenticationMethod.newAuthenticator(this);
+				authenticator = oauthAuthenticationMethod.newAuthenticator(this);
 				authenticator.configure();
 			} catch (HttpAuthenticationException e) {
 				throw new ConfigurationException(e);
@@ -759,8 +759,8 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	/**
 	 * Only used when {@literal tokenEndpoint} has been configured. Sets the OAuth authentication method and controls which authentication flow should be used.
 	 */
-	public void setAuthenticationMethod(AuthenticationMethod authenticationMethod) {
-		this.authenticationMethod = authenticationMethod;
+	public void setOauthAuthenticationMethod(OauthAuthenticationMethod oauthAuthenticationMethod) {
+		this.oauthAuthenticationMethod = oauthAuthenticationMethod;
 	}
 
 	/** Proxy host */
