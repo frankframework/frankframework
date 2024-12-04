@@ -298,7 +298,6 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 		sslSocketFactory = getSSLConnectionSocketFactory(); //Configure it here, so we can handle exceptions
 
-		preAuthenticate();
 		configureRedirectStrategy();
 
 		httpClientContext = defaultHttpClientContext; //Ensure a local instance is used when no SharedResource is present.
@@ -450,12 +449,17 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
 	}
 
-	private void preAuthenticate() {
+	/**
+	 * Adds a new authState instance to the clientContext when none exists. The authState is in {@literal CHALLENGED} state, which causes the request to always
+	 * require a challenge. A new authentication scheme (basic auth or oauth) is created for each request.
+	 * {@link OAuthAccessTokenManager} decides if and when to refresh the access token.
+	 */
+	private void preAuthenticate(HttpClientContext clientContext) {
 		if (credentials != null && !StringUtils.isEmpty(credentials.getUsername())) {
-			AuthState authState = defaultHttpClientContext.getTargetAuthState();
+			AuthState authState = clientContext.getTargetAuthState();
 			if (authState==null) {
 				authState = new AuthState();
-				defaultHttpClientContext.setAttribute(HttpClientContext.TARGET_AUTH_STATE, authState);
+				clientContext.setAttribute(HttpClientContext.TARGET_AUTH_STATE, authState);
 			}
 			authState.setState(AuthProtocolState.CHALLENGED);
 			authState.update(getPreferredAuthenticationScheme().createScheme(), getCredentials());
@@ -509,6 +513,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 		CloseableHttpClient client = getHttpClient();
 		HttpClientContext context = httpClientContext != null ? httpClientContext : getOrCreateHttpClientContext(client, session);
+		preAuthenticate(context);
 		log.trace("executing request using HttpClient [{}] and HttpContext [{}]", client::hashCode, () -> context);
 		return client.execute(targetHost, httpRequestBase, context);
 	}
