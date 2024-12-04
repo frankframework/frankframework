@@ -17,7 +17,8 @@ export class HasAccessToLinkDirective {
       linkName = [linkName];
     }
 
-    lastValueFrom(this.authService.loadPermissions())
+    this.authService
+      .loadPermissions()
       .then(() => {
         const hasAccess = linkName.some((name) => this.authService.hasAccessToLink(name));
 

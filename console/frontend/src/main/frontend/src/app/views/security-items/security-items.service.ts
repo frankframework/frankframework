@@ -168,6 +168,11 @@ export class SecurityItemsService {
   private readonly http: HttpClient = inject(HttpClient);
   private readonly appService: AppService = inject(AppService);
 
+  clearCache(): void {
+    this.securityItemsCache = null;
+    this.endpointsWithRolesCache = null;
+  }
+
   getSecurityItems(): Observable<SecurityItems> {
     if (this.securityItemsCache) {
       return of(this.securityItemsCache);

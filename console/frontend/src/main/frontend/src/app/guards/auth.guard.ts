@@ -1,7 +1,6 @@
 import { CanActivateFn } from '@angular/router';
 import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
-import { lastValueFrom } from 'rxjs';
 
 export const authGuard: CanActivateFn = async (route): Promise<boolean> => {
   const authService = inject(AuthService);
@@ -10,6 +9,6 @@ export const authGuard: CanActivateFn = async (route): Promise<boolean> => {
   if (!linkName) {
     return true;
   }
-  await lastValueFrom(authService.loadPermissions());
+  await authService.loadPermissions();
   return authService.hasAccessToLink(linkName);
 };

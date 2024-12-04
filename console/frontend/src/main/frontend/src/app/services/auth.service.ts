@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { AppService } from '../app.service';
 import { HttpClient } from '@angular/common/http';
-import { combineLatest, map, Observable, of, tap, shareReplay } from 'rxjs';
+import { combineLatest, map, Observable, tap, shareReplay } from 'rxjs';
 import {
   Link,
   LinkName,
@@ -18,15 +18,37 @@ export class AuthService {
   private readonly appService: AppService = inject(AppService);
   private readonly http: HttpClient = inject(HttpClient);
   private readonly securityItemsService: SecurityItemsService = inject(SecurityItemsService);
-  private readonly permissionsObservable$: Observable<void>;
 
   private loggedIn = false;
   private allowedRoles: string[] = [];
   private allowedLinks: Link[] = [];
 
-  constructor() {
-    this.permissionsObservable$ = this.initializePermissionsObservable();
-  }
+  /* Currently not being used because servlet handles basic auth */
+  /* login(username: string, password: string): void {
+    if (username != 'anonymous') {
+      this.authToken = this.Base64.encode(`${username}:${password}`);
+      sessionStorage.setItem('authToken', this.authToken);
+    }
+    const location = sessionStorage.getItem('location') || 'status';
+    const absUrl = window.location.href.split('login')[0];
+    window.location.href = absUrl + location;
+    window.location.reload();
+  } */
+  /* loggedin(): void {
+    if (token != null && token != 'null') {
+      if (this.router.url.includes('login'))
+        this.router.navigateByUrl(
+          sessionStorage.getItem('location') || 'status',
+        );
+    } else {
+      if (this.consoleState.init > 0) {
+        if (!this.router.url.includes('login'))
+          sessionStorage.setItem('location', this.router.url || 'status');
+        this.router.navigateByUrl('login');
+      }
+    }
+  } */
+  private loadingPermissionsPromise?: Promise<void>;
 
   setLoggedIn(username?: string): void {
     if (this.isNotAnonymous(username)) {
@@ -38,23 +60,20 @@ export class AuthService {
     return !!username && username !== 'anonymous';
   }
 
-  loadPermissions(): Observable<void> {
-    return this.permissionsObservable$;
-  }
-
-  private initializePermissionsObservable(): Observable<void> {
-    return this.fetchPermissionData().pipe(
-      tap(([securityItems, links]) => this.updatePermissions(securityItems, links)),
-      map(() => {}),
-      shareReplay(1),
-    );
-  }
-
-  private fetchPermissionData(): Observable<[SecurityItems, Links]> {
-    return combineLatest([
-      this.securityItemsService.getSecurityItems(),
-      this.securityItemsService.getEndpointsWithRoles(),
-    ]);
+  loadPermissions(): Promise<void> {
+    if (this.loadingPermissionsPromise) {
+      return this.loadingPermissionsPromise;
+    }
+    this.loadingPermissionsPromise = new Promise((resolve) => {
+      combineLatest([
+        this.securityItemsService.getSecurityItems(),
+        this.securityItemsService.getEndpointsWithRoles(),
+      ]).subscribe(([securityItems, links]) => {
+        this.updatePermissions(securityItems, links);
+        resolve();
+      });
+    });
+    return this.loadingPermissionsPromise;
   }
 
   private updatePermissions(securityItems: SecurityItems, links: Links): void {
@@ -63,7 +82,7 @@ export class AuthService {
   }
 
   private filterAllowedRoles(securityRoles: SecurityRole[]): string[] {
-    return securityRoles.filter((role) => role.allowed).map((role) => role.name);
+    return securityRoles.filter(({ allowed }) => allowed).map(({ name }) => name);
   }
 
   private filterAllowedLinks(links: Links): Link[] {
@@ -82,6 +101,7 @@ export class AuthService {
 
   logout(): Observable<object> {
     sessionStorage.clear();
+    this.securityItemsService.clearCache();
     this.loggedIn = false;
     return this.http.get(`${this.appService.getServerPath()}iaf/api/logout`);
   }
