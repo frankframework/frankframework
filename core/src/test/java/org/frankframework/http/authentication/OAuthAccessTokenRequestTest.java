@@ -55,7 +55,7 @@ public class OAuthAccessTokenRequestTest {
 
 		assertEquals("POST", request.getMethod());
 		assertHeaderPresent(request, "Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-		assertEquals("grant_type=client_credentials&scope=email&client_secret=fakeClientSecret&client_id=fakeClientId", StreamUtil.streamToString(request.getEntity()
+		assertEquals("client_secret=fakeClientSecret&client_id=fakeClientId&grant_type=client_credentials&scope=email", StreamUtil.streamToString(request.getEntity()
 				.getContent(), "\n", "UTF-8"));
 		assertEquals("[Content-Type: application/x-www-form-urlencoded; charset=UTF-8,Content-Length: 95,Chunked: false]", request.getEntity()
 				.toString());
@@ -97,7 +97,7 @@ public class OAuthAccessTokenRequestTest {
 
 		assertEquals("POST", request.getMethod());
 		assertHeaderPresent(request, "Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-		assertEquals("grant_type=password&scope=email&username=fakeCredentialUserName&password=fakeCredentialPassword&client_id=fakeClientId&client_secret=fakeClientSecret", StreamUtil.streamToString(request.getEntity()
+		assertEquals("client_id=fakeClientId&client_secret=fakeClientSecret&grant_type=password&scope=email&username=fakeCredentialUserName&password=fakeCredentialPassword", StreamUtil.streamToString(request.getEntity()
 				.getContent(), "\n", "UTF-8"));
 		assertEquals("[Content-Type: application/x-www-form-urlencoded; charset=UTF-8,Content-Length: 149,Chunked: false]", request.getEntity()
 				.toString());
