@@ -10,6 +10,8 @@
 		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-5.2.xsd
 		"
 	>
+	<bean id="LogPropertiesConfigurer" class="org.frankframework.lifecycle.LogPropertiesConfigurer" />
+
 <!-- 	<integration:control-bus dispatcher-pool-size="25" auto-create-channels="true"/> -->
 	<integration:publish-subscribe-channel id="frank-management-bus" />
 
