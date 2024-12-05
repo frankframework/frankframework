@@ -28,7 +28,7 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 	@Test
 	public void testBrowseMessage() throws Exception {
 		testActionAndTopicHeaders(
-				"/configurations/configuration/adapters/adapterName/receivers/storageSourceName/stores/error/messages/1",
+				"/configurations/configuration/adapters/adapterName/receivers/storageSourceName/stores/error/messages/MQ==", // MQ== is the Base64 encoded value for 1
 				"MESSAGE_BROWSER",
 				"GET"
 		);
@@ -37,7 +37,7 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 	@Test
 	public void testDownloadMessage() throws Exception {
 		testActionAndTopicHeaders(
-				"/configurations/configuration/adapters/adapterName/receivers/storageSourceName/stores/error/messages/1/download",
+				"/configurations/configuration/adapters/adapterName/receivers/storageSourceName/stores/error/messages/MQ==/download", // MQ== is the Base64 encoded value for 1
 				"MESSAGE_BROWSER",
 				"DOWNLOAD"
 		);
@@ -75,7 +75,7 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 		ArgumentCaptor<Message<Object>> requestCapture = ArgumentCaptor.forClass(Message.class);
 		doCallRealMethod().when(outputGateway).sendAsyncMessage(requestCapture.capture());
 
-		mockMvc.perform(MockMvcRequestBuilders.put("/configurations/configuration/adapters/adapterName/receivers/receiverName/stores/Error/messages/1"))
+		mockMvc.perform(MockMvcRequestBuilders.put("/configurations/configuration/adapters/adapterName/receivers/receiverName/stores/Error/messages/MQ==")) // MQ== is the Base64 encoded value for 1
 				.andExpect(MockMvcResultMatchers.status().isOk());
 
 		Message<Object> capturedRequest = Awaitility.await().atMost(1500, TimeUnit.MILLISECONDS).until(requestCapture::getValue, Objects::nonNull);
@@ -131,7 +131,7 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 		ArgumentCaptor<Message<Object>> requestCapture = ArgumentCaptor.forClass(Message.class);
 		doCallRealMethod().when(outputGateway).sendAsyncMessage(requestCapture.capture());
 
-		mockMvc.perform(MockMvcRequestBuilders.delete("/configurations/configuration/adapters/adapterName/receivers/storageSourceName/stores/Error/messages/1"))
+		mockMvc.perform(MockMvcRequestBuilders.delete("/configurations/configuration/adapters/adapterName/receivers/storageSourceName/stores/Error/messages/MQ==")) // MQ== is the Base64 encoded value for 1
 				.andExpect(MockMvcResultMatchers.status().isOk());
 
 		Message<Object> capturedRequest = Awaitility.await().atMost(1500, TimeUnit.MILLISECONDS).until(requestCapture::getValue, Objects::nonNull);
