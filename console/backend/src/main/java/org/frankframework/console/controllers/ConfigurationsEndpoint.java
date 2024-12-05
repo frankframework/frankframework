@@ -174,7 +174,7 @@ public class ConfigurationsEndpoint {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.MANAGE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		builder.addHeader(BUS_HEADER_VERSION, HttpUtils.urlDecode(encodedVersion));
+		builder.addHeader(BUS_HEADER_VERSION, HttpUtils.decodeBase64(encodedVersion));
 
 		if (json.containsKey("activate")) {
 			Object obj = json.get("activate");

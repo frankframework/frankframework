@@ -126,7 +126,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 
 	private static String createEndpointUrlFromRequest(HttpServletRequest request) {
 		String requestUrl = request.getRequestURL().toString(); // raw request -> schema+hostname+port/context-path/servlet-path/+request-uri
-		requestUrl = HttpUtils.urlDecode(requestUrl);
+		requestUrl = HttpUtils.decodeBase64(requestUrl);
 		String requestPath = request.getPathInfo(); // -> the remaining path, starts with a /. Is automatically decoded by the web container!
 		return requestUrl.substring(0, requestUrl.indexOf(requestPath));
 	}
