@@ -50,7 +50,6 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 import java.util.UUID;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SamlAssertionOauth extends AbstractOauthAuthenticator {
@@ -245,8 +244,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 	}
 
 	@Override
-	protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials) throws HttpAuthenticationException {
-		List<NameValuePair> parameters = new ArrayList<>();
+	protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials, List<NameValuePair> parameters) throws HttpAuthenticationException {
 		parameters.add(new BasicNameValuePair("grant_type", SAML2_BEARER_GRANT_TYPE));
 		parameters.add(new BasicNameValuePair("client_id", session.getClientId()));
 		parameters.add(new BasicNameValuePair("client_secret", session.getClientSecret()));

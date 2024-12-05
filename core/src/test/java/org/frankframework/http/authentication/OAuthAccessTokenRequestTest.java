@@ -134,7 +134,7 @@ public class OAuthAccessTokenRequestTest {
 	@Test
 	void testSamlAssertion() throws Exception {
 		httpSender.setTokenEndpoint("fakeEndpoint");
-		httpSender.setAuthenticationMethod(AbstractHttpSession.AuthenticationMethod.SAML_ASSERTION);
+		httpSender.setOauthAuthenticationMethod(AbstractHttpSession.OauthAuthenticationMethod.SAML_ASSERTION);
 
 		httpSender.setPrivateKey("-----BEGIN PRIVATE KEY-----\n" +
 				"MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGAa5meBF/8w4RETkBj\n" +
@@ -182,8 +182,8 @@ public class OAuthAccessTokenRequestTest {
 		httpSender.configure();
 		httpSender.start();
 
-		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.AuthenticationMethod.SAML_ASSERTION.newAuthenticator(httpSender);
-		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials());
+		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.SAML_ASSERTION.newAuthenticator(httpSender);
+		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials(), new ArrayList<>());
 
 		final String body = StreamUtil.streamToString(request.getEntity().getContent(), "\n", "UTF-8");
 		final String decodedBody = URLDecoder.decode(body, StandardCharsets.UTF_8);

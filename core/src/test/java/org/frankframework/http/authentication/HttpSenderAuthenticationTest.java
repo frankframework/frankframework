@@ -563,7 +563,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	void testSamlAssertion() throws Exception {
 		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
 		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH);
-		sender.setAuthenticationMethod(AbstractHttpSession.AuthenticationMethod.SAML_ASSERTION);
+		sender.setOauthAuthenticationMethod(AbstractHttpSession.OauthAuthenticationMethod.SAML_ASSERTION);
 
 		sender.setPrivateKey("-----BEGIN PRIVATE KEY-----\n" +
 				"MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGAa5meBF/8w4RETkBj\n" +

@@ -31,7 +31,7 @@ import java.util.List;
 
 import static org.frankframework.util.StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
-public abstract class AbstractAuthenticator implements IAuthenticator {
+public abstract class AbstractAuthenticator implements IOauthAuthenticator {
 
 	protected final AbstractHttpSession session;
 
