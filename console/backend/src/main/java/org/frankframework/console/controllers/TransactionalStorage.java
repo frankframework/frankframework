@@ -63,7 +63,7 @@ public class TransactionalStorage {
 	public ResponseEntity<?> browseMessage(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapterName,
 										   @PathVariable("storageSource") StorageSource storageSource, @PathVariable("storageSourceName") String storageSourceName,
 										   @PathVariable("processState") String processState, @PathVariable("messageId") String messageId) {
-		// messageId is base64 encoded, because it can contain '/' in ExchangeMailListener
+		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
 		return getMessageResponseEntity(configuration, adapterName, storageSource, storageSourceName, processState, HttpUtils.decodeBase64(messageId),
 				RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.GET)
 		);
@@ -75,7 +75,7 @@ public class TransactionalStorage {
 	public ResponseEntity<?> downloadMessage(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapterName,
 											 @PathVariable("storageSource") StorageSource storageSource, @PathVariable("storageSourceName") String storageSourceName,
 											 @PathVariable("processState") String processState, @PathVariable("messageId") String messageId) {
-		// messageId is base64 encoded, because it can contain '/' in ExchangeMailListener
+		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
 		return getMessageResponseEntity(configuration, adapterName, storageSource, storageSourceName, processState, HttpUtils.decodeBase64(messageId),
 				RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD)
 		);
@@ -94,7 +94,7 @@ public class TransactionalStorage {
 		StreamingResponseBody stream = out -> {
 			try (ZipOutputStream zos = new ZipOutputStream(out)) {
 				for (String messageId : messageIdArray) {
-					// messageId is base64 encoded, because it can contain '/' in ExchangeMailListener
+					// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
 					String decodedMessageId = HttpUtils.decodeBase64(messageId);
 
 					builder.addHeader("messageId", decodedMessageId);
@@ -177,7 +177,7 @@ public class TransactionalStorage {
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
 		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
 
-		// messageId is base64 encoded, because it can contain '/' in ExchangeMailListener
+		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
 		builder.addHeader("messageId", HttpUtils.decodeBase64(messageId));
 		return frankApiService.callAsyncGateway(builder);
 	}
@@ -225,7 +225,7 @@ public class TransactionalStorage {
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
 		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
 
-		// messageId is base64 encoded, because it can contain '/' in ExchangeMailListener
+		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
 		messageId = HttpUtils.decodeBase64(messageId);
 
 		builder.addHeader("messageId", messageId);
