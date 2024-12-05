@@ -15,9 +15,10 @@
 */
 package org.frankframework.scheduler.job;
 
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
@@ -98,7 +99,7 @@ public class SendMessageJob extends JobDef {
 	}
 
 	/**
-	 * The sole purpose of this calls is to prevent AOP wrapping around the sendMessage / sendMessageOrThrow methods.
+	 * The sole purpose of this call is to prevent AOP wrapping around the sendMessage / sendMessageOrThrow methods.
 	 * This pollutes the Ladybug with 'unwanted' reports about jobs being fired, without any useful information in the report.
 	 * See org.frankframework.ibistesttool.IbisDebuggerAdvice for the exclusion
 	 * 

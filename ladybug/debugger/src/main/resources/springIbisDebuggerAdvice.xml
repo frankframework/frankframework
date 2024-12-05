@@ -10,6 +10,7 @@
 		"
 	>
 
+	<bean name="debuggerActive" class="org.frankframework.ladybug.DebuggerActive" />
 	<bean name="ibisDebugger" class="org.frankframework.ladybug.LadybugDebugger" autowire="byName"/>
 
 	<bean
