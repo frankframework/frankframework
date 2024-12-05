@@ -17,8 +17,10 @@ package org.frankframework.encryption;
 
 public enum KeystoreType {
 
-	PKCS12,
+	/** Currently only used by the SignaturePipe to use a PEM certificate directly as a truststore. */
 	PEM,
+
+	PKCS12,
 	JKS,
 	JCEKS
 }

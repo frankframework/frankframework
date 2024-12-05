@@ -21,50 +21,21 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
 import org.apache.http.message.BasicNameValuePair;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.http.AbstractHttpSession;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class ClientCredentialsQueryParameters extends AbstractOauthAuthenticator {
+public class ClientCredentialsQueryParameters extends AbstractClientCredentials {
 
 	public ClientCredentialsQueryParameters(AbstractHttpSession session) throws HttpAuthenticationException {
 		super(session);
 	}
 
 	@Override
-	public void configure() throws ConfigurationException {
-		if (session.getClientId() == null) {
-			throw new ConfigurationException("clientId is required");
-		}
-
-		if (session.getClientSecret() == null) {
-			throw new ConfigurationException("clientSecret is required");
-		}
-
-		if (session.getUsername() != null) {
-			ConfigurationWarnings.add(session, log, "Username should not be set");
-		}
-
-		if (session.getPassword() != null) {
-			ConfigurationWarnings.add(session, log, "Password should not be set");
-		}
-	}
-
-	@Override
-	protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials) throws HttpAuthenticationException {
-		List<NameValuePair> parameters = new ArrayList<>();
-		parameters.add(new BasicNameValuePair("grant_type", "client_credentials"));
-
-		if (session.getScope() != null) {
-			parameters.add(getScopeHeader());
-		}
-
+	protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials, List<NameValuePair> parameters) throws HttpAuthenticationException {
 		parameters.add(new BasicNameValuePair("client_secret", session.getClientSecret()));
 		parameters.add(new BasicNameValuePair("client_id", session.getClientId()));
 
-		return createPostRequestWithForm(authorizationEndpoint, parameters);
+		return super.createRequest(credentials, parameters);
 	}
 }

@@ -34,6 +34,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.ZipException;
@@ -41,11 +42,12 @@ import java.util.zip.ZipException;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -584,11 +586,19 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			String inputMessage;
 			if (message instanceof Message msg) {
 				inputMessage = msg.asString();
+			} else if (message instanceof MessageWrapper<?> mw) {
+				inputMessage = mw.getMessage().asString();
 			} else {
 				inputMessage = message.toString();
 			}
-			String dataBaseMessage = retrieveObject(messageId, rs, columnIndex).getRawMessage().toString();
-			return !dataBaseMessage.equals(inputMessage);
+			RawMessageWrapper<S> rawMessageWrapper = retrieveObject(messageId, rs, columnIndex);
+			String dataBaseMessage;
+			if (rawMessageWrapper instanceof MessageWrapper<?> mw) {
+				dataBaseMessage = mw.getMessage().asString();
+			} else {
+				dataBaseMessage = rawMessageWrapper.getRawMessage().toString();
+			}
+			return !Objects.equals(dataBaseMessage, inputMessage);
 		} catch (Exception e) {
 			log.warn("Exception comparing messages", e);
 			return true;

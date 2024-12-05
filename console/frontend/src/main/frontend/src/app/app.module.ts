@@ -89,6 +89,8 @@ import { LoggingAddComponent } from './views/logging/logging-add/logging-add.com
 import { DatatableComponent } from './components/datatable/datatable.component';
 import { DtContentDirective } from './components/datatable/dt-content.directive';
 import { MonitorsNewComponent } from './views/monitors/monitors-new/monitors-new.component';
+import { ConfigurationTabListComponent } from './components/tab-list/configuration-tab-list.component';
+import { TabListComponent } from './components/tab-list/tab-list.component';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -197,6 +199,8 @@ const windowProvider: ValueProvider = {
 
     // standalone pipes
     TruncatePipe,
+    ConfigurationTabListComponent,
+    TabListComponent,
   ],
   providers: [windowProvider, { provide: TitleStrategy, useClass: PagesTitleStrategy }, httpInterceptorProviders],
   bootstrap: [AppComponent],

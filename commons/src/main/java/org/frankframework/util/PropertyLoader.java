@@ -76,7 +76,9 @@ public class PropertyLoader extends Properties {
 		}
 		try {
 			String result = System.getProperty(key);
-			LOG.trace("Get key [{}] from System Properties, value: [{}]", key, result);
+			if (result != null) {
+				LOG.trace("Get key [{}] from System Properties, value: [{}]", key, result);
+			}
 			return result;
 		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
 			LOG.warn("unable to read system property [{}]: {}", () -> key, e::getMessage);
@@ -116,16 +118,18 @@ public class PropertyLoader extends Properties {
 					return value;
 				}
 				String result = StringResolver.substVars(value, this);
-				if (LOG.isTraceEnabled() && !value.equals(result)) {
-					LOG.trace("resolved key [{}], value [{}] to [{}]", key, value, result);
+				if (!value.equals(result)) {
+					LOG.trace("substituted key [{}] with value from [{}] to [{}]", key, value, result);
 				}
+
+				LOG.trace("getResolvedProperty: key [{}] resolved to value [{}]", key, value);
 				return result;
 			} catch (IllegalArgumentException e) {
 				LOG.error("bad option value [{}] for key [{}]", value, key, e);
 				return value;
 			}
 		} else {
-			LOG.trace("getResolvedProperty: key [{}] resolved to value [{}]", key, value);
+			LOG.trace("getResolvedProperty: key [{}] was not found", key);
 			return null;
 		}
 	}

@@ -17,7 +17,7 @@ import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.senders.EchoSender;
 import org.frankframework.stream.Message;
 
-public class SenderMonitorAdapterTest implements EventThrowing {
+public class MonitorDestinationTest implements EventThrowing {
 	private @Getter Adapter adapter;
 	private @Getter String eventSourceName = "MONITOR_DESTINATION_TEST";
 	private static final String EVENTCODE = "MONITOR_EVENT_CODE";
@@ -25,10 +25,11 @@ public class SenderMonitorAdapterTest implements EventThrowing {
 	@Test
 	public void testSenderMonitorAdapter() throws Exception {
 		// Arrange
-		SenderMonitorAdapter destination = new SenderMonitorAdapter();
+		MonitorDestination destination = new MonitorDestination();
 		EchoSender sender = spy(EchoSender.class);
 		ArgumentCaptor<Message> messageCapture = ArgumentCaptor.forClass(Message.class);
 		destination.setSender(sender);
+		destination.setName("dummy destination");
 		destination.configure();
 
 		when(sender.sendMessage(messageCapture.capture(), any(PipeLineSession.class))).thenCallRealMethod();
@@ -46,9 +47,10 @@ public class SenderMonitorAdapterTest implements EventThrowing {
 	@Test
 	public void testSenderMonitorAdapterWithMessage() throws Exception {
 		// Arrange
-		SenderMonitorAdapter destination = new SenderMonitorAdapter();
+		MonitorDestination destination = new MonitorDestination();
 		MessageCapturingEchoSender sender = new MessageCapturingEchoSender();
 		destination.setSender(sender);
+		destination.setName("dummy destination");
 		destination.configure();
 		String eventText = "<ik>ben<xml/></ik>";
 

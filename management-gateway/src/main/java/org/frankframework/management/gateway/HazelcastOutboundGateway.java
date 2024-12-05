@@ -15,6 +15,7 @@
 */
 package org.frankframework.management.gateway;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +48,7 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.gateway.HazelcastConfig.InstanceType;
 import org.frankframework.management.gateway.events.ClusterMemberEvent;
 import org.frankframework.management.gateway.events.ClusterMemberEvent.EventType;
 import org.frankframework.management.security.JwtKeyGenerator;
@@ -124,7 +127,14 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		cm.setAddress(member.getSocketAddress().getHostName() + ":" + member.getSocketAddress().getPort());
 		cm.setId(member.getUuid());
 		Map<String, String> attrs = new HashMap<>(member.getAttributes());
-		cm.setType(attrs.remove(HazelcastConfig.ATTRIBUTE_TYPE_KEY));
+		String type = attrs.remove(HazelcastConfig.ATTRIBUTE_TYPE_KEY);
+		if (StringUtils.isNotBlank(type)) {
+			if (InstanceType.WORKER.name().equals(type)) {
+				cm.setType("worker");
+			} else {
+				cm.setType("console");
+			}
+		}
 		cm.setAttributes(attrs);
 		cm.setLocalMember(member.localMember());
 		return cm;
@@ -166,7 +176,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		hzInstance = HazelcastConfig.newHazelcastInstance("console");
+		hzInstance = HazelcastConfig.newHazelcastInstance(InstanceType.CONTROLLER, Collections.emptyMap());
 		SpringUtils.registerSingleton(applicationContext, "hazelcastOutboundInstance", hzInstance);
 
 		IMap<String, String> config = hzInstance.getMap(HazelcastConfig.FRANK_APPLICATION_CONFIG);

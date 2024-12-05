@@ -22,32 +22,17 @@ import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
-import org.apache.http.message.BasicNameValuePair;
-
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.http.AbstractHttpSession;
 
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.http.entity.mime.MIME.UTF8_CHARSET;
 
-public class ResourceOwnerPasswordCredentialsBasicAuth extends AbstractOauthAuthenticator {
+public class ResourceOwnerPasswordCredentialsBasicAuth extends AbstractResourceOwnerPasswordCredentials {
 
 	public ResourceOwnerPasswordCredentialsBasicAuth(AbstractHttpSession session) throws HttpAuthenticationException {
 		super(session);
-	}
-
-	@Override
-	public void configure() throws ConfigurationException {
-		if (session.getClientId() == null) {
-			throw new ConfigurationException("clientId is required");
-		}
-
-		if (session.getClientSecret() == null) {
-			throw new ConfigurationException("clientSecret is required");
-		}
 	}
 
 	private String createAuthorizationHeaderValue() {
@@ -59,18 +44,8 @@ public class ResourceOwnerPasswordCredentialsBasicAuth extends AbstractOauthAuth
 	}
 
 	@Override
-	protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials) throws HttpAuthenticationException {
-		List<NameValuePair> parameters = new ArrayList<>();
-		parameters.add(new BasicNameValuePair("grant_type", "password"));
-
-		if (session.getScope() != null) {
-			parameters.add(getScopeHeader());
-		}
-
-		parameters.add(new BasicNameValuePair("username", credentials.getUserPrincipal().getName()));
-		parameters.add(new BasicNameValuePair("password", credentials.getPassword()));
-
-		HttpEntityEnclosingRequestBase request = createPostRequestWithForm(authorizationEndpoint, parameters);
+	protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials, List<NameValuePair> parameters) throws HttpAuthenticationException {
+		HttpEntityEnclosingRequestBase request = super.createRequest(credentials, parameters);
 		request.addHeader(HttpHeaders.AUTHORIZATION, createAuthorizationHeaderValue());
 
 		return request;

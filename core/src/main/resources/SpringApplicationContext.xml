@@ -17,6 +17,12 @@
 
 	<import resource="springUnmanagedDeployment.xml"/>
 
+	<bean name="applicationEventMulticaster" class="org.springframework.context.event.SimpleApplicationEventMulticaster" autowire="byName">
+		<property name="errorHandler">
+			<bean class="org.frankframework.configuration.SpringEventErrorHandler"/>
+		</property>
+	</bean>
+
 	<bean
 		name="lowerCasePropertySourcePostProcessor"
 		class="org.frankframework.configuration.LowerCasePropertySourcePostProcessor"
@@ -184,10 +190,17 @@
 														>
 														<property name="pipeProcessor">
 															<bean
-																class="org.frankframework.processors.CorePipeProcessor"
+																class="org.frankframework.processors.TrackPreviousPipeInMetadataProcessor"
 																autowire="byName"
-																scope="prototype"
-															/>
+																scope="prototype">
+																<property name="pipeProcessor">
+																	<bean
+																		class="org.frankframework.processors.CorePipeProcessor"
+																		autowire="byName"
+																		scope="prototype"
+																	/>
+																</property>
+															</bean>
 														</property>
 													</bean>
 												</property>

@@ -1,9 +1,15 @@
 package org.frankframework.monitoring;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -12,6 +18,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,10 +30,12 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 import lombok.Getter;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.monitoring.events.ConsoleMonitorEvent;
 import org.frankframework.monitoring.events.FireMonitorEvent;
 import org.frankframework.monitoring.events.MonitorEvent;
+import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.XmlBuilder;
 
@@ -66,10 +76,10 @@ public class TriggerTest implements EventThrowing {
 
 		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), anyString(), monitorEventCaptor.capture());
 
-		monitor.addTrigger(trigger);
-
 		trigger.addEventCodeText(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
+
+		monitor.addTrigger(trigger);
 
 		manager.configure();
 
@@ -112,12 +122,12 @@ public class TriggerTest implements EventThrowing {
 
 		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), eventCode.capture(), monitorEventCaptor.capture());
 
-		monitor.addTrigger(trigger);
-
 		trigger.addEventCodeText(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
 		trigger.setThreshold(5);
 		trigger.setPeriod(1);
+
+		monitor.addTrigger(trigger);
 
 		manager.configure();
 
@@ -161,11 +171,11 @@ public class TriggerTest implements EventThrowing {
 
 		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), anyString(), monitorEventCaptor.capture());
 
-		monitor.addTrigger(trigger);
-		monitor.setAlarmSeverity(Severity.WARNING);
-
 		trigger.addEventCodeText(EVENT_CODE);
 		trigger.setSeverity(Severity.WARNING);
+
+		monitor.addTrigger(trigger);
+		monitor.setAlarmSeverity(Severity.WARNING);
 
 		manager.configure();
 
@@ -205,10 +215,10 @@ public class TriggerTest implements EventThrowing {
 
 		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), eventCode.capture(), monitorEventCaptor.capture());
 
-		monitor.addTrigger(trigger);
-
 		trigger.addEventCodeText(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
+
+		monitor.addTrigger(trigger);
 
 		manager.configure();
 
@@ -256,12 +266,13 @@ public class TriggerTest implements EventThrowing {
 		when(destination.getName()).thenReturn("dummy destination");
 		when(destination.toXml()).thenReturn(new XmlBuilder("destination"));
 
+		trigger.addEventCodeText(EVENT_CODE);
+		trigger.setSeverity(Severity.CRITICAL);
+
 		manager.addMonitor(monitor);
 		monitor.addTrigger(trigger);
 		manager.addDestination(destination);
 		monitor.setDestinations(destination.getName());
-		trigger.addEventCodeText(EVENT_CODE);
-		trigger.setSeverity(Severity.CRITICAL);
 		monitor.setAlarmSeverity(Severity.WARNING);
 
 		// Act
@@ -270,5 +281,39 @@ public class TriggerTest implements EventThrowing {
 		// Assert
 		verify(trigger, times(1)).configure();
 		assertEquals(TestFileUtils.getTestFile("/Management/Monitoring/getManagerToXML.xml"), manager.toXml().asXmlString());
+	}
+
+	@Test
+	public void testTriggerConfigure() {
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
+			Trigger trigger = new Trigger();
+
+			ConfigurationException e1 = assertThrows(ConfigurationException.class, trigger::configure);
+			assertEquals("no monitor autowired", e1.getMessage());
+
+			trigger.setMonitor(monitor);
+			trigger.setEventCode(EVENT_CODE);
+			trigger.setThreshold(1);
+			trigger.setPeriod(0);
+
+			ConfigurationException e2 = assertThrows(ConfigurationException.class, trigger::configure);
+			assertEquals("you must define a period when using threshold > 0", e2.getMessage());
+
+			trigger.setPeriod(1);
+
+			ConfigurationException e3 = assertThrows(ConfigurationException.class, trigger::configure);
+			assertEquals("you must define a severity for the trigger", e3.getMessage());
+
+			trigger.setSeverity(Severity.CRITICAL);
+
+			assertDoesNotThrow(trigger::configure);
+
+			assertThat(appender.getLogLines(), not(hasItem(containsString("should have at least one eventCode specified"))));
+
+			trigger.setEventCodes(List.of());
+			assertDoesNotThrow(trigger::configure);
+
+			assertThat(appender.getLogLines(), hasItem(containsString("should have at least one eventCode specified")));
+		}
 	}
 }

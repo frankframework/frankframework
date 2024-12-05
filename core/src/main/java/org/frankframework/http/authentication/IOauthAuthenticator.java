@@ -19,7 +19,7 @@ import org.apache.http.auth.Credentials;
 
 import org.frankframework.configuration.ConfigurationException;
 
-public interface IAuthenticator {
+public interface IOauthAuthenticator {
 	void configure() throws ConfigurationException;
 	String getOrRefreshAccessToken(Credentials credentials, boolean forceRefresh) throws HttpAuthenticationException;
 }

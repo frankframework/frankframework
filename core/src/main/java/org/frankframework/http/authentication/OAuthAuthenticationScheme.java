@@ -59,7 +59,7 @@ public class OAuthAuthenticationScheme extends BasicScheme {
 		Args.notNull(credentials, "Credentials");
 		Args.notNull(request, "HTTP request");
 
-		IAuthenticator oauthAuthentication = (IAuthenticator) context.getAttribute(AUTHENTICATION_METHOD_KEY);
+		IOauthAuthenticator oauthAuthentication = (IOauthAuthenticator) context.getAttribute(AUTHENTICATION_METHOD_KEY);
 
 		if (oauthAuthentication == null) {
 			throw new AuthenticationException("no oauthAuthentication found");

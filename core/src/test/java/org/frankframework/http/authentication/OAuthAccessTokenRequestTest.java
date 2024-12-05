@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,7 +27,7 @@ import org.frankframework.util.StreamUtil;
 /**
  * Tests whether tokenRequests are generated as expected according to the given input
  */
-public class OAuthAccessTokenManagerRequestTest {
+public class OAuthAccessTokenRequestTest {
 
 	private static final String CLIENT_ID = "fakeClientId";
 
@@ -54,12 +55,12 @@ public class OAuthAccessTokenManagerRequestTest {
 		httpSender.configure();
 		httpSender.start();
 
-		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.AuthenticationMethod.CLIENT_CREDENTIALS_QUERY_PARAMETERS.newAuthenticator(httpSender);
-		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials());
+		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_QUERY_PARAMETERS.newAuthenticator(httpSender);
+		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials(), new ArrayList<>());
 
 		assertEquals("POST", request.getMethod());
 		assertHeaderPresent(request, "Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-		assertEquals("grant_type=client_credentials&scope=email&client_secret=fakeClientSecret&client_id=fakeClientId", StreamUtil.streamToString(request.getEntity()
+		assertEquals("client_secret=fakeClientSecret&client_id=fakeClientId&grant_type=client_credentials&scope=email", StreamUtil.streamToString(request.getEntity()
 				.getContent(), "\n", "UTF-8"));
 		assertEquals("[Content-Type: application/x-www-form-urlencoded; charset=UTF-8,Content-Length: 95,Chunked: false]", request.getEntity()
 				.toString());
@@ -74,8 +75,8 @@ public class OAuthAccessTokenManagerRequestTest {
 		httpSender.configure();
 		httpSender.start();
 
-		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.AuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
-		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials());
+		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
+		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials(), new ArrayList<>());
 
 		assertEquals("POST", request.getMethod());
 		assertHeaderPresent(request, "Authorization", BASE_64);
@@ -96,12 +97,12 @@ public class OAuthAccessTokenManagerRequestTest {
 		httpSender.configure();
 		httpSender.start();
 
-		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.AuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS.newAuthenticator(httpSender);
-		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials());
+		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS.newAuthenticator(httpSender);
+		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials(), new ArrayList<>());
 
 		assertEquals("POST", request.getMethod());
 		assertHeaderPresent(request, "Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-		assertEquals("grant_type=password&scope=email&username=fakeCredentialUserName&password=fakeCredentialPassword&client_id=fakeClientId&client_secret=fakeClientSecret", StreamUtil.streamToString(request.getEntity()
+		assertEquals("client_id=fakeClientId&client_secret=fakeClientSecret&grant_type=password&scope=email&username=fakeCredentialUserName&password=fakeCredentialPassword", StreamUtil.streamToString(request.getEntity()
 				.getContent(), "\n", "UTF-8"));
 		assertEquals("[Content-Type: application/x-www-form-urlencoded; charset=UTF-8,Content-Length: 149,Chunked: false]", request.getEntity()
 				.toString());
@@ -118,8 +119,8 @@ public class OAuthAccessTokenManagerRequestTest {
 		httpSender.configure();
 		httpSender.start();
 
-		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.AuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
-		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials());
+		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
+		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials(), new ArrayList<>());
 
 		assertEquals("POST", request.getMethod());
 		assertHeaderPresent(request, "Authorization", BASE_64);

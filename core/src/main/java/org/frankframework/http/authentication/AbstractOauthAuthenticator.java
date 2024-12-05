@@ -15,6 +15,9 @@
 */
 package org.frankframework.http.authentication;
 
+import lombok.extern.log4j.Log4j2;
+
+import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -23,21 +26,19 @@ import org.apache.http.client.methods.HttpRequestBase;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.Logger;
 
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.JacksonUtils;
-import org.frankframework.util.LogUtil;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
+@Log4j2
 public abstract class AbstractOauthAuthenticator extends AbstractAuthenticator {
-
-	protected final Logger log = LogUtil.getLogger(this);
 
 	protected final URI authorizationEndpoint;
 	protected final int overwriteExpiryMs;
@@ -55,10 +56,10 @@ public abstract class AbstractOauthAuthenticator extends AbstractAuthenticator {
 		this.overwriteExpiryMs = session.getTokenExpiry() * 1000;
 	}
 
-	protected abstract HttpEntityEnclosingRequestBase createRequest(Credentials credentials) throws HttpAuthenticationException;
+	protected abstract HttpEntityEnclosingRequestBase createRequest(Credentials credentials, List<NameValuePair> parameters) throws HttpAuthenticationException;
 
 	private void refreshAccessToken(Credentials credentials) throws HttpAuthenticationException {
-		HttpRequestBase request = createRequest(credentials);
+		HttpRequestBase request = createRequest(credentials, new ArrayList<>());
 
 		CloseableHttpClient apacheHttpClient = session.getHttpClient();
 		TimeoutGuard tg = new TimeoutGuard(1 + session.getTimeout() / 1000, "token retrieval") {
@@ -87,16 +88,21 @@ public abstract class AbstractOauthAuthenticator extends AbstractAuthenticator {
 				log.debug("no accessToken lifetime found in accessTokenResponse, and no expiry specified. Token will not be refreshed preemptively");
 				accessTokenRefreshTime = -1;
 			} else {
-				accessTokenRefreshTime = System.currentTimeMillis() + (overwriteExpiryMs <0 ? 500 * accessTokenLifetime : overwriteExpiryMs);
+				accessTokenRefreshTime = System.currentTimeMillis() + (overwriteExpiryMs < 0 ? 500 * accessTokenLifetime : overwriteExpiryMs);
 				log.debug("set accessTokenRefreshTime [{}]", ()-> DateFormatUtils.format(accessTokenRefreshTime));
 			}
 		} catch (IOException e) {
 			request.abort();
-			throw new HttpAuthenticationException(e);
-		} finally {
+
 			if (tg.cancel()) {
-				throw new HttpAuthenticationException("timeout of [" + session.getTimeout() + "] ms exceeded");
+				throw new HttpAuthenticationException("timeout of [" + session.getTimeout() + "] ms exceeded", e);
 			}
+
+			throw new HttpAuthenticationException(e);
+		}
+
+		if (tg.cancel()) {
+			throw new HttpAuthenticationException("timeout of [" + session.getTimeout() + "] ms exceeded");
 		}
 	}
 

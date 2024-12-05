@@ -15,6 +15,7 @@
 */
 package org.frankframework.receivers;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,7 +59,7 @@ public abstract class ListenerTestBase<M extends Object, S extends IListener<M>>
 		listener = createListener();
 	}
 
-	protected RawMessageWrapper<M> getRawMessage(String mockedResult) throws ListenerException {
+	protected RawMessageWrapper<M> getRawMessage(Serializable mockedResult) throws ListenerException {
 		threadContext.put(STUB_RESULT_KEY, mockedResult);
 		if(listener instanceof IPullingListener) {
 			@SuppressWarnings("unchecked")
