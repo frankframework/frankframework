@@ -10,6 +10,7 @@
 		"
 	>
 
+	<bean name="debuggerActive" class="org.frankframework.ibistesttool.DebuggerActive"  />
 	<bean name="ibisDebugger" class="org.frankframework.ibistesttool.Debugger" autowire="byName"/>
 
 	<bean
