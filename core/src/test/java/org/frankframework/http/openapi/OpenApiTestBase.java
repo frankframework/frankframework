@@ -102,7 +102,7 @@ public class OpenApiTestBase extends Mockito {
 
 		MockHttpServletRequest request = new MockHttpServletRequest(method.toUpperCase(), uri);
 		request.setServerName("mock-hostname");
-		request.setPathInfo(HttpUtils.decodeBase64(uri)); //Should be decoded by the web container
+		request.setPathInfo(HttpUtils.urlDecode(uri)); //Should be decoded by the web container
 		request.setContextPath("/mock-context-path");
 		request.setServletPath("/mock-servlet-path");
 		request.setRequestURI(request.getContextPath() + request.getServletPath() + uri);
