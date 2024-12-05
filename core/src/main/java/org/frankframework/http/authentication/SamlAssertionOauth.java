@@ -15,22 +15,14 @@
 */
 package org.frankframework.http.authentication;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.auth.Credentials;
-
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-
-import org.apache.http.message.BasicNameValuePair;
-
-import org.apache.xml.security.algorithms.MessageDigestAlgorithm;
-
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.http.AbstractHttpSession;
-
-import org.apache.xml.security.signature.XMLSignature;
-import org.apache.xml.security.transforms.Transforms;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import java.io.ByteArrayInputStream;
+import java.io.StringWriter;
+import java.security.PrivateKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.Base64;
+import java.util.List;
+import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -39,22 +31,27 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.security.KeyFactory;
-import java.security.PrivateKey;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.Base64;
-import java.util.UUID;
+import org.apache.http.NameValuePair;
+import org.apache.http.auth.Credentials;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.xml.security.algorithms.MessageDigestAlgorithm;
+import org.apache.xml.security.signature.XMLSignature;
+import org.apache.xml.security.transforms.Transforms;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
-import java.util.List;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.encryption.EncryptionException;
+import org.frankframework.encryption.PkiUtil;
+import org.frankframework.http.AbstractHttpSession;
 
 public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 
 	private static final String SAML2_BEARER_GRANT_TYPE = "urn:ietf:params:oauth:grant-type:saml2-bearer";
+
+	private PrivateKey privateKey;
+	private X509Certificate certificate;
 
 	static {
 		org.apache.xml.security.Init.init();
@@ -74,29 +71,26 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 			throw new ConfigurationException("clientSecret is required");
 		}
 
-		if (session.getPrivateKey() == null) {
-			throw new ConfigurationException("privateKey is required");
+		try {
+			privateKey = PkiUtil.getPrivateKey(session, "Creation of SAML assertion");
+		} catch (EncryptionException e) {
+			throw new ConfigurationException(e);
+		}
+
+		try {
+			Certificate certificate = PkiUtil.getCertificate(session, "Creation of SAML assertion");
+
+			if (certificate instanceof X509Certificate x509certificate) {
+				this.certificate = x509certificate;
+			} else {
+				throw new ConfigurationException("Certificate must be a X.509 certificate");
+			}
+		} catch (EncryptionException e) {
+			throw new ConfigurationException(e);
 		}
 	}
 
 	private String createAssertion() throws Exception {
-		// Clean up the PEM content
-		String privateKeyPem = session.getPrivateKey().replace("-----BEGIN PRIVATE KEY-----", "")
-				.replace("-----END PRIVATE KEY-----", "")
-				.replaceAll("\\s+", ""); // Remove headers, footers, and whitespace
-
-		// Decode the Base64 content
-		byte[] privateKeyBytes = java.util.Base64.getDecoder().decode(privateKeyPem);
-
-		// Convert to PrivateKey object
-		PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
-		KeyFactory keyFactory = KeyFactory.getInstance("RSA"); // Ensure this matches the key algorithm
-		PrivateKey privateKey = keyFactory.generatePrivate(keySpec);
-
-		CertificateFactory cf = CertificateFactory.getInstance("X.509");
-		InputStream targetStream = new ByteArrayInputStream(session.getCertificate().getBytes());
-		X509Certificate certificate = (X509Certificate) cf.generateCertificate(targetStream);
-
 		// Generate SAML Assertion
 		Document samlAssertion = generateSAMLAssertion();
 		String docAsXml = documentToString(samlAssertion);

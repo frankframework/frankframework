@@ -14,14 +14,11 @@ import java.util.regex.Pattern;
 import org.apache.http.Header;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpRequestBase;
-
-import org.frankframework.http.AbstractHttpSession;
-
-import org.frankframework.http.HttpSender;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.http.HttpSender;
 import org.frankframework.util.StreamUtil;
 
 /**
@@ -32,8 +29,6 @@ public class OAuthAccessTokenRequestTest {
 	private static final String CLIENT_ID = "fakeClientId";
 
 	private static final String CLIENT_SECRET = "fakeClientSecret";
-
-	private static final String TOKEN_ENDPOINT = "http://fakeTokenEndpoint";
 
 	private static final String BASE_64 = "Basic " + Base64.getEncoder().encodeToString((CLIENT_ID + ":" + CLIENT_SECRET).getBytes());
 
@@ -136,42 +131,14 @@ public class OAuthAccessTokenRequestTest {
 		httpSender.setTokenEndpoint("fakeEndpoint");
 		httpSender.setOauthAuthenticationMethod(AbstractHttpSession.OauthAuthenticationMethod.SAML_ASSERTION);
 
-		httpSender.setPrivateKey("-----BEGIN PRIVATE KEY-----\n" +
-				"MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGAa5meBF/8w4RETkBj\n" +
-				"JgQeexBRPsR4JrrKYUjptS020Kyld9MSz1UOCuyPiFsjArpJPWs93mbSdCR89TwP\n" +
-				"9knZmJFQZk3wM5mkcEA+WJ6xjDH8/7zIJIQqzCGGT8UfMBeFqIhufQC4jYwTBRDW\n" +
-				"b2GHaLqrq+3nnHEmg1i6L8WRLXUCAwEAAQKBgCqcNfBjlrRSj74xT1JBtVRkvNfP\n" +
-				"dAlaVUS7XBmsYxW2GPzfsIY8l4gJ8Dk+ZhnxbYmOC30kWNk3jeiLtYKB8lIrvoBV\n" +
-				"fNXe4IJB39t7U8JbdUsQSa2nzVoUFjjeaI3LiJ6z1l/hzyhl70KSrXi5ycGVJrh5\n" +
-				"s9v3EROO99R/y1lNAkEAypss5gtI4dr6k+ElweeArftqL0MIgqYngamW3HGheglh\n" +
-				"qZlqU1uL3Fga5xwBlecq5FxiowNABOTES5YvzD5AxwJBAIf02yVM/4OXxgB2mE1G\n" +
-				"lzyiQ2tnKbPHrgzToM4SFDZN2EBOtWG+4AABsZLtXM6cJ3n1yMAze7tdlg5hMQLx\n" +
-				"W+MCQQCBkrYnNUZaM0qX8qDMHrscCbNCIJO7wnl3ojb6Kq3Dt2Y/Kf9m6iBLPgmO\n" +
-				"jkmxTdMPksn+SODTgF7NnHJbI+EXAkAYcZ6hEznxZ+1SkgAKDMIORcJHYjHuP918\n" +
-				"MuR7iGaX6OETltMnstDFT4ikuQZxo0O5usYQQHFjm4zqIvFT7R8vAkA2ntBhvJbQ\n" +
-				"AlNvCCvBjlTbsdp7A2LnIwddBZvi0ekQKMW9709HTkvcysbBTYHGV6qG6IOj3/AI\n" +
-				"36qWDXImqowl\n" +
-				"-----END PRIVATE KEY-----");
+		httpSender.setKeystore("/Signature/saml-keystore.p12");
+		httpSender.setKeystorePassword("geheim");
+		httpSender.setKeystoreAlias("myalias");
+		httpSender.setKeystoreAliasPassword("geheim");
 
-		httpSender.setCertificate2("-----BEGIN CERTIFICATE-----\n" +
-				"MIIDJTCCAg2gAwIBAgIUFVmKTIu/07BPj3LRAsqiZut8lfswDQYJKoZIhvcNAQEL\n" +
-				"BQAwIjELMAkGA1UEBhMCTkwxEzARBgNVBAoMCldlQXJlRnJhbmswHhcNMjQxMTI3\n" +
-				"MTIzMDA2WhcNMjUxMTI3MTIzMDA2WjAiMQswCQYDVQQGEwJOTDETMBEGA1UECgwK\n" +
-				"V2VBcmVGcmFuazCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMlPvUF3\n" +
-				"2PyY5zJA50W2o9scE244L/pQCBInrADajhfWdIsCSMqhEyzGWl3nVhjkqZA0bVha\n" +
-				"JQulfJH25XUQYHonoeffdqqh1gQEu03IKClKqRDLZ9lbT7jFbYEX/1hFlzu4FqRp\n" +
-				"pWLxdeGvMNvwX95VQSsRiHQ9GvuiuyUc/7+0V6OZBLfp+zWDuOrZ/yGmLlFeWwQb\n" +
-				"wyEIKKknBediwImW3o+iFuYs2FPsCqsJ3qfZol6ig+MeTVkFjNIIKONG+/FB56cz\n" +
-				"RWGYC+7g8OLjBWKaChPiKchs8g+v7NkBGCOJgyeBTA4f4pl+ttAXgGN0HwMhcuT2\n" +
-				"0eB//QxYx+AU5t0CAwEAAaNTMFEwHQYDVR0OBBYEFMP1Lz7dXT8lyus6hEUAcVFG\n" +
-				"sA0SMB8GA1UdIwQYMBaAFMP1Lz7dXT8lyus6hEUAcVFGsA0SMA8GA1UdEwEB/wQF\n" +
-				"MAMBAf8wDQYJKoZIhvcNAQELBQADggEBAGnVIsNlC2gBhJgrbRwmZnUgv7T7rxrc\n" +
-				"1y4n3sfABem5AWuGsx57/vKOtGlc8NYE10lPB0U7JTX5cwumSCgoNhOX0jAzSrXl\n" +
-				"Qb4i62POqkT6jxnjfaLJHlYUWdFDjffmzO/tH0gW6ETpi8c1VHKuulsoLLpXBkae\n" +
-				"HqOmr2g24wtU2NH+SNWvyKUk/Xyjr2Gjr2uAL45m80BjE8zYdQBoi9bI9e7BaO6F\n" +
-				"hOTVSThh5J3R23GaM4n6Wi2V2PQ6ynZ0qwNIpd4ak+cdJOr6tseVYu3mCpDaKSjz\n" +
-				"2UqUGdhJIbcKhIc0TaLaRpXlUUUGq8lq9/7GBNEl7t1E25Jm0I2hSTI=\n" +
-				"-----END CERTIFICATE-----\n");
+		httpSender.setTruststore("/Signature/saml-keystore.p12");
+		httpSender.setTruststorePassword("geheim");
+		httpSender.setTruststoreAuthAlias("myalias");
 
 		httpSender.setClientId(CLIENT_ID);
 		httpSender.setClientSecret(CLIENT_SECRET);
@@ -183,6 +150,7 @@ public class OAuthAccessTokenRequestTest {
 		httpSender.start();
 
 		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.SAML_ASSERTION.newAuthenticator(httpSender);
+		oauthAuthenticator.configure();
 		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials(), new ArrayList<>());
 
 		final String body = StreamUtil.streamToString(request.getEntity().getContent(), "\n", "UTF-8");
@@ -207,6 +175,10 @@ public class OAuthAccessTokenRequestTest {
 		String assertion = new String(Base64.getDecoder().decode(base64EncodedAssertion));
 		assertNotNull(assertion);
 		assertTrue(assertion.length() > 50, "Assertion should be a long string");
+
+		assertTrue(assertion.contains("<saml2:Issuer>www.successfactors.com</saml2:Issuer>"));
+		assertTrue(assertion.contains("<saml2:Audience>www.successfactors.com</saml2:Audience>"));
+		assertTrue(assertion.contains("<saml2:AttributeValue xsi:type=\"xs:string\">fakeClientId</saml2:AttributeValue>"));
 	}
 
 	public void assertHeaderPresent(HttpRequestBase method, String header, String expectedValue) {

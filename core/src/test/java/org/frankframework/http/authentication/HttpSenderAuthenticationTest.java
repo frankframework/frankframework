@@ -14,10 +14,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.http.AbstractHttpSession;
-import org.frankframework.testutil.ParameterBuilder;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -28,12 +24,15 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 
 import lombok.Getter;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.http.HttpSender;
 import org.frankframework.http.AbstractHttpSender.HttpMethod;
+import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.http.HttpSender;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.ParameterBuilder;
 
 public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	private final boolean useMockServer = true;
@@ -565,22 +564,14 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH);
 		sender.setOauthAuthenticationMethod(AbstractHttpSession.OauthAuthenticationMethod.SAML_ASSERTION);
 
-		sender.setPrivateKey("-----BEGIN PRIVATE KEY-----\n" +
-				"MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGAa5meBF/8w4RETkBj\n" +
-				"JgQeexBRPsR4JrrKYUjptS020Kyld9MSz1UOCuyPiFsjArpJPWs93mbSdCR89TwP\n" +
-				"9knZmJFQZk3wM5mkcEA+WJ6xjDH8/7zIJIQqzCGGT8UfMBeFqIhufQC4jYwTBRDW\n" +
-				"b2GHaLqrq+3nnHEmg1i6L8WRLXUCAwEAAQKBgCqcNfBjlrRSj74xT1JBtVRkvNfP\n" +
-				"dAlaVUS7XBmsYxW2GPzfsIY8l4gJ8Dk+ZhnxbYmOC30kWNk3jeiLtYKB8lIrvoBV\n" +
-				"fNXe4IJB39t7U8JbdUsQSa2nzVoUFjjeaI3LiJ6z1l/hzyhl70KSrXi5ycGVJrh5\n" +
-				"s9v3EROO99R/y1lNAkEAypss5gtI4dr6k+ElweeArftqL0MIgqYngamW3HGheglh\n" +
-				"qZlqU1uL3Fga5xwBlecq5FxiowNABOTES5YvzD5AxwJBAIf02yVM/4OXxgB2mE1G\n" +
-				"lzyiQ2tnKbPHrgzToM4SFDZN2EBOtWG+4AABsZLtXM6cJ3n1yMAze7tdlg5hMQLx\n" +
-				"W+MCQQCBkrYnNUZaM0qX8qDMHrscCbNCIJO7wnl3ojb6Kq3Dt2Y/Kf9m6iBLPgmO\n" +
-				"jkmxTdMPksn+SODTgF7NnHJbI+EXAkAYcZ6hEznxZ+1SkgAKDMIORcJHYjHuP918\n" +
-				"MuR7iGaX6OETltMnstDFT4ikuQZxo0O5usYQQHFjm4zqIvFT7R8vAkA2ntBhvJbQ\n" +
-				"AlNvCCvBjlTbsdp7A2LnIwddBZvi0ekQKMW9709HTkvcysbBTYHGV6qG6IOj3/AI\n" +
-				"36qWDXImqowl\n" +
-				"-----END PRIVATE KEY-----");
+		sender.setKeystore("/Signature/saml-keystore.p12");
+		sender.setKeystorePassword("geheim");
+		sender.setKeystoreAlias("myalias");
+		sender.setKeystoreAliasPassword("geheim");
+
+		sender.setTruststore("/Signature/saml-keystore.p12");
+		sender.setTruststorePassword("geheim");
+		sender.setTruststoreAuthAlias("myalias");
 
 		sender.setClientId(MockTokenServer.CLIENT_ID);
 		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);

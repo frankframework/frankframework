@@ -31,7 +31,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 
 import jakarta.annotation.Nonnull;
-
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
@@ -71,20 +70,6 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.pool.ConnPoolControl;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.logging.log4j.Logger;
-
-import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.http.authentication.ClientCredentialsBasicAuth;
-
-import org.frankframework.http.authentication.ClientCredentialsQueryParameters;
-import org.frankframework.http.authentication.IOauthAuthenticator;
-import org.frankframework.http.authentication.OAuthPreferringAuthenticationStrategy;
-
-import org.frankframework.http.authentication.ResourceOwnerPasswordCredentialsBasicAuth;
-
-import org.frankframework.http.authentication.ResourceOwnerPasswordCredentialsQueryParameters;
-
-import org.frankframework.http.authentication.SamlAssertionOauth;
-
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 
@@ -93,6 +78,7 @@ import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.AdapterAware;
 import org.frankframework.core.IConfigurationAware;
@@ -103,7 +89,14 @@ import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.authentication.AuthenticationScheme;
+import org.frankframework.http.authentication.ClientCredentialsBasicAuth;
+import org.frankframework.http.authentication.ClientCredentialsQueryParameters;
 import org.frankframework.http.authentication.HttpAuthenticationException;
+import org.frankframework.http.authentication.IOauthAuthenticator;
+import org.frankframework.http.authentication.OAuthPreferringAuthenticationStrategy;
+import org.frankframework.http.authentication.ResourceOwnerPasswordCredentialsBasicAuth;
+import org.frankframework.http.authentication.ResourceOwnerPasswordCredentialsQueryParameters;
+import org.frankframework.http.authentication.SamlAssertionOauth;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.HasStatistics;
@@ -201,8 +194,6 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private @Getter String clientSecret;
 	private @Getter String scope;
 
-	private @Getter String privateKey;
-	private @Getter String certificate;
 	private @Getter String nameId;
 	private @Getter String issuer;
 	private @Getter String audience;
@@ -774,17 +765,6 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	public void setOauthAuthenticationMethod(OauthAuthenticationMethod oauthAuthenticationMethod) {
 		this.oauthAuthenticationMethod = oauthAuthenticationMethod;
 	}
-
-	// TODO: move this to a keyStore.
-	public void setPrivateKey(String privateKey) {
-		this.privateKey = privateKey;
-	}
-
-	public void setCertificate2(String certificate) {
-		this.certificate = certificate;
-	}
-
-
 
 	/**
 	 * The nameId to be added during the creation of the SAML assertion.
