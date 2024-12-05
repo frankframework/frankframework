@@ -20,8 +20,8 @@ public class MockTokenServer {
 	public static final String accessTokenResponseExpired = "{\"access_token\":\""+EXPIRED_TOKEN+"\",\"refresh_expires_in\":0,\"scope\":\"profile email\",\"not-before-policy\":0,\"token_type\":\"Bearer\",\"expires_in\":0}";
 
 	public static final String PATH = "/token";
-
 	public static final String EXPIRED_PATH = "/firstExpired";
+	public static final String DELAYED_PATH = "/delayed";
 
 	public static final String CLIENT_ID = "testiaf-client";
 	public static final String CLIENT_SECRET = "testiaf-client-pwd";
@@ -44,6 +44,12 @@ public class MockTokenServer {
 						.withStatus(200)
 						.withHeader("Content-Type", "application/json")
 						.withBody(accessTokenResponseExpired)));
+		extension.stubFor(any(urlPathMatching(DELAYED_PATH))
+				.willReturn(aResponse()
+						.withFixedDelay(5000)
+						.withStatus(200)
+						.withHeader("Content-Type", "application/json")
+						.withBody(accessTokenResponseValid)));
 		extension.stubFor(any(urlPathMatching(PATH)).inScenario(SCENARIO_CONNECTION_RESET)
 					.whenScenarioStateIs(SCENARIO_STATE_RESET_CONNECTION)
 					.willSetStateTo(Scenario.STARTED)

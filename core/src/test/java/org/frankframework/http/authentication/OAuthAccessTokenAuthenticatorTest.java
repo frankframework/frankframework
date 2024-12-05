@@ -4,6 +4,8 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -156,6 +158,37 @@ public class OAuthAccessTokenAuthenticatorTest {
 
 		Thread.sleep(100);
 		assertThat(authenticator.getOrRefreshAccessToken(null, true), not(containsString("Expired")));
+	}
+
+	@Test
+	public void testRequestTimedOut() throws Exception {
+		httpSender.setTokenEndpoint(getEndpoint() + MockTokenServer.DELAYED_PATH);
+		httpSender.setTokenExpiry(-1);
+		httpSender.setTimeout(1000);
+		httpSender.setScope("read, email");
+		httpSender.setClientId(MockTokenServer.CLIENT_ID);
+		httpSender.setClientSecret(MockTokenServer.CLIENT_SECRET);
+
+		var authenticator = AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
+
+		HttpAuthenticationException exception = assertThrows(HttpAuthenticationException.class, () -> authenticator.getOrRefreshAccessToken(null, true));
+		assertEquals("timeout of [1000] ms exceeded: (SocketException) Socket closed", exception.getMessage());
+	}
+
+	@Test
+	public void testRequestDoesNotTimeout() throws Exception {
+		httpSender.setTokenEndpoint(getEndpoint() + MockTokenServer.DELAYED_PATH);
+		httpSender.setTokenExpiry(-1);
+		httpSender.setTimeout(10000);
+		httpSender.setScope("read, email");
+		httpSender.setClientId(MockTokenServer.CLIENT_ID);
+		httpSender.setClientSecret(MockTokenServer.CLIENT_SECRET);
+
+		var authenticator = AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
+
+		String token = assertDoesNotThrow(() -> authenticator.getOrRefreshAccessToken(null, true));
+		assertNotNull(token);
+		assertEquals(MockTokenServer.VALID_TOKEN, token);
 	}
 
 }

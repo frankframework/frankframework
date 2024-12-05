@@ -109,16 +109,21 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 				log.debug("no accessToken lifetime found in accessTokenResponse, and no expiry specified. Token will not be refreshed preemptively");
 				accessTokenRefreshTime = -1;
 			} else {
-				accessTokenRefreshTime = System.currentTimeMillis() + (overwriteExpiryMs <0 ? 500 * accessTokenLifetime : overwriteExpiryMs);
+				accessTokenRefreshTime = System.currentTimeMillis() + (overwriteExpiryMs < 0 ? 500 * accessTokenLifetime : overwriteExpiryMs);
 				log.debug("set accessTokenRefreshTime [{}]", ()-> DateFormatUtils.format(accessTokenRefreshTime));
 			}
 		} catch (IOException e) {
 			request.abort();
-			throw new HttpAuthenticationException(e);
-		} finally {
+
 			if (tg.cancel()) {
-				throw new HttpAuthenticationException("timeout of [" + session.getTimeout() + "] ms exceeded");
+				throw new HttpAuthenticationException("timeout of [" + session.getTimeout() + "] ms exceeded", e);
 			}
+
+			throw new HttpAuthenticationException(e);
+		}
+
+		if (tg.cancel()) {
+			throw new HttpAuthenticationException("timeout of [" + session.getTimeout() + "] ms exceeded");
 		}
 	}
 
