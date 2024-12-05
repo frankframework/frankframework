@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -45,7 +44,6 @@ import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.FormBodyPartBuilder;
@@ -142,51 +140,26 @@ public class HttpSender extends AbstractHttpSender {
 			}
 		}
 
-		URI uri;
-		try {
-			uri = encodeQueryParameters(url);
-		} catch (UnsupportedEncodingException | URISyntaxException e) {
-			throw new SenderException("error encoding queryparameters in url [" + url + "]", e);
-		}
-
 		if (postType == PostType.URLENCODED || postType == PostType.FORMDATA || postType == PostType.MTOM) {
 			try {
-				return getMultipartPostMethodWithParamsInBody(uri, message, parameters, session);
+				return getMultipartPostMethodWithParamsInBody(url, message, parameters, session);
 			} catch (IOException e) {
 				throw new SenderException("unable to read message", e);
 			}
 		}
 		// RAW + BINARY
-		return getMethod(uri, message, parameters);
-	}
-
-	// Encode query parameter values.
-	private URI encodeQueryParameters(URI url) throws UnsupportedEncodingException, URISyntaxException {
-		URIBuilder uri = new URIBuilder(url);
-		ArrayList<NameValuePair> pairs = new ArrayList<>(uri.getQueryParams().size());
-		for(NameValuePair pair : uri.getQueryParams()) {
-			String paramValue = pair.getValue(); //May be NULL
-			if(StringUtils.isNotEmpty(paramValue)) {
-				paramValue = URLEncoder.encode(paramValue, getCharSet()); //Only encode if the value is not null
-			}
-			pairs.add(new BasicNameValuePair(pair.getName(), paramValue));
-		}
-		if(!pairs.isEmpty()) {
-			uri.clearParameters();
-			uri.addParameters(pairs);
-		}
-		return uri.build();
+		return createRequestMethod(url, message, parameters, session);
 	}
 
 	/**
 	 * Returns HttpRequestBase, with (optional) RAW or as BINARY content
 	 */
-	protected HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters) throws SenderException {
+	protected HttpRequestBase createRequestMethod(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
 		try {
 			boolean queryParametersAppended = false;
 			StringBuilder relativePath = new StringBuilder(uri.getRawPath());
-			if (!StringUtils.isEmpty(uri.getQuery())) {
-				relativePath.append("?").append(uri.getQuery());
+			if (!StringUtils.isEmpty(uri.getRawQuery())) {
+				relativePath.append("?").append(uri.getRawQuery());
 				queryParametersAppended = true;
 			}
 
