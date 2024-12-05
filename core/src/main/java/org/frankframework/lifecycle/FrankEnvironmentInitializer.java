@@ -22,19 +22,19 @@ import jakarta.servlet.ServletException;
 
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
-import org.springframework.core.env.StandardEnvironment;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
 
 /**
  * Programmatically load the Frank!Framework Web Environment.
@@ -97,8 +97,6 @@ public class FrankEnvironmentInitializer implements WebApplicationInitializer {
 		applicationContext.setDisplayName("EnvironmentContext");
 
 		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
-		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
-		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
 		propertySources.addFirst(new PropertiesPropertySource(SpringContextScope.ENVIRONMENT.getFriendlyName(), AppConstants.getInstance()));
 
 		return applicationContext;

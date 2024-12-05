@@ -25,11 +25,12 @@ import java.util.Set;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
@@ -41,7 +42,6 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.core.TransactionAttributes;
 import org.frankframework.doc.Forward;
 import org.frankframework.doc.Mandatory;
@@ -215,11 +215,10 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	@Override
-	public void start() throws PipeStartException {}
+	public void start() {}
 
 	@Override
 	public void stop() {}
-
 
 	/**
 	 * Add a parameter to the list of parameters

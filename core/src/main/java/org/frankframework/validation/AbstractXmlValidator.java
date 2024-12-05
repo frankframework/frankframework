@@ -25,11 +25,18 @@ import java.util.Map;
 
 import javax.xml.validation.ValidatorHandler;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSModel;
+import org.springframework.context.ApplicationContext;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.helpers.XMLFilterImpl;
+
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.IConfigurationAware;
@@ -41,11 +48,6 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
-import org.springframework.context.ApplicationContext;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.helpers.XMLFilterImpl;
 
 /**
  * baseclass for validating input message against a XML Schema.
@@ -113,8 +115,8 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		return logPrefix;
 	}
 
-	public void start() throws ConfigurationException {
-		if(isStarted()) {
+	public void start() {
+		if (isStarted()) {
 			log.info("already started {}", ClassUtils.nameOf(this));
 		}
 

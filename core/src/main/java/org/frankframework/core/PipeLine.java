@@ -31,16 +31,13 @@ import java.util.stream.Collectors;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.CloseableThreadContext;
+import org.springframework.context.ApplicationContext;
+
 import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.CloseableThreadContext;
-
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
-
-import org.springframework.context.ApplicationContext;
 
 import org.frankframework.cache.ICache;
 import org.frankframework.cache.ICacheEnabled;
@@ -48,6 +45,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.doc.Category;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.FixedForwardPipe;
@@ -455,7 +454,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 
-	public void start() throws PipeStartException {
+	public void start() {
 		log.info("starting pipeline");
 
 		if (cache!=null) {
@@ -475,7 +474,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		log.info("successfully started pipeline");
 	}
 
-	protected void startPipe(String type, IPipe pipe) throws PipeStartException {
+	protected void startPipe(String type, IPipe pipe) {
 		if (pipe!=null) {
 			try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
 				log.debug("starting {}", type);
