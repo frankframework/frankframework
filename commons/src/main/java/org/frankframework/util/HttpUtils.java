@@ -15,8 +15,8 @@
  */
 package org.frankframework.util;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Enumeration;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -68,11 +68,12 @@ public class HttpUtils {
 		return result;
 	}
 
-	public static String urlDecode(String input) {
+	public static String decodeBase64(String input) {
 		try {
-			return URLDecoder.decode(input, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-		} catch (UnsupportedEncodingException e) {
-			log.warn("unable to decode input using charset [{}]", StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, e);
+			byte[] decoded = Base64.getDecoder().decode(input);
+			return new String(decoded, StandardCharsets.UTF_8);
+		} catch (IllegalArgumentException e) {
+			log.warn("unable to decode input string [{}]", input, e);
 			throw new IllegalArgumentException(e);
 		}
 	}
