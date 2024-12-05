@@ -70,27 +70,15 @@ public class MessageContentBody implements ContentBody {
 
 	@Override
 	public void writeTo(OutputStream out) throws IOException {
-		int length = Math.toIntExact(getContentLength());
+		long length = getContentLength();
 		try (InputStream inStream = message.asInputStream(getCharset())) {
-			final byte[] buffer = new byte[OUTPUT_BUFFER_SIZE];
-			int readLen;
 			if(length < 0) {
-				// consume until EOF
-				while((readLen = inStream.read(buffer)) != -1) {
-					out.write(buffer, 0, readLen);
-				}
+				StreamUtil.streamToStream(inStream, out);
 			} else {
 				// consume no more than length
-				long remaining = length;
-				while(remaining > 0) {
-					readLen = inStream.read(buffer, 0, (int) Math.min(OUTPUT_BUFFER_SIZE, remaining));
-					if(readLen == -1) {
-						break;
-					}
-					out.write(buffer, 0, readLen);
-					remaining -= readLen;
-				}
+				StreamUtil.copyPartialStream(inStream, out, length, OUTPUT_BUFFER_SIZE);
 			}
+
 		}
 	}
 
