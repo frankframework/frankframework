@@ -93,7 +93,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	private @Setter String provider;
 
 	private ClientRegistrationRepository clientRepository;
-	private String oauthBaseUrl;
+	private String servletPath;
 
 	private @Setter String roleMappingFile = "oauth-role-mapping.properties";
 	private URL roleMappingURL = null;
@@ -106,10 +106,10 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 		http.oauth2Login(login -> login
 				.clientRegistrationRepository(clientRepository) // Explicitly set, but can also be implicitly implied.
 				.authorizedClientService(new InMemoryOAuth2AuthorizedClientService(clientRepository))
-				.failureUrl(oauthBaseUrl + "/oauth2/failure/")
-				.authorizationEndpoint(endpoint -> endpoint.baseUri(oauthBaseUrl + OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI))
+				.failureUrl(servletPath + "/oauth2/failure/")
+				.authorizationEndpoint(endpoint -> endpoint.baseUri(servletPath + OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI))
 				.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(authorityMapper))
-				.loginProcessingUrl(oauthBaseUrl + "/oauth2/code/*"));
+				.loginProcessingUrl(servletPath + "/oauth2/code/*"));
 
 		return http.build();
 	}
@@ -125,8 +125,8 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 		}
 		log.info("found rolemapping file [{}]", roleMappingURL);
 
-		oauthBaseUrl = computeBaseUrl();
-		log.debug("using oauth baseurl [{}]", oauthBaseUrl);
+		servletPath = computeServletPath();
+		log.debug("using oauth servlet-path [{}]", servletPath);
 		clientRepository = createClientRegistrationRepository();
 		SpringUtils.registerSingleton(getApplicationContext(), "clientRegistrationRepository", clientRepository);
 	}
@@ -149,7 +149,9 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 		};
 
 		builder.clientId(clientId).clientSecret(clientSecret);
-		builder.redirectUri("{baseUrl}/%s/oauth2/code/{registrationId}".formatted(oauthBaseUrl));
+		String redirectUri = "%s/%s/oauth2/code/{registrationId}".formatted(computeBaseUrl(), servletPath);
+		log.debug("using oauth redirect-uri [{}]", redirectUri);
+		builder.redirectUri(redirectUri);
 
 		return builder.build();
 	}
@@ -173,11 +175,24 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 
 	private String computeBaseUrl() {
 		if (StringUtils.isEmpty(baseUrl)) {
-			baseUrl = getPrivateEndpoints().stream().findFirst().orElse("");
+			return "{baseUrl}";
+		}
 
-			if(baseUrl.endsWith("*")) { // Strip the '*' if the url ends with it
-				baseUrl = baseUrl.substring(0, baseUrl.length()-1);
-			}
+		if(baseUrl.endsWith("/")) { // Ensure the url does not end with a slash
+			baseUrl = baseUrl.substring(0, baseUrl.length()-1);
+		}
+
+		return baseUrl;
+	}
+
+	/**
+	 * Servlet-Path that needs to be secured. May not end with a `*` or `/`.
+	 */
+	private String computeServletPath() {
+		String baseUrl = getPrivateEndpoints().stream().findFirst().orElse("");
+
+		if(baseUrl.endsWith("*")) { // Strip the '*' if the url ends with it
+			baseUrl = baseUrl.substring(0, baseUrl.length()-1);
 		}
 
 		if(baseUrl.endsWith("/")) { // Ensure the url does not end with a slash
