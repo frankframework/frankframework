@@ -22,19 +22,19 @@ import java.nio.charset.Charset;
 
 import org.apache.http.entity.mime.MIME;
 import org.apache.http.entity.mime.content.ContentBody;
-import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.stream.Message;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
 
+@Log4j2
 public class MessageContentBody implements ContentBody {
-	private Logger log = LogUtil.getLogger(this);
 	private final Message message;
-	private String filename;
+	private final String filename;
 	private static final int OUTPUT_BUFFER_SIZE = 4096;
 	private final MimeType mimeType;
 
