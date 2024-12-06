@@ -94,12 +94,8 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 	public void writeTo(OutputStream outStream) throws IOException {
 		long length = getContentLength();
 		try (InputStream inStream = getContent()) {
-			if(length < 0) {
-				StreamUtil.streamToStream(inStream, outStream);
-			} else {
-				// consume no more than length
-				StreamUtil.copyPartialStream(inStream, outStream, length, OUTPUT_BUFFER_SIZE);
-			}
+			// consume no more than length
+			StreamUtil.copyPartialStream(inStream, outStream, length, OUTPUT_BUFFER_SIZE);
 		}
 	}
 }

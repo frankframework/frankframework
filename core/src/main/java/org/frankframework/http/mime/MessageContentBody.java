@@ -72,13 +72,8 @@ public class MessageContentBody implements ContentBody {
 	public void writeTo(OutputStream out) throws IOException {
 		long length = getContentLength();
 		try (InputStream inStream = message.asInputStream(getCharset())) {
-			if(length < 0) {
-				StreamUtil.streamToStream(inStream, out);
-			} else {
-				// consume no more than length
-				StreamUtil.copyPartialStream(inStream, out, length, OUTPUT_BUFFER_SIZE);
-			}
-
+			// consume no more than length
+			StreamUtil.copyPartialStream(inStream, out, length, OUTPUT_BUFFER_SIZE);
 		}
 	}
 

@@ -197,12 +197,17 @@ public class StreamUtil {
 	 * @throws IOException Thrown if any exception occurs while reading or writing from either stream.
 	 */
 	public static void copyPartialStream(InputStream in, OutputStream out, long maxBytesToCopy, int chunkSize) throws IOException {
-		if (in == null) {
+		if (in == null || maxBytesToCopy == 0L) {
+			return;
+		}
+
+		if (maxBytesToCopy < 0L) {
+			in.transferTo(out);
 			return;
 		}
 
 		byte[] buffer = new byte[chunkSize];
-		long bytesLeft = maxBytesToCopy > 0L ? maxBytesToCopy : Long.MAX_VALUE;
+		long bytesLeft = maxBytesToCopy;
 		int bytesRead;
 		while (bytesLeft != 0L) {
 			int toRead = (int) Math.min(chunkSize, bytesLeft);
@@ -279,12 +284,13 @@ public class StreamUtil {
 	 * @throws IOException exception to be thrown if an I/O exception occurs
 	 */
 	public static void streamToStream(InputStream input, OutputStream output, byte[] eof) throws IOException {
-		if (input != null) {
-			try (InputStream is = input) {
-				is.transferTo(output);
-				if(eof != null) {
-					output.write(eof);
-				}
+		if (input == null) {
+			return;
+		}
+		try (InputStream is = input) {
+			is.transferTo(output);
+			if(eof != null) {
+				output.write(eof);
 			}
 		}
 	}

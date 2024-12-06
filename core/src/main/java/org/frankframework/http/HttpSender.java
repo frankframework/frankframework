@@ -243,25 +243,22 @@ public class HttpSender extends AbstractHttpSender {
 	 * Returns a multi-parted message, either as X-WWW-FORM-URLENCODED, FORM-DATA or MTOM
 	 */
 	private HttpPost getMultipartPostMethodWithParamsInBody(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
-		HttpPost hmethod = new HttpPost(uri);
-		hmethod.setEntity(createHttpEntity(message, parameters, session));
-		return hmethod;
+		HttpPost httpMethod = new HttpPost(uri);
+		httpMethod.setEntity(createHttpEntity(message, parameters, session));
+		return httpMethod;
 	}
 
 	private HttpEntity createHttpEntity(Message message, ParameterValueList parameters, PipeLineSession session) throws IOException, SenderException {
-		HttpEntity httpEntity;
 		if (postType==PostType.URLENCODED && StringUtils.isEmpty(getMultipartXmlSessionKey())) { // x-www-form-urlencoded
-			httpEntity = createUrlEncodedFormEntity(message, parameters);
+			return createUrlEncodedFormEntity(message, parameters);
 		}
 		else { //formdata and mtom
-			httpEntity = createMultiPartEntity(message, parameters, session);
+			return createMultiPartEntity(message, parameters, session);
 		}
-		return httpEntity;
 	}
 
 	@Nonnull
 	private HttpEntity createUrlEncodedFormEntity(Message message, ParameterValueList parameters) throws IOException, SenderException {
-		HttpEntity requestEntity;
 		List<NameValuePair> requestFormElements = new ArrayList<>();
 
 		if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
@@ -280,14 +277,13 @@ public class HttpSender extends AbstractHttpSender {
 			}
 		}
 		try {
-			requestEntity = new UrlEncodedFormEntity(requestFormElements, getCharSet());
+			return new UrlEncodedFormEntity(requestFormElements, getCharSet());
 		} catch (UnsupportedEncodingException e) {
 			throw new SenderException("unsupported encoding for one or more POST parameters", e);
 		}
-		return requestEntity;
 	}
 
-	private FormBodyPart createStringBodypart(Message message) {
+	private FormBodyPart createStringBodyPart(Message message) {
 		MimeType mimeType = postType == PostType.MTOM ? APPLICATION_XOP_XML : MediaType.TEXT_PLAIN; // only the first part is XOP+XML, other parts should use their own content-type
 		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create(getFirstBodyPartName(), new MessageContentBody(message, mimeType));
 
@@ -307,7 +303,7 @@ public class HttpSender extends AbstractHttpSender {
 			entity.setMtomMultipart();
 
 		if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
-			entity.addPart(createStringBodypart(message));
+			entity.addPart(createStringBodyPart(message));
 			if (log.isDebugEnabled()) log.debug("appended stringpart [{}] with value [{}]", getFirstBodyPartName(), message);
 		}
 		if (parameters!=null) {
