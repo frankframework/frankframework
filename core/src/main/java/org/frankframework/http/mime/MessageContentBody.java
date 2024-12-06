@@ -89,11 +89,7 @@ public class MessageContentBody implements ContentBody {
 
 	@Override
 	public String getMimeType() {
-		StringBuilder builder = new StringBuilder();
-		builder.append(getMediaType());
-		builder.append('/');
-		builder.append(getSubType());
-		return builder.toString();
+		return getMediaType() + '/' + getSubType();
 	}
 
 	@Override
