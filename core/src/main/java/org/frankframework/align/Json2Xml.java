@@ -663,7 +663,9 @@ public class Json2Xml extends XmlAligner {
 		} else {
 			if (isMultipleOccurringChildElement(name) && node instanceof List<?>) {
 				//noinspection unchecked
-				for(JsonValue n:(List<JsonValue>)node) {
+				// this usecase seems to be for Multivalued-Parameters (See Json2XmlValidatorTest#testMultivaluedParameters)
+				// a mapping from a multivalued json array (in a json input) does not seem to be working?
+				for(JsonValue n: (List<JsonValue>) node) {
 					doHandleElement(elementDeclaration, n, elementNamespace, name, qname, attributes);
 				}
 			} else {
