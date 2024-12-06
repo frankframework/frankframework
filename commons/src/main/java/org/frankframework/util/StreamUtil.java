@@ -224,7 +224,6 @@ public class StreamUtil {
 		if (reader == null) {
 			return;
 		}
-		char[] buffer = new char[chunkSize];
 
 		int charsRead;
 		try (Reader r = reader){
@@ -234,6 +233,7 @@ public class StreamUtil {
 				return;
 			}
 			// Could also use `is.transferTo(Out);` here but that uses small default buffer size
+			char[] buffer = new char[chunkSize];
 			while (true) {
 				charsRead = r.read(buffer, 0, chunkSize);
 				if (charsRead <= 0) {
@@ -345,16 +345,7 @@ public class StreamUtil {
 	 * </p>
 	 */
 	public static void readerToWriter(Reader reader, Writer writer) throws IOException {
-		if (reader == null) {
-			return;
-		}
-		try (Reader r = reader) {
-			char[] buffer = new char[BUFFER_SIZE];
-			int charsRead;
-			while ((charsRead = r.read(buffer, 0, BUFFER_SIZE)) > -1) {
-				writer.write(buffer, 0, charsRead);
-			}
-		}
+		copyReaderToWriter(reader, writer, BUFFER_SIZE);
 	}
 
 	/**
