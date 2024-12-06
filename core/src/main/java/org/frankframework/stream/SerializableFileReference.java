@@ -73,7 +73,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 */
 	public static SerializableFileReference of(InputStream in) throws IOException {
 		try (InputStream ignored = in) {
-			return new SerializableFileReference(true, null, true, copyToTempFile(in, -1));
+			return new SerializableFileReference(true, null, true, copyToTempFile(in, -1L));
 		}
 	}
 
@@ -106,7 +106,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 */
 	public static SerializableFileReference of(Reader in, String charset) throws IOException {
 		try (InputStream is = ReaderInputStream.builder().setReader(in).setCharset(charset).get()) {
-			return new SerializableFileReference(false, charset, true, copyToTempFile(is, -1));
+			return new SerializableFileReference(false, charset, true, copyToTempFile(is, -1L));
 		}
 	}
 

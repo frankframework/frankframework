@@ -23,9 +23,11 @@ import java.nio.charset.Charset;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.ContentType;
-import org.apache.logging.log4j.Logger;
+
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.stream.Message;
-import org.frankframework.util.LogUtil;
+import org.frankframework.util.StreamUtil;
 
 /**
  * Custom implementation of an {@link HttpEntity} which deals with {@link #isRepeatable()},
@@ -33,8 +35,8 @@ import org.frankframework.util.LogUtil;
  *
  * @author Niels Meijer
  */
+@Log4j2
 public class HttpMessageEntity extends AbstractHttpEntity {
-	private final Logger log = LogUtil.getLogger(this);
 	private final Message message;
 
 	public HttpMessageEntity(Message message) {
@@ -62,7 +64,7 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 
 	@Override //overridden because we don't want to set empty values
 	public void setContentEncoding(String charset) {
-		if(charset == null || charset.length() > 0) {
+		if(charset == null || !charset.isEmpty()) {
 			super.setContentEncoding(charset);
 		}
 	}
@@ -90,27 +92,10 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 
 	@Override
 	public void writeTo(OutputStream outStream) throws IOException {
-		int length = Math.toIntExact(getContentLength());
+		long length = getContentLength();
 		try (InputStream inStream = getContent()) {
-			final byte[] buffer = new byte[OUTPUT_BUFFER_SIZE];
-			int readLen;
-			if(length < 0) {
-				// consume until EOF
-				while((readLen = inStream.read(buffer)) != -1) {
-					outStream.write(buffer, 0, readLen);
-				}
-			} else {
-				// consume no more than length
-				long remaining = length;
-				while(remaining > 0) {
-					readLen = inStream.read(buffer, 0, (int) Math.min(OUTPUT_BUFFER_SIZE, remaining));
-					if(readLen == -1) {
-						break;
-					}
-					outStream.write(buffer, 0, readLen);
-					remaining -= readLen;
-				}
-			}
+			// consume no more than length
+			StreamUtil.copyPartialStream(inStream, outStream, length, OUTPUT_BUFFER_SIZE);
 		}
 	}
 }
