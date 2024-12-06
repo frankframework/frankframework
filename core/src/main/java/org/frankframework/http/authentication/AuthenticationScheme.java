@@ -33,7 +33,7 @@ public enum AuthenticationScheme {
 	private @Getter String schemeName;
 	private final Class<? extends AuthSchemeBase> schemeClass;
 
-	private AuthenticationScheme(Class<? extends AuthSchemeBase> schemeClass) {
+	AuthenticationScheme(Class<? extends AuthSchemeBase> schemeClass) {
 		this.schemeClass = schemeClass;
 		schemeName = createScheme().getSchemeName();
 	}
