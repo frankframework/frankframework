@@ -49,6 +49,7 @@ import org.frankframework.http.AbstractHttpSession;
 public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 
 	private static final String SAML2_BEARER_GRANT_TYPE = "urn:ietf:params:oauth:grant-type:saml2-bearer";
+	private static final String namespaceURI = "urn:oasis:names:tc:SAML:2.0:assertion";
 
 	private PrivateKey privateKey;
 	private X509Certificate certificate;
@@ -73,11 +74,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 
 		try {
 			privateKey = PkiUtil.getPrivateKey(session, "Creation of SAML assertion");
-		} catch (EncryptionException e) {
-			throw new ConfigurationException(e);
-		}
 
-		try {
 			Certificate certificate = PkiUtil.getCertificate(session, "Creation of SAML assertion");
 
 			if (certificate instanceof X509Certificate x509certificate) {
@@ -107,8 +104,6 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 
 		return Base64.getEncoder().encodeToString(signedAssertionXml.getBytes());
 	}
-
-	private static final String namespaceURI = "urn:oasis:names:tc:SAML:2.0:assertion";
 
 	private Document generateSAMLAssertion() throws Exception {
 		String NotBefore = java.time.Instant.now().minusSeconds(60).toString();

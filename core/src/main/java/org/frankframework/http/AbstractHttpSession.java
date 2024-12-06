@@ -175,8 +175,8 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private @Getter int maxExecuteRetries = 1;
 	private @Getter boolean staleChecking=true;
 	private @Getter int staleTimeout = 5_000; // [ms]
-	private @Getter int connectionTimeToLive = 900; // [s]
-	private @Getter int connectionIdleTimeout = 10; // [s]
+	private @Getter int connectionTimeToLive = 900; // [seconds]
+	private @Getter int connectionIdleTimeout = 10; // [seconds]
 	private final HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
 	private @Getter HttpClientContext defaultHttpClientContext;
 	private HttpClientContext httpClientContext;
@@ -197,7 +197,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private @Getter String nameId;
 	private @Getter String issuer;
 	private @Getter String audience;
-	private @Getter int assertionExpiry; // [s]
+	private @Getter int assertionExpiry; // [seconds]
 
 	private @Getter OauthAuthenticationMethod oauthAuthenticationMethod;
 	private @Getter IOauthAuthenticator authenticator;

@@ -15,16 +15,21 @@
 */
 package org.frankframework.http.authentication;
 
+import jakarta.annotation.Nullable;
+
 import lombok.extern.log4j.Log4j2;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
 
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 
 import org.frankframework.http.AbstractHttpSession;
@@ -33,13 +38,18 @@ import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.JacksonUtils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.frankframework.util.StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+
 @Log4j2
-public abstract class AbstractOauthAuthenticator extends AbstractAuthenticator {
+public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator {
+
+	protected final AbstractHttpSession session;
 
 	protected final URI authorizationEndpoint;
 	protected final int overwriteExpiryMs;
@@ -48,13 +58,36 @@ public abstract class AbstractOauthAuthenticator extends AbstractAuthenticator {
 	private long accessTokenRefreshTime;
 
 	AbstractOauthAuthenticator(final AbstractHttpSession session) throws HttpAuthenticationException {
-		super(session);
+		this.session = session;
 		try {
 			this.authorizationEndpoint = new URI(session.getTokenEndpoint());
 		} catch (URISyntaxException e) {
 			throw new HttpAuthenticationException(e);
 		}
 		this.overwriteExpiryMs = session.getTokenExpiry() * 1000;
+	}
+
+	@Nullable
+	protected BasicHeader getScopeHeader() {
+		if (session.getScope() != null) {
+			return new BasicHeader("scope", session.getScope().replace(',', ' '));
+		}
+
+		return null;
+	}
+
+	protected HttpEntityEnclosingRequestBase createPostRequestWithForm(URI uri, List<NameValuePair> formParameters) throws HttpAuthenticationException {
+		try {
+			UrlEncodedFormEntity body = new UrlEncodedFormEntity(formParameters, DEFAULT_INPUT_STREAM_ENCODING);
+
+			HttpPost request = new HttpPost(uri);
+			request.addHeader(body.getContentType());
+			request.setEntity(body);
+
+			return request;
+		} catch (UnsupportedEncodingException e) {
+			throw new HttpAuthenticationException(e);
+		}
 	}
 
 	protected abstract HttpEntityEnclosingRequestBase createRequest(Credentials credentials, List<NameValuePair> parameters) throws HttpAuthenticationException;
