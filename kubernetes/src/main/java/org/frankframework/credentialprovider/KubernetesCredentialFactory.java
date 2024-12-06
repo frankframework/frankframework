@@ -51,7 +51,8 @@ public class KubernetesCredentialFactory implements ICredentialFactory {
 	protected static final String USERNAME_KEY = "username";
 	protected static final String PASSWORD_KEY = "password";
 	public static final String DEFAULT_NAMESPACE = "default";
-	protected String namespace = DEFAULT_NAMESPACE;
+
+	protected String namespace;
 	private KubernetesClient client;
 	protected List<Credentials> credentials; // Refreshed every SECRETS_CACHE_TIMEOUT_MILLIS
 	private long lastFetch = 0;
@@ -59,12 +60,12 @@ public class KubernetesCredentialFactory implements ICredentialFactory {
 	@Override
 	public void initialize() {
 		CredentialConstants appConstants = CredentialConstants.getInstance();
-		log.info("Initializing KubernetesCredentialFactory");
+		log.info("initializing KubernetesCredentialFactory");
 		if (client == null) { // For testing purposes
 			client = new KubernetesClientBuilder().build();
 		}
 
-		String defaultNamespace = Optional.ofNullable(client.getNamespace()).orElse(namespace);
+		String defaultNamespace = Optional.ofNullable(client.getNamespace()).orElse(DEFAULT_NAMESPACE);
 		namespace = appConstants.getProperty(K8_NAMESPACE_PROPERTY, defaultNamespace);
 
 		String k8Username = appConstants.getProperty(K8_USERNAME, null);
@@ -91,13 +92,14 @@ public class KubernetesCredentialFactory implements ICredentialFactory {
 
 	@Override
 	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
-		if (StringUtils.isNotEmpty(alias)) {
-			return getCredentials().stream()
-					.filter(credential -> alias.equalsIgnoreCase(credential.getAlias()))
-					.findFirst()
-					.orElseThrow(() -> new NoSuchElementException("cannot obtain credentials from authentication alias [" + alias + "]: alias not found"));
+		if (StringUtils.isEmpty(alias)) {
+			return new Credentials(null, defaultUsernameSupplier, defaultPasswordSupplier);
 		}
-		return new Credentials(null, defaultUsernameSupplier, defaultPasswordSupplier);
+
+		return getCredentials().stream()
+				.filter(credential -> alias.equalsIgnoreCase(credential.getAlias()))
+				.findFirst()
+				.orElseThrow(() -> new NoSuchElementException("cannot obtain credentials from authentication alias [" + alias + "]: alias not found"));
 	}
 
 	@Override
