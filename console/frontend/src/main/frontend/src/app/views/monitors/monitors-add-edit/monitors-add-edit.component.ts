@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Event, MonitorsService, Trigger } from '../monitors.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatestWith } from 'rxjs';
+import { AlertState } from '../../test-pipeline/test-pipeline.component';
 
 type EventSource = {
   adapter: string;
@@ -21,8 +22,8 @@ export class MonitorsAddEditComponent implements OnInit {
   protected severities: string[] = [];
   protected trigger: Trigger = {
     name: '',
-    severity: '',
-    filter: '',
+    severity: 'HARMLESS',
+    filter: 'NONE',
     period: 0,
     sources: {},
     changedSources: [],
@@ -34,16 +35,15 @@ export class MonitorsAddEditComponent implements OnInit {
   };
   protected disabled: boolean = false;
   protected pageTitle = '';
+  protected state: AlertState[] = [];
 
   private triggerId: number = -1;
   private events: Record<string, Event> = {};
   private eventSources: Record<string, EventSource[]> = {};
 
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private monitorsService: MonitorsService,
-  ) {}
+  private readonly router: Router = inject(Router);
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly monitorsService: MonitorsService = inject(MonitorsService);
 
   ngOnInit(): void {
     this.route.paramMap.pipe(combineLatestWith(this.route.queryParamMap)).subscribe(([parameters, queryParameters]) => {
@@ -135,6 +135,17 @@ export class MonitorsAddEditComponent implements OnInit {
   }
 
   submit(trigger: Trigger): void {
+    this.state = [];
+    if (trigger.period < 0 || trigger.threshold < 0) {
+      this.addNote('warning', 'Negative values are not allowed');
+      return;
+    }
+
+    if ((trigger.period > 0 && trigger.threshold <= 0) || (trigger.period <= 0 && trigger.threshold > 0)) {
+      this.addNote('warning', 'Threshold and period should both be set');
+      return;
+    }
+
     if (trigger.filter == 'ADAPTER') {
       delete trigger.sources;
     } else if (trigger.filter == 'SOURCE') {
@@ -164,5 +175,9 @@ export class MonitorsAddEditComponent implements OnInit {
           this.navigateBack();
         });
     }
+  }
+
+  addNote(type: string, message: string): void {
+    this.state.push({ type: type, message: message });
   }
 }
