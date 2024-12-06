@@ -413,6 +413,12 @@
 			<version>9.43.4</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.santuario</groupId>
+			<artifactId>xmlsec</artifactId>
+			<version>3.0.3</version>
+		</dependency>
+
 		<!-- TransactionManagers: NARAYANA -->
 		<dependency>
 			<groupId>org.jboss.narayana.jta</groupId>
