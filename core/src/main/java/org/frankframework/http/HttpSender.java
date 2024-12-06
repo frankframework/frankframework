@@ -140,14 +140,6 @@ public class HttpSender extends AbstractHttpSender {
 			}
 		}
 
-		if (postType == PostType.URLENCODED || postType == PostType.FORMDATA || postType == PostType.MTOM) {
-			try {
-				return getMultipartPostMethodWithParamsInBody(url, message, parameters, session);
-			} catch (IOException e) {
-				throw new SenderException("unable to read message", e);
-			}
-		}
-		// RAW + BINARY
 		return createRequestMethod(url, message, parameters, session);
 	}
 
@@ -197,7 +189,7 @@ public class HttpSender extends AbstractHttpSender {
 				} else if(postType == PostType.BINARY) {
 					entity = new HttpMessageEntity(message, getFullContentType());
 				} else {
-					throw new SenderException("PostType ["+postType.name()+"] not allowed!");
+					entity = createHttpEntity(message, parameters, session);
 				}
 
 				HttpEntityEnclosingRequestBase method;
@@ -237,15 +229,6 @@ public class HttpSender extends AbstractHttpSender {
 			//Catch all exceptions and throw them as SenderException
 			throw new SenderException(e);
 		}
-	}
-
-	/**
-	 * Returns a multi-parted message, either as X-WWW-FORM-URLENCODED, FORM-DATA or MTOM
-	 */
-	private HttpPost getMultipartPostMethodWithParamsInBody(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
-		HttpPost httpMethod = new HttpPost(uri);
-		httpMethod.setEntity(createHttpEntity(message, parameters, session));
-		return httpMethod;
 	}
 
 	private HttpEntity createHttpEntity(Message message, ParameterValueList parameters, PipeLineSession session) throws IOException, SenderException {

@@ -1,4 +1,4 @@
-POST http://127.0.0.1/value%20value?path=tr%40lala HTTP/1.1
+POST /value%20value?path=tr%40lala HTTP/1.1
 Message-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb1
 Correlation-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb2
 custom-header: value
