@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.stream.Stream;
 
 import org.apache.http.auth.Credentials;
@@ -36,7 +38,7 @@ import dasniko.testcontainers.keycloak.KeycloakContainer;
 public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 
 	@Container
-	static final KeycloakContainer keycloak = new KeycloakContainer("keycloak/keycloak:25.0").withRealmImportFile("/Http/Authentication/iaf-test.json");
+	static final KeycloakContainer keycloak = new KeycloakContainer().withRealmImportFile("/Http/Authentication/iaf-test.json").withStartupTimeout(Duration.of(5, ChronoUnit.MINUTES));
 
 	private static final String CLIENT_ID = "testiaf-client";
 
