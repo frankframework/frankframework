@@ -28,8 +28,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.xml.validation.ValidatorHandler;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
@@ -47,17 +45,22 @@ import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.grammars.XSGrammar;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xs.XSModel;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.XMLReader;
+
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.cache.EhCache;
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.util.AppConstants;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.XMLReader;
 
 
 /**
@@ -140,18 +143,28 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public void start() throws ConfigurationException {
+	public void start() {
 		super.start();
-		if (schemasProvider == null) throw new IllegalStateException("No schema provider");
-		String schemasId = schemasProvider.getSchemasId();
-		if (schemasId != null) {
-			PreparseResult preparseResult = preparse();
-			if (cache == null || isIgnoreCaching()) {
-				this.preparseResult = preparseResult;
-			} else {
-				cache.put(preparseResultId, preparseResult);
-			}
+
+		if (schemasProvider == null) {
+			throw new IllegalStateException("No schema provider");
 		}
+
+		try {
+			String schemasId = schemasProvider.getSchemasId();
+			if (schemasId != null) {
+				PreparseResult preparseResult = preparse();
+
+				if (cache == null || isIgnoreCaching()) {
+					this.preparseResult = preparseResult;
+				} else {
+					cache.put(preparseResultId, preparseResult);
+				}
+			}
+		} catch (ConfigurationException e) {
+			throw new LifecycleException(e);
+		}
+
 	}
 
 	private static class SymbolTableSingletonHelper {

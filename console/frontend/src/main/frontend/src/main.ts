@@ -12,7 +12,7 @@ declare global {
   }
 }
 
-let scroll2TopAnimation: Animation | null = null;
+const scroll2TopAnimation: Animation | null = null;
 
 function main(): void {
   platformBrowserDynamic()
@@ -74,11 +74,11 @@ function onReady(): void {
   bodyElement.addEventListener('scroll', function (this: HTMLElement) {
     const scroll2top = this.querySelector<HTMLElement>('.scroll-to-top');
     if (!scroll2top) return;
-    if (scroll2TopAnimation) scroll2TopAnimation.cancel();
-    scroll2TopAnimation =
-      this.scrollTop > 100 && Number.parseInt(scroll2top.style.opacity ?? '0') === 0
-        ? scroll2top.animate({ opacity: 1, 'z-index': 10_000 }, 50)
-        : scroll2top.animate({ opacity: 0, 'z-index': -1 }, 50);
+    if (scroll2top.classList.contains('hidden-scroll') && this.scrollTop > 100) {
+      scroll2top.classList.remove('hidden-scroll');
+    } else if (!scroll2top.classList.contains('hidden-scroll') && this.scrollTop <= 100) {
+      scroll2top.classList.add('hidden-scroll');
+    }
   });
 }
 

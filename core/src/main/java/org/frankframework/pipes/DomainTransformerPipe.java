@@ -21,14 +21,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.StringTokenizer;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
@@ -193,14 +193,8 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public void start() throws PipeStartException {
-		try {
-			qs.start();
-		} catch (Throwable t) {
-			PipeStartException pse = new PipeStartException("could not start", t);
-			pse.setPipeNameInError(getName());
-			throw pse;
-		}
+	public void start() {
+		qs.start();
 	}
 
 	@Override

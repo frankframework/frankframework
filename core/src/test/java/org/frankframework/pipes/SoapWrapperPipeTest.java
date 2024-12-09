@@ -23,7 +23,6 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.processors.InputOutputPipeProcessor;
@@ -659,7 +658,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		outputWrapper.stop();
 	}
 
-	private SoapWrapperPipe createWrapperSoapPipe(final SoapVersion soapVersion, boolean started) throws ConfigurationException, PipeStartException {
+	private SoapWrapperPipe createWrapperSoapPipe(final SoapVersion soapVersion, boolean started) throws ConfigurationException {
 		SoapWrapperPipe wrapPipeSoap = createPipe();
 		wrapPipeSoap.setDirection(Direction.WRAP);
 		autowireByType(wrapPipeSoap);
@@ -674,7 +673,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		return wrapPipeSoap;
 	}
 
-	private void setupUnwrapSoapPipe(final SoapVersion soapVersion, boolean started) throws ConfigurationException, PipeStartException {
+	private void setupUnwrapSoapPipe(final SoapVersion soapVersion, boolean started) throws ConfigurationException {
 		// Arrange - Simulate soapInputWrapper unwrapping the input and creating soapNamespace sessionKey using the namespace from the input
 		pipe.setDirection(Direction.UNWRAP);
 		pipe.setSoapVersion(soapVersion);

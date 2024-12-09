@@ -19,7 +19,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.util.StreamUtil;
 
@@ -60,7 +59,7 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 	}
 
 	@Test
-	public void unknownSessionKey() throws ConfigurationException, PipeStartException, PipeRunException {
+	public void unknownSessionKey() throws ConfigurationException, PipeRunException {
 		pipe.setSessionKey("unknown");
 		pipe.configure();
 		pipe.start();
@@ -92,7 +91,7 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 	}
 
 	@Test
-	public void retrieveInputStreamFromSession() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
+	public void retrieveInputStreamFromSession() throws ConfigurationException, PipeRunException, IOException {
 		pipe.setSessionKey("dummyStream");
 		pipe.configure();
 		pipe.start();
@@ -115,7 +114,7 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 	}
 
 	@Test
-	public void retrieveMapFromSession() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
+	public void retrieveMapFromSession() throws ConfigurationException, PipeRunException, IOException {
 		pipe.setType(ParameterType.MAP);
 		pipe.setSessionKey("map");
 		pipe.configure();

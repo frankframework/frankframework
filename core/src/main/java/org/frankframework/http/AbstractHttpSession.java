@@ -23,8 +23,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -416,7 +414,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 			} catch (NoSuchAlgorithmException e) {
 				String errorMessage = "unknown protocol ["+protocol+"]";
 				if(sslParams != null) {
-					errorMessage += ", must be one of ["+Stream.of(sslParams.getProtocols()).collect(Collectors.joining(", "))+"]";
+					errorMessage += ", must be one of ["+ String.join(", ", sslParams.getProtocols()) +"]";
 				}
 				throw new ConfigurationException(errorMessage, e);
 			}

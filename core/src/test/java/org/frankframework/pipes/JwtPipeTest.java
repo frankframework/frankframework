@@ -28,7 +28,6 @@ import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.parameters.Parameter;
 
 public class JwtPipeTest extends PipeTestBase<JwtPipe> {
@@ -66,7 +65,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	}
 
 	@Test
-	void secretParamTooShortShouldThrow() throws ConfigurationException, PipeStartException {
+	void secretParamTooShortShouldThrow() throws ConfigurationException {
 		pipe.addParameter(new Parameter(JwtPipe.SHARED_SECRET_PARAMETER_NAME, "Potato"));
 		configureAndStartPipe();
 

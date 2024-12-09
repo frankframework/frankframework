@@ -8,7 +8,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeRunException;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.stream.Message;
@@ -22,7 +21,7 @@ public class ConsecutiveXsltPipeTest extends PipeTestBase<XsltPipe> {
 	}
 
 	@Test
-	public void testConsecutiveXsltPipes() throws ConfigurationException, PipeRunException, IOException, PipeStartException {
+	public void testConsecutiveXsltPipes() throws ConfigurationException, PipeRunException, IOException {
 		XsltPipe first = new XsltPipe();
 		first.setName("XsltPipe");
 		first.setStyleSheetName("/Xslt/extract.xslt");

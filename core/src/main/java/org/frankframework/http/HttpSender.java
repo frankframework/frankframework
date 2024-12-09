@@ -19,13 +19,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
 import jakarta.mail.BodyPart;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMultipart;
@@ -44,7 +44,6 @@ import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.FormBodyPartBuilder;
@@ -141,51 +140,18 @@ public class HttpSender extends AbstractHttpSender {
 			}
 		}
 
-		URI uri;
-		try {
-			uri = encodeQueryParameters(url);
-		} catch (UnsupportedEncodingException | URISyntaxException e) {
-			throw new SenderException("error encoding queryparameters in url ["+url.toString()+"]", e);
-		}
-
-		if(postType==PostType.URLENCODED || postType==PostType.FORMDATA || postType==PostType.MTOM) {
-			try {
-				return getMultipartPostMethodWithParamsInBody(uri, message, parameters, session);
-			} catch (IOException e) {
-				throw new SenderException("unable to read message", e);
-			}
-		}
-		// RAW + BINARY
-		return getMethod(uri, message, parameters);
-	}
-
-	// Encode query parameter values.
-	private URI encodeQueryParameters(URI url) throws UnsupportedEncodingException, URISyntaxException {
-		URIBuilder uri = new URIBuilder(url);
-		ArrayList<NameValuePair> pairs = new ArrayList<>(uri.getQueryParams().size());
-		for(NameValuePair pair : uri.getQueryParams()) {
-			String paramValue = pair.getValue(); //May be NULL
-			if(StringUtils.isNotEmpty(paramValue)) {
-				paramValue = URLEncoder.encode(paramValue, getCharSet()); //Only encode if the value is not null
-			}
-			pairs.add(new BasicNameValuePair(pair.getName(), paramValue));
-		}
-		if(!pairs.isEmpty()) {
-			uri.clearParameters();
-			uri.addParameters(pairs);
-		}
-		return uri.build();
+		return createRequestMethod(url, message, parameters, session);
 	}
 
 	/**
-	 * Returns HttpRequestBase, with (optional) RAW or as BINAIRY content
+	 * Returns HttpRequestBase, with (optional) RAW or as BINARY content
 	 */
-	protected HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters) throws SenderException {
+	protected HttpRequestBase createRequestMethod(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
 		try {
 			boolean queryParametersAppended = false;
 			StringBuilder relativePath = new StringBuilder(uri.getRawPath());
-			if (!StringUtils.isEmpty(uri.getQuery())) {
-				relativePath.append("?").append(uri.getQuery());
+			if (!StringUtils.isEmpty(uri.getRawQuery())) {
+				relativePath.append("?").append(uri.getRawQuery());
 				queryParametersAppended = true;
 			}
 
@@ -223,7 +189,7 @@ public class HttpSender extends AbstractHttpSender {
 				} else if(postType == PostType.BINARY) {
 					entity = new HttpMessageEntity(message, getFullContentType());
 				} else {
-					throw new SenderException("PostType ["+postType.name()+"] not allowed!");
+					entity = createHttpEntity(message, parameters, session);
 				}
 
 				HttpEntityEnclosingRequestBase method;
@@ -265,45 +231,42 @@ public class HttpSender extends AbstractHttpSender {
 		}
 	}
 
-	/**
-	 * Returns a multi-parted message, either as X-WWW-FORM-URLENCODED, FORM-DATA or MTOM
-	 */
-	private HttpPost getMultipartPostMethodWithParamsInBody(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
-		HttpPost hmethod = new HttpPost(uri);
-
+	private HttpEntity createHttpEntity(Message message, ParameterValueList parameters, PipeLineSession session) throws IOException, SenderException {
 		if (postType==PostType.URLENCODED && StringUtils.isEmpty(getMultipartXmlSessionKey())) { // x-www-form-urlencoded
-			List<NameValuePair> requestFormElements = new ArrayList<>();
-
-			if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
-				requestFormElements.add(new BasicNameValuePair(getFirstBodyPartName(), message.asString()));
-				log.debug("appended parameter [{}] with value [{}]", getFirstBodyPartName(), message);
-			}
-			if (parameters!=null) {
-				for(ParameterValue pv : parameters) {
-					String name = pv.getDefinition().getName();
-					String value = pv.asStringValue("");
-
-					if (requestOrBodyParamsSet.contains(name) && (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(name))) {
-						requestFormElements.add(new BasicNameValuePair(name,value));
-						log.debug("appended parameter [{}] with value [{}]", name, value);
-					}
-				}
-			}
-			try {
-				hmethod.setEntity(new UrlEncodedFormEntity(requestFormElements, getCharSet()));
-			} catch (UnsupportedEncodingException e) {
-				throw new SenderException("unsupported encoding for one or more POST parameters", e);
-			}
+			return createUrlEncodedFormEntity(message, parameters);
 		}
 		else { //formdata and mtom
-			HttpEntity requestEntity = createMultiPartEntity(message, parameters, session);
-			hmethod.setEntity(requestEntity);
+			return createMultiPartEntity(message, parameters, session);
 		}
-
-		return hmethod;
 	}
 
-	private FormBodyPart createStringBodypart(Message message) {
+	@Nonnull
+	private HttpEntity createUrlEncodedFormEntity(Message message, ParameterValueList parameters) throws IOException, SenderException {
+		List<NameValuePair> requestFormElements = new ArrayList<>();
+
+		if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
+			requestFormElements.add(new BasicNameValuePair(getFirstBodyPartName(), message.asString()));
+			log.debug("appended parameter [{}] with value [{}]", getFirstBodyPartName(), message);
+		}
+		if (parameters !=null) {
+			for(ParameterValue pv : parameters) {
+				String name = pv.getDefinition().getName();
+				String value = pv.asStringValue("");
+
+				if (requestOrBodyParamsSet.contains(name) && (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(name))) {
+					requestFormElements.add(new BasicNameValuePair(name,value));
+					log.debug("appended parameter [{}] with value [{}]", name, value);
+				}
+			}
+		}
+		try {
+			return new UrlEncodedFormEntity(requestFormElements, getCharSet());
+		} catch (UnsupportedEncodingException e) {
+			throw new SenderException("unsupported encoding for one or more POST parameters", e);
+		}
+	}
+
+	private FormBodyPart createStringBodyPart(Message message) {
 		MimeType mimeType = postType == PostType.MTOM ? APPLICATION_XOP_XML : MediaType.TEXT_PLAIN; // only the first part is XOP+XML, other parts should use their own content-type
 		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create(getFirstBodyPartName(), new MessageContentBody(message, mimeType));
 
@@ -323,7 +286,7 @@ public class HttpSender extends AbstractHttpSender {
 			entity.setMtomMultipart();
 
 		if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
-			entity.addPart(createStringBodypart(message));
+			entity.addPart(createStringBodyPart(message));
 			if (log.isDebugEnabled()) log.debug("appended stringpart [{}] with value [{}]", getFirstBodyPartName(), message);
 		}
 		if (parameters!=null) {

@@ -9,7 +9,7 @@ type FormSessionKey = {
   value: string;
 };
 
-type AlertState = {
+export type AlertState = {
   type: string;
   message: string;
 };
