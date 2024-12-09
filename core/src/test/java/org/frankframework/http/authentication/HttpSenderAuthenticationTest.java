@@ -14,10 +14,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.http.AbstractHttpSession;
-import org.frankframework.testutil.ParameterBuilder;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -28,12 +24,15 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 
 import lombok.Getter;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.http.HttpSender;
 import org.frankframework.http.AbstractHttpSender.HttpMethod;
+import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.http.HttpSender;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.ParameterBuilder;
 
 public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	private final boolean useMockServer = true;
@@ -558,4 +557,37 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
 	}
+
+	@Test
+	void testSamlAssertion() throws Exception {
+		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
+		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH);
+		sender.setOauthAuthenticationMethod(AbstractHttpSession.OauthAuthenticationMethod.SAML_ASSERTION);
+
+		sender.setKeystore("/Signature/saml-keystore.p12");
+		sender.setKeystorePassword("geheim");
+		sender.setKeystoreAlias("myalias");
+		sender.setKeystoreAliasPassword("geheim");
+
+		sender.setTruststore("/Signature/saml-keystore.p12");
+		sender.setTruststorePassword("geheim");
+		sender.setTruststoreAuthAlias("myalias");
+
+		sender.setClientId(MockTokenServer.CLIENT_ID);
+		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
+
+		sender.setIssuer("www.successfactors.com");
+		sender.setAudience("www.successfactors.com");
+
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTimeout(100000);
+
+		sender.configure();
+		sender.start();
+
+		result = sendMessage();
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
+		assertNotNull(result.asString());
+	}
+
 }
