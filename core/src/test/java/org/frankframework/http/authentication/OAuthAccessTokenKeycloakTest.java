@@ -10,13 +10,9 @@ import java.util.stream.Stream;
 
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
-
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.http.HttpSender;
-
 import org.frankframework.senders.SenderTestBase;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -67,7 +63,8 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
-	super.setUp();
+		super.setUp();
+
 		sender.setName("Http Sender");
 		sender.setTokenEndpoint(getTestEndpoint());
 		sender.setUrl("http://localhost");
