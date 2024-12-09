@@ -34,7 +34,7 @@
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>3.2</frankdoc.version>
-		<javadoc-plugin.version>3.11.1</javadoc-plugin.version>
+		<javadoc-plugin.version>3.11.2</javadoc-plugin.version>
 
 		<!-- DB Driver Versions -->
 		<h2.driver.version>2.3.232</h2.driver.version>
