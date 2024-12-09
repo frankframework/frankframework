@@ -65,7 +65,9 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 	}
 
 	@BeforeEach
-	public void setup() throws ConfigurationException {
+	@Override
+	public void setUp() throws ConfigurationException {
+	super.setUp();
 		sender.setName("Http Sender");
 		sender.setTokenEndpoint(getTestEndpoint());
 		sender.setUrl("http://localhost");
@@ -76,7 +78,7 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 		sender.setPassword("fakeCredentialPassword");
 
 		sender.configure();
-		sender.start();;
+		sender.start();
 	}
 
 	@MethodSource("parameters")
