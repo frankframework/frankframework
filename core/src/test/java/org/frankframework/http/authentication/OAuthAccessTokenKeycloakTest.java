@@ -66,7 +66,7 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 
 	@BeforeEach
 	@Override
-	public void setUp() throws ConfigurationException {
+	public void setUp() throws Exception {
 	super.setUp();
 		sender.setName("Http Sender");
 		sender.setTokenEndpoint(getTestEndpoint());
