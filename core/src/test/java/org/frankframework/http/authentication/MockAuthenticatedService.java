@@ -68,13 +68,13 @@ public class MockAuthenticatedService {
 						.withHeader("WWW-Authenticate", "Bearer realm=test")
 						.withBody("{\"message\":\"no bearer authorization header\"}")));
 		extension.stubFor(any(urlPathMatching(oauthPath))
-					.withHeader(AUTHORIZATION_HEADER, matching("Bearer ([A-Za-z0-9]+)"))
+					.withHeader(AUTHORIZATION_HEADER, matching("Bearer " + MockTokenServer.VALID_TOKEN))
 					.willReturn(aResponse()
 						.withStatus(200)
 						.withHeader("Content-Type", "application/json")
 						.withBody("{}")));
 		extension.stubFor(any(urlPathMatching(oauthPath))
-					.withHeader(AUTHORIZATION_HEADER, matching("Bearer "+MockTokenServer.EXPIRED_TOKEN))
+					.withHeader(AUTHORIZATION_HEADER, matching("Bearer " + MockTokenServer.EXPIRED_TOKEN))
 					.willReturn(aResponse()
 						.withStatus(401)
 						.withHeader("WWW-Authenticate", "Bearer realm=test")

@@ -1,29 +1,25 @@
 package org.frankframework.http.authentication;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.stream.Stream;
 
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.http.HttpSender;
+import org.frankframework.senders.SenderTestBase;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import com.nimbusds.oauth2.sdk.AccessTokenResponse;
-import com.nimbusds.oauth2.sdk.TokenRequest;
-import com.nimbusds.oauth2.sdk.TokenResponse;
-import com.nimbusds.oauth2.sdk.http.HTTPRequest;
-import com.nimbusds.oauth2.sdk.http.HTTPResponse;
-import com.nimbusds.oauth2.sdk.token.AccessToken;
 
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 
@@ -35,10 +31,10 @@ import dasniko.testcontainers.keycloak.KeycloakContainer;
  */
 @Testcontainers(disabledWithoutDocker = true)
 @Tag("integration") // Requires Docker; exclude with '-DexcludedGroups=integration'
-public class OAuthAccessTokenKeycloakTest {
+public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 
 	@Container
-	static final KeycloakContainer keycloak = new KeycloakContainer().withRealmImportFile("/Http/Authentication/iaf-test.json");
+	static final KeycloakContainer keycloak = new KeycloakContainer("quay.io/keycloak/keycloak:26.0.7").withRealmImportFile("/Http/Authentication/iaf-test.json").withStartupTimeout(Duration.of(5, ChronoUnit.MINUTES));
 
 	private static final String CLIENT_ID = "testiaf-client";
 
@@ -50,45 +46,55 @@ public class OAuthAccessTokenKeycloakTest {
 
 	public static Stream<Arguments> parameters() {
 		return Stream.of(
-				Arguments.of(true, OAuthAccessTokenManager.AuthenticationType.REQUEST_PARAMETER),
-				Arguments.of(false, OAuthAccessTokenManager.AuthenticationType.REQUEST_PARAMETER),
-				Arguments.of(true, OAuthAccessTokenManager.AuthenticationType.AUTHENTICATION_HEADER),
-				Arguments.of(false, OAuthAccessTokenManager.AuthenticationType.AUTHENTICATION_HEADER)
+				Arguments.of(AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH, true),
+				Arguments.of(AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_QUERY_PARAMETERS, true),
+
+				// Keycloak does not store passwords directly, so resource owner password credentials is impossible.
+				Arguments.of(AbstractHttpSession.OauthAuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH, false),
+				Arguments.of(AbstractHttpSession.OauthAuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS, false)
 		);
+	}
+
+	@Override
+	public HttpSender createSender() throws Exception {
+		return new HttpSender();
+	}
+
+	@BeforeEach
+	@Override
+	public void setUp() throws Exception {
+		super.setUp();
+
+		sender.setName("Http Sender");
+		sender.setTokenEndpoint(getTestEndpoint());
+		sender.setUrl("http://localhost");
+		sender.setClientId(CLIENT_ID);
+		sender.setClientSecret(CLIENT_SECRET);
+		sender.setScope("email");
+		sender.setUsername("fakeCredentialUserName");
+		sender.setPassword("fakeCredentialPassword");
+
+		sender.configure();
+		sender.start();
 	}
 
 	@MethodSource("parameters")
 	@ParameterizedTest
-	void testGetAccessToken(boolean useCredentials, OAuthAccessTokenManager.AuthenticationType authenticationType) throws Exception {
-		TestableOAuthAccessTokenManager tokenManager = getTokenManager(useCredentials, authenticationType);
+	void testGetAccessToken(AbstractHttpSession.OauthAuthenticationMethod oauthAuthenticationMethod, boolean shouldResolveSuccessfully) throws Exception {
+		var authenticator = oauthAuthenticationMethod.newAuthenticator(sender);
 
-		TokenRequest tokenRequest = tokenManager.createRequest(credentials);
-		HTTPRequest httpRequest = tokenRequest.toHTTPRequest();
+		if (shouldResolveSuccessfully) {
+			String accessToken = authenticator.getOrRefreshAccessToken(credentials, false);
 
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			HttpPost apacheRequest = (HttpPost) tokenManager.convertToApacheHttpRequest(httpRequest);
-
-			try (CloseableHttpResponse apacheResponse = httpClient.execute(apacheRequest)) {
-				if (!useCredentials) {
-					// expect this to go wrong because 'direct access grants' is disabled for 'iaf-test' realm
-					assertEquals(400, apacheResponse.getStatusLine().getStatusCode());
-				} else {
-					HTTPResponse response = tokenManager.convertFromApacheHttpResponse(apacheResponse);
-					TokenResponse tokenResponse = TokenResponse.parse(response);
-					AccessTokenResponse successResponse = tokenResponse.toSuccessResponse();
-
-					AccessToken accessToken = successResponse.getTokens().getAccessToken();
-					assertNotNull(accessToken);
-				}
-			}
+			assertNotNull(accessToken);
+			assertTrue(accessToken.length() > 50, "Length of accessToken is short, which could indicate that it failed");
+		} else {
+			assertThrows(HttpAuthenticationException.class, () -> authenticator.getOrRefreshAccessToken(credentials, false));
 		}
-	}
-
-	private TestableOAuthAccessTokenManager getTokenManager(boolean useClientCredentials, OAuthAccessTokenManager.AuthenticationType authenticationType) throws Exception {
-		return new TestableOAuthAccessTokenManager(useClientCredentials, authenticationType, CLIENT_ID, CLIENT_SECRET, getTestEndpoint());
 	}
 
 	private String getTestEndpoint() {
 		return String.format(TOKEN_ENDPOINT_FORMAT, keycloak.getHttpPort());
 	}
+
 }
