@@ -1,6 +1,8 @@
 package org.frankframework.console.controllers;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 
@@ -24,6 +26,15 @@ import org.frankframework.management.bus.message.StringMessage;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, TransactionalStorage.class})
 public class TransactionalStorageTest extends FrankApiTestBase {
+
+	@Test
+	public void testDecodeBase64() {
+		assertAll(
+				() -> assertEquals("/adapter/dummy adapter/receiver/receiver!", TransactionalStorage.decodeBase64("L2FkYXB0ZXIvZHVtbXkgYWRhcHRlci9yZWNlaXZlci9yZWNlaXZlciE=")),
+				() -> assertEquals("/adapter/dummy ædåpter", TransactionalStorage.decodeBase64("L2FkYXB0ZXIvZHVtbXkgw6Zkw6VwdGVy")),
+				() -> assertThrows(IllegalArgumentException.class, () -> TransactionalStorage.decodeBase64("??"))
+		);
+	}
 
 	@Test
 	public void testBrowseMessage() throws Exception {
