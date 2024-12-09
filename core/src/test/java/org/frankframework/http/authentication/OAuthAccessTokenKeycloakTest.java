@@ -38,7 +38,7 @@ import dasniko.testcontainers.keycloak.KeycloakContainer;
 public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 
 	@Container
-	static final KeycloakContainer keycloak = new KeycloakContainer().withRealmImportFile("/Http/Authentication/iaf-test.json").withStartupTimeout(Duration.of(5, ChronoUnit.MINUTES));
+	static final KeycloakContainer keycloak = new KeycloakContainer("quay.io/keycloak/keycloak:26.0.7").withRealmImportFile("/Http/Authentication/iaf-test.json").withStartupTimeout(Duration.of(5, ChronoUnit.MINUTES));
 
 	private static final String CLIENT_ID = "testiaf-client";
 
