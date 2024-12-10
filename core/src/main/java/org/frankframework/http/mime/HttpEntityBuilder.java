@@ -48,8 +48,8 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
+import org.frankframework.http.HttpEntityType;
 import org.frankframework.http.HttpMessageEntity;
-import org.frankframework.http.HttpSender;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
@@ -61,7 +61,7 @@ import org.frankframework.util.XmlUtils;
 public class HttpEntityBuilder {
 	private static final MimeType APPLICATION_XOP_XML = MimeType.valueOf("application/xop+xml");
 
-	private HttpSender.PostType formType;
+	private HttpEntityType formType;
 	private ContentType contentType;
 	private Set<String> parametersToUse = Set.of();
 	private Set<String> parametersToSkipWhenEmpty = Set.of();
@@ -79,7 +79,7 @@ public class HttpEntityBuilder {
 
 	}
 
-	public HttpEntityBuilder formType(HttpSender.PostType formType) {
+	public HttpEntityBuilder formType(HttpEntityType formType) {
 		this.formType = formType;
 		return this;
 	}
@@ -190,11 +190,11 @@ public class HttpEntityBuilder {
 	}
 
 	private FormBodyPart createStringBodyPart(Message message) {
-		MimeType mimeType = formType == HttpSender.PostType.MTOM ? APPLICATION_XOP_XML : MediaType.TEXT_PLAIN; // only the first part is XOP+XML, other parts should use their own content-type
+		MimeType mimeType = formType == HttpEntityType.MTOM ? APPLICATION_XOP_XML : MediaType.TEXT_PLAIN; // only the first part is XOP+XML, other parts should use their own content-type
 		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create(firstBodyPartName, new MessageContentBody(message, mimeType));
 
 		// Should only be set when request is MTOM and it's the first BodyPart
-		if (formType == HttpSender.PostType.MTOM && StringUtils.isNotEmpty(mtomContentTransferEncoding)) {
+		if (formType == HttpEntityType.MTOM && StringUtils.isNotEmpty(mtomContentTransferEncoding)) {
 			bodyPart.setField(MIME.CONTENT_TRANSFER_ENC, mtomContentTransferEncoding);
 		}
 
@@ -205,7 +205,7 @@ public class HttpEntityBuilder {
 		MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 
 		entity.setCharset(Charset.forName(charSet));
-		entity.setMtomMultipart(formType == HttpSender.PostType.MTOM);
+		entity.setMtomMultipart(formType == HttpEntityType.MTOM);
 
 		if (StringUtils.isNotEmpty(firstBodyPartName)) {
 			entity.addPart(createStringBodyPart(message));

@@ -33,12 +33,12 @@ import org.frankframework.stream.Message;
 public class MultipartHttpSender extends HttpSender {
 
 	public MultipartHttpSender() {
-		setPostType(PostType.FORMDATA);
+		setPostType(HttpEntityType.FORMDATA);
 		setMethodType(HttpMethod.POST);
 		setFirstBodyPartName("message");
 	}
 
-	@Override
+	//@Override
 	protected FormBodyPart elementToFormBodyPart(Element element, PipeLineSession session) throws IOException {
 		String partType = element.getAttribute("type"); //File or otherwise
 		String partName = element.getAttribute("name"); //Name of the part

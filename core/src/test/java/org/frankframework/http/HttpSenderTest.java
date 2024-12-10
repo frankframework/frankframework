@@ -34,7 +34,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.AbstractHttpSender.HttpMethod;
-import org.frankframework.http.HttpSender.PostType;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
@@ -552,7 +551,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
 		sender.setMethodType(HttpMethod.POST);
-		sender.setPostType(PostType.URLENCODED);
+		sender.setPostType(HttpEntityType.URLENCODED);
 		sender.setFirstBodyPartName("nameOfTheFirstContentId");
 
 		sender.configure();
@@ -589,7 +588,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setContentType("application/json");
-		sender.setPostType(PostType.BINARY);
+		sender.setPostType(HttpEntityType.BINARY);
 
 		sender.configure();
 		sender.start();
@@ -609,7 +608,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setContentType("application/pdf");
-		sender.setPostType(PostType.BINARY);
+		sender.setPostType(HttpEntityType.BINARY);
 
 		sender.configure();
 		sender.start();
@@ -645,7 +644,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.PUT);
 		sender.setContentType("application/json");
-		sender.setPostType(PostType.BINARY);
+		sender.setPostType(HttpEntityType.BINARY);
 
 		sender.configure();
 		sender.start();
@@ -720,7 +719,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		PipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType(HttpMethod.POST);
-		sender.setPostType(PostType.FORMDATA);
+		sender.setPostType(HttpEntityType.FORMDATA);
 		sender.setFirstBodyPartName("request");
 
 		String xmlMultipart = """
@@ -758,7 +757,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		pls.put("multipartXml", xmlMultipart);
 		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
-		sender.setPostType(PostType.MTOM);
+		sender.setPostType(HttpEntityType.MTOM);
 		sender.setMultipartXmlSessionKey("multipartXml");
 
 		sender.configure();
@@ -812,7 +811,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		pls.put("multipartXml", xmlMultipart);
 		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
-		sender.setPostType(PostType.MTOM);
+		sender.setPostType(HttpEntityType.MTOM);
 		sender.setMultipartXmlSessionKey("multipartXml");
 
 		sender.configure();
@@ -864,7 +863,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setFirstBodyPartName("request");
-		sender.setPostType(PostType.MTOM);
+		sender.setPostType(HttpEntityType.MTOM);
 		sender.setMtomContentTransferEncoding("base64");
 
 		String xmlMultipart = """
@@ -933,7 +932,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setFirstBodyPartName("request");
-		sender.setPostType(PostType.MTOM);
+		sender.setPostType(HttpEntityType.MTOM);
 		sender.setMtomContentTransferEncoding("base64");
 
 		String xmlMultipart = """
@@ -969,7 +968,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		PipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType(HttpMethod.POST);
-		sender.setPostType(PostType.MTOM);
+		sender.setPostType(HttpEntityType.MTOM);
 		sender.setFirstBodyPartName("request");
 
 		String xmlMultipart = """
@@ -980,7 +979,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		pls.put("multipartXml", xmlMultipart);
 		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
-		sender.setPostType(PostType.MTOM);
+		sender.setPostType(HttpEntityType.MTOM);
 		sender.setMultipartXmlSessionKey("multipartXml");
 
 		sender.configure();
@@ -1008,7 +1007,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		pls.put("multipartXml", xmlMultipart);
 		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
-		sender.setPostType(PostType.MTOM);
+		sender.setPostType(HttpEntityType.MTOM);
 		sender.setMultipartXmlSessionKey("multipartXml");
 
 		sender.addParameter(new Parameter("url", "http://ignore.me")); //skip this
@@ -1041,7 +1040,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		pls.put("multipartXml", xmlMultipart);
 		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
-		sender.setPostType(PostType.MTOM);
+		sender.setPostType(HttpEntityType.MTOM);
 		sender.setMultipartXmlSessionKey("multipartXml");
 
 		sender.addParameter(new Parameter("url", "http://ignore.me")); //skip this

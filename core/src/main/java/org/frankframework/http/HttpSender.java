@@ -69,28 +69,14 @@ public class HttpSender extends AbstractHttpSender {
 	private @Getter boolean encodeMessages = false;
 	private @Getter Boolean treatInputMessageAsParameters = null;
 
-	private @Getter PostType postType = PostType.RAW;
+	private @Getter HttpEntityType postType = HttpEntityType.RAW;
 
 	private HttpEntityBuilder entityBuilder;
-
-	public enum PostType {
-		/** The input message is sent unchanged as character data, like text, XML or JSON, with possibly parameter data appended */
-		RAW, // text/html;charset=UTF8
-		/** The input message is sent unchanged as binary data */
-		BINARY, //application/octet-stream
-//		SWA("Soap with Attachments"), // text/xml
-		/** Yields a x-www-form-urlencoded form entity */
-		URLENCODED,
-		/** Yields a multipart/form-data form entity */
-		FORMDATA,
-		/** Yields a MTOM multipart/related form entity */
-		MTOM
-	}
 
 	@Override
 	public void configure() throws ConfigurationException {
 		//For backwards compatibility we have to set the contentType to text/html on POST and PUT requests
-		if(StringUtils.isEmpty(getContentType()) && postType == PostType.RAW && (getHttpMethod() == HttpMethod.POST || getHttpMethod() == HttpMethod.PUT || getHttpMethod() == HttpMethod.PATCH)) {
+		if(StringUtils.isEmpty(getContentType()) && postType == HttpEntityType.RAW && (getHttpMethod() == HttpMethod.POST || getHttpMethod() == HttpMethod.PUT || getHttpMethod() == HttpMethod.PATCH)) {
 			setContentType("text/html");
 		}
 
@@ -109,9 +95,9 @@ public class HttpSender extends AbstractHttpSender {
 			}
 		}
 
-		if (!paramsInUrl && postType == PostType.URLENCODED && StringUtils.isNotBlank(getMultipartXmlSessionKey())) {
+		if (!paramsInUrl && postType == HttpEntityType.URLENCODED && StringUtils.isNotBlank(getMultipartXmlSessionKey())) {
 			// Some weird backwards-compatibility hacks with deprecated "paramsInUrl" to be worked around. Now in better place than before, hopefully.
-			postType = PostType.FORMDATA;
+			postType = HttpEntityType.FORMDATA;
 		}
 
 		entityBuilder = HttpEntityBuilder.create()
@@ -289,7 +275,7 @@ public class HttpSender extends AbstractHttpSender {
 	 * If <code>methodType</code>=<code>POST</code>, <code>PUT</code> or <code>PATCH</code>, the type of post request
 	 * @ff.default RAW
 	 */
-	public void setPostType(PostType type) {
+	public void setPostType(HttpEntityType type) {
 		this.postType = type;
 	}
 
@@ -300,8 +286,8 @@ public class HttpSender extends AbstractHttpSender {
 	@Deprecated(forRemoval = true, since = "7.6.0")
 	public void setParamsInUrl(boolean b) {
 		if(!b) {
-			if(postType != PostType.MTOM && postType != PostType.FORMDATA) { //Don't override if another type has explicitly been set
-				postType = PostType.URLENCODED;
+			if(postType != HttpEntityType.MTOM && postType != HttpEntityType.FORMDATA) { //Don't override if another type has explicitly been set
+				postType = HttpEntityType.URLENCODED;
 				ConfigurationWarnings.add(this, log, "attribute [paramsInUrl] is deprecated: please use postType='URLENCODED' instead", SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
 			} else {
 				ConfigurationWarnings.add(this, log, "attribute [paramsInUrl] is deprecated: no longer required when using FORMDATA or MTOM requests", SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
