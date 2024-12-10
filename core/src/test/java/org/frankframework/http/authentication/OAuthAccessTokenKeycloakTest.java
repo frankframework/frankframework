@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -37,7 +38,10 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 	public static final Log4jLogConsumer logConsumer = new Log4jLogConsumer(log);
 
 	@Container
-	private static final KeycloakContainer keycloak = new KeycloakContainer().withRealmImportFile("/Http/Authentication/iaf-test.json").withLogConsumer(logConsumer);
+	private static final KeycloakContainer keycloak = new KeycloakContainer()
+			.withRealmImportFile("/Http/Authentication/iaf-test.json")
+			.withLogConsumer(logConsumer)
+			.waitingFor(Wait.forLogMessage(".*Running the server in development mode\\\\. DO NOT use this configuration in production.*", 1))
 
 	private static final String CLIENT_ID = "testiaf-client";
 
