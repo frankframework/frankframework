@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.stream.Stream;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -18,6 +18,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.Logger;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -31,10 +33,13 @@ import dasniko.testcontainers.keycloak.KeycloakContainer;
  */
 @Testcontainers(disabledWithoutDocker = true)
 @Tag("integration") // Requires Docker; exclude with '-DexcludedGroups=integration'
+@Log4j2
 public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 
+	public static final Slf4jLogConsumer logConsumer = new Slf4jLogConsumer((Logger) log);
+
 	@Container
-	static final KeycloakContainer keycloak = new KeycloakContainer("quay.io/keycloak/keycloak:26.0.7").withRealmImportFile("/Http/Authentication/iaf-test.json").withStartupTimeout(Duration.of(5, ChronoUnit.MINUTES));
+	static final KeycloakContainer keycloak = new KeycloakContainer().withRealmImportFile("/Http/Authentication/iaf-test.json").withLogConsumer(logConsumer);
 
 	private static final String CLIENT_ID = "testiaf-client";
 
