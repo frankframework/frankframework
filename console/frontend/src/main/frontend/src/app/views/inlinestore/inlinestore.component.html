@@ -12,6 +12,7 @@
                 <tr>
                   <th>ProcessState</th>
                   <th title="total number of messages for this ProcessState">#</th>
+                  <th>Configuration</th>
                   <th>Adapter</th>
                   <th>Receiver</th>
                   <th title="number of messages">#</th>
@@ -22,9 +23,10 @@
                   <ng-container *ngIf="item.value.items.length > 0">
                     <tr *ngFor="let stateItem of item.value.items; let innerIndex = index">
                       <ng-container *ngIf="innerIndex === 0">
-                        <td rowspan="0">{{ item.key }}</td>
-                        <td rowspan="0">{{ stateItem.messageCount }}</td>
+                        <td>{{ item.key }}</td>
+                        <td>{{ stateItem.messageCount }}</td>
                       </ng-container>
+                      <td>{{ stateItem.configurationName }}</td>
                       <td>{{ stateItem.adapterName }}</td>
                       <td>{{ stateItem.receiverName }}</td>
                       <td>
@@ -41,7 +43,7 @@
                               'receivers',
                               stateItem.receiverName,
                               'stores',
-                              item.key
+                              item.key,
                             ]"
                             class="btn btn-xs btn-default m-l-xs"
                             type="button"
