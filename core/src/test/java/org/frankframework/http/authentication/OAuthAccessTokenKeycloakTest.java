@@ -3,7 +3,6 @@ package org.frankframework.http.authentication;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.util.stream.Stream;
 
@@ -22,7 +21,6 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.http.HttpSender;
 import org.frankframework.senders.SenderTestBase;
-import org.frankframework.testutil.TestAssertions;
 
 /**
  * Tests whether requests for access tokens actually work using a Keycloak test container
@@ -82,8 +80,6 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 	@MethodSource("parameters")
 	@ParameterizedTest
 	void testGetAccessToken(AbstractHttpSession.OauthAuthenticationMethod oauthAuthenticationMethod, boolean shouldResolveSuccessfully) throws Exception {
-		assumeFalse(TestAssertions.isTestRunningOnGitHub());
-
 		var authenticator = oauthAuthenticationMethod.newAuthenticator(sender);
 
 		if (shouldResolveSuccessfully) {
