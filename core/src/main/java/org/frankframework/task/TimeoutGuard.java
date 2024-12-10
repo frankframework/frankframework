@@ -15,13 +15,13 @@
 */
 package org.frankframework.task;
 
-import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.apache.logging.log4j.Logger;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.logging.log4j.Logger;
 
 import org.frankframework.util.LogUtil;
 
@@ -37,7 +37,7 @@ public class TimeoutGuard {
 	int timeout;
 	@Getter @Setter String description;
 	boolean threadKilled;
-
+	private final Exception source = new Exception("TimeoutGuard created from source point");
 	private Timer timer;
 
 	private class Killer extends TimerTask {
@@ -51,14 +51,11 @@ public class TimeoutGuard {
 
 		@Override
 		public void run() {
-			log.warn("Thread [{}] executing task [{}] exceeds timeout of [{}] s, interrupting",
-				timeoutThread.getName(), description, timeout);
+			log.warn("Thread [{}] executing task [{}] exceeds timeout of [{}] s, interrupting. Created from source point:",
+				timeoutThread.getName(), description, timeout, source);
 			if (log.isDebugEnabled()) {
-				String stackTrace = Arrays.stream(timeoutThread.getStackTrace())
-						.map(StackTraceElement::toString)
-						.reduce("\n", (acc, element) -> acc + "    at " + element + "\n");
-				log.debug("Execution stack for thread [{}] executing task [{}]:{}",
-						timeoutThread.getName(), description, stackTrace);
+				log.debug("Execution stack for thread [{}] executing task [{}]:",
+						timeoutThread.getName(), description, new Exception("Interrupted at point"));
 			}
 			threadKilled=true;
 			timeoutThread.interrupt();

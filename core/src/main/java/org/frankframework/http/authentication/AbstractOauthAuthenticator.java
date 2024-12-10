@@ -78,8 +78,7 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 	}
 
 	private void refreshAccessToken(Credentials credentials) throws HttpAuthenticationException {
-		System.err.println("Refreshing access token, called from: ");
-		new Exception("Method called from:").printStackTrace(System.err);
+		log.warn("Refreshing access token, called from: ", new Exception("Method called from:"));
 		HttpRequestBase request = createRequest(credentials, new ArrayList<>());
 
 		CloseableHttpClient apacheHttpClient = session.getHttpClient();
