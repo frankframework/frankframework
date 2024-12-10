@@ -132,7 +132,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 		log.info("found rolemapping file [{}]", roleMappingURL);
 
 		String baseUrl = computeBaseUrl();
-		servletPath = (baseUrl == null) ? computeServletPath() : "";
+		servletPath = computeRelativePathFromServlet();
 		redirectUri = computeRedirectUri(baseUrl);
 		log.debug("using oauth base-url [{}] servlet-path [{}] and redirect-uri [{}]", baseUrl, servletPath, redirectUri);
 
@@ -209,7 +209,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	/**
 	 * Servlet-Path that needs to be secured. May not end with a `*` or `/`.
 	 */
-	private String computeServletPath() {
+	private String computeRelativePathFromServlet() {
 		String servletPath = getPrivateEndpoints().stream().findFirst().orElse("");
 
 		if(servletPath.endsWith("*")) { // Strip the '*' if the url ends with it
