@@ -1,5 +1,6 @@
 package org.frankframework.http.authentication;
 
+import static dasniko.testcontainers.keycloak.ExtendableKeycloakContainer.LOG_WAIT_STRATEGY;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -18,7 +19,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -41,7 +41,7 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 	private static final KeycloakContainer keycloak = new KeycloakContainer()
 			.withRealmImportFile("/Http/Authentication/iaf-test.json")
 			.withLogConsumer(logConsumer)
-			.waitingFor(Wait.forLogMessage(".*Running the server in development mode\\\\. DO NOT use this configuration in production.*", 1));
+			.waitingFor(LOG_WAIT_STRATEGY);
 
 	private static final String CLIENT_ID = "testiaf-client";
 
