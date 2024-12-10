@@ -14,7 +14,6 @@ import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.http.HttpSender;
 import org.frankframework.senders.SenderTestBase;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
