@@ -78,7 +78,7 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 	}
 
 	private void refreshAccessToken(Credentials credentials) throws HttpAuthenticationException {
-		log.warn("Refreshing access token, called from: ", new Exception("Method called from:"));
+		log.debug("Refreshing access token");
 		HttpRequestBase request = createRequest(credentials, new ArrayList<>());
 
 		CloseableHttpClient apacheHttpClient = session.getHttpClient();
@@ -95,6 +95,8 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 			String responseBody = EntityUtils.toString(response.getEntity());
 
 			if (response.getStatusLine().getStatusCode() != 200) {
+				tg.cancel();
+				log.debug("Failed to refresh access token, received status code {}", response.getStatusLine().getStatusCode());
 				throw new HttpAuthenticationException(responseBody);
 			}
 
@@ -111,7 +113,8 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 				accessTokenRefreshTime = System.currentTimeMillis() + (overwriteExpiryMs < 0 ? 500 * accessTokenLifetime : overwriteExpiryMs);
 				log.debug("set accessTokenRefreshTime [{}]", ()-> DateFormatUtils.format(accessTokenRefreshTime));
 			}
-		} catch (IOException e) {
+		} catch (IOException | RuntimeException e) {
+			log.debug("Failed to refresh access token, got an exception: {}", e.getMessage());
 			request.abort();
 
 			if (tg.cancel()) {

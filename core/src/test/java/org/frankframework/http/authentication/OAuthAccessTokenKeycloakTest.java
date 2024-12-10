@@ -58,7 +58,6 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 
 	@Override
 	public HttpSender createSender() throws Exception {
-		log.warn("Creating HTTP Sender for test", new Exception("Sender created in test:"));
 		HttpSender sender = new HttpSender();
 
 		sender.setName("Http Sender");
