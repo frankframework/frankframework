@@ -51,9 +51,11 @@ public class TimeoutGuard {
 
 		@Override
 		public void run() {
-			log.warn("Thread [{}] executing task [{}] exceeds timeout of [{}] s, interrupting. Created from source point:",
-				timeoutThread.getName(), description, timeout, source);
+			log.warn("Thread [{}] executing task [{}] exceeds timeout of [{}] s, interrupting.",
+				timeoutThread.getName(), description, timeout);
 			if (log.isDebugEnabled()) {
+				log.debug("Thread [{}] executing task [{}] created from source point:",
+						timeoutThread.getName(), description, source);
 				log.debug("Execution stack for thread [{}] executing task [{}]:",
 						timeoutThread.getName(), description, new Exception("Interrupted at point"));
 			}
