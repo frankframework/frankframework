@@ -61,13 +61,7 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 
 	@Override
 	public HttpSender createSender() throws Exception {
-		return new HttpSender();
-	}
-
-	@BeforeEach
-	@Override
-	public void setUp() throws Exception {
-		super.setUp();
+		HttpSender sender = new HttpSender();
 
 		sender.setName("Http Sender");
 		sender.setTokenEndpoint(getTestEndpoint());
@@ -81,6 +75,8 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 
 		sender.configure();
 		sender.start();
+
+		return sender;
 	}
 
 	@MethodSource("parameters")
