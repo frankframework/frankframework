@@ -9,14 +9,11 @@ import java.util.Base64;
 import org.apache.http.Header;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpRequestBase;
-
-import org.frankframework.http.AbstractHttpSession;
-
-import org.frankframework.http.HttpSender;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.http.HttpSender;
 import org.frankframework.util.StreamUtil;
 
 /**
@@ -27,8 +24,6 @@ public class OAuthAccessTokenRequestTest {
 	private static final String CLIENT_ID = "fakeClientId";
 
 	private static final String CLIENT_SECRET = "fakeClientSecret";
-
-	private static final String TOKEN_ENDPOINT = "http://fakeTokenEndpoint";
 
 	private static final String BASE_64 = "Basic " + Base64.getEncoder().encodeToString((CLIENT_ID + ":" + CLIENT_SECRET).getBytes());
 
