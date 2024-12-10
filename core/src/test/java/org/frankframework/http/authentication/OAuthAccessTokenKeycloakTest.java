@@ -77,6 +77,7 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 		sender.setScope("email");
 		sender.setUsername("fakeCredentialUserName");
 		sender.setPassword("fakeCredentialPassword");
+		sender.setTimeout(120);
 
 		sender.configure();
 		sender.start();
