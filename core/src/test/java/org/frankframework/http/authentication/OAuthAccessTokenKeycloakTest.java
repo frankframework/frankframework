@@ -7,16 +7,8 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.util.stream.Stream;
 
-import lombok.extern.log4j.Log4j2;
-
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.frankframework.http.AbstractHttpSession;
-import org.frankframework.http.HttpSender;
-import org.frankframework.senders.SenderTestBase;
-
-import org.frankframework.testutil.TestAssertions;
-
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -25,6 +17,12 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import dasniko.testcontainers.keycloak.KeycloakContainer;
+import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.http.HttpSender;
+import org.frankframework.senders.SenderTestBase;
+import org.frankframework.testutil.TestAssertions;
 
 /**
  * Tests whether requests for access tokens actually work using a Keycloak test container
@@ -62,6 +60,7 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 
 	@Override
 	public HttpSender createSender() throws Exception {
+		System.err.println("Creating HTTP Sender for test");
 		HttpSender sender = new HttpSender();
 
 		sender.setName("Http Sender");

@@ -15,24 +15,7 @@
 */
 package org.frankframework.http.authentication;
 
-import lombok.extern.log4j.Log4j2;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.auth.Credentials;
-
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
-
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
-
-import org.frankframework.http.AbstractHttpSession;
-import org.frankframework.task.TimeoutGuard;
-import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.JacksonUtils;
+import static org.frankframework.util.StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -41,7 +24,22 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.frankframework.util.StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+import org.apache.http.NameValuePair;
+import org.apache.http.auth.Credentials;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
+
+import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.task.TimeoutGuard;
+import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.JacksonUtils;
 
 @Log4j2
 public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator {
@@ -80,6 +78,8 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 	}
 
 	private void refreshAccessToken(Credentials credentials) throws HttpAuthenticationException {
+		System.err.println("Refreshing access token, called from: ");
+		new Exception("Method called from:").printStackTrace(System.err);
 		HttpRequestBase request = createRequest(credentials, new ArrayList<>());
 
 		CloseableHttpClient apacheHttpClient = session.getHttpClient();
