@@ -13,13 +13,12 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.http.HttpSender;
 import org.frankframework.senders.SenderTestBase;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.slf4j.Logger;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -36,7 +35,7 @@ import dasniko.testcontainers.keycloak.KeycloakContainer;
 @Log4j2
 public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 
-	public static final Slf4jLogConsumer logConsumer = new Slf4jLogConsumer((Logger) log);
+	public static final Log4jLogConsumer logConsumer = new Log4jLogConsumer(log);
 
 	@Container
 	static final KeycloakContainer keycloak = new KeycloakContainer().withRealmImportFile("/Http/Authentication/iaf-test.json").withLogConsumer(logConsumer);
