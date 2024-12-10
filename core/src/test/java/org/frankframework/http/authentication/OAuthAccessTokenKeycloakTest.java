@@ -38,7 +38,7 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 	public static final Log4jLogConsumer logConsumer = new Log4jLogConsumer(log);
 
 	@Container
-	static final KeycloakContainer keycloak = new KeycloakContainer().withRealmImportFile("/Http/Authentication/iaf-test.json").withLogConsumer(logConsumer);
+	private static final KeycloakContainer keycloak = new KeycloakContainer().withRealmImportFile("/Http/Authentication/iaf-test.json").withLogConsumer(logConsumer);
 
 	private static final String CLIENT_ID = "testiaf-client";
 
@@ -77,7 +77,7 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 		sender.setScope("email");
 		sender.setUsername("fakeCredentialUserName");
 		sender.setPassword("fakeCredentialPassword");
-		sender.setTimeout(120);
+		sender.setTimeout(120000);
 
 		sender.configure();
 		sender.start();
