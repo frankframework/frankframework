@@ -41,7 +41,7 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 	private static final KeycloakContainer keycloak = new KeycloakContainer()
 			.withRealmImportFile("/Http/Authentication/iaf-test.json")
 			.withLogConsumer(logConsumer)
-			.waitingFor(Wait.forLogMessage(".*Running the server in development mode\\\\. DO NOT use this configuration in production.*", 1))
+			.waitingFor(Wait.forLogMessage(".*Running the server in development mode\\\\. DO NOT use this configuration in production.*", 1));
 
 	private static final String CLIENT_ID = "testiaf-client";
 
