@@ -1,9 +1,9 @@
 package org.frankframework.http.authentication;
 
-import static dasniko.testcontainers.keycloak.ExtendableKeycloakContainer.LOG_WAIT_STRATEGY;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.util.stream.Stream;
 
@@ -14,6 +14,8 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.http.HttpSender;
 import org.frankframework.senders.SenderTestBase;
+
+import org.frankframework.testutil.TestAssertions;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -35,13 +37,9 @@ import dasniko.testcontainers.keycloak.KeycloakContainer;
 @Log4j2
 public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 
-	public static final Log4jLogConsumer logConsumer = new Log4jLogConsumer(log);
-
 	@Container
 	private static final KeycloakContainer keycloak = new KeycloakContainer()
-			.withRealmImportFile("/Http/Authentication/iaf-test.json")
-			.withLogConsumer(logConsumer)
-			.waitingFor(LOG_WAIT_STRATEGY);
+			.withRealmImportFile("/Http/Authentication/iaf-test.json");
 
 	private static final String CLIENT_ID = "testiaf-client";
 
@@ -85,6 +83,8 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 	@MethodSource("parameters")
 	@ParameterizedTest
 	void testGetAccessToken(AbstractHttpSession.OauthAuthenticationMethod oauthAuthenticationMethod, boolean shouldResolveSuccessfully) throws Exception {
+		assumeFalse(TestAssertions.isTestRunningOnGitHub());
+
 		var authenticator = oauthAuthenticationMethod.newAuthenticator(sender);
 
 		if (shouldResolveSuccessfully) {
