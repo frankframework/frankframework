@@ -49,7 +49,7 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
       }
     });
     this.appService.selectedConfigurationTab$.pipe(first()).subscribe((tab) => {
-      if (tab !== null) this.changeTab(tab ?? this._allTabName);
+      if (tab !== null) this.changeTab(tab);
     });
   }
 
@@ -67,6 +67,7 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
       relativeTo: this.route,
       queryParams: tab === this._allTabName ? { [this.queryParamName]: null } : { [this.queryParamName]: tab },
       queryParamsHandling: 'merge',
+      skipLocationChange: true,
     });
   }
 
