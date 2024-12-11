@@ -576,8 +576,8 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setClientId(MockTokenServer.CLIENT_ID);
 		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
-		sender.setIssuer("www.successfactors.com");
-		sender.setAudience("www.successfactors.com");
+		sender.setSamlIssuer("www.successfactors.com");
+		sender.setSamlAudience("www.successfactors.com");
 
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
 		sender.setTimeout(100000);

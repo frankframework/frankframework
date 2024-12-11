@@ -143,8 +143,8 @@ public class OAuthAccessTokenRequestTest {
 		httpSender.setClientId(CLIENT_ID);
 		httpSender.setClientSecret(CLIENT_SECRET);
 
-		httpSender.setIssuer("www.successfactors.com");
-		httpSender.setAudience("www.successfactors.com");
+		httpSender.setSamlIssuer("www.successfactors.com");
+		httpSender.setSamlAudience("www.successfactors.com");
 
 		httpSender.configure();
 		httpSender.start();

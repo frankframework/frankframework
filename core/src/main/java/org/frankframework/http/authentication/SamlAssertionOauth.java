@@ -107,7 +107,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 
 	private Document generateSAMLAssertion() throws Exception {
 		String NotBefore = java.time.Instant.now().minusSeconds(60).toString();
-		String NotOnOrAfter = java.time.Instant.now().plusSeconds(session.getAssertionExpiry()).toString();
+		String NotOnOrAfter = java.time.Instant.now().plusSeconds(session.getSamlAssertionExpiry()).toString();
 		String now = java.time.Instant.now().toString();
 
 		// Create a new XML Document
@@ -128,13 +128,13 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 
 		// Add Issuer
 		Element issuerElement = doc.createElementNS(namespaceURI, "saml2:Issuer");
-		issuerElement.setTextContent(session.getIssuer());
+		issuerElement.setTextContent(session.getSamlIssuer());
 		assertion.appendChild(issuerElement);
 
 		// Add Subject
 		Element subject = doc.createElementNS(namespaceURI, "saml2:Subject");
 		Element nameID = doc.createElementNS(namespaceURI, "saml2:NameID");
-		nameID.setTextContent(session.getNameId());
+		nameID.setTextContent(session.getSamlNameId());
 		nameID.setAttribute("Format", "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
 		subject.appendChild(nameID);
 		assertion.appendChild(subject);
@@ -157,7 +157,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		Element audienceRestriction = doc.createElementNS(namespaceURI, "saml2:AudienceRestriction");
 
 		Element audienceElement = doc.createElementNS(namespaceURI, "saml2:Audience");
-		audienceElement.setTextContent(session.getAudience());
+		audienceElement.setTextContent(session.getSamlAudience());
 
 		audienceRestriction.appendChild(audienceElement);
 		conditions.appendChild(audienceRestriction);

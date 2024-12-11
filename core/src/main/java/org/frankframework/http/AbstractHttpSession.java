@@ -194,10 +194,10 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private @Getter String clientSecret;
 	private @Getter String scope;
 
-	private @Getter String nameId;
-	private @Getter String issuer;
-	private @Getter String audience;
-	private @Getter int assertionExpiry; // [seconds]
+	private @Getter String samlNameId;
+	private @Getter String samlIssuer;
+	private @Getter String samlAudience;
+	private @Getter int samlAssertionExpiry; // [seconds]
 
 	private @Getter OauthAuthenticationMethod oauthAuthenticationMethod;
 	private @Getter IOauthAuthenticator authenticator;
@@ -769,29 +769,29 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	/**
 	 * The nameId to be added during the creation of the SAML assertion.
 	 */
-	public void setNameId(String nameId) {
-		this.nameId = nameId;
+	public void setSamlNameId(String samlNameId) {
+		this.samlNameId = samlNameId;
 	}
 
 	/**
 	 * The issuer to be added during the creation of the SAML assertion.
 	 */
-	public void setIssuer(String issuer) {
-		this.issuer = issuer;
+	public void setSamlIssuer(String samlIssuer) {
+		this.samlIssuer = samlIssuer;
 	}
 
 	/**
 	 * The audience to be added during the creation of the SAML assertion.
 	 */
-	public void setAudience(String audience) {
-		this.audience = audience;
+	public void setSamlAudience(String samlAudience) {
+		this.samlAudience = samlAudience;
 	}
 
 	/**
 	 * The time (in seconds) until the generated SAML assertion should be valid. A new assertion will be generated when the previous assertion is no longer valid.
 	 */
-	public void setAssertionExpiry(int expiry) {
-		this.assertionExpiry = expiry;
+	public void setSamlAssertionExpiry(int expiry) {
+		this.samlAssertionExpiry = expiry;
 	}
 
 	/** Proxy host */
