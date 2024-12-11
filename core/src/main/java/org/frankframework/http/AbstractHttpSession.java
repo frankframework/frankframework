@@ -68,6 +68,9 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.pool.ConnPoolControl;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.logging.log4j.Logger;
+
+import org.frankframework.http.authentication.IOauthAuthenticator;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 
