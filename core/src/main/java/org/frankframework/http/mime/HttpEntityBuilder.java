@@ -212,53 +212,64 @@ public class HttpEntityBuilder {
 			if (log.isDebugEnabled()) log.debug("appended stringpart [{}] with value [{}]", firstBodyPartName, message);
 		}
 		if (parameters!=null) {
-			for(ParameterValue pv : parameters) {
-				String name = pv.getDefinition().getName();
-				if (parametersToUse.contains(name)) {
-					String fileName = null;
-					String sessionKey = pv.getDefinition().getSessionKey();
-					if (sessionKey != null) {
-						fileName = session.getString(sessionKey + "Name");
-					}
-					if(fileName != null) {
-						log.warn("setting filename using [{}Name] for bodypart [{}]. Consider using a MultipartXml with the attribute [name] instead.", sessionKey, fileName, name);
-					}
-
-					Message msg = pv.asMessage();
-					if (msg.isEmpty() && parametersToSkipWhenEmpty.contains(name) && fileName == null) {
-						continue;
-					}
-
-					entity.addPart(name, new MessageContentBody(msg, null, fileName));
-					if (log.isDebugEnabled()) log.debug("appended bodypart [{}] with message [{}]", name, msg);
-				}
-			}
+			addParameters(entity, parameters, session);
 		}
 
 		if (StringUtils.isNotEmpty(multipartXmlSessionKey)) {
-			String multipartXml = session.getString(multipartXmlSessionKey);
-			log.debug("building multipart message with MultipartXmlSessionKey [{}]", multipartXml);
-			if (StringUtils.isEmpty(multipartXml)) {
-				log.warn("sessionKey [{}] is empty", multipartXmlSessionKey);
-			} else {
-				Element partsElement;
-				try {
-					partsElement = XmlUtils.buildElement(multipartXml);
-				} catch (DomBuilderException e) {
-					throw new SenderException("error building multipart xml", e);
-				}
-				Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
-				if (parts.isEmpty()) {
-					log.warn("no part(s) in multipart xml [{}]", multipartXml);
-				} else {
-					for (final Node part : parts) {
-						Element partElement = (Element) part;
-						entity.addPart(elementToFormBodyPart(partElement, session));
-					}
-				}
-			}
+			addMultiPart(entity, session);
 		}
 		return entity.build();
+	}
+
+	private void addMultiPart(MultipartEntityBuilder entity, PipeLineSession session) throws SenderException {
+		String multipartXml = session.getString(multipartXmlSessionKey);
+		log.debug("building multipart message with MultipartXmlSessionKey [{}]", multipartXml);
+		if (StringUtils.isEmpty(multipartXml)) {
+			log.warn("sessionKey [{}] is empty", multipartXmlSessionKey);
+			return;
+		}
+		Element partsElement;
+		try {
+			partsElement = XmlUtils.buildElement(multipartXml);
+		} catch (DomBuilderException e) {
+			throw new SenderException("error building multipart xml", e);
+		}
+		Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
+		if (parts.isEmpty()) {
+			log.warn("no part(s) in multipart xml [{}]", multipartXml);
+			return;
+		}
+		for (final Node part : parts) {
+			Element partElement = (Element) part;
+			entity.addPart(elementToFormBodyPart(partElement, session));
+		}
+	}
+
+	private void addParameters(MultipartEntityBuilder entity, ParameterValueList parameters, PipeLineSession session) {
+		parameters.stream()
+				.sequential()
+				.filter(parameter -> parametersToUse.contains(parameter.getName()))
+				.forEach(parameter -> addParameter(entity, parameter, session));
+	}
+
+	private void addParameter(MultipartEntityBuilder entity, ParameterValue pv, PipeLineSession session) {
+		String name = pv.getName();
+		String fileName = null;
+		String sessionKey = pv.getDefinition().getSessionKey();
+		if (sessionKey != null) {
+			fileName = session.getString(sessionKey + "Name");
+		}
+		if(fileName != null) {
+			log.warn("setting filename using [{}Name] for bodypart [{}]. Consider using a MultipartXml with the attribute \"name\"=[{}] instead.", sessionKey, fileName, name);
+		}
+
+		Message msg = pv.asMessage();
+		if (msg.isEmpty() && fileName == null && parametersToSkipWhenEmpty.contains(name)) {
+			return;
+		}
+
+		entity.addPart(name, new MessageContentBody(msg, null, fileName));
+		log.debug("appended bodypart [{}] with message [{}]", name, msg);
 	}
 
 	protected FormBodyPart elementToFormBodyPart(Element element, PipeLineSession session) {
