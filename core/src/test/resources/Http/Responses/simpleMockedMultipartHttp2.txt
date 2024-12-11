@@ -12,7 +12,7 @@ Content-Transfer-Encoding: 8bit
 <xml>input</xml>
 --IGNORE
 Content-Disposition: form-data; name="dummy"; filename="document.pdf"
-Content-Type: application/pdf; charset=UTF-8
+Content-Type: application/pdf
 Content-Transfer-Encoding: binary
 
 <dummy xml file/>

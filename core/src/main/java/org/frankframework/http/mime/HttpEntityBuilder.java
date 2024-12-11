@@ -268,8 +268,13 @@ public class HttpEntityBuilder {
 		String partSessionKey = element.getAttribute("sessionKey"); //SessionKey to retrieve data from
 		String partMimeType = element.getAttribute("mimeType"); //MimeType of the part
 		Message partObject = session.getMessage(partSessionKey);
+		if (Message.isEmpty(partObject) && element.hasAttribute("value")) {
+			partObject = Message.asMessage(element.getAttribute("value"));
+		}
+
 		MimeType mimeType = null;
 		if(StringUtils.isNotEmpty(partMimeType)) {
+			partObject.getContext().withMimeType(partMimeType);
 			mimeType = MimeType.valueOf(partMimeType);
 		}
 
