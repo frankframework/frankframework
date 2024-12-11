@@ -197,7 +197,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private @Getter String samlNameId;
 	private @Getter String samlIssuer;
 	private @Getter String samlAudience;
-	private @Getter int samlAssertionExpiry; // [seconds]
+	private @Getter int samlAssertionExpiry; // [ttl in seconds]
 
 	private @Getter OauthAuthenticationMethod oauthAuthenticationMethod;
 	private @Getter IOauthAuthenticator authenticator;
@@ -233,6 +233,11 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		 */
 		RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS,
 
+		/**
+		 * Requires {@literal samlNameId}, {@literal samlIssuer}, {@literal samlAudience}, {@literal samlAssertionExpiry}, and a certificate and private key.
+		 * Generates a new SAML assertion, which will be exchanged for a token by the authorization server. The {@literal accessToken} is then used
+		 * in the Authorization header to authenticate against the resource server.
+		 */
 		SAML_ASSERTION;
 
 		public IOauthAuthenticator newAuthenticator(AbstractHttpSession session) throws HttpAuthenticationException {
@@ -788,7 +793,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	}
 
 	/**
-	 * The time (in seconds) until the generated SAML assertion should be valid. A new assertion will be generated when the previous assertion is no longer valid.
+	 * The time to live (in seconds) until the generated SAML assertion should be valid. A new assertion will be generated when the previous assertion is no longer valid.
 	 */
 	public void setSamlAssertionExpiry(int expiry) {
 		this.samlAssertionExpiry = expiry;

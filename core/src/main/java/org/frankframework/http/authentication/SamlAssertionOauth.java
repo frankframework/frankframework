@@ -38,6 +38,9 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.xml.security.algorithms.MessageDigestAlgorithm;
 import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.transforms.Transforms;
+
+import org.frankframework.util.XmlUtils;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -92,7 +95,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		Document samlAssertion = generateSAMLAssertion();
 		String docAsXml = documentToString(samlAssertion);
 
-		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilderFactory docFactory = XmlUtils.getDocumentBuilderFactory();
 		docFactory.setNamespaceAware(true);
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 
@@ -222,7 +225,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 	}
 
 	public String documentToString(Document document) throws Exception {
-		TransformerFactory transformerFactory = TransformerFactory.newInstance();
+		TransformerFactory transformerFactory = XmlUtils.getTransformerFactory();
 		Transformer transformer = transformerFactory.newTransformer();
 		transformer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "no");
 		transformer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "no");
