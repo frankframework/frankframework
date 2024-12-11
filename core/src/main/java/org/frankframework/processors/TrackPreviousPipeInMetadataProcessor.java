@@ -41,7 +41,7 @@ public class TrackPreviousPipeInMetadataProcessor extends AbstractPipeProcessor 
 										@Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		PipeRunResult pipeRunResult = chain.apply(message);
 
-		if (logPreviousPipe(pipe, message, pipeLineSession)) {
+		if (message != null && logPreviousPipe(pipe, message, pipeLineSession)) {
 			message.getContext().put(MessageContext.CONTEXT_PREVIOUS_PIPE, pipe.getName());
 		}
 
