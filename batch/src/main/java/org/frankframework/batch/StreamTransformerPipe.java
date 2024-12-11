@@ -36,9 +36,9 @@ import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
@@ -142,14 +142,14 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public void start() throws PipeStartException {
+	public void start() {
 		super.start();
 		for (String recordHandlerName: registeredRecordHandlers.keySet()) {
 			IRecordHandler handler = getRecordHandler(recordHandlerName);
 			try {
 				handler.open();
 			} catch (SenderException e) {
-				throw new PipeStartException("cannot start recordhandler ["+recordHandlerName+"]", e);
+				throw new LifecycleException("cannot start recordhandler ["+recordHandlerName+"]", e);
 			}
 		}
 		for (String resultHandlerName: registeredResultHandlers.keySet()) {
@@ -157,7 +157,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			try {
 				handler.open();
 			} catch (SenderException e) {
-				throw new PipeStartException("cannot start resulthandler ["+resultHandlerName+"]", e);
+				throw new LifecycleException("cannot start resulthandler ["+resultHandlerName+"]", e);
 			}
 		}
 	}

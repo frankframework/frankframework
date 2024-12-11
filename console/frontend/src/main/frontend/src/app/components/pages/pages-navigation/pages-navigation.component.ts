@@ -8,6 +8,7 @@ import { InformationModalComponent } from '../information-modal/information-moda
 import { ServerInfoService } from '../../../services/server-info.service';
 import { CdkAccordionItem, CdkAccordionModule } from '@angular/cdk/accordion';
 import { SidebarDirective } from './sidebar.directive';
+import { HasAccessToLinkDirective } from '../../has-access-to-link.directive';
 
 type ExpandedItem = {
   element: HTMLElement;
@@ -28,6 +29,7 @@ type ExpandedItem = {
     ScrollToTopComponent,
     InformationModalComponent,
     SidebarDirective,
+    HasAccessToLinkDirective,
   ],
 })
 export class PagesNavigationComponent implements OnChanges, OnInit, AfterViewInit {

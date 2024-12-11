@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.pipes.PipeTestBase;
 import org.frankframework.stream.Message;
 
@@ -47,7 +46,7 @@ class ObfuscatePipeTest extends PipeTestBase<ObfuscatePipe> {
 	}
 
 	@Test
-	void testEmptyInput() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	void testEmptyInput() throws ConfigurationException, IOException, PipeRunException {
 		// Arrange
 		configureAndStartPipe();
 
@@ -74,7 +73,7 @@ class ObfuscatePipeTest extends PipeTestBase<ObfuscatePipe> {
 	}
 
 	@Test
-	void testDecryption() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	void testDecryption() throws ConfigurationException, IOException, PipeRunException {
 		// Arrange
 		pipe.setDirection(ObfuscatePipe.Direction.DEOBFUSCATE);
 		configureAndStartPipe();

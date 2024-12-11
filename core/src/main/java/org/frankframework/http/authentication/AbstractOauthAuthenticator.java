@@ -15,28 +15,11 @@
 */
 package org.frankframework.http.authentication;
 
+import static org.frankframework.util.StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+
+
 import jakarta.annotation.Nullable;
-
 import lombok.extern.log4j.Log4j2;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.auth.Credentials;
-
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
-
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.util.EntityUtils;
-
-import org.frankframework.http.AbstractHttpSession;
-import org.frankframework.task.TimeoutGuard;
-import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.JacksonUtils;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -44,7 +27,23 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.frankframework.util.StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+import org.apache.http.NameValuePair;
+import org.apache.http.auth.Credentials;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.util.EntityUtils;
+
+import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.task.TimeoutGuard;
+import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.JacksonUtils;
 
 @Log4j2
 public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator {
@@ -93,6 +92,7 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 	protected abstract HttpEntityEnclosingRequestBase createRequest(Credentials credentials, List<NameValuePair> parameters) throws HttpAuthenticationException;
 
 	private void refreshAccessToken(Credentials credentials) throws HttpAuthenticationException {
+		log.debug("Refreshing access token");
 		HttpRequestBase request = createRequest(credentials, new ArrayList<>());
 
 		CloseableHttpClient apacheHttpClient = session.getHttpClient();
@@ -109,6 +109,8 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 			String responseBody = EntityUtils.toString(response.getEntity());
 
 			if (response.getStatusLine().getStatusCode() != 200) {
+				tg.cancel();
+				log.debug("Failed to refresh access token, received status code {}", response.getStatusLine().getStatusCode());
 				throw new HttpAuthenticationException(responseBody);
 			}
 
@@ -125,7 +127,8 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 				accessTokenRefreshTime = System.currentTimeMillis() + (overwriteExpiryMs < 0 ? 500 * accessTokenLifetime : overwriteExpiryMs);
 				log.debug("set accessTokenRefreshTime [{}]", ()-> DateFormatUtils.format(accessTokenRefreshTime));
 			}
-		} catch (IOException e) {
+		} catch (IOException | RuntimeException e) {
+			log.debug("Failed to refresh access token, got an exception: {}", e.getMessage());
 			request.abort();
 
 			if (tg.cancel()) {

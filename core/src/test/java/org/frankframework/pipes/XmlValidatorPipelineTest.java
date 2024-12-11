@@ -22,7 +22,6 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.validation.AbstractXmlValidator;
@@ -137,7 +136,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 
 	@Override
 	public ValidationResult validate(String rootelement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
-			boolean ignoreUnknownNamespaces, String inputfile, String[] expectedFailureReasons) throws IOException, ConfigurationException, PipeStartException {
+			boolean ignoreUnknownNamespaces, String inputfile, String[] expectedFailureReasons) throws IOException, ConfigurationException {
 		XmlValidator validator = getUnconfiguredValidator(schemaLocation, addNamespaceToSchema, implementation);
 		if (rootelement!=null) validator.setRoot(rootelement);
 		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
@@ -148,7 +147,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 
 	@MethodSource("data")
 	@ParameterizedTest(name = "{0}")
-	void testSoapNamespaceFeature(Class<AbstractXmlValidator> implementation) throws ConfigurationException, IOException, PipeStartException {
+	void testSoapNamespaceFeature(Class<AbstractXmlValidator> implementation) throws ConfigurationException, IOException {
 		initXmlValidatorTest(implementation);
 		// Arrange
 		XmlValidator validator = buildXmlValidator(configuration, null, NO_NAMESPACE_SOAP_MSGROOT);

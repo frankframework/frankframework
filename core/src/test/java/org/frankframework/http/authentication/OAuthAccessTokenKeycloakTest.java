@@ -8,14 +8,6 @@ import java.util.stream.Stream;
 
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
-
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.http.AbstractHttpSession;
-import org.frankframework.http.HttpSender;
-
-import org.frankframework.senders.SenderTestBase;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -24,6 +16,11 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import dasniko.testcontainers.keycloak.KeycloakContainer;
+import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.http.HttpSender;
+import org.frankframework.senders.SenderTestBase;
 
 /**
  * Tests whether requests for access tokens actually work using a Keycloak test container
@@ -33,10 +30,12 @@ import dasniko.testcontainers.keycloak.KeycloakContainer;
  */
 @Testcontainers(disabledWithoutDocker = true)
 @Tag("integration") // Requires Docker; exclude with '-DexcludedGroups=integration'
+@Log4j2
 public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 
 	@Container
-	static final KeycloakContainer keycloak = new KeycloakContainer().withRealmImportFile("/Http/Authentication/iaf-test.json");
+	private static final KeycloakContainer keycloak = new KeycloakContainer()
+			.withRealmImportFile("/Http/Authentication/iaf-test.json");
 
 	private static final String CLIENT_ID = "testiaf-client";
 
@@ -59,11 +58,8 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 
 	@Override
 	public HttpSender createSender() throws Exception {
-		return new HttpSender();
-	}
+		HttpSender sender = new HttpSender();
 
-	@BeforeEach
-	public void setup() throws ConfigurationException {
 		sender.setName("Http Sender");
 		sender.setTokenEndpoint(getTestEndpoint());
 		sender.setUrl("http://localhost");
@@ -72,9 +68,12 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 		sender.setScope("email");
 		sender.setUsername("fakeCredentialUserName");
 		sender.setPassword("fakeCredentialPassword");
+		sender.setTimeout(120000);
 
 		sender.configure();
-		sender.start();;
+		sender.start();
+
+		return sender;
 	}
 
 	@MethodSource("parameters")

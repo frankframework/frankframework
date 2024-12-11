@@ -11,7 +11,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeStartException;
 
 /**
  * @author Gerrit van Brakel / Michiel Meeuwissen
@@ -106,7 +105,7 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
 					SCHEMA_LOCATION_GPBDB_GPBDB,
 					INPUT_FILE_GPBDB_OK,"[http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01]");
 			fail("Validation succeeded but an exception was expected");
-		} catch (PipeStartException | XNIException e) {
+		} catch (XNIException e) {
 			// Success.
 			// Which exception exactly was caught depends on parser used.
 			log.info("Expected exception thrown from validation method: ", e);

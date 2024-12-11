@@ -15,10 +15,10 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let rolesKV of securityRoles | keyvalue">
-                  <td>{{ rolesKV.value.name }}</td>
+                <tr *ngFor="let roles of securityRoles">
+                  <td>{{ roles.name }}</td>
                   <td>
-                    <i [ngClass]="rolesKV.value.allowed ? 'fa fa-check-square' : 'fa fa-times-circle'"></i>
+                    <i [ngClass]="roles.allowed ? 'fa fa-check-square' : 'fa fa-times-circle'"></i>
                   </td>
                 </tr>
               </tbody>
@@ -159,8 +159,8 @@
                 <tr>
                   <th>Action</th>
                   <th>Description</th>
-                  <th *ngFor="let rolesKV of securityRoles | keyvalue">
-                    {{ rolesKV.value.name }}
+                  <th *ngFor="let roles of securityRoles">
+                    {{ roles.name }}
                   </th>
                 </tr>
               </thead>
@@ -168,8 +168,8 @@
                 <tr *ngFor="let link of links">
                   <td>{{ link.name }}</td>
                   <td>{{ link.description }}</td>
-                  <td *ngFor="let rolesKV of securityRoles | keyvalue">
-                    <i *ngIf="!link.roles || link.roles?.includes(rolesKV.value.name)" class="fa fa-check"></i>
+                  <td *ngFor="let roles of securityRoles">
+                    <i *ngIf="!link.roles || link.roles?.includes(roles.name)" class="fa fa-check"></i>
                   </td>
                 </tr>
               </tbody>

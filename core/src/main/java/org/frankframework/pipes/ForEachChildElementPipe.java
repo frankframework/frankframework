@@ -23,16 +23,21 @@ import java.util.Map;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
@@ -56,10 +61,6 @@ import org.frankframework.xml.NodeSetFilter;
 import org.frankframework.xml.SaxException;
 import org.frankframework.xml.TransformerFilter;
 import org.frankframework.xml.XmlWriter;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * Sends a message to a Sender for each child element of the input XML.
@@ -114,14 +115,11 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	}
 
 	@Override
-	public void start() throws PipeStartException  {
-		try {
-			if (extractElementsTp!=null) {
-				extractElementsTp.open();
-			}
-		} catch (Exception e) {
-			throw new PipeStartException(e);
+	public void start() {
+		if (extractElementsTp!=null) {
+			extractElementsTp.open();
 		}
+
 		super.start();
 	}
 

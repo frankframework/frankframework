@@ -1,5 +1,5 @@
 HOST 127.0.0.1
-GET /value%20value?param=Hello+G%C3%BCnter&otherKey=otherValue HTTP/1.1
+GET /value%20value?param=Hello%20G%C3%BCnter&otherKey=otherValue HTTP/1.1
 Message-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb1
 Correlation-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb2
 custom-header: value

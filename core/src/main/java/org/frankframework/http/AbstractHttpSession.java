@@ -23,8 +23,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -344,7 +342,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 		if (oauthAuthenticationMethod == null) {
 			if (getTokenEndpoint() != null) {
-				ConfigurationWarnings.add(this, log, "Use authenticationMethod to explicitly set the Oauth2 method to be used. This is currently automatically determined, but will be removed in the future.");
+				ConfigurationWarnings.add(this, log, "Use oauthAuthenticationMethod to explicitly set the Oauth2 method to be used. This is currently automatically determined, but will be removed in the future.");
 			}
 			oauthAuthenticationMethod = OauthAuthenticationMethod.determineOauthAuthenticationMethod(this);
 		}
@@ -419,7 +417,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 			} catch (NoSuchAlgorithmException e) {
 				String errorMessage = "unknown protocol ["+protocol+"]";
 				if(sslParams != null) {
-					errorMessage += ", must be one of ["+Stream.of(sslParams.getProtocols()).collect(Collectors.joining(", "))+"]";
+					errorMessage += ", must be one of ["+ String.join(", ", sslParams.getProtocols()) +"]";
 				}
 				throw new ConfigurationException(errorMessage, e);
 			}
@@ -754,7 +752,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 	/** if set true, clientId and clientSecret will be added as Basic Authentication header to the tokenRequest, instead of as request parameters */
 	@Deprecated(forRemoval = true, since = "9.0")
-	@ConfigurationWarning("Use authenticationMethod to set this behaviour")
+	@ConfigurationWarning("Use oauthAuthenticationMethod to set this behaviour")
 	public void setAuthenticatedTokenRequest(boolean authenticatedTokenRequest) {
 		this.authenticatedTokenRequest = authenticatedTokenRequest;
 	}

@@ -11,10 +11,6 @@
 	<name>CredentialProvider</name>
 	<description>Framework to provide credentials from various secret stores</description>
 
-	<properties>
-		<apache-directory-server.version>2.0.0.AM26</apache-directory-server.version>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>

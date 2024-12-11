@@ -49,6 +49,7 @@ import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.jmx.JmxAttribute;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
@@ -612,7 +613,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 			result = pipeline.process(messageId, message, pipeLineSession);
 			return result;
 		} catch (Throwable t) {
-			// TODO: Check if t really can never be instance of ListenerException when caught. (Doesn't look likely, perhaps a SneakyThrows somewhere?)
+			// TODO: Check if it really can never be instance of ListenerException when caught. (Doesn't look likely, perhaps a SneakyThrows somewhere?)
 			ListenerException e;
 			if (t instanceof ListenerException) {
 				e = (ListenerException) t;
@@ -755,8 +756,8 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 					try {
 						log.debug("Adapter [{}] is starting pipeline", name);
 						pipeline.start();
-					} catch (PipeStartException pre) {
-						addErrorMessageToMessageKeeper("got error starting PipeLine", pre);
+					} catch (LifecycleException lifecycleException) {
+						addErrorMessageToMessageKeeper("got error starting PipeLine", lifecycleException);
 						runState.setRunState(RunState.ERROR);
 						return;
 					}
