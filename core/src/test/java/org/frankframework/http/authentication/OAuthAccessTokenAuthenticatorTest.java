@@ -12,15 +12,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
-
-import org.frankframework.http.AbstractHttpSession;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 
+import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.http.HttpSender;
 
 public class OAuthAccessTokenAuthenticatorTest {
