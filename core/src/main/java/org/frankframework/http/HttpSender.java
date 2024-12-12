@@ -307,6 +307,7 @@ public class HttpSender extends AbstractHttpSender {
 	 * <ul>
 	 * <li>name: optional, used as 'filename' in Content-Disposition</li>
 	 * <li>sessionKey: mandatory, refers to contents of part</li>
+	 * <li>value: optional, the contents of the part if the sessionKey specified contains no data</li>
 	 * <li>mimeType: optional MIME type</li>
 	 * </ul>
 	 * The name of the part is determined by the name attribute, unless that is empty, or the contents is binary. In those cases the sessionKey name is used as name of the part.

@@ -26,6 +26,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.stream.Message;
 
+@SuppressWarnings("ALL")
 public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSender> {
 
 	@Override

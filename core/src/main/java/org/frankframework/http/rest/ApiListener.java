@@ -36,6 +36,7 @@ import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.doc.Default;
 import org.frankframework.http.AbstractHttpSender;
+import org.frankframework.http.HttpEntityType;
 import org.frankframework.http.PushingListenerAdapter;
 import org.frankframework.jwt.JwtValidator;
 import org.frankframework.lifecycle.LifecycleException;
@@ -123,6 +124,12 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private @Getter JwtValidator<SecurityContext> jwtValidator;
 	private @Setter ServletManager servletManager;
+
+	private @Getter boolean responseAsMultipart;
+	private @Getter HttpEntityType responseEntityType;
+	private @Getter String responseMultipartXmlSessionKey;
+	private @Getter String responseResultBodyPartName;
+	private @Getter String responseMtomContentTransferEncoding;
 
 	public enum AuthenticationMethods {
 		NONE, COOKIE, HEADER, AUTHROLE, JWT;
@@ -459,6 +466,42 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	/** Claim name which specifies the principal name (maps to <code>GetPrincipalPipe</code>) */
 	public void setPrincipalNameClaim(String principalNameClaim) {
 		this.principalNameClaim = principalNameClaim;
+	}
+
+	/**
+	 * Should response be sent as a Multipart or not.
+	 * @ff.default false
+	 */
+	public void setResponseAsMultipart(boolean responseAsMultipart) {
+		this.responseAsMultipart = responseAsMultipart;
+	}
+
+	/**
+	 * If response is sent as Multipart, the type of Multipart entities to be created. Supported types are {@link HttpEntityType#FORMDATA},
+	 * {@link HttpEntityType#URLENCODED} and {@link HttpEntityType#MTOM}.
+	 */
+	public void setResponseEntityType(HttpEntityType responseEntityType) {
+		this.responseEntityType = responseEntityType;
+	}
+
+	/**
+	 * If response is sent as Multipart an optional session key can describe the Multipart contents in XML. See {@link org.frankframework.http.HttpSender#setMultipartXmlSessionKey(String)}
+	 * for details on the XML format specification.
+	 */
+	public void setResponseMultipartXmlSessionKey(String responseMultipartXmlSessionKey) {
+		this.responseMultipartXmlSessionKey = responseMultipartXmlSessionKey;
+	}
+
+	/**
+	 * If response is sent as Multipart, when this option is set the pipeline result message will be prepended as first Multipart Bodypart with
+	 * this name.
+	 */
+	public void setResponseResultBodyPartName(String responseResultBodyPartName) {
+		this.responseResultBodyPartName = responseResultBodyPartName;
+	}
+
+	public void setResponseMtomContentTransferEncoding(String responseMtomContentTransferEncoding) {
+		this.responseMtomContentTransferEncoding = responseMtomContentTransferEncoding;
 	}
 
 	@Override

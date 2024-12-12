@@ -40,6 +40,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.http.HttpEntity;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.springframework.util.InvalidMimeTypeException;
@@ -50,6 +51,7 @@ import com.nimbusds.jose.util.JSONObjectUtils;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.AbstractHttpServlet;
 import org.frankframework.http.HttpSecurityHandler;
+import org.frankframework.http.mime.HttpEntityBuilder;
 import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.http.mime.MultipartUtils.MultipartMessages;
 import org.frankframework.jwt.AuthorizationException;
@@ -598,7 +600,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 					/*
 					 * Finalize the pipeline and write the result to the response
 					 */
-					final boolean outputWritten = writeToResponseStream(response, result);
+					final boolean outputWritten = writeToResponseStream(listener, response, result, pipelineSession);
 					if (!outputWritten) {
 						LOG.debug("No output written, set content-type header to null");
 						response.resetBuffer();
@@ -606,8 +608,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 					}
 				}
 				LOG.trace("ApiListenerServlet finished with statusCode [{}] result [{}]", statusCode, result);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				LOG.warn("ApiListenerServlet caught exception, will rethrow as ServletException", e);
 				try {
 					response.reset();
@@ -634,7 +635,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				if (LOG.isTraceEnabled()) {
 					List<String> logValueList = valueList.stream()
 							.map(StringEscapeUtils::escapeJava)
-							.collect(Collectors.toList());
+							.toList();
 					LOG.trace("setting queryParameter [{}] to {}", StringEscapeUtils.escapeJava(paramName), logValueList);
 				}
 				params.put(paramName, valueList);
@@ -707,11 +708,26 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 	 * @return {@code true} if data was written, {@code false} if not.
 	 * @throws IOException Thrown if reading or writing to / from any of the streams throws  an IOException.
 	 */
-	private static boolean writeToResponseStream(HttpServletResponse response, Message result) throws IOException {
+	private static boolean writeToResponseStream(ApiListener listener, HttpServletResponse response, Message result, PipeLineSession session) throws IOException {
 		if (!Message.hasDataAvailable(result)) {
 			return false;
 		}
-		if (result.isBinary()) {
+		if (listener.isResponseAsMultipart()) {
+			response.resetBuffer();
+			HttpEntityBuilder entityBuilder = HttpEntityBuilder.create()
+					.formType(listener.getResponseEntityType())
+					.multipartXmlSessionKey(listener.getResponseMultipartXmlSessionKey())
+					.firstBodyPartName(listener.getResponseResultBodyPartName())
+					.mtomContentTransferEncoding(listener.getResponseMtomContentTransferEncoding())
+					;
+			if (result.getCharset() != null) {
+					entityBuilder.charSet(result.getCharset());
+			}
+			HttpEntity entity = entityBuilder.build(result, null, session);
+			response.setContentType(entity.getContentType().getValue());
+			response.setContentLengthLong(entity.getContentLength());
+			entity.writeTo(response.getOutputStream());
+		} else if (result.isBinary()) {
 			try (InputStream in = result.asInputStream()) {
 				StreamUtil.copyStream(in, response.getOutputStream(), 4096);
 			}

@@ -47,7 +47,6 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
 import org.frankframework.http.HttpEntityType;
 import org.frankframework.http.HttpMessageEntity;
 import org.frankframework.parameters.ParameterValue;
@@ -57,6 +56,9 @@ import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
 
+/**
+ * Builder for any type of HTTP Entity as specified by {@link HttpEntityType}.
+ */
 @Log4j2
 public class HttpEntityBuilder {
 	private static final MimeType APPLICATION_XOP_XML = MimeType.valueOf("application/xop+xml");
@@ -86,6 +88,11 @@ public class HttpEntityBuilder {
 
 	public HttpEntityBuilder contentType(ContentType contentType) {
 		this.contentType = contentType;
+		return this;
+	}
+
+	public HttpEntityBuilder contentType(String contentType) {
+		this.contentType = ContentType.create(contentType);
 		return this;
 	}
 
@@ -125,7 +132,7 @@ public class HttpEntityBuilder {
 	}
 
 	@Nonnull
-	public HttpEntity build(Message message, ParameterValueList parameters, PipeLineSession session) throws IOException, SenderException {
+	public HttpEntity build(Message message, ParameterValueList parameters, PipeLineSession session) throws IOException {
 		return switch (formType) {
 			case RAW -> createEntityForRawMessage(message, parameters);
 			case BINARY -> new HttpMessageEntity(message, contentType);
@@ -162,8 +169,7 @@ public class HttpEntityBuilder {
 	}
 
 	@Nonnull
-	private HttpEntity createUrlEncodedFormEntity(Message message, ParameterValueList parameters) throws IOException, SenderException {
-		HttpEntity requestEntity;
+	private HttpEntity createUrlEncodedFormEntity(Message message, ParameterValueList parameters) throws IOException {
 		List<NameValuePair> requestFormElements = new ArrayList<>();
 
 		if (StringUtils.isNotEmpty(firstBodyPartName)) {
@@ -182,11 +188,10 @@ public class HttpEntityBuilder {
 			}
 		}
 		try {
-			requestEntity = new UrlEncodedFormEntity(requestFormElements, charSet);
+			return new UrlEncodedFormEntity(requestFormElements, charSet);
 		} catch (UnsupportedEncodingException e) {
-			throw new SenderException("unsupported encoding for one or more POST parameters", e);
+			throw new IOException("unsupported encoding for one or more POST parameters", e);
 		}
-		return requestEntity;
 	}
 
 	private FormBodyPart createStringBodyPart(Message message) {
@@ -201,7 +206,7 @@ public class HttpEntityBuilder {
 		return bodyPart.build();
 	}
 
-	private HttpEntity createMultiPartEntity(Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
+	private HttpEntity createMultiPartEntity(Message message, ParameterValueList parameters, PipeLineSession session) throws IOException {
 		MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 
 		entity.setCharset(Charset.forName(charSet));
@@ -221,7 +226,7 @@ public class HttpEntityBuilder {
 		return entity.build();
 	}
 
-	private void addMultiPart(MultipartEntityBuilder entity, PipeLineSession session) throws SenderException {
+	private void addMultiPart(MultipartEntityBuilder entity, PipeLineSession session) throws IOException {
 		String multipartXml = session.getString(multipartXmlSessionKey);
 		log.debug("building multipart message with MultipartXmlSessionKey [{}]", multipartXml);
 		if (StringUtils.isEmpty(multipartXml)) {
@@ -232,7 +237,7 @@ public class HttpEntityBuilder {
 		try {
 			partsElement = XmlUtils.buildElement(multipartXml);
 		} catch (DomBuilderException e) {
-			throw new SenderException("error building multipart xml", e);
+			throw new IOException("error building multipart xml", e);
 		}
 		Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
 		if (parts.isEmpty()) {
