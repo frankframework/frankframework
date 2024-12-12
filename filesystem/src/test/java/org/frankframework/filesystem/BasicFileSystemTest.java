@@ -132,12 +132,12 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.configure();
 		fileSystem.open();
 
-		createFile(null, filename, contents);
+		String fullname = createFile(null, filename, contents);
 		waitForActionToFinish();
 		// test
-		existsCheck(filename);
+		existsCheck(fullname);
 
-		F file = fileSystem.toFile(filename);
+		F file = fileSystem.toFile(fullname);
 		// test
 		testReadFile(file, contents, null);
 	}

@@ -1,9 +1,13 @@
 package org.frankframework.filesystem.mail;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import org.eclipse.angus.mail.imap.IMAPFolder;
+import org.frankframework.filesystem.IFileSystemTestHelper;
+
+import com.icegreen.greenmail.junit5.GreenMailExtension;
 
 import jakarta.annotation.Nonnull;
 import jakarta.mail.Address;
@@ -16,14 +20,6 @@ import jakarta.mail.Store;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.search.SubjectTerm;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
-import org.eclipse.angus.mail.imap.IMAPFolder;
-
-import com.icegreen.greenmail.junit5.GreenMailExtension;
-
-import org.frankframework.filesystem.IFileSystemTestHelper;
 
 /**
  * Greenmail based mail file system helper.
@@ -85,11 +81,11 @@ public class GreenmailImapTestFileSystemHelper implements IFileSystemTestHelper 
 	}
 
 	@Override
-	public OutputStream _createFile(String folderName, String filename) throws Exception {
+	public String createFile(String folder, String filename, String contents) throws Exception {
 		Session session = greenMail.getImap().createSession();
 
 		greenMail.getUserManager().getUser("testuser");
-		IMAPFolder newFolder = (IMAPFolder) inbox.getFolder(getFolderToUse(folderName));
+		IMAPFolder newFolder = (IMAPFolder) inbox.getFolder(getFolderToUse(folder));
 
 		if (!newFolder.exists()) {
 			newFolder.create(Folder.HOLDS_FOLDERS | Folder.HOLDS_MESSAGES);
@@ -105,22 +101,13 @@ public class GreenmailImapTestFileSystemHelper implements IFileSystemTestHelper 
 		message.setFlag(Flags.Flag.ANSWERED, true);
 
 		// But return an OutputStream which will persist the message on calling close()
-		return new ByteArrayOutputStream() {
-			@Override
-			public void close() throws IOException {
-				super.close();
 
-				try {
-					Message[] toBeAppended = new Message[1];
-					toBeAppended[0] = message;
-					message.setText(new String(toByteArray()));
+		Message[] toBeAppended = new Message[1];
+		toBeAppended[0] = message;
+		message.setText(new String(contents));
 
-					newFolder.appendMessages(toBeAppended);
-				} catch (MessagingException e) {
-					throw new IOException(e);
-				}
-			}
-		};
+		newFolder.appendMessages(toBeAppended);
+		return message.getMessageID();
 	}
 
 	// the tests in FileSystemTestBase assume that the input folder is used

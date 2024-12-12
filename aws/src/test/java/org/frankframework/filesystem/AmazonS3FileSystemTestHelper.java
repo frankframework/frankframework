@@ -1,15 +1,9 @@
 package org.frankframework.filesystem;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -17,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.testutil.PropertyUtil;
+import org.frankframework.util.StringUtil;
 
 import lombok.Getter;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -45,9 +41,6 @@ import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
-
-import org.frankframework.testutil.PropertyUtil;
-import org.frankframework.util.StringUtil;
 
 public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 
@@ -147,28 +140,23 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public OutputStream _createFile(final String folderName, final String filename) throws IOException {
-		String fileName = tempFolder.toAbsolutePath() + "tempFile";
+	public String createFile(final String folderName, final String filename, String contents) throws IOException {
+		String filePath = folderName == null ? filename : folderName + "/" + filename;
 
-		final File file = new File(fileName);
-		final FileOutputStream fos = new FileOutputStream(file);
-		return new BufferedOutputStream(fos) {
-			@Override
-			public void close() throws IOException {
-				super.close();
+		if(StringUtils.isNotEmpty(contents)) {
+			s3Client.putObject(PutObjectRequest.builder()
+					.bucket(defaultBucketName)
+					.key(filePath)
+					.metadata(Map.of("Content-Length", ""+contents.length()))
+					.build(), RequestBody.fromString(contents));
+		} else {
+			s3Client.putObject(PutObjectRequest.builder()
+					.bucket(defaultBucketName)
+					.key(filePath)
+					.build(), RequestBody.empty());
+		}
 
-				FileInputStream fis = new FileInputStream(file);
-				String filePath = folderName == null ? filename : folderName + "/" + filename;
-				s3Client.putObject(PutObjectRequest.builder()
-						.bucket(defaultBucketName)
-						.key(filePath)
-						.metadata(Map.of("Content-Length", String.valueOf(file.length())))
-						.build(), RequestBody.fromInputStream(fis, file.length()));
-
-				fis.close();
-				Files.delete(file.toPath());
-			}
-		};
+		return filePath;
 	}
 
 	@Override
