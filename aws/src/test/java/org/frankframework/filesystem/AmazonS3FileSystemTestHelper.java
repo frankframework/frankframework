@@ -143,11 +143,18 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	public String createFile(final String folderName, final String filename, String contents) throws IOException {
 		String filePath = folderName == null ? filename : folderName + "/" + filename;
 
-		s3Client.putObject(PutObjectRequest.builder()
-				.bucket(defaultBucketName)
-				.key(filePath)
-				.metadata(Map.of("Content-Length", ""+contents.length()))
-				.build(), RequestBody.fromString(contents));
+		if(StringUtils.isNotEmpty(contents)) {
+			s3Client.putObject(PutObjectRequest.builder()
+					.bucket(defaultBucketName)
+					.key(filePath)
+					.metadata(Map.of("Content-Length", ""+contents.length()))
+					.build(), RequestBody.fromString(contents));
+		} else {
+			s3Client.putObject(PutObjectRequest.builder()
+					.bucket(defaultBucketName)
+					.key(filePath)
+					.build(), RequestBody.empty());
+		}
 
 		return filePath;
 	}
