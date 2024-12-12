@@ -573,6 +573,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 
 				if (!Message.isEmpty(result) || method == ApiListener.HttpMethod.HEAD) {
 					MimeType contentType = determineContentType(pipelineSession, listener, result);
+					result.getContext().withMimeType(contentType);
 					response.setContentType(contentType.toString());
 					if (result.size() != Message.MESSAGE_SIZE_UNKNOWN) {
 						response.setContentLength(Math.toIntExact(result.size()));
@@ -711,7 +712,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		if (!Message.hasDataAvailable(result)) {
 			return false;
 		}
-		if (listener.isResponseAsMultipart()) {
+		if (listener.getResponseEntityBuilder() != null) {
 			response.resetBuffer();
 			HttpEntity entity = listener.getResponseEntityBuilder().create(result, null, session);
 			response.setContentType(entity.getContentType().getValue());

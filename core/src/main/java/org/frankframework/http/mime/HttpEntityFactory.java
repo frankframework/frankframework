@@ -63,7 +63,7 @@ import org.frankframework.util.XmlUtils;
 public class HttpEntityFactory {
 
 	public static class Builder {
-		private HttpEntityType formType;
+		private HttpEntityType entityType;
 		private ContentType contentType;
 		private Set<String> parametersToUse = Set.of();
 		private Set<String> parametersToSkipWhenEmpty = Set.of();
@@ -77,8 +77,8 @@ public class HttpEntityFactory {
 			return new Builder();
 		}
 
-		public Builder entityType(HttpEntityType formType) {
-			this.formType = formType;
+		public Builder entityType(HttpEntityType entityType) {
+			this.entityType = entityType;
 			return this;
 		}
 
@@ -128,13 +128,13 @@ public class HttpEntityFactory {
 		}
 
 		public HttpEntityFactory build() {
-			return new HttpEntityFactory(formType, contentType, parametersToUse, parametersToSkipWhenEmpty, rawWithParametersAppendsInputMessage, multipartXmlSessionKey, charSet, firstBodyPartName, mtomContentTransferEncoding);
+			return new HttpEntityFactory(entityType, contentType, parametersToUse, parametersToSkipWhenEmpty, rawWithParametersAppendsInputMessage, multipartXmlSessionKey, charSet, firstBodyPartName, mtomContentTransferEncoding);
 		}
 	}
 
 	private static final MimeType APPLICATION_XOP_XML = MimeType.valueOf("application/xop+xml");
 
-	private final HttpEntityType formType;
+	private final HttpEntityType entityType;
 	private final ContentType contentType;
 	private final Set<String> parametersToUse;
 	private final Set<String> parametersToSkipWhenEmpty;
@@ -144,8 +144,8 @@ public class HttpEntityFactory {
 	private final String firstBodyPartName;
 	private final String mtomContentTransferEncoding;
 
-	private HttpEntityFactory(HttpEntityType formType, ContentType contentType, Set<String> parametersToUse, Set<String> parametersToSkipWhenEmpty, boolean rawWithParametersAppendsInputMessage, String multipartXmlSessionKey, String charSet, String firstBodyPartName, String mtomContentTransferEncoding) {
-		this.formType = formType;
+	private HttpEntityFactory(HttpEntityType entityType, ContentType contentType, Set<String> parametersToUse, Set<String> parametersToSkipWhenEmpty, boolean rawWithParametersAppendsInputMessage, String multipartXmlSessionKey, String charSet, String firstBodyPartName, String mtomContentTransferEncoding) {
+		this.entityType = entityType;
 		this.contentType = contentType;
 		this.parametersToUse = parametersToUse;
 		this.parametersToSkipWhenEmpty = parametersToSkipWhenEmpty;
@@ -159,9 +159,9 @@ public class HttpEntityFactory {
 
 	@Nonnull
 	public HttpEntity create(Message message, ParameterValueList parameters, PipeLineSession session) throws IOException {
-		return switch (formType) {
+		return switch (entityType) {
 			case RAW -> createEntityForRawMessage(message, parameters);
-			case BINARY -> new HttpMessageEntity(message, contentType);
+			case BINARY -> new HttpMessageEntity(message, computeContentType(message));
 			case URLENCODED -> createUrlEncodedFormEntity(message, parameters);
 			case FORMDATA, MTOM -> createMultiPartEntity(message, parameters, session);
 		};
@@ -170,7 +170,7 @@ public class HttpEntityFactory {
 	@Nonnull
 	private HttpEntity createEntityForRawMessage(Message message, ParameterValueList parameters) throws IOException {
 		if (parameters == null || parameters.stream().noneMatch(p -> parametersToUse.contains(p.getDefinition().getName()))) {
-			return new HttpMessageEntity(message, contentType);
+			return new HttpMessageEntity(message, computeContentType(message));
 		}
 
 		String initialMessage = rawWithParametersAppendsInputMessage && message != null ? message.asString() : null;
@@ -186,7 +186,18 @@ public class HttpEntityFactory {
 			params.add(0, initialMessage);
 		}
 		String msg = String.join("&", params);
-		return new ByteArrayEntity(msg.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING), contentType);
+		return new ByteArrayEntity(msg.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING), computeContentType(message));
+	}
+
+	private ContentType computeContentType(Message message) {
+		if (contentType != null) {
+			return contentType;
+		}
+		MimeType mimeType = message != null ? message.getContext().getMimeType() : null;
+		if (mimeType != null) {
+			return ContentType.create(mimeType.getType() + "/" + mimeType.getSubtype(), mimeType.getCharset());
+		}
+		return null;
 	}
 
 	@SneakyThrows
@@ -221,11 +232,11 @@ public class HttpEntityFactory {
 	}
 
 	private FormBodyPart createStringBodyPart(Message message) {
-		MimeType mimeType = formType == HttpEntityType.MTOM ? APPLICATION_XOP_XML : MediaType.TEXT_PLAIN; // only the first part is XOP+XML, other parts should use their own content-type
+		MimeType mimeType = entityType == HttpEntityType.MTOM ? APPLICATION_XOP_XML : MediaType.TEXT_PLAIN; // only the first part is XOP+XML, other parts should use their own content-type
 		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create(firstBodyPartName, new MessageContentBody(message, mimeType));
 
 		// Should only be set when request is MTOM and it's the first BodyPart
-		if (formType == HttpEntityType.MTOM && StringUtils.isNotEmpty(mtomContentTransferEncoding)) {
+		if (entityType == HttpEntityType.MTOM && StringUtils.isNotEmpty(mtomContentTransferEncoding)) {
 			bodyPart.setField(MIME.CONTENT_TRANSFER_ENC, mtomContentTransferEncoding);
 		}
 
@@ -236,7 +247,7 @@ public class HttpEntityFactory {
 		MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 
 		entity.setCharset(Charset.forName(charSet));
-		entity.setMtomMultipart(formType == HttpEntityType.MTOM);
+		entity.setMtomMultipart(entityType == HttpEntityType.MTOM);
 
 		if (StringUtils.isNotEmpty(firstBodyPartName)) {
 			entity.addPart(createStringBodyPart(message));

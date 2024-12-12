@@ -394,6 +394,36 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
+	public void apiListenerThatProducesXMLViaOutputMethodBinary() throws IOException, ConfigurationException {
+		String uri="/ApiListenerThatProducesXML/";
+		ApiListener listener = new ApiListenerBuilder(uri, List.of(HttpMethod.PUT), null, MediaTypes.XML).build();
+		listener.setResponseEntityType(HttpEntityType.BINARY);
+		listener.configure();
+
+		Response result = service(createRequest(uri, HttpMethod.PUT, "<xml>data</xml>"));
+		assertEquals(200, result.getStatus());
+		assertEquals("<xml>data</xml>", result.getContentAsString());
+		assertEquals("OPTIONS, PUT", result.getHeader("Allow"));
+		assertTrue(result.getContentType().contains("application/xml"), "Content-Type header does not contain [application/xml]");
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
+	public void apiListenerThatProducesXMLViaOutputMethodRaw() throws IOException, ConfigurationException {
+		String uri="/ApiListenerThatProducesXML/";
+		ApiListener listener = new ApiListenerBuilder(uri, List.of(HttpMethod.PUT), null, MediaTypes.XML).build();
+		listener.setResponseEntityType(HttpEntityType.RAW);
+		listener.configure();
+
+		Response result = service(createRequest(uri, HttpMethod.PUT, "<xml>data</xml>"));
+		assertEquals(200, result.getStatus());
+		assertEquals("<xml>data</xml>", result.getContentAsString());
+		assertEquals("OPTIONS, PUT", result.getHeader("Allow"));
+		assertTrue(result.getContentType().contains("application/xml"), "Content-Type header does not contain [application/xml]");
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
 	public void apiListenerThatProducesJSONForMethodPost() throws IOException, ConfigurationException {
 		String uri="/ApiListenerThatProducesJSON/";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), null, MediaTypes.JSON).build();
@@ -1397,7 +1427,6 @@ public class ApiListenerServletTest {
 					""")
 				.withResultSessionKey("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()))
 				.build();
-		apiListener.setResponseAsMultipart(true);
 		apiListener.setResponseEntityType(HttpEntityType.MTOM);
 		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
 		apiListener.configure();
@@ -1422,7 +1451,6 @@ public class ApiListenerServletTest {
 					""")
 				.withResultSessionKey("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()))
 				.build();
-		apiListener.setResponseAsMultipart(true);
 		apiListener.setResponseEntityType(HttpEntityType.MTOM);
 		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
 		apiListener.setResponseResultBodyPartName("message");
@@ -1448,7 +1476,6 @@ public class ApiListenerServletTest {
 					""")
 				.withResultSessionKey("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()))
 				.build();
-		apiListener.setResponseAsMultipart(true);
 		apiListener.setResponseEntityType(HttpEntityType.MTOM);
 		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
 		apiListener.setResponseResultBodyPartName("message");
@@ -1475,7 +1502,6 @@ public class ApiListenerServletTest {
 					""")
 				.withResultSessionKey("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()))
 				.build();
-		apiListener.setResponseAsMultipart(true);
 		apiListener.setResponseEntityType(HttpEntityType.FORMDATA);
 		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
 		apiListener.configure();
@@ -1500,7 +1526,6 @@ public class ApiListenerServletTest {
 					""")
 				.withResultSessionKey("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()))
 				.build();
-		apiListener.setResponseAsMultipart(true);
 		apiListener.setResponseEntityType(HttpEntityType.FORMDATA);
 		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
 		apiListener.setResponseResultBodyPartName("message");
