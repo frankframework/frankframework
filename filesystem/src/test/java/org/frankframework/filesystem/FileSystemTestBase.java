@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
-import java.io.OutputStream;
 
 import org.frankframework.core.ConfiguredTestBase;
 import org.frankframework.stream.Message;
@@ -45,7 +44,7 @@ public abstract class FileSystemTestBase extends ConfiguredTestBase {
 	/**
 	 * Creates a file with the specified name and returns output stream
 	 */
-	protected abstract OutputStream _createFile(String folder, String filename) throws Exception;
+	protected abstract String createFile(String folder, String filename, String contents) throws Exception;
 
 	/**
 	 * Returns an input stream of the file
@@ -70,14 +69,6 @@ public abstract class FileSystemTestBase extends ConfiguredTestBase {
 	public void deleteFile(String folder, String filename) throws Exception {
 		if (_fileExists(folder,filename)) {
 			_deleteFile(folder, filename);
-		}
-	}
-
-	public void createFile(String folder, String filename, String contents) throws Exception {
-		try (OutputStream out = _createFile(folder, filename)) {
-			if (contents != null) {
-				out.write(contents.getBytes());
-			}
 		}
 	}
 
