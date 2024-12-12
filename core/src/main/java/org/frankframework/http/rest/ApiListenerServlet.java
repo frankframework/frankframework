@@ -51,7 +51,6 @@ import com.nimbusds.jose.util.JSONObjectUtils;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.AbstractHttpServlet;
 import org.frankframework.http.HttpSecurityHandler;
-import org.frankframework.http.mime.HttpEntityBuilder;
 import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.http.mime.MultipartUtils.MultipartMessages;
 import org.frankframework.jwt.AuthorizationException;
@@ -714,16 +713,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		}
 		if (listener.isResponseAsMultipart()) {
 			response.resetBuffer();
-			HttpEntityBuilder entityBuilder = HttpEntityBuilder.create()
-					.formType(listener.getResponseEntityType())
-					.multipartXmlSessionKey(listener.getResponseMultipartXmlSessionKey())
-					.firstBodyPartName(listener.getResponseResultBodyPartName())
-					.mtomContentTransferEncoding(listener.getResponseMtomContentTransferEncoding())
-					;
-			if (result.getCharset() != null) {
-					entityBuilder.charSet(result.getCharset());
-			}
-			HttpEntity entity = entityBuilder.build(result, null, session);
+			HttpEntity entity = listener.getResponseEntityBuilder().build(result, null, session);
 			response.setContentType(entity.getContentType().getValue());
 			response.setContentLengthLong(entity.getContentLength());
 			entity.writeTo(response.getOutputStream());

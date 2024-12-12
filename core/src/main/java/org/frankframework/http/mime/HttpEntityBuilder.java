@@ -57,7 +57,7 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
 
 /**
- * Builder for any type of HTTP Entity as specified by {@link HttpEntityType}.
+ * A reusable builder for any type of HTTP Entity as specified by {@link HttpEntityType}.
  */
 @Log4j2
 public class HttpEntityBuilder {
@@ -81,7 +81,7 @@ public class HttpEntityBuilder {
 
 	}
 
-	public HttpEntityBuilder formType(HttpEntityType formType) {
+	public HttpEntityBuilder entityType(HttpEntityType formType) {
 		this.formType = formType;
 		return this;
 	}

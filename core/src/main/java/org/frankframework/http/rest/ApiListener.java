@@ -38,6 +38,7 @@ import org.frankframework.doc.Default;
 import org.frankframework.http.AbstractHttpSender;
 import org.frankframework.http.HttpEntityType;
 import org.frankframework.http.PushingListenerAdapter;
+import org.frankframework.http.mime.HttpEntityBuilder;
 import org.frankframework.jwt.JwtValidator;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.lifecycle.ServletManager;
@@ -131,6 +132,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String responseResultBodyPartName;
 	private @Getter String responseMtomContentTransferEncoding;
 
+	private @Getter HttpEntityBuilder responseEntityBuilder;
+
 	public enum AuthenticationMethods {
 		NONE, COOKIE, HEADER, AUTHROLE, JWT;
 	}
@@ -174,6 +177,15 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		contentType = produces.getMimeType(charset);
 
 		buildPhysicalDestinationName();
+
+		if (responseAsMultipart) {
+			responseEntityBuilder = HttpEntityBuilder.create()
+					.entityType(responseEntityType)
+					.multipartXmlSessionKey(responseMultipartXmlSessionKey)
+					.firstBodyPartName(responseResultBodyPartName)
+					.mtomContentTransferEncoding(responseMtomContentTransferEncoding);
+
+		}
 	}
 
 	private void validateClaimAttribute(String claimAttributeToValidate, String claimAttributeName) throws ConfigurationException {

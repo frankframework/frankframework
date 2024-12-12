@@ -102,7 +102,7 @@ public class HttpSender extends AbstractHttpSender {
 
 		entityBuilder = HttpEntityBuilder.create()
 				.charSet(getCharSet())
-				.formType(postType)
+				.entityType(postType)
 				.contentType(getFullContentType())
 				.parametersToSkipWhenEmpty(parametersToSkipWhenEmptySet)
 				.parametersToUse(requestOrBodyParamsSet)
