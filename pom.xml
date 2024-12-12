@@ -20,21 +20,21 @@
 		<junit.includedTags></junit.includedTags>
 
 		<jackson.version>2.18.2</jackson.version>
-		<cxf.version>4.0.5</cxf.version>
+		<cxf.version>4.0.6</cxf.version>
 		<spring.version>6.2.0</spring.version>
 		<spring-security.version>6.4.1</spring-security.version>
 		<spring-integration.version>6.4.0</spring-integration.version>
 		<spring.boot.version>3.4.0</spring.boot.version>
-		<tomcat.version>10.1.33</tomcat.version>
+		<tomcat.version>10.1.34</tomcat.version>
 		<bouncycastle.version>1.79</bouncycastle.version>
 
 		<narayana.version>7.1.0.Final</narayana.version>
 		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
-		<micrometer.version>1.14.1</micrometer.version>
+		<micrometer.version>1.14.2</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>3.2</frankdoc.version>
-		<javadoc-plugin.version>3.11.1</javadoc-plugin.version>
+		<javadoc-plugin.version>3.11.2</javadoc-plugin.version>
 
 		<!-- DB Driver Versions -->
 		<h2.driver.version>2.3.232</h2.driver.version>

@@ -22,9 +22,13 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import jakarta.annotation.security.RolesAllowed;
+
+import org.springframework.messaging.Message;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
@@ -37,7 +41,6 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.receivers.Receiver;
-import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 public class InlineStorage extends BusEndpointBase {
@@ -59,7 +62,7 @@ public class InlineStorage extends BusEndpointBase {
 								try {
 									int count = browser.getMessageCount();
 									if(count > 0) {
-										InlineStoreItem item = new InlineStoreItem(adapter.getName(), receiver.getName(), count);
+										InlineStoreItem item = new InlineStoreItem(config.getName(), adapter.getName(), receiver.getName(), count);
 										storeItemsGroupedByProcessState.get(state.getName()).getItems().add(item);
 										storeItemsGroupedByProcessState.get(state.getName()).setTotalMessageCount(storeItemsGroupedByProcessState.get(state.getName()).getTotalMessageCount() + count);
 									}
@@ -83,6 +86,7 @@ public class InlineStorage extends BusEndpointBase {
 
 	@AllArgsConstructor
 	private static class InlineStoreItem {
+		private @Getter @Setter String configurationName;
 		private @Getter @Setter String adapterName;
 		private @Getter @Setter String receiverName;
 		private @Getter @Setter int messageCount;

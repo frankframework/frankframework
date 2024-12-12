@@ -165,7 +165,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		assertEqualsIgnoreCRLF("text/xml; charset=UTF-8", sender.getFullContentType().toString());
 	}
 
-	@Test()
+	@Test
 	public void testCharset() throws Throwable {
 		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		sender.setCharSet("ISO-8859-1");

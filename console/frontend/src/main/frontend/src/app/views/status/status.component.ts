@@ -154,14 +154,14 @@ export class StatusComponent implements OnInit, OnDestroy {
     }
     const transitionObject: Record<string, string> = {};
     if (filterCount < 3) transitionObject['filter'] = filterString.join('+');
-    if (this.selectedConfiguration != 'All') transitionObject['configuration'] = this.selectedConfiguration;
-    if (this.searchText.length > 0) transitionObject['search'] = this.searchText;
+    transitionObject['search'] = this.searchText;
 
     const fragment = this.adapterName === '' ? undefined : this.adapterName;
 
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: transitionObject,
+      queryParamsHandling: 'merge',
       fragment,
     });
   }
@@ -273,7 +273,6 @@ export class StatusComponent implements OnInit, OnDestroy {
   changeConfiguration(name: string): void {
     this.selectedConfiguration = name;
     this.appService.updateAdapterSummary(name, true);
-    this.updateQueryParams();
     this.updateConfigurationFlowDiagram(name);
   }
 
