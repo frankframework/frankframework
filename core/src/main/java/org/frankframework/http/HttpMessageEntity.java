@@ -38,7 +38,7 @@ import org.frankframework.util.StreamUtil;
 @Log4j2
 public class HttpMessageEntity extends AbstractHttpEntity {
 	private final Message message;
-	private final long contentLength;
+	private long contentLength;
 
 	public HttpMessageEntity(Message message) {
 		this(message, null);
@@ -111,8 +111,8 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 	public void writeTo(OutputStream outStream) throws IOException {
 		long length = getContentLength();
 		try (InputStream inStream = getContent()) {
-			// consume no more than length
-			StreamUtil.copyPartialStream(inStream, outStream, length, OUTPUT_BUFFER_SIZE);
+			// consume no more than length. Update contentLength because it may have been unknown before reading the stream, now it is accurate.
+			contentLength = StreamUtil.copyPartialStream(inStream, outStream, length, OUTPUT_BUFFER_SIZE);
 		}
 	}
 }

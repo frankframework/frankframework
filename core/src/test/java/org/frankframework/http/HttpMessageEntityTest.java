@@ -2,6 +2,7 @@ package org.frankframework.http;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -188,6 +189,11 @@ public class HttpMessageEntityTest {
 			assertEquals(message.getCharset(), entity.getContentEncoding().getValue());
 		}
 
+		// Check length before reading
+		if (!preserved && type != MessageType.BINARY) {
+			assertEquals(-1L, entity.getContentLength());
+		}
+
 		// Act
 		ByteArrayOutputStream boas = new ByteArrayOutputStream();
 		entity.writeTo(boas);
@@ -196,7 +202,8 @@ public class HttpMessageEntityTest {
 		if(preserved || type == MessageType.BINARY) {
 			assertEquals(entity.getContentLength(), boas.toByteArray().length);
 		} else {
-			assertEquals(-1L, entity.getContentLength());
+			// Check again after reading, expect to be now known
+			assertNotEquals(-1L, entity.getContentLength());
 		}
 		String boasString = type == MessageType.BINARY ? boas.toString(): boas.toString(message.getCharset());
 		assertEquals(type.getMessage().asString(StreamUtil.AUTO_DETECT_CHARSET), boasString);

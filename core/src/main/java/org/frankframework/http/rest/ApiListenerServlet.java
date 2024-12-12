@@ -723,6 +723,11 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 			response.setContentType(entity.getContentType().getValue());
 		}
 		entity.writeTo(response.getOutputStream());
+
+		// After reading the entire entity, we may have a more accurate value for content-length before flushing the output.
+		if (entity.getContentLength() != contentLength) {
+			response.setContentLengthLong(entity.getContentLength());
+		}
 		return true;
 	}
 
