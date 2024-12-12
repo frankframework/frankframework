@@ -1386,7 +1386,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void testMultiPartResponse1() throws Exception {
+	public void testMultiPartResponseMtom1() throws Exception {
 		// Arrange
 		ApiListener apiListener = new ApiListenerBuilder("/multipartResponse/1", List.of(HttpMethod.GET))
 				.withResponseContent("body pt1")
@@ -1411,7 +1411,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void testMultiPartResponse2() throws Exception {
+	public void testMultiPartResponseMtom2() throws Exception {
 		// Arrange
 		ApiListener apiListener = new ApiListenerBuilder("/multipartResponse/2", List.of(HttpMethod.GET))
 				.withResponseContent("body pt1")
@@ -1434,6 +1434,84 @@ public class ApiListenerServletTest {
 		// Assert
 		assertEquals(200, result.getStatus());
 		assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartMtom2.txt"), getResultAsStringWithIgnores(result));
+	}
+
+	@Test
+	public void testMultiPartResponseMtom3() throws Exception {
+		// Arrange
+		ApiListener apiListener = new ApiListenerBuilder("/multipartResponse/3", List.of(HttpMethod.GET))
+				.withResponseContent("<body1/>".getBytes())
+				.withResultSessionKey("multipartXml", """
+					<parts><part name="dummy" \
+					value="{json:true}" size="72833" \
+					mimeType="application/json"/></parts>\
+					""")
+				.withResultSessionKey("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()))
+				.build();
+		apiListener.setResponseAsMultipart(true);
+		apiListener.setResponseEntityType(HttpEntityType.MTOM);
+		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
+		apiListener.setResponseResultBodyPartName("message");
+		apiListener.setResponseMtomContentTransferEncoding("binary");
+		apiListener.configure();
+
+		// Act
+		Response result = service(createRequest("/multipartResponse/3", HttpMethod.GET));
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartMtom3.txt"), getResultAsStringWithIgnores(result));
+	}
+
+	@Test
+	public void testMultiPartResponseFormdata1() throws Exception {
+		// Arrange
+		ApiListener apiListener = new ApiListenerBuilder("/multipartResponse/4", List.of(HttpMethod.GET))
+				.withResponseContent("body pt1")
+				.withResultSessionKey("multipartXml", """
+					<parts><part name="dummy" \
+					value="{json:true}" size="72833" \
+					mimeType="application/json"/></parts>\
+					""")
+				.withResultSessionKey("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()))
+				.build();
+		apiListener.setResponseAsMultipart(true);
+		apiListener.setResponseEntityType(HttpEntityType.FORMDATA);
+		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
+		apiListener.configure();
+
+		// Act
+		Response result = service(createRequest("/multipartResponse/4", HttpMethod.GET));
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartFormdata1.txt"), getResultAsStringWithIgnores(result));
+	}
+
+	@Test
+	public void testMultiPartResponseFormdata2() throws Exception {
+		// Arrange
+		ApiListener apiListener = new ApiListenerBuilder("/multipartResponse/5", List.of(HttpMethod.GET))
+				.withResponseContent("body pt1")
+				.withResultSessionKey("multipartXml", """
+					<parts><part name="dummy" \
+					value="{json:true}" size="72833" \
+					mimeType="application/json"/></parts>\
+					""")
+				.withResultSessionKey("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()))
+				.build();
+		apiListener.setResponseAsMultipart(true);
+		apiListener.setResponseEntityType(HttpEntityType.FORMDATA);
+		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
+		apiListener.setResponseResultBodyPartName("message");
+		apiListener.configure();
+
+		// Act
+		Response result = service(createRequest("/multipartResponse/5", HttpMethod.GET));
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartFormdata2.txt"), getResultAsStringWithIgnores(result));
 	}
 
 	@Test

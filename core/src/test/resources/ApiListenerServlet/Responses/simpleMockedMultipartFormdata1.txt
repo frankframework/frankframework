@@ -1,0 +1,14 @@
+Allow: OPTIONS, GET
+Cache-Control: no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0
+Content-Length: IGNORE
+Content-Type: multipart/form-data; boundary=IGNORE; charset=UTF-8
+Last-Modified: IGNORE
+Pragma: no-cache
+
+--IGNORE
+Content-Disposition: form-data; name="dummy"
+Content-Type: application/json; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+{json:true}
+--IGNORE--
