@@ -321,12 +321,13 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailMessage> implemen
 
 	@Override
 	public MailMessage toFile(String id) throws FileSystemException {
-		return new MailMessage(mailFolder, id);
+		return toFile(null, id);
 	}
 
 	@Override
 	public MailMessage toFile(String defaultFolder, String id) throws FileSystemException {
-		throw new IllegalStateException();
+//		new MailFolder();
+		return new MailMessage(mailFolder, id);
 	}
 
 	@Override

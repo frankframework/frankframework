@@ -42,12 +42,14 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	@Override
 	public void setUp() throws Exception {
 		fileSystem = createFileSystem();
+		super.setUp();
 	}
 
 	@AfterEach
 	@Override
 	public void tearDown() {
 		CloseUtils.closeSilently(fileSystem);
+		super.tearDown();
 	}
 
 	@Test

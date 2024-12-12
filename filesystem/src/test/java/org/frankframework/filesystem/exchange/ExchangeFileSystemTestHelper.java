@@ -1,12 +1,10 @@
 package org.frankframework.filesystem.exchange;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 
 import com.azure.core.credential.TokenCredential;
@@ -22,6 +20,7 @@ import com.microsoft.graph.models.User;
 import com.microsoft.graph.serviceclient.GraphServiceClient;
 import com.microsoft.graph.users.item.UserItemRequestBuilder;
 import com.microsoft.graph.users.item.mailfolders.item.MailFolderItemRequestBuilder;
+import com.microsoft.graph.users.item.mailfolders.item.childfolders.ChildFoldersRequestBuilder;
 import com.microsoft.graph.users.item.messages.item.move.MovePostRequestBody;
 
 import org.frankframework.filesystem.IFileSystemTestHelper;
@@ -43,7 +42,7 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 	private MailFolderItemRequestBuilder baseMailFolder;
 
 	private GraphServiceClient msGraphClient;
-	private static UserItemRequestBuilder requestBuilder;
+	private String userId;
 
 	public ExchangeFileSystemTestHelper(String clientId, String clientSecret, String tenantId, String mailAddress, String baseFolder) {
 		this.clientId = clientId;
@@ -56,7 +55,7 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 	@BeforeEach
 	@Override
 	public void setUp() {
-		if (requestBuilder == null) {
+		if (userId == null) {
 			CredentialFactory cf = new CredentialFactory(authAlias, clientId, clientSecret);
 			TokenCredential credential = new ClientSecretCredentialBuilder()
 					.tenantId(tenantId)
@@ -69,10 +68,11 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 				rc.queryParameters.select = new String[]{"id", "userPrincipalName", "displayName", "givenName", "surname", "accountEnabled"};
 			});
 
-			requestBuilder = msGraphClient.users().byUserId(user.getId());
+			userId = user.getId();
 
 			List<String> baseFolderList = StringUtil.split(baseFolder, "/");
 
+			UserItemRequestBuilder requestBuilder = getRequestBuilder();
 			List<MailFolder> folders = requestBuilder.mailFolders().get().getValue();
 			MailFolder base = folders.get(0);
 
@@ -90,6 +90,10 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 		}
 	}
 
+	private UserItemRequestBuilder getRequestBuilder() {
+		return msGraphClient.users().byUserId(userId);
+	}
+
 	private MailFolder findFolder(String folderNames) {
 		List<String> baseFolderList = StringUtil.split(folderNames, "/");
 
@@ -99,7 +103,7 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 		for (String subMailFolder : baseFolderList) {
 			for (MailFolder mailFolder : folders) {
 				if (subMailFolder.equalsIgnoreCase(mailFolder.getDisplayName())) {
-					folders = requestBuilder.mailFolders().byMailFolderId(mailFolder.getId()).childFolders().get().getValue();
+					folders = getRequestBuilder().mailFolders().byMailFolderId(mailFolder.getId()).childFolders().get().getValue();
 					base = mailFolder;
 				}
 			}
@@ -116,7 +120,7 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 	@Override
 	public boolean _fileExists(String folder, String filename) throws Exception {
 		String mailFolderId = (folder != null) ? findFolder(folder).getId() : baseFolderId;
-		Message msg = requestBuilder.mailFolders().byMailFolderId(mailFolderId).messages().byMessageId(filename).get();
+		Message msg = getRequestBuilder().mailFolders().byMailFolderId(mailFolderId).messages().byMessageId(filename).get();
 		return msg != null;
 	}
 
@@ -132,36 +136,30 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public OutputStream _createFile(String folder, String filename) throws Exception {
-		return new ByteArrayOutputStream() {
+	public String createFile(String folder, String filename, String content) throws Exception {
+		Message message = new Message();
+		message.setSubject(filename);
+		message.setImportance(Importance.Normal);
 
-			@Override
-			public void close() throws IOException {
-				String content = new String(toByteArray());
-				Message message = new Message();
-				message.setSubject(filename);
-				message.setImportance(Importance.Normal);
+		ItemBody body = new ItemBody();
+		body.setContentType(BodyType.Text);
+		body.setContent(content);
+		message.setBody(body);
 
-				ItemBody body = new ItemBody();
-				body.setContentType(BodyType.Text);
-				body.setContent(content);
-				message.setBody(body);
+		List<Recipient> toRecipients = new LinkedList<Recipient>();
+		Recipient recipient = new Recipient();
+		EmailAddress emailAddress = new EmailAddress();
+		emailAddress.setAddress("sergi@frankframework.org");
+		recipient.setEmailAddress(emailAddress);
+		toRecipients.add(recipient);
+		message.setToRecipients(toRecipients);
 
-				List<Recipient> toRecipients = new LinkedList<Recipient>();
-				Recipient recipient = new Recipient();
-				EmailAddress emailAddress = new EmailAddress();
-				emailAddress.setAddress("sergi@frankframework.org");
-				recipient.setEmailAddress(emailAddress);
-				toRecipients.add(recipient);
-				message.setToRecipients(toRecipients);
+		Message response = getRequestBuilder().messages().post(message);
 
-				Message response = requestBuilder.messages().post(message);
-
-				MovePostRequestBody movePostRequestBody = new MovePostRequestBody();
-				movePostRequestBody.setDestinationId(baseFolderId);
-				requestBuilder.messages().byMessageId(response.getId()).move().post(movePostRequestBody);
-			}
-		};
+		MovePostRequestBody movePostRequestBody = new MovePostRequestBody();
+		movePostRequestBody.setDestinationId(baseFolderId);
+		Message movedMessage = getRequestBuilder().messages().byMessageId(response.getId()).move().post(movePostRequestBody);
+		return movedMessage.getId();
 	}
 
 	@Override
@@ -172,8 +170,19 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public void _createFolder(String foldername) throws Exception {
-		// TODO Auto-generated method stub
-		
+		List<String> folders = StringUtil.split(foldername, "/");
+		ChildFoldersRequestBuilder crb = baseMailFolder.childFolders();
+
+		for (String folder : folders) {
+			if (StringUtils.isEmpty(folder)) return;
+
+			MailFolder mailFolder = new MailFolder();
+			mailFolder.setDisplayName(folder);
+			mailFolder.setIsHidden(false);
+
+			MailFolder newMailFolder = crb.post(mailFolder);
+			crb = getRequestBuilder().mailFolders().byMailFolderId(newMailFolder.getId()).childFolders();
+		}
 	}
 
 	@Override
