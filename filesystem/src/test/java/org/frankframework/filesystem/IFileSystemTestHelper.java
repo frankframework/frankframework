@@ -1,7 +1,6 @@
 package org.frankframework.filesystem;
 
 import java.io.InputStream;
-import java.io.OutputStream;
 
 public interface IFileSystemTestHelper extends AutoCloseable {
 
@@ -32,7 +31,7 @@ public interface IFileSystemTestHelper extends AutoCloseable {
 	 * Creates a file with the specified name and returns output stream
 	 * to be able to write that file.
 	 */
-	OutputStream _createFile(String folder, String filename) throws Exception;
+	String createFile(String folder, String filename, String contents) throws Exception;
 
 	/**
 	 * Returns an input stream of the file

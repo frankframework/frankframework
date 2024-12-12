@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.junit.jupiter.api.AfterEach;
@@ -131,10 +132,14 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public OutputStream _createFile(String folder, String filename) throws IOException {
+	public String createFile(String folder, String filename, String contents) throws Exception {
 		String path = folder != null ? folder + "/" + filename : filename;
-		OutputStream out = ftpClient.storeFileStream(path);
-		return completePendingCommand(out);
+		try (OutputStream out = completePendingCommand(ftpClient.storeFileStream(path))) {
+			if(StringUtils.isNotEmpty(contents)) {
+				out.write(contents.getBytes());
+			}
+		}
+		return path;
 	}
 
 	@Override
