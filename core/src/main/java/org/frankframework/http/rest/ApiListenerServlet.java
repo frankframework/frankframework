@@ -16,8 +16,6 @@
 package org.frankframework.http.rest;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
 import java.time.Instant;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -709,24 +707,20 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 	 * @throws IOException Thrown if reading or writing to / from any of the streams throws  an IOException.
 	 */
 	private static boolean writeToResponseStream(ApiListener listener, HttpServletResponse response, Message result, PipeLineSession session) throws IOException {
-		if (!Message.hasDataAvailable(result)) {
+		response.resetBuffer();
+		HttpEntity entity = listener.getResponseEntityBuilder().create(result, null, session);
+
+		long contentLength = entity.getContentLength();
+		if (contentLength == 0L) {
 			return false;
 		}
-		if (listener.getResponseEntityBuilder() != null) {
-			response.resetBuffer();
-			HttpEntity entity = listener.getResponseEntityBuilder().create(result, null, session);
+		response.setContentLengthLong(contentLength);
+
+		// Content-type might not be same as set before if we have a form. However it might also not be set.
+		if (entity.getContentType() != null) {
 			response.setContentType(entity.getContentType().getValue());
-			response.setContentLengthLong(entity.getContentLength());
-			entity.writeTo(response.getOutputStream());
-		} else if (result.isBinary()) {
-			try (InputStream in = result.asInputStream()) {
-				StreamUtil.copyStream(in, response.getOutputStream(), 4096);
-			}
-		} else {
-			try (Reader reader = result.asReader()) {
-				StreamUtil.copyReaderToWriter(reader, response.getWriter(), 4096);
-			}
 		}
+		entity.writeTo(response.getOutputStream());
 		return true;
 	}
 

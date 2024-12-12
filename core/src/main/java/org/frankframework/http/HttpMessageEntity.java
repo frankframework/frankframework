@@ -81,7 +81,11 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 
 	@Override
 	public long getContentLength() {
-		return message.size();
+		try {
+			return Message.hasDataAvailable(message) ? message.size() : 0L;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	// size (getContentLength) and encoding (getContentEncoding) of the InputStream must match the way it is being read / sent!

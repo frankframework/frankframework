@@ -397,7 +397,7 @@ public class ApiListenerServletTest {
 	public void apiListenerThatProducesXMLViaOutputMethodBinary() throws IOException, ConfigurationException {
 		String uri="/ApiListenerThatProducesXML/";
 		ApiListener listener = new ApiListenerBuilder(uri, List.of(HttpMethod.PUT), null, MediaTypes.XML).build();
-		listener.setResponseEntityType(HttpEntityType.BINARY);
+		listener.setResponseType(HttpEntityType.BINARY);
 		listener.configure();
 
 		Response result = service(createRequest(uri, HttpMethod.PUT, "<xml>data</xml>"));
@@ -412,7 +412,7 @@ public class ApiListenerServletTest {
 	public void apiListenerThatProducesXMLViaOutputMethodRaw() throws IOException, ConfigurationException {
 		String uri="/ApiListenerThatProducesXML/";
 		ApiListener listener = new ApiListenerBuilder(uri, List.of(HttpMethod.PUT), null, MediaTypes.XML).build();
-		listener.setResponseEntityType(HttpEntityType.RAW);
+		listener.setResponseType(HttpEntityType.RAW);
 		listener.configure();
 
 		Response result = service(createRequest(uri, HttpMethod.PUT, "<xml>data</xml>"));
@@ -1427,7 +1427,7 @@ public class ApiListenerServletTest {
 					""")
 				.withResultSessionKey("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()))
 				.build();
-		apiListener.setResponseEntityType(HttpEntityType.MTOM);
+		apiListener.setResponseType(HttpEntityType.MTOM);
 		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
 		apiListener.configure();
 
@@ -1451,7 +1451,7 @@ public class ApiListenerServletTest {
 					""")
 				.withResultSessionKey("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()))
 				.build();
-		apiListener.setResponseEntityType(HttpEntityType.MTOM);
+		apiListener.setResponseType(HttpEntityType.MTOM);
 		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
 		apiListener.setResponseResultBodyPartName("message");
 		apiListener.configure();
@@ -1476,7 +1476,7 @@ public class ApiListenerServletTest {
 					""")
 				.withResultSessionKey("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()))
 				.build();
-		apiListener.setResponseEntityType(HttpEntityType.MTOM);
+		apiListener.setResponseType(HttpEntityType.MTOM);
 		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
 		apiListener.setResponseResultBodyPartName("message");
 		apiListener.setResponseMtomContentTransferEncoding("binary");
@@ -1502,7 +1502,7 @@ public class ApiListenerServletTest {
 					""")
 				.withResultSessionKey("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()))
 				.build();
-		apiListener.setResponseEntityType(HttpEntityType.FORMDATA);
+		apiListener.setResponseType(HttpEntityType.FORMDATA);
 		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
 		apiListener.configure();
 
@@ -1526,7 +1526,7 @@ public class ApiListenerServletTest {
 					""")
 				.withResultSessionKey("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()))
 				.build();
-		apiListener.setResponseEntityType(HttpEntityType.FORMDATA);
+		apiListener.setResponseType(HttpEntityType.FORMDATA);
 		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
 		apiListener.setResponseResultBodyPartName("message");
 		apiListener.configure();

@@ -126,8 +126,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter JwtValidator<SecurityContext> jwtValidator;
 	private @Setter ServletManager servletManager;
 
-	private @Getter boolean responseAsMultipart;
-	private @Getter HttpEntityType responseEntityType;
+	private @Getter HttpEntityType responseType;
 	private @Getter String responseMultipartXmlSessionKey;
 	private @Getter String responseResultBodyPartName;
 	private @Getter String responseMtomContentTransferEncoding;
@@ -178,26 +177,26 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 		buildPhysicalDestinationName();
 
-		if (responseAsMultipart) {
-			responseEntityBuilder = HttpEntityFactory.Builder.create()
-					.entityType(responseEntityType)
-					.multipartXmlSessionKey(responseMultipartXmlSessionKey)
-					.firstBodyPartName(responseResultBodyPartName)
-					.mtomContentTransferEncoding(responseMtomContentTransferEncoding)
-					.build();
-		} else {
-			if (responseEntityType != null) {
-				ConfigurationWarnings.add(this, log, "[responseEntityType] should only be set when [responseAsMultipart=true]");
-			}
+		if (responseType == null) {
+			responseType = HttpEntityType.BINARY;
+		}
+		responseEntityBuilder = HttpEntityFactory.Builder.create()
+				.entityType(responseType)
+				.multipartXmlSessionKey(responseMultipartXmlSessionKey)
+				.firstBodyPartName(responseResultBodyPartName)
+				.mtomContentTransferEncoding(responseMtomContentTransferEncoding)
+				.build();
+
+		if (responseType != HttpEntityType.MTOM && responseType != HttpEntityType.FORMDATA) {
 			if (StringUtils.isNotBlank(responseMultipartXmlSessionKey)) {
-				ConfigurationWarnings.add(this, log, "[responseMultipartXmlSessionKey] should only be set when [responseAsMultipart=true]");
+				ConfigurationWarnings.add(this, log, "[responseMultipartXmlSessionKey] should only be set when [responseType] is [MTOM] or [FORMDATA]");
 			}
 			if (StringUtils.isNotBlank(responseResultBodyPartName)) {
-				ConfigurationWarnings.add(this, log, "[responseResultBodyPartName] should only be set when [responseAsMultipart=true]");
+				ConfigurationWarnings.add(this, log, "[responseResultBodyPartName] should only be set when [responseType] is [MTOM] or [FORMDATA]");
 			}
-			if (StringUtils.isNotBlank(responseMtomContentTransferEncoding)) {
-				ConfigurationWarnings.add(this, log, "[responseMtomContentTransferEncoding] should only be set when [responseAsMultipart=true]");
-			}
+		}
+		if (responseType != HttpEntityType.MTOM && StringUtils.isNotBlank(responseMtomContentTransferEncoding)) {
+			ConfigurationWarnings.add(this, log, "[responseMtomContentTransferEncoding] should only be set when [responseType] is [MTOM]");
 		}
 	}
 
@@ -494,23 +493,17 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * Should response be sent as a Multipart or not.
-	 * @ff.default false
+	 * Optional configuration setting to have more control over how to send the response.
+	 * Set this to return data as Multipart formdata or MTOM.
+	 * See {@link HttpEntityType} for all supported values and how to use them.
+	 * @ff.default {@link HttpEntityType#BINARY}.
 	 */
-	public void setResponseAsMultipart(boolean responseAsMultipart) {
-		this.responseAsMultipart = responseAsMultipart;
+	public void setResponseType(HttpEntityType responseType) {
+		this.responseType = responseType;
 	}
 
 	/**
-	 * If response is sent as Multipart, the type of Multipart entities to be created. Supported types are {@link HttpEntityType#FORMDATA},
-	 * {@link HttpEntityType#URLENCODED} and {@link HttpEntityType#MTOM}.
-	 */
-	public void setResponseEntityType(HttpEntityType responseEntityType) {
-		this.responseEntityType = responseEntityType;
-	}
-
-	/**
-	 * If response is sent as Multipart an optional session key can describe the Multipart contents in XML. See {@link org.frankframework.http.HttpSender#setMultipartXmlSessionKey(String)}
+	 * If response is sent as Multipart ({@link HttpEntityType#FORMDATA} or {@link HttpEntityType#MTOM}) an optional session key can describe the Multipart contents in XML. See {@link org.frankframework.http.HttpSender#setMultipartXmlSessionKey(String)}
 	 * for details on the XML format specification.
 	 */
 	public void setResponseMultipartXmlSessionKey(String responseMultipartXmlSessionKey) {
@@ -518,13 +511,16 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * If response is sent as Multipart, when this option is set the pipeline result message will be prepended as first Multipart Bodypart with
+	 * If response is sent as Multipart ({@link HttpEntityType#FORMDATA} or {@link HttpEntityType#MTOM}), when this option is set the pipeline result message will be prepended as first Multipart Bodypart with
 	 * this name.
 	 */
 	public void setResponseResultBodyPartName(String responseResultBodyPartName) {
 		this.responseResultBodyPartName = responseResultBodyPartName;
 	}
 
+	/**
+	 * If the response is sent as {@link HttpEntityType#MTOM}, optionally specify the transfer-encoding of the first part.
+	 */
 	public void setResponseMtomContentTransferEncoding(String responseMtomContentTransferEncoding) {
 		this.responseMtomContentTransferEncoding = responseMtomContentTransferEncoding;
 	}
