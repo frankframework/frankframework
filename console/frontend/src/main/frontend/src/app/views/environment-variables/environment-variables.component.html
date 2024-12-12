@@ -1,7 +1,7 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   <div class="row">
     <app-tab-list
-      allTabName="Global"
+      [allTabName]="GLOBAL_TAB_NAME"
       [tabs]="configurationNames"
       (selectedTabChange)="changeConfiguration($event)"
     ></app-tab-list>

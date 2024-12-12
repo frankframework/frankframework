@@ -2,6 +2,7 @@
     "Available": {
         "items": [
             {
+                "configurationName": "TestConfiguration",
                 "adapterName": "TestAdapter",
                 "receiverName": "ReceiverName",
                 "messageCount": 2
