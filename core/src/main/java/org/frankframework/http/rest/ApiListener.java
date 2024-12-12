@@ -184,7 +184,19 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 					.multipartXmlSessionKey(responseMultipartXmlSessionKey)
 					.firstBodyPartName(responseResultBodyPartName)
 					.mtomContentTransferEncoding(responseMtomContentTransferEncoding);
-
+		} else {
+			if (responseEntityType != null) {
+				ConfigurationWarnings.add(this, log, "[responseEntityType] should only be set when [responseAsMultipart=true]");
+			}
+			if (StringUtils.isNotBlank(responseMultipartXmlSessionKey)) {
+				ConfigurationWarnings.add(this, log, "[responseMultipartXmlSessionKey] should only be set when [responseAsMultipart=true]");
+			}
+			if (StringUtils.isNotBlank(responseResultBodyPartName)) {
+				ConfigurationWarnings.add(this, log, "[responseResultBodyPartName] should only be set when [responseAsMultipart=true]");
+			}
+			if (StringUtils.isNotBlank(responseMtomContentTransferEncoding)) {
+				ConfigurationWarnings.add(this, log, "[responseMtomContentTransferEncoding] should only be set when [responseAsMultipart=true]");
+			}
 		}
 	}
 
