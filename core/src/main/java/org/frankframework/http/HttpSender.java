@@ -45,7 +45,7 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
-import org.frankframework.http.mime.HttpEntityBuilder;
+import org.frankframework.http.mime.HttpEntityFactory;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
@@ -71,7 +71,7 @@ public class HttpSender extends AbstractHttpSender {
 
 	private @Getter HttpEntityType postType = HttpEntityType.RAW;
 
-	private HttpEntityBuilder entityBuilder;
+	private HttpEntityFactory entityBuilder;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -100,7 +100,7 @@ public class HttpSender extends AbstractHttpSender {
 			postType = HttpEntityType.FORMDATA;
 		}
 
-		entityBuilder = HttpEntityBuilder.create()
+		entityBuilder = HttpEntityFactory.Builder.create()
 				.charSet(getCharSet())
 				.entityType(postType)
 				.contentType(getFullContentType())
@@ -109,7 +109,8 @@ public class HttpSender extends AbstractHttpSender {
 				.firstBodyPartName(getFirstBodyPartName())
 				.mtomContentTransferEncoding(mtomContentTransferEncoding)
 				.multipartXmlSessionKey(multipartXmlSessionKey)
-				.rawWithParametersAppendsInputMessage(BooleanUtils.isTrue(getTreatInputMessageAsParameters()));
+				.rawWithParametersAppendsInputMessage(BooleanUtils.isTrue(getTreatInputMessageAsParameters()))
+				.build();
 
 	}
 
@@ -165,7 +166,7 @@ public class HttpSender extends AbstractHttpSender {
 					method = new HttpPut(relativePath.toString());
 				}
 
-				method.setEntity(entityBuilder.build(message, parameters, session));
+				method.setEntity(entityBuilder.create(message, parameters, session));
 				return method;
 
 			case DELETE:

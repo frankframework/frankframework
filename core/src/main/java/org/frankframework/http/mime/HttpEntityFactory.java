@@ -60,79 +60,105 @@ import org.frankframework.util.XmlUtils;
  * A reusable builder for any type of HTTP Entity as specified by {@link HttpEntityType}.
  */
 @Log4j2
-public class HttpEntityBuilder {
+public class HttpEntityFactory {
+
+	public static class Builder {
+		private HttpEntityType formType;
+		private ContentType contentType;
+		private Set<String> parametersToUse = Set.of();
+		private Set<String> parametersToSkipWhenEmpty = Set.of();
+		private boolean rawWithParametersAppendsInputMessage = false;
+		private String multipartXmlSessionKey;
+		private String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+		private String firstBodyPartName;
+		private String mtomContentTransferEncoding;
+
+		public static Builder create() {
+			return new Builder();
+		}
+
+		public Builder entityType(HttpEntityType formType) {
+			this.formType = formType;
+			return this;
+		}
+
+		public Builder contentType(ContentType contentType) {
+			this.contentType = contentType;
+			return this;
+		}
+
+		public Builder contentType(String contentType) {
+			this.contentType = ContentType.create(contentType);
+			return this;
+		}
+
+		public Builder parametersToUse(Set<String> parametersToUse) {
+			this.parametersToUse = parametersToUse;
+			return this;
+		}
+
+		public Builder parametersToSkipWhenEmpty(Set<String> parametersToSkipWhenEmpty) {
+			this.parametersToSkipWhenEmpty = parametersToSkipWhenEmpty;
+			return this;
+		}
+
+		public Builder multipartXmlSessionKey(String multipartXmlSessionKey) {
+			this.multipartXmlSessionKey = multipartXmlSessionKey;
+			return this;
+		}
+
+		public Builder charSet(String charSet) {
+			this.charSet = charSet;
+			return this;
+		}
+
+		public Builder firstBodyPartName(String firstBodyPartName) {
+			this.firstBodyPartName = firstBodyPartName;
+			return this;
+		}
+
+		public Builder mtomContentTransferEncoding(String mtomContentTransferEncoding) {
+			this.mtomContentTransferEncoding = mtomContentTransferEncoding;
+			return this;
+		}
+
+		public Builder rawWithParametersAppendsInputMessage(boolean rawWithParametersAppendsInputMessage) {
+			this.rawWithParametersAppendsInputMessage = rawWithParametersAppendsInputMessage;
+			return this;
+		}
+
+		public HttpEntityFactory build() {
+			return new HttpEntityFactory(formType, contentType, parametersToUse, parametersToSkipWhenEmpty, rawWithParametersAppendsInputMessage, multipartXmlSessionKey, charSet, firstBodyPartName, mtomContentTransferEncoding);
+		}
+	}
+
 	private static final MimeType APPLICATION_XOP_XML = MimeType.valueOf("application/xop+xml");
 
-	private HttpEntityType formType;
-	private ContentType contentType;
-	private Set<String> parametersToUse = Set.of();
-	private Set<String> parametersToSkipWhenEmpty = Set.of();
-	private boolean rawWithParametersAppendsInputMessage = false;
-	private String multipartXmlSessionKey;
-	private String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	private String firstBodyPartName;
-	private String mtomContentTransferEncoding;
+	private final HttpEntityType formType;
+	private final ContentType contentType;
+	private final Set<String> parametersToUse;
+	private final Set<String> parametersToSkipWhenEmpty;
+	private final boolean rawWithParametersAppendsInputMessage;
+	private final String multipartXmlSessionKey;
+	private final String charSet;
+	private final String firstBodyPartName;
+	private final String mtomContentTransferEncoding;
 
-	public static HttpEntityBuilder create() {
-		return new HttpEntityBuilder();
-	}
-
-	private HttpEntityBuilder() {
-
-	}
-
-	public HttpEntityBuilder entityType(HttpEntityType formType) {
+	private HttpEntityFactory(HttpEntityType formType, ContentType contentType, Set<String> parametersToUse, Set<String> parametersToSkipWhenEmpty, boolean rawWithParametersAppendsInputMessage, String multipartXmlSessionKey, String charSet, String firstBodyPartName, String mtomContentTransferEncoding) {
 		this.formType = formType;
-		return this;
-	}
-
-	public HttpEntityBuilder contentType(ContentType contentType) {
 		this.contentType = contentType;
-		return this;
-	}
-
-	public HttpEntityBuilder contentType(String contentType) {
-		this.contentType = ContentType.create(contentType);
-		return this;
-	}
-
-	public HttpEntityBuilder parametersToUse(Set<String> parametersToUse) {
 		this.parametersToUse = parametersToUse;
-		return this;
-	}
-
-	public HttpEntityBuilder parametersToSkipWhenEmpty(Set<String> parametersToSkipWhenEmpty) {
 		this.parametersToSkipWhenEmpty = parametersToSkipWhenEmpty;
-		return this;
-	}
-
-	public HttpEntityBuilder multipartXmlSessionKey(String multipartXmlSessionKey) {
-		this.multipartXmlSessionKey = multipartXmlSessionKey;
-		return this;
-	}
-
-	public HttpEntityBuilder charSet(String charSet) {
-		this.charSet = charSet;
-		return this;
-	}
-
-	public HttpEntityBuilder firstBodyPartName(String firstBodyPartName) {
-		this.firstBodyPartName = firstBodyPartName;
-		return this;
-	}
-
-	public HttpEntityBuilder mtomContentTransferEncoding(String mtomContentTransferEncoding) {
-		this.mtomContentTransferEncoding = mtomContentTransferEncoding;
-		return this;
-	}
-
-	public HttpEntityBuilder rawWithParametersAppendsInputMessage(boolean rawWithParametersAppendsInputMessage) {
 		this.rawWithParametersAppendsInputMessage = rawWithParametersAppendsInputMessage;
-		return this;
+		this.multipartXmlSessionKey = multipartXmlSessionKey;
+		this.charSet = charSet;
+		this.firstBodyPartName = firstBodyPartName;
+		this.mtomContentTransferEncoding = mtomContentTransferEncoding;
 	}
+
 
 	@Nonnull
-	public HttpEntity build(Message message, ParameterValueList parameters, PipeLineSession session) throws IOException {
+	public HttpEntity create(Message message, ParameterValueList parameters, PipeLineSession session) throws IOException {
 		return switch (formType) {
 			case RAW -> createEntityForRawMessage(message, parameters);
 			case BINARY -> new HttpMessageEntity(message, contentType);

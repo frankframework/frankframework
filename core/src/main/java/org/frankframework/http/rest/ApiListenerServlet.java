@@ -713,7 +713,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		}
 		if (listener.isResponseAsMultipart()) {
 			response.resetBuffer();
-			HttpEntity entity = listener.getResponseEntityBuilder().build(result, null, session);
+			HttpEntity entity = listener.getResponseEntityBuilder().create(result, null, session);
 			response.setContentType(entity.getContentType().getValue());
 			response.setContentLengthLong(entity.getContentLength());
 			entity.writeTo(response.getOutputStream());
