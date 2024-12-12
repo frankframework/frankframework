@@ -1,0 +1,79 @@
+/*
+   Copyright 2024 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
+package org.frankframework.filesystem.exchange;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.frankframework.filesystem.MsalClientAdapter.GraphClient;
+
+public class MailFolderResponse {
+	private static final int MAX_ENTRIES_PER_CALL = 20;
+	private static final String MAIL_FOLDERS = "https://graph.microsoft.com/v1.0/users/%s/mailFolders?$top=%d&$skip=0";
+	public static final String CHILD_MAIL_FOLDERS = "%s/childFolders?$top=%d&$skip=0";
+
+	public static List<MailFolder> get(GraphClient client, String email) throws IOException {
+		return get(client, email, 20); // default limit is 20, and with 20 entries per API call, only 1 call will be made.
+	}
+
+	public static List<MailFolder> get(GraphClient client, String email, int limit) throws IOException {
+		URI uri = URI.create(MAIL_FOLDERS.formatted(email, MAX_ENTRIES_PER_CALL));
+		List<MailFolder> folders = new ArrayList<>();
+		getRecursive(client, uri, folders, limit - MAX_ENTRIES_PER_CALL);
+		return folders;
+	}
+
+	public static List<MailFolder> get(GraphClient client, MailFolder folder) throws IOException {
+		return get(client, folder, 20);
+	}
+
+	public static List<MailFolder> get(GraphClient client, MailFolder folder, int limit) throws IOException {
+		URI uri = URI.create(CHILD_MAIL_FOLDERS.formatted(folder.getUrl(), MAX_ENTRIES_PER_CALL));
+		List<MailFolder> folders = new ArrayList<>();
+		getRecursive(client, uri, folders, limit - MAX_ENTRIES_PER_CALL);
+		return folders;
+	}
+
+	private static void getRecursive(GraphClient client, URI uri, List<MailFolder> folders, int limit) throws IOException {
+		MailFolderResponse response = client.execute(new HttpGet(uri), MailFolderResponse.class);
+
+		String urlWithoutQueryParameters = new URIBuilder(uri).removeQuery().toString();
+		response.folders.forEach(e -> e.setUrl(urlWithoutQueryParameters));
+		folders.addAll(response.folders);
+
+		if (StringUtils.isNotBlank(response.nextLink) && limit > 0) {
+			getRecursive(client, URI.create(response.nextLink), folders, limit - MAX_ENTRIES_PER_CALL);
+		}
+	}
+
+	/**
+	 * Pagination in an API.
+	 * @see <a href="https://learn.microsoft.com/en-us/graph/api/user-list-mailfolders?view=graph-rest-1.0&tabs=http">MS Graph API</a>
+	 */
+	@JsonProperty("@odata.nextLink")
+	String nextLink;
+
+	@JsonProperty("value")
+	List<MailFolder> folders;
+}

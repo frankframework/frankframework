@@ -1,0 +1,77 @@
+/*
+   Copyright 2024 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
+package org.frankframework.filesystem.exchange;
+
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class MailMessage {
+
+	public MailMessage() {
+		// public constructor for Jackson
+	}
+
+	public MailMessage(MailFolder mailFolder, String id) {
+		this.id = id;
+		this.mailFolder = mailFolder;
+	}
+
+	private MailFolder mailFolder;
+
+	private String id;
+	@JsonProperty("displayName")
+	private String sentDateTime;
+	private String createdDateTime;
+	private String receivedDateTime;
+	private String lastModifiedDateTime;
+	private boolean hasAttachments;
+
+	private String subject;
+	private String importance;
+	private String parentFolderId;
+	private String conversationId;
+	private boolean isDeliveryReceiptRequested;
+	private boolean isReadReceiptRequested;
+	private boolean isRead;
+	private boolean isDraft;
+	private MailBody body;
+	private EmailAddress sender;
+	private EmailAddress from;
+	private List<EmailAddress> toRecipients;
+	private List<EmailAddress> ccRecipients;
+	private List<EmailAddress> bccRecipients;
+	private String replyTo;
+
+	@Getter
+	@Setter
+	public static class MailBody {
+		private String contentType;
+		private String content;
+	}
+
+	@Getter
+	@Setter
+	public static class EmailAddress {
+		private String name;
+		private String address;
+	}
+}
