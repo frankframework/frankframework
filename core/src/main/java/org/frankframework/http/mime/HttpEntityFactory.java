@@ -21,6 +21,7 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,11 +58,14 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
 
 /**
- * A reusable builder for any type of HTTP Entity as specified by {@link HttpEntityType}.
+ * A reusable, thread-safe factory for any type of HTTP Entity as specified by {@link HttpEntityType}.
  */
 @Log4j2
 public class HttpEntityFactory {
 
+	/**
+	 * Builder for the HttpEntityFactory.
+	 */
 	public static class Builder {
 		private HttpEntityType entityType;
 		private ContentType contentType;
@@ -75,6 +79,10 @@ public class HttpEntityFactory {
 
 		public static Builder create() {
 			return new Builder();
+		}
+
+		private Builder() {
+
 		}
 
 		public Builder entityType(HttpEntityType entityType) {
@@ -147,8 +155,8 @@ public class HttpEntityFactory {
 	private HttpEntityFactory(HttpEntityType entityType, ContentType contentType, Set<String> parametersToUse, Set<String> parametersToSkipWhenEmpty, boolean rawWithParametersAppendsInputMessage, String multipartXmlSessionKey, String charSet, String firstBodyPartName, String mtomContentTransferEncoding) {
 		this.entityType = entityType;
 		this.contentType = contentType;
-		this.parametersToUse = parametersToUse;
-		this.parametersToSkipWhenEmpty = parametersToSkipWhenEmpty;
+		this.parametersToUse = Collections.unmodifiableSet(parametersToUse);
+		this.parametersToSkipWhenEmpty = Collections.unmodifiableSet(parametersToSkipWhenEmpty);
 		this.rawWithParametersAppendsInputMessage = rawWithParametersAppendsInputMessage;
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
 		this.charSet = charSet;

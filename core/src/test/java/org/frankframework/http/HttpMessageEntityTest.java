@@ -48,9 +48,9 @@ public class HttpMessageEntityTest {
 		HttpMessageEntity hmeUrlRepeatable = new HttpMessageEntity(binaryMessage);
 
 		assertEquals(repeatableMessage.size(), bae.getContentLength());
-		assertEquals(-1, ise.getContentLength());
+		assertEquals(-1L, ise.getContentLength());
 		assertEquals(repeatableMessage.size(), hmeRepeatable.getContentLength());
-		assertEquals(-1, hmeNonRepeatable.getContentLength());
+		assertEquals(-1L, hmeNonRepeatable.getContentLength());
 		assertEquals(26358, hmeUrlRepeatable.getContentLength());
 	}
 
@@ -196,7 +196,7 @@ public class HttpMessageEntityTest {
 		if(preserved || type == MessageType.BINARY) {
 			assertEquals(entity.getContentLength(), boas.toByteArray().length);
 		} else {
-			assertEquals(-1, entity.getContentLength());
+			assertEquals(-1L, entity.getContentLength());
 		}
 		String boasString = type == MessageType.BINARY ? boas.toString(): boas.toString(message.getCharset());
 		assertEquals(type.getMessage().asString(StreamUtil.AUTO_DETECT_CHARSET), boasString);

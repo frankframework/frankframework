@@ -558,7 +558,8 @@ public class Message implements Serializable, Closeable {
 	private byte[] readBytesFromCharacterData(int readLimit) throws IOException {
 		if (request instanceof Reader reader) {
 			if (!reader.markSupported()) {
-				request = new BufferedReader(reader, readLimit);
+				reader = new BufferedReader(reader, readLimit);
+				request = reader;
 			}
 			reader.mark(readLimit);
 			try {

@@ -574,7 +574,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 					result.getContext().withMimeType(contentType);
 					response.setContentType(contentType.toString());
 					if (result.size() != Message.MESSAGE_SIZE_UNKNOWN) {
-						response.setContentLength(Math.toIntExact(result.size()));
+						response.setContentLengthLong(result.size());
 					}
 				}
 
@@ -714,7 +714,9 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		if (contentLength == 0L) {
 			return false;
 		}
-		response.setContentLengthLong(contentLength);
+		if (contentLength != Message.MESSAGE_SIZE_UNKNOWN) {
+			response.setContentLengthLong(contentLength);
+		}
 
 		// Content-type might not be same as set before if we have a form. However it might also not be set.
 		if (entity.getContentType() != null) {

@@ -38,6 +38,7 @@ import org.frankframework.util.StreamUtil;
 @Log4j2
 public class HttpMessageEntity extends AbstractHttpEntity {
 	private final Message message;
+	private final long contentLength;
 
 	public HttpMessageEntity(Message message) {
 		this(message, null);
@@ -45,6 +46,8 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 
 	public HttpMessageEntity(Message message, ContentType contentType) {
 		this.message = message;
+		// Pre-compute this, because we will always anyway need it, and we cannot access it after writing the message (which breaks some tests).
+		this.contentLength = computeContentLength();
 
 		String charset = message.getCharset();
 		if(contentType != null) {
@@ -81,10 +84,20 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 
 	@Override
 	public long getContentLength() {
+		return contentLength;
+	}
+
+	private long computeContentLength() {
+		long messageSize = message.size();
 		try {
-			return Message.hasDataAvailable(message) ? message.size() : 0L;
+			// To get an accurate value if the size is unknown we need to check if data is available.
+			if (messageSize == Message.MESSAGE_SIZE_UNKNOWN && !Message.hasDataAvailable(message)) {
+				return 0L;
+			}
+			return messageSize;
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			log.warn("IOException while checking if message has data", e);
+			return 0L;
 		}
 	}
 
