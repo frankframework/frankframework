@@ -56,7 +56,7 @@ import lombok.Getter;
 
 public abstract class AbstractServletAuthenticator implements IAuthenticator, ApplicationContextAware {
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
-	public static final List<String> DEFAULT_IBIS_ROLES = List.of("IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService");
+	public static final List<String> DEFAULT_IBIS_ROLES = List.of("IbisWebService", "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester");
 
 	public static final String ALLOW_OPTIONS_REQUESTS_KEY = "application.security.http.allowUnsecureOptionsRequests";
 
