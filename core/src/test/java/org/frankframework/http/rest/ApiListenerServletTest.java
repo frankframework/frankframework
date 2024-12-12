@@ -29,6 +29,7 @@ import static org.mockito.Mockito.spy;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
@@ -302,7 +303,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void testAfterServiceMethodThreadContextMustBeCleared() throws IOException, ListenerException, ConfigurationException {
+	public void testAfterServiceMethodThreadContextMustBeCleared() throws IOException, ConfigurationException {
 		// arrange
 		ThreadContext.put("fakeMdcKey", "fakeContextValue");
 		ThreadContext.push("fakeNdcKey", "fakeStackItem");
@@ -626,11 +627,11 @@ public class ApiListenerServletTest {
 		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
 		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");//Defaults to 'text/plain;charset=ISO-8859-1'
 
-		URL url1 = ClassLoaderUtils.getResourceURL("/Documents/doc001.pdf");
-		builder.addBinaryBody("file1", url1.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file1");
+		InputStream doc1 = getClass().getResourceAsStream("/Documents/doc001.pdf");
+		builder.addBinaryBody("file1", doc1, ContentType.APPLICATION_OCTET_STREAM, "file1");
 
-		URL url2 = ClassLoaderUtils.getResourceURL("/Documents/doc002.pdf");
-		builder.addBinaryBody("file2", url2.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file2");
+		InputStream doc2 = getClass().getResourceAsStream("/Documents/doc002.pdf");
+		builder.addBinaryBody("file2", doc2, ContentType.APPLICATION_OCTET_STREAM, "file2");
 
 		Response result = service(createRequest(uri, HttpMethod.POST, builder.build()));
 		assertEquals(200, result.getStatus());
@@ -674,11 +675,11 @@ public class ApiListenerServletTest {
 		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
 		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");// ISO_8859_1 encoded but is since we don't set the charset, it will be parsed as UTF-8 (€ è)
 
-		URL url1 = ClassLoaderUtils.getResourceURL("/Documents/doc001.pdf");
-		builder.addBinaryBody("file1", url1.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file1");
+		InputStream doc1 = getClass().getResourceAsStream("/Documents/doc001.pdf");
+		builder.addBinaryBody("file1", doc1, ContentType.APPLICATION_OCTET_STREAM, "file1");
 
-		URL url2 = ClassLoaderUtils.getResourceURL("/Documents/doc002.pdf");
-		builder.addBinaryBody("file2", url2.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file2");
+		InputStream doc2 = getClass().getResourceAsStream("/Documents/doc002.pdf");
+		builder.addBinaryBody("file2", doc2, ContentType.APPLICATION_OCTET_STREAM, "file2");
 
 		Response result = service(createRequest(uri, HttpMethod.POST, builder.build()));
 		assertEquals(200, result.getStatus());
@@ -907,7 +908,7 @@ public class ApiListenerServletTest {
 	public void apiListenerWithRepeatableMessageAndGloballyDisabled() throws Exception {
 		// Arrange
 		String uri="/etag2";
-		Message repeatableMessage = new Message(new Message("{\"tralalalallala\":true}").asByteArray());
+		Message repeatableMessage = new Message("{\"tralalalallala\":true}".getBytes());
 		new ApiListenerBuilder(uri, List.of(HttpMethod.GET))
 			.withResponseContent(repeatableMessage)
 			.build();
@@ -932,7 +933,7 @@ public class ApiListenerServletTest {
 	public void apiListenerWithHeadMethodCall() throws Exception {
 		// Arrange
 		String uri = "/apiListenerWithHeadMethodCall";
-		Message repeatableMessage = new Message(new Message("{\"tralalalallala\":true}").asByteArray());
+		Message repeatableMessage = new Message("{\"tralalalallala\":true}".getBytes());
 		new ApiListenerBuilder(uri, List.of(HttpMethod.HEAD), MediaTypes.JSON, MediaTypes.JSON)
 				.withResponseContent(repeatableMessage)
 				.build();
@@ -960,7 +961,7 @@ public class ApiListenerServletTest {
 	public void apiListenerWithHeadMethodCallAndEmptyMessage() throws Exception {
 		// Arrange
 		String uri = "/apiListenerWithHeadMethodCall";
-		Message repeatableMessage = new Message(new Message("").asByteArray());
+		Message repeatableMessage = new Message("".getBytes());
 		new ApiListenerBuilder(uri, List.of(HttpMethod.HEAD), MediaTypes.JSON, MediaTypes.JSON)
 				.withResponseContent(repeatableMessage)
 				.build();
@@ -1733,10 +1734,6 @@ public class ApiListenerServletTest {
 	/**
 	 * Get the response as string, with content-type header, and all boundaries replaced with "IGNORE" for easier comparison to expected results.
 	 * Also, the values of the headers Last-Modified and Content-Length are replaced with "IGNORE", for the same reason.
-	 *
-	 * @param response
-	 * @return
-	 * @throws UnsupportedEncodingException
 	 */
 	@Nonnull
 	private static String getResultAsStringWithIgnores(Response response) throws UnsupportedEncodingException {
