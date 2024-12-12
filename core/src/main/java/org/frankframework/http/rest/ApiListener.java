@@ -496,6 +496,9 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * Optional configuration setting to have more control over how to send the response.
 	 * Set this to return data as Multipart formdata or MTOM.
 	 * See {@link HttpEntityType} for all supported values and how to use them.
+	 *
+	 * @ff.note NB: For the ApiListener, there is no difference between {@link HttpEntityType#BINARY} and {@link HttpEntityType#RAW} because parameters are not supported.
+	 *
 	 * @ff.default {@link HttpEntityType#BINARY}.
 	 */
 	public void setResponseType(HttpEntityType responseType) {

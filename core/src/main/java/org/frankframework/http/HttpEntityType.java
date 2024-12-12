@@ -16,10 +16,18 @@
 package org.frankframework.http;
 
 public enum HttpEntityType {
-	/** The input message is sent unchanged as character data, like text, XML or JSON, with possibly parameter data appended */
+	/**
+	 * The input message is sent unchanged as character data, like text, XML or JSON, with possibly parameter data appended.
+	 * When there are no parameters to be appended, the output of this option is the same as {@link #BINARY}.
+	 */
 	RAW, // text/html;charset=UTF8
-	/** The input message is sent unchanged as binary data */
+
+	/**
+	 * The input message is sent unchanged as binary or character data. The mimetype and character set on the HTTP entity
+	 * will determine how the client interprets the data.
+	 */
 	BINARY, //application/octet-stream
+
 //		SWA("Soap with Attachments"), // text/xml
 	/** Yields a x-www-form-urlencoded form entity */
 	URLENCODED,
