@@ -21,12 +21,16 @@ import com.microsoft.graph.serviceclient.GraphServiceClient;
 import com.microsoft.graph.users.item.UserItemRequestBuilder;
 import com.microsoft.graph.users.item.mailfolders.item.MailFolderItemRequestBuilder;
 import com.microsoft.graph.users.item.mailfolders.item.childfolders.ChildFoldersRequestBuilder;
+import com.microsoft.graph.users.item.mailfolders.item.messages.item.MessageItemRequestBuilder;
 import com.microsoft.graph.users.item.messages.item.move.MovePostRequestBody;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StringUtil;
 
+@Log4j2
 public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 
 	private static final String SCOPE = "https://graph.microsoft.com/.default";
@@ -54,7 +58,7 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 
 	@BeforeEach
 	@Override
-	public void setUp() {
+	public void setUp() throws Exception {
 		if (userId == null) {
 			CredentialFactory cf = new CredentialFactory(authAlias, clientId, clientSecret);
 			TokenCredential credential = new ClientSecretCredentialBuilder()
@@ -87,7 +91,25 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 
 			baseFolderId = base.getId();
 			baseMailFolder = requestBuilder.mailFolders().byMailFolderId(baseFolderId);
+
+			cleanMailFolder();
 		}
+	}
+
+	private void cleanMailFolder() throws Exception {
+		List<MailFolder> folders = baseMailFolder.childFolders().get().getValue();
+		for (MailFolder mailFolder : folders) {
+			deleteFolderById(mailFolder.getId());
+		}
+
+		// remove all messages in the base folder
+		baseMailFolder.messages().get().getValue().stream().forEach(msg -> {
+			try {
+				_deleteFile(null, msg.getId());
+			} catch (Exception e) {
+				log.error("unable to remove file", e);
+			}
+		});
 	}
 
 	private UserItemRequestBuilder getRequestBuilder() {
@@ -113,15 +135,20 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public void tearDown() throws Exception {
-		// TODO Auto-generated method stub
-		
+		// Nothing to do here
 	}
 
 	@Override
 	public boolean _fileExists(String folder, String filename) throws Exception {
 		String mailFolderId = (folder != null) ? findFolder(folder).getId() : baseFolderId;
-		Message msg = getRequestBuilder().mailFolders().byMailFolderId(mailFolderId).messages().byMessageId(filename).get();
-		return msg != null;
+		MessageItemRequestBuilder mirb = getRequestBuilder().mailFolders().byMailFolderId(mailFolderId).messages().byMessageId(filename);
+
+		try {
+			mirb.get();
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	@Override
@@ -130,13 +157,17 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public void _deleteFile(String folder, String filename) throws Exception {
-		// TODO Auto-generated method stub
-		
+	public void _deleteFile(String folder, String messageId) throws Exception {
+		String mailFolderId = (folder != null) ? findFolder(folder).getId() : baseFolderId;
+		MessageItemRequestBuilder mirb = getRequestBuilder().mailFolders().byMailFolderId(mailFolderId).messages().byMessageId(messageId);
+
+		mirb.delete();
 	}
 
 	@Override
 	public String createFile(String folder, String filename, String content) throws Exception {
+		String mailFolderId = (folder != null) ? findFolder(folder).getId() : baseFolderId;
+
 		Message message = new Message();
 		message.setSubject(filename);
 		message.setImportance(Importance.Normal);
@@ -157,7 +188,7 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 		Message response = getRequestBuilder().messages().post(message);
 
 		MovePostRequestBody movePostRequestBody = new MovePostRequestBody();
-		movePostRequestBody.setDestinationId(baseFolderId);
+		movePostRequestBody.setDestinationId(mailFolderId);
 		Message movedMessage = getRequestBuilder().messages().byMessageId(response.getId()).move().post(movePostRequestBody);
 		return movedMessage.getId();
 	}
@@ -187,8 +218,14 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public void _deleteFolder(String folderName) throws Exception {
-		// TODO Auto-generated method stub
-		
+		if (folderName != null) {
+			String mailFolderId = findFolder(folderName).getId();
+			deleteFolderById(mailFolderId);
+		}
 	}
 
+	private void deleteFolderById(String mailFolderId) throws Exception {
+		MailFolderItemRequestBuilder mirb = getRequestBuilder().mailFolders().byMailFolderId(mailFolderId);
+		mirb.delete();
+	}
 }

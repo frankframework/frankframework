@@ -39,6 +39,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
 
 import com.microsoft.aad.msal4j.ClientCredentialFactory;
 import com.microsoft.aad.msal4j.ClientCredentialParameters;
@@ -152,18 +153,29 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 			this.msal = msal;
 		}
 
+		public void execute(HttpRequestBase httpRequestBase) throws IOException {
+			execute(httpRequestBase, null);
+		}
+
 		public <T> T execute(HttpRequestBase httpRequestBase, Class<T> dto) throws IOException {
 			httpRequestBase.addHeader("Authorization", msal.getAuthenticationToken());
 			HttpResponse response = msal.execute(httpRequestBase.getURI(), httpRequestBase, null);
-			HttpEntity entity = response.getEntity();
-			try (InputStream contentStream = entity.getContent()) {
-				if(String.class.isAssignableFrom(dto)) {
-					return (T) new String(contentStream.readAllBytes());
+			HttpStatus status = HttpStatus.resolve(response.getStatusLine().getStatusCode());
+			if (status.is2xxSuccessful()) {
+				HttpEntity entity = response.getEntity();
+				if (entity != null) {
+					try (InputStream contentStream = entity.getContent()) {
+						if(String.class.isAssignableFrom(dto)) {
+							return (T) new String(contentStream.readAllBytes());
+						}
+						return JacksonUtils.convertToDTO(contentStream, dto);
+					} finally {
+						EntityUtils.consume(entity);
+					}
 				}
-				return JacksonUtils.convertToDTO(contentStream, dto);
-			} finally {
-				EntityUtils.consume(entity);
+				return null;
 			}
+			throw new IOException(status.getReasonPhrase());
 		}
 
 		public List<MailFolder> getMailFolders(String email) throws IOException {
@@ -192,9 +204,8 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 			
 		}
 
-		public void deleteMailMessage(MailMessage file) {
-			// TODO Auto-generated method stub
-			
+		public void deleteMailMessage(MailMessage file) throws IOException {
+			MailMessageResponse.delete(this, file);
 		}
 
 		public MailMessage getMailMessage(MailMessage file) throws IOException {

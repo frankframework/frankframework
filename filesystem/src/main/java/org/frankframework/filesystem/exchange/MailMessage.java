@@ -17,28 +17,21 @@ package org.frankframework.filesystem.exchange;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class MailMessage {
+public class MailMessage extends MailItemId {
 
 	public MailMessage() {
 		// public constructor for Jackson
 	}
 
 	public MailMessage(MailFolder mailFolder, String id) {
-		this.id = id;
-		this.mailFolder = mailFolder;
+		super(mailFolder, id);
 	}
 
-	private MailFolder mailFolder;
-
-	private String id;
-	@JsonProperty("displayName")
 	private String sentDateTime;
 	private String createdDateTime;
 	private String receivedDateTime;
@@ -47,7 +40,6 @@ public class MailMessage {
 
 	private String subject;
 	private String importance;
-	private String parentFolderId;
 	private String conversationId;
 	private boolean isDeliveryReceiptRequested;
 	private boolean isReadReceiptRequested;

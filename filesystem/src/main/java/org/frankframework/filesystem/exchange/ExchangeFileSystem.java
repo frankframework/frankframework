@@ -18,9 +18,11 @@ package org.frankframework.filesystem.exchange;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
@@ -34,12 +36,14 @@ import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.filesystem.AbstractFileSystem;
 import org.frankframework.filesystem.FileSystemException;
+import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.IBasicFileSystem;
 import org.frankframework.filesystem.MsalClientAdapter;
 import org.frankframework.filesystem.MsalClientAdapter.GraphClient;
 import org.frankframework.filesystem.TypeFilter;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.SpringUtils;
@@ -59,7 +63,7 @@ import org.frankframework.util.StringUtil;
  * 		<li>Make sure your application is able to reach <code>https://login.microsoftonline.com</code>. Required for token retrieval. </li>
  * </ol>
  */
-public class ExchangeFileSystem extends AbstractFileSystem<MailMessage> implements HasKeystore, HasTruststore {
+public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implements HasKeystore, HasTruststore {
 	private final @Getter String domain = "Exchange";
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -191,8 +195,17 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailMessage> implemen
 		}
 	}
 
-	private MailFolder findSubFolder(MailFolder parentFolder, String childFolderName) throws IOException {
-		List<MailFolder> subFolders = client.getMailFolders(parentFolder);
+	private MailFolder findSubFolder(MailFolder parentFolder, String childFolderName) throws FileSystemException {
+		List<MailFolder> subFolders;
+		try {
+			subFolders = client.getMailFolders(parentFolder);
+		} catch (IOException e) {
+			throw new FileSystemException("unable to find folder ["+parentFolder+"]", e);
+		}
+
+		basic filesystemtest get foldername fails here.
+		subFolders.stream().map(MailFolder::getName).forEach(System.out::println);
+
 		MailFolder subMailFolder = subFolders.stream()
 				.filter(t -> childFolderName.equalsIgnoreCase(t.getName()))
 				.findFirst()
@@ -296,44 +309,77 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailMessage> implemen
 	}
 
 	@Override
-	public DirectoryStream<MailMessage> list(String folder, TypeFilter filter) throws FileSystemException {
-		// TODO Auto-generated method stub
-
-		try {
-			List<MailMessage> messages = client.getMailMessages(this.mailFolder);
-			messages.stream().map(MailMessage::getId).forEach(System.err::println);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return null;
+	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
+		MailFolder f = findSubFolder(mailFolder, folder);
+		return f.getTotalItemCount();
 	}
 
 	@Override
-	public String getName(MailMessage msg) {
+	public DirectoryStream<MailItemId> list(String folderName, TypeFilter filter) throws FileSystemException {
+		List<MailItemId> items = new ArrayList<>();
+		try {
+			MailFolder folder = StringUtils.isBlank(folderName) ? mailFolder : findSubFolder(mailFolder, folderName);
+			if (filter.includeFolders()) {
+				List<MailFolder> folders = client.getMailFolders(folder);
+				items.addAll(folders);
+			}
+			if (filter.includeFiles()) {
+				List<MailMessage> messages = client.getMailMessages(folder);
+				items.addAll(messages);
+			}
+
+			return FileSystemUtils.getDirectoryStream(items);
+		} catch (IOException e) {
+			throw new FileSystemException(e);
+		}
+	}
+
+	@Override
+	public String getName(MailItemId msg) {
 		return msg.getId();
 	}
 
 	@Override
-	public String getParentFolder(MailMessage msg) throws FileSystemException {
+	public String getParentFolder(MailItemId msg) throws FileSystemException {
 		return msg.getParentFolderId();
 	}
 
 	@Override
-	public MailMessage toFile(String id) throws FileSystemException {
+	public MailItemId toFile(String id) throws FileSystemException {
+		if (StringUtils.isBlank(id)) {
+			throw new FileSystemException("no id or folder name provided");
+		}
+
+		// Folder
+		if (id.contains("/")) {
+			return toFile(id, null);
+		}
+
+		// File
 		return toFile(null, id);
 	}
 
 	@Override
-	public MailMessage toFile(String defaultFolder, String id) throws FileSystemException {
-//		new MailFolder();
-		return new MailMessage(mailFolder, id);
+	public MailItemId toFile(String childFolderName, String id) throws FileSystemException {
+		MailFolder folder = StringUtils.isBlank(childFolderName) ? mailFolder : findSubFolder(mailFolder, childFolderName);
+
+		if (StringUtils.isBlank(id)) {
+			return folder;
+		}
+
+		return new MailMessage(folder, id);
 	}
 
 	@Override
-	public boolean exists(MailMessage file) throws FileSystemException {
+	public boolean exists(MailItemId file) throws FileSystemException {
 		try {
-			return client.getMailMessage(file) != null;
+			if (file instanceof MailMessage message) {
+				return client.getMailMessage(message) != null;
+			} else if (file instanceof MailFolder folder) {
+				return client.getMailFolders(folder) != null;
+			} else {
+				return false;
+			}
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 			// or return false?
@@ -341,39 +387,52 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailMessage> implemen
 	}
 
 	@Override
-	public boolean isFolder(MailMessage file) throws FileSystemException {
-		return false;
+	public boolean isFolder(MailItemId file) throws FileSystemException {
+		return file instanceof MailFolder;
 	}
 
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
+		return findSubFolder(mailFolder, folder) != null;
+	}
+
+	@Override
+	public Message readFile(MailItemId file, String charset) throws FileSystemException, IOException {
+		MailMessage msg = client.getMailMessage(getMailMessage(file));
+		return new Message(msg.getBody().getContent(), new MessageContext().withCharset(charset));
+	}
+
+	private MailMessage getMailMessage(MailItemId id) throws FileSystemException {
+		if (id instanceof MailMessage mailMessage) {
+			try {
+				return client.getMailMessage(mailMessage);
+			} catch (IOException e) {
+				throw new FileSystemException("message not found", e);
+			}
+		}
+
+		throw new FileSystemException("item is not a mail message");
+	}
+
+	@Override
+	public void deleteFile(MailItemId id) throws FileSystemException {
 		try {
-			return findSubFolder(mailFolder, folder) != null;
+			if (id instanceof MailMessage mailMessage) {
+				client.deleteMailMessage(mailMessage);
+			}
 		} catch (IOException e) {
-			throw new FileSystemException("unable ", e);
-			//or return false?
+			throw new FileSystemException("unable to delete message", e);
 		}
 	}
 
 	@Override
-	public Message readFile(MailMessage file, String charset) throws FileSystemException, IOException {
-		MailMessage msg = client.getMailMessage(file);
-		return new Message(msg.getBody().getContent());
-	}
-
-	@Override
-	public void deleteFile(MailMessage file) throws FileSystemException {
-		client.deleteMailMessage(file);
-	}
-
-	@Override
-	public MailMessage moveFile(MailMessage f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public MailMessage moveFile(MailItemId f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MailMessage copyFile(MailMessage f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public MailMessage copyFile(MailItemId f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -389,25 +448,32 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailMessage> implemen
 	}
 
 	@Override
-	public long getFileSize(MailMessage file) throws FileSystemException {
-		return file.getBody().getContent().length();
+	public long getFileSize(MailItemId file) throws FileSystemException {
+		return getMailMessage(file).getBody().getContent().length();
 	}
 
 	@Override
-	public String getCanonicalName(MailMessage file) throws FileSystemException {
-//		return file.getUrl();
-		return null; //full path
+	public String getCanonicalName(MailItemId file) throws FileSystemException {
+		return file.getMailFolder().getUrl();
 	}
 
 	@Override
-	public Date getModificationTime(MailMessage file) throws FileSystemException {
-		//format: 2024-12-10T13:18:03Z
-		Instant instant = DateFormatUtils.parseToInstant(file.getLastModifiedDateTime(), DateFormatUtils.FULL_ISO_FORMATTER);
+	public Date getModificationTime(MailItemId file) throws FileSystemException {
+		MailMessage mailMessage = getMailMessage(file);
+		return toDate(mailMessage.getLastModifiedDateTime());
+	}
+
+	/**
+	 * @param timestamp format: 2024-12-10T13:18:03Z
+	 */
+	private Date toDate(String timestamp) {
+		Objects.requireNonNull(timestamp, "timestamp may not be null");
+		Instant instant = DateFormatUtils.parseToInstant(timestamp, DateFormatUtils.FULL_ISO_FORMATTER);
 		return Date.from(instant);
 	}
 
 	@Override
-	public Map<String, Object> getAdditionalFileProperties(MailMessage f) throws FileSystemException {
+	public Map<String, Object> getAdditionalFileProperties(MailItemId f) throws FileSystemException {
 		return null;
 	}
 

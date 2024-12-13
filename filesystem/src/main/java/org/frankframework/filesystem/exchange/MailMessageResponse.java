@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.springframework.beans.BeanUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -51,11 +53,21 @@ public class MailMessageResponse {
 		}
 	}
 
-	public static MailMessage get(GraphClient client, MailMessage file) throws IOException {
-		URI uri = URI.create(MESSAGE.formatted(file.getMailFolder().getUrl(), file.getId()));
+	/**
+	 * Resolves mail message
+	 */
+	public static MailMessage get(GraphClient client, MailMessage filePointer) throws IOException {
+		URI uri = URI.create(MESSAGE.formatted(filePointer.getMailFolder().getUrl(), filePointer.getId()));
 		MailMessage response = client.execute(new HttpGet(uri), MailMessage.class);
-		response.setMailFolder(file.getMailFolder());
+
+		response.setMailFolder(filePointer.getMailFolder());
+		BeanUtils.copyProperties(response, filePointer);
 		return response;
+	}
+
+	public static void delete(GraphClient client, MailMessage file) throws IOException {
+		URI uri = URI.create(MESSAGE.formatted(file.getMailFolder().getUrl(), file.getId()));
+		client.execute(new HttpDelete(uri));
 	}
 
 	/**
@@ -67,4 +79,5 @@ public class MailMessageResponse {
 
 	@JsonProperty("value")
 	List<MailMessage> messages;
+
 }
