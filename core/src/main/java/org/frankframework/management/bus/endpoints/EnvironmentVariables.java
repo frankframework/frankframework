@@ -24,13 +24,14 @@ import java.util.Map;
 import java.util.Properties;
 
 import jakarta.annotation.security.RolesAllowed;
-import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.JsonMessage;
+
 import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.Environment;
@@ -51,7 +52,7 @@ public class EnvironmentVariables extends BusEndpointBase {
 		Map<String, Object> envVars = new HashMap<>();
 		Map<String, Object> configVars = new HashMap<>();
 
-		configVars.put("All", convertPropertiesToMap(AppConstants.getInstance(), propsToHide));
+		configVars.put("Global", convertPropertiesToMap(AppConstants.getInstance(), propsToHide));
 		for(Configuration config : getIbisManager().getConfigurations()) {
 			if(config.getClassLoader() != null) {
 				configVars.put(config.getName(), convertPropertiesToMap(AppConstants.getInstance(config.getClassLoader()), propsToHide));

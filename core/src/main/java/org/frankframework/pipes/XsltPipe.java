@@ -15,18 +15,18 @@
 */
 package org.frankframework.pipes;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.springframework.beans.factory.InitializingBean;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.doc.Category;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.ReferTo;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
@@ -77,13 +77,9 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 	}
 
 	@Override
-	public void start() throws PipeStartException {
+	public void start() {
 		super.start();
-		try {
-			sender.start();
-		} catch (LifecycleException e) {
-			throw new PipeStartException(e);
-		}
+		sender.start();
 	}
 
 	@Override

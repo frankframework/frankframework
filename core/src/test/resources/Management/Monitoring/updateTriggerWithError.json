@@ -1,0 +1,10 @@
+{
+    "threshold": 1,
+    "period": 0,
+    "severity": "WARNING",
+    "type": "CLEARING",
+    "events": [
+        "Pipe Exception1",
+        "Pipe Exception2"
+    ]
+}

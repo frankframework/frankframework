@@ -25,14 +25,15 @@ import java.util.Map;
 import java.util.Queue;
 
 import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.monitoring.events.FireMonitorEvent;
 import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.XmlBuilder;
 
 /**
@@ -42,9 +43,8 @@ import org.frankframework.util.XmlBuilder;
  * @since   4.9
  *
  */
+@Log4j2
 public class Trigger implements ITrigger {
-	protected Logger log = LogUtil.getLogger(this);
-
 	// The element names, which can be used as a Trigger.
 	private static final String ALARM_NAME = "AlarmTrigger";
 	private static final String CLEARING_NAME = "ClearingTrigger";
@@ -65,23 +65,31 @@ public class Trigger implements ITrigger {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if(monitor == null) {
+		configured = false;
+		if (monitor == null) {
 			throw new ConfigurationException("no monitor autowired");
 		}
+		if (threshold > 0 && period < 1) {
+			throw new ConfigurationException("you must define a period when using threshold > 0");
+		}
 
+		if (severity == null) {
+			throw new ConfigurationException("you must define a severity for the trigger");
+		}
 		if (eventCodes.isEmpty()) {
 			log.warn("trigger of Monitor [{}] should have at least one eventCode specified", monitor::getName);
 		}
 
 		if (threshold > 0) {
-			if(period < 1) {
-				throw new ConfigurationException("you must define a period when using threshold > 0");
-			}
 			if (eventDates == null) {
 				eventDates = new ArrayDeque<>();
 			}
 		} else { // In case of a reconfigure
 			eventDates = null;
+		}
+
+		if (severity == null) {
+			throw new ConfigurationException("you must define a severity for the trigger");
 		}
 
 		configured = true;
@@ -199,6 +207,11 @@ public class Trigger implements ITrigger {
 	private void clearEventCodes() {
 		eventCodes.clear();
 	}
+
+	/**
+	 * Adds one or more events to the trigger. Example: <Event>Pipe Exception</Event>.
+  	 * Each event requires it's own xml tag. It is not a comma-separated field.
+	 */
 	public void addEventCodeText(String code) {
 		eventCodes.add(code);
 	}
@@ -219,11 +232,13 @@ public class Trigger implements ITrigger {
 		return Collections.unmodifiableList(eventCodes);
 	}
 
+	/** Amount of triggers required before sounding an alarm */
 	@Override
 	public void setThreshold(int i) {
 		threshold = i;
 	}
 
+	/** Amount of hits required within 'x' amount of seconds before it counts as a trigger */
 	@Override
 	public void setPeriod(int i) {
 		period = i;
@@ -262,5 +277,4 @@ public class Trigger implements ITrigger {
 	public void destroy() throws Exception {
 		log.info("removing trigger [{}]", this);
 	}
-
 }

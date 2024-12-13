@@ -33,8 +33,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.encryption.KeystoreType;
-import org.frankframework.http.HttpSender.PostType;
 import org.frankframework.http.AbstractHttpSender.HttpMethod;
+import org.frankframework.http.HttpSender.PostType;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
@@ -165,7 +165,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		assertEqualsIgnoreCRLF("text/xml; charset=UTF-8", sender.getFullContentType().toString());
 	}
 
-	@Test()
+	@Test
 	public void testCharset() throws Throwable {
 		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		sender.setCharSet("ISO-8859-1");
@@ -303,6 +303,23 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPost.txt"), result.trim());
+	}
+
+	@Test
+	public void simpleMockedHttpPostWithUrlPathAndQueryParam() throws Throwable {
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender.setUrl("http://127.0.0.1/value%20value?path=tr%40lala");
+		Message input = new Message("hallo this is my message");
+
+		PipeLineSession pls = new PipeLineSession(session);
+
+		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
+
+		sender.configure();
+		sender.start();
+
+		String result = sender.sendMessageOrThrow(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostWithUrlPathAndQueryParam.txt"), result.trim());
 	}
 
 	@Test
@@ -448,7 +465,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.addParameter(new Parameter("url", "http://127.0.0.1/value%20value?path=tralala"));
+		sender.addParameter(new Parameter("url", "http://127.0.0.1/value%20value?path=tr%40lala"));
 
 		sender.addParameter(new Parameter("illegalCharacters", "o@t&h=e+r$V,a/lue"));
 
@@ -663,6 +680,36 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpMultipart.txt"), result.trim());
+	}
+
+	@Test
+	public void simpleMockedHttpMultipartWithUrlPathAndQueryParam() throws Throwable {
+		sender = getSender();
+		sender.setUrl("http://127.0.0.1/value%20value?path=tr%40lala");
+
+		Message input = new Message("<xml>input</xml>");
+
+		PipeLineSession pls = new PipeLineSession(session);
+
+		sender.setMethodType(HttpMethod.POST);
+		sender.setParamsInUrl(false);
+		sender.setFirstBodyPartName("request");
+
+		String xmlMultipart = """
+				<parts><part type="file" name="document.pdf" \
+				sessionKey="part_file" size="72833" \
+				mimeType="application/pdf"/></parts>\
+				""";
+		pls.put("multipartXml", xmlMultipart);
+		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+		sender.setMultipartXmlSessionKey("multipartXml");
+
+		sender.configure();
+		sender.start();
+
+		String result = sender.sendMessageOrThrow(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpMultipartWithUrlPathAndQueryParam.txt"), result.trim());
 	}
 
 	@Test

@@ -35,7 +35,6 @@ import org.frankframework.core.IWrapperPipe;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
@@ -174,17 +173,11 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 	}
 
 	@Override
-	public void start() throws PipeStartException {
+	public void start() {
 		super.start();
 
 		if (StringUtils.isEmpty(getStubFilename())) {
-			try {
-				listener.start();
-			} catch (LifecycleException t) {
-				PipeStartException pse = new PipeStartException("could not start", t);
-				pse.setPipeNameInError(getName());
-				throw pse;
-			}
+			listener.start();
 		}
 	}
 

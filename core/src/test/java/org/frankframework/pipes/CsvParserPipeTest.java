@@ -14,7 +14,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.pipes.CsvParserPipe.HeaderCase;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.TestFileUtils;
@@ -27,7 +26,7 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 	}
 
 	@Test
-	public void testConfigureAndStart() throws ConfigurationException, PipeStartException {
+	public void testConfigureAndStart() throws ConfigurationException {
 		configureAndStartPipe();
 	}
 

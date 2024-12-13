@@ -1,17 +1,17 @@
 package org.frankframework.filesystem.mock;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Date;
 
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.filesystem.IFileSystemTestHelperFullControl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
-import org.frankframework.filesystem.IFileSystemTestHelperFullControl;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystemTestHelperFullControl {
 
 	private final MockFileSystem<F> fileSystem;
@@ -65,7 +65,7 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 	}
 
 	@Override
-	public OutputStream _createFile(String folderName, String filename) throws Exception {
+	public String createFile(String folderName, String filename, String contents) throws Exception {
 		MockFolder folder = folderName==null?fileSystem:fileSystem.getFolders().get(folderName);
 		if (folder==null) {
 			folder=new MockFolder(folderName,fileSystem);
@@ -73,19 +73,13 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 		}
 		final MockFile mf = createNewFile(folder,filename);
 
-		//log.debug("created file ["+filename+"] in folder ["+folderName+"]");
+		log.debug("created file ["+filename+"] in folder ["+folderName+"]");
 
 		folder.getFiles().put(filename, mf);
-
-		return new ByteArrayOutputStream() {
-
-			@Override
-			public void close() throws IOException {
-				super.close();
-				mf.setContents(toByteArray());
-			}
-
-		};
+		if(StringUtils.isNotEmpty(contents)) {
+			mf.setContents(contents.getBytes());
+		}
+		return folderName == null ? filename : folderName + "/" + filename;
 	}
 
 	@Override

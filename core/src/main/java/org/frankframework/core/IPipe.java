@@ -89,7 +89,7 @@ public interface IPipe extends IConfigurable, IForwardTarget {
 	 * after the {@link #configure()} method, for each start and stop command of the
 	 * adapter.
 	 */
-	void start() throws PipeStartException;
+	void start();
 
 	/**
 	 * Perform necessary actions to stop the <code>Pipe</code>.<br/>

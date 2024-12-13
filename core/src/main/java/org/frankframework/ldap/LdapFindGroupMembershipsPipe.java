@@ -31,7 +31,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlBuilder;
 
@@ -81,7 +80,7 @@ public class LdapFindGroupMembershipsPipe extends AbstractLdapQueryPipe implemen
 	}
 
 	@Override
-	public void start() throws PipeStartException {
+	public void start() {
 		super.start();
 		ldapClient.open();
 	}

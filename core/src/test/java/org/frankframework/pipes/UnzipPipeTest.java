@@ -18,7 +18,6 @@ import org.junit.jupiter.api.io.TempDir;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.TestFileUtils;
 
@@ -42,7 +41,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 	}
 
 	@Test
-	public void testConfigureAndStartWithDefaultAttributes() throws ConfigurationException, PipeStartException {
+	public void testConfigureAndStartWithDefaultAttributes() throws ConfigurationException {
 		configureAndStartPipe();
 		assertFalse(pipe.isSkipOnEmptyInput());
 	}

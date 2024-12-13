@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AppService, Configuration } from 'src/app/app.service';
 import { Monitor, MonitorsService, Trigger } from './monitors.service';
-import { ActivatedRoute, ParamMap, Router, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -34,7 +34,6 @@ export class MonitorsComponent implements OnInit, OnDestroy {
         this.updateConfigurations();
       }
     });
-
     const configurationsSubscription = this.appService.configurations$.subscribe(() => {
       this.configurations = this.appService.configurations;
       if (this.configurations.length > 0) {
@@ -56,16 +55,6 @@ export class MonitorsComponent implements OnInit, OnDestroy {
 
   changeConfiguration(name: string): void {
     this.selectedConfiguration = name;
-    const configurationQueryParameter = this.routeQueryParams.get('configuration');
-
-    if (configurationQueryParameter == '' || configurationQueryParameter != name) {
-      // Update the URL
-      this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: { configuration: name },
-      });
-    }
-
     this.update();
   }
 
@@ -79,10 +68,10 @@ export class MonitorsComponent implements OnInit, OnDestroy {
       for (const monitor of this.monitors) {
         monitor.displayName = monitor.name;
         if (monitor.raised) this.totalRaised++;
-        monitor.activeDestinations = [];
+        monitor.activeDestinations = {};
         for (const index in this.destinations) {
           const destination = this.destinations[index];
-          monitor.activeDestinations[index] = monitor.destinations.includes(destination);
+          monitor.activeDestinations[destination] = monitor.destinations.includes(destination);
         }
       }
     });

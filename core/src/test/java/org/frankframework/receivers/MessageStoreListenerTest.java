@@ -22,7 +22,6 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.util.Map;
 
-import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
 import org.junit.jupiter.api.Test;
@@ -40,10 +39,10 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 	public MessageStoreListener createListener() throws Exception {
 		MessageStoreListener listener = spy(new MessageStoreListener() {
 			@Override
-			protected RawMessageWrapper<Object> getRawMessage(Connection conn, Map threadContext) {
-				Object o = threadContext.get(STUB_RESULT_KEY);
+			protected RawMessageWrapper<Serializable> getRawMessage(Connection conn, Map<String, Object> threadContext) {
+				Serializable o = (Serializable) threadContext.get(STUB_RESULT_KEY);
 				if (o instanceof MessageWrapper<?>) {
-					return (RawMessageWrapper<Object>) o;
+					return (RawMessageWrapper<Serializable>) o;
 				}
 				return new RawMessageWrapper<>(o, String.valueOf(threadContext.get(PipeLineSession.MESSAGE_ID_KEY)), null);
 			}
@@ -53,14 +52,7 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 		doReturn("version").when(md).getDatabaseProductVersion();
 		Connection conn = mock(Connection.class);
 		doReturn(md).when(conn).getMetaData();
-		DataSourceFactory factory = new DataSourceFactory() {
-			@Override
-			protected DataSource augmentDatasource(CommonDataSource dataSource, String product) {
-				// Just cast the datasource and do not wrap it in a pool for the benefit of the tests.
-				return (DataSource) dataSource;
-			}
-
-		};
+		DataSourceFactory factory = new DataSourceFactory();
 		DataSource dataSource = mock(DataSource.class);
 		String dataSourceName = "myDummyDataSource";
 		factory.add(dataSource, dataSourceName);

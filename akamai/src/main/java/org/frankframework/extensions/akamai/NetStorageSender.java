@@ -149,7 +149,7 @@ public class NetStorageSender extends AbstractHttpSender {
 	 * @return full path to use as endpoint
 	 */
 	@Override
-	protected URI getURI(String path) throws URISyntaxException {
+	protected URI getURI(@Nonnull String path) throws URISyntaxException {
 		if (!path.startsWith(PATH_SEPARATOR)) path = PATH_SEPARATOR + path;
 		String url = getUrl() + getCpCode();
 

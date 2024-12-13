@@ -25,7 +25,8 @@
         >, total disk space: <strong>{{ fileSystem.totalSpace | humanFileSize }}</strong
         ><br />
         Up since:
-        <strong><span appToDate [time]="uptime"></span></strong> (<span appTimeSince [time]="uptime"></span>)
+        <strong><span appToDate [time]="uptime"></span></strong> (<span appTimeSince [time]="uptime"></span>), timezone:
+        <strong>{{ serverTimeService.timezone }}</strong>
       </p>
     </ng-container>
     <ng-template #information>

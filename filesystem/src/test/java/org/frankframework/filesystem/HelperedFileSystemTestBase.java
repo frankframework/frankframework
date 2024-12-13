@@ -2,12 +2,10 @@ package org.frankframework.filesystem;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 
 import org.frankframework.util.CloseUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 
@@ -45,8 +43,8 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	 * Creates a file with the specified name and returns output stream to be able to write that file.
 	 */
 	@Override
-	protected OutputStream _createFile(String folder, String filename) throws Exception {
-		return helper._createFile(folder, filename);
+	protected String createFile(String folder, String filename, String contents) throws Exception {
+		return helper.createFile(folder, filename, contents);
 	}
 
 	/**

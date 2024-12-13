@@ -15,7 +15,11 @@
         >
       </li>
       <li>
-        <span class="m-r-sm text-muted serverTime">{{ serverTimeService.getCurrentTimeFormatted() }}</span>
+        <span
+          class="m-r-sm text-muted serverTime"
+          [title]="'The servertime is in timezone: ' + serverTimeService.timezone"
+          >{{ serverTimeService.getCurrentTimeFormatted() }}</span
+        >
       </li>
       <li>
         <span class="m-r-sm stage">{{ dtapStage }}</span>

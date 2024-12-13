@@ -27,14 +27,15 @@ import javax.xml.transform.TransformerException;
 
 import jakarta.annotation.Nonnull;
 
-import io.micrometer.core.instrument.DistributionSummary;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
+
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
@@ -60,7 +61,6 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
@@ -768,15 +768,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	}
 
 	@Override
-	public void start() throws PipeStartException {
+	public void start() {
 		if (StringUtils.isEmpty(getStubFilename())) {
-			try {
-				getSender().start();
-			} catch (LifecycleException lifecycleException) {
-				PipeStartException pse = new PipeStartException("could not start", lifecycleException);
-				pse.setPipeNameInError(getName());
-				throw pse;
-			}
+			getSender().start();
 		}
 
 		if (getInputValidator() != null) {
@@ -793,14 +787,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		}
 
 		ITransactionalStorage<?> messageLog = getMessageLog();
-		if (messageLog!=null) {
-			try {
-				messageLog.start();
-			} catch (Exception e) {
-				PipeStartException pse = new PipeStartException("could not open messagelog", e);
-				pse.setPipeNameInError(getName());
-				throw pse;
-			}
+		if (messageLog != null) {
+			messageLog.start();
 		}
 	}
 	@Override

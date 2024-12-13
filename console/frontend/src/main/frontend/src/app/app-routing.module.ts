@@ -31,7 +31,6 @@ import { ConfigurationsManageDetailsComponent } from './views/configurations/con
 import { ConfigurationsUploadComponent } from './views/configurations/configurations-upload/configurations-upload.component';
 import { ErrorComponent } from './views/error/error.component';
 import { LoadingComponent } from './views/loading/loading.component';
-import { NotificationsComponent } from './views/notifications/notifications.component';
 import { LoggingComponent } from './views/logging/logging.component';
 import { LoggingManageComponent } from './views/logging/logging-manage/logging-manage.component';
 import { IafUpdateComponent } from './views/iaf-update/iaf-update.component';
@@ -42,28 +41,41 @@ import { LoginComponent } from './views/login/login.component';
 import { WebsocketTestComponent } from './views/websocket-test/websocket-test.component';
 import { LoggingAddComponent } from './views/logging/logging-add/logging-add.component';
 import { MonitorsNewComponent } from './views/monitors/monitors-new/monitors-new.component';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   {
     path: 'websocket-test',
     component: WebsocketTestComponent,
     title: 'Websocket Test',
+    data: {
+      breadcrumbs: 'Websocket Test',
+    },
   },
   {
     path: 'login',
     component: LoginComponent,
     title: 'Login',
+    data: {
+      breadcrumbs: 'Login',
+    },
   },
   {
     path: 'logout',
     component: LogoutComponent,
     title: 'Logout',
+    data: {
+      linkName: 'logout',
+      breadcrumbs: 'Logout',
+    },
   },
   {
     path: 'status',
     component: StatusComponent,
     title: 'Adapter Status',
+    canActivate: [authGuard],
     data: {
+      linkName: 'getAdapters',
       breadcrumbs: 'Adapter > Status',
     },
   },
@@ -71,7 +83,9 @@ export const routes: Routes = [
     path: ':configuration/adapter/:name/statistics',
     component: AdapterstatisticsComponent,
     title: 'Adapter Statistics',
+    canActivate: [authGuard],
     data: {
+      linkName: 'getAdapterStatistics',
       breadcrumbs: 'Adapter > Statistics',
     },
   },
@@ -79,226 +93,278 @@ export const routes: Routes = [
     path: ':configuration/adapters/:adapter/:storageSource/:storageSourceName',
     component: StorageComponent,
     title: '',
+    canActivate: [authGuard],
     data: {
       breadcrumbIsCustom: true,
+      linkName: 'browseMessages',
     },
     children: [
       {
         path: 'stores/:processState',
         component: StorageListComponent,
+        canActivate: [authGuard],
+        data: {
+          linkName: 'browseMessage',
+        },
       },
       {
         path: 'stores/:processState/messages/:messageId',
         component: StorageViewComponent,
+        canActivate: [authGuard],
+        data: {
+          linkName: 'downloadMessage',
+        },
       },
     ],
-  },
-  {
-    path: 'notifications',
-    component: NotificationsComponent,
-    title: 'Notifications',
-    data: {
-      breadcrumbs: 'Notifications',
-    },
   },
   {
     path: 'configurations',
     component: ConfigurationsShowComponent,
     title: 'Configurations',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'Configurations > Show',
+      linkName: 'getConfigurationXML',
     },
   },
   {
     path: 'configurations/upload',
     component: ConfigurationsUploadComponent,
     title: 'Manage Configurations',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'Configurations > Upload',
+      linkName: 'uploadConfiguration',
     },
   },
   {
     path: 'configurations/manage',
     component: ConfigurationsManageComponent,
     title: 'Manage Configurations',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'Configurations > Manage',
+      linkName: 'manageConfiguration',
     },
   },
   {
     path: 'configurations/manage/:name',
     component: ConfigurationsManageDetailsComponent,
     title: 'Manage Configurations',
+    canActivate: [authGuard],
     data: {
       breadcrumbIsCustom: true,
+      linkName: 'manageConfiguration',
     },
   },
   {
     path: 'logging/settings',
     component: LoggingManageComponent,
     title: 'Logging',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'Logging > Log Settings',
+      linkName: 'updateLogConfiguration',
     },
   },
   {
     path: 'logging/settings/add',
     component: LoggingAddComponent,
     title: 'Logging',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'Logging > Log Settings > Add Logger',
+      linkName: 'createLogDefinition',
     },
   },
   {
     path: 'logging',
     component: LoggingComponent,
     title: 'Logging',
+    canActivate: [authGuard],
     data: {
       breadcrumbIsCustom: true,
+      linkName: 'getLogDirectory',
     },
   },
   {
     path: 'logging/:directory',
     component: LoggingComponent,
     title: 'Logging',
+    canActivate: [authGuard],
     data: {
       breadcrumbIsCustom: true,
+      linkName: 'getLogDirectory',
     },
   },
   {
     path: 'logging/:directory/:file',
     component: LoggingComponent,
     title: 'Logging',
+    canActivate: [authGuard],
     data: {
       breadcrumbIsCustom: true,
+      linkName: 'getFileContent',
     },
   },
   {
     path: 'jms/send-message',
     component: JmsSendMessageComponent,
     title: 'Send JMS Message',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'JMS > Send Message',
+      linkName: 'putJmsMessage',
     },
   },
   {
     path: 'jms/browse-queue',
     component: JmsBrowseQueueComponent,
     title: 'Browse JMS Queue',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'JMS > Browse Queue',
+      linkName: 'browseQueue',
     },
   },
   {
     path: 'test-pipeline',
     component: TestPipelineComponent,
     title: 'Test a PipeLine',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'Testing > Test a PipeLine',
+      linkName: 'testPipeLine',
     },
   },
   {
     path: 'test-service-listener',
     component: TestServiceListenerComponent,
     title: 'Test a ServiceListener',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'Testing > Test a ServiceListener',
+      linkName: 'postServiceListener',
     },
   },
   {
     path: 'webservices',
     component: WebservicesComponent,
     title: 'Webservices',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'Webservices',
+      linkName: 'getWebServices',
     },
   },
   {
     path: 'scheduler',
     component: SchedulerComponent,
     title: 'Scheduler',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'Scheduler',
+      linkName: 'getSchedule',
     },
   },
   {
     path: 'scheduler/new',
     component: SchedulerAddComponent,
     title: 'Add Schedule',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'Scheduler > Add Schedule',
+      linkName: 'createSchedule',
     },
   },
   {
     path: 'scheduler/edit/:group/:name',
     component: SchedulerEditComponent,
     title: 'Edit Schedule',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'Scheduler > Edit Schedule',
+      linkName: 'updateScheduler',
     },
   },
   {
     path: 'environment-variables',
     component: EnvironmentVariablesComponent,
     title: 'Environment Variables',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'Environment Variables',
+      linkName: 'getEnvironmentVariables',
     },
   },
   {
     path: 'jdbc/execute-query',
     component: JdbcExecuteQueryComponent,
     title: 'Execute JDBC Query',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'JDBC > Execute Query',
+      linkName: 'executeJdbcQuery',
     },
   },
   {
     path: 'jdbc/browse-tables',
     component: JdbcBrowseTablesComponent,
     title: 'Browse JDBC Tables',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'JDBC > Browse Tables',
+      linkName: 'browseJdbcTable',
     },
   },
   {
     path: 'security-items',
     component: SecurityItemsComponent,
     title: 'Security Items',
+    canActivate: [authGuard],
     data: {
       pageTitle: 'Security Items',
       breadcrumbs: 'Security Items',
+      linkName: 'getSecurityItems',
     },
   },
   {
     path: 'connections',
     component: ConnectionsComponent,
     title: 'Connection Overview',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'Connection Overview',
+      linkName: 'getConnections',
     },
   },
   {
     path: 'inlinestores/overview',
     component: InlinestoreComponent,
     title: 'InlineStore Overview',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'InlineStore Overview',
+      linkName: 'getMessageBrowsers',
     },
   },
   {
     path: 'monitors',
     component: MonitorsComponent,
     title: 'Monitors',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'Monitors',
+      linkName: 'getMonitors',
     },
   },
   {
     path: 'monitors/:monitor/triggers/new',
     component: MonitorsAddEditComponent,
     title: 'Add Trigger',
+    canActivate: [authGuard],
     data: {
+      linkName: 'addTrigger',
       breadcrumbs: 'Monitors > Triggers > Add',
     },
   },
@@ -306,7 +372,9 @@ export const routes: Routes = [
     path: 'monitors/:monitor/triggers/:trigger',
     component: MonitorsAddEditComponent,
     title: 'Edit Trigger',
+    canActivate: [authGuard],
     data: {
+      linkName: 'updateTrigger',
       breadcrumbs: 'Monitors > Triggers > Edit',
     },
   },
@@ -314,7 +382,9 @@ export const routes: Routes = [
     path: 'monitors/new',
     component: MonitorsNewComponent,
     title: 'New Monitor',
+    canActivate: [authGuard],
     data: {
+      linkName: 'addMonitor',
       breadcrumbs: 'Monitors > New',
     },
   },
@@ -322,16 +392,20 @@ export const routes: Routes = [
     path: 'ibisstore-summary',
     component: IbisstoreSummaryComponent,
     title: 'Ibisstore Summary',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'JDBC > Ibisstore Summary',
+      linkName: 'getIbisStoreSummary',
     },
   },
   {
     path: 'liquibase',
     component: LiquibaseComponent,
     title: 'Liquibase Script',
+    canActivate: [authGuard],
     data: {
       breadcrumbs: 'JDBC > Liquibase Script',
+      linkName: 'generateSQL',
     },
   },
   {
@@ -376,6 +450,7 @@ export const routes: Routes = [
     title: 'FF! update',
     data: {
       breadcrumbs: 'FF! update',
+      linkName: 'fullReload',
     },
   },
   {

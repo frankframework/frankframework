@@ -54,12 +54,17 @@ public class ConsoleWarInitializer extends SpringBootServletInitializer {
 
 		private @Setter ApplicationContext applicationContext;
 
+		/**
+		 * Apparently this is required, though I'm unsure why.
+		 * 
+		 * Prevents `Failed to register 'filter springSecurityFilterChain' on the servlet context. Possibly already registered?`.
+		 * Does not need to be disabled `bean.setEnabled(false)`. Just having the bean here is enough.
+		 */
 		@Bean
 		public FilterRegistrationBean<Filter> getFilterRegistrationBean() {
 			FilterRegistrationBean<Filter> bean = new FilterRegistrationBean<>();
 			Filter filter = applicationContext.getBean("springSecurityFilterChain", Filter.class);
 			bean.setFilter(filter);
-			bean.setEnabled(false);
 			return bean;
 		}
 

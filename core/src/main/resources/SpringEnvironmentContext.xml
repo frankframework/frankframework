@@ -10,6 +10,8 @@
 		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-5.2.xsd
 		"
 	>
+	<bean id="LogPropertiesConfigurer" class="org.frankframework.lifecycle.LogPropertiesConfigurer" />
+
 <!-- 	<integration:control-bus dispatcher-pool-size="25" auto-create-channels="true"/> -->
 	<integration:publish-subscribe-channel id="frank-management-bus" />
 
@@ -23,7 +25,7 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
 
 		<!-- Ignore all Spring annotations from the Ladybug module, they should be wired in their own context -->
-		<context:exclude-filter type="regex" expression="org\.frankframework\.ibistesttool\..*"/>
+		<context:exclude-filter type="regex" expression="org\.frankframework\.ladybug\..*"/>
 		<context:exclude-filter type="regex" expression="org\.frankframework\.web\..*"/>
 		<context:exclude-filter type="regex" expression="org\.frankframework\.console\..*"/>
 	</context:component-scan>

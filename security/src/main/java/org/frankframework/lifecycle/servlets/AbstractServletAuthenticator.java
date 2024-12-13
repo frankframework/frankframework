@@ -17,7 +17,6 @@ package org.frankframework.lifecycle.servlets;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -43,18 +42,21 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AnonymousConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.web.filter.ForwardedHeaderFilter;
 
 import lombok.Getter;
 
 public abstract class AbstractServletAuthenticator implements IAuthenticator, ApplicationContextAware {
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
-	public static final List<String> DEFAULT_IBIS_ROLES = Collections.unmodifiableList(Arrays.asList("IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"));
+	public static final List<String> DEFAULT_IBIS_ROLES = List.of("IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService");
 
 	public static final String ALLOW_OPTIONS_REQUESTS_KEY = "application.security.http.allowUnsecureOptionsRequests";
 
@@ -166,7 +168,7 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 			httpSecurityConfigurer.csrf(CsrfConfigurer::disable); // Disable CSRF, post requests should be possible.
 			httpSecurityConfigurer.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
 			httpSecurityConfigurer.logout(LogoutConfigurer::disable); // Disable the logout filter
-			httpSecurityConfigurer.headers(h -> h.frameOptions(o -> o.sameOrigin()));
+			httpSecurityConfigurer.headers(h -> h.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
 
 			return configureHttpSecurity(httpSecurityConfigurer);
 		} catch (Exception e) {
@@ -195,6 +197,8 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 		RequestMatcher authorizationRequestMatcher = new AndRequestMatcher(securityRequestMatcher, this::authorizationRequestMatcher);
 		http.authorizeHttpRequests(requests -> requests.requestMatchers(authorizationRequestMatcher).access(getAuthorizationManager()));
 
+		// This filter converts x-forwarded headers to their corresponding `normal` headers. Eg. `X-Forwarded-Proto` sets HttpServletRequest.isSecure to `true`.
+		http.addFilterBefore(new ForwardedHeaderFilter(), SecurityContextHolderFilter.class);
 		return configure(http);
 	}
 

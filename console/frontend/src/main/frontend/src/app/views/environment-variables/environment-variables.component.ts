@@ -11,6 +11,7 @@ type keyValueProperty = KeyValue<string, string>;
   styleUrls: ['./environment-variables.component.scss'],
 })
 export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
+  protected readonly GLOBAL_TAB_NAME = 'Global';
   protected searchFilter: string = '';
   protected selectedConfiguration: string = '';
   protected configProperties: keyValueProperty[] = [];
@@ -46,7 +47,7 @@ export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
           instanceName = data['Application Constants'][configName]['instance.name'];
         }
       }
-      this.changeConfiguration('All');
+      this.changeConfiguration(this.GLOBAL_TAB_NAME);
       this.environmentProperties = this.convertPropertiesToArray(data['Environment Variables']);
       this.systemProperties = this.convertPropertiesToArray(data['System Properties']);
     });
