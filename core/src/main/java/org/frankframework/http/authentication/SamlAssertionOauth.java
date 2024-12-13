@@ -27,7 +27,10 @@ import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -37,9 +40,11 @@ import org.apache.http.auth.Credentials;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.xml.security.algorithms.MessageDigestAlgorithm;
+import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.transforms.Transforms;
 
+import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.XmlUtils;
 
 import org.w3c.dom.Document;
@@ -79,9 +84,9 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		try {
 			privateKey = PkiUtil.getPrivateKey(session, "Creation of SAML assertion");
 
-			Certificate certificate = PkiUtil.getCertificate(session, "Creation of SAML assertion");
+			Certificate loadedCertificate = PkiUtil.getCertificate(session, "Creation of SAML assertion");
 
-			if (certificate instanceof X509Certificate x509certificate) {
+			if (loadedCertificate instanceof X509Certificate x509certificate) {
 				this.certificate = x509certificate;
 			} else {
 				throw new ConfigurationException("Certificate must be a X.509 certificate");
@@ -91,17 +96,12 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		}
 	}
 
-	private String createAssertion() throws Exception {
+	private String createAssertion() throws ParserConfigurationException, TransformerException, DomBuilderException, XMLSecurityException {
 		// Generate SAML Assertion
 		Document samlAssertion = generateSAMLAssertion();
 		String docAsXml = documentToString(samlAssertion);
 
-		DocumentBuilderFactory docFactory = XmlUtils.getDocumentBuilderFactory();
-		docFactory.setNamespaceAware(true);
-		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-
-		Document document = docBuilder.parse(new ByteArrayInputStream(docAsXml.getBytes()));
-
+		Document document = XmlUtils.buildDomDocument(docAsXml);
 		Document signedAssertion = signAssertion(document, privateKey, certificate);
 
 		String signedAssertionXml = documentToString(signedAssertion);
@@ -109,11 +109,11 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		return Base64.getEncoder().encodeToString(signedAssertionXml.getBytes());
 	}
 
-	private Document generateSAMLAssertion() throws Exception {
+	private Document generateSAMLAssertion() throws ParserConfigurationException {
 		Instant nowInstant = java.time.Instant.now();
 
-		String NotBefore = nowInstant.minusSeconds(60).toString();
-		String NotOnOrAfter = nowInstant.plusSeconds(session.getSamlAssertionExpiry()).toString();
+		String notBefore = nowInstant.minusSeconds(60).toString();
+		String notOnOrAfter = nowInstant.plusSeconds(session.getSamlAssertionExpiry()).toString();
 		String now = nowInstant.toString();
 
 		// Create a new XML Document
@@ -148,7 +148,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		subjectConfirmation.setAttribute("Method", "urn:oasis:names:tc:SAML:2.0:cm:bearer");
 
 		Element subjectConfirmationData = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:SubjectConfirmationData");
-		subjectConfirmationData.setAttribute("NotOnOrAfter", NotOnOrAfter);
+		subjectConfirmationData.setAttribute("NotOnOrAfter", notOnOrAfter);
 		subjectConfirmationData.setAttribute("Recipient", session.getTokenEndpoint());
 
 		subjectConfirmation.appendChild(subjectConfirmationData);
@@ -156,8 +156,8 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 
 		// Add Conditions
 		Element conditions = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:Conditions");
-		conditions.setAttribute("NotBefore", NotBefore);
-		conditions.setAttribute("NotOnOrAfter", NotOnOrAfter);
+		conditions.setAttribute("NotBefore", notBefore);
+		conditions.setAttribute("NotOnOrAfter", notOnOrAfter);
 
 		Element audienceRestriction = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:AudienceRestriction");
 
@@ -199,7 +199,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		return doc;
 	}
 
-	private Document signAssertion(Document doc, PrivateKey privateKey, X509Certificate certificate) throws Exception {
+	private Document signAssertion(Document doc, PrivateKey privateKey, X509Certificate certificate) throws XMLSecurityException {
 		// Register the "ID" attribute as type ID in the XML document
 		Element rootElement = doc.getDocumentElement();
 		rootElement.setIdAttribute("ID", true);
@@ -226,7 +226,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		return doc;
 	}
 
-	public String documentToString(Document document) throws Exception {
+	public String documentToString(Document document) throws TransformerException {
 		TransformerFactory transformerFactory = XmlUtils.getTransformerFactory();
 		Transformer transformer = transformerFactory.newTransformer();
 		transformer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "no");
