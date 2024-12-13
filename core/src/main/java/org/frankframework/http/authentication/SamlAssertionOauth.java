@@ -108,7 +108,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 	}
 
 	private Document generateSAMLAssertion() throws ParserConfigurationException {
-		Instant nowInstant = java.time.Instant.now();
+		Instant nowInstant = Instant.now();
 
 		String notBefore = nowInstant.minusSeconds(60).toString();
 		String notOnOrAfter = nowInstant.plusSeconds(session.getSamlAssertionExpiry()).toString();
@@ -123,7 +123,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		Element assertion = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:Assertion");
 		assertion.setAttribute("ID", "_" + UUID.randomUUID());
 		assertion.setAttribute("Version", "2.0");
-		assertion.setAttribute("IssueInstant", java.time.Instant.now().toString());
+		assertion.setAttribute("IssueInstant", Instant.now().toString());
 		assertion.setAttribute("xmlns:xs", "http://www.w3.org/2001/XMLSchema");
 		assertion.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 
