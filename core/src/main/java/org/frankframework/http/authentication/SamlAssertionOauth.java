@@ -20,6 +20,7 @@ import java.io.StringWriter;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
@@ -52,7 +53,7 @@ import org.frankframework.http.AbstractHttpSession;
 public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 
 	private static final String SAML2_BEARER_GRANT_TYPE = "urn:ietf:params:oauth:grant-type:saml2-bearer";
-	private static final String namespaceURI = "urn:oasis:names:tc:SAML:2.0:assertion";
+	private static final String SAML2_NAMESPACE_URI = "urn:oasis:names:tc:SAML:2.0:assertion";
 
 	private PrivateKey privateKey;
 	private X509Certificate certificate;
@@ -109,9 +110,11 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 	}
 
 	private Document generateSAMLAssertion() throws Exception {
-		String NotBefore = java.time.Instant.now().minusSeconds(60).toString();
-		String NotOnOrAfter = java.time.Instant.now().plusSeconds(session.getSamlAssertionExpiry()).toString();
-		String now = java.time.Instant.now().toString();
+		Instant nowInstant = java.time.Instant.now();
+
+		String NotBefore = nowInstant.minusSeconds(60).toString();
+		String NotOnOrAfter = nowInstant.plusSeconds(session.getSamlAssertionExpiry()).toString();
+		String now = nowInstant.toString();
 
 		// Create a new XML Document
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -120,7 +123,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		Document doc = docBuilder.newDocument();
 
 		// Create the Assertion element
-		Element assertion = doc.createElementNS(namespaceURI, "saml2:Assertion");
+		Element assertion = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:Assertion");
 		assertion.setAttribute("ID", "_" + UUID.randomUUID());
 		assertion.setAttribute("Version", "2.0");
 		assertion.setAttribute("IssueInstant", java.time.Instant.now().toString());
@@ -130,22 +133,22 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		doc.appendChild(assertion);
 
 		// Add Issuer
-		Element issuerElement = doc.createElementNS(namespaceURI, "saml2:Issuer");
+		Element issuerElement = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:Issuer");
 		issuerElement.setTextContent(session.getSamlIssuer());
 		assertion.appendChild(issuerElement);
 
 		// Add Subject
-		Element subject = doc.createElementNS(namespaceURI, "saml2:Subject");
-		Element nameID = doc.createElementNS(namespaceURI, "saml2:NameID");
+		Element subject = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:Subject");
+		Element nameID = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:NameID");
 		nameID.setTextContent(session.getSamlNameId());
 		nameID.setAttribute("Format", "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
 		subject.appendChild(nameID);
 		assertion.appendChild(subject);
 
-		Element subjectConfirmation = doc.createElementNS(namespaceURI, "saml2:SubjectConfirmation");
+		Element subjectConfirmation = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:SubjectConfirmation");
 		subjectConfirmation.setAttribute("Method", "urn:oasis:names:tc:SAML:2.0:cm:bearer");
 
-		Element subjectConfirmationData = doc.createElementNS(namespaceURI, "saml2:SubjectConfirmationData");
+		Element subjectConfirmationData = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:SubjectConfirmationData");
 		subjectConfirmationData.setAttribute("NotOnOrAfter", NotOnOrAfter);
 		subjectConfirmationData.setAttribute("Recipient", session.getTokenEndpoint());
 
@@ -153,13 +156,13 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		subject.appendChild(subjectConfirmation);
 
 		// Add Conditions
-		Element conditions = doc.createElementNS(namespaceURI, "saml2:Conditions");
+		Element conditions = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:Conditions");
 		conditions.setAttribute("NotBefore", NotBefore);
 		conditions.setAttribute("NotOnOrAfter", NotOnOrAfter);
 
-		Element audienceRestriction = doc.createElementNS(namespaceURI, "saml2:AudienceRestriction");
+		Element audienceRestriction = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:AudienceRestriction");
 
-		Element audienceElement = doc.createElementNS(namespaceURI, "saml2:Audience");
+		Element audienceElement = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:Audience");
 		audienceElement.setTextContent(session.getSamlAudience());
 
 		audienceRestriction.appendChild(audienceElement);
@@ -167,13 +170,13 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		assertion.appendChild(conditions);
 
 		// Add AuthnStatement
-		Element authnStatement = doc.createElementNS(namespaceURI, "saml2:AuthnStatement");
+		Element authnStatement = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:AuthnStatement");
 		authnStatement.setAttribute("AuthnInstant", now);
 		authnStatement.setAttribute("SessionIndex", UUID.randomUUID().toString());
 
-		Element authnContext = doc.createElementNS(namespaceURI, "saml2:AuthnContext");
+		Element authnContext = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:AuthnContext");
 
-		Element authnContextClassRef = doc.createElementNS(namespaceURI, "saml2:AuthnContextClassRef");
+		Element authnContextClassRef = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:AuthnContextClassRef");
 		authnContextClassRef.setTextContent("urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport");
 
 		authnContext.appendChild(authnContextClassRef);
@@ -181,12 +184,12 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		assertion.appendChild(authnStatement);
 
 		// Add attributeStatement
-		Element attributeStatement = doc.createElementNS(namespaceURI, "saml2:AttributeStatement");
+		Element attributeStatement = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:AttributeStatement");
 
-		Element attribute = doc.createElementNS(namespaceURI, "saml2:Attribute");
+		Element attribute = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:Attribute");
 		attribute.setAttribute("Name", "api_key");
 
-		Element attributeValue = doc.createElementNS(namespaceURI, "saml2:AttributeValue");
+		Element attributeValue = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:AttributeValue");
 		attributeValue.setAttribute("xsi:type", "xs:string");
 		attributeValue.setTextContent(session.getClientId());
 
