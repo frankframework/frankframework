@@ -117,8 +117,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		String now = nowInstant.toString();
 
 		// Create a new XML Document
-		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-		docFactory.setNamespaceAware(true);
+		DocumentBuilderFactory docFactory = XmlUtils.getDocumentBuilderFactory(true);
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 		Document doc = docBuilder.newDocument();
 
