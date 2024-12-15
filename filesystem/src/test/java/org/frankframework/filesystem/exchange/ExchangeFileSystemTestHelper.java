@@ -1,5 +1,6 @@
 package org.frankframework.filesystem.exchange;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
@@ -194,9 +195,11 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public InputStream _readFile(String folder, String filename) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+	public InputStream _readFile(String folder, String mailId) throws Exception {
+		String mailFolderId = (folder != null) ? findFolder(folder).getId() : baseFolderId;
+
+		Message mailMessage = getRequestBuilder().mailFolders().byMailFolderId(mailFolderId).messages().byMessageId(mailId).get();
+		return new ByteArrayInputStream(mailMessage.getBodyPreview().getBytes());
 	}
 
 	@Override

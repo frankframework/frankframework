@@ -21,8 +21,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.springframework.beans.BeanUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -70,8 +74,36 @@ public class MailMessageResponse {
 		return response;
 	}
 
-	public static void delete(GraphClient client, MailMessage file) throws IOException {
-		URI uri = URI.create(MESSAGE.formatted(file.getMailFolder().getUrl(), file.getId()));
+	public static MailMessage move(GraphClient client, MailMessage file, MailFolder destinationFolder) throws IOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public static MailMessage copy(GraphClient client, MailMessage filePointer, MailFolder destinationFolder) throws IOException {
+		String composedUrl = MESSAGE.formatted(filePointer.getMailFolder().getUrl(), filePointer.getId());
+		String generatedUrl = filePointer.getUrl();
+		if (!composedUrl.equals(generatedUrl)) {
+			throw new IOException("url mismatch");
+		}
+		URI uri = URI.create(generatedUrl + "/copy");
+
+		String content = "{\"destinationId\":\"%s\"}".formatted(destinationFolder.getId());
+		HttpPost post = new HttpPost(uri);
+		HttpEntity entity = new StringEntity(content, ContentType.APPLICATION_JSON);
+		post.setEntity(entity);
+
+		MailMessage response = client.execute(post, MailMessage.class);
+		response.setMailFolder(filePointer.getMailFolder());
+		return response;
+	}
+
+	public static void delete(GraphClient client, MailMessage filePointer) throws IOException {
+		String composedUrl = MESSAGE.formatted(filePointer.getMailFolder().getUrl(), filePointer.getId());
+		String generatedUrl = filePointer.getUrl();
+		if (!composedUrl.equals(generatedUrl)) {
+			throw new IOException("url mismatch");
+		}
+		URI uri = URI.create(generatedUrl + "/copy");
 		client.execute(new HttpDelete(uri));
 	}
 

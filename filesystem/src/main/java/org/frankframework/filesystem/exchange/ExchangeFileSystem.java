@@ -426,6 +426,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	private MailMessage getMailMessage(MailItemId id) throws FileSystemException {
 		if (id instanceof MailMessage mailMessage) {
 			try {
+				//TODO make this conditional
 				return client.getMailMessage(mailMessage);
 			} catch (IOException e) {
 				throw new FileSystemException("message not found", e);
@@ -446,13 +447,25 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	@Override
-	public MailMessage moveFile(MailItemId f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		return client.moveMailMessage(f, destinationFolder);
+	public MailMessage moveFile(MailItemId file, String destinationFolder, boolean createFolder) throws FileSystemException {
+		MailMessage mailMessage = getMailMessage(file);
+		MailFolder mailDestinationFolder = findSubFolder(mailFolder, destinationFolder);
+		try {
+			return client.moveMailMessage(mailMessage, mailDestinationFolder);
+		} catch (IOException e) {
+			throw new FileSystemException("unable to move message", e);
+		}
 	}
 
 	@Override
-	public MailMessage copyFile(MailItemId f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		return client.copyMailMessage(f, destinationFolder);
+	public MailMessage copyFile(MailItemId file, String destinationFolder, boolean createFolder) throws FileSystemException {
+		MailMessage mailMessage = getMailMessage(file);
+		MailFolder mailDestinationFolder = findSubFolder(mailFolder, destinationFolder);
+		try {
+			return client.copyMailMessage(mailMessage, mailDestinationFolder);
+		} catch (IOException e) {
+			throw new FileSystemException("unable to copy message", e);
+		}
 	}
 
 	@Override

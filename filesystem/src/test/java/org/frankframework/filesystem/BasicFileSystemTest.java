@@ -347,10 +347,10 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.open();
 
 		_createFolder(srcFolder);
-		createFile(srcFolder,filename, contents);
+		String id = createFile(srcFolder,filename, contents);
 		waitForActionToFinish();
 
-		assertFileExistsWithContents(srcFolder, filename, contents);
+		assertFileExistsWithContents(srcFolder, id, contents);
 
 		_createFolder(dstFolder);
 		waitForActionToFinish();
@@ -358,11 +358,11 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		assertTrue(_folderExists(dstFolder));
 		assertFileDoesNotExist(dstFolder, filename);
 
-		F f = fileSystem.toFile(srcFolder, filename);
+		F f = fileSystem.toFile(srcFolder, id);
 		F copiedFile = fileSystem.copyFile(f, dstFolder, false);
 		waitForActionToFinish();
 
-		assertEquals(filename, fileSystem.getName(copiedFile));
+		assertEquals(id, fileSystem.getName(copiedFile));
 
 		assertTrue(_folderExists(dstFolder), "Destination folder must exist");
 		assertFileExistsWithContents(dstFolder, fileSystem.getName(copiedFile), contents);

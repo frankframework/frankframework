@@ -55,13 +55,12 @@ import org.frankframework.core.SenderException;
 import org.frankframework.doc.Protected;
 import org.frankframework.filesystem.exchange.MailFolder;
 import org.frankframework.filesystem.exchange.MailFolderResponse;
-import org.frankframework.filesystem.exchange.MailItemId;
 import org.frankframework.filesystem.exchange.MailMessage;
 import org.frankframework.filesystem.exchange.MailMessageResponse;
+import org.frankframework.http.AbstractHttpSender;
 import org.frankframework.http.HttpMessageEntity;
 import org.frankframework.http.HttpResponseHandler;
 import org.frankframework.lifecycle.LifecycleException;
-import org.frankframework.http.AbstractHttpSender;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
@@ -213,14 +212,12 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 			return MailMessageResponse.get(this, file);
 		}
 
-		public MailMessage moveMailMessage(MailItemId f, String destinationFolder) {
-			// TODO Auto-generated method stub
-			return null;
+		public MailMessage moveMailMessage(MailMessage file, MailFolder destinationFolder) throws IOException {
+			return MailMessageResponse.move(this, file, destinationFolder);
 		}
 
-		public MailMessage copyMailMessage(MailItemId f, String destinationFolder) {
-			// TODO Auto-generated method stub
-			return null;
+		public MailMessage copyMailMessage(MailMessage file, MailFolder destinationFolder) throws IOException {
+			return MailMessageResponse.copy(this, file, destinationFolder);
 		}
 	}
 
