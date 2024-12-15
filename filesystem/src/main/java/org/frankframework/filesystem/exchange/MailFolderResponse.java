@@ -30,7 +30,7 @@ import org.frankframework.filesystem.MsalClientAdapter.GraphClient;
 
 public class MailFolderResponse {
 	private static final int MAX_ENTRIES_PER_CALL = 20;
-	private static final String MAIL_FOLDERS = "https://graph.microsoft.com/v1.0/users/%s/mailFolders?$top=%d&$skip=0";
+	private static final String MS_GRAPH_MAIL_BASE_URL = "https://graph.microsoft.com/v1.0/users/%s/mailFolders?$top=%d&$skip=0";
 	public static final String CHILD_MAIL_FOLDERS = "%s/childFolders?$top=%d&$skip=0";
 
 	public static List<MailFolder> get(GraphClient client, String email) throws IOException {
@@ -38,7 +38,7 @@ public class MailFolderResponse {
 	}
 
 	public static List<MailFolder> get(GraphClient client, String email, int limit) throws IOException {
-		URI uri = URI.create(MAIL_FOLDERS.formatted(email, MAX_ENTRIES_PER_CALL));
+		URI uri = URI.create(MS_GRAPH_MAIL_BASE_URL.formatted(email, MAX_ENTRIES_PER_CALL));
 		List<MailFolder> folders = new ArrayList<>();
 		getRecursive(client, uri, folders, limit - MAX_ENTRIES_PER_CALL);
 		return folders;

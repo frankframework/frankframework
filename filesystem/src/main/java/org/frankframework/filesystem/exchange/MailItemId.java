@@ -15,8 +15,6 @@
  */
 package org.frankframework.filesystem.exchange;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,11 +26,6 @@ public class MailItemId {
 		// public constructor for Jackson
 	}
 
-	public MailItemId(MailFolder mailFolder, String id) {
-		this.id = id;
-		this.mailFolder = mailFolder;
-	}
-
 	private MailFolder mailFolder;
 
 	private String url;
@@ -42,7 +35,5 @@ public class MailItemId {
 	}
 
 	private String id;
-	@JsonProperty("displayName")
-	private String name;
 	private String parentFolderId;
 }

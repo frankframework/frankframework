@@ -15,6 +15,8 @@
  */
 package org.frankframework.filesystem.exchange;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,9 +28,8 @@ public class MailFolder extends MailItemId {
 		// public constructor for Jackson
 	}
 
-	public MailFolder(MailFolder mailFolder, String id) {
-		super(mailFolder, id);
-	}
+	@JsonProperty("displayName")
+	private String name;
 
 	private int childFolderCount;
 	private int unreadItemCount;

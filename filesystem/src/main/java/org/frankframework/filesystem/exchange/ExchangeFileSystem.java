@@ -196,24 +196,37 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	private MailFolder findSubFolder(MailFolder parentFolder, String childFolderName) throws FileSystemException {
-		List<MailFolder> subFolders;
+		List<String> folderNames = StringUtil.split(childFolderName, "/");
+		if (folderNames.isEmpty()) {
+			throw new FileSystemException("unable to find folder, no name specified");
+		}
+
 		try {
-			subFolders = client.getMailFolders(parentFolder);
+			String folderToLookFor = folderNames.remove(0);
+			log.trace("attempt to find sub folder [{}] in parent folder [{}]", parentFolder, folderToLookFor);
+			List<MailFolder> subFolders = client.getMailFolders(parentFolder);
+			MailFolder folder = findSubFolder(subFolders, folderToLookFor);
+
+			// No more sub-folders, we have found what we're looking for
+			if (folderNames.isEmpty()) {
+				return folder;
+			}
+
+			// More sub-folders to find, repeat our search
+			return findSubFolder(folder, String.join(",", folderNames));
 		} catch (IOException e) {
 			throw new FileSystemException("unable to find folder ["+parentFolder+"]", e);
 		}
+	}
 
-		basic filesystemtest get foldername fails here.
-		subFolders.stream().map(MailFolder::getName).forEach(System.out::println);
-
-		MailFolder subMailFolder = subFolders.stream()
-				.filter(t -> childFolderName.equalsIgnoreCase(t.getName()))
-				.findFirst()
-				.orElseThrow(() -> {
-			throw new LifecycleException("unable to find sub-folder [%s/%s] in mailbox [%s]".formatted(parentFolder.getName(), childFolderName, mailAddress));
-		});
-		log.trace("found id [{}] beloging to subFolder [{}]", subMailFolder::getId, parentFolder::getName);
-		return subMailFolder;
+	private MailFolder findSubFolder(List<MailFolder> childFolders, String childFolderName) throws FileSystemException {
+		for (MailFolder mailFolder : childFolders) {
+			if (childFolderName.equalsIgnoreCase(mailFolder.getName())) {
+				log.debug("found id [{}] beloging to subFolder [{}]", mailFolder::getId, ()->childFolderName);
+				return mailFolder;
+			}
+		}
+		throw new FileSystemException("unable to find sub-folder [%s] in mailbox [%s]".formatted(childFolderName, mailAddress));
 	}
 
 	@Override
@@ -336,12 +349,20 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	@Override
 	public String getName(MailItemId msg) {
+		if (msg instanceof MailFolder folder) {
+			return folder.getName();
+		}
+
 		return msg.getId();
 	}
 
 	@Override
 	public String getParentFolder(MailItemId msg) throws FileSystemException {
-		return msg.getParentFolderId();
+		MailFolder parentMailFolder = msg.getMailFolder();
+		if (parentMailFolder == null) {
+			throw new FileSystemException("unknown");
+		}
+		return parentMailFolder.getName();
 	}
 
 	@Override
@@ -381,8 +402,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 				return false;
 			}
 		} catch (IOException e) {
-			throw new FileSystemException(e);
-			// or return false?
+			return false;
 		}
 	}
 
@@ -402,6 +422,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 		return new Message(msg.getBody().getContent(), new MessageContext().withCharset(charset));
 	}
 
+	/** resolves mail message, turns a pointer to an actual mail item. */
 	private MailMessage getMailMessage(MailItemId id) throws FileSystemException {
 		if (id instanceof MailMessage mailMessage) {
 			try {
@@ -417,9 +438,8 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	@Override
 	public void deleteFile(MailItemId id) throws FileSystemException {
 		try {
-			if (id instanceof MailMessage mailMessage) {
-				client.deleteMailMessage(mailMessage);
-			}
+			MailMessage mailMessage = getMailMessage(id);
+			client.deleteMailMessage(mailMessage);
 		} catch (IOException e) {
 			throw new FileSystemException("unable to delete message", e);
 		}
@@ -427,14 +447,12 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	@Override
 	public MailMessage moveFile(MailItemId f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		// TODO Auto-generated method stub
-		return null;
+		return client.moveMailMessage(f, destinationFolder);
 	}
 
 	@Override
 	public MailMessage copyFile(MailItemId f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		// TODO Auto-generated method stub
-		return null;
+		return client.copyMailMessage(f, destinationFolder);
 	}
 
 	@Override

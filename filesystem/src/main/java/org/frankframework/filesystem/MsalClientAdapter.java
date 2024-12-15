@@ -55,6 +55,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.doc.Protected;
 import org.frankframework.filesystem.exchange.MailFolder;
 import org.frankframework.filesystem.exchange.MailFolderResponse;
+import org.frankframework.filesystem.exchange.MailItemId;
 import org.frankframework.filesystem.exchange.MailMessage;
 import org.frankframework.filesystem.exchange.MailMessageResponse;
 import org.frankframework.http.HttpMessageEntity;
@@ -210,6 +211,16 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 
 		public MailMessage getMailMessage(MailMessage file) throws IOException {
 			return MailMessageResponse.get(this, file);
+		}
+
+		public MailMessage moveMailMessage(MailItemId f, String destinationFolder) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public MailMessage copyMailMessage(MailItemId f, String destinationFolder) {
+			// TODO Auto-generated method stub
+			return null;
 		}
 	}
 

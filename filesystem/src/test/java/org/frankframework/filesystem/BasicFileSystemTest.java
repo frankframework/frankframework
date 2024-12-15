@@ -216,12 +216,12 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.configure();
 		fileSystem.open();
 
-		createFile(null, filename, contents);
+		String id = createFile(null, filename, contents);
 		waitForActionToFinish();
 
-		F file = fileSystem.toFile(filename);
+		F file = fileSystem.toFile(id);
 		// test
-		assertEquals(filename, fileSystem.getName(file));
+		assertEquals(id, fileSystem.getName(file));
 	}
 
 	@Test
@@ -585,7 +585,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		_createFolder(folderName);
 		String id = createFile(folderName, FILE1, "text");
 
-		F f = fileSystem.toFile(id, FILE1);
+		F f = fileSystem.toFile(folderName, id);
 
 		fileSystem.deleteFile(f);
 

@@ -57,7 +57,12 @@ public class MailMessageResponse {
 	 * Resolves mail message
 	 */
 	public static MailMessage get(GraphClient client, MailMessage filePointer) throws IOException {
-		URI uri = URI.create(MESSAGE.formatted(filePointer.getMailFolder().getUrl(), filePointer.getId()));
+		String composedUrl = MESSAGE.formatted(filePointer.getMailFolder().getUrl(), filePointer.getId());
+		String generatedUrl = filePointer.getUrl();
+		if (!composedUrl.equals(generatedUrl)) {
+			throw new IOException("url mismatch");
+		}
+		URI uri = URI.create(generatedUrl);
 		MailMessage response = client.execute(new HttpGet(uri), MailMessage.class);
 
 		response.setMailFolder(filePointer.getMailFolder());

@@ -23,13 +23,24 @@ import lombok.Setter;
 @Getter
 @Setter
 public class MailMessage extends MailItemId {
+	private static final String MESSAGE_BASE = "%s/messages";
 
 	public MailMessage() {
 		// public constructor for Jackson
 	}
 
 	public MailMessage(MailFolder mailFolder, String id) {
-		super(mailFolder, id);
+		setMailFolder(mailFolder);
+		setId(id);
+	}
+
+	/**
+	 * Also sets the baseUrl for this message to the url of the `folder` that's provided.
+	 */
+	@Override
+	public void setMailFolder(MailFolder mailFolder) {
+		super.setMailFolder(mailFolder);
+		setUrl(MESSAGE_BASE.formatted(mailFolder.getUrl()));
 	}
 
 	private String sentDateTime;
