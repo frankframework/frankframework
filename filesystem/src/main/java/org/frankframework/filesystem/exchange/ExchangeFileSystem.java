@@ -420,6 +420,10 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	@Override
 	public long getFileSize(MailItemId file) throws FileSystemException {
+		if (file instanceof MailFolder folder) {
+			return folder.getSizeInBytes();
+		}
+
 		return getMailMessage(file).getBody().getContent().length();
 	}
 
@@ -430,6 +434,10 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	@Override
 	public Date getModificationTime(MailItemId file) throws FileSystemException {
+		if (file instanceof MailFolder) {
+			return null;
+		}
+
 		MailMessage mailMessage = getMailMessage(file);
 		return toDate(mailMessage.getLastModifiedDateTime());
 	}

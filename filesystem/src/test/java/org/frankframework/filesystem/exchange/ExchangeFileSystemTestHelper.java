@@ -227,6 +227,7 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 				crb = getRequestBuilder().mailFolders().byMailFolderId(newMailFolder.getId()).childFolders();
 			} catch (ODataError e) {
 				if (e.getMessage().contains("A folder with the specified name already exists.")) {
+					crb = getRequestBuilder().mailFolders().byMailFolderId(findFolder(folder).getId()).childFolders();
 					continue;
 				}
 			}
