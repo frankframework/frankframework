@@ -325,17 +325,24 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.open();
 
 		_createFolder(srcFolder);
-		createFile(srcFolder,filename, srcContents);
+		String id1 = createFile(srcFolder, filename, srcContents);
 		_createFolder(dstFolder);
-		createFile(dstFolder,filename, dstContents);
+		String id2 = createFile(dstFolder, filename, dstContents);
 		waitForActionToFinish();
 
-		assertFileExistsWithContents(srcFolder, filename, srcContents);
-		assertFileExistsWithContents(dstFolder, filename, dstContents);
+		assertFileExistsWithContents(srcFolder, id1, srcContents);
+		assertFileExistsWithContents(dstFolder, id2, dstContents);
 
-		F f = fileSystem.toFile(srcFolder, filename);
+		F f = fileSystem.toFile(srcFolder, id1);
 
-		assertThrows(FileSystemException.class, ()-> fileSystem.moveFile(f, dstFolder, false) );
+		if (id1.equals(id2)) { // if both filenames are the same, this test should fail
+			assertThrows(FileSystemException.class, ()-> fileSystem.moveFile(f, dstFolder, false) );
+		} else {
+			F movedFile = fileSystem.moveFile(f, dstFolder, false);
+			assertFileExistsWithContents(srcFolder, fileSystem.getName(movedFile), srcContents);
+			assertFalse(fileSystem.exists(f));
+			assertEquals(2, fileSystem.getNumberOfFilesInFolder(dstFolder));
+		}
 	}
 
 	@Test

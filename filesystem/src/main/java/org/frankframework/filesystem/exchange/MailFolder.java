@@ -35,4 +35,9 @@ public class MailFolder extends MailItemId {
 	private int unreadItemCount;
 	private int totalItemCount;
 	private int sizeInBytes;
+
+	@Override
+	public String toString() {
+		return "MailFolder [%s] with id [%s]".formatted(name, getId());
+	}
 }

@@ -70,7 +70,7 @@ public class MailMessageResponse {
 		MailMessage response = client.execute(new HttpGet(uri), MailMessage.class);
 
 		response.setMailFolder(filePointer.getMailFolder());
-		BeanUtils.copyProperties(response, filePointer);
+		BeanUtils.copyProperties(response, filePointer, "url"); // should ignore the url as that's compiled already when setting the MailFolder
 		return response;
 	}
 
@@ -116,7 +116,7 @@ public class MailMessageResponse {
 		if (!composedUrl.equals(generatedUrl)) {
 			throw new IOException("url mismatch");
 		}
-		URI uri = URI.create(generatedUrl + "/copy");
+		URI uri = URI.create(generatedUrl);
 		client.execute(new HttpDelete(uri));
 	}
 

@@ -373,10 +373,12 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 		// Folder
 		if (id.contains("/")) {
+			log.trace("assuming id [{}] is a folder", id);
 			return toFile(id, null);
 		}
 
 		// File
+		log.trace("assuming id [{}] is a file", id);
 		return toFile(null, id);
 	}
 
@@ -426,7 +428,11 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	private MailMessage getMailMessage(MailItemId id) throws FileSystemException {
 		if (id instanceof MailMessage mailMessage) {
 			try {
-				//TODO make this conditional
+				if (StringUtils.isNotBlank(mailMessage.getParentFolderId())) {
+					return mailMessage;
+				}
+
+				// else update the message
 				return client.getMailMessage(mailMessage);
 			} catch (IOException e) {
 				throw new FileSystemException("message not found", e);

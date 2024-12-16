@@ -19,7 +19,9 @@ import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 @Getter
 @Setter
 public class MailMessage extends MailItemId {
@@ -30,6 +32,7 @@ public class MailMessage extends MailItemId {
 	}
 
 	public MailMessage(MailFolder mailFolder, String id) {
+		log.debug("creating new MailItem with id [{}] in folder [{}]", id, mailFolder);
 		setMailFolder(mailFolder);
 		setId(id);
 	}
@@ -63,6 +66,11 @@ public class MailMessage extends MailItemId {
 	private List<EmailAddress> ccRecipients;
 	private List<EmailAddress> bccRecipients;
 	private String replyTo;
+
+	@Override
+	public String toString() {
+		return "MailItem [%s] with subject [%s] in %s".formatted(getId(), getSubject(), getMailFolder());
+	}
 
 	@Getter
 	@Setter
