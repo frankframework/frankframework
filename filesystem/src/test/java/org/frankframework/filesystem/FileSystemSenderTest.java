@@ -28,7 +28,7 @@ import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.UUIDUtil;
 
-public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<F, FS>, F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
+public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<F, FS>, F, FS extends IBasicFileSystem<F>> extends HelperedFileSystemTestBase {
 
 	private static final String FOLDER_NAME = "folder";
 	protected FSS fileSystemSender;

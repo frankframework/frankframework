@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,29 +13,26 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package org.frankframework.receivers;
+package org.frankframework.senders;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.doc.Category;
 import org.frankframework.doc.ReferTo;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
-import org.frankframework.filesystem.AbstractFileSystemListener;
+import org.frankframework.filesystem.AbstractFileSystemSender;
 import org.frankframework.filesystem.AbstractMailFileSystem;
 import org.frankframework.filesystem.exchange.ExchangeFileSystem;
 import org.frankframework.filesystem.exchange.MailItemId;
 import org.frankframework.util.SpringUtils;
 
 /**
- * Microsoft Exchange Implementation of a mailbox based filesystem.
+ * Implementation of a {@link AbstractFileSystemSender} that enables to manipulate messages in an Exchange folder.
  */
-@Category(Category.Type.ADVANCED)
-public class ExchangeMailListener extends AbstractFileSystemListener<MailItemId, ExchangeFileSystem> {
+public class ExchangeFileSystemSender extends AbstractFileSystemSender<MailItemId, ExchangeFileSystem> {
 
-	@Override
-	protected ExchangeFileSystem createFileSystem() {
-		return new ExchangeFileSystem();
+	public ExchangeFileSystemSender() {
+		setFileSystem(new ExchangeFileSystem());
 	}
 
 	@Override

@@ -35,7 +35,7 @@ import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 import org.frankframework.util.CloseUtils;
 
 @TestMethodOrder(MethodName.class)
-public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
+public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> extends HelperedFileSystemTestBase {
 
 	private final String lineSeparator = System.getProperty("line.separator");
 	protected FileSystemActor<F, FS> actor;
