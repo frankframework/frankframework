@@ -74,9 +74,22 @@ public class MailMessageResponse {
 		return response;
 	}
 
-	public static MailMessage move(GraphClient client, MailMessage file, MailFolder destinationFolder) throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+	public static MailMessage move(GraphClient client, MailMessage filePointer, MailFolder destinationFolder) throws IOException {
+		String composedUrl = MESSAGE.formatted(filePointer.getMailFolder().getUrl(), filePointer.getId());
+		String generatedUrl = filePointer.getUrl();
+		if (!composedUrl.equals(generatedUrl)) {
+			throw new IOException("url mismatch");
+		}
+		URI uri = URI.create(generatedUrl + "/move");
+
+		String content = "{\"destinationId\":\"%s\"}".formatted(destinationFolder.getId());
+		HttpPost post = new HttpPost(uri);
+		HttpEntity entity = new StringEntity(content, ContentType.APPLICATION_JSON);
+		post.setEntity(entity);
+
+		MailMessage response = client.execute(post, MailMessage.class);
+		response.setMailFolder(filePointer.getMailFolder());
+		return response;
 	}
 
 	public static MailMessage copy(GraphClient client, MailMessage filePointer, MailFolder destinationFolder) throws IOException {

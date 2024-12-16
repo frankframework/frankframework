@@ -35,18 +35,6 @@ public class ExchangeFileSystemTest extends HelperedBasicFileSystemTest<MailItem
 
 	@Test
 	@Override
-	public void basicFileSystemTestCopyFile() throws Exception {
-		super.basicFileSystemTestCopyFile();
-	}
-
-	@Test
-	@Override
-	public void basicFileSystemTestMoveFile() throws Exception {
-		super.basicFileSystemTestMoveFile();
-	}
-
-	@Test
-	@Override
 	@Disabled("test needs to be rewritten to deal with file id's")
 	public void basicFileSystemTestListDirsAndOrFolders() throws Exception {
 		super.basicFileSystemTestListDirsAndOrFolders();

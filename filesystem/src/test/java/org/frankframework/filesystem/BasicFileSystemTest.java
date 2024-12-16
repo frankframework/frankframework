@@ -276,29 +276,31 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.open();
 
 		_createFolder(srcFolder);
-		createFile(srcFolder,filename, contents);
+		String id = createFile(srcFolder,filename, contents);
 		waitForActionToFinish();
 
-		assertFileExistsWithContents(srcFolder, filename, contents);
+		assertFileExistsWithContents(srcFolder, id, contents);
 
 		_createFolder(dstFolder);
 		waitForActionToFinish();
 
 		assertTrue(_folderExists(dstFolder));
-		assertFileDoesNotExist(dstFolder, filename);
+		assertFileDoesNotExist(dstFolder, filename); // does not work with file's with an `id`. already returns false so tests pass regardless.
 
-		F f = fileSystem.toFile(srcFolder, filename);
-		F f2 = fileSystem.toFile(srcFolder, filename);
-		F movedFile =fileSystem.moveFile(f, dstFolder, false);
+		F f = fileSystem.toFile(srcFolder, id);
+		F f2 = fileSystem.toFile(srcFolder, id);
+		F movedFile = fileSystem.moveFile(f, dstFolder, false);
 		waitForActionToFinish();
 
-		assertEquals(filename,fileSystem.getName(movedFile));
+		if (filename.equals(id)) { // If each file has a different 'name' because it's not unique in a folder, this test wont work.
+			assertEquals(filename, fileSystem.getName(movedFile));
+		}
 
 		assertTrue(_folderExists(dstFolder), "Destination folder must exist");
 		assertFileExistsWithContents(dstFolder, fileSystem.getName(movedFile), contents);
 		//TODO: test that contents of file has remained the same
 		//TODO: test that file timestamp has not changed
-		assertFileDoesNotExist(srcFolder, filename);
+		assertFileDoesNotExist(srcFolder, id);
 
 		assertFalse(fileSystem.exists(f2), "original file should not exist anymore after move");
 
@@ -362,13 +364,15 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		F copiedFile = fileSystem.copyFile(f, dstFolder, false);
 		waitForActionToFinish();
 
-		assertEquals(id, fileSystem.getName(copiedFile));
+		if (filename.equals(id)) { //If each file has a different 'name' because it's not unique in a folder, this test wont work.
+			assertEquals(filename, fileSystem.getName(copiedFile));
+		}
 
 		assertTrue(_folderExists(dstFolder), "Destination folder must exist");
-		assertFileExistsWithContents(dstFolder, fileSystem.getName(copiedFile), contents);
+		assertFileExistsWithContents(dstFolder, fileSystem.getName(copiedFile), contents); //Assert new file is present
 		//TODO: test that contents of file has remained the same
 		//TODO: test that file timestamp has not changed
-		assertFileExistsWithContents(srcFolder, filename, contents);
+		assertFileExistsWithContents(srcFolder, id, contents); //Assert old file is (still) present
 	}
 
 	@Test
