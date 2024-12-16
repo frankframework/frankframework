@@ -1,5 +1,8 @@
 package org.frankframework.filesystem.exchange;
 
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -13,15 +16,30 @@ import org.frankframework.util.PropertyLoader;
  */
 public class ExchangeFileSystemTest extends HelperedBasicFileSystemTest<MailItemId, ExchangeFileSystem> {
 	private static TestConfiguration configuration = new TestConfiguration();
-	private static final PropertyLoader PROPERTIES = new PropertyLoader("azure-credentials.properties");
+	private static PropertyLoader PROPERTIES;
 
-	private String mailAddress = PROPERTIES.getProperty("mailAddress");
-	private String clientId = PROPERTIES.getProperty("clientId");
-	private String clientSecret = PROPERTIES.getProperty("clientSecret");
-	private String tenantId = PROPERTIES.getProperty("tenantId");
+	private static String mailAddress;
+	private static String clientId;
+	private static String clientSecret;
+	private static String tenantId;
 
 	// Should ideally never be `inbox` as it removes all mail items!
 	private String baseFolder = PROPERTIES.getProperty("baseFolder", "Inbox/iafTest");
+
+	@BeforeAll
+	public static void beforeAll() {
+		try {
+			PROPERTIES = new PropertyLoader("azure-credentials.properties");
+
+			mailAddress = PROPERTIES.getProperty("mailAddress");
+			clientId = PROPERTIES.getProperty("clientId");
+			clientSecret = PROPERTIES.getProperty("clientSecret");
+			tenantId = PROPERTIES.getProperty("tenantId");
+		} catch (Exception e) {
+			// file not found
+		}
+		assumeTrue(PROPERTIES != null);
+	}
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {

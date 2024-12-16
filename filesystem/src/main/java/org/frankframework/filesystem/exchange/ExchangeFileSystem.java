@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2024 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -69,7 +69,6 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	private @Getter @Setter ApplicationContext applicationContext;
 	private final @Getter String name = "ExchangeFileSystem";
 
-	private @Getter String filter;
 	private @Getter String mailAddress;
 	private @Getter String url;
 
@@ -116,11 +115,6 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isNotEmpty(getFilter())) {
-			if (!getFilter().equalsIgnoreCase("NDR")) {
-				throw new ConfigurationException("illegal value for filter [" + getFilter() + "], must be 'NDR' or empty");
-			}
-		}
 		if (StringUtils.isEmpty(getUrl()) && StringUtils.isEmpty(getMailAddress())) {
 			throw new ConfigurationException("either url or mailAddress needs to be specified");
 		}
@@ -336,7 +330,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	@Override
 	public Message readFile(MailItemId file, String charset) throws FileSystemException, IOException {
-		MailMessage msg = client.getMailMessage(getMailMessage(file));
+		MailMessage msg = getMailMessage(file);
 		return new Message(msg.getBody().getContent(), new MessageContext().withCharset(charset));
 	}
 
@@ -476,14 +470,6 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
-
-	/**
-	 * If empty, all mails are retrieved. If set to <code>NDR</code> only Non-Delivery Report mails ('bounces') are retrieved
-	 */
-	public void setFilter(String filter) {
-		this.filter = filter;
-	}
-
 
 	/** proxy host */
 	public void setProxyHost(String proxyHost) {
