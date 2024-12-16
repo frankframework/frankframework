@@ -64,7 +64,7 @@ import org.frankframework.util.StringUtil;
  * </ol>
  */
 public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implements HasKeystore, HasTruststore {
-	private final @Getter String domain = "Exchange";
+	private final @Getter String domain = "Azure";
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private final @Getter String name = "ExchangeFileSystem";
@@ -173,7 +173,6 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 			client = msalClientAdapter.greateGraphClient(tenantId, getCredentials());
 
 			List<String> folder = StringUtil.split(baseFolder, "/");
-			if(folder.size() > 2) throw new LifecycleException("for now only 2 levels deep are supported"); //TODO
 
 			String rootFolder = folder.remove(0);
 			List<MailFolder> folders = client.getMailFolders(mailAddress);
@@ -188,7 +187,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 			if (folder.size() == 0) {
 				this.mailFolder = mailFolder;
 			} else {
-				this.mailFolder = findSubFolder(mailFolder, folder.get(0));
+				this.mailFolder = findSubFolder(mailFolder, String.join(",", folder));
 			}
 		} catch (FileSystemException | IOException e) {
 			throw new LifecycleException("Failed to initialize Microsoft Authentication client.", e);
@@ -235,90 +234,6 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 		if (msalClientAdapter != null) {
 			msalClientAdapter.stop();
 		}
-	}
-
-	/**
-	 * The mail address of the mailbox connected to (also used for auto discovery)
-	 */
-	public void setMailAddress(String mailAddress) {
-		this.mailAddress = mailAddress;
-	}
-
-	/** Folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used */
-	public void setBaseFolder(String baseFolder) {
-		this.baseFolder = baseFolder;
-	}
-
-	/**
-	 * Client ID that represents a registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview.
-	 */
-	public void setClientId(String clientId) {
-		this.clientId = clientId;
-	}
-
-	/**
-	 * Client secret that belongs to registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Certificates and Secrets
-	 */
-	public void setClientSecret(String clientSecret) {
-		this.clientSecret = clientSecret;
-	}
-
-	/**
-	 * Tenant ID that represents the tenant in which the registered application exists within Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview.
-	 */
-	public void setTenantId(String tenantId) {
-		this.tenantId = tenantId;
-	}
-
-	/**
-	 * Alias used to obtain client ID and secret or username and password for authentication to Exchange mail server.
-	 * If the attribute tenantId is empty, the deprecated Basic Authentication method is used.
-	 * If the attribute tenantId is not empty, the username and password are treated as the client ID and secret.
-	 */
-	public void setAuthAlias(String authAlias) {
-		this.authAlias = authAlias;
-	}
-
-	/**
-	 * If empty, all mails are retrieved. If set to <code>NDR</code> only Non-Delivery Report mails ('bounces') are retrieved
-	 */
-	public void setFilter(String filter) {
-		this.filter = filter;
-	}
-
-
-	/** proxy host */
-	public void setProxyHost(String proxyHost) {
-		this.proxyHost = proxyHost;
-	}
-
-	/**
-	 * proxy port
-	 *
-	 * @ff.default 8080
-	 */
-	public void setProxyPort(int proxyPort) {
-		this.proxyPort = proxyPort;
-	}
-
-	/** proxy username */
-	public void setProxyUsername(String proxyUsername) {
-		this.proxyUsername = proxyUsername;
-	}
-
-	/** proxy password */
-	public void setProxyPassword(String proxyPassword) {
-		this.proxyPassword = proxyPassword;
-	}
-
-	/** proxy authAlias */
-	public void setProxyAuthAlias(String proxyAuthAlias) {
-		this.proxyAuthAlias = proxyAuthAlias;
-	}
-
-	/** proxy domain */
-	public void setProxyDomain(String proxyDomain) {
-		this.proxyDomain = proxyDomain;
 	}
 
 	@Override
@@ -387,6 +302,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 		MailFolder folder = StringUtils.isBlank(childFolderName) ? mailFolder : findSubFolder(mailFolder, childFolderName);
 
 		if (StringUtils.isBlank(id)) {
+			log.trace("no id provided using foldername [{}] to resolve MailItem", childFolderName);
 			return folder;
 		}
 
@@ -517,5 +433,89 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	@Override
 	public String getPhysicalDestinationName() {
 		return mailFolder.getUrl();
+	}
+
+	/**
+	 * The mail address of the mailbox connected to (also used for auto discovery)
+	 */
+	public void setMailAddress(String mailAddress) {
+		this.mailAddress = mailAddress;
+	}
+
+	/** Folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used */
+	public void setBaseFolder(String baseFolder) {
+		this.baseFolder = baseFolder;
+	}
+
+	/**
+	 * Client ID that represents a registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview.
+	 */
+	public void setClientId(String clientId) {
+		this.clientId = clientId;
+	}
+
+	/**
+	 * Client secret that belongs to registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Certificates and Secrets
+	 */
+	public void setClientSecret(String clientSecret) {
+		this.clientSecret = clientSecret;
+	}
+
+	/**
+	 * Tenant ID that represents the tenant in which the registered application exists within Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview.
+	 */
+	public void setTenantId(String tenantId) {
+		this.tenantId = tenantId;
+	}
+
+	/**
+	 * Alias used to obtain client ID and secret or username and password for authentication to Exchange mail server.
+	 * If the attribute tenantId is empty, the deprecated Basic Authentication method is used.
+	 * If the attribute tenantId is not empty, the username and password are treated as the client ID and secret.
+	 */
+	public void setAuthAlias(String authAlias) {
+		this.authAlias = authAlias;
+	}
+
+	/**
+	 * If empty, all mails are retrieved. If set to <code>NDR</code> only Non-Delivery Report mails ('bounces') are retrieved
+	 */
+	public void setFilter(String filter) {
+		this.filter = filter;
+	}
+
+
+	/** proxy host */
+	public void setProxyHost(String proxyHost) {
+		this.proxyHost = proxyHost;
+	}
+
+	/**
+	 * proxy port
+	 *
+	 * @ff.default 8080
+	 */
+	public void setProxyPort(int proxyPort) {
+		this.proxyPort = proxyPort;
+	}
+
+	/** proxy username */
+	public void setProxyUsername(String proxyUsername) {
+		this.proxyUsername = proxyUsername;
+	}
+
+	/** proxy password */
+	public void setProxyPassword(String proxyPassword) {
+		this.proxyPassword = proxyPassword;
+	}
+
+	/** proxy authAlias */
+	public void setProxyAuthAlias(String proxyAuthAlias) {
+		this.proxyAuthAlias = proxyAuthAlias;
+	}
+
+	/** proxy domain */
+	public void setProxyDomain(String proxyDomain) {
+		this.proxyDomain = proxyDomain;
 	}
 }
