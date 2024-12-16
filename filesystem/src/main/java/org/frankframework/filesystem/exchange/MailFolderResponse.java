@@ -21,8 +21,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -31,7 +36,8 @@ import org.frankframework.filesystem.MsalClientAdapter.GraphClient;
 public class MailFolderResponse {
 	private static final int MAX_ENTRIES_PER_CALL = 20;
 	private static final String MS_GRAPH_MAIL_BASE_URL = "https://graph.microsoft.com/v1.0/users/%s/mailFolders?$top=%d&$skip=0";
-	public static final String CHILD_MAIL_FOLDERS = "%s/childFolders?$top=%d&$skip=0";
+	private static final String CHILD_MAIL_FOLDERS_SEARCH = "%s/childFolders?$top=%d&$skip=0";
+	private static final String CHILD_MAIL_FOLDER_BASE = "%s/childFolders";
 
 	public static List<MailFolder> get(GraphClient client, String email) throws IOException {
 		return get(client, email, 20); // default limit is 20, and with 20 entries per API call, only 1 call will be made.
@@ -49,7 +55,7 @@ public class MailFolderResponse {
 	}
 
 	public static List<MailFolder> get(GraphClient client, MailFolder folder, int limit) throws IOException {
-		URI uri = URI.create(CHILD_MAIL_FOLDERS.formatted(folder.getUrl(), MAX_ENTRIES_PER_CALL));
+		URI uri = URI.create(CHILD_MAIL_FOLDERS_SEARCH.formatted(folder.getUrl(), MAX_ENTRIES_PER_CALL));
 		List<MailFolder> folders = new ArrayList<>();
 		getRecursive(client, uri, folders, limit - MAX_ENTRIES_PER_CALL);
 		return folders;
@@ -65,6 +71,21 @@ public class MailFolderResponse {
 		if (StringUtils.isNotBlank(response.nextLink) && limit > 0) {
 			getRecursive(client, URI.create(response.nextLink), folders, limit - MAX_ENTRIES_PER_CALL);
 		}
+	}
+
+	public static void create(GraphClient client, MailFolder folder, String folderName) throws IOException {
+		URI uri = URI.create(CHILD_MAIL_FOLDER_BASE.formatted(folder.getUrl()));
+
+		String content = "{\"displayName\":\"%s\"}".formatted(folderName);
+		HttpPost post = new HttpPost(uri);
+		HttpEntity entity = new StringEntity(content, ContentType.APPLICATION_JSON);
+		post.setEntity(entity);
+		client.execute(post);
+	}
+
+	public static void delete(GraphClient client, MailFolder folder) throws IOException {
+		URI uri = URI.create(folder.getUrl());
+		client.execute(new HttpDelete(uri));
 	}
 
 	/**

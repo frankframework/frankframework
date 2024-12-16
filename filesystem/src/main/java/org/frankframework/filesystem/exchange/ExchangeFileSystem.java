@@ -37,6 +37,7 @@ import org.frankframework.encryption.KeystoreType;
 import org.frankframework.filesystem.AbstractFileSystem;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
+import org.frankframework.filesystem.FolderNotFoundException;
 import org.frankframework.filesystem.IBasicFileSystem;
 import org.frankframework.filesystem.MsalClientAdapter;
 import org.frankframework.filesystem.MsalClientAdapter.GraphClient;
@@ -219,7 +220,8 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 				return mailFolder;
 			}
 		}
-		throw new FileSystemException("unable to find sub-folder [%s] in mailbox [%s]".formatted(childFolderName, mailAddress));
+
+		throw new FolderNotFoundException("unable to find sub-folder [%s] in mailbox [%s]".formatted(childFolderName, mailAddress));
 	}
 
 	@Override
@@ -282,8 +284,13 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 		// Folder
 		if (id.contains("/")) {
-			log.trace("assuming id [{}] is a folder", id);
-			return toFile(id, null);
+			log.trace("assuming id [{}] is a (part) folder", id);
+			String folderName = id.substring(0, id.lastIndexOf('/'));
+			String mailId = null;
+			if (id.length() > id.lastIndexOf('/')) {
+				mailId = id.substring(id.lastIndexOf('/')+1);
+			}
+			return toFile(folderName, mailId);
 		}
 
 		// File
@@ -325,7 +332,11 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
-		return findSubFolder(mailFolder, folder) != null;
+		try {
+			return findSubFolder(mailFolder, folder) != null;
+		} catch (FolderNotFoundException e) {
+			return false;
+		}
 	}
 
 	@Override
@@ -386,12 +397,25 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	@Override
 	public void createFolder(String folder) throws FileSystemException {
-		client.createMailFolder(mailFolder, folder);
+		try {
+			client.createMailFolder(mailFolder, folder);
+		} catch (IOException e) {
+			throw new FileSystemException("unable to create folder", e);
+		}
 	}
 
 	@Override
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
-		client.deleteMailFolder(mailFolder, folder);
+		try {
+			MailFolder folderToDelete = findSubFolder(mailFolder, folder);
+			if (folderToDelete.getTotalItemCount() > 0 && !removeNonEmptyFolder) {
+				throw new FileSystemException("Cannot remove folder, not empty");
+			}
+
+			client.deleteMailFolder(folderToDelete);
+		} catch (IOException e) {
+			throw new FileSystemException("unable to remove folder", e);
+		}
 	}
 
 	@Override

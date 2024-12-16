@@ -157,13 +157,14 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 			execute(httpRequestBase, null);
 		}
 
+		@SuppressWarnings("unchecked")
 		public <T> T execute(HttpRequestBase httpRequestBase, Class<T> dto) throws IOException {
 			httpRequestBase.addHeader("Authorization", msal.getAuthenticationToken());
 			HttpResponse response = msal.execute(httpRequestBase.getURI(), httpRequestBase, null);
 			HttpStatus status = HttpStatus.resolve(response.getStatusLine().getStatusCode());
 			if (status.is2xxSuccessful()) {
 				HttpEntity entity = response.getEntity();
-				if (entity != null) {
+				if (entity != null && dto != null) {
 					try (InputStream contentStream = entity.getContent()) {
 						if(String.class.isAssignableFrom(dto)) {
 							return (T) new String(contentStream.readAllBytes());
@@ -194,14 +195,12 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 			return MailMessageResponse.get(this, folder, limit);
 		}
 
-		public void createMailFolder(MailFolder mailFolder, String folderName) {
-			// TODO Auto-generated method stub
-			
+		public void createMailFolder(MailFolder mailFolder, String folderName) throws IOException {
+			MailFolderResponse.create(this, mailFolder, folderName);
 		}
 
-		public void deleteMailFolder(MailFolder mailFolder, String folder) {
-			// TODO Auto-generated method stub
-			
+		public void deleteMailFolder(MailFolder folderToDelete) throws IOException {
+			MailFolderResponse.delete(this, folderToDelete);
 		}
 
 		public void deleteMailMessage(MailMessage file) throws IOException {

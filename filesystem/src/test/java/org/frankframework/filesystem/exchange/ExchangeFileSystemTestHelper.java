@@ -18,6 +18,7 @@ import com.microsoft.graph.models.MailFolder;
 import com.microsoft.graph.models.Message;
 import com.microsoft.graph.models.Recipient;
 import com.microsoft.graph.models.User;
+import com.microsoft.graph.models.odataerrors.ODataError;
 import com.microsoft.graph.serviceclient.GraphServiceClient;
 import com.microsoft.graph.users.item.UserItemRequestBuilder;
 import com.microsoft.graph.users.item.mailfolders.item.MailFolderItemRequestBuilder;
@@ -141,7 +142,14 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public boolean _fileExists(String folder, String filename) throws Exception {
-		String mailFolderId = (folder != null) ? findFolder(folder).getId() : baseFolderId;
+		String mailFolderId = baseFolderId;
+		if (folder != null) {
+			MailFolder fFolder = findFolder(folder);
+			if (fFolder == null) {
+				return false;
+			}
+			mailFolderId = fFolder.getId();
+		}
 		MessageItemRequestBuilder mirb = getRequestBuilder().mailFolders().byMailFolderId(mailFolderId).messages().byMessageId(filename);
 
 		try {
@@ -214,16 +222,24 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 			mailFolder.setDisplayName(folder);
 			mailFolder.setIsHidden(false);
 
-			MailFolder newMailFolder = crb.post(mailFolder);
-			crb = getRequestBuilder().mailFolders().byMailFolderId(newMailFolder.getId()).childFolders();
+			try {
+				MailFolder newMailFolder = crb.post(mailFolder);
+				crb = getRequestBuilder().mailFolders().byMailFolderId(newMailFolder.getId()).childFolders();
+			} catch (ODataError e) {
+				if (e.getMessage().contains("A folder with the specified name already exists.")) {
+					continue;
+				}
+			}
 		}
 	}
 
 	@Override
 	public void _deleteFolder(String folderName) throws Exception {
-		if (folderName != null) {
-			String mailFolderId = findFolder(folderName).getId();
-			deleteFolderById(mailFolderId);
+		if (StringUtils.isNotBlank(folderName)) {
+			MailFolder folder = findFolder(folderName);
+			if(folder != null) {
+				deleteFolderById(folder.getId());
+			}
 		}
 	}
 
