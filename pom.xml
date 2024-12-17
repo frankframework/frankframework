@@ -11,7 +11,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>17</maven.compiler.target>
 		<maven.compiler.source>17</maven.compiler.source>
-		<log4j2.version>2.23.1</log4j2.version>
+		<log4j2.version>2.24.3</log4j2.version>
 
 		<sonar.organization>frank-framework</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -20,8 +20,8 @@
 		<junit.includedTags></junit.includedTags>
 
 		<jackson.version>2.18.2</jackson.version>
-		<cxf.version>4.0.6</cxf.version>
-		<spring.version>6.2.0</spring.version>
+		<cxf.version>4.1.0</cxf.version>
+		<spring.version>6.2.1</spring.version>
 		<spring-security.version>6.4.1</spring-security.version>
 		<spring-integration.version>6.4.0</spring-integration.version>
 		<spring.boot.version>3.4.0</spring.boot.version>
@@ -56,7 +56,7 @@
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.14.2</mockito.version>
-		<junit.version>5.11.3</junit.version>
+		<junit.version>5.11.4</junit.version>
 	</properties>
 
 	<name>Frank!Framework parent</name>
@@ -506,7 +506,7 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-text</artifactId>
-				<version>1.12.0</version>
+				<version>1.13.0</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-codec</groupId>
@@ -1007,7 +1007,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>10.20.2</version>
+							<version>10.21.0</version>
 						</dependency>
 					</dependencies>
 				</plugin>

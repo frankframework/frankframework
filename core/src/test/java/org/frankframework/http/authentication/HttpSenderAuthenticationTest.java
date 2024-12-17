@@ -558,4 +558,37 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
 	}
+
+	@Test
+	void testSamlAssertion() throws Exception {
+		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
+		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH);
+		sender.setOauthAuthenticationMethod(AbstractHttpSession.OauthAuthenticationMethod.SAML_ASSERTION);
+
+		sender.setKeystore("/Signature/saml-keystore.p12");
+		sender.setKeystorePassword("geheim");
+		sender.setKeystoreAlias("myalias");
+		sender.setKeystoreAliasPassword("geheim");
+
+		sender.setTruststore("/Signature/saml-keystore.p12");
+		sender.setTruststorePassword("geheim");
+		sender.setTruststoreAuthAlias("myalias");
+
+		sender.setClientId(MockTokenServer.CLIENT_ID);
+		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
+
+		sender.setSamlIssuer("www.successfactors.com");
+		sender.setSamlAudience("www.successfactors.com");
+
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTimeout(100000);
+
+		sender.configure();
+		sender.start();
+
+		result = sendMessage();
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
+		assertNotNull(result.asString());
+	}
+
 }

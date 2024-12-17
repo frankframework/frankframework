@@ -2,9 +2,14 @@ package org.frankframework.http.authentication;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.http.Header;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -119,6 +124,61 @@ public class OAuthAccessTokenRequestTest {
 				.getContent(), "\n", "UTF-8"));
 		assertEquals("[Content-Type: application/x-www-form-urlencoded; charset=UTF-8,Content-Length: 95,Chunked: false]", request.getEntity()
 				.toString());
+	}
+
+	@Test
+	void testSamlAssertion() throws Exception {
+		httpSender.setTokenEndpoint("fakeEndpoint");
+		httpSender.setOauthAuthenticationMethod(AbstractHttpSession.OauthAuthenticationMethod.SAML_ASSERTION);
+
+		httpSender.setKeystore("/Signature/saml-keystore.p12");
+		httpSender.setKeystorePassword("geheim");
+		httpSender.setKeystoreAlias("myalias");
+		httpSender.setKeystoreAliasPassword("geheim");
+
+		httpSender.setTruststore("/Signature/saml-keystore.p12");
+		httpSender.setTruststorePassword("geheim");
+		httpSender.setTruststoreAuthAlias("myalias");
+
+		httpSender.setClientId(CLIENT_ID);
+		httpSender.setClientSecret(CLIENT_SECRET);
+
+		httpSender.setSamlIssuer("www.successfactors.com");
+		httpSender.setSamlAudience("www.successfactors.com");
+
+		httpSender.configure();
+		httpSender.start();
+
+		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.SAML_ASSERTION.newAuthenticator(httpSender);
+		oauthAuthenticator.configure();
+		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials(), new ArrayList<>());
+
+		final String body = StreamUtil.streamToString(request.getEntity().getContent(), "\n", "UTF-8");
+		final String decodedBody = URLDecoder.decode(body, StandardCharsets.UTF_8);
+		int bodyLength = body.length();
+
+		assertEquals("POST", request.getMethod());
+		assertHeaderPresent(request, "Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+
+		assertTrue(decodedBody.contains("grant_type=urn:ietf:params:oauth:grant-type:saml2-bearer&client_id=fakeClientId&client_secret=fakeClientSecret&assertion="));
+
+		assertEquals(String.format("[Content-Type: application/x-www-form-urlencoded; charset=UTF-8,Content-Length: %s,Chunked: false]", bodyLength), request.getEntity()
+				.toString());
+
+		Pattern pattern = Pattern.compile("(.*?)assertion=(.*?)($|&(.*?))");
+		Matcher matcher = pattern.matcher(decodedBody);
+
+		assertTrue(matcher.find());
+		String base64EncodedAssertion = matcher.group(2);
+		assertNotNull(base64EncodedAssertion);
+
+		String assertion = new String(Base64.getDecoder().decode(base64EncodedAssertion));
+		assertNotNull(assertion);
+		assertTrue(assertion.length() > 50, "Assertion should be a long string");
+
+		assertTrue(assertion.contains("<saml2:Issuer>www.successfactors.com</saml2:Issuer>"));
+		assertTrue(assertion.contains("<saml2:Audience>www.successfactors.com</saml2:Audience>"));
+		assertTrue(assertion.contains("<saml2:AttributeValue xsi:type=\"xs:string\">fakeClientId</saml2:AttributeValue>"));
 	}
 
 	public void assertHeaderPresent(HttpRequestBase method, String header, String expectedValue) {
