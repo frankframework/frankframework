@@ -1,6 +1,11 @@
 package org.frankframework.filesystem.exchange;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
+import java.net.URL;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -9,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.filesystem.HelperedBasicFileSystemTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.util.JacksonUtils;
 import org.frankframework.util.PropertyLoader;
 
 /**
@@ -71,5 +77,19 @@ public class ExchangeFileSystemTest extends HelperedBasicFileSystemTest<MailItem
 	@Disabled("test never fails because we ignore the charset attribute completely")
 	public void basicFileSystemTestReadSpecialCharsFails() throws Exception {
 		// NO OP
+	}
+
+	@Test
+	public void testMailMapping() throws Exception {
+		URL mailJson = this.getClass().getResource("/ms-graph-mail.json");
+		assertNotNull(mailJson, "unable to find file");
+		MailMessageResponse dto = JacksonUtils.convertToDTO(mailJson.openStream(), MailMessageResponse.class);
+		List<MailMessage> messages = dto.messages;
+		assertEquals(1, messages.size());
+		MailMessage message = messages.get(0);
+		assertEquals("Test Message Contents", message.getBody().getContent());
+		assertEquals("EmailAddress: yes-reply <yes-reply@hidden.domain>", message.getSender().toString());
+		assertEquals("EmailAddress: no-reply <no-reply@hidden.domain>", message.getFrom().toString());
+		assertEquals("[EmailAddress: Karel Appel <karel@appel.domain>]", message.getToRecipients().toString());
 	}
 }

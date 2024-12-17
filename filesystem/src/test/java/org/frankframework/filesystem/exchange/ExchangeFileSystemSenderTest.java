@@ -3,8 +3,6 @@ package org.frankframework.filesystem.exchange;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
 import org.frankframework.filesystem.FileSystemSenderTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
@@ -56,13 +54,5 @@ public class ExchangeFileSystemSenderTest extends FileSystemSenderTest<ExchangeF
 		fileSystem.setBaseFolder(baseFolder);
 
 		return fileSystem;
-	}
-
-	@Test
-	@Disabled
-	@Override
-	public void fileSystemSenderCreateFileAlreadyExists() throws Exception {
-		// java.lang.ClassCastException: Exchange FileSystem is not IWritableFileSystem
-		// Why is the create action part of the IBasicFileSystem?
 	}
 }

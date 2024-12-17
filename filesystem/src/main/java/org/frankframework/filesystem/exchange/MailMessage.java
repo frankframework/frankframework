@@ -15,7 +15,11 @@
  */
 package org.frankframework.filesystem.exchange;
 
+import java.io.UnsupportedEncodingException;
+import java.util.Collections;
 import java.util.List;
+
+import jakarta.mail.internet.InternetAddress;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -60,11 +64,44 @@ public class MailMessage extends MailItemId {
 	private boolean isRead;
 	private boolean isDraft;
 	private MailBody body;
-	private EmailAddress sender;
-	private EmailAddress from;
-	private List<EmailAddress> toRecipients;
-	private List<EmailAddress> ccRecipients;
-	private List<EmailAddress> bccRecipients;
+	private EmailAddressHolder sender;
+	private EmailAddressHolder from;
+
+	public EmailAddress getSender() {
+		if (sender == null) {
+			return null;
+		}
+		return sender.getEmailAddress();
+	}
+
+	public EmailAddress getFrom() {
+		if (from == null) {
+			return null;
+		}
+		return from.getEmailAddress();
+	}
+
+	private List<EmailAddressHolder> toRecipients;
+	private List<EmailAddressHolder> ccRecipients;
+	private List<EmailAddressHolder> bccRecipients;
+
+	public List<EmailAddress> getToRecipients() {
+		return unwrapHolder(toRecipients);
+	}
+	public List<EmailAddress> getCcRecipients() {
+		return unwrapHolder(ccRecipients);
+	}
+	public List<EmailAddress> getBccRecipients() {
+		return unwrapHolder(bccRecipients);
+	}
+
+	private List<EmailAddress> unwrapHolder(List<EmailAddressHolder> mailAddresses) {
+		if (mailAddresses == null) {
+			return Collections.emptyList();
+		}
+		return mailAddresses.stream().map(EmailAddressHolder::getEmailAddress).toList();
+	}
+
 	private String replyTo;
 
 	@Override
@@ -72,17 +109,34 @@ public class MailMessage extends MailItemId {
 		return "MailItem [%s] with subject [%s] in %s".formatted(getId(), getSubject(), getMailFolder());
 	}
 
-	@Getter
-	@Setter
 	public static class MailBody {
+		@Getter @Setter
 		private String contentType;
+
+		@Getter @Setter
 		private String content;
 	}
 
-	@Getter
-	@Setter
+	public static class EmailAddressHolder {
+		@Getter @Setter private EmailAddress emailAddress;
+	}
+
 	public static class EmailAddress {
-		private String name;
-		private String address;
+		private @Setter String name;
+		private @Setter String address;
+
+		public String get() {
+			try {
+				InternetAddress iaddress = new InternetAddress(address, name);
+				return iaddress.toUnicodeString();
+			} catch (UnsupportedEncodingException e) {
+				return address.toString();
+			}
+		}
+
+		@Override
+		public String toString() {
+			return "EmailAddress: "+get();
+		}
 	}
 }

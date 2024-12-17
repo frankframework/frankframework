@@ -16,18 +16,14 @@
 package org.frankframework.filesystem.exchange;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.file.DirectoryStream;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import jakarta.mail.internet.InternetAddress;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
@@ -52,7 +48,6 @@ import org.frankframework.filesystem.TypeFilter;
 import org.frankframework.filesystem.exchange.MailMessage.EmailAddress;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.MessageContext;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.SpringUtils;
@@ -352,7 +347,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	@Override
 	public Message readFile(MailItemId file, String charset) throws FileSystemException, IOException {
 		MailMessage msg = getMailMessage(file);
-		return new Message(msg.getBody().getContent(), new MessageContext().withCharset(charset));
+		return new Message(msg.getBody().getContent(), FileSystemUtils.getContext(this, msg, charset));
 	}
 
 	/** resolves mail message, turns a pointer to an actual mail item. */
@@ -439,7 +434,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	@Override
 	public String getCanonicalName(MailItemId file) throws FileSystemException {
-		return file.getMailFolder().getUrl();
+		return file.getUrl();
 	}
 
 	@Override
@@ -463,14 +458,22 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(MailItemId f) throws FileSystemException {
+		if (f instanceof MailFolder) {
+			return null;
+		}
+
 		MailMessage emailMessage = getMailMessage(f);
 		try {
 			final Map<String, Object> result = new LinkedHashMap<>();
 			result.put(IMailFileSystem.TO_RECIPIENTS_KEY, asList(emailMessage.getToRecipients()));
 			result.put(IMailFileSystem.CC_RECIPIENTS_KEY, asList(emailMessage.getCcRecipients()));
 			result.put(IMailFileSystem.BCC_RECIPIENTS_KEY, asList(emailMessage.getBccRecipients()));
-			result.put(IMailFileSystem.FROM_ADDRESS_KEY, cleanAddress(emailMessage.getFrom()));
-			result.put(IMailFileSystem.SENDER_ADDRESS_KEY, cleanAddress(emailMessage.getSender()));
+			if (emailMessage.getFrom() != null) {
+				result.put(IMailFileSystem.FROM_ADDRESS_KEY, emailMessage.getFrom().get());
+			}
+			if (emailMessage.getSender() != null) {
+				result.put(IMailFileSystem.SENDER_ADDRESS_KEY, emailMessage.getSender().get());
+			}
 			result.put(IMailFileSystem.REPLY_TO_RECIPIENTS_KEY, emailMessage.getReplyTo());
 			result.put(IMailFileSystem.DATETIME_SENT_KEY, toDate(emailMessage.getSentDateTime()));
 			result.put(IMailFileSystem.DATETIME_RECEIVED_KEY, toDate(emailMessage.getReceivedDateTime()));
@@ -484,26 +487,8 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 		}
 	}
 
-	private String cleanAddress(EmailAddress address) {
-		String personal = address.getName();
-		String email = address.getAddress();
-		InternetAddress iaddress;
-		try {
-			iaddress = new InternetAddress(email, personal);
-		} catch (UnsupportedEncodingException e) {
-			return address.toString();
-		}
-		return iaddress.toUnicodeString();
-	}
-
 	private List<String> asList(List<EmailAddress> addressCollection) {
-		if (addressCollection == null) {
-			return Collections.emptyList();
-		}
-		return addressCollection
-			.stream()
-			.map(this::cleanAddress)
-			.toList();
+		return addressCollection.stream().map(EmailAddress::get).toList();
 	}
 
 	@Override

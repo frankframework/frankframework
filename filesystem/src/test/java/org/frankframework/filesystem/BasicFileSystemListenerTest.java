@@ -242,6 +242,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		assertNotNull(rawMessage);
 
 		Message message = fileSystemListener.extractMessage(rawMessage, threadContext);
+		System.err.println(message.asString());
 		assertThat(message.asString(), containsString(id));
 	}
 
@@ -300,16 +301,16 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.configure();
 		fileSystemListener.start();
 
-		createFile(null, filename, contents);
+		String id = createFile(null, filename, contents);
 
 		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 
-		String id = rawMessage.getId();
-		assertThat(id, endsWith(filename));
+		String wrapperId = rawMessage.getId();
+		assertThat(wrapperId, endsWith(id));
 
 		String filepathAttribute = (String) threadContext.get("filepath");
-		assertThat(filepathAttribute, containsString(filename));
+		assertThat(filepathAttribute, containsString(id));
 	}
 
 	@Test
@@ -322,16 +323,15 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.configure();
 		fileSystemListener.start();
 
-		createFile(null, filename, contents);
+		String id = createFile(null, filename, contents);
 
 		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 
-		String id = rawMessage.getId();
-		assertThat(id, endsWith(filename));
+		String wrapperId = rawMessage.getId();
+		assertThat(wrapperId, endsWith(id));
 
 		String metadataAttribute = (String) threadContext.get("metadata");
-		System.out.println(metadataAttribute);
 		assertThat(metadataAttribute, startsWith("<metadata"));
 	}
 
