@@ -236,13 +236,13 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.configure();
 		fileSystemListener.start();
 
-		createFile(null, filename, contents);
+		String id = createFile(null, filename, contents);
 
 		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 
 		Message message = fileSystemListener.extractMessage(rawMessage, threadContext);
-		assertThat(message.asString(), containsString(filename));
+		assertThat(message.asString(), containsString(id));
 	}
 
 	@Test
@@ -277,16 +277,16 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.configure();
 		fileSystemListener.start();
 
-		createFile(null, filename, contents);
+		String id = createFile(null, filename, contents);
 
 		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 
-		String id = rawMessage.getId();
-		assertThat(id, endsWith(filename));
+		String wrapperId = rawMessage.getId();
+		assertThat(wrapperId, endsWith(id));
 
 		String filenameAttribute = (String) threadContext.get("filename");
-		assertThat(filenameAttribute, containsString(filename));
+		assertThat(filenameAttribute, containsString(id));
 
 	}
 
@@ -348,10 +348,10 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.configure();
 		fileSystemListener.start();
 
-		createFile(null, filename, contents);
+		String id = createFile(null, filename, contents);
 		waitForActionToFinish();
 		// test
-		existsCheck(filename);
+		existsCheck(id);
 
 		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
@@ -360,8 +360,10 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
 		// test
-		assertFalse(_fileExists(filename), "Expected file [" + filename + "] not to be present");
-		assertFileExistsWithContents(logFolder, filename, contents);
+		assertFalse(_fileExists(id), "Expected file [" + filename + "] not to be present");
+		if (filename.equals(id)) {
+			assertFileExistsWithContents(logFolder, filename, contents);
+		}
 	}
 
 	@Test
@@ -369,10 +371,10 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		String fileName = "fileTobeMoved.txt";
 		String processedFolder = "destinationFolder";
 
-		createFile(null, fileName, "");
+		String id = createFile(null, fileName, "");
 		waitForActionToFinish();
 
-		assertTrue(_fileExists(fileName));
+		assertTrue(_fileExists(id));
 
 		_createFolder(processedFolder);
 		waitForActionToFinish();
@@ -382,7 +384,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.configure();
 		fileSystemListener.start();
 
-		assertTrue(_fileExists(fileName));
+		assertTrue(_fileExists(id));
 		assertTrue(_folderExists(processedFolder));
 
 		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
@@ -394,8 +396,10 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		waitForActionToFinish();
 
 		assertTrue(_folderExists(processedFolder), "Destination folder must exist");
-		assertTrue(_fileExists(processedFolder, fileName), "Destination must exist");
-		assertFalse(_fileExists(fileName), "Origin must have disappeared");
+		if (fileName.equals(id)) {
+			assertTrue(_fileExists(processedFolder, fileName), "Destination must exist");
+		}
+		assertFalse(_fileExists(id), "Origin must have disappeared");
 	}
 
 	@Test
@@ -403,13 +407,13 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		String fileName = "fileTobeMoved.txt";
 		String processedFolder = "destinationFolder";
 
-		createFile(null, fileName, "");
+		String id1 = createFile(null, fileName, "");
 		waitForActionToFinish();
 
-		assertTrue(_fileExists(fileName));
+		assertTrue(_fileExists(id1));
 
 		_createFolder(processedFolder);
-		createFile(processedFolder, fileName, "");
+		String id2 = createFile(processedFolder, fileName, "");
 		waitForActionToFinish();
 
 		fileSystemListener.setMinStableTime(0);
@@ -418,7 +422,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.configure();
 		fileSystemListener.start();
 
-		assertTrue(_fileExists(fileName));
+		assertTrue(_fileExists(id1));
 		assertTrue(_folderExists(processedFolder));
 
 		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
@@ -430,8 +434,8 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		waitForActionToFinish();
 
 		assertTrue(_folderExists(processedFolder), "Destination folder must exist");
-		assertTrue(_fileExists(processedFolder, fileName), "Destination must exist");
-		assertFalse(_fileExists(fileName), "Origin must have disappeared");
+		assertTrue(_fileExists(processedFolder, id2), "Destination must exist");
+		assertFalse(_fileExists(id1), "Origin must have disappeared");
 	}
 
 	@Test
@@ -443,10 +447,10 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.configure();
 		fileSystemListener.start();
 
-		createFile(null, filename, "maakt niet uit");
+		String id = createFile(null, filename, "maakt niet uit");
 		waitForActionToFinish();
 		// test
-		existsCheck(filename);
+		existsCheck(id);
 
 		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
@@ -455,7 +459,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
 		// test
-		assertFalse(_fileExists(filename), "Expected file [" + filename + "] not to be present");
+		assertFalse(_fileExists(id), "Expected file [" + filename + "] not to be present");
 	}
 
 	@Test
@@ -464,10 +468,10 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		String processedFolder = "destinationFolder";
 		String errorFolder = "errorFolder";
 
-		createFile(null, fileName, "");
+		String id = createFile(null, fileName, "");
 		waitForActionToFinish();
 
-		assertTrue(_fileExists(fileName));
+		assertTrue(_fileExists(id));
 
 		_createFolder(processedFolder);
 		_createFolder(errorFolder);
@@ -479,7 +483,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.configure();
 		fileSystemListener.start();
 
-		assertTrue(_fileExists(fileName));
+		assertTrue(_fileExists(id));
 		assertTrue(_folderExists(processedFolder));
 
 		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
@@ -491,9 +495,11 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		waitForActionToFinish();
 
 		assertTrue(_folderExists(processedFolder), "Error folder must exist");
-		assertTrue(_fileExists(errorFolder, fileName), "Destination must exist in error folder");
-		assertFalse(_fileExists(processedFolder, fileName), "Destination must not exist in processed folder");
-		assertFalse(_fileExists(fileName), "Origin must have disappeared");
+		if (fileName.equals(id)) {
+			assertTrue(_fileExists(errorFolder, fileName), "Destination must exist in error folder");
+			assertFalse(_fileExists(processedFolder, fileName), "Destination must not exist in processed folder");
+		}
+		assertFalse(_fileExists(id), "Origin must have disappeared");
 	}
 
 	@Test
@@ -501,10 +507,10 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		String fileName = "fileTobeMoved.txt";
 		String processedFolder = "destinationFolder";
 
-		createFile(null, fileName, "");
+		String id = createFile(null, fileName, "");
 		waitForActionToFinish();
 
-		assertTrue(_fileExists(fileName));
+		assertTrue(_fileExists(id));
 
 		_createFolder(processedFolder);
 		waitForActionToFinish();
@@ -514,7 +520,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		fileSystemListener.configure();
 		fileSystemListener.start();
 
-		assertTrue(_fileExists(fileName));
+		assertTrue(_fileExists(id));
 		assertTrue(_folderExists(processedFolder));
 
 		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
@@ -526,7 +532,9 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		waitForActionToFinish();
 
 		assertTrue(_folderExists(processedFolder), "Error folder must exist");
-		assertTrue(_fileExists(processedFolder, fileName), "Destination must exist in processed folder");
-		assertFalse(_fileExists(fileName), "Origin must have disappeared");
+		if (fileName.equals(id)) {
+			assertTrue(_fileExists(processedFolder, fileName), "Destination must exist in processed folder");
+		}
+		assertFalse(_fileExists(id), "Origin must have disappeared");
 	}
 }

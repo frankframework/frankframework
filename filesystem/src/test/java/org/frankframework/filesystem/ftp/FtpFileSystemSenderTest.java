@@ -2,9 +2,9 @@ package org.frankframework.filesystem.ftp;
 
 import org.junit.jupiter.api.BeforeEach;
 
-import org.frankframework.filesystem.FileSystemSenderTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.filesystem.LocalFileSystemTestHelper;
+import org.frankframework.filesystem.WritableFileSystemSenderTest;
 import org.frankframework.senders.FtpFileSystemSender;
 import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileServer.FileSystemType;
@@ -15,7 +15,7 @@ import org.frankframework.testutil.junit.LocalFileSystemMock;
  *
  * @author Ali Sihab
  */
-public class FtpFileSystemSenderTest extends FileSystemSenderTest<FtpFileSystemSender, FTPFileRef, FtpFileSystem> {
+public class FtpFileSystemSenderTest extends WritableFileSystemSenderTest<FtpFileSystemSender, FTPFileRef, FtpFileSystem> {
 
 	private final String username = "frankframework";
 	private final String password = "pass_123";

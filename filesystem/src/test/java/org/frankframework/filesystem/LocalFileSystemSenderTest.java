@@ -18,7 +18,7 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.LocalFileSystemSender;
 import org.frankframework.stream.Message;
 
-public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSystemSender, Path, LocalFileSystem>{
+public class LocalFileSystemSenderTest extends WritableFileSystemSenderTest<LocalFileSystemSender, Path, LocalFileSystem>{
 
 	@TempDir
 	public Path folder;

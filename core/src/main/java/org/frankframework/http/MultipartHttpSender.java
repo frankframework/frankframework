@@ -29,7 +29,7 @@ import org.w3c.dom.Element;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 
-@Deprecated
+@Deprecated(since = "7.8", forRemoval = true)
 public class MultipartHttpSender extends HttpSender {
 
 	public MultipartHttpSender() {

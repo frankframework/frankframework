@@ -79,7 +79,7 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 		if(StringUtils.isNotEmpty(contents)) {
 			mf.setContents(contents.getBytes());
 		}
-		return folderName == null ? filename : folderName + "/" + filename;
+		return filename;
 	}
 
 	@Override
