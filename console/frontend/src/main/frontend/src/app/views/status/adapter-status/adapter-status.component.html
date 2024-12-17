@@ -78,7 +78,7 @@
           <!-- adapter information -->
           <span class="pull-right">
             <a
-              [appHasAccessToLink]="['getAdapterStatistics']"
+              appHasAccessToLink="getAdapterStatistics"
               [routerLink]="['', adapter.configuration, 'adapter', adapter.name, 'statistics']"
               class="btn btn-xs btn-info pull-right m-r-xs"
               type="button"
@@ -99,7 +99,7 @@
                 <td *ngIf="adapter.state === 'started'" class="col-md-6">
                   <span><i class="fa fa-check-square lh22 m-r-xs"></i> Started</span>
                   <button
-                    [appHasAccessToLink]="['updateAdapter']"
+                    appHasAccessToLink="updateAdapter"
                     (click)="stopAdapter(adapter)"
                     class="btn btn-xs danger-hover"
                     style="float: right"
@@ -118,7 +118,7 @@
                 <td *ngIf="adapter.state === 'stopped'" class="col-md-6">
                   <span><i class="fa fa-stop-circle lh22 m-r-xs"></i> Stopped</span>
                   <button
-                    [appHasAccessToLink]="['updateAdapter']"
+                    appHasAccessToLink="updateAdapter"
                     (click)="startAdapter(adapter)"
                     class="btn btn-xs primary-hover"
                     style="float: right"
@@ -365,7 +365,7 @@
                         <span [ngClass]="pipes.isSenderTransactionalStorage ? 'text-primary' : 'text-success'">
                           <a
                             *ngIf="pipes.hasMessageLog"
-                            [appHasAccessToLink]="['browseMessages']"
+                            appHasAccessToLink="browseMessages"
                             [routerLink]="[
                               '',
                               adapter.configuration,
@@ -431,7 +431,7 @@
         </div>
         <div class="col-lg-3 col-md-0 flow">
           <h4>Flow</h4>
-          <app-flow [appHasAccessToLink]="['getAdapterFlow']" [adapter]="adapter" [canLoadInline]="loadFlowInline" />
+          <app-flow appHasAccessToLink="getAdapterFlow" [adapter]="adapter" [canLoadInline]="loadFlowInline" />
         </div>
       </div>
     </div>
