@@ -1099,20 +1099,20 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 	@Test
 	public void fileSystemActorDeleteActionTestWithWildCard() throws Exception {
 		String srcFolderName = "src" + new Date().getTime();
-		if(_folderExists(srcFolderName)) {
+		if(!_folderExists(srcFolderName)) {
 			_createFolder(srcFolderName);
 		}
 
 		for (int i = 0; i < 3; i++) {
 			String filename = "tobedeleted" + i + FILE1;
 
-			if (!_fileExists(filename)) {
+			if (!_fileExists(srcFolderName, filename)) {
 				createFile(srcFolderName, filename, "is not empty");
 			}
 
 			filename = "tostay" + i + FILE1;
 
-			if (!_fileExists(filename)) {
+			if (!_fileExists(srcFolderName, filename)) {
 				createFile(srcFolderName, filename, "is not empty");
 			}
 		}
