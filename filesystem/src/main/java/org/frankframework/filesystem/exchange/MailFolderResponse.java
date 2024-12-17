@@ -35,7 +35,8 @@ import org.frankframework.filesystem.MsalClientAdapter.GraphClient;
 
 public class MailFolderResponse {
 	private static final int MAX_ENTRIES_PER_CALL = 20;
-	private static final String MS_GRAPH_MAIL_BASE_URL = "https://graph.microsoft.com/v1.0/users/%s/mailFolders?$top=%d&$skip=0";
+	private static final String TRUSTED_URL_PREFIX = "https://graph.microsoft.com/v1.0/";
+	private static final String MS_GRAPH_MAIL_BASE_URL = TRUSTED_URL_PREFIX + "users/%s/mailFolders?$top=%d&$skip=0";
 	private static final String CHILD_MAIL_FOLDERS_SEARCH = "%s/childFolders?$top=%d&$skip=0";
 	private static final String CHILD_MAIL_FOLDER_BASE = "%s/childFolders";
 
@@ -69,8 +70,15 @@ public class MailFolderResponse {
 		folders.addAll(response.folders);
 
 		if (StringUtils.isNotBlank(response.nextLink) && limit > 0) {
-			getRecursive(client, URI.create(response.nextLink), folders, limit - MAX_ENTRIES_PER_CALL);
+			getRecursive(client, validateNextLink(response.nextLink), folders, limit - MAX_ENTRIES_PER_CALL);
 		}
+	}
+
+	private static URI validateNextLink(String nextLink) throws IOException {
+		if (!nextLink.startsWith(TRUSTED_URL_PREFIX)) {
+			throw new IOException("Untrusted URL: " + nextLink);
+		}
+		return URI.create(nextLink);
 	}
 
 	public static void create(GraphClient client, MailFolder folder, String folderName) throws IOException {

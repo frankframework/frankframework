@@ -35,6 +35,7 @@ import org.frankframework.filesystem.MsalClientAdapter.GraphClient;
 
 public class MailMessageResponse {
 	private static final int MAX_ENTRIES_PER_CALL = 20;
+	private static final String TRUSTED_URL_PREFIX = "https://graph.microsoft.com/v1.0/";
 	private static final String MESSAGES = "%s/messages?$top=%d&$skip=0";
 	private static final String MESSAGE = "%s/messages/%s";
 
@@ -53,8 +54,15 @@ public class MailMessageResponse {
 		}
 
 		if (StringUtils.isNotBlank(response.nextLink) && limit > 0) {
-			getRecursive(client, URI.create(response.nextLink), parentFolder, folders, limit - MAX_ENTRIES_PER_CALL);
+			getRecursive(client, validateNextLink(response.nextLink), parentFolder, folders, limit - MAX_ENTRIES_PER_CALL);
 		}
+	}
+
+	private static URI validateNextLink(String nextLink) throws IOException {
+		if (!nextLink.startsWith(TRUSTED_URL_PREFIX)) {
+			throw new IOException("Untrusted URL: " + nextLink);
+		}
+		return URI.create(nextLink);
 	}
 
 	/**
