@@ -31,6 +31,7 @@ import org.frankframework.util.XmlBuilder;
 /**
  * FileSystem Sender extension to handle Attachments.
  */
+@Deprecated
 public class FileSystemSenderWithAttachments<F, A, FS extends IMailFileSystem<F,A>> extends AbstractFileSystemSender<F,FS> {
 
 	public final FileSystemActor.FileSystemAction[] ACTIONS_FS_WITH_ATTACHMENTS = {FileSystemActor.FileSystemAction.LISTATTACHMENTS};
