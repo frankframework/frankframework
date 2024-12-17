@@ -108,26 +108,13 @@ public class Json2Xml extends XmlAligner {
 		setRootElement(rootElement);
 	}
 
-	private static Set<String> getNamesOfXsdChildElements(XSComplexTypeDefinition complexTypeDefinition) {
-		XSTerm term = complexTypeDefinition.getParticle().getTerm();
-		if (!(term instanceof XSModelGroup modelGroup)) {
-			return Collections.emptySet();
-		}
-		@SuppressWarnings("unchecked")
-		List<XSParticle> particles = modelGroup.getParticles();
-		return particles.stream()
-				.map(XSParticle::getTerm)
-				.map(XSObject::getName)
-				.collect(Collectors.toSet());
-	}
-
 	private static List<XSParticle> getXsdChildParticles(XSComplexTypeDefinition complexTypeDefinition) {
 		XSTerm term = complexTypeDefinition.getParticle().getTerm();
-		if (!(term instanceof XSModelGroup modelGroup)) {
-			return List.of();
+		if (term instanceof XSModelGroup modelGroup) {
+			//noinspection unchecked
+			return modelGroup.getParticles();
 		}
-		//noinspection unchecked
-		return modelGroup.getParticles();
+		return List.of();
 	}
 
 	public void startParse(JsonValue node) throws SAXException {
@@ -575,8 +562,8 @@ public class Json2Xml extends XmlAligner {
 	public final Iterable<JsonValue> getChildrenByName(JsonValue node, XSElementDeclaration childElementDeclaration) throws SAXException {
 		String childName=childElementDeclaration.getName();
 		Iterable<JsonValue> children = getNodeChildrenByName(node, childElementDeclaration);
-		if (children==null && sp!=null && sp.hasSubstitutionsFor(getContext(), childName)) {
-			List<JsonValue> result=new ArrayList<>();
+		if (children == null && sp != null && sp.hasSubstitutionsFor(getContext(), childName)) {
+			List<JsonValue> result = new ArrayList<>();
 			result.add(getSubstitutedChild(childName));
 			return result;
 		}
