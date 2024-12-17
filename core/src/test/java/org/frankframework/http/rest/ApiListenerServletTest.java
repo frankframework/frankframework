@@ -1453,7 +1453,7 @@ public class ApiListenerServletTest {
 				.build();
 		apiListener.setResponseType(HttpEntityType.MTOM);
 		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
-		apiListener.setResponseResultBodyPartName("message");
+		apiListener.setResponseFirstBodyPartName("message");
 		apiListener.configure();
 
 		// Act
@@ -1478,7 +1478,7 @@ public class ApiListenerServletTest {
 				.build();
 		apiListener.setResponseType(HttpEntityType.MTOM);
 		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
-		apiListener.setResponseResultBodyPartName("message");
+		apiListener.setResponseFirstBodyPartName("message");
 		apiListener.setResponseMtomContentTransferEncoding("binary");
 		apiListener.configure();
 
@@ -1528,7 +1528,7 @@ public class ApiListenerServletTest {
 				.build();
 		apiListener.setResponseType(HttpEntityType.FORMDATA);
 		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
-		apiListener.setResponseResultBodyPartName("message");
+		apiListener.setResponseFirstBodyPartName("message");
 		apiListener.configure();
 
 		// Act

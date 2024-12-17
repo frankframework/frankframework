@@ -128,7 +128,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private @Getter HttpEntityType responseType;
 	private @Getter String responseMultipartXmlSessionKey;
-	private @Getter String responseResultBodyPartName;
+	private @Getter String responseFirstBodyPartName;
 	private @Getter String responseMtomContentTransferEncoding;
 
 	private @Getter HttpEntityFactory responseEntityBuilder;
@@ -183,7 +183,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		responseEntityBuilder = HttpEntityFactory.Builder.create()
 				.entityType(responseType)
 				.multipartXmlSessionKey(responseMultipartXmlSessionKey)
-				.firstBodyPartName(responseResultBodyPartName)
+				.firstBodyPartName(responseFirstBodyPartName)
 				.mtomContentTransferEncoding(responseMtomContentTransferEncoding)
 				.build();
 
@@ -191,7 +191,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			if (StringUtils.isNotBlank(responseMultipartXmlSessionKey)) {
 				ConfigurationWarnings.add(this, log, "[responseMultipartXmlSessionKey] should only be set when [responseType] is [MTOM] or [FORMDATA]");
 			}
-			if (StringUtils.isNotBlank(responseResultBodyPartName)) {
+			if (StringUtils.isNotBlank(responseFirstBodyPartName)) {
 				ConfigurationWarnings.add(this, log, "[responseResultBodyPartName] should only be set when [responseType] is [MTOM] or [FORMDATA]");
 			}
 		}
@@ -517,8 +517,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * If response is sent as Multipart ({@link HttpEntityType#FORMDATA} or {@link HttpEntityType#MTOM}), when this option is set the pipeline result message will be prepended as first Multipart Bodypart with
 	 * this name.
 	 */
-	public void setResponseResultBodyPartName(String responseResultBodyPartName) {
-		this.responseResultBodyPartName = responseResultBodyPartName;
+	public void setResponseFirstBodyPartName(String responseFirstBodyPartName) {
+		this.responseFirstBodyPartName = responseFirstBodyPartName;
 	}
 
 	/**
