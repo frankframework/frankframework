@@ -74,10 +74,10 @@ public class ExchangeMailListener extends AbstractFileSystemListener<MailItemId,
 		getFileSystem().setBaseFolder(baseFolder);
 	}
 
-//	@ReferTo(AbstractMailFileSystem.class)
-//	public void setReplyAddressFields(String replyAddressFields) {
-//		getFileSystem().setReplyAddressFields(replyAddressFields);
-//	}
+	@ReferTo(AbstractMailFileSystem.class)
+	public void setReplyAddressFields(String replyAddressFields) {
+		getFileSystem().setReplyAddressFields(replyAddressFields);
+	}
 
 	@ReferTo(ExchangeFileSystem.class)
 	public void setProxyHost(String proxyHost) {

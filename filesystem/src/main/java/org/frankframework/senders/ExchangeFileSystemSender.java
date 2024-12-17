@@ -71,10 +71,10 @@ public class ExchangeFileSystemSender extends AbstractFileSystemSender<MailItemI
 		getFileSystem().setBaseFolder(baseFolder);
 	}
 
-//	@ReferTo(AbstractMailFileSystem.class)
-//	public void setReplyAddressFields(String replyAddressFields) {
-//		getFileSystem().setReplyAddressFields(replyAddressFields);
-//	}
+	@ReferTo(AbstractMailFileSystem.class)
+	public void setReplyAddressFields(String replyAddressFields) {
+		getFileSystem().setReplyAddressFields(replyAddressFields);
+	}
 
 	@ReferTo(ExchangeFileSystem.class)
 	public void setProxyHost(String proxyHost) {
