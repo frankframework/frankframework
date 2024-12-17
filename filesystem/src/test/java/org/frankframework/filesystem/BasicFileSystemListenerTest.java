@@ -242,7 +242,6 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		assertNotNull(rawMessage);
 
 		Message message = fileSystemListener.extractMessage(rawMessage, threadContext);
-		System.err.println(message.asString());
 		assertThat(message.asString(), containsString(id));
 	}
 
