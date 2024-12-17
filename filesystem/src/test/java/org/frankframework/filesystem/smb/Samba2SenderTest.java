@@ -2,16 +2,16 @@ package org.frankframework.filesystem.smb;
 
 import org.junit.jupiter.api.BeforeEach;
 
-import org.frankframework.filesystem.FileSystemSenderTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.filesystem.LocalFileSystemTestHelper;
+import org.frankframework.filesystem.WritableFileSystemSenderTest;
 import org.frankframework.filesystem.smb.Samba2FileSystem.Samba2AuthType;
 import org.frankframework.senders.Samba2Sender;
 import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileServer.FileSystemType;
 import org.frankframework.testutil.junit.LocalFileSystemMock;
 
-public class Samba2SenderTest extends FileSystemSenderTest<Samba2Sender, SmbFileRef, Samba2FileSystem> {
+public class Samba2SenderTest extends WritableFileSystemSenderTest<Samba2Sender, SmbFileRef, Samba2FileSystem> {
 
 	private final String username = "frankframework";
 	private final String password = "pass_123";

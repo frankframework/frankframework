@@ -4,15 +4,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.filesystem.FileSystemActorTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.filesystem.LocalFileSystemTestHelper;
+import org.frankframework.filesystem.WritableFileSystemActorTest;
 import org.frankframework.filesystem.smb.Samba2FileSystem.Samba2AuthType;
 import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileServer.FileSystemType;
 import org.frankframework.testutil.junit.LocalFileSystemMock;
 
-public class Samba2FileSystemActorTest extends FileSystemActorTest<SmbFileRef, Samba2FileSystem> {
+public class Samba2FileSystemActorTest extends WritableFileSystemActorTest<SmbFileRef, Samba2FileSystem> {
 
 	private final String username = "frankframework";
 	private final String password = "pass_123";
