@@ -16,13 +16,18 @@
 package org.frankframework.filesystem.exchange;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.DirectoryStream;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import jakarta.mail.internet.InternetAddress;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
@@ -39,9 +44,12 @@ import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.FolderNotFoundException;
 import org.frankframework.filesystem.IBasicFileSystem;
+import org.frankframework.filesystem.IMailFileSystem;
+import org.frankframework.filesystem.MailFileSystemUtils;
 import org.frankframework.filesystem.MsalClientAdapter;
 import org.frankframework.filesystem.MsalClientAdapter.GraphClient;
 import org.frankframework.filesystem.TypeFilter;
+import org.frankframework.filesystem.exchange.MailMessage.EmailAddress;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
@@ -85,6 +93,8 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	private @Getter String clientSecret = null;
 	private @Getter String tenantId = null;
 	private @Getter String baseFolder;
+
+	private @Getter String replyAddressFields = IMailFileSystem.REPLY_ADDRESS_FIELDS_DEFAULT;
 
 	/* SSL */
 	private @Getter @Setter String keystore;
@@ -453,7 +463,47 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(MailItemId f) throws FileSystemException {
-		return null;
+		MailMessage emailMessage = getMailMessage(f);
+		try {
+			final Map<String, Object> result = new LinkedHashMap<>();
+			result.put(IMailFileSystem.TO_RECIPIENTS_KEY, asList(emailMessage.getToRecipients()));
+			result.put(IMailFileSystem.CC_RECIPIENTS_KEY, asList(emailMessage.getCcRecipients()));
+			result.put(IMailFileSystem.BCC_RECIPIENTS_KEY, asList(emailMessage.getBccRecipients()));
+			result.put(IMailFileSystem.FROM_ADDRESS_KEY, cleanAddress(emailMessage.getFrom()));
+			result.put(IMailFileSystem.SENDER_ADDRESS_KEY, cleanAddress(emailMessage.getSender()));
+			result.put(IMailFileSystem.REPLY_TO_RECIPIENTS_KEY, emailMessage.getReplyTo());
+			result.put(IMailFileSystem.DATETIME_SENT_KEY, toDate(emailMessage.getSentDateTime()));
+			result.put(IMailFileSystem.DATETIME_RECEIVED_KEY, toDate(emailMessage.getReceivedDateTime()));
+
+//			result.putAll(extractInternetMessageHeaders(emailMessage, emailMessageId)); // Missing, for now a non-backwards compatible change
+
+			result.put(IMailFileSystem.BEST_REPLY_ADDRESS_KEY, MailFileSystemUtils.findBestReplyAddress(result, getReplyAddressFields()));
+			return result;
+		} catch (Exception e) {
+			throw new FileSystemException(e);
+		}
+	}
+
+	private String cleanAddress(EmailAddress address) {
+		String personal = address.getName();
+		String email = address.getAddress();
+		InternetAddress iaddress;
+		try {
+			iaddress = new InternetAddress(email, personal);
+		} catch (UnsupportedEncodingException e) {
+			return address.toString();
+		}
+		return iaddress.toUnicodeString();
+	}
+
+	private List<String> asList(List<EmailAddress> addressCollection) {
+		if (addressCollection == null) {
+			return Collections.emptyList();
+		}
+		return addressCollection
+			.stream()
+			.map(this::cleanAddress)
+			.toList();
 	}
 
 	@Override
@@ -535,5 +585,13 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	/** proxy domain */
 	public void setProxyDomain(String proxyDomain) {
 		this.proxyDomain = proxyDomain;
+	}
+
+	/**
+	 * Comma separated list of fields to try as response address
+	 * @ff.default {@value IMailFileSystem#REPLY_ADDRESS_FIELDS_DEFAULT}
+	 */
+	public void setReplyAddressFields(String replyAddressFields) {
+		this.replyAddressFields = replyAddressFields;
 	}
 }
