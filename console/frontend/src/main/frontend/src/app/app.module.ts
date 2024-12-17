@@ -91,6 +91,7 @@ import { DtContentDirective } from './components/datatable/dt-content.directive'
 import { MonitorsNewComponent } from './views/monitors/monitors-new/monitors-new.component';
 import { ConfigurationTabListComponent } from './components/tab-list/configuration-tab-list.component';
 import { TabListComponent } from './components/tab-list/tab-list.component';
+import { HasAccessToLinkDirective } from './components/has-access-to-link.directive';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -201,6 +202,7 @@ const windowProvider: ValueProvider = {
     TruncatePipe,
     ConfigurationTabListComponent,
     TabListComponent,
+    HasAccessToLinkDirective,
   ],
   providers: [windowProvider, { provide: TitleStrategy, useClass: PagesTitleStrategy }, httpInterceptorProviders],
   bootstrap: [AppComponent],

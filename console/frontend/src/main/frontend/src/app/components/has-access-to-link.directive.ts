@@ -1,4 +1,4 @@
-import { Directive, inject, Input, TemplateRef, ViewContainerRef } from '@angular/core';
+import { Directive, ElementRef, inject, Input } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { LinkName } from '../views/security-items/security-items.service';
 
@@ -8,27 +8,23 @@ import { LinkName } from '../views/security-items/security-items.service';
 })
 export class HasAccessToLinkDirective {
   private readonly authService: AuthService = inject(AuthService);
-  private readonly templateRef: TemplateRef<HTMLElement> = inject(TemplateRef);
-  private readonly viewContainer: ViewContainerRef = inject(ViewContainerRef);
+  private readonly elementRef: ElementRef<HTMLElement> = inject(ElementRef);
 
-  @Input('appHasAccessToLink') set hasAccessToLink(linkName: LinkName | LinkName[]) {
-    if (typeof linkName === 'string') {
-      linkName = [linkName];
-    }
+  @Input() noAccessToLinkClassName: string = 'disabled';
 
-    this.authService
-      .loadPermissions()
-      .then(() => {
-        const hasAccess = linkName.some((name) => this.authService.hasAccessToLink(name));
+  @Input('appHasAccessToLink') set hasAccessToLink(linkNames: LinkName | LinkName[]) {
+    linkNames = typeof linkNames === 'string' ? [linkNames] : linkNames;
 
-        if (hasAccess) {
-          this.viewContainer.createEmbeddedView(this.templateRef);
-        } else {
-          this.viewContainer.clear();
-        }
-      })
-      .catch(() => {
-        this.viewContainer.clear();
-      });
+    this.elementRef.nativeElement.classList.add(this.noAccessToLinkClassName);
+    this.elementRef.nativeElement.style.pointerEvents = 'none';
+
+    this.authService.loadPermissions().then(() => {
+      const hasAccess = linkNames.some((name) => this.authService.hasAccessToLink(name));
+
+      if (hasAccess) {
+        this.elementRef.nativeElement.classList.remove(this.noAccessToLinkClassName);
+        this.elementRef.nativeElement.style.pointerEvents = 'auto';
+      }
+    });
   }
 }

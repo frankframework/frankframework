@@ -35,6 +35,7 @@
                     <span><i class="fa fa-play m-r-xs"></i> Started</span>
                     <!-- <button style="float:right;" title="Stop Scheduler" ng-click="stop()" class="btn btn-xs btn-danger m-l-xs" type="button"><i class="fa fa-stop m-r-xs"></i> Stop</button> -->
                     <button
+                      [appHasAccessToLink]="['updateScheduler']"
                       style="float: right"
                       [ladda]="refreshing"
                       title="Pause Scheduler"
@@ -49,6 +50,7 @@
                     <span><i class="fa fa-pause m-r-xs"></i> Paused</span>
                     <!-- <button style="float:right;" title="Stop Scheduler" ng-click="stop()" class="btn btn-xs btn-danger m-l-xs" type="button"><i class="fa fa-stop m-r-xs"></i> Stop</button> -->
                     <button
+                      [appHasAccessToLink]="['updateScheduler']"
                       style="float: right"
                       [ladda]="refreshing"
                       title="Start Scheduler"
@@ -62,6 +64,7 @@
                   <td *ngIf="scheduler.state === 'stopped'">
                     <span><i class="fa fa-stop m-r-xs"></i> Stopped</span>
                     <button
+                      [appHasAccessToLink]="['updateScheduler']"
                       style="float: right"
                       [ladda]="refreshing"
                       title="Start Scheduler"
@@ -174,6 +177,7 @@
             <div class="col-md-12">
               <div class="pull-right">
                 <button
+                  [appHasAccessToLink]="['updateTrigger']"
                   *ngIf="job.type === 'DATABASE'"
                   title="Edit Job {{ job.name }}"
                   class="btn btn-info btn-xs"
@@ -183,6 +187,7 @@
                   <i class="fa fa-pencil"></i> Edit</button
                 >&nbsp;
                 <button
+                  [appHasAccessToLink]="['deleteTrigger']"
                   *ngIf="job.type === 'DATABASE'"
                   title="Delete Job {{ job.name }}"
                   class="btn btn-danger btn-xs"
@@ -192,6 +197,7 @@
                   <i class="fa fa-times"></i> Delete</button
                 >&nbsp;
                 <button
+                  [appHasAccessToLink]="['updateTrigger']"
                   *ngIf="job.state === 'PAUSED'"
                   title="Resume Job {{ job.name }}"
                   class="btn btn-warning btn-xs"
@@ -201,6 +207,7 @@
                   <i class="fa fa-play"></i> Resume</button
                 >&nbsp;
                 <button
+                  [appHasAccessToLink]="['updateTrigger']"
                   *ngIf="job.state !== 'PAUSED'"
                   title="Pause Job {{ job.name }}"
                   class="btn btn-gray btn-xs"
@@ -210,6 +217,7 @@
                   <i class="fa fa-pause"></i> Pause</button
                 >&nbsp;
                 <button
+                  [appHasAccessToLink]="['trigger']"
                   title="Trigger Job {{ job.name }}"
                   class="btn btn-info btn-xs"
                   type="button"

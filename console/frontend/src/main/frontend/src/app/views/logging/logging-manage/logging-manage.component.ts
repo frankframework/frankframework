@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ErrorLevels, LogInformation, LoggingService, LoggingSettings, errorLevelsConst } from '../logging.service';
+import { ErrorLevels, errorLevelsConst, LoggingService, LoggingSettings, LogInformation } from '../logging.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -48,8 +48,8 @@ export class LoggingManageComponent implements OnInit {
   }
 
   //Individual level
-  changeLoglevel(logger: string, level: (typeof this.errorLevels)[number]): void {
-    this.loggingService.putLoggingSettingsChange({ logger: logger, level: level }).subscribe(() => {
+  changeLoglevel(logger: string | unknown, level: (typeof this.errorLevels)[number]): void {
+    this.loggingService.putLoggingSettingsChange({ logger: logger as string, level: level }).subscribe(() => {
       this.toastService.success(`Updated logger [${logger}] to [${level}]`);
       this.updateLogInformation();
     });

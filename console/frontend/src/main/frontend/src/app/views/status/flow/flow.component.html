@@ -13,6 +13,8 @@
     [nmRefreshInterval]="500"
   ></ng-mermaid>
   <ng-template #mermaidModalBtn>
-    <button class="btn btn-info"><i class="fa fa-share-alt-square"></i> Flow Diagram</button>
+    <button [appHasAccessToLink]="['getAdapterFlow']" class="btn btn-info">
+      <i class="fa fa-share-alt-square"></i> Flow Diagram
+    </button>
   </ng-template>
 </div>

@@ -144,7 +144,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     data: {
       breadcrumbs: 'Configurations > Manage',
-      linkName: 'manageConfiguration',
+      linkName: 'getAllConfigurations',
     },
   },
   {
@@ -164,7 +164,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     data: {
       breadcrumbs: 'Logging > Log Settings',
-      linkName: 'updateLogConfiguration',
+      linkName: ['getLogConfiguration', 'getLogDefinitions'],
     },
   },
   {

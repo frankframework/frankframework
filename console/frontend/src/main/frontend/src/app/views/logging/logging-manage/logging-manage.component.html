@@ -1,6 +1,6 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   <ngb-alert *ngIf="alert" type="danger" [dismissible]="false">alert</ngb-alert>
-  <div class="row">
+  <div class="row" [noAccessToLinkClassName]="'hidden'" appHasAccessToLink="getLogConfiguration">
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
         <div class="ibox-title">
@@ -15,8 +15,19 @@
                 </div>
                 <div class="col-md-4">
                   <div class="btn-group w-100" ngbDropdown>
-                    <button type="button" class="btn btn-default w-100" ngbDropdownToggle>
-                      {{ form.loglevel }} <span class="caret"></span>
+                    <button
+                      noAccessToLinkClassName="_"
+                      appHasAccessToLink="updateLogConfiguration"
+                      type="button"
+                      class="btn btn-default w-100"
+                      ngbDropdownToggle
+                    >
+                      {{ form.loglevel }}
+                      <span
+                        noAccessToLinkClassName="hidden"
+                        appHasAccessToLink="updateLogConfiguration"
+                        class="caret"
+                      ></span>
                     </button>
                     <ul role="menu" ngbDropdownMenu>
                       <li *ngFor="let loglevel of form.errorLevels">
@@ -32,7 +43,10 @@
                 </div>
                 <div class="col-md-3 col-xs-2">
                   <span class="form-control m-b no-border"
-                    ><input type="checkbox" [(ngModel)]="form.logIntermediaryResults"
+                    ><input
+                      type="checkbox"
+                      appHasAccessToLink="updateLogConfiguration"
+                      [(ngModel)]="form.logIntermediaryResults"
                   /></span>
                 </div>
               </div>
@@ -45,6 +59,7 @@
                     class="form-control m-b"
                     name="maxMessageLength"
                     type="text"
+                    appHasAccessToLink="updateLogConfiguration"
                     [(ngModel)]="form.maxMessageLength"
                   />
                 </div>
@@ -55,19 +70,28 @@
                 </div>
                 <div class="col-md-3 col-xs-2">
                   <span class="form-control m-b no-border"
-                    ><input type="checkbox" [(ngModel)]="form.enableDebugger"
+                    ><input
+                      type="checkbox"
+                      appHasAccessToLink="updateLogConfiguration"
+                      [(ngModel)]="form.enableDebugger"
                   /></span>
                 </div>
               </div>
               <div class="row">
                 <div class="col-md-offset-3 col-md-10">
-                  <button class="btn btn-info btn-w-m font-bold space-it-out" type="button" (click)="reset()">
+                  <button
+                    class="btn btn-info btn-w-m font-bold space-it-out"
+                    type="button"
+                    appHasAccessToLink="updateLogConfiguration"
+                    (click)="reset()"
+                  >
                     Reset
                   </button>
                   <button
                     [ladda]="updateDynamicParams"
                     class="btn btn-primary btn-w-m font-bold"
                     type="submit"
+                    appHasAccessToLink="updateLogConfiguration"
                     (click)="submit(form)"
                   >
                     Send
@@ -81,15 +105,25 @@
     </div>
   </div>
 
-  <div class="row">
+  <div class="row" noAccessToLinkClassName="hidden" appHasAccessToLink="getLogDefinitions">
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
         <div class="ibox-title">
           <div class="pull-right">
-            <button (click)="addLogger()" class="btn btn-xs btn-primary m-r-md" type="button">
+            <button
+              appHasAccessToLink="createLogDefinition"
+              (click)="addLogger()"
+              class="btn btn-xs btn-primary m-r-md"
+              type="button"
+            >
               <span>Add Logger</span>
             </button>
-            <button (click)="reconfigure()" class="btn btn-xs pull-right btn-warning m-r-xs" type="button">
+            <button
+              appHasAccessToLink="updateLogConfiguration"
+              (click)="reconfigure()"
+              class="btn btn-xs pull-right btn-warning m-r-xs"
+              type="button"
+            >
               <i class="fa fa-warning" aria-hidden="true"></i>
               <span> Reconfigure</span>
             </button>
@@ -113,8 +147,18 @@
               <tr *ngFor="let definition of definitions; index as index">
                 <td>{{ definition.name }}</td>
                 <td ngbDropdown [ngClass]="index > 4 && index >= definitions.length - 5 ? 'dropup' : ''">
-                  <button type="button" class="btn-invisible" ngbDropdownToggle>
-                    {{ definition.level }} <span class="caret"></span>
+                  <button
+                    appHasAccessToLink="updateLogDefinition"
+                    type="button"
+                    class="btn-invisible"
+                    ngbDropdownToggle
+                  >
+                    {{ definition.level }}
+                    <span
+                      [noAccessToLinkClassName]="'hidden'"
+                      appHasAccessToLink="updateLogDefinition"
+                      class="caret"
+                    ></span>
                   </button>
                   <ul role="menu" ngbDropdownMenu="">
                     <li *ngFor="let loglevel of errorLevels">
@@ -136,7 +180,7 @@
     </div>
   </div>
 
-  <div class="row">
+  <div class="row" noAccessToLinkClassName="hidden" appHasAccessToLink="getLogDefinitions">
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
         <div class="ibox-title">
@@ -159,8 +203,18 @@
               <tr *ngFor="let logger of loggers | keyvalue; index as index">
                 <td>{{ logger.key }}</td>
                 <td ngbDropdown [ngClass]="index > 4 && index >= loggersLength - 5 ? 'dropup' : ''">
-                  <button type="button" class="btn-invisible" ngbDropdownToggle>
-                    {{ logger.value }} <span class="caret"></span>
+                  <button
+                    appHasAccessToLink="updateLogDefinition"
+                    type="button"
+                    class="btn-invisible"
+                    ngbDropdownToggle
+                  >
+                    {{ logger.value }}
+                    <span
+                      noAccessToLinkClassName="hidden"
+                      appHasAccessToLink="updateLogDefinition"
+                      class="caret"
+                    ></span>
                   </button>
                   <ul role="menu" ngbDropdownMenu>
                     <li *ngFor="let loglevel of errorLevels">
