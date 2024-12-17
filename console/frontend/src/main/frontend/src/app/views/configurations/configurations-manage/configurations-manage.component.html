@@ -13,7 +13,7 @@
               <i class="fa fa-download" aria-hidden="true"></i><span> Download Active Configs</span>
             </button>
             <button
-              [appHasAccessToLink]="['uploadConfiguration']"
+              appHasAccessToLink="uploadConfiguration"
               routerLink="/configurations/upload"
               class="btn btn-xs btn-info"
               type="button"
@@ -43,9 +43,12 @@
                 [title]="conf.exception ?? ''"
               >
                 <td *ngIf="conf.type === 'DatabaseClassLoader'">
-                  <a [routerLink]="['/configurations/manage/', conf.name]" [state]="{ configuration: conf }">{{
-                    conf.name
-                  }}</a>
+                  <a
+                    appHasAccessToLink="manageConfiguration"
+                    [routerLink]="['/configurations/manage/', conf.name]"
+                    [state]="{ configuration: conf }"
+                    >{{ conf.name }}</a
+                  >
                 </td>
                 <td *ngIf="conf.type !== 'DatabaseClassLoader'">
                   {{ conf.name }}

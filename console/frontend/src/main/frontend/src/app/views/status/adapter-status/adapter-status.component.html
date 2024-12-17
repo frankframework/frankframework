@@ -160,8 +160,7 @@
                 <td></td>
                 <td>
                   <a
-                    [noAccessToLinkClassName]="'hidden'"
-                    [appHasAccessToLink]="['getConfigurationXML']"
+                    appHasAccessToLink="getConfigurationXML"
                     [queryParams]="{
                       name: adapter.configuration,
                       adapter: adapter.name,
@@ -242,7 +241,7 @@
                     Threads
                     <span *ngIf="receiver.threadCountControllable">
                       <button
-                        [appHasAccessToLink]="['updateReceiver']"
+                        appHasAccessToLink="updateReceiver"
                         (click)="addThread(adapter, receiver)"
                         [disabled]="receiver.state === 'loading'"
                         class="btn btn-xs btn-default m-l-xs"
@@ -252,7 +251,7 @@
                         <i class="fa fa-plus"></i> Inc
                       </button>
                       <button
-                        [appHasAccessToLink]="['updateReceiver']"
+                        appHasAccessToLink="updateReceiver"
                         (click)="removeThread(adapter, receiver)"
                         [disabled]="receiver.state === 'loading' || (receiver.maxThreadCount ?? 0) < 2"
                         class="btn btn-xs btn-default m-l-xs"
@@ -272,7 +271,7 @@
                           title="Browse messages with ProcessState: {{ store.name }}"
                         >
                           <a
-                            [appHasAccessToLink]="['browseMessages']"
+                            appHasAccessToLink="browseMessages"
                             [routerLink]="[
                               '',
                               adapter.configuration,
@@ -292,7 +291,7 @@
                         </span>
                       </span>
                       <button
-                        [appHasAccessToLink]="['updateReceiver']"
+                        appHasAccessToLink="updateReceiver"
                         (click)="stopReceiver(adapter, receiver)"
                         *ngIf="receiver.state === 'started' || receiver.state === 'exception_starting'"
                         class="btn btn-xs danger-hover"

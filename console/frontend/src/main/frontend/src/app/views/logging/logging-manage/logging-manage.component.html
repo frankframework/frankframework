@@ -1,6 +1,6 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   <ngb-alert *ngIf="alert" type="danger" [dismissible]="false">alert</ngb-alert>
-  <div class="row" [noAccessToLinkClassName]="'hidden'" appHasAccessToLink="getLogConfiguration">
+  <div class="row" noAccessToLinkClassName="hidden" appHasAccessToLink="getLogConfiguration">
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
         <div class="ibox-title">
@@ -155,7 +155,7 @@
                   >
                     {{ definition.level }}
                     <span
-                      [noAccessToLinkClassName]="'hidden'"
+                      noAccessToLinkClassName="hidden"
                       appHasAccessToLink="updateLogDefinition"
                       class="caret"
                     ></span>

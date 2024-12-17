@@ -25,6 +25,27 @@ app-pages-navigation {
   height: 60px;
 }
 
+/* DISABLED ELEMENTS (used for has access to link directive) */
+a.disabled {
+  color: #ccc;
+}
+
+.disabled {
+  position: relative;  /* Enable positioning context for pseudo-element */
+}
+
+.disabled::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: not-allowed;
+  pointer-events: auto;
+  z-index: 1;
+}
+
 /* SCROLL TO TOP BUTTON */
 .scroll-to-top {
   visibility: visible;
