@@ -37,7 +37,7 @@ public class DelineaCredentialFactoryTest {
 				.map(Objects::toString)
 				.toList();
 
-		when(client.getSecret(any())).thenReturn(secret1);
+		when(client.getSecret("1")).thenReturn(secret1);
 
 		// TODO mock client.getSecretsPage
 		when(client.getSecrets()).thenReturn(list);
