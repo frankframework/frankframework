@@ -1,5 +1,6 @@
 package org.frankframework.filesystem.exchange;
 
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -59,91 +60,104 @@ public class ExchangeFileSystemActorTest extends FileSystemActorTest<MailItemId,
 	@Test
 	@Disabled("charset cannot be wrong")
 	@Override
-	public void fileSystemActorReadWithCharsetUseIncompatible() throws Exception {
+	public void fileSystemActorReadWithCharsetUseIncompatible() {
 		// NO OP
+		fail();
 	}
 
 	@Test
 	@Disabled("wildcards are not supported")
 	@Override
-	public void fileSystemActorCopyActionTestWithExcludeWildCard() throws Exception {
+	public void fileSystemActorCopyActionTestWithExcludeWildCard() {
 		// NO OP: Wildcards are not supported
+		fail();
 	}
 
 	@Test
 	@Disabled("wildcards are not supported")
 	@Override
-	public void fileSystemActorCopyActionTestWithWildCard() throws Exception {
+	public void fileSystemActorCopyActionTestWithWildCard() {
 		// NO OP: Wildcards are not supported
+		fail();
 	}
 
 	@Test
 	@Disabled("wildcards are not supported")
 	@Override
-	public void fileSystemActorDeleteActionTestWithExcludeWildCard() throws Exception {
+	public void fileSystemActorDeleteActionTestWithExcludeWildCard() {
 		// NO OP: Wildcards are not supported
+		fail();
 	}
 
 	@Test
 	@Disabled("wildcards are not supported")
 	@Override
-	public void fileSystemActorDeleteActionTestWithWildCard() throws Exception {
+	public void fileSystemActorDeleteActionTestWithWildCard() {
 		// NO OP: Wildcards are not supported
+		fail();
 	}
 
 	@Test
 	@Disabled("wildcards are not supported")
 	@Override
-	public void fileSystemActorListActionTestInFolderWithBothWildCardAndExcludeWildCard() throws Exception {
+	public void fileSystemActorListActionTestInFolderWithBothWildCardAndExcludeWildCard() {
 		// NO OP: Wildcards are not supported
+		fail();
 	}
 
 	@Test
 	@Disabled("wildcards are not supported")
 	@Override
-	public void fileSystemActorListActionTestInFolderWithExcludeWildCard() throws Exception {
+	public void fileSystemActorListActionTestInFolderWithExcludeWildCard() {
 		// NO OP: Wildcards are not supported
+		fail();
 	}
 
 	@Test
 	@Disabled("wildcards are not supported")
 	@Override
-	public void fileSystemActorListActionTestInFolderWithWildCard() throws Exception {
+	public void fileSystemActorListActionTestInFolderWithWildCard() {
 		// NO OP: Wildcards are not supported
+		fail();
 	}
 
 	@Test
 	@Disabled("wildcards are not supported")
 	@Override
-	public void fileSystemActorMoveActionTestWithExcludeWildCard() throws Exception {
+	public void fileSystemActorMoveActionTestWithExcludeWildCard() {
 		// NO OP: Wildcards are not supported
+		fail();
 	}
 
 	@Test
 	@Disabled("wildcards are not supported")
 	@Override
-	public void fileSystemActorMoveActionTestWithWildCard() throws Exception {
+	public void fileSystemActorMoveActionTestWithWildCard() {
 		// NO OP: Wildcards are not supported
+		fail();
 	}
 
 	@Test
 	@Disabled("wildcards are not supported")
 	@Override
-	public void migrated_localFileSystemTestListExcludeWildcard() throws Exception {
+	public void migrated_localFileSystemTestListExcludeWildcard() {
 		// NO OP: Wildcards are not supported
+		fail();
 	}
 
 	@Test
 	@Disabled("wildcards are not supported")
 	@Override
-	public void migrated_localFileSystemTestListIncludeExcludeWildcard() throws Exception {
+	public void migrated_localFileSystemTestListIncludeExcludeWildcard() {
 		// NO OP: Wildcards are not supported
+		fail();
 	}
 
 	@Test
 	@Disabled("wildcards are not supported")
 	@Override
-	public void migrated_localFileSystemTestListWildcard() throws Exception {
+	public void migrated_localFileSystemTestListWildcard() {
 		// NO OP: Wildcards are not supported
+		fail();
 	}
 }

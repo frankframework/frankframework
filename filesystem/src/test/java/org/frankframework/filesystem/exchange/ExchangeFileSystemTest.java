@@ -2,6 +2,7 @@ package org.frankframework.filesystem.exchange;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.net.URL;
@@ -68,15 +69,17 @@ public class ExchangeFileSystemTest extends HelperedBasicFileSystemTest<MailItem
 	@Test
 	@Override
 	@Disabled("test needs to be rewritten to deal with file id's")
-	public void basicFileSystemTestListDirsAndOrFolders() throws Exception {
+	public void basicFileSystemTestListDirsAndOrFolders() {
 		// NO OP
+		fail();
 	}
 
 	@Test
 	@Override
 	@Disabled("test never fails because we ignore the charset attribute completely")
-	public void basicFileSystemTestReadSpecialCharsFails() throws Exception {
+	public void basicFileSystemTestReadSpecialCharsFails() {
 		// NO OP
+		fail();
 	}
 
 	@Test

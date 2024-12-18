@@ -219,10 +219,10 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	private MailFolder findSubFolder(List<MailFolder> childFolders, String childFolderName) throws FileSystemException {
-		for (MailFolder mailFolder : childFolders) {
-			if (childFolderName.equalsIgnoreCase(mailFolder.getName())) {
-				log.debug("found id [{}] beloging to subFolder [{}]", mailFolder::getId, ()->childFolderName);
-				return mailFolder;
+		for (MailFolder childMailFolder : childFolders) {
+			if (childFolderName.equalsIgnoreCase(childMailFolder.getName())) {
+				log.debug("found id [{}] beloging to subFolder [{}]", childMailFolder::getId, ()->childFolderName);
+				return childMailFolder;
 			}
 		}
 

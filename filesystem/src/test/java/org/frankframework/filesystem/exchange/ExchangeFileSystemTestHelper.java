@@ -98,7 +98,7 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 		}
 	}
 
-	private void cleanMailFolder() throws Exception {
+	private void cleanMailFolder() {
 		List<MailFolder> folders = baseMailFolder.childFolders().get().getValue();
 		for (MailFolder mailFolder : folders) {
 			deleteFolderById(mailFolder.getId());
