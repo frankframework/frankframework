@@ -6,23 +6,11 @@
 				serviceName="ibis4test-Base64Pipe" />
 		</receiver>
 		<pipeline>
-			<exits>
-				<exit path="EXIT" state="success" />
-			</exits>
-			<pipe name="Read" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
-				action="read"/>
-			<pipe name="Encode" className="nl.nn.adapterframework.pipes.Base64Pipe"
-				storeResultInSessionKey="base64"/>
-			<pipe name="Send"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
-				storeResultInSessionKey="fileOut" >
-				<sender className="nl.nn.adapterframework.senders.IbisJavaSender"
-					serviceName="testtool-base64pipe" />
-			</pipe>
-			<pipe name="Decode" className="nl.nn.adapterframework.pipes.Base64Pipe"
-				direction="decode"/>
-			<pipe name="Write" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
-				action="write" filename="${testdata.dir}/b64/file_out.bin"/>
+			<SenderPipe name="sender">
+				<MqttSender name="mqttSender" brokerUrl="tcp://localhost:1883" topic="testTopic" clientId="testClientId">
+
+				</MqttSender>
+			</SenderPipe>
 		</pipeline>
 	</adapter>
 </module>

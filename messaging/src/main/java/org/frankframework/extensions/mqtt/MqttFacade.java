@@ -18,9 +18,14 @@ package org.frankframework.extensions.mqtt;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
+
+import org.frankframework.doc.Mandatory;
+
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -69,9 +74,6 @@ public class MqttFacade implements HasPhysicalDestination, IConfigurable {
 		if (StringUtils.isEmpty(getTopic())) {
 			throw new ConfigurationException("topic must be specified");
 		}
-		if (StringUtils.isEmpty(getPersistenceDirectory())) {
-			throw new ConfigurationException("persistenceDirectory must be specified");
-		}
 		connectOptions = new MqttConnectOptions();
 		connectOptions.setCleanSession(isCleanSession());
 		connectOptions.setAutomaticReconnect(isAutomaticReconnect());
@@ -85,12 +87,19 @@ public class MqttFacade implements HasPhysicalDestination, IConfigurable {
 			connectOptions.setPassword(credentialFactory.getPassword().toCharArray());
 		}
 
-		MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(getPersistenceDirectory());
 		try {
-			client = new MqttClient(brokerUrl, clientId, dataStore);
+			client = new MqttClient(brokerUrl, clientId, getDataStore());
 		} catch (MqttException e) {
 			throw new ConfigurationException("Could not create client", e);
 		}
+	}
+
+	private MqttClientPersistence getDataStore() {
+		if (StringUtils.isEmpty(getPersistenceDirectory())) {
+			return new MemoryPersistence();
+		}
+
+		return new MqttDefaultFilePersistence(getPersistenceDirectory());
 	}
 
 	public void start() {
@@ -143,16 +152,19 @@ public class MqttFacade implements HasPhysicalDestination, IConfigurable {
 	}
 
 	/** see <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank">MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)</a> */
+	@Mandatory
 	public void setClientId(String clientId) {
 		this.clientId = clientId;
 	}
 
 	/** see <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank">MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)</a> */
+	@Mandatory
 	public void setBrokerUrl(String brokerUrl) {
 		this.brokerUrl = brokerUrl;
 	}
 
 	/** see <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#subscribe-java.lang.String-" target="_blank">MqttClient.subscribe(java.lang.String topicFilter)</a> */
+	@Mandatory
 	public void setTopic(String topic) {
 		this.topic = topic;
 	}
@@ -171,7 +183,9 @@ public class MqttFacade implements HasPhysicalDestination, IConfigurable {
 		this.cleanSession = cleanSession;
 	}
 
-	/** see <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/persist/MqttDefaultFilePersistence.html" target="_blank">MqttDefaultFilePersistence</a> and <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html" target="_blank">MqttClient</a> */
+	/**
+	 * Stores inbound and outbound messages while they are in flight on disk storage. Recommended when reliability is paramount. Messages are persisted in memory when empty.
+	 * see <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/persist/MqttDefaultFilePersistence.html" target="_blank">MqttDefaultFilePersistence</a> and <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html" target="_blank">MqttClient</a> */
 	public void setPersistenceDirectory(String persistenceDirectory) {
 		this.persistenceDirectory = persistenceDirectory;
 	}
