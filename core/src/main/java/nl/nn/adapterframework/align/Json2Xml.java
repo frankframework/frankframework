@@ -18,6 +18,7 @@ package nl.nn.adapterframework.align;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -37,13 +38,22 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonString;
 import jakarta.json.JsonStructure;
 import jakarta.json.JsonValue;
-import lombok.Getter;
-import lombok.Setter;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
+import org.apache.xerces.xs.XSModelGroup;
+import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSParticle;
+import org.apache.xerces.xs.XSTerm;
+import org.apache.xerces.xs.XSTypeDefinition;
+import org.apache.xerces.xs.XSWildcard;
 import org.xml.sax.SAXException;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * XML Schema guided JSON to XML converter;
@@ -54,6 +64,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 
 	public static final String MSG_FULL_INPUT_IN_STRICT_COMPACTING_MODE="straight json found while expecting compact arrays and strict syntax checking";
 	public static final String MSG_EXPECTED_SINGLE_ELEMENT="did not expect array, but single element";
+	public static final String XSD_WILDCARD_ELEMENT_TOKEN = "*";
 
 	private boolean insertElementContainerElements;
 	private boolean strictSyntax;
@@ -348,22 +359,26 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	}
 
 	/**
-	 * Create a copy of the JSON node that contains only keys from the allowedNames set in the top level.
+	 * Create a copy of the JSON node that contains only keys from the allowedChildren set in the top level.
 	 *
 	 * @param node Node to copy
-	 * @param allowedNames Names of child-nodes to keep in the copy
+	 * @param allowedChildren Names of child-nodes to keep in the copy
 	 * @return Copy of the JSON node.
 	 */
 	@Override
-	protected JsonValue filterNodeChildren(JsonValue node, Set<String> allowedNames) {
+	protected JsonValue filterNodeChildren(JsonValue node, List<XSParticle> allowedChildren) {
 		if (node instanceof JsonArray) {
-			return copyJsonArray((JsonArray)node, allowedNames);
+			return copyJsonArray((JsonArray)node, allowedChildren);
 		} else if (node instanceof JsonObject) {
-			return copyJsonObject((JsonObject)node, allowedNames);
+			return copyJsonObject((JsonObject)node, allowedChildren);
 		} else return node;
 	}
 
-	private JsonValue copyJsonObject(JsonObject node, Set<String> allowedNames) {
+	private JsonValue copyJsonObject(JsonObject node, List<XSParticle> allowedChildren) {
+		Set<String> allowedNames = allowedChildren
+				.stream()
+				.map(p -> p.getTerm().getName())
+				.collect(Collectors.toSet());
 		JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
 		node.forEach((key, value) -> {
 			if (allowedNames.contains(key)) objectBuilder.add(key, value);
@@ -373,19 +388,57 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		// This is perhaps not the cleanest way to make sure the substitutions are performed but this requires the least
 		// amount of code changes in other parts.
 		if (sp != null) {
-			allowedNames.forEach(name -> {
+			allowedChildren.forEach(childParticle -> {
+				String name = childParticle.getTerm().getName();
 				if (!node.containsKey(name) && sp.hasSubstitutionsFor(getContext(), name)) {
 					objectBuilder.add(name, getSubstitutedChild(node, name));
+				} else if (hasSubstitutionForChild(childParticle)) {
+					// A deeper child-node does have a substitution for this element, so add an empty object for it to further parse at later stage.
+					objectBuilder.add(name, Json.createObjectBuilder().build());
 				}
 			});
 		}
 		return objectBuilder.build();
 	}
 
-	private JsonValue copyJsonArray(JsonArray node, Set<String> allowedNames) {
+	private boolean hasSubstitutionForChild(XSParticle childParticle) {
+		// Find a recursive list of all child-names of this type to see if any of these names has a substitution from parameters
+		Set<String> names = new HashSet<>();
+		getChildElementNamesRecursive(childParticle, names, new HashSet<>());
+		return names.contains(XSD_WILDCARD_ELEMENT_TOKEN) || names.stream().anyMatch(childName -> sp.hasSubstitutionsFor(getContext(), childName));
+	}
+
+	private void getChildElementNamesRecursive(XSParticle particle, Set<String> names, Set<XSParticle> visitedTypes) {
+		XSTerm term = particle.getTerm();
+		names.add(term.getName());
+		if (visitedTypes.contains(particle)) {
+			return;
+		}
+		visitedTypes.add(particle);
+		if (term instanceof XSModelGroup) {
+			XSObjectList modelGroupParticles = ((XSModelGroup)term).getParticles();
+			for (Object childObject : modelGroupParticles) {
+				XSParticle childParticle = (XSParticle) childObject;
+				getChildElementNamesRecursive(childParticle, names, visitedTypes);
+			}
+		} else if (term instanceof XSElementDeclaration) {
+			XSTypeDefinition typeDefinition = ((XSElementDeclaration)term).getTypeDefinition();
+			if (typeDefinition.getTypeCategory()!=XSTypeDefinition.SIMPLE_TYPE) {
+				XSComplexTypeDefinition complexTypeDefinition = (XSComplexTypeDefinition) typeDefinition;
+				getChildElementNamesRecursive(complexTypeDefinition.getParticle(), names, visitedTypes);
+			}
+		} else if (term instanceof XSWildcard) {
+			XSWildcard wildcard = (XSWildcard)term;
+			log.debug("XSD contains wildcard element [{}], constraint [{}]/[{}]", term.getName(), wildcard.getConstraintType(), wildcard.getNsConstraintList());
+			// TODO: Not sure what to do here to realistically restrict possible child-elements and I'm afraid it can balloon into a lot of unneeded code.
+			names.add(XSD_WILDCARD_ELEMENT_TOKEN);
+		}
+	}
+
+	private JsonValue copyJsonArray(JsonArray node, List<XSParticle> allowedChildren) {
 		JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
 		node.forEach(value -> {
-			arrayBuilder.add(filterNodeChildren(value, allowedNames));
+			arrayBuilder.add(filterNodeChildren(value, allowedChildren));
 		});
 		return arrayBuilder.build();
 	}

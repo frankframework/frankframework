@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.pipes;
 
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
+import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreWhitespaces;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -809,5 +810,36 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		System.err.println(result.getResult().asString());
 		String expected = TestFileUtils.getTestFile("/Validation/AttributesOnDifferentLevels/output-" + input + ".xml");
 		assertXmlEquals(expected, result.getResult().asString());
+	}
+
+	@Test
+	public void testExpandParameters() throws Exception {
+		// Arrange
+		pipe.setName("testExpandParameters");
+		pipe.setSchema("/Validation/Json2Xml/ParameterSubstitution/Main.xsd");
+		pipe.setThrowException(true);
+		pipe.setOutputFormat(DocumentFormat.JSON);
+		pipe.setRoot("GetDocumentAttributes_Error");
+		pipe.setDeepSearch(true);
+
+		pipe.addParameter(new Parameter("type", "/errors/"));
+		pipe.addParameter(ParameterBuilder.create().withName("title").withSessionKey("errorReason"));
+		pipe.addParameter(ParameterBuilder.create().withName("status").withSessionKey("errorCode"));
+		pipe.addParameter(ParameterBuilder.create().withName("detail").withSessionKey("errorDetailText"));
+		pipe.addParameter(new Parameter("instance", "/archiving/documents"));
+
+		pipe.configure();
+		pipe.start();
+
+		session.put("errorReason", "More than one document found");
+		session.put("errorCode", "DATA_ERROR");
+		session.put("errorDetailText", "The Devil's In The Details");
+
+		// Act
+		PipeRunResult result = pipe.doPipe(Message.asMessage("{}"), session);
+
+		// Assert
+		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/ParameterSubstitution/expected_output.json");
+		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
 	}
 }
