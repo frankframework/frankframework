@@ -23,4 +23,5 @@ public interface SubstitutionProvider<V> {
 	V getOverride(AlignmentContext context);
 	V getDefault(AlignmentContext context);
 
+	boolean isNotEmpty();
 }

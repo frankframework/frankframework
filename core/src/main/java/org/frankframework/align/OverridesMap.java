@@ -94,4 +94,8 @@ public class OverridesMap<V> extends SubstitutionNode<V> implements Substitution
 		return null;
 	}
 
+	@Override
+	public boolean isNotEmpty() {
+		return !allParents.isEmpty();
+	}
 }
