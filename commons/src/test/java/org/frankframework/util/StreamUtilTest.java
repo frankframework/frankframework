@@ -28,6 +28,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 public class StreamUtilTest {
 
 	@TempDir
@@ -58,7 +61,7 @@ public class StreamUtilTest {
 		int i;
 		InputStream inputStream = input.openStream();
 		while ((i = inputStream.read()) >= 0) {
-			System.out.print(Integer.toHexString(i) + " ");
+			log.debug(Integer.toHexString(i) + " ");
 		}
 
 		Reader reader;

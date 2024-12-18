@@ -33,7 +33,7 @@ class ClassUtilsTest {
 
 				() -> assertThrows(IllegalArgumentException.class, () -> ClassUtils.convertToType(Object.class, "dummy")),
 				() -> assertThrows(IllegalArgumentException.class, () -> ClassUtils.convertToType(Long.class, "dummy")),
-				() -> assertThrows(IllegalArgumentException.class, () -> ClassUtils.convertToType(int.class, "")) //Empty string
+				() -> assertThrows(IllegalArgumentException.class, () -> ClassUtils.convertToType(int.class, "")) // Empty string
 		);
 	}
 
@@ -122,10 +122,12 @@ class ClassUtilsTest {
 		private @Getter TestEnum[] testEnums;
 		private @Getter String[] testStrings;
 
+		@SuppressWarnings("unused") // not unused, but used with reflection!
 		public void setEnumVarArgs(TestEnum... testEnum) {
 			this.testEnums = testEnum;
 		}
 
+		@SuppressWarnings("unused") // not unused, but used with reflection!
 		public void setTestStrings(String... testStrings) {
 			this.testStrings = testStrings;
 		}
