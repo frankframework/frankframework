@@ -21,12 +21,12 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
+import org.apache.xerces.xs.XSParticle;
 import org.frankframework.align.Properties2Xml.PropertyNode;
 import org.xml.sax.SAXException;
 
@@ -60,7 +60,7 @@ public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<Strin
 	}
 
 	@Override
-	PropertyNode filterNodeChildren(PropertyNode node, Set<String> allowedNames) {
+	PropertyNode filterNodeChildren(PropertyNode node, List<XSParticle> allowedChildren) {
 		// Dummy-implementation since this is basically unused code
 		return node;
 	}
