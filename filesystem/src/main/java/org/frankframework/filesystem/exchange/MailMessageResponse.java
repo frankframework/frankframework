@@ -36,11 +36,11 @@ import org.frankframework.filesystem.MsalClientAdapter.GraphClient;
 public class MailMessageResponse {
 	private static final int MAX_ENTRIES_PER_CALL = 20;
 	private static final String TRUSTED_URL_PREFIX = "https://graph.microsoft.com/v1.0/";
-	private static final String MESSAGES = "%s/messages?$top=%d&$skip=0";
-	private static final String MESSAGE = "%s/messages/%s";
+	private static final String MESSAGES_URL_SUFFIX = "%s/messages?$top=%d&$skip=0";
+	private static final String MESSAGE_URL_SUFFIX = "%s/messages/%s";
 
 	public static List<MailMessage> get(GraphClient client, MailFolder folder, int limit) throws IOException {
-		URI uri = URI.create(MESSAGES.formatted(folder.getUrl(), MAX_ENTRIES_PER_CALL));
+		URI uri = URI.create(MESSAGES_URL_SUFFIX.formatted(folder.getUrl(), MAX_ENTRIES_PER_CALL));
 		List<MailMessage> folders = new ArrayList<>();
 		getRecursive(client, uri, folder, folders, limit - MAX_ENTRIES_PER_CALL);
 		return folders;
@@ -69,7 +69,7 @@ public class MailMessageResponse {
 	 * Resolves mail message
 	 */
 	public static MailMessage get(GraphClient client, MailMessage filePointer) throws IOException {
-		String composedUrl = MESSAGE.formatted(filePointer.getMailFolder().getUrl(), filePointer.getId());
+		String composedUrl = MESSAGE_URL_SUFFIX.formatted(filePointer.getMailFolder().getUrl(), filePointer.getId());
 		String generatedUrl = filePointer.getUrl();
 		if (!composedUrl.equals(generatedUrl)) {
 			throw new IOException("url mismatch");
@@ -83,7 +83,7 @@ public class MailMessageResponse {
 	}
 
 	public static MailMessage move(GraphClient client, MailMessage filePointer, MailFolder destinationFolder) throws IOException {
-		String composedUrl = MESSAGE.formatted(filePointer.getMailFolder().getUrl(), filePointer.getId());
+		String composedUrl = MESSAGE_URL_SUFFIX.formatted(filePointer.getMailFolder().getUrl(), filePointer.getId());
 		String generatedUrl = filePointer.getUrl();
 		if (!composedUrl.equals(generatedUrl)) {
 			throw new IOException("url mismatch");
@@ -101,7 +101,7 @@ public class MailMessageResponse {
 	}
 
 	public static MailMessage copy(GraphClient client, MailMessage filePointer, MailFolder destinationFolder) throws IOException {
-		String composedUrl = MESSAGE.formatted(filePointer.getMailFolder().getUrl(), filePointer.getId());
+		String composedUrl = MESSAGE_URL_SUFFIX.formatted(filePointer.getMailFolder().getUrl(), filePointer.getId());
 		String generatedUrl = filePointer.getUrl();
 		if (!composedUrl.equals(generatedUrl)) {
 			throw new IOException("url mismatch");
@@ -119,7 +119,7 @@ public class MailMessageResponse {
 	}
 
 	public static void delete(GraphClient client, MailMessage filePointer) throws IOException {
-		String composedUrl = MESSAGE.formatted(filePointer.getMailFolder().getUrl(), filePointer.getId());
+		String composedUrl = MESSAGE_URL_SUFFIX.formatted(filePointer.getMailFolder().getUrl(), filePointer.getId());
 		String generatedUrl = filePointer.getUrl();
 		if (!composedUrl.equals(generatedUrl)) {
 			throw new IOException("url mismatch");

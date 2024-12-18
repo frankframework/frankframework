@@ -130,7 +130,7 @@ public class MailMessage extends MailItemId {
 				InternetAddress iaddress = new InternetAddress(address, name);
 				return iaddress.toUnicodeString();
 			} catch (UnsupportedEncodingException e) {
-				return address.toString();
+				return address;
 			}
 		}
 

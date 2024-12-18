@@ -24,10 +24,6 @@ import lombok.Setter;
 @Setter
 public class MailFolder extends MailItemId {
 
-	public MailFolder() {
-		// public constructor for Jackson
-	}
-
 	@JsonProperty("displayName")
 	private String name;
 

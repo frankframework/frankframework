@@ -116,7 +116,18 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 		super.start();
 	}
 
-	public GraphClient greateGraphClient(String tenantId, CredentialFactory credentials) throws MalformedURLException {
+	@Override
+	public void stop() {
+		if (executor != null) {
+			executor.shutdown();
+		}
+		if (client != null) {
+			client = null;
+		}
+		super.stop();
+	}
+
+	public GraphClient createGraphClient(String tenantId, CredentialFactory credentials) throws MalformedURLException {
 		if (getHttpClient() == null) {
 			throw new LifecycleException("not yet started");
 		}
@@ -161,7 +172,8 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 		public <T> T execute(HttpRequestBase httpRequestBase, Class<T> dto) throws IOException {
 			httpRequestBase.addHeader("Authorization", msal.getAuthenticationToken());
 			HttpResponse response = msal.execute(httpRequestBase.getURI(), httpRequestBase, null);
-			HttpStatus status = HttpStatus.resolve(response.getStatusLine().getStatusCode());
+			HttpStatus status = HttpStatus.valueOf(response.getStatusLine().getStatusCode());
+
 			if (status.is2xxSuccessful()) {
 				HttpEntity entity = response.getEntity();
 				if (entity != null && dto != null) {
@@ -176,6 +188,7 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 				}
 				return null;
 			}
+
 			throw new IOException(status.getReasonPhrase());
 		}
 

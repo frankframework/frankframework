@@ -22,10 +22,6 @@ import lombok.Setter;
 @Setter
 public class MailItemId {
 
-	public MailItemId() {
-		// public constructor for Jackson
-	}
-
 	private MailFolder mailFolder;
 
 	private String url;

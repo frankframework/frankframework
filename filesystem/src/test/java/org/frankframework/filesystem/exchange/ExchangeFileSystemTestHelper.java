@@ -235,7 +235,7 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public void _deleteFolder(String folderName) throws Exception {
+	public void _deleteFolder(String folderName) {
 		if (StringUtils.isNotBlank(folderName)) {
 			MailFolder folder = findFolder(folderName);
 			if(folder != null) {
@@ -244,7 +244,7 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 		}
 	}
 
-	private void deleteFolderById(String mailFolderId) throws Exception {
+	private void deleteFolderById(String mailFolderId) {
 		MailFolderItemRequestBuilder mirb = getRequestBuilder().mailFolders().byMailFolderId(mailFolderId);
 		mirb.delete();
 	}

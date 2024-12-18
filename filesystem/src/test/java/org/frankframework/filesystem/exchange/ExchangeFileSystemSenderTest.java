@@ -13,7 +13,7 @@ import org.frankframework.util.PropertyLoader;
 public class ExchangeFileSystemSenderTest extends FileSystemSenderTest<ExchangeFileSystemSender, MailItemId, ExchangeFileSystem> {
 
 	private static TestConfiguration configuration = new TestConfiguration();
-	private static PropertyLoader PROPERTIES;
+	private static PropertyLoader properties;
 
 	private static String mailAddress;
 	private static String clientId;
@@ -21,21 +21,21 @@ public class ExchangeFileSystemSenderTest extends FileSystemSenderTest<ExchangeF
 	private static String tenantId;
 
 	// Should ideally never be `inbox` as it removes all mail items!
-	private String baseFolder = PROPERTIES.getProperty("baseFolder", "Inbox/iafTest");
+	private String baseFolder = properties.getProperty("baseFolder", "Inbox/iafTest");
 
 	@BeforeAll
 	public static void beforeAll() {
 		try {
-			PROPERTIES = new PropertyLoader("azure-credentials.properties");
+			properties = new PropertyLoader("azure-credentials.properties");
 
-			mailAddress = PROPERTIES.getProperty("mailAddress");
-			clientId = PROPERTIES.getProperty("clientId");
-			clientSecret = PROPERTIES.getProperty("clientSecret");
-			tenantId = PROPERTIES.getProperty("tenantId");
+			mailAddress = properties.getProperty("mailAddress");
+			clientId = properties.getProperty("clientId");
+			clientSecret = properties.getProperty("clientSecret");
+			tenantId = properties.getProperty("tenantId");
 		} catch (Exception e) {
 			// file not found
 		}
-		assumeTrue(PROPERTIES != null);
+		assumeTrue(properties != null);
 	}
 
 	@Override

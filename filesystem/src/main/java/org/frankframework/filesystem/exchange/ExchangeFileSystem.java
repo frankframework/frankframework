@@ -170,24 +170,24 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 			super.open();
 
 			msalClientAdapter.start();
-			client = msalClientAdapter.greateGraphClient(tenantId, getCredentials());
+			client = msalClientAdapter.createGraphClient(tenantId, getCredentials());
 
 			List<String> folder = StringUtil.split(baseFolder, "/");
 
 			String rootFolder = folder.remove(0);
 			List<MailFolder> folders = client.getMailFolders(mailAddress);
-			MailFolder mailFolder = folders.stream()
+			MailFolder foundMailFolder = folders.stream()
 					.filter(t -> rootFolder.equalsIgnoreCase(t.getName()))
 					.findFirst()
 					.orElseThrow(() -> {
 				throw new LifecycleException("unable to find folder [%s] in mailbox [%s]".formatted(rootFolder, mailAddress));
 			});
-			log.trace("found id [{}] beloging to rootFolder [{}]", mailFolder.getId(), rootFolder);
+			log.trace("found id [{}] beloging to rootFolder [{}]", foundMailFolder.getId(), rootFolder);
 
-			if (folder.size() == 0) {
-				this.mailFolder = mailFolder;
+			if (folder.isEmpty()) {
+				this.mailFolder = foundMailFolder;
 			} else {
-				this.mailFolder = findSubFolder(mailFolder, String.join(",", folder));
+				this.mailFolder = findSubFolder(foundMailFolder, String.join(",", folder));
 			}
 		} catch (FileSystemException | IOException e) {
 			throw new LifecycleException("Failed to initialize Microsoft Authentication client.", e);
