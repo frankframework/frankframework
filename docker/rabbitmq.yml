@@ -1,0 +1,15 @@
+services:
+  ff-test:
+    build: docker/Tomcat/test
+    environment:
+      jms.provider.default: rabbitmq
+      jms.destination.suffix: -rabbitmq
+      jms.hostname: rabbitmq
+      active.jms: true
+    ports:
+      - "8080:8080"
+
+  rabbitmq:
+    image: myrabbitmq:latest
+    ports:
+      - "5672:5672"

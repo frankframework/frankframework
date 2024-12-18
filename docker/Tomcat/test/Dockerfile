@@ -1,4 +1,4 @@
-ARG FF_VERSION=latest
+ARG FF_VERSION=9.0.0-SNAPSHOT
 # Make repository variable so iaf-test can use a private image
 ARG REGISTRY=nexus.frankframework.org
 FROM ${REGISTRY}/frankframework:${FF_VERSION}
