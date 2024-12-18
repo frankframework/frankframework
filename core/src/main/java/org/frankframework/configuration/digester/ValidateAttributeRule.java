@@ -63,7 +63,7 @@ public class ValidateAttributeRule extends AbstractDigesterRule {
 		if (pd != null) {
 			m = pd.getWriteMethod();
 		}
-		if (m == null) { //validate if the attribute exists
+		if (m == null) { // Validate if the attribute exists
 			addLocalWarning("does not have an attribute ["+name+"] to set to value ["+value+"]");
 			return;
 		}
@@ -73,15 +73,24 @@ public class ValidateAttributeRule extends AbstractDigesterRule {
 			return;
 		}
 
-		checkDeprecationAndConfigurationWarning(name, value, m); //check if the setter or enum value is deprecated
-		checkIfMethodIsMarkedAsUnsafe(m, name);
+		checkDeprecationAndConfigurationWarning(name, value, m); // Check if the setter or enum value is deprecated
 
-		if (value.contains(StringResolver.DELIM_START) && value.contains(StringResolver.DELIM_STOP)) { //If value contains a property, resolve it
+		if (value.contains(StringResolver.DELIM_START) && value.contains(StringResolver.DELIM_STOP)) { // If value contains a property, resolve it
 			value = resolveValue(value);
-		} else { //Only check for default values for non-property values
+		} else { // Only check for default values for non-property values
 			Method readMethod = pd.getReadMethod();
-			if(readMethod != null) { //And if a read method (getter) exists
-				checkTypeCompatibility(readMethod, name, value, attributes);
+			if(readMethod != null) { // And if a read method (getter) exists
+				Object defaultValue = getDefaultValue(readMethod, name, value, attributes);
+
+				if (equals(defaultValue, value)) {
+					addSuppressibleWarning("attribute ["+name+"] already has a default value ["+value+"]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY);
+				} else {
+					// Contains read method, value does not equal the default, check if method is unsafe.
+					checkIfMethodIsMarkedAsUnsafe(m, name);
+				}
+			} else {
+				// No read method, thus no default value, always check if method is unsafe.
+				checkIfMethodIsMarkedAsUnsafe(m, name);
 			}
 		}
 
@@ -108,21 +117,21 @@ public class ValidateAttributeRule extends AbstractDigesterRule {
 	 * - Does not equal the default value (parsed by invoking the getter, if present).
 	 * If no Getter is present, tries to match the type to the Setters first argument.
 	 */
-	private void checkTypeCompatibility(Method readMethod, String name, String value, Map<String, String> attrs) {
+	@Nullable
+	private Object getDefaultValue(Method readMethod, String name, String value, Map<String, String> attrs) {
 		try {
 			Object bean = getBean();
 			Object defaultValue = readMethod.invoke(bean);
 			if (bean instanceof HasSpecialDefaultValues values) {
 				defaultValue = values.getSpecialDefaultValue(name, defaultValue, attrs);
 			}
-			if (equals(defaultValue, value)) {
-				addSuppressibleWarning("attribute ["+name+"] already has a default value ["+value+"]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY);
-			}
+			return defaultValue;
 			// if the default value is null, then it can mean that the real default value is determined in configure(),
 			// so we cannot assume setting it to "" has no effect
 		} catch (Exception e) {
 			addLocalWarning("is unable to parse attribute ["+name+"] value ["+value+"] to method ["+readMethod.getName()+"] with type ["+readMethod.getReturnType()+"]");
 			log.warn("Error on getting default for object [{}] with method [{}] attribute [{}] value [{}]", getObjectName(), readMethod.getName(), name, value, e);
+			return null;
 		}
 	}
 
