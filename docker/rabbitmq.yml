@@ -1,14 +1,11 @@
 services:
   ff-test:
-    build: docker/Tomcat/test
     environment:
       jms.provider.default: rabbitmq
       jms.destination.suffix: -rabbitmq
       jms.hostname: rabbitmq
       active.jms: true
-    ports:
-      - "8080:8080"
-
+      transactionmanager.narayana.jms.connection.maxPoolSize: 1
   rabbitmq:
     image: myrabbitmq:latest
     ports:

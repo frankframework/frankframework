@@ -107,7 +107,7 @@ jdbc:
 #    url: "tcp://${jms.hostname:-localhost}:61615"
 
 jms:
-  - name: "rabbitmq"
+  - name: "qcf-rabbitmq"
     type: "com.rabbitmq.jms.admin.RMQConnectionFactory"
     url: "amqp://rabbitmq:5672/"
     properties:
@@ -115,4 +115,3 @@ jms:
       host: "rabbitmq"
       username: "guest"
       password: "guest"
-
