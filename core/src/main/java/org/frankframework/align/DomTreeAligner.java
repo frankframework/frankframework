@@ -27,6 +27,7 @@ import javax.xml.validation.ValidatorHandler;
 
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
+import org.apache.xerces.xs.XSParticle;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -55,7 +56,7 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 	}
 
 	@Override
-	Node filterNodeChildren(Node node, Set<String> allowedNames) {
+	Node filterNodeChildren(Node node, List<XSParticle> allowedChildren) {
 		// Dummy implementation, since this is basically dead code / deep search is not relevant to this class.
 		return node;
 	}

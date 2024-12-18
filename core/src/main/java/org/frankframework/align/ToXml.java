@@ -417,10 +417,12 @@ public abstract class ToXml<C,N> extends XmlAligner {
 			return false;
 		}
 		XSComplexTypeDefinition complexTypeDefinition = (XSComplexTypeDefinition) typeDefinition;
-		Set<String> allowedNames = getNamesOfXsdChildElements(complexTypeDefinition);
-		allowedNames.removeAll(processedChildren);
+		List<XSParticle> allowedParticles = getXsdChildParticles(complexTypeDefinition).stream()
+				.filter(p -> !processedChildren.contains(p.getTerm().getName()))
+				.collect(Collectors.toList());
 
-		N copy = filterNodeChildren(node, allowedNames);
+
+		N copy = filterNodeChildren(node, allowedParticles);
 
 		if (isEmptyNode(copy) && !mandatory) {
 			return false;
@@ -429,17 +431,13 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		return true;
 	}
 
-	private static Set<String> getNamesOfXsdChildElements(XSComplexTypeDefinition complexTypeDefinition) {
+	private static List<XSParticle> getXsdChildParticles(XSComplexTypeDefinition complexTypeDefinition) {
 		XSTerm term = complexTypeDefinition.getParticle().getTerm();
-		if (!(term instanceof XSModelGroup)) {
-			return Collections.emptySet();
+		if (term instanceof XSModelGroup) {
+			//noinspection unchecked
+			return ((XSModelGroup)term).getParticles();
 		}
-		XSModelGroup modelGroup = (XSModelGroup) term;
-		@SuppressWarnings("unchecked")
-		List<XSParticle> particles = modelGroup.getParticles();
-		return particles.stream()
-				.map(p -> p.getTerm().getName())
-				.collect(Collectors.toSet());
+		return Collections.emptyList();
 	}
 
 	/**
@@ -456,7 +454,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	 * @param allowedNames Names of child-nodes to keep in the copy
 	 * @return Copy of the node
 	 */
-	abstract N filterNodeChildren(N node, Set<String> allowedNames);
+	abstract N filterNodeChildren(N node, List<XSParticle> allowedChildren);
 
 	public List<XSParticle> getBestChildElementPath(XSElementDeclaration elementDeclaration, N node, boolean silent) throws SAXException {
 		XSTypeDefinition typeDefinition = elementDeclaration.getTypeDefinition();
