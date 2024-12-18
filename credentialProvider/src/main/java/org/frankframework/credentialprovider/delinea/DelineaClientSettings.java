@@ -15,7 +15,7 @@
 */
 package org.frankframework.credentialprovider.delinea;
 
-import io.micrometer.common.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Contains the settings for the SecretServer configuration.

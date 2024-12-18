@@ -62,7 +62,7 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 		if ((StringUtils.isEmpty(delineaClientSettings.apiRootUrlTemplate()) || StringUtils.isEmpty(delineaClientSettings.tokenUrlTemplate()))
 				&& (StringUtils.isEmpty(delineaClientSettings.apiRootUrl()) || StringUtils.isEmpty(delineaClientSettings.oauthTokenUrl()))
 				&& StringUtils.isEmpty(delineaClientSettings.tenant())) {
-			throw new IllegalArgumentException("Either secret_server.tenant or both of either secret_server.api_root_url and secret_server.oauth2.token_url or secret_server.api_root_url_template and secret_server.oauth2.token_url_template must be set.");
+			throw new IllegalArgumentException("Either 'tenant' or both of 'api_root_url' and 'oauth2.token_url' or 'api_root_url_template' and 'oauth2.token_url_template' must be set.");
 		}
 
 		// For testing purposes, we need to be able to mock the client

@@ -17,7 +17,7 @@ package org.frankframework.credentialprovider.delinea;
 
 import static org.springframework.web.util.UriComponentsBuilder.fromUriString;
 
-import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.client.ClientHttpRequestFactory;
@@ -69,9 +69,11 @@ public class DelineaClientFactory {
 
 		delineaClient.setUriTemplateHandler(uriBuilderFactory);
 		delineaClient.setRequestFactory( // Add the 'Authorization: Bearer {accessGrant.accessToken}' HTTP header
-				new InterceptingClientHttpRequestFactory(requestFactory, Arrays.asList((request, body, execution) -> {
-					request.getHeaders().add(AUTHORIZATION_HEADER_NAME,
-							String.format("%s %s", AUTHORIZATION_TOKEN_TYPE, getAccessGrant().accessToken));
+				new InterceptingClientHttpRequestFactory(requestFactory, List.of((request, body, execution) -> {
+					request.getHeaders().add(
+							AUTHORIZATION_HEADER_NAME,
+							String.format("%s %s", AUTHORIZATION_TOKEN_TYPE, getAccessGrant().accessToken)
+					);
 					return execution.execute(request, body);
 				})));
 
