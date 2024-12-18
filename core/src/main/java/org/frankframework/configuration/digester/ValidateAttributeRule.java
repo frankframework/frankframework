@@ -171,7 +171,7 @@ public class ValidateAttributeRule extends AbstractDigesterRule {
 			return;
 		}
 
-		String warning = "[" + attributeName + "] is unsafe and should not be used in a production environment.";
+		String warning = "[" + attributeName + "] is unsafe and should not be used in a production environment";
 		addSuppressibleWarning(warning, SuppressKeys.UNSAFE_ATTRIBUTE_SUPPRESS_KEY);
 	}
 
