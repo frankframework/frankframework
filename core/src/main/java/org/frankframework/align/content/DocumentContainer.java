@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017 Nationale-Nederlanden, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,8 +17,12 @@ package org.frankframework.align.content;
 
 import org.apache.xerces.xs.XSTypeDefinition;
 
-public interface DocumentContainer extends ElementGroupContainer {
+public interface DocumentContainer extends ElementContainer {
 	void startElementGroup(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition);
 
 	void endElementGroup(String localName);
+
+	void startElement(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition);
+
+	void endElement(String localName);
 }

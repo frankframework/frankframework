@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2017 Nationale-Nederlanden, 2020, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public class JsonElementContainer implements ElementContainer {
 	private final String attributePrefix;
 	private final String mixedContentLabel;
 
-	public String stringContent;
+	private String stringContent;
 	private Map<String,Object> contentMap;
 	private List<Object> array;
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017 Nationale-Nederlanden, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,6 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 public interface ElementContainer {
 
 	void setNull();
-	void setAttribute(String Name, String value, XSSimpleTypeDefinition attTypeDefinition);
+	void setAttribute(String name, String value, XSSimpleTypeDefinition attTypeDefinition);
 	void characters(char[] ch, int start, int length);
 }

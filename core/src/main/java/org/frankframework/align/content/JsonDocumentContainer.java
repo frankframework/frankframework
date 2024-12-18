@@ -15,26 +15,34 @@
 */
 package org.frankframework.align.content;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import jakarta.json.stream.JsonGenerator;
-import lombok.Getter;
+
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.logging.log4j.Logger;
+import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
-import org.frankframework.util.LogUtil;
+
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Helper class to construct JSON from XML events.
  *
  * @author Gerrit van Brakel
  */
-public class JsonDocumentContainer extends TreeContentContainer<JsonElementContainer>{
-	protected Logger log = LogUtil.getLogger(this.getClass());
+@Log4j2
+public class JsonDocumentContainer implements DocumentContainer {
 
-	private @Getter final String name;
+	private final Deque<JsonElementContainer> elementStack = new ArrayDeque<>();
+	private final JsonElementContainer root = createElementContainer(null, false, false, null);
+	private JsonElementContainer elementContainer=root;
+
+	@Getter private final String name;
 	private final boolean skipArrayElementContainers;
 	private final boolean skipRootElement;
 	private static final String ATTRIBUTE_PREFIX = "@";
@@ -50,11 +58,52 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 	}
 
 	@Override
+	public void startElementGroup(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition) {
+	}
+
+	@Override
+	public void endElementGroup(String localName) {
+	}
+
+	@Override
+	public void startElement(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition) {
+		elementStack.push(elementContainer);
+		elementContainer=createElementContainer(localName, xmlArrayContainer, repeatedElement, typeDefinition);
+	}
+	@Override
+	public void endElement(String localName) {
+		JsonElementContainer result=elementContainer;
+		elementContainer=elementStack.pop();
+		addContent(elementContainer,result);
+	}
+
+	@Override
+	public void setNull() {
+		elementContainer.setNull();
+	}
+
+	@Override
+	public void setAttribute(String name, String value, XSSimpleTypeDefinition attTypeDefinition) {
+		elementContainer.setAttribute(name, value, attTypeDefinition);
+	}
+
+	@Override
+	public void characters(char[] ch, int start, int length) {
+		elementContainer.characters(ch, start, length);
+	}
+
+	public JsonElementContainer getRoot() {
+		return root;
+	}
+
+	public JsonElementContainer getCurrentElement() {
+		return elementContainer;
+	}
+
 	protected JsonElementContainer createElementContainer(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition) {
 		return new JsonElementContainer(localName, xmlArrayContainer, repeatedElement, skipArrayElementContainers, ATTRIBUTE_PREFIX, MIXED_CONTENT_LABEL, typeDefinition);
 	}
 
-	@Override
 	protected void addContent(JsonElementContainer parent, JsonElementContainer child) {
 		if (log.isTraceEnabled())
 			log.trace("DocCont.addGroupContent name [{}] child [{}]", parent.getName(), child.getName());
@@ -67,11 +116,11 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 	}
 
 	public String toString(boolean indent) {
-		Object content=getRoot().getContent();
+		Object content=root.getContent();
 		if (content==null) {
 			return null;
 		}
-		if (skipRootElement && content instanceof Map map) {
+		if (skipRootElement && content instanceof Map<?,?> map) {
 			content=map.values().toArray()[0];
 		}
 		StringBuilder sb = new StringBuilder();
@@ -87,7 +136,8 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 		} else if (item instanceof Map) {
 			sb.append("{");
 			if (indentLevel>=0) indentLevel++;
-			for (Entry<String,Object> entry:((Map<String,Object>)item).entrySet()) {
+			//noinspection unchecked
+			for (Entry<String,Object> entry: ((Map<String,Object>)item).entrySet()) {
 				newLine(sb, indentLevel);
 				sb.append('"').append(entry.getKey()).append("\": ");
 				toString(sb,entry.getValue(), indentLevel);
@@ -97,10 +147,10 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 			if (indentLevel>=0) indentLevel--;
 			newLine(sb, indentLevel);
 			sb.append("}");
-		} else if (item instanceof List list) {
+		} else if (item instanceof List<?> list) {
 			sb.append("[");
 			if (indentLevel>=0) indentLevel++;
-			for (Object subitem:list) {
+			for (Object subitem: list) {
 				newLine(sb, indentLevel);
 				toString(sb,subitem, indentLevel);
 				sb.append(",");
