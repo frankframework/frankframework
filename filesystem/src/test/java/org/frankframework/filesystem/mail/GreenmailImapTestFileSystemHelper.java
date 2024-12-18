@@ -32,13 +32,13 @@ public class GreenmailImapTestFileSystemHelper implements IFileSystemTestHelper 
 
 	private final GreenMailExtension greenMail;
 	private final ImapMailListenerTest.User user;
-	private final String inputFolder;
+	private final String baseFolder;
 	private Folder inbox;
 
-	public GreenmailImapTestFileSystemHelper(GreenMailExtension greenMail, ImapMailListenerTest.User user, String inputFolder) {
+	public GreenmailImapTestFileSystemHelper(GreenMailExtension greenMail, ImapMailListenerTest.User user, String baseFolder) {
 		this.greenMail = greenMail;
 		this.user = user;
-		this.inputFolder = inputFolder;
+		this.baseFolder = baseFolder;
 	}
 
 	@Override
@@ -46,10 +46,10 @@ public class GreenmailImapTestFileSystemHelper implements IFileSystemTestHelper 
 		Store store = greenMail.getImap().createStore();
 		store.connect(user.username(), user.password());
 
-		inbox = store.getFolder("INBOX");
-
-		// The tests assume that the input folder is present
-		_createFolder(inputFolder);
+		inbox = store.getFolder(baseFolder);
+		if (!inbox.exists()) {
+			inbox.create(Folder.HOLDS_FOLDERS | Folder.HOLDS_MESSAGES);
+		}
 
 		inbox.open(Folder.READ_ONLY);
 	}
@@ -94,7 +94,7 @@ public class GreenmailImapTestFileSystemHelper implements IFileSystemTestHelper 
 		// Construct a message
 		MimeMessage message = new MimeMessage(session);
 		message.setSubject(StringEscapeUtils.escapeJava(filename));
-		message.setText(StringEscapeUtils.escapeJava("content#0"));
+		message.setText(StringEscapeUtils.escapeJava(contents));
 
 		setRecipients(message, Message.RecipientType.TO, "to", 1, 2);
 		message.setFrom(new InternetAddress("from2@localhost"));
@@ -104,7 +104,6 @@ public class GreenmailImapTestFileSystemHelper implements IFileSystemTestHelper 
 
 		Message[] toBeAppended = new Message[1];
 		toBeAppended[0] = message;
-		message.setText(new String(contents));
 
 		newFolder.appendMessages(toBeAppended);
 		return message.getMessageID();
@@ -112,7 +111,7 @@ public class GreenmailImapTestFileSystemHelper implements IFileSystemTestHelper 
 
 	// the tests in FileSystemTestBase assume that the input folder is used
 	private @Nonnull String getFolderToUse(String folderName) {
-		return StringUtils.isNotBlank(folderName) ? folderName : ImapMailListenerTest.INPUT_FOLDER;
+		return StringUtils.isNotBlank(folderName) ? folderName : baseFolder;
 	}
 
 	private void setRecipients(MimeMessage message, Message.RecipientType recipientType, String prefix, int... indexes)

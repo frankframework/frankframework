@@ -17,7 +17,7 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
 
-public abstract class FileSystemActorCustomFileAttributesTest<F, S extends IWritableFileSystem<F>> extends FileSystemActorTest<F, S> {
+public abstract class FileSystemActorCustomFileAttributesTest<F, S extends IWritableFileSystem<F>> extends WritableFileSystemActorTest<F, S> {
 
 	private Message input;
 

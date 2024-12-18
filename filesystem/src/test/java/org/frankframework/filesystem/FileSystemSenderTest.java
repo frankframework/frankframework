@@ -9,10 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,15 +21,14 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.util.CloseUtils;
-import org.frankframework.util.StreamUtil;
 import org.frankframework.util.UUIDUtil;
 
-public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<F, FS>, F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
+public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<F, FS>, F, FS extends IBasicFileSystem<F>> extends HelperedFileSystemTestBase {
 
-	private static final String FOLDER_NAME = "folder";
+	static final String FOLDER_NAME = "folder";
 	protected FSS fileSystemSender;
-	private SenderResult senderResult;
-	private Message result;
+	SenderResult senderResult;
+	Message result;
 
 	public abstract FSS createFileSystemSender();
 
@@ -75,97 +70,11 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 	}
 
 	@Test
-	public void fileSystemSenderUploadActionTestWithString() throws Exception {
-		String filename = "uploadedwithString" + FILE1;
-		String contents = "Some text content to test upload action\n";
-
-		if (_fileExists(filename)) {
-			_deleteFile(null, filename);
-		}
-
-		PipeLineSession session = new PipeLineSession();
-		session.put("uploadActionTargetwString", contents.getBytes());
-
-		fileSystemSender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTargetwString"));
-		fileSystemSender.setAction(FileSystemAction.UPLOAD);
-		fileSystemSender.configure();
-		fileSystemSender.start();
-
-		Message message = new Message(filename);
-		result = fileSystemSender.sendMessageOrThrow(message, session);
-		waitForActionToFinish();
-
-		String actual = readFile(null, filename);
-		// test
-		// TODO: evaluate 'result'
-		//assertEquals("result of sender should be input message",result,message);
-		assertEquals(contents.trim(), actual.trim());
-	}
-
-	@Test
-	public void fileSystemSenderUploadActionTestWithByteArray() throws Exception {
-		String filename = "uploadedwithByteArray" + FILE1;
-		String contents = "Some text content to test upload action\n";
-
-		if (_fileExists(filename)) {
-			_deleteFile(null, filename);
-		}
-
-		PipeLineSession session = new PipeLineSession();
-		session.put("uploadActionTargetwByteArray", contents.getBytes());
-
-		fileSystemSender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTargetwByteArray"));
-		fileSystemSender.setAction(FileSystemAction.UPLOAD);
-		fileSystemSender.configure();
-		fileSystemSender.start();
-
-		Message message = new Message(filename);
-		result = fileSystemSender.sendMessageOrThrow(message, session);
-		waitForActionToFinish();
-
-
-		String actual = readFile(null, filename);
-		// test
-		// TODO: evaluate 'result'
-		//assertEquals("result of sender should be input message",result,message);
-		assertEquals(contents.trim(), actual.trim());
-	}
-
-	@Test
-	public void fileSystemSenderUploadActionTestWithInputStream() throws Exception {
-		String filename = "uploadedwithInputStream" + FILE1;
-		String contents = "Some text content to test upload action\n";
-
-		if (_fileExists(filename)) {
-			_deleteFile(null, filename);
-		}
-
-		InputStream stream = new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8));
-		PipeLineSession session = new PipeLineSession();
-		session.put("uploadActionTarget", stream);
-
-		fileSystemSender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTarget"));
-		fileSystemSender.setAction(FileSystemAction.UPLOAD);
-		fileSystemSender.configure();
-		fileSystemSender.start();
-
-		Message message = new Message(filename);
-		result = fileSystemSender.sendMessageOrThrow(message, session);
-		waitForActionToFinish();
-
-		String actual = readFile(null, filename);
-		// test
-		// TODO: evaluate 'result'
-		//assertEquals("result of sender should be input message",result,message);
-		assertEquals(contents.trim(), actual.trim());
-	}
-
-	@Test
 	public void fileSystemSenderDownloadActionTest() throws Exception {
 		String filename = "sender" + FILE1;
 		String contents = "Tekst om te lezen";
 
-		createFile(null, filename, contents);
+		String id = createFile(null, filename, contents);
 		waitForActionToFinish();
 
 		fileSystemSender.setAction(FileSystemAction.DOWNLOAD);
@@ -173,7 +82,7 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 		fileSystemSender.start();
 
 		PipeLineSession session = new PipeLineSession();
-		Message message = new Message(filename);
+		Message message = new Message(id);
 		result = fileSystemSender.sendMessageOrThrow(message, session);
 
 		// test
@@ -193,7 +102,7 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 		if (folderShouldExist && folder2 != null) {
 			_createFolder(folder2);
 		}
-		createFile(folder1, filename, contents);
+		String id = createFile(folder1, filename, contents);
 //		deleteFile(folder2, filename);
 		waitForActionToFinish();
 
@@ -206,7 +115,7 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 		fileSystemSender.start();
 
 		PipeLineSession session = new PipeLineSession();
-		Message message = new Message(filename);
+		Message message = new Message(id);
 		result = fileSystemSender.sendMessageOrThrow(message, session);
 
 		assertNotNull(result);
@@ -215,7 +124,7 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 		// TODO: contents of result should be contents of original file
 
 		// assertTrue("file should exist in destination folder ["+folder2+"]", _fileExists(folder2, filename)); // does not have to be this way. filename may have changed.
-		assertFalse(_fileExists(folder1, filename), "file should not exist anymore in original folder [" + folder1 + "]");
+		assertFalse(_fileExists(folder1, id), "file should not exist anymore in original folder [" + folder1 + "]");
 	}
 
 	@Test
@@ -231,7 +140,8 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 	@Test
 	public void fileSystemSenderMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
 		Exception e = assertThrows(Exception.class, () -> fileSystemSenderMoveActionTest(null, FOLDER_NAME, false, false));
-		assertThat(e.getMessage(), containsString("unable to process [" + FileSystemAction.MOVE + "] action for File [sendermovefile1.txt]: destination folder [folder] does not exist"));
+		assertThat(e.getMessage(), containsString("unable to process [" + FileSystemAction.MOVE + "] action for File ["));
+		assertThat(e.getMessage(), containsString("]: destination folder [folder] does not exist"));
 	}
 
 	@Test
@@ -243,12 +153,13 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 
 		_deleteFolder(inputFolder); // ensure all test folders are empty
 		_createFolder(inputFolder);
-		createFile(inputFolder, FILE1, testFileContents);
+		_createFolder(outputFolder);
+		String id = createFile(inputFolder, FILE1, testFileContents);
 
 		waitForActionToFinish();
 
 		fileSystemSender.setAction(FileSystemAction.MOVE);
-		fileSystemSender.addParameter(ParameterBuilder.create("filename", inputFolder + "/" + FILE1));
+		fileSystemSender.addParameter(ParameterBuilder.create("filename", inputFolder + "/" + id));
 		fileSystemSender.addParameter(ParameterBuilder.create("destination", outputFolder));
 		fileSystemSender.setCreateFolder(true);
 
@@ -262,10 +173,12 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 		// Assert
 		assertNotNull(result);
 		String newFilename = result.asString();
-		assertEquals(FILE1, newFilename);
+		if (FILE1.equals(id)) {
+			assertEquals(FILE1, newFilename);
+		}
 
 		assertTrue(_fileExists(outputFolder, newFilename), "file should exist in destination folder [" + outputFolder + "]");
-		assertFalse(_fileExists(inputFolder, FILE1), "file should not exist anymore in original folder [" + outputFolder + "]");
+		assertFalse(_fileExists(inputFolder, id), "file should not exist anymore in original folder [" + outputFolder + "]");
 		String newFileContents = readFile(outputFolder, newFilename);
 		assertEquals(testFileContents, newFileContents);
 	}
@@ -359,56 +272,25 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 	public void fileSystemSenderDeleteActionTest() throws Exception {
 		String filename = "tobedeleted" + FILE1;
 
-		if (!_fileExists(filename)) {
-			createFile(null, filename, "is not empty");
+		if (_fileExists(filename)) {
+			_deleteFile(null, filename);
 		}
+		String id = createFile(null, filename, "is not empty");
 
 		fileSystemSender.setAction(FileSystemAction.DELETE);
 		fileSystemSender.configure();
 		fileSystemSender.start();
 
 		PipeLineSession session = new PipeLineSession();
-		Message message = new Message(filename);
+		Message message = new Message(id);
 		result = fileSystemSender.sendMessageOrThrow(message, session);
 
 		waitForActionToFinish();
 
-		boolean actual = _fileExists(filename);
+		boolean actual = _fileExists(id);
 		// test
-		assertEquals(filename, result.asString(), "result of sender should be name of deleted file");
+		assertEquals(id, result.asString(), "result of sender should be name of deleted file");
 		assertFalse(actual, "Expected file [" + filename + "] " + "not to be present");
-	}
-
-	@Test
-	public void fileSystemSenderRenameActionTest() throws Exception {
-		String filename = "toberenamed" + FILE1;
-		String dest = "renamed" + FILE1;
-
-		if (!_fileExists(filename)) {
-			createFile(null, filename, "is not empty");
-		}
-
-		fileSystemSender.addParameter(new Parameter("destination", dest));
-		fileSystemSender.setAction(FileSystemAction.RENAME);
-		fileSystemSender.configure();
-		fileSystemSender.start();
-
-		deleteFile(null, dest);
-
-		PipeLineSession session = new PipeLineSession();
-		Message message = new Message(filename);
-		result = fileSystemSender.sendMessageOrThrow(message, session);
-
-		// test
-		assertEquals(dest, result.asString(), "result of sender should be new name of file");
-
-		boolean actual = _fileExists(filename);
-		// test
-		assertFalse(actual, "Expected file [" + filename + "] " + "not to be present");
-
-		actual = _fileExists(dest);
-		// test
-		assertTrue(actual, "Expected file [" + dest + "] " + "to be present");
 	}
 
 	public void fileSystemSenderListActionTest(String inputFolder, int numberOfItems, TypeFilter typeFilter) throws Exception {
@@ -488,6 +370,7 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 		waitForActionToFinish();
 
 		if (fileAlreadyExists) {
+			_createFolder(folder);
 			createFile(folder, filename, "dummy-contents\n");
 		}
 
@@ -539,76 +422,6 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 		fileSystemSenderCreateFile(FOLDER_NAME, false, true);
 	}
 
-	public SenderResult fileSystemSenderWriteFile(String folder, boolean fileAlreadyExists, boolean setCreateFolderAttribute) throws Exception {
-		String filename = "write" + FILE1;
-
-		if (_folderExists(folder)) {
-			_deleteFolder(folder);
-		}
-		waitForActionToFinish();
-
-		if (fileAlreadyExists && !_fileExists(folder, filename)) {
-			createFile(folder, filename, "dummy-contents\n");
-		}
-
-		fileSystemSender.setAction(FileSystemAction.WRITE);
-		fileSystemSender.setCreateFolder(setCreateFolderAttribute);
-		fileSystemSender.addParameter(ParameterBuilder.create("filename", folder + "/" + filename));
-		fileSystemSender.configure();
-		fileSystemSender.start();
-
-		Message input = new Message("dummyText");
-		senderResult = fileSystemSender.sendMessage(input, session);
-		CloseUtils.closeSilently(input);
-		if (!senderResult.isSuccess()) {
-			return senderResult;
-		}
-		String result = senderResult.getResult().asString();
-
-		// test
-		// result should be name of the moved file
-		assertNotNull(result);
-
-		// TODO: result should point to new location of file
-		// TODO: contents of result should be contents of original file
-
-		assertTrue(_fileExists(folder, filename), "file should exist in destination folder [" + folder + "]");
-		assertEquals("dummyText", StreamUtil.streamToString(_readFile(folder, filename)));
-		return senderResult;
-	}
-
-	@Test
-	public void fileSystemSenderWriteNewFileInFolder() throws Exception {
-		senderResult = fileSystemSenderWriteFile("folder1", false, false);
-		assertFalse(senderResult.isSuccess());
-		assertEquals("folderNotFound", senderResult.getForwardName());
-		assertThat(senderResult.getErrorMessage(), containsString("unable to process [WRITE] action for File [folder1/writefile1.txt]"));
-		assertThat(senderResult.getErrorMessage(), containsString("folder1] does not exist"));
-	}
-
-	@Test
-	public void fileSystemSenderWritingFileAndCreateFolderAttributeEnabled() throws Exception {
-		fileSystemSenderWriteFile("folder2", false, true);
-	}
-
-	@Test
-	public void fileSystemSenderWritingFileThatAlreadyExists() throws Exception {
-		senderResult = fileSystemSenderWriteFile("folder3", true, false);
-		assertFalse(senderResult.isSuccess());
-		assertEquals("fileAlreadyExists", senderResult.getForwardName());
-		assertThat(senderResult.getErrorMessage(), containsString("unable to process [WRITE] action for File [folder3/writefile1.txt]"));
-		assertThat(senderResult.getErrorMessage(), containsString("writefile1.txt] already exists"));
-	}
-
-	@Test
-	public void fileSystemSenderWritingFileThatAlreadyExistsAndCreateFolderAttributeEnabled() throws Exception {
-		senderResult = fileSystemSenderWriteFile("folder4", true, true);
-		assertFalse(senderResult.isSuccess());
-		assertEquals("fileAlreadyExists", senderResult.getForwardName());
-		assertThat(senderResult.getErrorMessage(), containsString("unable to process [WRITE] action for File [folder4/writefile1.txt]"));
-		assertThat(senderResult.getErrorMessage(), containsString("writefile1.txt] already exists"));
-	}
-
 	@Test
 	public void fileSystemSenderTestForFolderExistenceWithNonExistingFolder() throws Exception {
 		fileSystemSender.setAction(FileSystemAction.LIST);
@@ -648,8 +461,8 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 		}
 		_createFolder(inputFolder);
 
-		createFile(inputFolder, filename, "some content");
-		createFile(inputFolder, filename2, "some content of the second file");
+		String id1 = createFile(inputFolder, filename, "some content");
+		String id2 = createFile(inputFolder, filename2, "some content of the second file");
 
 		_createFolder(inputFolder + "/subfolder");
 		createFile(inputFolder + "/subfolder", "dont-list-me.txt", "content of the third file");
@@ -666,10 +479,10 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 		fileSystemSender.start();
 
 		// Act
-		assertTrue(_fileExists(inputFolder, filename), "File [" + filename + "] expected to be present");
-		assertTrue(_fileExists(inputFolder, filename2), "File [" + filename2 + "] expected to be present");
+		assertTrue(_fileExists(inputFolder, id1), "File [" + filename + "] expected to be present");
+		assertTrue(_fileExists(inputFolder, id2), "File [" + filename2 + "] expected to be present");
 
-		Message message = new Message(filename);
+		Message message = new Message(id1);
 		result = fileSystemSender.sendMessageOrThrow(message, session);
 		waitForActionToFinish();
 
@@ -688,17 +501,17 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 		}
 		_createFolder(inputFolder);
 
-		createFile(inputFolder, filename, "some content");
+		String id = createFile(inputFolder, filename, "some content");
 
 		waitForActionToFinish();
 
-		fileSystemSender.addParameter(ParameterBuilder.create("filename", inputFolder + "/" + filename));
+		fileSystemSender.addParameter(ParameterBuilder.create("filename", inputFolder + "/" + id));
 		fileSystemSender.setAction(FileSystemAction.READDELETE);
 		fileSystemSender.configure();
 		fileSystemSender.start();
 
 		// Act
-		assertTrue(_fileExists(inputFolder, filename), "File [" + filename + "] expected to be present");
+		assertTrue(_fileExists(inputFolder, id), "File [" + filename + "] expected to be present");
 
 		Message message = new Message("not-used");
 		result = fileSystemSender.sendMessageOrThrow(message, session);

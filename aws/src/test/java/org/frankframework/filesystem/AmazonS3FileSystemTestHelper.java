@@ -156,7 +156,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 					.build(), RequestBody.empty());
 		}
 
-		return filePath;
+		return filename;
 	}
 
 	@Override
