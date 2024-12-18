@@ -38,6 +38,7 @@ import org.frankframework.util.StreamUtil;
 @Log4j2
 public class HttpMessageEntity extends AbstractHttpEntity {
 	private final Message message;
+	private long contentLength;
 
 	public HttpMessageEntity(Message message) {
 		this(message, null);
@@ -45,6 +46,8 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 
 	public HttpMessageEntity(Message message, ContentType contentType) {
 		this.message = message;
+		// Pre-compute this, because we will always anyway need it, and we cannot access it after writing the message (which breaks some tests).
+		this.contentLength = computeContentLength();
 
 		String charset = message.getCharset();
 		if(contentType != null) {
@@ -81,7 +84,21 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 
 	@Override
 	public long getContentLength() {
-		return message.size();
+		return contentLength;
+	}
+
+	private long computeContentLength() {
+		long messageSize = message.size();
+		try {
+			// To get an accurate value if the size is unknown we need to check if data is available.
+			if (messageSize == Message.MESSAGE_SIZE_UNKNOWN && !Message.hasDataAvailable(message)) {
+				return 0L;
+			}
+			return messageSize;
+		} catch (IOException e) {
+			log.warn("IOException while checking if message has data", e);
+			return 0L;
+		}
 	}
 
 	// size (getContentLength) and encoding (getContentEncoding) of the InputStream must match the way it is being read / sent!
@@ -94,8 +111,8 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 	public void writeTo(OutputStream outStream) throws IOException {
 		long length = getContentLength();
 		try (InputStream inStream = getContent()) {
-			// consume no more than length
-			StreamUtil.copyPartialStream(inStream, outStream, length, OUTPUT_BUFFER_SIZE);
+			// consume no more than length. Update contentLength because it may have been unknown before reading the stream, now it is accurate.
+			contentLength = StreamUtil.copyPartialStream(inStream, outStream, length, OUTPUT_BUFFER_SIZE);
 		}
 	}
 }

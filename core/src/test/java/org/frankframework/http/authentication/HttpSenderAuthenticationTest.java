@@ -14,10 +14,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.http.AbstractHttpSession;
-import org.frankframework.testutil.ParameterBuilder;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -28,12 +24,16 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 
 import lombok.Getter;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.http.HttpSender;
 import org.frankframework.http.AbstractHttpSender.HttpMethod;
+import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.http.HttpEntityType;
+import org.frankframework.http.HttpSender;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.ParameterBuilder;
 
 public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	private final boolean useMockServer = true;
@@ -384,7 +384,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setClientId(MockTokenServer.CLIENT_ID);
 		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
-		sender.setPostType(HttpSender.PostType.BINARY);
+		sender.setPostType(HttpEntityType.BINARY);
 		sender.setMethodType(HttpMethod.POST);
 
 		sender.configure();
@@ -406,7 +406,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setClientId(MockTokenServer.CLIENT_ID);
 		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
-		sender.setPostType(HttpSender.PostType.BINARY);
+		sender.setPostType(HttpEntityType.BINARY);
 		sender.setMethodType(HttpMethod.POST);
 
 		sender.configure();
@@ -441,7 +441,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.addParameter(ParameterBuilder.create("xml-part", "<ik><ben/><xml/></ik>"));
 		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("part_file"));
 
-		sender.setPostType(HttpSender.PostType.MTOM);
+		sender.setPostType(HttpEntityType.MTOM);
 		sender.setMethodType(HttpMethod.POST);
 
 		sender.configure();
@@ -468,7 +468,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.addParameter(ParameterBuilder.create("xml-part", "<ik><ben/><xml/></ik>"));
 		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
 
-		sender.setPostType(HttpSender.PostType.MTOM);
+		sender.setPostType(HttpEntityType.MTOM);
 		sender.setMethodType(HttpMethod.POST);
 
 		sender.configure();
@@ -498,7 +498,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.addParameter(ParameterBuilder.create("xml-part", "<ik><ben/><xml/></ik>"));
 		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
 
-		sender.setPostType(HttpSender.PostType.MTOM);
+		sender.setPostType(HttpEntityType.MTOM);
 		sender.setMethodType(HttpMethod.POST);
 
 		sender.configure();
@@ -527,7 +527,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.addParameter(ParameterBuilder.create("xml-part", "<ik><ben/><xml/></ik>"));
 		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
 
-		sender.setPostType(HttpSender.PostType.MTOM);
+		sender.setPostType(HttpEntityType.MTOM);
 		sender.setMethodType(HttpMethod.POST);
 
 		sender.configure();

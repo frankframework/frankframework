@@ -33,6 +33,7 @@ import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.Args;
+
 import org.frankframework.stream.Message;
 
 /**
@@ -73,6 +74,11 @@ public class MultipartEntityBuilder {
 
 	public MultipartEntityBuilder setMtomMultipart() {
 		mtom = true;
+		return this;
+	}
+
+	public MultipartEntityBuilder setMtomMultipart(boolean mtom) {
+		this.mtom = mtom;
 		return this;
 	}
 
@@ -129,8 +135,8 @@ public class MultipartEntityBuilder {
 		return addPart(FormBodyPartBuilder.create(name, contentBody).build());
 	}
 
-	public void addPart(String name, Message message) {
-		addPart(name, new MessageContentBody(message));
+	public MultipartEntityBuilder addPart(String name, Message message) {
+		return addPart(name, new MessageContentBody(message));
 	}
 
 	/* utility methods */
