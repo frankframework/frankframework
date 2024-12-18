@@ -71,6 +71,7 @@ import org.xml.sax.helpers.AttributesImpl;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.xml.XmlWriter;
 
@@ -79,6 +80,7 @@ import org.frankframework.xml.XmlWriter;
  *
  * @author Gerrit van Brakel
  */
+@Log4j2
 public class Json2Xml extends XmlAligner {
 
 	public static final String MSG_FULL_INPUT_IN_STRICT_COMPACTING_MODE="straight json found while expecting compact arrays and strict syntax checking";

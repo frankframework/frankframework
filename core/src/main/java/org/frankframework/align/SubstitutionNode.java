@@ -19,13 +19,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.util.LogUtil;
-
+@Log4j2
 public class SubstitutionNode<V> {
-	protected Logger log = LogUtil.getLogger(this.getClass());
-
 	private Map<String,SubstitutionNode<V>> parents;
 	private V value;
 

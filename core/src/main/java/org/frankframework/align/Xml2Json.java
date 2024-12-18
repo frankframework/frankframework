@@ -82,12 +82,6 @@ public class Xml2Json extends XMLFilterImpl {
 		boolean repeatedElement = aligner.isMultipleOccurringChildInParentElement(localName);
 		XSTypeDefinition typeDefinition = aligner.getTypeDefinition();
 		if (!localName.equals(topElement)) {
-			if (topElement != null) {
-				log.trace("endElementGroup [{}]", topElement);
-				documentContainer.endElementGroup(topElement);
-			}
-			log.trace("startElementGroup [{}]", localName);
-			documentContainer.startElementGroup(localName, xmlArrayContainer, repeatedElement, typeDefinition);
 			topElement=localName;
 		}
 		element.push(topElement);
@@ -153,18 +147,10 @@ public class Xml2Json extends XMLFilterImpl {
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		if (topElement != null) {
-			log.trace("endElementGroup [{}]", topElement);
-			documentContainer.endElementGroup(topElement);
-		}
 		topElement=element.pop();
 		log.trace("endElement [{}]", localName);
-		documentContainer.endElement(localName);
+		documentContainer.endElement();
 		super.endElement(uri, localName, qName);
-		if (element.isEmpty()) {
-			log.trace("endElementGroup [{}]", localName);
-			documentContainer.endElementGroup(localName);
-		}
 	}
 
 	@Override
