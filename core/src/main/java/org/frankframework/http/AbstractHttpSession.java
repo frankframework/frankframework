@@ -68,6 +68,9 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.pool.ConnPoolControl;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.logging.log4j.Logger;
+
+import org.frankframework.http.authentication.IOauthAuthenticator;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 
@@ -90,10 +93,10 @@ import org.frankframework.http.authentication.AuthenticationScheme;
 import org.frankframework.http.authentication.ClientCredentialsBasicAuth;
 import org.frankframework.http.authentication.ClientCredentialsQueryParameters;
 import org.frankframework.http.authentication.HttpAuthenticationException;
-import org.frankframework.http.authentication.IOauthAuthenticator;
 import org.frankframework.http.authentication.OAuthPreferringAuthenticationStrategy;
 import org.frankframework.http.authentication.ResourceOwnerPasswordCredentialsBasicAuth;
 import org.frankframework.http.authentication.ResourceOwnerPasswordCredentialsQueryParameters;
+import org.frankframework.http.authentication.SamlAssertionOauth;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.HasStatistics;
@@ -172,8 +175,8 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private @Getter int maxExecuteRetries = 1;
 	private @Getter boolean staleChecking=true;
 	private @Getter int staleTimeout = 5_000; // [ms]
-	private @Getter int connectionTimeToLive = 900; // [s]
-	private @Getter int connectionIdleTimeout = 10; // [s]
+	private @Getter int connectionTimeToLive = 900; // [seconds]
+	private @Getter int connectionIdleTimeout = 10; // [seconds]
 	private final HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
 	private @Getter HttpClientContext defaultHttpClientContext;
 	private HttpClientContext httpClientContext;
@@ -190,6 +193,11 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private @Getter String clientId;
 	private @Getter String clientSecret;
 	private @Getter String scope;
+
+	private @Getter String samlNameId;
+	private @Getter String samlIssuer;
+	private @Getter String samlAudience;
+	private @Getter int samlAssertionExpiry; // [ttl in seconds]
 
 	private @Getter OauthAuthenticationMethod oauthAuthenticationMethod;
 	private @Getter IOauthAuthenticator authenticator;
@@ -223,7 +231,14 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		 * and {@literal password} are sent in the form body to the authorization server.
 		 * The {@literal accessToken} is then used in the Authorization header to authenticate against the resource server.
 		 */
-		RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS;
+		RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS,
+
+		/**
+		 * Requires {@literal samlNameId}, {@literal samlIssuer}, {@literal samlAudience}, {@literal samlAssertionExpiry}, and a certificate and private key.
+		 * Generates a new SAML assertion, which will be exchanged for a token by the authorization server. The {@literal accessToken} is then used
+		 * in the Authorization header to authenticate against the resource server.
+		 */
+		SAML_ASSERTION;
 
 		public IOauthAuthenticator newAuthenticator(AbstractHttpSession session) throws HttpAuthenticationException {
 			return switch (this) {
@@ -231,6 +246,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 				case CLIENT_CREDENTIALS_QUERY_PARAMETERS -> new ClientCredentialsQueryParameters(session);
 				case RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH -> new ResourceOwnerPasswordCredentialsBasicAuth(session);
 				case RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS -> new ResourceOwnerPasswordCredentialsQueryParameters(session);
+				case SAML_ASSERTION -> new SamlAssertionOauth(session);
 			};
 		}
 
@@ -753,6 +769,34 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	 */
 	public void setOauthAuthenticationMethod(OauthAuthenticationMethod oauthAuthenticationMethod) {
 		this.oauthAuthenticationMethod = oauthAuthenticationMethod;
+	}
+
+	/**
+	 * The nameId to be added during the creation of the SAML assertion.
+	 */
+	public void setSamlNameId(String samlNameId) {
+		this.samlNameId = samlNameId;
+	}
+
+	/**
+	 * The issuer to be added during the creation of the SAML assertion.
+	 */
+	public void setSamlIssuer(String samlIssuer) {
+		this.samlIssuer = samlIssuer;
+	}
+
+	/**
+	 * The audience to be added during the creation of the SAML assertion.
+	 */
+	public void setSamlAudience(String samlAudience) {
+		this.samlAudience = samlAudience;
+	}
+
+	/**
+	 * The time to live (in seconds) until the generated SAML assertion should be valid. A new assertion will be generated when the previous assertion is no longer valid.
+	 */
+	public void setSamlAssertionExpiry(int expiry) {
+		this.samlAssertionExpiry = expiry;
 	}
 
 	/** Proxy host */

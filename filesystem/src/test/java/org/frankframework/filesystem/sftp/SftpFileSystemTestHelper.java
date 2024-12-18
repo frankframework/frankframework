@@ -189,7 +189,7 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper {
 		} catch (SftpException e) {
 			throw new FileSystemException(e);
 		}
-		return path;
+		return filename;
 	}
 
 	@Override

@@ -35,6 +35,7 @@ import jakarta.mail.Message;
 import jakarta.mail.Message.RecipientType;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Multipart;
+import jakarta.mail.NoSuchProviderException;
 import jakarta.mail.Part;
 import jakarta.mail.Session;
 import jakarta.mail.Store;
@@ -76,12 +77,19 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 		}
 	}
 
+	/**
+	 * For test purposes only. Defaults to IMAPS, but tests use IMAP
+	 */
+	protected String getStoreName() throws NoSuchProviderException {
+		return "imaps";
+	}
+
 	@Override
 	protected IMAPFolder createConnection() throws FileSystemException {
 		try {
 			// emailSession.setDebug(true);
 			CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-			Store store = emailSession.getStore("imaps");
+			Store store = emailSession.getStore(getStoreName());
 			try {
 				store.connect(getHost(), getPort(), cf.getUsername(), cf.getPassword());
 			} catch (Exception e) {

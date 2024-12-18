@@ -34,6 +34,7 @@ import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.ValidatorHandler;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
@@ -43,8 +44,7 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonString;
 import jakarta.json.JsonStructure;
 import jakarta.json.JsonValue;
-import lombok.Getter;
-import lombok.Setter;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -61,7 +61,6 @@ import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
-import org.frankframework.xml.XmlWriter;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
@@ -69,6 +68,11 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import org.frankframework.xml.XmlWriter;
 
 /**
  * XML Schema guided JSON to XML converter;
@@ -83,11 +87,12 @@ public class Json2Xml extends XmlAligner {
 	public static final String MSG_EXPECTED_ELEMENT="expected element";
 	public static final String MSG_CANNOT_NOT_FIND_ELEMENT_DECLARATION="Cannot find the declaration of element";
 	private static final String NAMESPACE_PREFIX = "ns";
+	public static final String XSD_WILDCARD_ELEMENT_TOKEN = "*";
 
 	private final boolean insertElementContainerElements;
 	private final boolean strictSyntax;
 	private final Map<String, String> prefixMap = new HashMap<>();
-	SubstitutionProvider<?> sp;
+	@Nonnull SubstitutionProvider<?> sp = new OverridesMap<>();
 	private @Getter @Setter boolean readAttributes=true;
 	private static final String ATTRIBUTE_PREFIX = "@";
 	private static final String MIXED_CONTENT_LABEL = "#text";
@@ -104,17 +109,13 @@ public class Json2Xml extends XmlAligner {
 		setRootElement(rootElement);
 	}
 
-	private static Set<String> getNamesOfXsdChildElements(XSComplexTypeDefinition complexTypeDefinition) {
+	private static List<XSParticle> getXsdChildParticles(XSComplexTypeDefinition complexTypeDefinition) {
 		XSTerm term = complexTypeDefinition.getParticle().getTerm();
-		if (!(term instanceof XSModelGroup modelGroup)) {
-			return Collections.emptySet();
+		if (term instanceof XSModelGroup modelGroup) {
+			//noinspection unchecked
+			return modelGroup.getParticles();
 		}
-		@SuppressWarnings("unchecked")
-		List<XSParticle> particles = modelGroup.getParticles();
-		return particles.stream()
-				.map(XSParticle::getTerm)
-				.map(XSObject::getName)
-				.collect(Collectors.toSet());
+		return List.of();
 	}
 
 	public void startParse(JsonValue node) throws SAXException {
@@ -223,26 +224,27 @@ public class Json2Xml extends XmlAligner {
 		return result;
 	}
 
-	public Map<String, String> getAttributes(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
+	public @Nonnull Map<String, String> getAttributes(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
 		if (!readAttributes) {
-			return null;
+			return Map.of();
 		}
 		if (!(node instanceof JsonObject o)) {
 			if (log.isTraceEnabled())
 				log.trace("parent node is not a JsonObject, but a [{}] isParentOfSingleMultipleOccurringChildElement [{}]  value [{}], returning null", node.getClass()
 						.getName(), isParentOfSingleMultipleOccurringChildElement(), node);
-			return null;
+			return Map.of();
 		}
 		if (o.isEmpty()) {
 			if (log.isTraceEnabled()) log.trace("getAttributes() no children");
-			return null;
+			return Map.of();
 		}
 		try {
 			Map<String, String> result=new LinkedHashMap<>(); // it is not really necessary to preserve the order, but often the results look nicer, and it is easier for testing ...
-			for (String key:o.keySet()) {
+			for (Map.Entry<String,JsonValue> entry: o.entrySet()) {
+				String key = entry.getKey();
 				if (key.startsWith(ATTRIBUTE_PREFIX)) {
 					String attributeName=key.substring(ATTRIBUTE_PREFIX.length());
-					String value=getText(elementDeclaration, o.get(key));
+					String value=getText(elementDeclaration, entry.getValue());
 					if (log.isTraceEnabled()) log.trace("getAttributes() attribute [{}] = [{}]", attributeName, value);
 					result.put(attributeName, value);
 				}
@@ -261,14 +263,14 @@ public class Json2Xml extends XmlAligner {
 		// should check for complex or simple type.
 		// for complex, any path of a substitution is valid
 		// for simple, only when a valid substitution value is found, a hit should be present.
-		if (sp!=null && sp.hasSubstitutionsFor(getContext(), childName)) {
+		if (sp.hasSubstitutionsFor(getContext(), childName)) {
 			return true;
 		}
-		Set<String> allChildNames=getAllNodeChildNames(node);
-		return allChildNames!=null && allChildNames.contains(childName);
+		Set<String> allChildNames = getAllNodeChildNames(node);
+		return allChildNames.contains(childName);
 	}
 
-	public Set<String> getAllNodeChildNames(JsonValue node) throws SAXException {
+	public @Nonnull Set<String> getAllNodeChildNames(JsonValue node) throws SAXException {
 		if (log.isTraceEnabled())
 			log.trace("node isParentOfSingleMultipleOccurringChildElement [{}] [{}][{}]", isParentOfSingleMultipleOccurringChildElement(), node.getClass()
 					.getName(), node);
@@ -289,29 +291,29 @@ public class Json2Xml extends XmlAligner {
 				if (log.isTraceEnabled())
 					log.trace("parent node is not a JsonObject, but a [{}] isParentOfSingleMultipleOccurringChildElement [{}]  value [{}], returning null", node.getClass()
 							.getName(), isParentOfSingleMultipleOccurringChildElement(), node);
-				return null;
+				return Set.of();
 			}
 			if (o.isEmpty()) {
-				if (log.isTraceEnabled()) log.trace("no children");
-				return null;
+				log.trace("no children");
+				return Set.of();
 			}
 			Set<String> result = new LinkedHashSet<>();
-			for (String key:o.keySet()) {
+			for (String key: o.keySet()) {
 				if (!readAttributes || !key.startsWith(ATTRIBUTE_PREFIX)) {
 					result.add(key);
 				}
 			}
-			if (log.isTraceEnabled()) log.trace("returning [{}]", result);
+			log.trace("returning [{}]", result);
 			return result;
 		} catch (JsonException e) {
 			throw new SAXException(e);
 		}
 	}
 
-	public Iterable<JsonValue> getNodeChildrenByName(JsonValue node, XSElementDeclaration childElementDeclaration) throws SAXException {
+	public @Nullable Iterable<JsonValue> getNodeChildrenByName(JsonValue node, XSElementDeclaration childElementDeclaration) throws SAXException {
 		String name=childElementDeclaration.getName();
 		if (log.isTraceEnabled())
-			log.trace("childname [{}] parent isParentOfSingleMultipleOccurringChildElement [{}] isMultipleOccuringChildElement [{}] node [{}]", name, isParentOfSingleMultipleOccurringChildElement(), isMultipleOccurringChildElement(name), node);
+			log.trace("childname [{}] parent isParentOfSingleMultipleOccurringChildElement [{}] isMultipleOccurringChildElement [{}] node [{}]", name, isParentOfSingleMultipleOccurringChildElement(), isMultipleOccurringChildElement(name), node);
 		try {
 			if (!(node instanceof JsonObject o)) {
 				if (log.isTraceEnabled()) log.trace("parent node is not a JsonObject, but a [{}]", node.getClass().getName());
@@ -351,7 +353,7 @@ public class Json2Xml extends XmlAligner {
 		}
 	}
 
-	protected JsonValue getSubstitutedChild(String childName) {
+	protected @Nullable JsonValue getSubstitutedChild(String childName) {
 		if (!sp.hasSubstitutionsFor(getContext(), childName)) {
 			return null;
 		}
@@ -385,13 +387,13 @@ public class Json2Xml extends XmlAligner {
 	}
 
 	protected void processChildElement(JsonValue node, String parentName, XSElementDeclaration childElementDeclaration, boolean mandatory, Set<String> processedChildren) throws SAXException {
-		String childElementName=childElementDeclaration.getName();
+		String childElementName = childElementDeclaration.getName();
 		if (log.isTraceEnabled())
 			log.trace("parentName [{}] childElementName [{}] node [{}] isParentOfSingleMultipleOccurringChildElement [{}]", parentName, childElementName, node, isParentOfSingleMultipleOccurringChildElement());
 		if (isParentOfSingleMultipleOccurringChildElement()) {
 			if (node instanceof JsonArray ja) {
 				if (log.isTraceEnabled()) log.trace("array child node is JsonArray, handling each of the elements as a [{}]", childElementName);
-				for (JsonValue child:ja) {
+				for (JsonValue child: ja) {
 					handleElement(childElementDeclaration, child);
 				}
 				// mark that we have processed the array elements
@@ -406,47 +408,42 @@ public class Json2Xml extends XmlAligner {
 				return;
 			}
 		}
-		String childElementName1 = childElementDeclaration.getName();
-		if (log.isTraceEnabled()) log.trace("ToXml.processChildElement() parent name [{}] childElementName [{}]", parentName, childElementName1);
 		Iterable<JsonValue> childNodes = getChildrenByName(node, childElementDeclaration);
-		boolean childSeen=false;
-		if (childNodes!=null) {
+		boolean childSeen = false;
+		if (childNodes != null) {
 			childSeen = true;
 			int i = 0;
-			for (JsonValue childNode:childNodes) {
+			for (JsonValue childNode: childNodes) {
 				i++;
 				handleElement(childElementDeclaration,childNode);
 			}
-			if (log.isTraceEnabled()) log.trace("processed [{}] children found by name [{}] in [{}]", i, childElementName1, parentName);
+			log.trace("processed [{}] children found by name [{}] in [{}]", i, childElementName, parentName);
 			if (i==0 && isDeepSearch() && childElementDeclaration.getTypeDefinition().getTypeCategory()!=XSTypeDefinition.SIMPLE_TYPE) {
-				if (log.isTraceEnabled())
-					log.trace("no children processed, and deepSearch, not a simple type therefore handle node [{}] in [{}]", childElementName1, parentName);
+				log.trace("no children processed, and deepSearch, not a simple type therefore handle node [{}] in [{}]", childElementName, parentName);
 				handleElement(childElementDeclaration, node);
-				childSeen = true;
 			}
 		} else {
-			if (log.isTraceEnabled()) log.trace("no children found by name [{}] in [{}]", childElementName1, parentName);
-			if (isDeepSearch() && childElementDeclaration.getTypeDefinition().getTypeCategory()!=XSTypeDefinition.SIMPLE_TYPE) {
-				if (log.isTraceEnabled())
-					log.trace("no children found, and deepSearch, not a simple type therefore handle node [{}] in [{}]", childElementName1, parentName);
+			log.trace("no children found by name [{}] in [{}]", childElementName, parentName);
+			if (isDeepSearch() && childElementDeclaration.getTypeDefinition().getTypeCategory() != XSTypeDefinition.SIMPLE_TYPE) {
+				log.trace("no children found, and deepSearch, not a simple type therefore handle node [{}] in [{}]", childElementName, parentName);
 				if (tryDeepSearchForChildElement(childElementDeclaration, mandatory, node, processedChildren)) {
 					childSeen = true;
 				}
 			}
 		}
 		if (childSeen) {
-			if (processedChildren.contains(childElementName1)) {
-				throw new IllegalStateException("child element ["+ childElementName1 +"] already processed for node ["+ parentName +"]");
+			if (processedChildren.contains(childElementName)) {
+				throw new IllegalStateException("child element ["+ childElementName +"] already processed for node ["+ parentName +"]");
 			}
-			processedChildren.add(childElementName1);
+			processedChildren.add(childElementName);
 		}
 	}
 
 	protected boolean isEmptyNode(JsonValue node) {
-		if (node instanceof JsonArray) {
-			return ((JsonArray)node).isEmpty();
-		} else if (node instanceof JsonObject) {
-			return ((JsonObject)node).isEmpty();
+		if (node instanceof JsonArray jsonArray) {
+			return jsonArray.isEmpty();
+		} else if (node instanceof JsonObject jsonObject) {
+			return jsonObject.isEmpty();
 		} else {
 			return true;
 		}
@@ -455,19 +452,23 @@ public class Json2Xml extends XmlAligner {
 	/**
 	 * Create a copy of the JSON node that contains only keys from the allowedNames set in the top level.
 	 *
-	 * @param node Node to copy
-	 * @param allowedNames Names of child-nodes to keep in the copy
+	 * @param node                  Node to copy
+	 * @param allowedChildren          Names of child-nodes to keep in the copy
 	 * @return Copy of the JSON node.
 	 */
-	protected JsonValue filterNodeChildren(JsonValue node, Set<String> allowedNames) {
-		if (node instanceof JsonArray) {
-			return copyJsonArray((JsonArray)node, allowedNames);
-		} else if (node instanceof JsonObject) {
-			return copyJsonObject((JsonObject)node, allowedNames);
+	protected @Nonnull JsonValue filterNodeChildren(JsonValue node, List<XSParticle> allowedChildren) {
+		if (node instanceof JsonArray jsonArray) {
+			return copyJsonArray(jsonArray, allowedChildren);
+		} else if (node instanceof JsonObject jsonObject) {
+			return copyJsonObject(jsonObject, allowedChildren);
 		} else return node;
 	}
 
-	private JsonValue copyJsonObject(JsonObject node, Set<String> allowedNames) {
+	private JsonValue copyJsonObject(JsonObject node, List<XSParticle> allowedChildren) {
+		Set<String> allowedNames = allowedChildren
+				.stream()
+				.map(p -> p.getTerm().getName())
+				.collect(Collectors.toSet());
 		JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
 		node.forEach((key, value) -> {
 			if (allowedNames.contains(key)) objectBuilder.add(key, value);
@@ -476,21 +477,56 @@ public class Json2Xml extends XmlAligner {
 		// substitutions could fill in for absent names.
 		// This is perhaps not the cleanest way to make sure the substitutions are performed but this requires the least
 		// amount of code changes in other parts.
-		if (sp != null) {
-			allowedNames.forEach(name -> {
+		if (sp.isNotEmpty()) {
+			allowedChildren.forEach(childParticle -> {
+				String name = childParticle.getTerm().getName();
 				if (!node.containsKey(name) && sp.hasSubstitutionsFor(getContext(), name)) {
 					objectBuilder.add(name, getSubstitutedChild(name));
+				} else if (hasSubstitutionForChild(childParticle)) {
+					// A deeper child-node does have a substitution for this element, so add an empty object for it to further parse at later stage.
+					objectBuilder.add(name, Json.createObjectBuilder().build());
 				}
 			});
 		}
 		return objectBuilder.build();
 	}
 
-	private JsonValue copyJsonArray(JsonArray node, Set<String> allowedNames) {
+	private boolean hasSubstitutionForChild(XSParticle childParticle) {
+		// Find a recursive list of all child-names of this type to see if any of these names has a substitution from parameters
+		Set<String> names = new HashSet<>();
+		getChildElementNamesRecursive(childParticle, names, new HashSet<>());
+		return names.contains(XSD_WILDCARD_ELEMENT_TOKEN) || names.stream().anyMatch(childName -> sp.hasSubstitutionsFor(getContext(), childName));
+	}
+
+	private void getChildElementNamesRecursive(XSParticle particle, Set<String> names, Set<XSParticle> visitedTypes) {
+		XSTerm term = particle.getTerm();
+		names.add(term.getName());
+		if (visitedTypes.contains(particle)) {
+			return;
+		}
+		visitedTypes.add(particle);
+		if (term instanceof XSModelGroup modelGroup) {
+			XSObjectList modelGroupParticles = modelGroup.getParticles();
+			for (Object childObject : modelGroupParticles) {
+				XSParticle childParticle = (XSParticle) childObject;
+				getChildElementNamesRecursive(childParticle, names, visitedTypes);
+			}
+		} else if (term instanceof XSElementDeclaration elementDeclaration) {
+			XSTypeDefinition typeDefinition = elementDeclaration.getTypeDefinition();
+			if (typeDefinition.getTypeCategory()!=XSTypeDefinition.SIMPLE_TYPE) {
+				XSComplexTypeDefinition complexTypeDefinition = (XSComplexTypeDefinition) typeDefinition;
+				getChildElementNamesRecursive(complexTypeDefinition.getParticle(), names, visitedTypes);
+			}
+		} else if (term instanceof XSWildcard wildcard) {
+			log.debug("XSD contains wildcard element [{}], constraint [{}]/[{}]", term.getName(), wildcard.getConstraintType(), wildcard.getNsConstraintList());
+			// TODO: Not sure what to do here to realistically restrict possible child-elements and I'm afraid it can balloon into a lot of unneeded code.
+			names.add(XSD_WILDCARD_ELEMENT_TOKEN);
+		}
+	}
+
+	private JsonValue copyJsonArray(JsonArray node, List<XSParticle> allowedChildren) {
 		JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-		node.forEach(value -> {
-			arrayBuilder.add(filterNodeChildren(value, allowedNames));
-		});
+		node.forEach(value -> arrayBuilder.add(filterNodeChildren(value, allowedChildren)));
 		return arrayBuilder.build();
 	}
 
@@ -525,8 +561,8 @@ public class Json2Xml extends XmlAligner {
 	public final Iterable<JsonValue> getChildrenByName(JsonValue node, XSElementDeclaration childElementDeclaration) throws SAXException {
 		String childName=childElementDeclaration.getName();
 		Iterable<JsonValue> children = getNodeChildrenByName(node, childElementDeclaration);
-		if (children==null && sp!=null && sp.hasSubstitutionsFor(getContext(), childName)) {
-			List<JsonValue> result=new ArrayList<>();
+		if (children == null && sp.hasSubstitutionsFor(getContext(), childName)) {
+			List<JsonValue> result = new ArrayList<>();
 			result.add(getSubstitutedChild(childName));
 			return result;
 		}
@@ -537,13 +573,13 @@ public class Json2Xml extends XmlAligner {
 		String nodeName=elementDeclaration.getName();
 		Object text;
 		if (log.isTraceEnabled()) log.trace("node [{}] currently parsed element [{}]", nodeName, getContext().getLocalName());
-		if (sp!=null && sp.hasOverride(getContext())) {
+		if (sp.hasOverride(getContext())) {
 			String result = getOverride(node);
 			if (log.isTraceEnabled()) log.trace("node [{}] override found [{}]", nodeName, result);
 			return result;
 		}
 		String result=getNodeText(node);
-		if (sp!=null && StringUtils.isEmpty(result) && (text=sp.getDefault(getContext()))!=null) {
+		if (StringUtils.isEmpty(result) && (text = sp.getDefault(getContext())) != null) {
 			if (log.isTraceEnabled()) log.trace("node [{}] default found [{}]", nodeName, text);
 			result = text.toString();
 		}
@@ -553,7 +589,7 @@ public class Json2Xml extends XmlAligner {
 
 	protected Set<String> getUnprocessedChildElementNames(JsonValue node, Set<String> processedChildren) throws SAXException {
 		Set<String> unProcessedChildren = getAllNodeChildNames(node);
-		if (unProcessedChildren!=null && !unProcessedChildren.isEmpty()) {
+		if (!unProcessedChildren.isEmpty()) {
 			unProcessedChildren.removeAll(processedChildren);
 		}
 		return unProcessedChildren;
@@ -612,46 +648,45 @@ public class Json2Xml extends XmlAligner {
 
 	public void handleElement(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
 		String name = elementDeclaration.getName();
-		String elementNamespace=elementDeclaration.getNamespace();
-		String qname=getQName(elementNamespace, name);
-		if (log.isTraceEnabled()) log.trace("handleNode() name [{}] elementNamespace [{}]", name, elementNamespace);
+		String elementNamespace = elementDeclaration.getNamespace();
+		String qname = getQName(elementNamespace, name);
+		log.trace("handleNode() name [{}] elementNamespace [{}]", name, elementNamespace);
+
 		newLine();
-		AttributesImpl attributes=new AttributesImpl();
+		AttributesImpl attributes = new AttributesImpl();
 		Map<String,String> nodeAttributes = getAttributes(elementDeclaration, node);
-		if (log.isTraceEnabled()) log.trace("node [{}] search for attributeDeclaration", name);
-		XSTypeDefinition typeDefinition=elementDeclaration.getTypeDefinition();
-		XSObjectList attributeUses=getAttributeUses(typeDefinition);
+		log.trace("node [{}] search for attributeDeclaration", name);
+		XSTypeDefinition typeDefinition = elementDeclaration.getTypeDefinition();
+
+		List<XSAttributeUse> attributeUses = getAttributeUses(typeDefinition);
 		XSWildcard wildcard = typeDefinition instanceof XSComplexTypeDefinition xsctd ? xsctd.getAttributeWildcard():null;
-		if ((attributeUses==null || attributeUses.getLength()==0) && wildcard==null) {
-			if (nodeAttributes!=null && !nodeAttributes.isEmpty()) {
+		if (attributeUses.isEmpty() && wildcard == null) {
+			if (!nodeAttributes.isEmpty()) {
 				log.warn("node [{}] found [{}] attributes, but no declared AttributeUses or wildcard", name, nodeAttributes.size());
 			} else {
-				if (log.isTraceEnabled()) log.trace("node [{}] no attributeUses or wildcard, no attributes", name);
+				log.trace("node [{}] no attributeUses or wildcard, no attributes", name);
 			}
+		} else if (nodeAttributes.isEmpty()) {
+			log.warn("node [{}] declared [{}] attributes, but no attributes found", name, attributeUses.size());
 		} else {
-			if (nodeAttributes==null || nodeAttributes.isEmpty()) {
-				log.warn("node [{}] declared [{}] attributes, but no attributes found", name, attributeUses != null ? attributeUses.getLength() : 0);
-			} else if (attributeUses != null) {
-				for (int i=0;i<attributeUses.getLength(); i++) {
-					XSAttributeUse attributeUse=(XSAttributeUse)attributeUses.item(i);
-					XSAttributeDeclaration attributeDeclaration=attributeUse.getAttrDeclaration();
-					String attName=attributeDeclaration.getName();
-					if (nodeAttributes.containsKey(attName)) {
-						String value=nodeAttributes.remove(attName);
-						String uri=attributeDeclaration.getNamespace();
-						String attqname=getQName(uri,attName);
-						String type=null;
-						if (log.isTraceEnabled()) log.trace("node [{}] adding attribute [{}] value [{}]", name, attName, value);
-						attributes.addAttribute(uri, attName, attqname, type, value);
-					}
+			for (XSAttributeUse attributeUse : attributeUses) {
+				XSAttributeDeclaration attributeDeclaration = attributeUse.getAttrDeclaration();
+				String attName = attributeDeclaration.getName();
+				if (nodeAttributes.containsKey(attName)) {
+					String value = nodeAttributes.remove(attName);
+					String uri = attributeDeclaration.getNamespace();
+					String attqname = getQName(uri, attName);
+					String type = null;
+					log.trace("node [{}] adding attribute [{}] value [{}]", name, attName, value);
+					attributes.addAttribute(uri, attName, attqname, type, value);
 				}
-				if (wildcard!=null) {
-					nodeAttributes.forEach((attName,value)-> {
-						if (log.isTraceEnabled()) log.trace("node [{}] adding attribute [{}] value [{}] via wildcard", name, attName, value);
-						attributes.addAttribute("", attName, attName, null, value);
-					});
-					nodeAttributes.clear();
-				}
+			}
+			if (wildcard != null) {
+				nodeAttributes.forEach((attName, value) -> {
+					log.trace("node [{}] adding attribute [{}] value [{}] via wildcard", name, attName, value);
+					attributes.addAttribute("", attName, attName, null, value);
+				});
+				nodeAttributes.clear();
 			}
 		}
 		if (isNil(node)) {
@@ -663,7 +698,7 @@ public class Json2Xml extends XmlAligner {
 		} else {
 			if (isMultipleOccurringChildElement(name) && node instanceof List<?>) {
 				//noinspection unchecked
-				for(JsonValue n:(List<JsonValue>)node) {
+				for(JsonValue n: (List<JsonValue>)node) {
 					doHandleElement(elementDeclaration, n, elementNamespace, name, qname, attributes);
 				}
 			} else {
@@ -680,7 +715,7 @@ public class Json2Xml extends XmlAligner {
 
 	protected void handleComplexTypedElement(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
 		String name = elementDeclaration.getName();
-		if (log.isTraceEnabled()) log.trace("ToXml.handleComplexTypedElement() search for best path for available children of element [{}]", name);
+		log.trace("ToXml.handleComplexTypedElement() search for best path for available children of element [{}]", name);
 		List<XSParticle> childParticles = getBestChildElementPath(elementDeclaration, node, false);
 		if (log.isTraceEnabled()) {
 			if (childParticles.isEmpty()) {
@@ -697,21 +732,21 @@ public class Json2Xml extends XmlAligner {
 		for (int i = 0; i < childParticles.size(); i++) {
 			XSParticle childParticle = childParticles.get(i);
 			XSElementDeclaration childElementDeclaration = (XSElementDeclaration) childParticle.getTerm();
-			if (log.isTraceEnabled()) log.trace("ToXml.handleComplexTypedElement() processing child [{}], name [{}]", i, childElementDeclaration.getName());
+			log.trace("ToXml.handleComplexTypedElement() processing child [{}], name [{}]", i, childElementDeclaration.getName());
 			processChildElement(node, name, childElementDeclaration, childParticle.getMinOccurs() > 0, processedChildren);
 		}
 
 		Set<String> unProcessedChildren = getUnprocessedChildElementNames(node, processedChildren);
 
-		if (unProcessedChildren!=null && !unProcessedChildren.isEmpty()) {
-			Set<String> unProcessedChildrenWorkingCopy=new LinkedHashSet<>(unProcessedChildren);
+		if (unProcessedChildren != null && !unProcessedChildren.isEmpty()) {
+			Set<String> unProcessedChildrenWorkingCopy = new LinkedHashSet<>(unProcessedChildren);
 			log.warn("processing [{}] unprocessed child elements{}", unProcessedChildren.size(), !unProcessedChildren.isEmpty() ? ", first [" + unProcessedChildren.iterator()
 					.next() + "]" : "");
 			// this loop is required to handle for mixed content element containing globally defined elements
-			for (String childName:unProcessedChildrenWorkingCopy) {
+			for (String childName: unProcessedChildrenWorkingCopy) {
 				log.warn("processing unprocessed child element [{}]", childName);
 				XSElementDeclaration childElementDeclaration = findElementDeclarationForName(null,childName);
-				if (childElementDeclaration==null) {
+				if (childElementDeclaration == null) {
 					// this clause is hit for mixed content element containing elements that are not defined
 					if (isTypeContainsWildcard()) {
 						XSElementDecl elementDeclarationStub = new XSElementDecl();
@@ -730,7 +765,6 @@ public class Json2Xml extends XmlAligner {
 			if (log.isTraceEnabled()) log.trace("ToXml.handleComplexTypedElement() handle element [{}] as simple, because no children processed", name);
 			handleSimpleTypedElement(elementDeclaration, node);
 		}
-
 	}
 
 	protected void handleSimpleTypedElement(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
@@ -759,11 +793,12 @@ public class Json2Xml extends XmlAligner {
 		if (!(typeDefinition instanceof XSComplexTypeDefinition complexTypeDefinition)) {
 			return false;
 		}
-		Set<String> allowedNames = getNamesOfXsdChildElements(complexTypeDefinition);
-		allowedNames.removeAll(processedChildren);
 
-		JsonValue copy = filterNodeChildren(node, allowedNames);
+		List<XSParticle> allowedParticles = getXsdChildParticles(complexTypeDefinition).stream()
+				.filter(p -> !processedChildren.contains(p.getTerm().getName()))
+				.toList();
 
+		JsonValue copy = filterNodeChildren(node, allowedParticles);
 		if (isEmptyNode(copy) && !mandatory) {
 			return false;
 		}
@@ -773,7 +808,7 @@ public class Json2Xml extends XmlAligner {
 
 	public @Nonnull List<XSParticle> getBestChildElementPath(XSElementDeclaration elementDeclaration, JsonValue node, boolean silent) throws SAXException {
 		XSTypeDefinition typeDefinition = elementDeclaration.getTypeDefinition();
-		if (typeDefinition==null) {
+		if (typeDefinition == null) {
 			log.warn("getBestChildElementPath typeDefinition is null");
 			return Collections.emptyList();
 		}
@@ -847,24 +882,20 @@ public class Json2Xml extends XmlAligner {
 
 	private boolean handleElementDeclarationTerm(JsonValue baseNode, XSParticle particle, List<XSParticle> path, List<String> failureReasons, XSElementDeclaration elementDeclaration) throws SAXException {
 		String elementName=elementDeclaration.getName();
-		if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration name [{}]", elementName);
+		log.trace("getBestMatchingElementPath().XSElementDeclaration name [{}]", elementName);
 		if (!hasChild(baseNode, elementName)) {
 			if (isDeepSearch()) {
-				if (log.isTraceEnabled())
-					log.trace("getBestMatchingElementPath().XSElementDeclaration element [{}] not found, perform deep search", elementName);
+				log.trace("getBestMatchingElementPath().XSElementDeclaration element [{}] not found, perform deep search", elementName);
 				try {
 					List<XSParticle> subList=getBestChildElementPath(elementDeclaration, baseNode, true);
 					if (!subList.isEmpty()) {
 						path.add(particle);
-						if (log.isTraceEnabled())
-							log.trace("getBestMatchingElementPath().XSElementDeclaration element [{}] not found, nested elements found in deep search", elementName);
+						log.trace("getBestMatchingElementPath().XSElementDeclaration element [{}] not found, nested elements found in deep search", elementName);
 						return true;
 					}
-					if (log.isTraceEnabled())
-						log.trace("getBestMatchingElementPath().XSElementDeclaration element [{}] not found, no nested elements found in deep search", elementName);
+					log.trace("getBestMatchingElementPath().XSElementDeclaration element [{}] not found, no nested elements found in deep search", elementName);
 				} catch (Exception e) {
-					if (log.isTraceEnabled())
-						log.trace("getBestMatchingElementPath().XSElementDeclaration element [{}] not found, no nested elements found in deep search: {}", elementName, e.getMessage());
+					log.trace("getBestMatchingElementPath().XSElementDeclaration element [{}] not found, no nested elements found in deep search: {}", elementName, e.getMessage());
 					return false;
 				}
 			}
@@ -878,14 +909,12 @@ public class Json2Xml extends XmlAligner {
 		}
 		for (XSParticle resultParticle: path) {
 			if (elementName.equals(resultParticle.getTerm().getName())) {
-				if (log.isTraceEnabled())
-					log.trace("getBestMatchingElementPath().XSElementDeclaration element [{}] found but required multiple times", elementName);
+				log.trace("getBestMatchingElementPath().XSElementDeclaration element [{}] found but required multiple times", elementName);
 				failureReasons.add("element ["+elementName+"] required multiple times");
 				return false;
 			}
 		}
-		if (log.isTraceEnabled())
-			log.trace("getBestMatchingElementPath().XSElementDeclaration element [{}] found", elementName);
+		log.trace("getBestMatchingElementPath().XSElementDeclaration element [{}] found", elementName);
 		path.add(particle);
 		return true;
 	}

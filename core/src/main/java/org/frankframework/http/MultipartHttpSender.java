@@ -15,7 +15,7 @@
 */
 package org.frankframework.http;
 
-@Deprecated
+@Deprecated(since = "7.8", forRemoval = true)
 public class MultipartHttpSender extends HttpSender {
 
 	public MultipartHttpSender() {

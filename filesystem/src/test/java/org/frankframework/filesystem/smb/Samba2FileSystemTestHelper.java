@@ -166,7 +166,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 		}
 
 		file.close();
-		return path;
+		return filename;
 	}
 
 	@Override

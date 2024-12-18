@@ -6,8 +6,8 @@ import org.junit.jupiter.api.BeforeAll;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.filesystem.FileSystemActorTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
+import org.frankframework.filesystem.WritableFileSystemActorTest;
 
 /**
  * This test class is created to test both SFtpFileSystem and SFtpFileSystemSender classes.
@@ -16,7 +16,7 @@ import org.frankframework.filesystem.IFileSystemTestHelper;
  *
  */
 @Log4j2
-class SftpFileSystemActorTest extends FileSystemActorTest<SftpFileRef, SftpFileSystem> {
+class SftpFileSystemActorTest extends WritableFileSystemActorTest<SftpFileRef, SftpFileSystem> {
 
 	private static final String username = "frankframework";
 	private static final String password = "pass_123";

@@ -6,14 +6,14 @@ import org.junit.jupiter.api.Test;
 
 import jcifs.smb.SmbFile;
 
-import org.frankframework.filesystem.FileSystemActorTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.filesystem.LocalFileSystemTestHelper;
+import org.frankframework.filesystem.WritableFileSystemActorTest;
 import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileServer.FileSystemType;
 import org.frankframework.testutil.junit.LocalFileSystemMock;
 
-public class Samba1FileSystemActorTest extends FileSystemActorTest<SmbFile, Samba1FileSystem> {
+public class Samba1FileSystemActorTest extends WritableFileSystemActorTest<SmbFile, Samba1FileSystem> {
 
 	private final String username = "frankframework";
 	private final String password = "pass_123";
