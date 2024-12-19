@@ -26,6 +26,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
@@ -46,7 +47,7 @@ import org.frankframework.util.LogUtil;
  * @author Niels Meijer
  */
 @Log4j2
-@Order(Ordered.HIGHEST_PRECEDENCE+1) //2nd highest precedence
+@Order(Ordered.HIGHEST_PRECEDENCE+1) // 2nd highest precedence
 public class FrankEnvironmentInitializer implements WebApplicationInitializer {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 
@@ -93,6 +94,7 @@ public class FrankEnvironmentInitializer implements WebApplicationInitializer {
 		APPLICATION_LOG.debug("Starting Frank EnvironmentContext");
 
 		XmlWebApplicationContext applicationContext = new XmlWebApplicationContext();
+		applicationContext.setEnvironment(new StandardEnvironment()); // Force a StandardEnvironment else it will create a StandardServletEnvironment
 		applicationContext.setConfigLocations(SpringContextScope.ENVIRONMENT.getContextFile());
 		applicationContext.setDisplayName("EnvironmentContext");
 
