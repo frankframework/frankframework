@@ -795,14 +795,41 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 			"false, ChildTypeFirstInXsdPresentInInput",
 			"true, ChildTypeLastInXsd",
 			"false, ChildTypeLastInXsd",
+			"true, ParentNotRootChildMissing",
+			"false, ParentNotRootChildMissing",
+			"true, WithIntermediateLevelChildMissing",
+			"false, WithIntermediateLevelChildMissing",
 	})
 	public void testSameNameDifferentLevels(boolean deepSearch, String testCase) throws Exception {
 		// Arrange
 		pipe.setName("testSameNameDifferentLevelsDeepSearch=" + deepSearch);
 		pipe.setSchema("/Validation/Json2Xml/DeepSearch/" + testCase + "/Test.xsd");
 		pipe.setThrowException(true);
-		pipe.setRoot("parent");
+		pipe.setRoot("root");
 		pipe.setDeepSearch(deepSearch);
+
+		pipe.configure();
+		pipe.start();
+
+		String input = TestFileUtils.getTestFile("/Validation/Json2Xml/DeepSearch/" + testCase + "/Test-Input.json");
+
+		// Act
+		PipeRunResult result = pipe.doPipe(Message.asMessage(input), session);
+
+		// Assert
+		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/DeepSearch/" + testCase + "/ExpectedOutput.xml");
+		assertXmlEquals(expectedResult, result.getResult().asString());
+	}
+
+	@Test
+	public void testSameNameDifferentLevelsWithDeepSearchFailingCase() throws Exception {
+		// Arrange
+		String testCase = "ChildTypeFirstInXsdMissingInInput";
+		pipe.setName("testSameNameDifferentLevelsDeepSearch=true");
+		pipe.setSchema("/Validation/Json2Xml/DeepSearch/" + testCase + "/Test.xsd");
+		pipe.setThrowException(true);
+		pipe.setRoot("root");
+		pipe.setDeepSearch(true);
 
 		pipe.configure();
 		pipe.start();

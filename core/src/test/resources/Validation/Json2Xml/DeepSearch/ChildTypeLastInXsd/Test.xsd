@@ -19,7 +19,7 @@
 			<xsd:element name="type" type="otherType"/>
 		</xsd:sequence>
 	</xsd:complexType>
-	<xsd:element name="parent">
+	<xsd:element name="root">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="type" type="messageType" minOccurs="0"/>

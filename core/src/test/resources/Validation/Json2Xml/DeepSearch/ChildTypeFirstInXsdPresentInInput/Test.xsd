@@ -20,7 +20,7 @@
 			<xsd:element name="name" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
-	<xsd:element name="parent">
+	<xsd:element name="root">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="child" type="childType" minOccurs="0"/>
