@@ -5,6 +5,7 @@
       ><i class="fa fa-file-text-o"></i> View</a
     >
     <button
+      appHasAccessToLink="resendReceiverMessage"
       *ngIf="storageService.storageParams.processState === 'Error'"
       [ladda]="message.resending"
       data-style="slide-down"
@@ -16,6 +17,7 @@
       <i class="fa fa-repeat"></i> Resend
     </button>
     <button
+      appHasAccessToLink="deleteReceiverMessage"
       *ngIf="storageService.storageParams.processState === 'Error'"
       [ladda]="message.deleting"
       data-style="slide-down"
@@ -27,6 +29,7 @@
       <i class="fa fa-times"></i> Delete
     </button>
     <button
+      appHasAccessToLink="downloadMessage"
       title="Download Message"
       (click)="storageService.downloadMessage(message.id)"
       class="btn btn-info btn-xs"

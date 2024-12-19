@@ -72,6 +72,7 @@
                   <td *ngIf="s.receiver">
                     <span class="text-success" title="View Messages Processed by {{ s.receiver }}">
                       <button
+                        appHasAccessToLink="browseMessages"
                         *ngIf="t.type === 'A'"
                         [routerLink]="[
                           '',
@@ -81,7 +82,7 @@
                           'receivers',
                           s.receiver,
                           'stores',
-                          'Done'
+                          'Done',
                         ]"
                         class="btn btn-xs btn-default m-l-xs"
                         type="button"
@@ -91,6 +92,7 @@
                     </span>
                     <span class="text-danger" title="View Messages in Error in {{ s.receiver }}">
                       <button
+                        appHasAccessToLink="browseMessages"
                         *ngIf="t.type === 'E'"
                         [routerLink]="[
                           '',
@@ -100,7 +102,7 @@
                           'receivers',
                           s.receiver,
                           'stores',
-                          'Error'
+                          'Error',
                         ]"
                         class="btn btn-xs btn-default m-l-xs"
                         type="button"

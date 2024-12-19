@@ -25,6 +25,11 @@ app-pages-navigation {
   height: 60px;
 }
 
+/* DISABLED ELEMENTS (used for has access to link directive) */
+a.disabled {
+  color: #ccc;
+}
+
 /* SCROLL TO TOP BUTTON */
 .scroll-to-top {
   visibility: visible;
