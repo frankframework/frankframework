@@ -35,6 +35,8 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.web.context.WebApplicationContext;
 
 import lombok.Setter;
@@ -98,6 +100,14 @@ public class ConsoleWarInitializer extends SpringBootServletInitializer {
 		Set<String> set = new HashSet<>();
 		set.add("FrankConsoleContext.xml");
 		application.setWebApplicationType(WebApplicationType.NONE);
+
+		// Not ideal, but allows us to delegate property resolving to the parent context if present.
+		// When running the console as a standalone jar, this code wont be used.
+		StandardEnvironment environment = new StandardEnvironment();
+		MutablePropertySources propertySources = environment.getPropertySources();
+		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
+		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
+		application.setEnvironment(environment);
 		application.setSources(set);
 
 		return super.run(application);
