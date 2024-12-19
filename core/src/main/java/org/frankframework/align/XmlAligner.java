@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2022 WeAreFrank!
+   Copyright 2017-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.logging.log4j.Logger;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.xs.ElementPSVI;
@@ -58,8 +57,8 @@ import org.xml.sax.helpers.XMLFilterImpl;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.XmlUtils;
 
 /**
@@ -67,9 +66,8 @@ import org.frankframework.util.XmlUtils;
  *
  * @author Gerrit van Brakel
  */
+@Log4j2
 public class XmlAligner extends XMLFilterImpl {
-	protected Logger log = LogUtil.getLogger(this.getClass());
-
 	public static final String FEATURE_NAMESPACES="http://xml.org/sax/features/namespaces";
 	public static final String FEATURE_NAMESPACE_PREFIXES="http://xml.org/sax/features/namespace-prefixes";
 
