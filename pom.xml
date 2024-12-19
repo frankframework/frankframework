@@ -52,6 +52,9 @@
 		<activemq.driver.version>6.1.4</activemq.driver.version>
 		<artemis.driver.version>2.38.0</artemis.driver.version>
 
+		<rabbitmq.driver.version>5.23.0</rabbitmq.driver.version>
+		<rabbitmq.jms.version>3.4.0</rabbitmq.jms.version>
+
 		<aws.java.sdk.version>2.29.1</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
