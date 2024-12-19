@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:simpleType name="messageType">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="2"/>
+			<xsd:enumeration value="M1"/>
+			<xsd:enumeration value="M2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="otherType">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="2"/>
+			<xsd:enumeration value="C1"/>
+			<xsd:enumeration value="C2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="childType">
+		<xsd:sequence>
+			<xsd:element name="type" type="otherType" minOccurs="0"/>
+			<xsd:element name="name" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="parent">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="child" type="childType" minOccurs="0"/>
+				<xsd:element name="type" type="messageType" minOccurs="0"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>

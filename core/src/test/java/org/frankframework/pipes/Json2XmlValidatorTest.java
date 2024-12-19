@@ -789,8 +789,10 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	@ParameterizedTest(name = "With DeepSearch={0} Case={1}")
 	@DisplayName("Same Element-Name At Different Levels")
 	@CsvSource(value = {
-			"true, ChildTypeFirstInXsd",
-			"false, ChildTypeFirstInXsd",
+			"true, ChildTypeFirstInXsdMissingInInput",
+			"false, ChildTypeFirstInXsdMissingInInput",
+			"true, ChildTypeFirstInXsdPresentInInput",
+			"false, ChildTypeFirstInXsdPresentInInput",
 			"true, ChildTypeLastInXsd",
 			"false, ChildTypeLastInXsd",
 	})
