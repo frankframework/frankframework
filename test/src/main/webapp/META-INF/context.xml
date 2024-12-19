@@ -193,6 +193,12 @@
 		brokerURL="tcp://${jms.hostname:-localhost}:61615"
 	/>
 
+	<Resource name="jms/qcf-rabbitmq"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="com.rabbitmq.jms.admin.RMQConnectionFactory"
+		brokerURL="amqp://guest:guest@${jms.hostname:-localhost}:5672"
+	/>
+
 	<!-- AWS SQS resource configuration -->
 	<!-- The queues configured in the queues attribute will be created if they do not exist -->
 	<Resource name="jms/qcf-aws_sqs"
