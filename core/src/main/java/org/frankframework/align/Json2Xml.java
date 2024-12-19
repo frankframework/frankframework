@@ -92,7 +92,7 @@ public class Json2Xml extends XmlAligner {
 	private final boolean insertElementContainerElements;
 	private final boolean strictSyntax;
 	private final Map<String, String> prefixMap = new HashMap<>();
-	@Nonnull SubstitutionProvider<?> sp = new OverridesMap<>();
+	private @Nonnull SubstitutionProvider<?> sp = new OverridesMap<>();
 	private @Getter @Setter boolean readAttributes=true;
 	private static final String ATTRIBUTE_PREFIX = "@";
 	private static final String MIXED_CONTENT_LABEL = "#text";
