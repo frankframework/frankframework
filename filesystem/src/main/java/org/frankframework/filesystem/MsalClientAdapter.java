@@ -158,7 +158,7 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 	}
 
 	/** Silly wrapper to create a clean SDK */
-	public class GraphClient {
+	public static class GraphClient {
 		private MsalClientAdapter msal;
 		public GraphClient(MsalClientAdapter msal) {
 			this.msal = msal;

@@ -180,7 +180,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 					.filter(t -> rootFolder.equalsIgnoreCase(t.getName()))
 					.findFirst()
 					.orElseThrow(() -> {
-				throw new LifecycleException("unable to find folder [%s] in mailbox [%s]".formatted(rootFolder, mailAddress));
+				return new LifecycleException("unable to find folder [%s] in mailbox [%s]".formatted(rootFolder, mailAddress));
 			});
 			log.trace("found id [{}] beloging to rootFolder [{}]", foundMailFolder.getId(), rootFolder);
 

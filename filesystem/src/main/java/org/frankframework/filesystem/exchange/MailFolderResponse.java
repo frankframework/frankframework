@@ -41,7 +41,7 @@ public class MailFolderResponse {
 	private static final String CHILD_MAIL_FOLDER_BASE = "%s/childFolders";
 
 	public static List<MailFolder> get(GraphClient client, String email) throws IOException {
-		return get(client, email, 20); // default limit is 20, and with 20 entries per API call, only 1 call will be made.
+		return get(client, email, 200); // default limit is 20, and with 20 entries per API call, only 1 call will be made.
 	}
 
 	public static List<MailFolder> get(GraphClient client, String email, int limit) throws IOException {
@@ -52,7 +52,7 @@ public class MailFolderResponse {
 	}
 
 	public static List<MailFolder> get(GraphClient client, MailFolder folder) throws IOException {
-		return get(client, folder, 20);
+		return get(client, folder, 200);
 	}
 
 	public static List<MailFolder> get(GraphClient client, MailFolder folder, int limit) throws IOException {

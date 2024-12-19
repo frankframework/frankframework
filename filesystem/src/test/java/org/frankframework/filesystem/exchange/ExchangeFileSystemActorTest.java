@@ -3,6 +3,7 @@ package org.frankframework.filesystem.exchange;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,8 @@ public class ExchangeFileSystemActorTest extends FileSystemActorTest<MailItemId,
 		} catch (Exception e) {
 			// file not found
 		}
-		assumeTrue(properties != null);
+
+		assumeTrue(StringUtils.isNoneEmpty(mailAddress, clientId, clientSecret, tenantId));
 	}
 
 	@Override
