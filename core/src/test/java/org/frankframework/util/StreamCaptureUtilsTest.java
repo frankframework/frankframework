@@ -1,6 +1,7 @@
 package org.frankframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -9,8 +10,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.stream.Message;
@@ -18,27 +19,17 @@ import org.frankframework.stream.UrlMessage;
 
 class StreamCaptureUtilsTest {
 
-	static class BooleanContainer {
-		private boolean value;
-		public void setValue(boolean value) {
-			this.value = value;
-		}
-		public boolean getValue() {
-			return value;
-		}
-	}
-
 	@Test
 	void assertCaptureUtilsCallsWriteMethod() throws IOException {
 		ByteArrayInputStream bis = new ByteArrayInputStream("Test input".getBytes());
 
 		// We need something effectively final here, we can't use a boolean directly unfortunately.
-		BooleanContainer container = new BooleanContainer();
+		AtomicBoolean container = new AtomicBoolean();
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream() {
 			@Override
 			public void write(byte[] b, int off, int len) {
-				container.setValue(true);
+				container.set(true);
 				super.write(b, off, len);
 			}
 		};
@@ -46,7 +37,7 @@ class StreamCaptureUtilsTest {
 		InputStream inputStream = StreamCaptureUtils.captureInputStream(bis, baos, 16);
 		inputStream.close();
 
-		Assertions.assertTrue(container.getValue());
+		assertTrue(container.get(), "Asserts that the write method was called by the capture utils");
 	}
 
 	@Test
