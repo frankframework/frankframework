@@ -107,6 +107,11 @@ jobs:
       # Use Maven Wrapper, so we can build with an older version of Maven, see PR #4579.
     - name: Build with Maven
       env:
+        mailAddress: ${{ secrets.EXCHANGE_MAIL_ADDRESS }}
+        clientId: ${{ secrets.EXCHANGE_MAIL_CLIENTID }}
+        clientSecret: ${{ secrets.EXCHANGE_MAIL_CLIENTSECRET }}
+        tenantId: ${{ secrets.EXCHANGE_MAIL_TENANTID }}
+        baseFolder: "Inbox/iafTest${{ matrix.java }}"
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"

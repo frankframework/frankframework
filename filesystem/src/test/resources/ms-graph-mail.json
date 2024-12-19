@@ -1,0 +1,72 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#users('frank-test-mailbox%40wearefrank.nl')/mailFolders('AAMkADZlNzVhMjJkLTlmZWItNDZjYS1hNWE1LWVkYzNjYWZmMDg5YQAuAAAAAAB414_IEEnGTYVS14HN-8YpAQAkxcE8jvHwRZOOLPsH8i2GAAAAAAEMAAA%3D')/childFolders('AAMkADZlNzVhMjJkLTlmZWItNDZjYS1hNWE1LWVkYzNjYWZmMDg5YQAuAAAAAAB414_IEEnGTYVS14HN-8YpAQAkxcE8jvHwRZOOLPsH8i2GAAAAAAFKAAA%3D')/messages",
+  "value": [
+    {
+      "@odata.etag": "W/\"CQAAABYAAAAkxcE8jvHwRZOOLPsH8i2GAAAAKlYE\"",
+      "id": "a_IEEnGTYVS14HN-8YpBwAkxcE8jvHwRZOOLPsH8i2GAAAAAAFKAAAkxcE8jvHwRZOOLPsH8i2GAAAALrylAAA=",
+      "createdDateTime": "2024-12-17T13:09:30Z",
+      "lastModifiedDateTime": "2024-12-17T13:09:30Z",
+      "changeKey": "CQAAABYAAAAkxcE8jvHwRZOOLPsH8i2GAAAAKlYE",
+      "categories": [],
+      "receivedDateTime": "2024-12-17T13:09:30Z",
+      "sentDateTime": "2024-12-17T13:09:30Z",
+      "hasAttachments": false,
+      "internetMessageId": "<AM0PR02MB40194BC2F67D1EDC5BDC8987B8042@AM0PR02MB4019.eurprd02.prod.outlook.com>",
+      "subject": "rawMessageFile",
+      "bodyPreview": "Test Message Contents",
+      "importance": "normal",
+      "parentFolderId": "AAMkADZlNzVhMjJkLTlmZWItNDZjYS1hNWE1LWVkYzNjYWZmMDg5YQAuAAAAAAB414_IEEnGTYVS14HN-8YpAQAkxcE8jvHwRZOOLPsH8i2GAAAAAAFKAAA=",
+      "conversationId": "AAQkADZlNzVhMjJkLTlmZWItNDZjYS1hNWE1LWVkYzNjYWZmMDg5YQAQABKUy4vn2slAro5CMW0Q7XI=",
+      "conversationIndex": "AQHbUIToEpTLi+fayUCujkIxbRDtcg==",
+      "isDeliveryReceiptRequested": false,
+      "isReadReceiptRequested": false,
+      "isRead": true,
+      "isDraft": true,
+      "webLink": "https://outlook.office365.com/owa/?ItemID=a%2BIEEnGTYVS14HN%2F8YpBwAkxcE8jvHwRZOOLPsH8i2GAAAAAAFKAAAkxcE8jvHwRZOOLPsH8i2GAAAALrylAAA%3D&exvsurl=1&viewmodel=ReadMessageItem",
+      "inferenceClassification": "focused",
+      "body": {
+        "contentType": "text",
+        "content": "Test Message Contents"
+      },
+      "sender": {
+        "emailAddress": {
+          "name": "yes-reply",
+          "address": "yes-reply@hidden.domain"
+        }
+      },
+      "from": {
+        "emailAddress": {
+          "name": "no-reply",
+          "address": "no-reply@hidden.domain"
+        }
+      },
+      "toRecipients": [
+        {
+          "emailAddress": {
+            "name": "Karel Appel",
+            "address": "karel@appel.domain"
+          }
+        }
+      ],
+      "ccRecipients": [
+        {
+          "emailAddress": {
+            "name": "Karel1 Appel",
+            "address": "karel1@appel.domain"
+          }
+        },
+        {
+          "emailAddress": {
+            "name": "Karel2 Appel",
+            "address": "karel2@appel.domain"
+          }
+        }
+      ],
+      "bccRecipients": [],
+      "replyTo": [],
+      "flag": {
+        "flagStatus": "notFlagged"
+      }
+    }
+  ]
+}

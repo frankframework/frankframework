@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2024 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,16 +13,23 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package org.frankframework.senders;
+package org.frankframework.filesystem.exchange;
 
-import org.frankframework.configuration.ConfigurationWarning;
-import org.frankframework.filesystem.AbstractFileSystemSender;
+import lombok.Getter;
+import lombok.Setter;
 
-/**
- * Implementation of a {@link AbstractFileSystemSender} that enables to manipulate messages in an Exchange folder.
- */
-@Deprecated(forRemoval = true)
-@ConfigurationWarning("please use the 'ExchangeFileSystemSender' instead")
-public class ExchangeFolderSender extends ExchangeFileSystemSender {
-	//NO OP
+@Getter
+@Setter
+public class MailItemId {
+
+	private MailFolder mailFolder;
+
+	private String url;
+
+	public String getUrl() {
+		return "%s/%s".formatted(url, id);
+	}
+
+	private String id;
+	private String parentFolderId;
 }

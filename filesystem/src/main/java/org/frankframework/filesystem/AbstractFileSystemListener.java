@@ -261,7 +261,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 	public synchronized RawMessageWrapper<F> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		log.trace("Get Raw Message");
 		FS fileSystem = getFileSystem();
-		log.trace("Getting raw message from FS {}", fileSystem.getClass().getSimpleName());
+		log.trace("Getting raw message from FS {}", () -> fileSystem.getClass().getSimpleName());
 
 		try(Stream<F> ds = FileSystemUtils.getFilteredStream(fileSystem, getInputFolder(), getWildcard(), getExcludeWildcard(), TypeFilter.FILES_ONLY)) {
 			Optional<F> optionalFile = findFirstStableFile(ds);
