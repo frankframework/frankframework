@@ -179,9 +179,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 			MailFolder foundMailFolder = folders.stream()
 					.filter(t -> rootFolder.equalsIgnoreCase(t.getName()))
 					.findFirst()
-					.orElseThrow(() -> {
-				return new LifecycleException("unable to find folder [%s] in mailbox [%s]".formatted(rootFolder, mailAddress));
-			});
+					.orElseThrow(() -> new LifecycleException("unable to find folder [%s] in mailbox [%s]".formatted(rootFolder, mailAddress)));
 			log.trace("found id [{}] beloging to rootFolder [{}]", foundMailFolder.getId(), rootFolder);
 
 			if (folder.isEmpty()) {
