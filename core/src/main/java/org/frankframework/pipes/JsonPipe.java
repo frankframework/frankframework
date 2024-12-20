@@ -78,7 +78,7 @@ public class JsonPipe extends FixedForwardPipe {
 		super.configure();
 
 		// rootElementName has been modified from its default value
-		if (getDirection() == Direction.XML2JSON && rootElementName != DEFAULT_ROOT_ELEMENT_NAME) {
+		if (getDirection() == Direction.XML2JSON && !DEFAULT_ROOT_ELEMENT_NAME.equals(rootElementName)) {
 			throw new ConfigurationException("rootElementName can not be used when direction is XML2JSON");
 		}
 
