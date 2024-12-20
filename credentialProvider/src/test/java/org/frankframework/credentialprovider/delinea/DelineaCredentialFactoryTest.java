@@ -69,7 +69,7 @@ public class DelineaCredentialFactoryTest {
 		// Non-existing secret
 		ICredentials credentials2 = credentialFactory.getCredentials("16", () -> null, () -> null);
 		assertNotNull(credentials2);
-		assertNull(credentials.getUsername());
+		assertNull(credentials2.getUsername());
 	}
 
 	private static Secret createSecret(int id, int folderId, String username, String password) {
