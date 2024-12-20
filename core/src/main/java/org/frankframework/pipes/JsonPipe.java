@@ -29,7 +29,7 @@ import jakarta.json.JsonValue;
 
 import lombok.Getter;
 
-import org.codehaus.plexus.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.doc.Default;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
