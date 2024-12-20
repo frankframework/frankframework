@@ -17,9 +17,12 @@ package org.frankframework.credentialprovider.delinea;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * Response POJO for listing all secrets.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record SecretsList (
 	boolean hasNext,
 	boolean hasPrev,
@@ -35,5 +38,6 @@ public record SecretsList (
 	List<CategorizedListSummary> records) {
 
 	// We only need the id since that's used to determine the secret's alias.
+	@JsonIgnoreProperties(ignoreUnknown = true)
 	record CategorizedListSummary(int id) {}
 }

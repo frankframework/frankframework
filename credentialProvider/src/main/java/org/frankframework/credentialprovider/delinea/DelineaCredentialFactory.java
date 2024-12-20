@@ -100,11 +100,15 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 
 	@Override
 	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
-		if (StringUtils.isEmpty(alias)) {
-			return new Credentials(null, defaultUsernameSupplier, defaultPasswordSupplier);
+		if (StringUtils.isNotEmpty(alias)) {
+			Secret secret = delineaClient.getSecret(alias);
+
+			if (secret != null) {
+				return translate(secret);
+			}
 		}
 
-		return translate(delineaClient.getSecret(alias));
+		return new Credentials(null, defaultUsernameSupplier, defaultPasswordSupplier);
 	}
 
 	void setDelineaClient(DelineaClient delineaClient) {

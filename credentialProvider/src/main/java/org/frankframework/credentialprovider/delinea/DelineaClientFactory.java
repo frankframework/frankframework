@@ -56,10 +56,10 @@ public class DelineaClientFactory {
 	private final DelineaClientSettings delineaClientSettings;
 
 	public DelineaClientFactory(DelineaClientSettings delineaClientSettings) {
+		this.delineaClientSettings = delineaClientSettings;
+
 		uriBuilderFactory = new DefaultUriBuilderFactory(fromUriString(
 				formatUrlTemplateOrGetUrl(delineaClientSettings.apiRootUrlTemplate(), delineaClientSettings.apiRootUrl())));
-
-		this.delineaClientSettings = delineaClientSettings;
 
 		requestFactory = new SimpleClientHttpRequestFactory();
 	}
@@ -80,7 +80,7 @@ public class DelineaClientFactory {
 		return delineaClient;
 	}
 
-	private AccessGrant getAccessGrant() {
+	AccessGrant getAccessGrant() {
 		final MultiValueMap<String, String> request = new LinkedMultiValueMap<>();
 
 		request.add(GRANT_REQUEST_USERNAME_PROPERTY, delineaClientSettings.oauthUsername());

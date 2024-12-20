@@ -27,9 +27,9 @@ import org.springframework.web.client.RestTemplate;
  * RestTemplate implementation for the Delinea Secret Server REST API.
  */
 public class DelineaClient extends RestTemplate {
-	private static final String SECRETS_URI = "/secrets";
+	static final String SECRETS_URI = "/secrets";
 
-	private static final String SECRET_ID_URI = SECRETS_URI + "/{id}";
+	static final String SECRET_ID_URI = SECRETS_URI + "/{id}";
 
 	/**
 	 * Fetch and return a {@link Secret} from Delinea Secret Server, including {@code fileAttachments}

@@ -18,6 +18,7 @@ package org.frankframework.credentialprovider.delinea;
 import java.util.Collections;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -52,6 +53,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @see <a href="https://docs.delinea.com/online-help/platform-api/secret-server-apis-from-platform.htm#UsingtheAccessTokentoCalltheSecretServerAPI">example response</a>
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record Secret(
 	int id,
 	int folderId,
@@ -96,6 +98,7 @@ public record Secret(
 	 *   }
 	 * </pre>
 	 */
+	@JsonIgnoreProperties(ignoreUnknown = true)
 	public record Field(
 		@JsonProperty("itemId")
 		int id,

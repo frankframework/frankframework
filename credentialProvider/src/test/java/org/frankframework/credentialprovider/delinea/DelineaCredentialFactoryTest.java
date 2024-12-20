@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -67,9 +66,10 @@ public class DelineaCredentialFactoryTest {
 		assertNotNull(credentials);
 		assertEquals("user1", credentials.getUsername());
 
+		// Non-existing secret
 		ICredentials credentials2 = credentialFactory.getCredentials("16", () -> null, () -> null);
 		assertNotNull(credentials2);
-		assertNull(null, credentials.getUsername());
+		assertNull(credentials.getUsername());
 	}
 
 	private static Secret createSecret(int id, int folderId, String username, String password) {
