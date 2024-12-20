@@ -29,6 +29,8 @@ import jakarta.json.JsonValue;
 
 import lombok.Getter;
 
+import org.codehaus.plexus.util.StringUtils;
+
 import org.frankframework.doc.Default;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 
@@ -63,7 +65,7 @@ public class JsonPipe extends FixedForwardPipe {
 
 	private @Getter Direction direction = Direction.JSON2XML;
 	private Boolean addXmlRootElement = null;
-	private @Getter String rootElementName = DEFAULT_ROOT_ELEMENT_NAME;
+	private @Getter String rootElementName;
 	private @Getter boolean prettyPrint = false;
 
 	private TransformerPool tpXml2Json;
@@ -78,8 +80,12 @@ public class JsonPipe extends FixedForwardPipe {
 		super.configure();
 
 		// rootElementName has been modified from its default value
-		if (getDirection() == Direction.XML2JSON && !DEFAULT_ROOT_ELEMENT_NAME.equals(rootElementName)) {
+		if (getDirection() == Direction.XML2JSON && StringUtils.isNotEmpty(rootElementName)) {
 			throw new ConfigurationException("rootElementName can not be used when direction is XML2JSON");
+		}
+
+		if (StringUtils.isEmpty(rootElementName)) {
+			rootElementName = DEFAULT_ROOT_ELEMENT_NAME;
 		}
 
 		Direction dir = getDirection();
