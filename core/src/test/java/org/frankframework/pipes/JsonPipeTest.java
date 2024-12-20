@@ -5,6 +5,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.frankframework.configuration.ConfigurationException;
+
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeRunException;
@@ -205,4 +207,47 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		String result = prr.getResult().asString();
 		MatchUtils.assertXmlEquals(expected, result);
 	}
+
+	@Test
+	public void testJson2XmlWithPrettyPrint() throws Exception {
+		pipe.setPrettyPrint(true);
+
+		pipe.configure();
+		pipe.start();
+
+		String input ="{ \"name\": \"Jantje\" }";
+		String expected = "<root>\n\t<name>Jantje</name>\n</root>";
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+
+		String result = prr.getResult().asString();
+		MatchUtils.assertXmlEquals(expected, result);
+		assertEquals(expected, result);
+	}
+
+	@Test
+	public void testJson2XmlWithCustomRoot() throws Exception {
+		pipe.setRootElementName("myroot");
+		pipe.setDirection(Direction.JSON2XML);
+
+		pipe.configure();
+		pipe.start();
+
+		String input = "{ \"name\": \"Jantje\" }";
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+
+		String result = prr.getResult().asString();
+		MatchUtils.assertXmlEquals("<myroot><name>Jantje</name></myroot>", result);
+	}
+
+	@Test
+	public void testXml2JsonWithCustomRoot() {
+		pipe.setRootElementName("myroot");
+		pipe.setDirection(Direction.XML2JSON);
+
+		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> pipe.configure());
+		assertEquals("rootElementName can not be used when direction is XML2JSON", exception.getMessage());
+	}
+
 }
