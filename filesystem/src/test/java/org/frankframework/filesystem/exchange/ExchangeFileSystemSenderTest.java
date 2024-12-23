@@ -42,7 +42,7 @@ public class ExchangeFileSystemSenderTest extends FileSystemSenderTest<ExchangeF
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		setWaitMillis(250);
+		setWaitMillis(ExchangeFileSystemTestHelper.WAIT_MILLIS);
 		return new ExchangeFileSystemTestHelper(clientId, clientSecret, tenantId, mailAddress, baseFolder);
 	}
 
