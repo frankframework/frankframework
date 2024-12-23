@@ -27,7 +27,8 @@ type PipelineResult = {
 })
 export class TestPipelineComponent implements OnInit, OnDestroy {
   @ViewChild(InputFileUploadComponent) formFile!: InputFileUploadComponent;
-  protected configurations: Record<string, Configuration> = {};
+  protected configurations: Configuration[] = [];
+  protected configurationNames: string[] = [];
   protected adapters: Record<string, Adapter> = {};
   protected state: AlertState[] = [];
   protected selectedConfiguration = '';
@@ -77,9 +78,8 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
   }
 
   private setConfigurations(): void {
-    for (const configuration of this.appService.configurations) {
-      this.configurations[configuration.name] = configuration;
-    }
+    this.configurations = this.appService.configurations;
+    this.configurationNames = this.configurations.map(({ name }) => name);
   }
 
   addNote(type: string, message: string): void {

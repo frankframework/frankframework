@@ -2,8 +2,6 @@ import { Component, CUSTOM_ELEMENTS_SCHEMA, EventEmitter, Input, OnInit, Output,
 import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-type Options<T> = Record<string, T>;
-
 @Component({
   selector: 'app-combobox',
   standalone: true,
@@ -12,19 +10,19 @@ type Options<T> = Record<string, T>;
   templateUrl: './combobox.component.html',
   styleUrl: './combobox.component.scss',
 })
-export class ComboboxComponent<T> implements OnInit {
-  @Input({ required: true }) options!: Options<T>;
+export class ComboboxComponent implements OnInit {
+  @Input({ required: true }) options!: string[];
   @Input() comboBoxClass: string = 'form-control';
   @Input() comboBoxOptionsClass: string = 'combobox-options';
   @Input() required: boolean = true;
   @Input() name: string = '';
-  @Input() selectedOption: string = '';
+  @Input() selectedOption?: string;
   @Output() selectedOptionChange: EventEmitter<string> = new EventEmitter<string>();
 
   @ViewChild('comboBoxOptions') comboBoxOptions!: HTMLElement;
 
   protected input: string = '';
-  protected listItems: string[] = [];
+  protected filteredOptions: string[] = [];
   protected selectedIndex: number = -1;
   protected listShown: boolean = false;
   protected showError: boolean = false;
@@ -34,7 +32,7 @@ export class ComboboxComponent<T> implements OnInit {
   }
 
   private resetListItems(): void {
-    this.listItems = Object.keys(this.options);
+    this.filteredOptions = this.options;
   }
 
   protected showListDisplay(): void {
@@ -45,13 +43,7 @@ export class ComboboxComponent<T> implements OnInit {
   }
 
   private filterListItems(): void {
-    this.listItems = Object.keys(this.options).filter((item) =>
-      item.toLowerCase().startsWith(this.input.toLowerCase()),
-    );
-  }
-
-  protected hideListDisplayWithDelay(): void {
-    setTimeout(() => this.hideListDisplay(), 100);
+    this.filteredOptions = this.options.filter((item) => item.toLowerCase().startsWith(this.input.toLowerCase()));
   }
 
   hideListDisplay(): void {
@@ -61,7 +53,7 @@ export class ComboboxComponent<T> implements OnInit {
   }
 
   private validateInput(): void {
-    this.showError = !!(this.input || this.required) && !Object.keys(this.options).includes(this.input);
+    this.showError = !!(this.input || this.required) && !this.options.includes(this.input);
     if (this.showError) this.resetListItems();
   }
 
@@ -72,7 +64,7 @@ export class ComboboxComponent<T> implements OnInit {
 
   private highlightItemMatchingInput(): void {
     if (!this.input) return;
-    const matchingItem = this.listItems.indexOf(this.input);
+    const matchingItem = this.filteredOptions.indexOf(this.input);
     if (matchingItem >= 0) {
       this.selectItemInListDisplay(matchingItem);
     } else {
@@ -91,7 +83,7 @@ export class ComboboxComponent<T> implements OnInit {
   }
 
   private selectItem(index: number): void {
-    this.input = this.listItems[index];
+    this.input = this.filteredOptions[index];
     this.setSelectedOption(this.input);
   }
 
@@ -101,27 +93,26 @@ export class ComboboxComponent<T> implements OnInit {
   }
 
   protected onKeyPress(event: KeyboardEvent): void {
-    if (this.listShown) {
-      switch (event.key) {
-        case 'Escape': {
-          this.clearSelectedItem();
-          this.hideListDisplay();
-          break;
-        }
-        case 'Enter': {
-          this.selectItem(this.selectedIndex);
-          this.hideListDisplay();
-          break;
-        }
+    this.showListDisplay();
+    switch (event.key) {
+      case 'Escape': {
+        this.clearSelectedItem();
+        this.hideListDisplay();
+        break;
+      }
+      case 'Enter': {
+        this.selectItem(this.selectedIndex);
+        this.hideListDisplay();
+        break;
+      }
 
-        case 'ArrowDown': {
-          this.selectNext();
-          break;
-        }
-        case 'ArrowUp': {
-          this.selectPrevious();
-          break;
-        }
+      case 'ArrowDown': {
+        this.selectNext();
+        break;
+      }
+      case 'ArrowUp': {
+        this.selectPrevious();
+        break;
       }
     }
   }
@@ -134,20 +125,20 @@ export class ComboboxComponent<T> implements OnInit {
   }
 
   private selectNext(): void {
-    if (this.listItems.length <= 0) {
+    if (this.filteredOptions.length <= 0) {
       return;
     }
-    this.selectItemInListDisplay((this.selectedIndex + 1) % this.listItems.length);
+    this.selectItemInListDisplay((this.selectedIndex + 1) % this.filteredOptions.length);
   }
 
   private selectPrevious(): void {
-    if (this.listItems.length <= 0) {
+    if (this.filteredOptions.length <= 0) {
       return;
     }
     if (this.selectedIndex === -1) this.selectedIndex = 0;
     if (this.selectedIndex <= 0) {
-      this.selectedIndex = this.listItems.length + this.selectedIndex;
+      this.selectedIndex = this.filteredOptions.length + this.selectedIndex;
     }
-    this.selectItemInListDisplay((this.selectedIndex - 1) % this.listItems.length);
+    this.selectItemInListDisplay((this.selectedIndex - 1) % this.filteredOptions.length);
   }
 }

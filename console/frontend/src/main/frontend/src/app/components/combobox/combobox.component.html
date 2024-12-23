@@ -14,7 +14,7 @@
 <div #comboBoxOptions [className]="comboBoxOptionsClass" *ngIf="listShown">
   <div
     class="list-item"
-    *ngFor="let item of listItems; let i = index"
+    *ngFor="let item of filteredOptions; let i = index"
     [ngClass]="{ selected: i === selectedIndex }"
     (mousedown)="clickItem(i); $event.preventDefault()"
   >
