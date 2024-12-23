@@ -12,8 +12,6 @@ import { FormsModule } from '@angular/forms';
 })
 export class ComboboxComponent implements OnInit {
   @Input({ required: true }) options!: string[];
-  @Input() comboBoxClass: string = 'form-control';
-  @Input() comboBoxOptionsClass: string = 'combobox-options';
   @Input() required: boolean = true;
   @Input() name: string = '';
   @Input() selectedOption?: string;
