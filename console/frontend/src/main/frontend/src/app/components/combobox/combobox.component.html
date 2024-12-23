@@ -1,0 +1,25 @@
+<input
+  type="text"
+  placeholder="Select one..."
+  [name]="name"
+  [className]="comboBoxClass"
+  [(ngModel)]="input"
+  (ngModelChange)="onUpdateInput()"
+  (keyup)="onKeyPress($event)"
+  (blur)="hideListDisplay()"
+  (focus)="showListDisplay()"
+  (click)="showListDisplay()"
+  [ngClass]="{ error: showError }"
+/>
+<div #comboBoxOptions [className]="comboBoxOptionsClass" *ngIf="listShown">
+  <div
+    class="list-item"
+    *ngFor="let item of listItems; let i = index"
+    [ngClass]="{ selected: i === selectedIndex }"
+    (mousedown)="clickItem(i); $event.preventDefault()"
+  >
+    {{ item }}
+  </div>
+  <div class="list-item" *ngIf="input" (mousedown)="clearSelectedItem(); $event.preventDefault()">&times; clear</div>
+</div>
+<i *ngIf="showError" class="error-text">Invalid Selection</i>

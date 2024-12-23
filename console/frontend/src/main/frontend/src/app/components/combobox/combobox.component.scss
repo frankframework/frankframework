@@ -1,0 +1,36 @@
+.combobox-options {
+  margin-top: 5px;
+  position: absolute;
+  background-color: white;
+  border: 1px solid #bdbfc2;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 2px 2px 2px #00000022;
+  z-index: 1;
+}
+
+.selected {
+  color: cornsilk;
+  background-color: #1ab394;
+}
+
+.list-item {
+  padding: 5px 15px;
+}
+
+.list-item:not(:last-child){
+  border-bottom: 1px solid #bdbfc2;
+}
+
+.list-item:hover {
+  background-color: #999;
+  color: white;
+}
+
+.error-text {
+  color: rgb(165, 112, 112);
+}
+
+.error {
+  border: 1px solid red;
+}

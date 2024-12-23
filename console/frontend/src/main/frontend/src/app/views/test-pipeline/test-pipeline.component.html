@@ -13,20 +13,13 @@
             <div class="row form-group">
               <label class="col-sm-3 control-label">Configuration</label>
               <div class="col-sm-9">
-                <input
-                  list="configurations"
-                  autocomplete="off"
-                  data-cy-test-pipeline="selectConfig"
-                  [(ngModel)]="selectedConfiguration"
-                  (ngModelChange)="form.adapter = ''"
+                <app-combobox
                   name="configuration"
-                  class="form-control"
-                />
-                <datalist id="configurations">
-                  <option *ngFor="let config of configurations" [value]="config.name">
-                    {{ config.name }}
-                  </option>
-                </datalist>
+                  [options]="configurations"
+                  [(selectedOption)]="selectedConfiguration"
+                  data-cy-test-pipeline="selectConfig"
+                  (selectedOptionChange)="form.adapter = ''"
+                ></app-combobox>
               </div>
             </div>
             <div class="row form-group">

@@ -27,7 +27,7 @@ type PipelineResult = {
 })
 export class TestPipelineComponent implements OnInit, OnDestroy {
   @ViewChild(InputFileUploadComponent) formFile!: InputFileUploadComponent;
-  protected configurations: Configuration[] = [];
+  protected configurations: Record<string, Configuration> = {};
   protected adapters: Record<string, Adapter> = {};
   protected state: AlertState[] = [];
   protected selectedConfiguration = '';
@@ -59,9 +59,9 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.configurations = this.appService.configurations;
+    this.setConfigurations();
     const configurationsSubscription = this.appService.configurations$.subscribe(() => {
-      this.configurations = this.appService.configurations;
+      this.setConfigurations();
     });
     this.subscriptions.add(configurationsSubscription);
 
@@ -74,6 +74,12 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+  }
+
+  private setConfigurations(): void {
+    for (const configuration of this.appService.configurations) {
+      this.configurations[configuration.name] = configuration;
+    }
   }
 
   addNote(type: string, message: string): void {
