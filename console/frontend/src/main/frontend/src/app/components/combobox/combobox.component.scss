@@ -1,6 +1,7 @@
 .combobox {
+  position: relative;
+
   &__input-container {
-    position: relative;
     display: flex;
     align-items: center;
   }
@@ -29,8 +30,9 @@
     background-color: white;
     border: 1px solid #bdbfc2;
     max-height: 200px;
+    width: 100%;
     overflow-y: auto;
-    box-shadow: 0 2px 2px 2px #00000022;
+    box-shadow: 0 2px 3px 3px #00000011;
     z-index: 1;
   }
 
@@ -51,18 +53,20 @@
       background-color: #1ab394;
     }
 
+    &--empty {
+      font-style: italic;
+    }
+
     &--clear {
-      text-align: center;
       font-weight: bold;
       color: #cc5965;
     }
 
     &__label {
-      font-weight: bold;
     }
 
     &__description {
-      font-size: 0.9em;
+      font-size: 0.8em;
     }
   }
 
