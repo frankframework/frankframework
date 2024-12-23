@@ -10,9 +10,12 @@ import jakarta.json.JsonStructure;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import lombok.extern.log4j.Log4j2;
+
 /**
  * @author Gerrit van Brakel
  */
+@Log4j2
 public class TestXml2Json extends AlignTestBase {
 
 	@Override
@@ -36,12 +39,12 @@ public class TestXml2Json extends AlignTestBase {
 			assertEquals(expectValid, Utils.validate(schemaUrl, xmlString), "XML invalid");
 		}
 
-		LOG.debug("input xml:"+xmlString);
+		log.debug("input xml:"+xmlString);
 		JsonStructure json;
 		String jsonOut;
 		try {
 			jsonOut= Xml2Json.translate(xmlString, schemaUrl, compactArrays, skipJsonRootElements).toString(true);
-			LOG.debug("result compactArrays ["+compactArrays+"] skipJsonRootElements ["+skipJsonRootElements+"] json:\n" +jsonOut);
+			log.debug("result compactArrays ["+compactArrays+"] skipJsonRootElements ["+skipJsonRootElements+"] json:\n" +jsonOut);
 			if (!expectValid) {
 				fail("expected to fail with reason ["+ expectedFailureReason +"]");
 			}
@@ -49,17 +52,17 @@ public class TestXml2Json extends AlignTestBase {
 		} catch (Exception e) {
 			if (expectValid) {
 				e.printStackTrace();
-				LOG.error("exception compactArrays ["+compactArrays+"] skipJsonRootElements ["+skipJsonRootElements+"]");
+				log.error("exception compactArrays ["+compactArrays+"] skipJsonRootElements ["+skipJsonRootElements+"]");
 				fail(e.getMessage());
 			}
 			return;
 		}
 		if (expectValidRoundTrip) {
-			if(LOG.isDebugEnabled()) {
+			if(log.isDebugEnabled()) {
 				String backToXml1= Json2Xml.translate(json, schemaUrl, compactArrays, skipJsonRootElements?rootElement:null, null);
-				LOG.debug("back to xml compactArrays ["+compactArrays+"] xml:\n" +backToXml1);
+				log.debug("back to xml compactArrays ["+compactArrays+"] xml:\n" +backToXml1);
 				String backToXml2=Json2Xml.translate(json, schemaUrl, !compactArrays, skipJsonRootElements?rootElement:null, null);
-				LOG.debug("back to xml compactArrays ["+!compactArrays+"] xml:\n" +backToXml2);
+				log.debug("back to xml compactArrays ["+!compactArrays+"] xml:\n" +backToXml2);
 			}
 
 			String jsonCompactExpected=getTestFile(xml+"-compact.json");

@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -12,13 +12,24 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-*/
-package org.frankframework.align.content;
+ */
+package org.frankframework.filesystem.exchange;
 
-import org.apache.xerces.xs.XSTypeDefinition;
+import lombok.Getter;
+import lombok.Setter;
 
-public interface DocumentContainer extends ElementGroupContainer {
-	void startElementGroup(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition);
+@Getter
+@Setter
+public class MailItemId {
 
-	void endElementGroup(String localName);
+	private MailFolder mailFolder;
+
+	private String url;
+
+	public String getUrl() {
+		return "%s/%s".formatted(url, id);
+	}
+
+	private String id;
+	private String parentFolderId;
 }
