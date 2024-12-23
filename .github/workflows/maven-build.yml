@@ -112,7 +112,7 @@ jobs:
         clientId: ${{ secrets.EXCHANGE_MAIL_CLIENTID }}
         clientSecret: ${{ secrets.EXCHANGE_MAIL_CLIENTSECRET }}
         tenantId: ${{ secrets.EXCHANGE_MAIL_TENANTID }}
-        baseFolder: "Inbox/${{PR_NUMBER}}-${{ matrix.java }}"
+        baseFolder: "Inbox/${{env.PR_NUMBER}}-${{ matrix.java }}"
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
