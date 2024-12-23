@@ -43,6 +43,7 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 	private String tenantId;
 	private String mailAddress;
 	private String baseFolder;
+	private boolean createBaseFolder = true;
 
 	private String baseFolderId;
 	private MailFolderItemRequestBuilder baseMailFolder;
@@ -78,19 +79,36 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 
 			List<String> baseFolderList = StringUtil.split(baseFolder, "/");
 
+			log.debug("searching for mail folder [{}]", baseFolder);
 			UserItemRequestBuilder requestBuilder = getRequestBuilder();
 			List<MailFolder> folders = requestBuilder.mailFolders().get().getValue();
-			MailFolder base = folders.get(0);
+			MailFolder base = null;
 
 			for (String subMailFolder : baseFolderList) {
+				boolean found = false;
 				for (MailFolder mailFolder : folders) {
 					if (subMailFolder.equalsIgnoreCase(mailFolder.getDisplayName())) {
 						folders = requestBuilder.mailFolders().byMailFolderId(mailFolder.getId()).childFolders().get().getValue();
 						base = mailFolder;
+						found = true;
+						log.debug("found mail folder [{}] with id [{}]", subMailFolder, base.getId());
+						break;
+					}
+				}
+				if (!found) {
+					if (createBaseFolder) {
+						MailFolder mailFolder = new MailFolder();
+						mailFolder.setDisplayName(subMailFolder);
+						mailFolder.setIsHidden(false);
+						base = requestBuilder.mailFolders().byMailFolderId(base.getId()).childFolders().post(mailFolder);
+						log.debug("created mail folder [{}] with id [{}]", subMailFolder, base.getId());
+					} else {
+						throw new RuntimeException("cannot find mailfolder ["+subMailFolder+"] in mailbox ");
 					}
 				}
 			}
 
+			log.debug("using MailFolder id [{}]", base.getId());
 			baseFolderId = base.getId();
 			baseMailFolder = requestBuilder.mailFolders().byMailFolderId(baseFolderId);
 
