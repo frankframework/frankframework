@@ -40,10 +40,7 @@ public class MailFolderResponse {
 	private static final String CHILD_MAIL_FOLDERS_SEARCH = "%s/childFolders?$top=%d&$skip=0";
 	private static final String CHILD_MAIL_FOLDER_BASE = "%s/childFolders";
 
-	public static List<MailFolder> get(GraphClient client, String email) throws IOException {
-		return get(client, email, 200); // default limit is 20, and with 20 entries per API call, only 1 call will be made.
-	}
-
+	// default limit is 20, and with 20 entries per API call, only 1 call will be made.
 	public static List<MailFolder> get(GraphClient client, String email, int limit) throws IOException {
 		URI uri = URI.create(MS_GRAPH_MAIL_BASE_URL.formatted(email, MAX_ENTRIES_PER_CALL));
 		List<MailFolder> folders = new ArrayList<>();
