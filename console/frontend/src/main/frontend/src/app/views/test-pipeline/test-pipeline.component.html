@@ -18,32 +18,20 @@
                   [options]="configurationOptions"
                   [(selectedOption)]="selectedConfiguration"
                   data-cy-test-pipeline="selectConfig"
-                  (selectedOptionChange)="form.adapter = ''"
+                  (selectedOptionChange)="setSelectedConfiguration()"
                 ></app-combobox>
               </div>
             </div>
             <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30">Select an adapter</label>
               <div class="col-sm-9">
-                <input
-                  list="adapters"
-                  autocomplete="off"
+                <app-combobox
+                  name="adapters"
+                  [options]="adapterOptions"
+                  [(selectedOption)]="form.adapter"
                   data-cy-test-pipeline="selectAdapter"
-                  [(ngModel)]="form.adapter"
                   [disabled]="selectedConfiguration === ''"
-                  class="form-control"
-                  name="adapter"
-                />
-                <datalist id="adapters">
-                  <option
-                    *ngFor="let adapter of adapters | configurationFilter: selectedConfiguration | keyvalue"
-                    [value]="adapter.value.name"
-                  >
-                    {{
-                      adapter.value.name + (adapter.value.description !== null ? ' - ' + adapter.value.description : '')
-                    }}
-                  </option>
-                </datalist>
+                ></app-combobox>
               </div>
             </div>
             <div

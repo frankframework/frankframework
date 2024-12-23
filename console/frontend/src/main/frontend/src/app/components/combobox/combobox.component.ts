@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -11,7 +11,6 @@ export type Option = {
   selector: 'app-combobox',
   standalone: true,
   imports: [NgClass, FormsModule, NgIf, NgForOf],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './combobox.component.html',
   styleUrl: './combobox.component.scss',
 })
@@ -19,10 +18,13 @@ export class ComboboxComponent implements OnInit {
   @Input({ required: true }) options!: Option[];
   @Input() required: boolean = true;
   @Input() name: string = '';
+  @Input() id: string = '';
+  @Input() disabled: boolean = false;
   @Input() selectedOption?: string;
   @Output() selectedOptionChange: EventEmitter<string> = new EventEmitter<string>();
 
-  @ViewChild('comboBoxOptions') comboBoxOptions!: HTMLElement;
+  @ViewChild('comboboxOptions') comboboxOptionsRef!: ElementRef;
+  @ViewChild('comboboxDropdownIcon') comboboxDropdownIcon!: ElementRef;
 
   protected input: string = '';
   protected filteredOptions: Option[] = [];
@@ -41,6 +43,7 @@ export class ComboboxComponent implements OnInit {
   protected showListDisplay(): void {
     if (this.listShown) return;
     this.listShown = true;
+    this.comboboxDropdownIcon.nativeElement.classList.add('combobox__dropdown-icon--active');
     this.filterListItems();
     this.highlightItemMatchingInput();
   }
@@ -51,6 +54,7 @@ export class ComboboxComponent implements OnInit {
 
   hideListDisplay(): void {
     if (!this.listShown) return;
+    this.comboboxDropdownIcon.nativeElement.classList.remove('combobox__dropdown-icon--active');
     this.listShown = false;
     this.validateInput();
   }
@@ -76,7 +80,9 @@ export class ComboboxComponent implements OnInit {
 
   private selectItemInListDisplay(index: number): void {
     this.selectedIndex = index;
-    document.querySelectorAll('.list-item')[this.selectedIndex]?.scrollIntoView();
+    this.comboboxOptionsRef.nativeElement
+      .querySelectorAll('.combobox__list-item')
+      [this.selectedIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   protected clickItem(index: number): void {

@@ -4,6 +4,7 @@ import { Adapter, AppService, Configuration } from 'src/app/app.service';
 import { InputFileUploadComponent } from 'src/app/components/input-file-upload/input-file-upload.component';
 import { Subscription } from 'rxjs';
 import { Option } from '../../components/combobox/combobox.component';
+import { ConfigurationFilter } from '../../pipes/configuration-filter.pipe';
 
 type FormSessionKey = {
   key: string;
@@ -31,6 +32,7 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
   protected configurations: Configuration[] = [];
   protected configurationOptions: Option[] = [];
   protected adapters: Record<string, Adapter> = {};
+  protected adapterOptions: Option[] = [];
   protected state: AlertState[] = [];
   protected selectedConfiguration = '';
   protected processingMessage = false;
@@ -67,9 +69,9 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
     });
     this.subscriptions.add(configurationsSubscription);
 
-    this.adapters = this.appService.adapters;
+    this.setAdapters();
     const adaptersSubscription = this.appService.adapters$.subscribe(() => {
-      this.adapters = this.appService.adapters;
+      this.setAdapters();
     });
     this.subscriptions.add(adaptersSubscription);
   }
@@ -82,7 +84,18 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
     this.configurations = this.appService.configurations;
     this.configurationOptions = this.configurations.map((configuration) => ({
       label: configuration.name,
-      description: configuration.type,
+    }));
+  }
+
+  private setAdapters(): void {
+    this.adapters = this.appService.adapters;
+  }
+
+  private setAdapterOptions(selectedConfiguration: string): void {
+    const filteredAdapters = ConfigurationFilter(this.adapters, selectedConfiguration);
+    this.adapterOptions = Object.entries(filteredAdapters).map(([, adapter]) => ({
+      label: adapter.name,
+      description: adapter.description ?? '',
     }));
   }
 
@@ -175,5 +188,10 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
         this.processingMessage = false;
       },
     });
+  }
+
+  protected setSelectedConfiguration(): void {
+    this.form.adapter = '';
+    this.setAdapterOptions(this.selectedConfiguration);
   }
 }

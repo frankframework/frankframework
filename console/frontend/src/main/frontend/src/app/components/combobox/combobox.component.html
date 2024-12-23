@@ -3,6 +3,8 @@
     type="text"
     placeholder="Select one..."
     [name]="name"
+    [id]="id"
+    [disabled]="disabled"
     class="form-control"
     [(ngModel)]="input"
     (ngModelChange)="onUpdateInput()"
@@ -12,9 +14,9 @@
     (click)="showListDisplay()"
     [ngClass]="{ 'combobox__input--error': showError }"
   />
-  <div class="combobox__dropdown-icon">&#9660;</div>
+  <div #comboboxDropdownIcon class="combobox__dropdown-icon">&#9660;</div>
 </div>
-<div #comboBoxOptions class="combobox__options" *ngIf="listShown">
+<div #comboboxOptions class="combobox__options" *ngIf="listShown">
   <div
     class="combobox__list-item"
     *ngFor="let item of filteredOptions; let i = index"
@@ -24,7 +26,11 @@
     <div class="combobox__list-item__label">{{ item.label }}</div>
     <div class="combobox__list-item__description" *ngIf="item.description">{{ item.description }}</div>
   </div>
-  <div class="combobox__list-item" *ngIf="input" (mousedown)="clearSelectedItem(); $event.preventDefault()">
+  <div
+    class="combobox__list-item combobox__list-item--clear"
+    *ngIf="input"
+    (mousedown)="clearSelectedItem(); $event.preventDefault()"
+  >
     &times; clear
   </div>
 </div>

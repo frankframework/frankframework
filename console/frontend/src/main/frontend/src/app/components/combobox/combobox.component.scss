@@ -16,7 +16,11 @@
     right: 10px;
     pointer-events: none;
     font-size: 12px;
-    color: #ccc;
+    color: #999;
+
+    &--active {
+      color: #333;
+    }
   }
 
   &__options {
@@ -47,6 +51,12 @@
       background-color: #1ab394;
     }
 
+    &--clear {
+      text-align: center;
+      font-weight: bold;
+      color: #cc5965;
+    }
+
     &__label {
       font-weight: bold;
     }
@@ -57,6 +67,6 @@
   }
 
   &__error-text {
-    color: rgb(165, 112, 112);
+    color: #cc5965;
   }
 }
