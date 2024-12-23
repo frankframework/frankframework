@@ -41,7 +41,7 @@ public class ExchangeFileSystemListenerTest extends BasicFileSystemListenerTest<
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		setWaitMillis(250);
+		setWaitMillis(ExchangeFileSystemTestHelper.WAIT_MILLIS);
 		return new ExchangeFileSystemTestHelper(clientId, clientSecret, tenantId, mailAddress, baseFolder);
 	}
 
