@@ -34,7 +34,7 @@ import org.frankframework.util.StringUtil;
 
 @Log4j2
 public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
-	public static final int WAIT_MILLIS = 50;
+	public static final int WAIT_MILLIS = 150;
 
 	private static final String SCOPE = "https://graph.microsoft.com/.default";
 
