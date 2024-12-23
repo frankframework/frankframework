@@ -104,7 +104,7 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 						base = requestBuilder.mailFolders().byMailFolderId(base.getId()).childFolders().post(mailFolder);
 						log.debug("created mail folder [{}] with id [{}]", subMailFolder, base.getId());
 					} else {
-						throw new RuntimeException("cannot find mailfolder ["+subMailFolder+"] in mailbox ");
+						throw new IllegalStateException("cannot find mailfolder ["+subMailFolder+"] in mailbox ");
 					}
 				}
 			}
