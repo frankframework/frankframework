@@ -1,4 +1,14 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+  ViewChild,
+} from '@angular/core';
 import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -14,7 +24,7 @@ export type Option = {
   templateUrl: './combobox.component.html',
   styleUrl: './combobox.component.scss',
 })
-export class ComboboxComponent implements OnInit {
+export class ComboboxComponent implements OnInit, OnChanges {
   @Input({ required: true }) options!: Option[];
   @Input() required: boolean = true;
   @Input() name: string = '';
@@ -34,6 +44,12 @@ export class ComboboxComponent implements OnInit {
 
   ngOnInit(): void {
     this.resetListItems();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['selectedOption']) {
+      this.input = changes['selectedOption'].currentValue ?? '';
+    }
   }
 
   private resetListItems(): void {
@@ -56,6 +72,7 @@ export class ComboboxComponent implements OnInit {
     if (!this.listShown) return;
     this.comboboxDropdownIcon.nativeElement.classList.remove('combobox__dropdown-icon--active');
     this.listShown = false;
+    this.setSelectedOption(this.input);
     this.validateInput();
   }
 
