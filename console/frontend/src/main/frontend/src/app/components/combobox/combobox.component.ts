@@ -87,6 +87,7 @@ export class ComboboxComponent implements OnInit, OnChanges {
   }
 
   private highlightItemMatchingInput(): void {
+    if (!this.listShown) return;
     const matchingItem = this.filteredOptions.findIndex(({ label }) => label === this.input);
     if (matchingItem >= 0) {
       this.selectItemInListDisplay(matchingItem);
@@ -97,7 +98,7 @@ export class ComboboxComponent implements OnInit, OnChanges {
 
   private selectItemInListDisplay(index: number): void {
     this.selectedIndex = index;
-    this.comboboxOptionsRef.nativeElement
+    this.comboboxOptionsRef?.nativeElement
       .querySelectorAll('.combobox__list-item')
       [this.selectedIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
