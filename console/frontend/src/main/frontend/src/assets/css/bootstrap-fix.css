@@ -133,7 +133,7 @@ app-toasts-container {
 }
 
 .toast .toast-header {
-  padding: 5px 0;
+  padding: 0 0 5px;
 }
 
 .toast.clickable {
@@ -143,7 +143,7 @@ app-toasts-container {
 .toast .toast-body .toast-close {
   display: inline-block;
   align-self: flex-start;
-  margin: -12px -6px 0 0;
+  margin: -6px -6px 0 0;
   color: #fff;
   -webkit-appearance: none;
   background: none;
@@ -153,7 +153,16 @@ app-toasts-container {
 .toast .toast-body .title {
   display: inline-block;
   margin-right: auto;
+  font-size: 16px;
   font-weight: bold;
+}
+
+.toast .toast-body p {
+  margin-bottom: 0;
+}
+
+.toast .toast-body small {
+  font-style: italic;
 }
 
 .toast-success {

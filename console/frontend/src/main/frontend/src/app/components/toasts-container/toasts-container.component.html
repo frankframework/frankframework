@@ -9,9 +9,10 @@
 >
   <div class="toast-header">
     <strong class="title">{{ toast.title }}</strong>
-    <button class="toast-close" (click)="remove(toast)">
+    <button class="toast-close" (click)="remove(toast, $event)">
       <i class="fa fa-times" aria-hidden="true"></i>
     </button>
   </div>
   <p *ngIf="toast.body">{{ toast.body }}</p>
+  <small *ngIf="toast.similarCount && toast.similarCount > 0">+{{ toast.similarCount }} {{ toast.type }}s</small>
 </ngb-toast>
