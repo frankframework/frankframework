@@ -46,6 +46,14 @@
       color: cornsilk;
       background-color: #1ab394;
     }
+
+    &__label {
+      font-weight: bold;
+    }
+
+    &__description {
+      font-size: 0.9em;
+    }
   }
 
   &__error-text {

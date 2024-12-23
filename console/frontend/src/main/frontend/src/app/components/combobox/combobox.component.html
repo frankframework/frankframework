@@ -21,7 +21,8 @@
     [ngClass]="{ 'combobox__list-item--selected': i === selectedIndex }"
     (mousedown)="clickItem(i); $event.preventDefault()"
   >
-    {{ item }}
+    <div class="combobox__list-item__label">{{ item.label }}</div>
+    <div class="combobox__list-item__description" *ngIf="item.description">{{ item.description }}</div>
   </div>
   <div class="combobox__list-item" *ngIf="input" (mousedown)="clearSelectedItem(); $event.preventDefault()">
     &times; clear

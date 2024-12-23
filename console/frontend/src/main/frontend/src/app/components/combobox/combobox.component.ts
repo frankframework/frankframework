@@ -2,6 +2,11 @@ import { Component, CUSTOM_ELEMENTS_SCHEMA, EventEmitter, Input, OnInit, Output,
 import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+export type Option = {
+  label: string;
+  description?: string;
+};
+
 @Component({
   selector: 'app-combobox',
   standalone: true,
@@ -11,7 +16,7 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './combobox.component.scss',
 })
 export class ComboboxComponent implements OnInit {
-  @Input({ required: true }) options!: string[];
+  @Input({ required: true }) options!: Option[];
   @Input() required: boolean = true;
   @Input() name: string = '';
   @Input() selectedOption?: string;
@@ -20,7 +25,7 @@ export class ComboboxComponent implements OnInit {
   @ViewChild('comboBoxOptions') comboBoxOptions!: HTMLElement;
 
   protected input: string = '';
-  protected filteredOptions: string[] = [];
+  protected filteredOptions: Option[] = [];
   protected selectedIndex: number = -1;
   protected listShown: boolean = false;
   protected showError: boolean = false;
@@ -41,7 +46,7 @@ export class ComboboxComponent implements OnInit {
   }
 
   private filterListItems(): void {
-    this.filteredOptions = this.options.filter((item) => item.toLowerCase().startsWith(this.input.toLowerCase()));
+    this.filteredOptions = this.options.filter(({ label }) => label.toLowerCase().startsWith(this.input.toLowerCase()));
   }
 
   hideListDisplay(): void {
@@ -51,7 +56,7 @@ export class ComboboxComponent implements OnInit {
   }
 
   private validateInput(): void {
-    this.showError = !!(this.input || this.required) && !this.options.includes(this.input);
+    this.showError = !!(this.input || this.required) && !this.options.some(({ label }) => label === this.input);
     if (this.showError) this.resetListItems();
   }
 
@@ -61,8 +66,7 @@ export class ComboboxComponent implements OnInit {
   }
 
   private highlightItemMatchingInput(): void {
-    if (!this.input) return;
-    const matchingItem = this.filteredOptions.indexOf(this.input);
+    const matchingItem = this.filteredOptions.findIndex(({ label }) => label === this.input);
     if (matchingItem >= 0) {
       this.selectItemInListDisplay(matchingItem);
     } else {
@@ -81,7 +85,7 @@ export class ComboboxComponent implements OnInit {
   }
 
   private selectItem(index: number): void {
-    this.input = this.filteredOptions[index];
+    this.input = this.filteredOptions[index].label;
     this.setSelectedOption(this.input);
   }
 

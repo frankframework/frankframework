@@ -15,7 +15,7 @@
               <div class="col-sm-9">
                 <app-combobox
                   name="configuration"
-                  [options]="configurationNames"
+                  [options]="configurationOptions"
                   [(selectedOption)]="selectedConfiguration"
                   data-cy-test-pipeline="selectConfig"
                   (selectedOptionChange)="form.adapter = ''"

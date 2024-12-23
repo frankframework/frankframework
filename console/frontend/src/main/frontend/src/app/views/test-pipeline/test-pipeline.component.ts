@@ -3,6 +3,7 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Adapter, AppService, Configuration } from 'src/app/app.service';
 import { InputFileUploadComponent } from 'src/app/components/input-file-upload/input-file-upload.component';
 import { Subscription } from 'rxjs';
+import { Option } from '../../components/combobox/combobox.component';
 
 type FormSessionKey = {
   key: string;
@@ -28,7 +29,7 @@ type PipelineResult = {
 export class TestPipelineComponent implements OnInit, OnDestroy {
   @ViewChild(InputFileUploadComponent) formFile!: InputFileUploadComponent;
   protected configurations: Configuration[] = [];
-  protected configurationNames: string[] = [];
+  protected configurationOptions: Option[] = [];
   protected adapters: Record<string, Adapter> = {};
   protected state: AlertState[] = [];
   protected selectedConfiguration = '';
@@ -79,7 +80,10 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
 
   private setConfigurations(): void {
     this.configurations = this.appService.configurations;
-    this.configurationNames = this.configurations.map(({ name }) => name);
+    this.configurationOptions = this.configurations.map((configuration) => ({
+      label: configuration.name,
+      description: configuration.type,
+    }));
   }
 
   addNote(type: string, message: string): void {
