@@ -20,7 +20,7 @@
           <h4>{{ pageTitle }}</h4>
         </div>
         <div class="ibox-content">
-          <form *ngIf="!componentLoading">
+          <form *ngIf="!componentLoading" role="form" (submit)="submit(trigger)" appQuickSubmitForm>
             <div class="row form-group">
               <label class="col-sm-3 control-label" for="name">Monitor</label>
               <div class="col-sm-9">
@@ -146,7 +146,7 @@
               </div>
             </div>
             <div class="col-lg-9 m-t-md">
-              <button class="btn btn-primary btn-w-m font-bold" type="submit" (click)="submit(trigger)">Save</button>
+              <button class="btn btn-primary btn-w-m font-bold" type="submit">Save</button>
             </div>
           </form>
         </div>

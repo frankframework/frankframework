@@ -5,15 +5,16 @@ import { Directive, ElementRef, HostListener } from '@angular/core';
   standalone: true,
 })
 export class QuickSubmitFormDirective {
-  constructor(private element: ElementRef<HTMLInputElement>) {}
+  constructor(private element: ElementRef<HTMLFormElement>) {}
 
-  // keydown.ctrl.enter doesnt work somehow
   @HostListener('keydown', ['$event'])
   onEnter(event: KeyboardEvent): boolean | void {
-    if (event.ctrlKey && event.key === 'Enter') {
-      const formElement = this.element.nativeElement.form;
-      formElement?.querySelector<HTMLButtonElement>('button[type="submit"]')?.click();
-      return false;
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.ctrlKey) {
+        this.element.nativeElement.dispatchEvent(new Event('submit'));
+      }
     }
   }
 }
