@@ -5,18 +5,15 @@ import { By } from '@angular/platform-browser';
 
 @Component({
   standalone: true,
-  template: `<form>
+  template: `<form (submit)="changeTrigger()">
     <textarea appQuickSubmitForm></textarea>
-    <button type="submit" (click)="changeTrigger($event)">Submit</button>
   </form>`,
   imports: [QuickSubmitFormDirective],
 })
 class TestComponent {
   triggered = false;
-  changeTrigger(event: Event): void {
-    event.preventDefault();
+  changeTrigger(): void {
     this.triggered = true;
-    event.stopPropagation();
   }
 }
 

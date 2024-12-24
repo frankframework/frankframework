@@ -136,7 +136,7 @@
             </div>
           </div>
           <div *ngIf="monitor.edit">
-            <form role="form">
+            <form role="form" (submit)="edit(monitor)" appQuickSubmitForm>
               <div class="form-group">
                 <label class="col-sm-3 control-label">Name</label>
                 <div class="col-sm-9">

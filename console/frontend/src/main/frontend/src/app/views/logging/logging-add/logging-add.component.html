@@ -9,7 +9,7 @@
           <h4>Add Logging</h4>
         </div>
         <div class="ibox-content">
-          <form role="form">
+          <form role="form" (submit)="submit()" appQuickSubmitForm>
             <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30">Logger name</label>
               <div class="col-sm-9">
@@ -28,12 +28,7 @@
             </div>
             <div class="row form-group">
               <div class="col-sm-offset-3 col-sm-9 m-t-md">
-                <button
-                  [ladda]="processing"
-                  class="btn btn-primary btn-w-m font-bold space-it-out"
-                  type="submit"
-                  (click)="submit()"
-                >
+                <button [ladda]="processing" class="btn btn-primary btn-w-m font-bold space-it-out" type="submit">
                   Send
                 </button>
                 <button routerLink=".." class="btn btn-w-m font-bold" type="button">Cancel</button>

@@ -12,7 +12,7 @@
           <h4>Create new Monitor</h4>
         </div>
         <div class="ibox-content">
-          <form role="form">
+          <form role="form" (submit)="submit()" appQuickSubmitForm>
             <div class="row form-group">
               <label class="col-sm-3 control-label">Configuration</label>
               <div class="col-sm-9">
@@ -37,9 +37,7 @@
               </div>
             </div>
             <div class="col-lg-9 m-t-md">
-              <button class="btn btn-primary btn-w-m font-bold" type="submit" [ladda]="ladda" (click)="submit()">
-                Create
-              </button>
+              <button class="btn btn-primary btn-w-m font-bold" type="submit" [ladda]="ladda">Create</button>
             </div>
           </form>
         </div>

@@ -9,7 +9,7 @@
           <h4>IbisStore Summary</h4>
         </div>
         <div class="ibox-content">
-          <form>
+          <form role="form" (submit)="submit(form)" appQuickSubmitForm>
             <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30">Datasource</label>
               <div class="col-sm-9">
@@ -25,7 +25,7 @@
                 <button class="btn btn-info btn-w-m font-bold" type="button" (click)="reset()">Reset</button>
               </div>
               <div class="col-sm-3 m-t-md">
-                <button class="btn btn-primary btn-w-m font-bold" type="submit" (click)="submit(form)">Send</button>
+                <button class="btn btn-primary btn-w-m font-bold" type="submit">Send</button>
               </div>
             </div>
           </form>
