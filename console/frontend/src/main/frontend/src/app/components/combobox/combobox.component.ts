@@ -109,6 +109,7 @@ export class ComboboxComponent implements OnInit, OnChanges {
   }
 
   private selectItem(index: number): void {
+    if (index < 0 || index >= this.filteredOptions.length) return;
     this.input = this.filteredOptions[index].label;
     this.setSelectedOption(this.input);
   }
