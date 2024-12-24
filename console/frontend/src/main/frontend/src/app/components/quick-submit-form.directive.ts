@@ -5,15 +5,16 @@ import { Directive, ElementRef, HostListener } from '@angular/core';
   standalone: true,
 })
 export class QuickSubmitFormDirective {
-  constructor(private element: ElementRef<HTMLInputElement>) {}
+  constructor(private element: ElementRef<HTMLFormElement>) {}
 
   @HostListener('keydown', ['$event'])
   onEnter(event: KeyboardEvent): boolean | void {
-    if (event.ctrlKey && event.key === 'Enter') {
-      this.element.nativeElement.form?.submit();
-    } else if (event.key === 'Enter') {
+    if (event.key === 'Enter') {
       event.preventDefault();
       event.stopPropagation();
+      if (event.ctrlKey) {
+        this.element.nativeElement.dispatchEvent(new Event('submit'));
+      }
     }
   }
 }
