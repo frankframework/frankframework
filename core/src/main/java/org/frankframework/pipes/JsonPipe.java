@@ -97,8 +97,7 @@ public class JsonPipe extends FixedForwardPipe {
 					return convertJsonToXml(jr.read());
 				} catch (JsonException e) {
 					log.debug("cannot parse input as JsonStructure", e);
-					Message result = new Message(String.format("<%s>%s</%s>", rootElementName, message.asString(), rootElementName);
-					// Message result = new Message("<root>"+message.asString()+"</root>");
+					Message result = new Message("<root>"+message.asString()+"</root>");
 					result.getContext().withMimeType(MediaType.APPLICATION_XML);
 					return new PipeRunResult(getSuccessForward(), result);
 				}
