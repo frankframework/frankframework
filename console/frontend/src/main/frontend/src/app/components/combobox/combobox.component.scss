@@ -32,7 +32,7 @@
     max-height: 200px;
     width: 100%;
     overflow-y: auto;
-    box-shadow: 0 2px 3px 3px #00000011;
+    box-shadow: 0 2px 3px 3px #0001;
     z-index: 1;
   }
 
@@ -63,6 +63,7 @@
     }
 
     &__label {
+      // placeholder
     }
 
     &__description {
