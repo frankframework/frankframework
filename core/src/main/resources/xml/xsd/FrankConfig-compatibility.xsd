@@ -1399,6 +1399,15 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="ExchangeFileSystemSender">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="ExchangeFileSystemSenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="ExchangeFolderSender">
         <xs:complexType>
           <xs:complexContent>
@@ -2749,24 +2758,19 @@
     <xs:attribute ref="responseHeadersToSessionKeys" />
     <xs:attributeGroup ref="JMSFacadeCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="ExchangeFolderSenderType">
+  <xs:complexType name="ExchangeFileSystemSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
       </xs:choice>
     </xs:sequence>
-    <xs:attributeGroup ref="ExchangeFolderSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.ExchangeFolderSender" />
+    <xs:attributeGroup ref="ExchangeFileSystemSenderCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.ExchangeFileSystemSender" />
   </xs:complexType>
-  <xs:attributeGroup name="ExchangeFolderSenderDeclaredAttributeGroup">
+  <xs:attributeGroup name="ExchangeFileSystemSenderDeclaredAttributeGroup">
     <xs:attribute name="mailAddress" type="xs:string">
       <xs:annotation>
         <xs:documentation>The mail address of the mailbox connected to (also used for auto discovery)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="url" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up startup, leave empty to use autodiscovery</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="clientId" type="xs:string">
@@ -2784,16 +2788,6 @@
         <xs:documentation>Tenant ID that represents the tenant in which the registered application exists within Azure AD which could be found at Azure AD -&gt; App Registrations -&gt; MyApp -&gt; Overview.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="username" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Username for authentication to mail server.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="password" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Password for authentication to mail server.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="authAlias" type="xs:string">
       <xs:annotation>
         <xs:documentation>Alias used to obtain client ID and secret or username and password for authentication to Exchange mail server.
@@ -2804,11 +2798,6 @@
     <xs:attribute name="baseFolder" type="xs:string">
       <xs:annotation>
         <xs:documentation>Folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="filter" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>If empty, all mails are retrieved. If set to &lt;code&gt;NDR&lt;/code&gt; only Non-Delivery Report mails ('bounces') are retrieved</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
@@ -2844,12 +2833,6 @@
     <xs:attribute name="proxyDomain" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy domain</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="mailboxObjectSeparator" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Separator character used when working with multiple mailboxes, specified before the separator in the object name &lt;code&gt;test@organisation.com|My sub folder&lt;/code&gt; or &lt;code&gt;test@organisation.com|AAMkADljZDMxYzIzLTFlMjYtNGY4Mi1hM2Y1LTc2MjE5ZjIyZmMyNABGAAAAAAAu/9EmV5M6QokBRZwID1Q6BwDXQXY+F44hRbDfTB9v8jRfAAAEUqUVAADXQXY+F44hRbDfTB9v8jRfAAKA4F+pAAA=&lt;/code&gt;.
- Please consider when moving emails across mailboxes that there will be a null value returned instead of the newly created identifier. Default: |</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keystore" type="xs:string">
@@ -2939,10 +2922,19 @@
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
-  <xs:attributeGroup name="ExchangeFolderSenderCumulativeAttributeGroup">
-    <xs:attributeGroup ref="ExchangeFolderSenderDeclaredAttributeGroup" />
+  <xs:attributeGroup name="ExchangeFileSystemSenderCumulativeAttributeGroup">
+    <xs:attributeGroup ref="ExchangeFileSystemSenderDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractFileSystemSenderCumulativeAttributeGroup" />
   </xs:attributeGroup>
+  <xs:complexType name="ExchangeFolderSenderType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="ExchangeFileSystemSenderCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.ExchangeFolderSender" />
+  </xs:complexType>
   <xs:complexType name="FileSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -3369,7 +3361,7 @@
         <xs:documentation>If &lt;code&gt;methodType&lt;/code&gt;=&lt;code&gt;POST&lt;/code&gt;, &lt;code&gt;PUT&lt;/code&gt; or &lt;code&gt;PATCH&lt;/code&gt;, the type of post request Default: RAW</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="PostTypeAttributeValuesType variableRef" />
+        <xs:union memberTypes="HttpEntityTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="paramsInUrl" type="frankBoolean">
@@ -3389,6 +3381,7 @@
  &lt;ul&gt;
  &lt;li&gt;name: optional, used as 'filename' in Content-Disposition&lt;/li&gt;
  &lt;li&gt;sessionKey: mandatory, refers to contents of part&lt;/li&gt;
+ &lt;li&gt;value: optional, the contents of the part if the sessionKey specified contains no data&lt;/li&gt;
  &lt;li&gt;mimeType: optional MIME type&lt;/li&gt;
  &lt;/ul&gt;
  The name of the part is determined by the name attribute, unless that is empty, or the contents is binary. In those cases the sessionKey name is used as name of the part.</xs:documentation>
@@ -3474,6 +3467,11 @@
     <xs:attribute ref="clientSecret" />
     <xs:attribute ref="scope" />
     <xs:attribute ref="authenticatedTokenRequest" />
+    <xs:attribute ref="oauthAuthenticationMethod" />
+    <xs:attribute ref="samlNameId" />
+    <xs:attribute ref="samlIssuer" />
+    <xs:attribute ref="samlAudience" />
+    <xs:attribute ref="samlAssertionExpiry" />
     <xs:attribute ref="proxyHost" />
     <xs:attribute ref="proxyPort" />
     <xs:attribute ref="proxyAuthAlias" />
@@ -3540,6 +3538,11 @@
     <xs:attribute ref="clientSecret" />
     <xs:attribute ref="scope" />
     <xs:attribute ref="authenticatedTokenRequest" />
+    <xs:attribute ref="oauthAuthenticationMethod" />
+    <xs:attribute ref="samlNameId" />
+    <xs:attribute ref="samlIssuer" />
+    <xs:attribute ref="samlAudience" />
+    <xs:attribute ref="samlAssertionExpiry" />
     <xs:attribute ref="proxyHost" />
     <xs:attribute ref="proxyPort" />
     <xs:attribute ref="proxyAuthAlias" />
@@ -4735,17 +4738,18 @@
     </xs:attribute>
     <xs:attribute name="timeout" type="frankInt" />
     <xs:attribute name="keepAliveInterval" type="frankInt" />
-    <xs:attribute name="clientId" type="xs:string">
+    <xs:attribute name="clientId" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The clientId for this connection. Be aware that each connection (each sender or listener) needs to have a unique clientId. The MQTT broker uses the clientId to hold a persistent session, so it can send any missing messages when you reconnect.
+ see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank"&gt;MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)&lt;/a&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="brokerUrl" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank"&gt;MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)&lt;/a&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="brokerUrl" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank"&gt;MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)&lt;/a&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="topic" type="xs:string">
+    <xs:attribute name="topic" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#subscribe-java.lang.String-" target="_blank"&gt;MqttClient.subscribe(java.lang.String topicFilter)&lt;/a&gt;</xs:documentation>
       </xs:annotation>
@@ -4762,7 +4766,8 @@
     </xs:attribute>
     <xs:attribute name="persistenceDirectory" type="xs:string">
       <xs:annotation>
-        <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/persist/MqttDefaultFilePersistence.html" target="_blank"&gt;MqttDefaultFilePersistence&lt;/a&gt; and &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html" target="_blank"&gt;MqttClient&lt;/a&gt;</xs:documentation>
+        <xs:documentation>Stores inbound and outbound messages while they are in flight on disk storage. Recommended when reliability is paramount. Messages are persisted in memory when empty.
+ see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/persist/MqttDefaultFilePersistence.html" target="_blank"&gt;MqttDefaultFilePersistence&lt;/a&gt; and &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html" target="_blank"&gt;MqttClient&lt;/a&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="automaticReconnect" type="frankBoolean">
@@ -4907,6 +4912,11 @@
     <xs:attribute ref="clientSecret" />
     <xs:attribute ref="scope" />
     <xs:attribute ref="authenticatedTokenRequest" />
+    <xs:attribute ref="oauthAuthenticationMethod" />
+    <xs:attribute ref="samlNameId" />
+    <xs:attribute ref="samlIssuer" />
+    <xs:attribute ref="samlAudience" />
+    <xs:attribute ref="samlAssertionExpiry" />
     <xs:attribute ref="proxyHost" />
     <xs:attribute ref="proxyPort" />
     <xs:attribute ref="proxyAuthAlias" />
@@ -5844,6 +5854,11 @@
     <xs:attribute ref="clientSecret" />
     <xs:attribute ref="scope" />
     <xs:attribute ref="authenticatedTokenRequest" />
+    <xs:attribute ref="oauthAuthenticationMethod" />
+    <xs:attribute ref="samlNameId" />
+    <xs:attribute ref="samlIssuer" />
+    <xs:attribute ref="samlAudience" />
+    <xs:attribute ref="samlAssertionExpiry" />
     <xs:attribute ref="proxyHost" />
     <xs:attribute ref="proxyPort" />
     <xs:attribute ref="proxyAuthAlias" />
@@ -6565,6 +6580,33 @@
         <xs:documentation>Claim name which specifies the principal name (maps to &lt;code&gt;GetPrincipalPipe&lt;/code&gt;)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="responseType">
+      <xs:annotation>
+        <xs:documentation>Optional configuration setting to have more control over how to send the response.
+ Set this to return data as Multipart formdata or MTOM.
+ See HttpEntityType for all supported values and how to use them. Default: HttpEntityType#BINARY.</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="HttpEntityTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="responseMultipartXmlSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If response is sent as Multipart (HttpEntityType#FORMDATA or HttpEntityType#MTOM) an optional session key can describe the Multipart contents in XML. See org.frankframework.http.HttpSender#setMultipartXmlSessionKey(String)
+ for details on the XML format specification.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="responseFirstBodyPartName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If response is sent as Multipart (HttpEntityType#FORMDATA or HttpEntityType#MTOM), when this option is set the pipeline result message will be prepended as first Multipart Bodypart with
+ this name.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="responseMtomContentTransferEncoding" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If the response is sent as HttpEntityType#MTOM, optionally specify the transfer-encoding of the first part.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="ApiListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="ApiListenerDeclaredAttributeGroup" />
@@ -6956,11 +6998,6 @@
         <xs:documentation>The mail address of the mailbox connected to (also used for auto discovery)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="url" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up startup, leave empty to use autodiscovery</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="clientId" type="xs:string">
       <xs:annotation>
         <xs:documentation>Client ID that represents a registered application in Azure AD which could be found at Azure AD -&gt; App Registrations -&gt; MyApp -&gt; Overview.</xs:documentation>
@@ -6976,16 +7013,6 @@
         <xs:documentation>Tenant ID that represents the tenant in which the registered application exists within Azure AD which could be found at Azure AD -&gt; App Registrations -&gt; MyApp -&gt; Overview.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="username" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Username for authentication to mail server.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="password" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Password for authentication to mail server.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="authAlias" type="xs:string">
       <xs:annotation>
         <xs:documentation>Alias used to obtain client ID and secret or username and password for authentication to Exchange mail server.
@@ -6996,11 +7023,6 @@
     <xs:attribute name="baseFolder" type="xs:string">
       <xs:annotation>
         <xs:documentation>Folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="filter" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>If empty, all mails are retrieved. If set to &lt;code&gt;NDR&lt;/code&gt; only Non-Delivery Report mails ('bounces') are retrieved</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
@@ -7036,12 +7058,6 @@
     <xs:attribute name="proxyDomain" type="xs:string">
       <xs:annotation>
         <xs:documentation>proxy domain</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="mailboxObjectSeparator" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Separator character used when working with multiple mailboxes, specified before the separator in the object name &lt;code&gt;test@organisation.com|My sub folder&lt;/code&gt; or &lt;code&gt;test@organisation.com|AAMkADljZDMxYzIzLTFlMjYtNGY4Mi1hM2Y1LTc2MjE5ZjIyZmMyNABGAAAAAAAu/9EmV5M6QokBRZwID1Q6BwDXQXY+F44hRbDfTB9v8jRfAAAEUqUVAADXQXY+F44hRbDfTB9v8jRfAAKA4F+pAAA=&lt;/code&gt;.
- Please consider when moving emails across mailboxes that there will be a null value returned instead of the newly created identifier. Default: |</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keystore" type="xs:string">
@@ -7133,33 +7149,6 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="ExchangeMailListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="ExchangeMailListenerDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractMailListenerCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="AbstractMailListenerDeclaredAttributeGroup">
-    <xs:attribute name="simple" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>when set to &lt;code&gt;true&lt;/code&gt;, the xml string passed to the pipeline only contains the subject of the mail (to save memory) Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="storeEmailAsStreamInSessionKey" type="xs:string" />
-    <xs:attribute name="messageType">
-      <xs:annotation>
-        <xs:documentation>Determines the contents of the message that is sent to the Pipeline. can be one of:
- &lt;ul&gt;
- &lt;li&gt;&lt;code&gt;EMAIL&lt;/code&gt;, for an XML containing most relevant information, except the body and the attachments&lt;/li&gt;
- &lt;li&gt;&lt;code&gt;CONTENTS&lt;/code&gt;, for the body of the message&lt;/li&gt;
- &lt;li&gt;&lt;code&gt;MIME&lt;/code&gt;, for the MIME contents of the message&lt;/li&gt;
- &lt;li&gt;&lt;code&gt;NAME&lt;/code&gt; or &lt;code&gt;PATH&lt;/code&gt;, for an internal handle of mail message, that can be used by a related MailFileSystemSender&lt;/li&gt;
- &lt;li&gt;&lt;code&gt;HEADER&lt;/code&gt;, for the value of the header matching the searchKey in the message context&lt;/li&gt;
- &lt;/ul&gt; Default: EMAIL</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="MessageTypeAttributeValuesType_2 variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="AbstractMailListenerCumulativeAttributeGroup">
-    <xs:attributeGroup ref="AbstractMailListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractFileSystemListenerDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="FrankListenerType">
@@ -7451,6 +7440,33 @@
   <xs:attributeGroup name="ImapListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="ImapListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractMailListenerCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="AbstractMailListenerDeclaredAttributeGroup">
+    <xs:attribute name="simple" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>when set to &lt;code&gt;true&lt;/code&gt;, the xml string passed to the pipeline only contains the subject of the mail (to save memory) Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="storeEmailAsStreamInSessionKey" type="xs:string" />
+    <xs:attribute name="messageType">
+      <xs:annotation>
+        <xs:documentation>Determines the contents of the message that is sent to the Pipeline. can be one of:
+ &lt;ul&gt;
+ &lt;li&gt;&lt;code&gt;EMAIL&lt;/code&gt;, for an XML containing most relevant information, except the body and the attachments&lt;/li&gt;
+ &lt;li&gt;&lt;code&gt;CONTENTS&lt;/code&gt;, for the body of the message&lt;/li&gt;
+ &lt;li&gt;&lt;code&gt;MIME&lt;/code&gt;, for the MIME contents of the message&lt;/li&gt;
+ &lt;li&gt;&lt;code&gt;NAME&lt;/code&gt; or &lt;code&gt;PATH&lt;/code&gt;, for an internal handle of mail message, that can be used by a related MailFileSystemSender&lt;/li&gt;
+ &lt;li&gt;&lt;code&gt;HEADER&lt;/code&gt;, for the value of the header matching the searchKey in the message context&lt;/li&gt;
+ &lt;/ul&gt; Default: EMAIL</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="MessageTypeAttributeValuesType_2 variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="AbstractMailListenerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="AbstractMailListenerDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractFileSystemListenerDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JavaListenerType">
     <xs:attributeGroup ref="JavaListenerDeclaredAttributeGroup" />
@@ -7855,7 +7871,7 @@
     </xs:attribute>
     <xs:attribute name="authRoles" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of authorization roles which are granted for this rest service Default: IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService</xs:documentation>
+        <xs:documentation>Comma separated list of authorization roles which are granted for this rest service Default: IbisWebService,IbisObserver,IbisDataAdmin,IbisAdmin,IbisTester</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="writeToSecLog" type="frankBoolean" />
@@ -11074,6 +11090,15 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="IfPipe">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="IfPipeType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="IncreaseIntegerPipe">
         <xs:complexType>
           <xs:complexContent>
@@ -12261,7 +12286,11 @@
         <xs:documentation>Alternatively: xpath-expression to create stylesheet from</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="namespaceDefs" />
+    <xs:attribute name="namespaceDefs" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
         <xs:documentation>Only valid for xpathexpression Default: text</xs:documentation>
@@ -12418,7 +12447,11 @@
         <xs:documentation>Alternatively: xpath-expression to create stylesheet from</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="namespaceDefs" />
+    <xs:attribute name="namespaceDefs" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
         <xs:documentation>Only valid for xpathexpression Default: text</xs:documentation>
@@ -13192,9 +13225,9 @@
         <xs:documentation>Starts counting at this value. Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="stopAt" type="frankInt" use="required">
+    <xs:attribute name="stopAt" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Break from the loop when incrementSessionKey equals this value</xs:documentation>
+        <xs:documentation>Break from the loop when incrementSessionKey equals this value.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -13301,6 +13334,46 @@
     <xs:attributeGroup ref="GetTibcoQueuesDeclaredAttributeGroup" />
     <xs:attributeGroup ref="TimeoutGuardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
+  <xs:complexType name="IfPipeType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractPipeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="IfPipeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.IfPipe" />
+  </xs:complexType>
+  <xs:attributeGroup name="IfPipeDeclaredAttributeGroup">
+    <xs:attribute ref="thenForwardName" />
+    <xs:attribute ref="elseForwardName" />
+    <xs:attribute ref="expressionValue" />
+    <xs:attribute name="xpathExpression" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>xpath expression to be applied to the input-message. if not set, no transformation is done when the input message is mediatype XML</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="jsonPathExpression" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>jsonPath expression to be applied to the input-message. if not set, no transformation is done when the input message is mediatype JSON</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="xsltVersion" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan) Default: 2</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="namespaceDefs" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt; definitions.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="namespaceAware" />
+    <xs:attribute ref="defaultMediaType" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="IfPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="IfPipeDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="IncreaseIntegerPipeType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -13403,12 +13476,18 @@
     <xs:attribute name="addXmlRootElement" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>When direction is JSON2XML, it wraps a root element around the converted message.
- When direction is XML2JSON, it includes the name of the root element as a key in the converted message. Default: TRUE when JSON2XML and FALSE when XML2JSON</xs:documentation>
+ When direction is XML2JSON, it includes the name of the root element as a key in the converted message, thus preserving the structure of the original input message. Default: TRUE when JSON2XML and FALSE when XML2JSON</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="rootElementName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>When direction is JSON2XML, specifies the name of the root element when `addXmlRootElement` is &lt;code&gt;true&lt;/code&gt;.
+ When direction is XML2JSON, can not be used. Default: root</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="prettyPrint" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Format the output in easy legible way (currently only for XML)</xs:documentation>
+        <xs:documentation>Format the output in easy legible way (currently only for JSON2XML)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -15339,35 +15418,26 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XmlIf" />
   </xs:complexType>
   <xs:attributeGroup name="XmlIfDeclaredAttributeGroup">
+    <xs:attribute name="regex" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Regular expression to be applied to the input-message (ignored if either &lt;code&gt;xpathExpression&lt;/code&gt; or &lt;code&gt;jsonPathExpression&lt;/code&gt; is specified).
+ The input-message &lt;b&gt;fully&lt;/b&gt; matching the given regular expression leads to the 'then'-forward</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="sessionKey" type="xs:string">
       <xs:annotation>
         <xs:documentation>name of the key in the &lt;code&gt;pipelinesession&lt;/code&gt; to retrieve the input-message from. if not set, the current input message of the pipe is taken. n.b. same as &lt;code&gt;getinputfromsessionkey&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="expressionValue" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>a string to compare the result of the xpathExpression (or the input-message itself) to. If not specified, a non-empty result leads to the 'then'-forward, an empty result to 'else'-forward</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="thenForwardName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>forward returned when output is &lt;code&gt;true&lt;/code&gt; Default: then</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="elseForwardName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>forward returned when output is &lt;code&gt;false&lt;/code&gt; Default: else</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="XmlIfCumulativeAttributeGroup">
+    <xs:attributeGroup ref="XmlIfDeclaredAttributeGroup" />
+    <xs:attribute ref="thenForwardName" />
+    <xs:attribute ref="elseForwardName" />
+    <xs:attribute ref="expressionValue" />
     <xs:attribute name="xpathExpression" type="xs:string">
       <xs:annotation>
-        <xs:documentation>xpath expression to be applied to the input-message. if not set, no transformation is done</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="regex" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Regular expression to be applied to the input-message (ignored if &lt;code&gt;xpathExpression&lt;/code&gt; is specified).
- The input-message &lt;b&gt;fully&lt;/b&gt; matching the given regular expression leads to the 'then'-forward</xs:documentation>
+        <xs:documentation>xpath expression to be applied to the input-message. if not set, no transformation is done when the input message is mediatype XML</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
@@ -15380,14 +15450,8 @@
         <xs:documentation>namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt; definitions.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="namespaceAware" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>controls namespace-awareness of XSLT transformation Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="XmlIfCumulativeAttributeGroup">
-    <xs:attributeGroup ref="XmlIfDeclaredAttributeGroup" />
+    <xs:attribute ref="namespaceAware" />
+    <xs:attribute ref="defaultMediaType" />
     <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="XmlSwitchType">
@@ -15899,7 +15963,7 @@
           </xs:sequence>
           <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="destination" />
-          <xs:attribute name="className" type="xs:string" use="required" />
+          <xs:attribute name="className" type="xs:string" default="org.frankframework.monitoring.MonitorDestination" />
           <xs:anyAttribute processContents="skip" />
         </xs:complexType>
       </xs:element>
@@ -15922,19 +15986,28 @@
   <xs:complexType name="SenderMonitorAdapterType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="SenderMonitorAdapterDeclaredChildGroup" />
+        <xs:group ref="MonitorDestinationDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="AbstractMonitorDestinationDeclaredAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.SenderMonitorAdapter" />
+  </xs:complexType>
+  <xs:complexType name="MonitorDestinationType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="MonitorDestinationDeclaredChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="AbstractMonitorDestinationDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.MonitorDestination" />
   </xs:complexType>
-  <xs:group name="SenderMonitorAdapterDeclaredChildGroup">
+  <xs:group name="MonitorDestinationDeclaredChildGroup">
     <xs:sequence>
       <xs:group ref="SenderElementGroup" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractMonitorDestinationDeclaredAttributeGroup">
-    <xs:attribute name="name" type="xs:string">
+    <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>The functional name of the object.</xs:documentation>
       </xs:annotation>
@@ -16009,8 +16082,16 @@
   </xs:group>
   <xs:attributeGroup name="TriggerDeclaredAttributeGroup">
     <xs:attribute name="eventCode" type="xs:string" />
-    <xs:attribute name="threshold" type="frankInt" />
-    <xs:attribute name="period" type="frankInt" />
+    <xs:attribute name="threshold" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Amount of triggers required before sounding an alarm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="period" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Amount of hits required within 'x' amount of seconds before it counts as a trigger</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="severity">
       <xs:simpleType>
         <xs:union memberTypes="SeverityAttributeValuesType variableRef" />
@@ -16107,6 +16188,11 @@
     <xs:attribute ref="clientSecret" />
     <xs:attribute ref="scope" />
     <xs:attribute ref="authenticatedTokenRequest" />
+    <xs:attribute ref="oauthAuthenticationMethod" />
+    <xs:attribute ref="samlNameId" />
+    <xs:attribute ref="samlIssuer" />
+    <xs:attribute ref="samlAudience" />
+    <xs:attribute ref="samlAssertionExpiry" />
     <xs:attribute ref="proxyHost" />
     <xs:attribute ref="proxyPort" />
     <xs:attribute ref="proxyAuthAlias" />
@@ -16287,8 +16373,8 @@
   </xs:simpleType>
   <xs:simpleType name="KeystoreTypeAttributeValuesType">
     <xs:restriction base="xs:string">
-      <xs:pattern value="[pP][kK][cC][sS][11][22]" />
       <xs:pattern value="[pP][eE][mM]" />
+      <xs:pattern value="[pP][kK][cC][sS][11][22]" />
       <xs:pattern value="[jJ][kK][sS]" />
       <xs:pattern value="[jJ][cC][eE][kK][sS]" />
     </xs:restriction>
@@ -16354,7 +16440,7 @@
       <xs:pattern value="[pP]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="PostTypeAttributeValuesType">
+  <xs:simpleType name="HttpEntityTypeAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[rR][aA][wW]" />
       <xs:pattern value="[bB][iI][nN][aA][rR][yY]" />
@@ -16372,6 +16458,15 @@
       <xs:pattern value="[dD][eE][lL][eE][tT][eE]" />
       <xs:pattern value="[hH][eE][aA][dD]" />
       <xs:pattern value="[rR][eE][pP][oO][rR][tT]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="OauthAuthenticationMethodAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[cC][lL][iI][eE][nN][tT][__][cC][rR][eE][dD][eE][nN][tT][iI][aA][lL][sS][__][bB][aA][sS][iI][cC][__][aA][uU][tT][hH]" />
+      <xs:pattern value="[cC][lL][iI][eE][nN][tT][__][cC][rR][eE][dD][eE][nN][tT][iI][aA][lL][sS][__][qQ][uU][eE][rR][yY][__][pP][aA][rR][aA][mM][eE][tT][eE][rR][sS]" />
+      <xs:pattern value="[rR][eE][sS][oO][uU][rR][cC][eE][__][oO][wW][nN][eE][rR][__][pP][aA][sS][sS][wW][oO][rR][dD][__][cC][rR][eE][dD][eE][nN][tT][iI][aA][lL][sS][__][bB][aA][sS][iI][cC][__][aA][uU][tT][hH]" />
+      <xs:pattern value="[rR][eE][sS][oO][uU][rR][cC][eE][__][oO][wW][nN][eE][rR][__][pP][aA][sS][sS][wW][oO][rR][dD][__][cC][rR][eE][dD][eE][nN][tT][iI][aA][lL][sS][__][qQ][uU][eE][rR][yY][__][pP][aA][rR][aA][mM][eE][tT][eE][rR][sS]" />
+      <xs:pattern value="[sS][aA][mM][lL][__][aA][sS][sS][eE][rR][tT][iI][oO][nN]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="ActionAttributeValuesType_5">
@@ -16759,6 +16854,12 @@
       <xs:pattern value="[dD][eE][lL][eE][tT][eE]" />
       <xs:pattern value="[fF][lL][uU][sS][hH]" />
       <xs:pattern value="[cC][lL][eE][aA][rR]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="SupportedMediaTypeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[xX][mM][lL]" />
+      <xs:pattern value="[jJ][sS][oO][nN]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="DirectionAttributeValuesType_8">
@@ -17311,6 +17412,34 @@
   <xs:attribute name="authenticatedTokenRequest" type="frankBoolean">
     <xs:annotation>
       <xs:documentation>if set true, clientId and clientSecret will be added as Basic Authentication header to the tokenRequest, instead of as request parameters</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="oauthAuthenticationMethod">
+    <xs:annotation>
+      <xs:documentation>Only used when `tokenEndpoint` has been configured. Sets the OAuth authentication method and controls which authentication flow should be used.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:union memberTypes="OauthAuthenticationMethodAttributeValuesType variableRef" />
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="samlNameId" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>The nameId to be added during the creation of the SAML assertion.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="samlIssuer" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>The issuer to be added during the creation of the SAML assertion.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="samlAudience" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>The audience to be added during the creation of the SAML assertion.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="samlAssertionExpiry" type="frankInt">
+    <xs:annotation>
+      <xs:documentation>The time to live (in seconds) until the generated SAML assertion should be valid. A new assertion will be generated when the previous assertion is no longer valid.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="proxyHost" type="xs:string">
@@ -17989,11 +18118,6 @@
       <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the failure forward is replaced by the success forward (like a warning mode)</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="namespaceDefs" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
   <xs:attribute name="itemNoSessionKey" type="xs:string">
     <xs:annotation>
       <xs:documentation>Key of session variable to store number of items processed, i.e. the position or index in the set of items to be processed. When handling the first item, the value will be 1.</xs:documentation>
@@ -18047,6 +18171,34 @@
     <xs:annotation>
       <xs:documentation>Maximum number of child threads that may run in parallel simultaneously (combined total of all threads calling this pipe). Use &lt;code&gt;0&lt;/code&gt; for unlimited threads Default: 0</xs:documentation>
     </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="thenForwardName" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>forward returned when output is &lt;code&gt;true&lt;/code&gt; Default: then</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="elseForwardName" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>forward returned when output is &lt;code&gt;false&lt;/code&gt; Default: else</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="expressionValue" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>a string to compare the result of the xpathExpression (or the input-message itself) to. If not specified, a non-empty result leads to the 'then'-forward, an empty result to 'else'-forward</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="namespaceAware" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>controls namespace-awareness of XSLT transformation Default: true</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="defaultMediaType">
+    <xs:annotation>
+      <xs:documentation>Default: DefaultMediaType.XML</xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:union memberTypes="SupportedMediaTypeAttributeValuesType variableRef" />
+    </xs:simpleType>
   </xs:attribute>
   <xs:attribute name="sessionKey" type="xs:string">
     <xs:annotation>

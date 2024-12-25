@@ -1,7 +1,7 @@
 <module>
 	<Adapter name="RegExPipe">
 		<Receiver name="RegExPipe">
-			<JavaListener serviceName="ibis4test-RegExPipe" />
+			<JavaListener name="RegExPipe" serviceName="ibis4test-RegExPipe" />
 		</Receiver>
 		<Pipeline firstPipe="regExPipe">
 			<Exit path="EXIT" state="success" />

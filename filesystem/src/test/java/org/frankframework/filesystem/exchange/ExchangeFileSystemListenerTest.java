@@ -21,7 +21,7 @@ public class ExchangeFileSystemListenerTest extends BasicFileSystemListenerTest<
 	private static String tenantId;
 
 	// Should ideally never be `inbox` as it removes all mail items!
-	private String baseFolder = properties.getProperty("baseFolder", "Inbox/iafTest");
+	private String baseFolder = properties.getProperty("baseFolder", ExchangeFileSystemTestHelper.DEFAULT_BASE_FOLDER);
 
 	@BeforeAll
 	public static void beforeAll() {
