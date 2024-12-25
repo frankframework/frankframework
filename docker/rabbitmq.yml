@@ -1,0 +1,12 @@
+services:
+  ff-test:
+    environment:
+      jms.provider.default: rabbitmq
+      jms.destination.suffix: -rabbitmq
+      jms.hostname: rabbitmq
+      active.jms: true
+      transactionmanager.narayana.jms.connection.maxPoolSize: 1
+  rabbitmq:
+    image: myrabbitmq:latest
+    ports:
+      - "5672:5672"

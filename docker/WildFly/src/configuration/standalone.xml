@@ -617,6 +617,31 @@
 						</admin-object>
 					</admin-objects>
 				</resource-adapter>
+				<resource-adapter id="rabbitmq">
+					<archive>ampq-client.jar</archive>
+
+					<transaction-support>XATransaction</transaction-support>
+
+					<connection-definitions>
+						<connection-definition class-name="com.rabbitmq.jms.admin.RMQXAConnectionFactory"
+							jndi-name="java:/RabbitMQConnectionFactory"
+							pool-name="RabbitMQConnectionFactory">
+							<config-property name="host">localhost</config-property>
+							<config-property name="port">5672</config-property>
+							<config-property name="username">guest</config-property>
+							<config-property name="password">guest</config-property>
+						</connection-definition>
+					</connection-definitions>
+
+					<admin-objects>
+						<admin-object class-name="com.rabbitmq.jms.admin.RMQDestination"
+							jndi-name="java:/queue/testQueue"
+							pool-name="testQueue">
+							<config-property name="destinationName">testQueue</config-property>
+							<config-property name="destinationType">queue</config-property>
+						</admin-object>
+					</admin-objects>
+				</resource-adapter>
 			</resource-adapters>
 		</subsystem>
 		<subsystem xmlns="urn:jboss:domain:sar:1.0"/>
