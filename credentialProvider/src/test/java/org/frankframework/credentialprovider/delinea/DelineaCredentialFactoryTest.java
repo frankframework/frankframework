@@ -38,7 +38,6 @@ public class DelineaCredentialFactoryTest {
 
 		when(client.getSecret("1")).thenReturn(secret1);
 
-		// TODO mock client.getSecretsPage
 		when(client.getSecrets()).thenReturn(list);
 
 		// setup constants
