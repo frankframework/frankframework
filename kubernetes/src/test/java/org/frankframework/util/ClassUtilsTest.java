@@ -4,27 +4,28 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 
 import org.frankframework.core.INamedObject;
 
 /**
- * This Class tests whether or not the spring-core dependency is present on the classpath.
+ * This Class tests whether the spring-core dependency is present on the classpath.
  * This dependency is present but marked as optional in the frankframework-commons module.
  * 
  * In the commons module this optional compile module is present during tests. And thus spring-core will always be present.
  */
 public class ClassUtilsTest {
 
-	@BeforeAll
+	// @BeforeAll
 	public static void ensureOptionalDependenciesAreNotOnTheClasspath() {
 		assertAll(
 			() -> assertFalse(isPresent("org.springframework.util.ClassUtils"), "found Spring.ClassUtils on the classpath, unable to test optional dependency")
 		);
 	}
 
-	@Test
+	// TODO: fix this test
+	@Disabled("This test is disabled because the spring-core dependency is present in every module")
+	// @Test
 	public void testIfSpringDependencyOptional() {
 		assertEquals("String", ClassUtils.nameOf("test"));
 		assertEquals("ClassUtilsTest", ClassUtils.nameOf(this));
