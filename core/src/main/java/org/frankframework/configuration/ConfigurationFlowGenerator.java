@@ -15,13 +15,19 @@
 */
 package org.frankframework.configuration;
 
-import org.frankframework.lifecycle.ConfigurableLifecycle;
-import org.frankframework.util.flow.FlowDiagramManager;
+import java.io.IOException;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.core.Adapter;
+import org.frankframework.core.IConfigurationAware;
+import org.frankframework.lifecycle.ConfigurableLifecycle;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.flow.FlowDiagramManager;
 
 /**
  * Generate a flow over the digested {@link Configuration}.
@@ -29,6 +35,7 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public class ConfigurationFlowGenerator implements ConfigurableLifecycle, ApplicationContextAware {
+	private final boolean suppressWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.FLOW_GENERATION_ERROR.getKey(), false);
 
 	@Setter
 	private FlowDiagramManager flowDiagramManager;
@@ -43,12 +50,12 @@ public class ConfigurationFlowGenerator implements ConfigurableLifecycle, Applic
 
 	@Override
 	public void start() {
-		//Do nothing
+		// Do nothing
 	}
 
 	@Override
 	public void stop() {
-		//Do nothing
+		// Do nothing
 	}
 
 	@Override
@@ -58,14 +65,23 @@ public class ConfigurationFlowGenerator implements ConfigurableLifecycle, Applic
 
 	@Override
 	public void configure() {
-		if(!(applicationContext instanceof Configuration configuration)) {
-			throw new IllegalStateException("no suitable Configuration found");
-		}
-
 		try {
-			flowDiagramManager.generate(configuration);
-		} catch (Exception e) { //Don't throw an exception when generating the flow fails
-			ConfigurationWarnings.add(configuration, log, "Error generating flow diagram for configuration ["+configuration.getName()+"]", e);
+			if (applicationContext instanceof Configuration configuration) {
+				System.err.println("creating flow for configuration: " + configuration);
+				flowDiagramManager.generate(configuration);
+			} else if (applicationContext instanceof Adapter adapter) {
+				System.err.println("creating flow for adapter: " + adapter);
+				flowDiagramManager.generate(adapter);
+			} else {
+				throw new IllegalStateException("no suitable Configuration found");
+			}
+
+			// Don't throw an exception when generating the flow fails
+			// Exception is already logged when loglevel equals debug (see FlowDiagramManager#generateFlowDiagram(String, String, File))
+		} catch (IOException e) {
+			if(!suppressWarnings) {
+				ConfigurationWarnings.add((IConfigurationAware) applicationContext, log, "error generating flow diagram", e);
+			}
 		}
 	}
 }

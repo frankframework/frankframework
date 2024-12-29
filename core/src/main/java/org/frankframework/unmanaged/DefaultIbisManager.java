@@ -126,7 +126,7 @@ public class DefaultIbisManager implements IbisManager {
 			Assert.notNull(adapterName, "no adapterName provided");
 			Assert.notNull(configurationName, "no configurationName provided");
 
-			if (adapterName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
+			if (true || adapterName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
 				if (configurationName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
 					log.info("Stopping all adapters on request of [{}]", commandIssuedBy);
 					for (Configuration configuration : configurations) {
@@ -143,7 +143,7 @@ public class DefaultIbisManager implements IbisManager {
 				Assert.notNull(adapter, ()->"adapter ["+adapterName+"] not found");
 
 				log.info("Stopping adapter [{}], on request of [{}]", adapterName, commandIssuedBy);
-				configuration.getRegisteredAdapter(adapterName).stopRunning();
+				configuration.getRegisteredAdapter(adapterName).stop();
 			}
 			break;
 
@@ -151,7 +151,7 @@ public class DefaultIbisManager implements IbisManager {
 			Assert.notNull(adapterName, "no adapterName provided");
 			Assert.notNull(configurationName, "no configurationName provided");
 
-			if (adapterName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
+			if (true || adapterName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
 				if (configurationName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
 					log.info("Starting all adapters on request of [{}]", commandIssuedBy);
 					for (Configuration configuration : configurations) {
@@ -169,7 +169,7 @@ public class DefaultIbisManager implements IbisManager {
 					Assert.notNull(adapter, ()->"adapter ["+adapterName+"] not found");
 
 					log.info("Starting adapter [{}] on request of [{}]", adapterName, commandIssuedBy);
-					configuration.getRegisteredAdapter(adapterName).startRunning();
+					configuration.getRegisteredAdapter(adapterName).start();
 				} catch (Exception e) {
 					log.error("error in execution of command [{}] for adapter [{}]", action, adapterName, e);
 				}
@@ -273,7 +273,7 @@ public class DefaultIbisManager implements IbisManager {
 			case STARTED:
 			case EXCEPTION_STARTING:
 			case EXCEPTION_STOPPING:
-				receiver.stopRunning();
+				receiver.stop();
 				log.info("receiver [{}] stopped by webcontrol on request of [{}]", receiverName, commandIssuedBy);
 				break;
 			default:
@@ -296,7 +296,7 @@ public class DefaultIbisManager implements IbisManager {
 				adapter.getMessageKeeper().info(receiver, "already in state [" + receiverRunState + "]");
 				break;
 			case STOPPED:
-				receiver.startRunning();
+				receiver.start();
 				log.info("receiver [{}] started by [{}]", receiverName, commandIssuedBy);
 				break;
 			default:
@@ -308,13 +308,15 @@ public class DefaultIbisManager implements IbisManager {
 	private void startAdapters(Configuration configuration) {
 		Assert.notNull(configuration, "no configuration provided");
 		log.info("Starting all autostart-configured adapters for configuation [{}]", configuration::getName);
-		configuration.getAdapterManager().start();
+//		configuration.getAdapterManager().start();
+		configuration.start();
 	}
 
 	private void stopAdapters(Configuration configuration) {
 		Assert.notNull(configuration, "no configuration provided");
 		log.info("Stopping all adapters for configuation [{}]", configuration::getName);
-		configuration.getAdapterManager().stop();
+//		configuration.getAdapterManager().stop();
+		configuration.stop();
 	}
 
 	@Override

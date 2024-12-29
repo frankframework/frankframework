@@ -36,7 +36,6 @@ import org.frankframework.core.Adapter;
 import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
 import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
 import org.frankframework.util.RunState;
-import org.frankframework.util.StringUtil;
 
 /**
  * Manager which holds all adapters within a {@link Configuration}.
@@ -49,10 +48,7 @@ import org.frankframework.util.StringUtil;
 public class AdapterManager extends AbstractConfigurableLifecyle implements ApplicationContextAware, AutoCloseable {
 
 	private @Getter @Setter ApplicationContext applicationContext;
-	private List<? extends AbstractAdapterLifecycleWrapper> adapterLifecycleWrappers;
 
-	private final List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<>());
-	private final List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<>());
 	private final AtomicBoolean active = new AtomicBoolean(true); // Flag that indicates whether this manager is active and can accept new Adapters.
 
 	private final Map<String, Adapter> adapters = new LinkedHashMap<>(); // insertion order map
@@ -89,35 +85,9 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 			return;
 		}
 
-		if(adapterLifecycleWrappers != null) {
-			for (AbstractAdapterLifecycleWrapper adapterProcessor : adapterLifecycleWrappers) {
-				adapterProcessor.removeAdapter(adapter);
-			}
-		}
-
 		String name = adapter.getName();
 		adapters.remove(name);
 		log.debug("removed adapter [{}] from AdapterManager [{}]", name, this);
-	}
-
-	public void setAdapterLifecycleWrappers(List<? extends AbstractAdapterLifecycleWrapper> adapterLifecycleWrappers) {
-		this.adapterLifecycleWrappers = adapterLifecycleWrappers;
-	}
-
-	public void addStartAdapterThread(Runnable runnable) {
-		startAdapterThreads.add(runnable);
-	}
-
-	public void removeStartAdapterThread(Runnable runnable) {
-		startAdapterThreads.remove(runnable);
-	}
-
-	public void addStopAdapterThread(Runnable runnable) {
-		stopAdapterThreads.add(runnable);
-	}
-
-	public void removeStopAdapterThread(Runnable runnable) {
-		stopAdapterThreads.remove(runnable);
 	}
 
 	public Adapter getAdapter(String name) {
@@ -134,26 +104,6 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 
 	@Override
 	public void configure() {
-		if(!inState(RunState.STOPPED)) {
-			log.warn("unable to configure [{}] while in state [{}]", ()->this, this::getState);
-			return;
-		}
-		updateState(RunState.STARTING);
-
-		log.info("configuring all adapters in AdapterManager [{}]", this);
-
-		for (Adapter adapter : getAdapterList()) {
-			try {
-				if(adapterLifecycleWrappers != null) {
-					for (AbstractAdapterLifecycleWrapper adapterProcessor : adapterLifecycleWrappers) {
-						adapterProcessor.addAdapter(adapter);
-					}
-				}
-				adapter.configure();
-			} catch (ConfigurationException e) {
-				log.error("error configuring adapter [{}]", adapter.getName(), e);
-			}
-		}
 	}
 
 	/**
@@ -165,20 +115,6 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 	 */
 	@Override
 	public void start() {
-		if(!inState(RunState.STARTING)) {
-			log.warn("unable to start [{}] while in state [{}]", ()->this, this::getState);
-			return;
-		}
-
-		log.info("starting all autostart-configured adapters in AdapterManager [{}]", this);
-		for (Adapter adapter : getAdapterList()) {
-			if (adapter.configurationSucceeded() && adapter.isAutoStart()) {
-				log.info("Starting adapter [{}]", adapter::getName);
-				adapter.startRunning();
-			}
-		}
-
-		updateState(RunState.STARTED);
 	}
 
 	/**
@@ -186,24 +122,6 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 	 */
 	@Override
 	public void stop() {
-		if(!inState(RunState.STARTED)) {
-			log.warn("forcing [{}] to stop while in state [{}]", ()->this, this::getState);
-		}
-		updateState(RunState.STOPPING);
-
-		log.info("stopping all adapters in AdapterManager [{}]", this);
-		List<Adapter> adapters = getAdapterList();
-		Collections.reverse(adapters);
-		for (Adapter adapter : adapters) {
-			stopAdapter(adapter);
-		}
-		Thread.yield(); // Give chance to the stop-adapter threads to activate
-		updateState(RunState.STOPPED);
-	}
-
-	private void stopAdapter(Adapter adapter) {
-		log.info("stopping adapter [{}]", adapter::getName);
-		adapter.stopRunning();
 	}
 
 	/**
@@ -214,53 +132,6 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 	public void close() {
 		active.set(false);
 		log.info("destroying AdapterManager [{}]", this);
-
-		try {
-			doClose();
-		} catch(Exception e) {
-			if(!getAdapterList().isEmpty()) {
-				Configuration config = (Configuration) applicationContext;
-				config.log("not all adapters have been unregistered " + getAdapterList(), e);
-			}
-		}
-	}
-
-	/**
-	 * - wait for StartAdapterThreads to finish
-	 * - try to stop all adapters
-	 * - wait for StopAdapterThreads to finish
-	 * - unregister all adapters from this manager
-	 */
-	private void doClose() {
-		long sleepDelay = 50L;
-		while (!startAdapterThreads.isEmpty()) {
-			log.debug("waiting for start threads to end: {}", ()-> StringUtil.safeCollectionToString(startAdapterThreads));
-
-			try {
-				Thread.sleep(sleepDelay);
-				if (sleepDelay < 1000L) sleepDelay = sleepDelay * 2L;
-			} catch (InterruptedException e) {
-				log.warn("Interrupted thread while waiting for start threads to end", e);
-				Thread.currentThread().interrupt();
-			}
-		}
-
-		if(!inState(RunState.STOPPED)) {
-			stop(); //Call this just in case...
-		}
-
-		sleepDelay = 50L;
-		while (!stopAdapterThreads.isEmpty()) {
-			log.debug("waiting for stop threads to end: {}", () -> StringUtil.safeCollectionToString(stopAdapterThreads));
-
-			try {
-				Thread.sleep(sleepDelay);
-				if (sleepDelay < 1000L) sleepDelay = sleepDelay * 2L;
-			} catch (InterruptedException e) {
-				log.warn("Interrupted thread while waiting for stop threads to end", e);
-				Thread.currentThread().interrupt();
-			}
-		}
 
 		getAdapterList().forEach(this::removeAdapter);
 	}

@@ -237,7 +237,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 		String msg;
 		if (isAutoStartup()) {
-			start();
+			start(); // Calls ConfiguringLifecycleProcessor#start() which starts all newly (non-started) registerd beans.
 			msg = "startup in " + (System.currentTimeMillis() - start) + " ms";
 		} else {
 			msg = "configured in " + (System.currentTimeMillis() - start) + " ms";
@@ -291,7 +291,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public boolean isUnloadInProgressOrDone() {
-		return inState(RunState.STOPPING) || inState(RunState.STOPPED);
+		return !isActive() || !isRunning(); //inState(RunState.STOPPING) || inState(RunState.STOPPED);
 	}
 
 	@Override
@@ -342,22 +342,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			return Collections.emptyList();
 		}
 		return adapterManager.getAdapterList();
-	}
-
-	public void addStartAdapterThread(Runnable runnable) {
-		adapterManager.addStartAdapterThread(runnable);
-	}
-
-	public void removeStartAdapterThread(Runnable runnable) {
-		adapterManager.removeStartAdapterThread(runnable);
-	}
-
-	public void addStopAdapterThread(Runnable runnable) {
-		adapterManager.addStopAdapterThread(runnable);
-	}
-
-	public void removeStopAdapterThread(Runnable runnable) {
-		adapterManager.removeStopAdapterThread(runnable);
 	}
 
 	/**

@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -34,6 +35,9 @@ import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.LifecycleProcessor;
+import org.springframework.context.SmartLifecycle;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 
 import io.micrometer.core.instrument.DistributionSummary;
@@ -43,12 +47,16 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationFlowGenerator;
 import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
+import org.frankframework.lifecycle.ConfigurableLifecycle;
+import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.receivers.Receiver;
@@ -65,6 +73,7 @@ import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.Misc;
 import org.frankframework.util.RunState;
 import org.frankframework.util.RunStateManager;
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
 
 /**
@@ -95,9 +104,7 @@ import org.frankframework.util.StringUtil;
 @Log4j2
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class Adapter implements IManagable, HasStatistics, NamedBean {
-	private @Getter @Setter ApplicationContext applicationContext;
-
+public class Adapter extends GenericApplicationContext implements IManagable, HasStatistics, NamedBean {
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
 	public static final String PROCESS_STATE_OK = "OK";
@@ -108,7 +115,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 
 	private String name;
 	private @Getter String description;
-	private @Getter boolean autoStart = appConstants.getBoolean("adapters.autoStart", true);
+	private Boolean autoStart = null;
 	private @Getter boolean replaceNullMessage = false;
 	private @Getter int messageKeeperSize = 10; // Default length of MessageKeeper
 	private Level msgLogLevel = Level.toLevel(appConstants.getProperty("msg.log.level.default", "INFO"));
@@ -160,6 +167,17 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	}
 
 	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) {
+		setParent(applicationContext);
+		setConfiguration((Configuration) applicationContext);
+	}
+
+	@Override
+	public ApplicationContext getApplicationContext() {
+		return this;
+	}
+
+	@Override
 	public Adapter getAdapter() {
 		return this;
 	}
@@ -181,7 +199,14 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	 */
 	@Override
 	@SuppressWarnings("java:S4792") // Changing the logger level is not a security-sensitive operation, because roles originate from the properties file
-	public void configure() throws ConfigurationException { //TODO check if we should fail when the adapter has already been configured?
+	public void configure() throws ConfigurationException {
+		if (isActive() || configurationSucceeded) {
+			throw new LifecycleException("already configured");
+		}
+		if (!(getClassLoader() instanceof IConfigurationClassLoader)) {
+			throw new IllegalStateException("No IConfigurationClassLoader set");
+		}
+
 		msgLog = LogUtil.getMsgLogger(this);
 		Configurator.setLevel(msgLog.getName(), msgLogLevel);
 		configurationSucceeded = false;
@@ -189,6 +214,19 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 		if(getName().contains("/")) {
 			throw new ConfigurationException("It is not allowed to have '/' in adapter name ["+getName()+"]");
 		}
+
+		refresh();
+
+		ConfigurationFlowGenerator bean = SpringUtils.createBean(this, ConfigurationFlowGenerator.class);
+		getBeanFactory().registerSingleton("FlowGenerator", bean);
+
+		// Trigger a configure on all (Configurable) Lifecycle beans
+		LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
+		if (!(lifecycle instanceof ConfigurableLifecycle configurableLifecycle)) {
+			throw new ConfigurationException("wrong lifecycle processor found, unable to configure beans");
+		}
+
+		configurableLifecycle.configure();
 
 		numOfMessagesProcessed = configurationMetrics.createCounter(this, FrankMeterType.PIPELINE_PROCESSED);
 		numOfMessagesInError = configurationMetrics.createCounter(this, FrankMeterType.PIPELINE_IN_ERROR);
@@ -227,6 +265,14 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 		}
 
 		configurationSucceeded = true; // Only if there are no errors mark the adapter as `configurationSucceeded`!
+	}
+
+	@Override
+	protected void initLifecycleProcessor() {
+		ConfiguringLifecycleProcessor defaultProcessor = new ConfiguringLifecycleProcessor();
+		defaultProcessor.setBeanFactory(getBeanFactory());
+		getBeanFactory().registerSingleton(LIFECYCLE_PROCESSOR_BEAN_NAME, defaultProcessor);
+		super.initLifecycleProcessor();
 	}
 
 	@Nonnull
@@ -687,13 +733,13 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	 * @see Receiver#startRunning()
 	 */
 	@Override
-	public void startRunning() {
+	public void start() {
 		switch(getRunState()) {
 			case STARTING,
-				 EXCEPTION_STARTING,
-				 STARTED,
-				 STOPPING,
-				 EXCEPTION_STOPPING:
+				EXCEPTION_STARTING,
+				STARTED,
+				STOPPING,
+				EXCEPTION_STOPPING:
 				log.warn("cannot start adapter [{}] that is stopping, starting or already started", name);
 				return;
 			default:
@@ -739,7 +785,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 						return;
 					}
 
-					//Update the adapter uptime.
+					// Update the adapter uptime.
 					statsUpSince = System.currentTimeMillis();
 
 					// as from version 3.0 the adapter is started,
@@ -751,13 +797,13 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 
 					// starting receivers
 					for (Receiver<?> receiver: receivers) {
-						receiver.startRunning();
+						receiver.start();
 					}
 				} catch (Throwable t) {
 					addErrorMessageToMessageKeeper("got error starting Adapter", t);
 					runState.setRunState(RunState.ERROR);
 				} finally {
-					configuration.removeStartAdapterThread(this);
+					log.debug("Adapter.start - start adapter thread for Adapter [{}] finished and completed", name);
 				}
 			}
 
@@ -767,8 +813,17 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 			}
 		};
 
-		configuration.addStartAdapterThread(runnable);
 		taskExecutor.execute(runnable);
+	}
+
+	@Override
+	public int getPhase() {
+		return 100;
+	}
+
+	@Override
+	public boolean isRunning() {
+		return runState.getRunState() == RunState.STARTED && super.isRunning();
 	}
 
 	/**
@@ -781,7 +836,9 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	 * @see PipeLine#stop
 	 */
 	@Override
-	public void stopRunning() {
+	public void stop(@Nonnull Runnable callback) {
+		Objects.requireNonNull(callback, "callback may not be null");
+
 		log.info("Stopping Adapter named [{}] with {} receivers", this::getName, receivers::size);
 		Runnable runnable = new Runnable() {
 			@Override
@@ -804,7 +861,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 					for (Receiver<?> receiver: receivers) {
 						// Will not stop receivers that are in state "STARTING"
 						log.debug("Adapter.stopRunning: Stopping receiver [{}] in state [{}]", receiver::getName, receiver::getRunState);
-						receiver.stopRunning();
+						receiver.stop();
 					}
 					// IPullingListeners might still be running, see also
 					// comment in method Receiver.tellResourcesToStop()
@@ -816,7 +873,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 						while (!receiver.getRunState().isStopped()) {
 							if (receiver.getRunState() == RunState.STARTED || receiver.getRunState() == RunState.EXCEPTION_STARTING) {
 								log.debug("Adapter [{}] stopping receiver [{}] which was still starting when stop() command was received", ()->name, receiver::getName);
-								receiver.stopRunning();
+								receiver.stop();
 							}
 							log.debug("Adapter [{}] waiting for receiver [{}] in state [{}] to stop", ()->name, receiver::getName, receiver::getRunState);
 							try {
@@ -837,7 +894,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 					waitForNoMessagesInProcess();
 					log.debug("Adapter [{}] is stopping pipeline", name);
 					pipeline.stop();
-					//Set the adapter uptime to 0 as the adapter is stopped.
+					// Set the adapter uptime to 0 as the adapter is stopped.
 					statsUpSince = 0;
 					runState.setRunState(RunState.STOPPED);
 					getMessageKeeper().add("Adapter [" + name + "] stopped");
@@ -847,8 +904,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 					runState.setRunState(RunState.ERROR);
 					log.warn("Adapter [{}] in state ERROR", name, t);
 				} finally {
-					configuration.removeStopAdapterThread(this);
-					log.debug("Adapter.stopRunning - stop adapter thread for Adapter [{}] finished and completed", name);
+					log.debug("Adapter.stop - stop adapter thread for Adapter [{}] finished and completed", name);
 				}
 			}
 
@@ -858,19 +914,28 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 			}
 		};
 
-		configuration.addStopAdapterThread(runnable);
-		taskExecutor.execute(runnable);
+		CompletableFuture.runAsync(runnable, taskExecutor) // Stop asynchronous from other adapters
+				.thenRun(super::stop) // Stop other LifeCycle aware beans
+				.thenRun(callback); // Call the callback 'CountDownLatch' to confirm we've stopped
+	}
+
+	/**
+	 * This method should ideally not be called directly.
+	 * Since this is a {@link SmartLifecycle} the {@link #stop(Runnable)} must be called instead.
+	 * Delegates to {@link #stop(Runnable)} which calls `super.stop()`.
+	 */
+	@Override
+	public void stop() {
+		stop(() -> log.debug("stopped adapter [{}]", getName()));
 	}
 
 	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("[name=").append(name).append("]");
-		sb.append("[targetDesignDocument=").append(targetDesignDocument).append("]");
+	public String toString() { //TODO update this with the ApplicationContext
+		StringBuilder sb = new StringBuilder(super.toString());
+		sb.append(" ");
 		sb.append("[receivers=");
 		for (Receiver<?> receiver: receivers) {
 			sb.append(" ").append(receiver.getName());
-
 		}
 		sb.append("]");
 		sb.append("[pipeLine=").append(pipeline != null ? pipeline.toString() : "none registered").append("][started=").append(getRunState()).append("]");
@@ -912,7 +977,9 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	 */
 	@Override
 	public void setName(String name) {
+		setDisplayName("AdapterContext [" + name + "]");
 		this.name = name;
+		setId(name);
 	}
 	@Override
 	public String getName() {
@@ -932,6 +999,22 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	public void setAutoStart(boolean autoStart) {
 		this.autoStart = autoStart;
 	}
+
+	@Override
+	public boolean isAutoStartup() {
+		if (!isConfigurationSucceeded()) return false; // Don't startup until configured
+
+		if (autoStart == null && getClassLoader() != null) {
+			autoStart = AppConstants.getInstance(getClassLoader()).getBoolean("adapters.autoStart", true);
+		}
+		return autoStart;
+	}
+
+//	TODO
+//	@Override
+//	public ClassLoader getConfigurationClassLoader() {
+//		return getClassLoader();
+//	}
 
 
 	/**

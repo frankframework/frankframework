@@ -57,11 +57,6 @@
 		factory-method="getInstance"
 	/>
 
-
-	<bean id="adapterLifecycleWrapper" autowire="byName" scope="prototype" abstract="true" />
-
-	<bean name="adapterFlowProcessor" class="org.frankframework.util.flow.FlowDiagramAdapterWrapper" parent="adapterLifecycleWrapper"/>
-
 	<bean name="flowDiagramManager" class="org.frankframework.util.flow.FlowDiagramManager" lazy-init="true" />
 
 	<bean name="applicationWarnings" class="org.frankframework.configuration.ApplicationWarnings" />
