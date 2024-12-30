@@ -71,7 +71,7 @@ import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
-import org.frankframework.util.flow.ConfigurationFlowGenerator;
+import org.frankframework.util.flow.SpringContextFlowDiagramProvider;
 import org.frankframework.util.Misc;
 import org.frankframework.util.RunState;
 import org.frankframework.util.RunStateManager;
@@ -208,7 +208,7 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 
 		refresh();
 
-		ConfigurationFlowGenerator bean = SpringUtils.createBean(this, ConfigurationFlowGenerator.class);
+		SpringContextFlowDiagramProvider bean = SpringUtils.createBean(this, SpringContextFlowDiagramProvider.class);
 		getBeanFactory().registerSingleton("FlowGenerator", bean);
 	}
 

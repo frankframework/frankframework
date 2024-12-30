@@ -24,6 +24,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IConfigurationAware;
@@ -35,7 +36,7 @@ import org.frankframework.util.AppConstants;
  * Uses {@link Configuration#getLoadedConfiguration()} (and in case of an Adapter, an xPath on the LoadedConfiguration).
  */
 @Log4j2
-public class ConfigurationFlowGenerator implements ConfigurableLifecycle, ApplicationContextAware {
+public class SpringContextFlowDiagramProvider implements ConfigurableLifecycle, ApplicationContextAware {
 	private final boolean suppressWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.FLOW_GENERATION_ERROR.getKey(), false);
 
 	@Setter
