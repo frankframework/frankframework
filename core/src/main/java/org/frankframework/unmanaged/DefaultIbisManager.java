@@ -143,7 +143,7 @@ public class DefaultIbisManager implements IbisManager {
 				Assert.notNull(adapter, ()->"adapter ["+adapterName+"] not found");
 
 				log.info("Stopping adapter [{}], on request of [{}]", adapterName, commandIssuedBy);
-				configuration.getRegisteredAdapter(adapterName).stop();
+				adapter.stop();
 			}
 			break;
 
@@ -169,7 +169,7 @@ public class DefaultIbisManager implements IbisManager {
 					Assert.notNull(adapter, ()->"adapter ["+adapterName+"] not found");
 
 					log.info("Starting adapter [{}] on request of [{}]", adapterName, commandIssuedBy);
-					configuration.getRegisteredAdapter(adapterName).start();
+					adapter.start();
 				} catch (Exception e) {
 					log.error("error in execution of command [{}] for adapter [{}]", action, adapterName, e);
 				}

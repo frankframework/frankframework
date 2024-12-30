@@ -1034,13 +1034,6 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 		return autoStart;
 	}
 
-//	TODO
-//	@Override
-//	public ClassLoader getConfigurationClassLoader() {
-//		return getClassLoader();
-//	}
-
-
 	/**
 	 * If <code>true</code> a null message is replaced by an empty message
 	 * @ff.default <code>false</code>
