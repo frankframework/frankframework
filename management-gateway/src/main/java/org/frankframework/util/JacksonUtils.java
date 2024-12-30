@@ -16,6 +16,7 @@
 package org.frankframework.util;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -51,6 +52,8 @@ public class JacksonUtils {
 				return MAPPER.readValue(string, dto);
 			} else if(payload instanceof byte[] bytes) {
 				return MAPPER.readValue(bytes, dto);
+			} else if(payload instanceof InputStream stream) {
+				return MAPPER.readValue(stream, dto);
 			} else {
 				throw new NotImplementedException("unhandled payload type ["+payload.getClass()+"]");
 			}

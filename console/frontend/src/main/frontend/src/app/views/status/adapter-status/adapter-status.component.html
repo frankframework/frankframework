@@ -78,6 +78,7 @@
           <!-- adapter information -->
           <span class="pull-right">
             <a
+              appHasAccessToLink="getAdapterStatistics"
               [routerLink]="['', adapter.configuration, 'adapter', adapter.name, 'statistics']"
               class="btn btn-xs btn-info pull-right m-r-xs"
               type="button"
@@ -98,6 +99,7 @@
                 <td *ngIf="adapter.state === 'started'" class="col-md-6">
                   <span><i class="fa fa-check-square lh22 m-r-xs"></i> Started</span>
                   <button
+                    appHasAccessToLink="updateAdapter"
                     (click)="stopAdapter(adapter)"
                     class="btn btn-xs danger-hover"
                     style="float: right"
@@ -116,6 +118,7 @@
                 <td *ngIf="adapter.state === 'stopped'" class="col-md-6">
                   <span><i class="fa fa-stop-circle lh22 m-r-xs"></i> Stopped</span>
                   <button
+                    appHasAccessToLink="updateAdapter"
                     (click)="startAdapter(adapter)"
                     class="btn btn-xs primary-hover"
                     style="float: right"
@@ -157,9 +160,10 @@
                 <td></td>
                 <td>
                   <a
+                    appHasAccessToLink="getConfigurationXML"
                     [queryParams]="{
                       name: adapter.configuration,
-                      adapter: adapter.name
+                      adapter: adapter.name,
                     }"
                     routerLink="/configurations"
                   >
@@ -187,7 +191,7 @@
               </tr>
               <tr
                 [ngClass]="{
-                  hasErrors: (adapter.messagesInError ?? 0) > 0
+                  hasErrors: (adapter.messagesInError ?? 0) > 0,
                 }"
               >
                 <td>With error</td>
@@ -219,11 +223,14 @@
                   [ngClass]="{ 'text-danger': receiver.state === 'error' }"
                 >
                   <td>{{ receiver.name }}</td>
-                  <td #listenerDestination
+                  <td
+                    #listenerDestination
                     *ngIf="receiver.listener && receiver.listener.destination; else noListener"
                     [title]="receiver.listener.destination"
                   >
-                    {{ receiver.listener.class }} ({{ receiver.listener.destination | truncate: 150 : listenerDestination }})
+                    {{ receiver.listener.class }} ({{
+                      receiver.listener.destination | truncate: 150 : listenerDestination
+                    }})
                   </td>
                   <ng-template #noListener><td></td></ng-template>
                   <td>{{ receiver.messages.retried }}</td>
@@ -234,6 +241,7 @@
                     Threads
                     <span *ngIf="receiver.threadCountControllable">
                       <button
+                        appHasAccessToLink="updateReceiver"
                         (click)="addThread(adapter, receiver)"
                         [disabled]="receiver.state === 'loading'"
                         class="btn btn-xs btn-default m-l-xs"
@@ -243,6 +251,7 @@
                         <i class="fa fa-plus"></i> Inc
                       </button>
                       <button
+                        appHasAccessToLink="updateReceiver"
                         (click)="removeThread(adapter, receiver)"
                         [disabled]="receiver.state === 'loading' || (receiver.maxThreadCount ?? 0) < 2"
                         class="btn btn-xs btn-default m-l-xs"
@@ -262,6 +271,7 @@
                           title="Browse messages with ProcessState: {{ store.name }}"
                         >
                           <a
+                            appHasAccessToLink="browseMessages"
                             [routerLink]="[
                               '',
                               adapter.configuration,
@@ -270,7 +280,7 @@
                               'receivers',
                               receiver.name,
                               'stores',
-                              store.name
+                              store.name,
                             ]"
                             class="btn btn-xs btn-default"
                             type="button"
@@ -281,6 +291,7 @@
                         </span>
                       </span>
                       <button
+                        appHasAccessToLink="updateReceiver"
                         (click)="stopReceiver(adapter, receiver)"
                         *ngIf="receiver.state === 'started' || receiver.state === 'exception_starting'"
                         class="btn btn-xs danger-hover"
@@ -354,6 +365,7 @@
                         <span [ngClass]="pipes.isSenderTransactionalStorage ? 'text-primary' : 'text-success'">
                           <a
                             *ngIf="pipes.hasMessageLog"
+                            appHasAccessToLink="browseMessages"
                             [routerLink]="[
                               '',
                               adapter.configuration,
@@ -362,7 +374,7 @@
                               'pipes',
                               pipes.name,
                               'stores',
-                              'Done'
+                              'Done',
                             ]"
                             class="btn btn-xs btn-default m-l-xs"
                             type="button"
@@ -419,7 +431,7 @@
         </div>
         <div class="col-lg-3 col-md-0 flow">
           <h4>Flow</h4>
-          <app-flow [adapter]="adapter" [canLoadInline]="loadFlowInline" />
+          <app-flow appHasAccessToLink="getAdapterFlow" [adapter]="adapter" [canLoadInline]="loadFlowInline" />
         </div>
       </div>
     </div>

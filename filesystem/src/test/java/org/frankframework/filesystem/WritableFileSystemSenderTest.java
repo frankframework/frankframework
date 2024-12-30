@@ -52,6 +52,67 @@ public abstract class WritableFileSystemSenderTest<FSS extends AbstractFileSyste
 		assertEquals(contents.trim(), actual.trim());
 	}
 
+	public SenderResult fileSystemSenderCreateFile(String folder, boolean fileAlreadyExists, boolean setCreateFolderAttribute) throws Exception {
+		String filename = "create" + FILE1;
+
+		if (_folderExists(folder)) {
+			_deleteFolder(folder);
+		}
+		waitForActionToFinish();
+
+		if (fileAlreadyExists) {
+			_createFolder(folder);
+			createFile(folder, filename, "dummy-contents\n");
+		}
+
+		fileSystemSender.setAction(FileSystemAction.CREATE); //TODO WRITE
+		if (setCreateFolderAttribute) {
+			fileSystemSender.setCreateFolder(true);
+		}
+		fileSystemSender.configure();
+		fileSystemSender.start();
+
+		Message input = new Message(folder + "/" + filename);
+		senderResult = fileSystemSender.sendMessage(input, session);
+		CloseUtils.closeSilently(input);
+		if (!senderResult.isSuccess()) {
+			return senderResult;
+		}
+		String result = senderResult.getResult().asString();
+
+		// Result should be the name of the moved file
+		assertNotNull(result);
+
+		// TODO: result should point to new location of file
+		// TODO: contents of result should be contents of original file
+
+		assertTrue(_fileExists(folder, filename), "file should exist in destination folder [" + folder + "]");
+		return senderResult;
+	}
+
+	@Test
+	public void fileSystemSenderCreateFile() throws Exception {
+		senderResult = fileSystemSenderCreateFile(FOLDER_NAME, false, false);
+		assertFalse(senderResult.isSuccess());
+		assertEquals("folderNotFound", senderResult.getForwardName());
+		assertThat(senderResult.getErrorMessage(), containsString("unable to process [CREATE] action for File [folder/createfile1.txt]"));
+		assertThat(senderResult.getErrorMessage(), containsString("folder] does not exist"));
+	}
+
+	@Test
+	public void fileSystemSenderCreateFileAlreadyExists() throws Exception {
+		senderResult = fileSystemSenderCreateFile(FOLDER_NAME, true, false);
+		assertFalse(senderResult.isSuccess());
+		assertEquals("fileAlreadyExists", senderResult.getForwardName());
+		assertThat(senderResult.getErrorMessage(), containsString("unable to process [CREATE] action for File [folder/createfile1.txt]"));
+		assertThat(senderResult.getErrorMessage(), containsString("createfile1.txt] already exists"));
+	}
+
+	@Test
+	public void fileSystemSenderCreateFileAndCreateFolderAttributeEnabled() throws Exception {
+		fileSystemSenderCreateFile(FOLDER_NAME, false, true);
+	}
+
 	@Test
 	public void fileSystemSenderUploadActionTestWithByteArray() throws Exception {
 		String filename = "uploadedwithByteArray" + FILE1;

@@ -11,6 +11,7 @@
         <div *ngIf="monitors.length > 0; else noMonitorsFound" class="ibox-title summary">
           <div class="pull-right">
             <button
+              appHasAccessToLink="addMonitor"
               class="btn btn-primary btn-xs"
               [routerLink]="['/monitors', 'new']"
               [queryParams]="{ configuration: selectedConfiguration }"
@@ -35,6 +36,7 @@
           <div class="ibox-title summary">
             <div class="pull-right">
               <button
+                appHasAccessToLink="addMonitor"
                 class="btn btn-primary btn-xs"
                 [routerLink]="['/monitors', 'new']"
                 [queryParams]="{ configuration: selectedConfiguration }"
@@ -54,6 +56,7 @@
         <div class="ibox-title {{ monitor.raised ? 'danger' : 'primary' }}">
           <div class="pull-right">
             <button
+              appHasAccessToLink="updateMonitor"
               *ngIf="!monitor.raised && !monitor.edit"
               title="Raise alarm {{ monitor.name }}"
               class="btn btn-warning btn-xs space-it-out"
@@ -63,6 +66,7 @@
               <i class="fa fa-arrow-circle-o-right"></i> Raise
             </button>
             <button
+              appHasAccessToLink="updateMonitor"
               *ngIf="monitor.raised"
               title="Clear alarm {{ monitor.name }}"
               class="btn btn-primary btn-xs space-it-out"
@@ -72,6 +76,7 @@
               <i class="fa fa-arrow-circle-o-right"></i> Clear
             </button>
             <button
+              appHasAccessToLink="deleteMonitor"
               *ngIf="!monitor.raised && monitor.edit"
               title="Delete Monitor {{ monitor.name }}"
               class="btn btn-danger btn-xs space-it-out"
@@ -81,6 +86,7 @@
               <i class="fa fa-close"></i> Delete
             </button>
             <button
+              appHasAccessToLink="updateMonitor"
               *ngIf="!monitor.raised && !monitor.edit"
               title="Edit Monitor {{ monitor.name }}"
               class="btn btn-info btn-xs space-it-out"
@@ -90,6 +96,7 @@
               <i class="fa fa-pencil"></i> Edit
             </button>
             <button
+              appHasAccessToLink="updateMonitor"
               *ngIf="!monitor.raised && monitor.edit"
               title="Save Monitor {{ monitor.name }}"
               class="btn btn-primary btn-xs space-it-out"
@@ -129,7 +136,7 @@
             </div>
           </div>
           <div *ngIf="monitor.edit">
-            <form role="form">
+            <form role="form" (submit)="edit(monitor)" appQuickSubmitForm>
               <div class="form-group">
                 <label class="col-sm-3 control-label">Name</label>
                 <div class="col-sm-9">
@@ -211,6 +218,7 @@
                     <td>{{ trigger.period }}</td>
                     <td *ngIf="monitor.edit" class="pull-right">
                       <button
+                        appHasAccessToLink="updateTrigger"
                         title="Edit trigger {{ trigger.name }}"
                         class="btn btn-info btn-xs space-it-out"
                         type="button"
@@ -220,6 +228,7 @@
                         Edit
                       </button>
                       <button
+                        appHasAccessToLink="deleteTrigger"
                         title="Delete trigger {{ trigger.name }}"
                         class="btn btn-danger btn-xs"
                         type="button"
@@ -232,6 +241,7 @@
                   <tr *ngIf="monitor.edit">
                     <td colspan="7" class="text-center">
                       <button
+                        appHasAccessToLink="addTrigger"
                         class="btn btn-primary btn-outline btn-xs"
                         [routerLink]="['/monitors', monitor.name, 'triggers', 'new']"
                         [queryParams]="{ configuration: selectedConfiguration }"

@@ -15,6 +15,8 @@
 */
 package org.frankframework.scheduler.job;
 
+import java.io.IOException;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -71,8 +73,11 @@ public class SendMessageJob extends AbstractJobDef {
 			session.put(PipeLineSession.CORRELATION_ID_KEY, UUIDUtil.createSimpleUUID());
 
 			localSender.start();
-			localSender.sendMessageOrThrow(toSendMessage, session).close();
-		} catch (LifecycleException | SenderException e) {
+			try (Message result = localSender.sendMessageOrThrow(toSendMessage, session)) {
+				// The result needs to be read, to make sure the StreamCaptureUtils sees this stream as read and will display the return value in Ladybug.
+				result.asString();
+			}
+		} catch (LifecycleException | SenderException | IOException e) {
 			throw new JobExecutionException("unable to send message to javaListener [" + javaListener + "]", e);
 		} finally {
 			try {

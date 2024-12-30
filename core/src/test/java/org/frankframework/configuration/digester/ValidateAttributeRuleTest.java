@@ -39,6 +39,7 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.INamedObject;
 import org.frankframework.doc.Protected;
+import org.frankframework.doc.Unsafe;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
@@ -443,6 +444,45 @@ public class ValidateAttributeRuleTest {
 	}
 
 	@Test
+	public void testUnsafeAttribute() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+
+		attr.put("testUnsafeAttribute", "unsafe");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum [testUnsafeAttribute] is unsafe and should not be used in a production environment", configWarnings.get(0));
+	}
+
+	@Test
+	public void testUnsafeAttributeWithDefault() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+
+		attr.put("testUnsafeAttributeWithDefault", "default");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum attribute [testUnsafeAttributeWithDefault] already has a default value [default]", configWarnings.get(0));
+	}
+
+	@Test
+	public void testUnsafeAttributeWithoutDefault() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+
+		attr.put("testUnsafeAttributeWithDefault", "unsafe");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum [testUnsafeAttributeWithDefault] is unsafe and should not be used in a production environment", configWarnings.get(0));
+	}
+
+	@Test
 	public void testSuppressDeprecationWarningsForSomeAdapters() throws IOException {
 		// Arrange
 		configuration = new TestConfiguration("testConfigurationWithDigester.xml");
@@ -560,6 +600,7 @@ public class ValidateAttributeRuleTest {
 		private @Setter String testStringWithoutGetter = "string";
 		private @Setter int testIntegerWithoutGetter = 0;
 		private @Setter boolean testBooleanWithoutGetter = false;
+		private @Getter String testUnsafeAttributeWithDefault = "default";
 
 		public void setEnumWithDifferentName(TestEnum testEnum) {
 			this.testEnum = testEnum;
@@ -605,6 +646,16 @@ public class ValidateAttributeRuleTest {
 		@Protected
 		public void setTestSuppressAttribute(String test) {
 			testString = test;
+		}
+
+		@Unsafe
+		public void setTestUnsafeAttribute(String test) {
+			// NO OP
+		}
+
+		@Unsafe
+		public void setTestUnsafeAttributeWithDefault(String testUnsafeAttributeWithDefault) {
+			this.testUnsafeAttributeWithDefault = testUnsafeAttributeWithDefault;
 		}
 	}
 

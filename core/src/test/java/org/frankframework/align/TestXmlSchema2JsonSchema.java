@@ -16,6 +16,8 @@ import org.leadpony.justify.api.JsonSchema;
 import org.leadpony.justify.api.JsonValidationService;
 import org.leadpony.justify.api.ProblemHandler;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.PipeForward;
 import org.frankframework.pipes.Json2XmlValidator;
 import org.frankframework.testutil.MatchUtils;
@@ -27,6 +29,7 @@ import org.frankframework.util.StreamUtil;
  * @see: https://swagger.io/specification
  * @see: https://json-schema.org/understanding-json-schema/reference/
  */
+@Log4j2
 public class TestXmlSchema2JsonSchema extends AlignTestBase {
 
 	@Override
@@ -73,7 +76,7 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 			fail("no schema generated for [" + rootElement + "]");
 		}
 		String jsonSchemaContent = Misc.jsonPretty(jsonschema.toString());
-		LOG.info("result compactArrays [{}] skipJsonRootElements [{}] json:\n{}", compactArrays, skipJsonRootElements, jsonSchemaContent);
+		log.info("result compactArrays [{}] skipJsonRootElements [{}] json:\n{}", compactArrays, skipJsonRootElements, jsonSchemaContent);
 		if (StringUtils.isEmpty(jsonSchemaContent)) {
 			fail("json schema is empty");
 		}
@@ -83,8 +86,8 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 			//String schemaPretty = jsonPrettyPrint("{" + jsonSchemaContent + "}");
 			//schemaPretty = schemaPretty.substring(1, schemaPretty.length() - 1).trim();
 
-			LOG.debug("expected [{}]", expectedJsonSchema);
-			LOG.debug("actual [{}]", jsonSchemaContent);
+			log.debug("expected [{}]", expectedJsonSchema);
+			log.debug("actual [{}]", jsonSchemaContent);
 			MatchUtils.assertJsonEquals("generated does not match [" + jsonSchemaFile + "]", expectedJsonSchema, jsonSchemaContent);
 
 //	    	if (!expectValid) {
@@ -116,8 +119,8 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 			}
 		}
 
-		LOG.debug("jsonString: {}", jsonString);
-		LOG.debug("problems: {}", problems);
+		log.debug("jsonString: {}", jsonString);
+		log.debug("problems: {}", problems);
 		assertEquals(0, problems.size(), problems.toString());
 	}
 }
