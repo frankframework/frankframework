@@ -204,7 +204,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	@Override
 	public final void setApplicationContext(ApplicationContext applicationContext) {
 		if(!(applicationContext instanceof Adapter)) {
-			throw new IllegalArgumentException("ApplicationContext is not instance of Configuration");
+			throw new IllegalArgumentException("ApplicationContext is not instance of Adapter");
 		}
 		this.applicationContext = applicationContext;
 	}

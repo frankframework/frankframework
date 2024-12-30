@@ -126,7 +126,7 @@ public class DefaultIbisManager implements IbisManager {
 			Assert.notNull(adapterName, "no adapterName provided");
 			Assert.notNull(configurationName, "no configurationName provided");
 
-			if (true || adapterName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
+			if (adapterName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
 				if (configurationName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
 					log.info("Stopping all adapters on request of [{}]", commandIssuedBy);
 					for (Configuration configuration : configurations) {
@@ -151,7 +151,7 @@ public class DefaultIbisManager implements IbisManager {
 			Assert.notNull(adapterName, "no adapterName provided");
 			Assert.notNull(configurationName, "no configurationName provided");
 
-			if (true || adapterName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
+			if (adapterName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
 				if (configurationName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
 					log.info("Starting all adapters on request of [{}]", commandIssuedBy);
 					for (Configuration configuration : configurations) {
@@ -308,14 +308,12 @@ public class DefaultIbisManager implements IbisManager {
 	private void startAdapters(Configuration configuration) {
 		Assert.notNull(configuration, "no configuration provided");
 		log.info("Starting all autostart-configured adapters for configuation [{}]", configuration::getName);
-//		configuration.getAdapterManager().start();
 		configuration.start();
 	}
 
 	private void stopAdapters(Configuration configuration) {
 		Assert.notNull(configuration, "no configuration provided");
 		log.info("Stopping all adapters for configuation [{}]", configuration::getName);
-//		configuration.getAdapterManager().stop();
 		configuration.stop();
 	}
 

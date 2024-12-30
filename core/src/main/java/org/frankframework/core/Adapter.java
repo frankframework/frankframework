@@ -36,6 +36,8 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NamedBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.SmartLifecycle;
@@ -205,6 +207,11 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 		if (isActive()) {
 			throw new LifecycleException("unable to refresh, AdapterContext is already active");
 		}
+
+		AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
+		postProcessor.setAutowiredAnnotationType(Autowired.class);
+		postProcessor.setBeanFactory(getBeanFactory());
+		getBeanFactory().addBeanPostProcessor(postProcessor);
 
 		refresh();
 
