@@ -39,6 +39,7 @@ import org.springframework.core.task.TaskExecutor;
 import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
@@ -48,7 +49,6 @@ import org.frankframework.doc.Category;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
-import org.frankframework.jmx.JmxAttribute;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.receivers.Receiver;
@@ -92,12 +92,12 @@ import org.frankframework.util.StringUtil;
  *
  * @author Johan Verrips
  */
+@Log4j2
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
 public class Adapter implements IManagable, HasStatistics, NamedBean {
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	private final Logger log = LogUtil.getLogger(this);
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
 	public static final String PROCESS_STATE_OK = "OK";
@@ -110,7 +110,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	private @Getter String description;
 	private @Getter boolean autoStart = appConstants.getBoolean("adapters.autoStart", true);
 	private @Getter boolean replaceNullMessage = false;
-	private @Getter int messageKeeperSize = 10; //default length of MessageKeeper
+	private @Getter int messageKeeperSize = 10; // Default length of MessageKeeper
 	private Level msgLogLevel = Level.toLevel(appConstants.getProperty("msg.log.level.default", "INFO"));
 	private @Getter boolean msgLogHidden = appConstants.getBoolean("msg.log.hidden.default", true);
 	private @Setter @Getter String targetDesignDocument;
@@ -119,7 +119,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 
 	private final ArrayList<Receiver<?>> receivers = new ArrayList<>();
 	private long lastMessageDate = 0;
-	private @Getter String lastMessageProcessingState; //"OK" or "ERROR"
+	private @Getter String lastMessageProcessingState; // "OK" or "ERROR"
 	private PipeLine pipeline;
 
 	private final Map<String, SenderLastExitState> sendersLastExitState = new HashMap<>();
@@ -141,7 +141,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 
 	private final RunStateManager runState = new RunStateManager();
 	private @Getter boolean configurationSucceeded = false;
-	private MessageKeeper messageKeeper; //instantiated in configure()
+	private MessageKeeper messageKeeper; // Instantiated in configure()
 	private final boolean msgLogHumanReadable = appConstants.getBoolean("msg.log.humanReadable", false);
 
 	private @Getter @Setter TaskExecutor taskExecutor;
@@ -226,7 +226,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 			runState.setRunState(RunState.STOPPED);
 		}
 
-		configurationSucceeded = true; //Only if there are no errors mark the adapter as `configurationSucceeded`!
+		configurationSucceeded = true; // Only if there are no errors mark the adapter as `configurationSucceeded`!
 	}
 
 	@Nonnull
@@ -244,7 +244,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	}
 
 	public void configureReceiver(Receiver<?> receiver) throws ConfigurationException {
-		if(receiver.configurationSucceeded()) { //It's possible when an adapter has multiple receivers that the last one fails. The others have already been configured the 2nd time the adapter tries to configure it self
+		if(receiver.configurationSucceeded()) { // It's possible when an adapter has multiple receivers that the last one fails. The others have already been configured the 2nd time the adapter tries to configure it self
 			log.debug("already configured receiver, skipping");
 		}
 
@@ -389,16 +389,6 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	/**
 	 * retrieve the date and time of the last message.
 	 */
-	@JmxAttribute(description = "The date/time of the last processed message")
-	public String getLastMessageDate() {
-		String result;
-		if (lastMessageDate != 0)
-			result = DateFormatUtils.format(lastMessageDate, DateFormatUtils.FULL_GENERIC_FORMATTER);
-		else
-			result = "-";
-		return result;
-	}
-
 	public Date getLastMessageDateDate() {
 		Date result = null;
 		if (lastMessageDate != 0) {
@@ -420,7 +410,6 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	/**
 	 * The number of messages for which processing ended unsuccessfully.
 	 */
-	@JmxAttribute(description = "# Messages in Error")
 	public double getNumOfMessagesInError() {
 		log.trace("Get Adapter num messages in error, using synchronized statisticsLock [{}]", statisticsLock);
 		try {
@@ -431,7 +420,6 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 			log.trace("Got Adapter num messages in error, statisticsLock [{}] has been released", statisticsLock);
 		}
 	}
-	@JmxAttribute(description = "# Messages in process")
 	public int getNumOfMessagesInProcess() {
 		log.trace("Get Adapter num messages in process, using synchronized statisticsLock [{}]", statisticsLock);
 		try {
@@ -457,7 +445,6 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	 * Total of messages processed
 	 * @return long total messages processed
 	 */
-	@JmxAttribute(description = "# Messages Processed")
 	public double getNumOfMessagesProcessed() {
 		log.trace("Get Adapter number of processed messages, using synchronized statisticsLock [{}]", statisticsLock);
 		try {
@@ -489,21 +476,11 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 		return state;
 	}
 
-	@JmxAttribute(description = "RunState")
-	public String getRunStateAsString() {
-		return getRunState().toString();
-	}
-
 	/**
 	 * return the date and time since active
 	 * Creation date: (19-02-2003 12:16:53)
 	 * @return String  Date
 	 */
-	@JmxAttribute(description = "Up Since")
-	public String getStatsUpSince() {
-		return DateFormatUtils.format(statsUpSince, DateFormatUtils.FULL_GENERIC_FORMATTER);
-	}
-
 	public Date getStatsUpSinceDate() {
 		return new Date(statsUpSince);
 	}
@@ -817,7 +794,7 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 						case STARTING:
 						case STOPPING:
 						case STOPPED:
-							if (log.isWarnEnabled()) log.warn("adapter [{}] currently in state [{}], ignoring stop() command", getName(), getRunStateAsString());
+							if (log.isWarnEnabled()) log.warn("adapter [{}] currently in state [{}], ignoring stop() command", getName(), getRunState());
 							return;
 						default:
 							break;
@@ -937,7 +914,6 @@ public class Adapter implements IManagable, HasStatistics, NamedBean {
 	public void setName(String name) {
 		this.name = name;
 	}
-	@JmxAttribute(description = "Name of the Adapter")
 	@Override
 	public String getName() {
 		return name;
