@@ -18,7 +18,7 @@ package org.frankframework.configuration.digester;
 import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.Attributes;
 
-public interface IDigesterRuleAware extends ApplicationContextAware {
+public interface IDigesterFactory extends ApplicationContextAware {
 
 	void setDigester(Digester digester);
 

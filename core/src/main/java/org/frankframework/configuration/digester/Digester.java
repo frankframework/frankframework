@@ -49,7 +49,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 	private Deque<String> elementNames = new ArrayDeque<>(); // XML element names
 	private Deque<BeanRuleWrapper> elementBeans = new ArrayDeque<>(); // Beans conform found element names, TODO turn into IConfigurable
 	private Deque<ApplicationContext> applicationContext = new ArrayDeque<>(); // Context Stack
-	private Map<DigesterRule, IDigesterRuleAware> beanFactories = new ConcurrentHashMap<>();
+	private Map<DigesterRule, IDigesterFactory> beanFactories = new ConcurrentHashMap<>();
 	private ValidateAttributeRule handleAttributeRule;
 	private Locator locator;
 
@@ -97,7 +97,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 		}
 
 		try {
-			IDigesterRuleAware factory = getFactoryForRule(rule);
+			IDigesterFactory factory = getFactoryForRule(rule);
 			if (factory != null) { // Only the Configuration element doesn't have a factory
 				factory.setApplicationContext(getCurrentApplicationContext());
 				Object bean = factory.createObject(atts);
@@ -154,9 +154,9 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 		}
 	}
 
-	private IDigesterRuleAware getFactoryForRule(DigesterRule rule) {
+	private IDigesterFactory getFactoryForRule(DigesterRule rule) {
 		return beanFactories.computeIfAbsent(rule, r -> {
-			IDigesterRuleAware factory = createFactory(r.getFactory());
+			IDigesterFactory factory = createFactory(r.getFactory());
 			if (factory != null) {
 				factory.setDigesterRule(rule);
 				factory.setDigester(this);

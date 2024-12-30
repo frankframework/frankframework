@@ -55,7 +55,7 @@ import org.frankframework.util.SpringUtils;
  * @since   4.8
  *
  */
-public abstract class AbstractSpringPoweredDigesterFactory implements ApplicationContextAware, IDigesterRuleAware {
+public abstract class AbstractSpringPoweredDigesterFactory implements ApplicationContextAware, IDigesterFactory {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter Digester digester;
