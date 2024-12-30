@@ -67,10 +67,10 @@ public class ConfigurationFlowGenerator implements ConfigurableLifecycle, Applic
 	public void configure() {
 		try {
 			if (applicationContext instanceof Configuration configuration) {
-				System.err.println("creating flow for configuration: " + configuration);
+				log.debug("creating flow for configuration: {}", configuration);
 				flowDiagramManager.generate(configuration);
 			} else if (applicationContext instanceof Adapter adapter) {
-				System.err.println("creating flow for adapter: " + adapter);
+				log.debug("creating flow for adapter: ", adapter);
 				flowDiagramManager.generate(adapter);
 			} else {
 				throw new IllegalStateException("no suitable Configuration found");

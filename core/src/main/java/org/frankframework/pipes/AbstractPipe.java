@@ -32,7 +32,6 @@ import org.springframework.context.ApplicationContextAware;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.Adapter;
@@ -204,7 +203,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 */
 	@Override
 	public final void setApplicationContext(ApplicationContext applicationContext) {
-		if(!(applicationContext instanceof Configuration)) {
+		if(!(applicationContext instanceof Adapter)) {
 			throw new IllegalArgumentException("ApplicationContext is not instance of Configuration");
 		}
 		this.applicationContext = applicationContext;

@@ -33,6 +33,8 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.LifecycleProcessor;
@@ -104,7 +106,7 @@ import org.frankframework.util.StringUtil;
 @Log4j2
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class Adapter extends GenericApplicationContext implements IManagable, HasStatistics, NamedBean {
+public class Adapter extends GenericApplicationContext implements IManagable, HasStatistics, NamedBean, InitializingBean {
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
 	public static final String PROCESS_STATE_OK = "OK";
@@ -167,6 +169,22 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 	}
 
 	@Override
+	protected void initLifecycleProcessor() {
+		ConfiguringLifecycleProcessor defaultProcessor = new ConfiguringLifecycleProcessor();
+		defaultProcessor.setBeanFactory(getBeanFactory());
+		getBeanFactory().registerSingleton(LIFECYCLE_PROCESSOR_BEAN_NAME, defaultProcessor);
+		super.initLifecycleProcessor();
+	}
+
+	public void registerSingleton(String beanName, Object singletonObject) {
+		if (singletonObject instanceof BeanFactoryAware aware) {
+			aware.setBeanFactory(getBeanFactory());
+		}
+
+		getBeanFactory().registerSingleton(beanName, singletonObject);
+	}
+
+	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) {
 		setParent(applicationContext);
 		setConfiguration((Configuration) applicationContext);
@@ -180,6 +198,18 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 	@Override
 	public Adapter getAdapter() {
 		return this;
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		if (isActive()) {
+			throw new LifecycleException("unable to refresh, AdapterContext is already active");
+		}
+
+		refresh();
+
+		ConfigurationFlowGenerator bean = SpringUtils.createBean(this, ConfigurationFlowGenerator.class);
+		getBeanFactory().registerSingleton("FlowGenerator", bean);
 	}
 
 	/**
@@ -200,7 +230,7 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 	@Override
 	@SuppressWarnings("java:S4792") // Changing the logger level is not a security-sensitive operation, because roles originate from the properties file
 	public void configure() throws ConfigurationException {
-		if (isActive() || configurationSucceeded) {
+		if (!isActive() || configurationSucceeded) {
 			throw new LifecycleException("already configured");
 		}
 		if (!(getClassLoader() instanceof IConfigurationClassLoader)) {
@@ -214,11 +244,6 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 		if(getName().contains("/")) {
 			throw new ConfigurationException("It is not allowed to have '/' in adapter name ["+getName()+"]");
 		}
-
-		refresh();
-
-		ConfigurationFlowGenerator bean = SpringUtils.createBean(this, ConfigurationFlowGenerator.class);
-		getBeanFactory().registerSingleton("FlowGenerator", bean);
 
 		// Trigger a configure on all (Configurable) Lifecycle beans
 		LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
@@ -265,14 +290,6 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 		}
 
 		configurationSucceeded = true; // Only if there are no errors mark the adapter as `configurationSucceeded`!
-	}
-
-	@Override
-	protected void initLifecycleProcessor() {
-		ConfiguringLifecycleProcessor defaultProcessor = new ConfiguringLifecycleProcessor();
-		defaultProcessor.setBeanFactory(getBeanFactory());
-		getBeanFactory().registerSingleton(LIFECYCLE_PROCESSOR_BEAN_NAME, defaultProcessor);
-		super.initLifecycleProcessor();
 	}
 
 	@Nonnull

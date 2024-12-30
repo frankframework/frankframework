@@ -291,7 +291,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public boolean isUnloadInProgressOrDone() {
-		return !isActive() || !isRunning(); //inState(RunState.STOPPING) || inState(RunState.STOPPED);
+		return !isActive() || inState(RunState.STOPPING);
 	}
 
 	@Override

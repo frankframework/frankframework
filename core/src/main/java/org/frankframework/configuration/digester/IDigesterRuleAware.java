@@ -15,8 +15,13 @@
 */
 package org.frankframework.configuration.digester;
 
+import org.xml.sax.Attributes;
+
 public interface IDigesterRuleAware {
+
+	Digester getDigester();
 
 	void setDigesterRule(DigesterRule rule);
 
+	public Object createObject(Attributes attrs) throws Exception;
 }

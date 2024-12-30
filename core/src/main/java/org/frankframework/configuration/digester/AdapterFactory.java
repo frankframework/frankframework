@@ -18,11 +18,19 @@ package org.frankframework.configuration.digester;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory;
 
 import org.frankframework.core.Adapter;
-import org.frankframework.util.SpringUtils;
 
-public class AdapterFactory extends GenericFactory {
+public class AdapterFactory extends GenericFactory implements BeanFactoryAware {
+
+	private AbstractAutowireCapableBeanFactory beanFactory;
+
+	public void setBeanFactory(BeanFactory beanFactory) {
+		this.beanFactory = (AbstractAutowireCapableBeanFactory) beanFactory;
+	}
 
 	@Override
 	protected Object createObject(Map<String, String> attrs) throws ClassNotFoundException {
@@ -33,8 +41,8 @@ public class AdapterFactory extends GenericFactory {
 
 		attrs.put("className", Adapter.class.getCanonicalName());
 		Object bean = super.createObject(attrs);
-		Adapter adapter = (Adapter) getApplicationContext().getAutowireCapableBeanFactory().initializeBean(bean, name);
-		SpringUtils.registerSingleton(getApplicationContext(), name, adapter);
+		Adapter adapter = (Adapter) bean;
+		beanFactory.registerSingleton(name, adapter);
 		return adapter;
 	}
 }

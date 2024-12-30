@@ -28,6 +28,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.ParameterException;
@@ -112,7 +113,7 @@ public class IbisLocalSender extends AbstractSenderWithParameters implements Has
 
 	private final @Getter String domain = "Local";
 
-	private Configuration configuration;
+	private @Setter Configuration configuration;
 	private @Getter String serviceName;
 	private @Getter String javaListener;
 	private @Getter String javaListenerSessionKey;
@@ -143,10 +144,14 @@ public class IbisLocalSender extends AbstractSenderWithParameters implements Has
 			throw new ConfigurationException("serviceName and javaListener cannot be specified both");
 		}
 
-		if(!(getApplicationContext() instanceof Configuration)) {
+		if (getApplicationContext() instanceof Configuration config) {
+			configuration = config;
+		} else if (getApplicationContext() instanceof Adapter && getApplicationContext().getParent() instanceof Configuration config) {
+			configuration = config;
+		}
+		if(configuration == null) {
 			throw new ConfigurationException("unable to determine configuration");
 		}
-		configuration = (Configuration) getApplicationContext();
 	}
 
 	@Override

@@ -35,7 +35,7 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		log.debug("configuring all LifeCycle beans");
+		log.trace("configuring all LifeCycle beans");
 		Map<String, Lifecycle> lifecycleBeans = getLifecycleBeans();
 		Map<Integer, LifecycleGroup> phases = new TreeMap<>();
 
@@ -61,13 +61,13 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 	// This triggers an internal startBeans method, and does not call #start().
 	@Override
 	public void onRefresh() {
-		log.debug("refresh, starting all LifeCycle beans");
+		log.trace("refresh, starting all LifeCycle beans");
 		super.onRefresh();
 	}
 
 	@Override
 	public void start() {
-		log.debug("starting all LifeCycle beans");
+		log.trace("starting all LifeCycle beans");
 		super.start();
 	}
 

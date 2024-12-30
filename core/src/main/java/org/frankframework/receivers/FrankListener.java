@@ -100,8 +100,14 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 		return ((Receiver<?>) getHandler()).getAdapter();
 	}
 
+	//TODO use @Autowired @Setter Configuration !!!
 	private Configuration getConfiguration() {
-		return (Configuration) applicationContext;
+		if (getApplicationContext() instanceof Adapter) {
+			return (Configuration) getApplicationContext().getParent();
+		} else if (getApplicationContext() instanceof Configuration) {
+			return (Configuration) getApplicationContext();
+		}
+		throw new IllegalStateException("unable to locate Configuration");
 	}
 
 	@Override

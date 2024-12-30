@@ -20,7 +20,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.digester3.Rule;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanUtils;
@@ -30,6 +29,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
 
+import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ApplicationWarnings;
@@ -54,8 +54,9 @@ import org.frankframework.util.StringResolver;
 /**
  * @author Niels Meijer
  */
-public abstract class AbstractDigesterRule extends Rule implements ApplicationContextAware {
+public abstract class AbstractDigesterRule implements ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
+	private @Getter @Setter Digester digester;
 	private @Setter ApplicationContext applicationContext;
 	private @Setter ConfigurationWarnings configurationWarnings;
 	private @Setter ApplicationWarnings applicationWarnings;
@@ -146,7 +147,6 @@ public abstract class AbstractDigesterRule extends Rule implements ApplicationCo
 		return result;
 	}
 
-	@Override
 	public final void begin(String uri, String elementName, Attributes attributes) throws Exception {
 		Object top = getBean();
 
@@ -208,7 +208,6 @@ public abstract class AbstractDigesterRule extends Rule implements ApplicationCo
 		}
 	}
 
-	@Override
 	public void end(String namespace, String name) throws Exception {
 		if ("adapter".equalsIgnoreCase(name)) {
 			currentAdapter = null;

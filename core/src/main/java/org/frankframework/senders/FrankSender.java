@@ -547,8 +547,14 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 		return getTarget();
 	}
 
+	//TODO use @Autowired @Setter Configuration !!!
 	private Configuration getConfiguration() {
-		return (Configuration) getApplicationContext();
+		if (getApplicationContext() instanceof Adapter) {
+			return (Configuration) getApplicationContext().getParent();
+		} else if (getApplicationContext() instanceof Configuration) {
+			return (Configuration) getApplicationContext();
+		}
+		throw new IllegalStateException("unable to locate Configuration");
 	}
 
 	/**

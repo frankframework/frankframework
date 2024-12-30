@@ -24,16 +24,27 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
 import jakarta.annotation.Nullable;
 
-import org.apache.commons.digester3.Digester;
-import org.apache.commons.digester3.binder.DigesterLoader;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.configuration.digester.FrankDigesterRules;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.configuration.digester.AbstractDigesterRulesHandler;
+import org.frankframework.configuration.digester.Digester;
+import org.frankframework.configuration.digester.DigesterRule;
 import org.frankframework.configuration.digester.IncludeFilter;
 import org.frankframework.configuration.filters.ElementRoleFilter;
 import org.frankframework.configuration.filters.InitialCapsFilter;
@@ -54,21 +65,8 @@ import org.frankframework.xml.AttributePropertyResolver;
 import org.frankframework.xml.ElementPropertyResolver;
 import org.frankframework.xml.NamespacedContentsRemovingFilter;
 import org.frankframework.xml.PrettyPrintFilter;
-import org.frankframework.xml.SaxException;
 import org.frankframework.xml.TransformerFilter;
 import org.frankframework.xml.XmlWriter;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 
 /**
  * The configurationDigester reads the configuration.xml and the digester rules
@@ -106,7 +104,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 	private static final String CONFIGURATION_VALIDATION_SCHEMA = "FrankFrameworkCanonical.xsd";
 
-	private @Getter @Setter String digesterRuleFile = FrankDigesterRules.DIGESTER_RULES_FILE;
+	private @Getter @Setter String digesterRuleFile = "digester-rules.xml";
 
 	private final boolean suppressValidationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.CONFIGURATION_VALIDATION.getKey(), false);
 	private final boolean validation = AppConstants.getInstance().getBoolean("configurations.validation", true);
@@ -141,51 +139,47 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	}
 
 	private Digester getDigester(Configuration configuration) throws ConfigurationException {
+		Digester digester = SpringUtils.createBean(configuration, Digester.class);
 		try {
-			XMLReader reader = XmlUtils.getXMLReader(configuration);
-			Digester digester = new Digester(reader) {
-				// override Digester.createSAXException() implementations to obtain a clear unduplicated message and a properly nested stacktrace on IBM JDK
-				@Override
-				public SAXException createSAXException(String message, Exception e) {
-					return SaxException.createSaxException(message, getDocumentLocator(), e);
-				}
-				@Override
-				public SAXException createSAXException(Exception e) {
-					return SaxException.createSaxException(null, getDocumentLocator(), e);
-				}
-			};
+//			XMLReader reader = XmlUtils.getXMLReader(configuration);
+//			Digester digester = new Digester(reader) {
+//				// override Digester.createSAXException() implementations to obtain a clear unduplicated message and a properly nested stacktrace on IBM JDK
+//				@Override
+//				public SAXException createSAXException(String message, Exception e) {
+//					return SaxException.createSaxException(message, getDocumentLocator(), e);
+//				}
+//				@Override
+//				public SAXException createSAXException(Exception e) {
+//					return SaxException.createSaxException(null, getDocumentLocator(), e);
+//				}
+//			};
 
-			digester.setClassLoader(configuration.getClassLoader());
-			digester.push(configuration);
+//			digester.setClassLoader(configuration.getClassLoader());
+//			digester.push(configuration);
 
 			Resource digesterRulesResource = Resource.getResource(configuration, getDigesterRuleFile());
-			loadDigesterRules(digester, digesterRulesResource);
+//			loadDigesterRules(digester, digesterRulesResource);
+			Rules r = new Rules();
+			XmlUtils.parseXml(digesterRulesResource.asInputSource(), r);
+			digester.setParsedPatterns(r.getParsedPatterns());
 
 			if (validation) {
-				digester.setValidating(true);
-				digester.setNamespaceAware(true);
-				digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
+//				digester.setValidating(true);
+//				digester.setNamespaceAware(true);
+//				digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
 
 				URL xsdUrl = ClassLoaderUtils.getResourceURL(CONFIGURATION_VALIDATION_SCHEMA);
 				if (xsdUrl==null) {
 					throw new ConfigurationException("cannot get URL from ["+CONFIGURATION_VALIDATION_SCHEMA+"]");
 				}
-				digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", xsdUrl.toExternalForm());
+//				digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", xsdUrl.toExternalForm());
 				XmlErrorHandler xeh = new XmlErrorHandler(CONFIGURATION_VALIDATION_SCHEMA);
 				digester.setErrorHandler(xeh);
 			}
 			return digester;
-		} catch (ParserConfigurationException | SAXException e) {
+		} catch (IOException | SAXException e) {
 			throw new ConfigurationException("unable to create configuration parser", e);
 		}
-	}
-
-	private void loadDigesterRules(Digester digester, Resource digesterRulesResource) {
-		FrankDigesterRules digesterRules = new FrankDigesterRules(digester, digesterRulesResource);
-		//Populate the bean with Spring magic
-		SpringUtils.autowireByName(applicationContext, digesterRules);
-		DigesterLoader loader = DigesterLoader.newLoader(digesterRules);
-		loader.addRules(digester);
 	}
 
 	public void digest() throws ConfigurationException {
@@ -237,6 +231,26 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		}
 
 		throw new ConfigurationException("Configuration file ["+configurationFile+"] not found in ClassLoader ["+configuration.getClassLoader()+"]");
+	}
+
+	private static class Rules extends AbstractDigesterRulesHandler {
+		@Getter
+		private final HashMap<String, DigesterRule> parsedPatterns = new HashMap<>();
+
+		@Override
+		protected void handle(DigesterRule rule) throws SAXException {
+			if(log.isTraceEnabled()) log.trace("adding digesterRule {}", rule.toString());
+
+			String pattern = rule.getPattern();
+
+			if (parsedPatterns.containsKey(pattern)) {
+				// Duplicate patterns are used to tell FrankDoc parser about changed multiplicity.
+				// Original method will still be available to be used by digester, so second instance of rule can be ignored here.
+				log.warn("pattern [{}] already parsed", pattern);
+				return;
+			}
+			parsedPatterns.put(pattern, rule);
+		}
 	}
 
 	/**
