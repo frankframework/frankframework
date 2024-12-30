@@ -88,7 +88,7 @@ public class OpenApiTestBase extends Mockito {
 	 */
 	private static TaskExecutor getTaskExecutor() {
 		if (taskExecutor == null) {
-			//Make sure all threads are joining the calling thread
+			// Make sure all threads are joining the calling thread
 			SyncTaskExecutor executor = new SyncTaskExecutor();
 			taskExecutor = executor;
 		}
@@ -102,7 +102,7 @@ public class OpenApiTestBase extends Mockito {
 
 		MockHttpServletRequest request = new MockHttpServletRequest(method.toUpperCase(), uri);
 		request.setServerName("mock-hostname");
-		request.setPathInfo(HttpUtils.urlDecode(uri)); //Should be decoded by the web container
+		request.setPathInfo(HttpUtils.urlDecode(uri)); // Should be decoded by the web container
 		request.setContextPath("/mock-context-path");
 		request.setServletPath("/mock-servlet-path");
 		request.setRequestURI(request.getContextPath() + request.getServletPath() + uri);
@@ -124,11 +124,11 @@ public class OpenApiTestBase extends Mockito {
 			String res = response.getContentAsString();
 			return res.replaceFirst("auto-generated at .* for", "auto-generated at -timestamp- for");
 		} catch (Throwable t) {
-			//Silly hack to try and make the error visible in Travis.
+			// Silly hack to try and make the error visible in Travis.
 			fail(ExceptionUtils.getStackTrace(t));
 		}
 
-		//This should never happen because of the assertTrue(false) statement in the catch cause.
+		// This should never happen because of the assertTrue(false) statement in the catch cause.
 		return null;
 	}
 
@@ -165,9 +165,6 @@ public class OpenApiTestBase extends Mockito {
 		private Json2XmlValidator inputValidator;
 		private Json2XmlValidator outputValidator;
 
-		//		public static AdapterBuilder create(String name, String description) {
-//			return new AdapterBuilder(name, description);
-//		}
 		public AdapterBuilder(String name, String description) {
 			adapter = spy(SpringUtils.createBean(configuration, Adapter.class));
 			when(adapter.getMessageKeeper()).thenReturn(new SysOutMessageKeeper());
@@ -317,7 +314,7 @@ public class OpenApiTestBase extends Mockito {
 		public void start(Adapter... adapters) {
 			for (Adapter adapter : adapters) {
 				log.info("attempting to start adapter [{}]", adapter::getName);
-				adapter.startRunning();
+				adapter.start();
 			}
 			for (Adapter adapter : adapters) {
 				log.info("adapter RunState [{}]", adapter::getRunState);

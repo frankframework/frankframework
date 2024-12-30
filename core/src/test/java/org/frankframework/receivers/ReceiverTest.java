@@ -677,7 +677,7 @@ public class ReceiverTest {
 
 		// Act
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
-			adapter.stopRunning();
+			adapter.stop();
 
 			waitForState(adapter, RunState.STOPPED);
 
