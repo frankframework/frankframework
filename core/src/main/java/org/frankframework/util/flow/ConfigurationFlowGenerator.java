@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.configuration;
+package org.frankframework.util.flow;
 
 import java.io.IOException;
 
@@ -23,15 +23,16 @@ import org.springframework.context.ApplicationContextAware;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.flow.FlowDiagramManager;
 
 /**
- * Generate a flow over the digested {@link Configuration}.
- * Uses {@link Configuration#getLoadedConfiguration()}.
+ * Generate a flow over the digested {@link Adapter} or {@link Configuration}.
+ * Uses {@link Configuration#getLoadedConfiguration()} (and in case of an Adapter, an xPath on the LoadedConfiguration).
  */
 @Log4j2
 public class ConfigurationFlowGenerator implements ConfigurableLifecycle, ApplicationContextAware {

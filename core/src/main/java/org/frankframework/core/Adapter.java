@@ -49,7 +49,6 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationFlowGenerator;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.core.PipeLine.ExitState;
@@ -72,6 +71,7 @@ import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
+import org.frankframework.util.flow.ConfigurationFlowGenerator;
 import org.frankframework.util.Misc;
 import org.frankframework.util.RunState;
 import org.frankframework.util.RunStateManager;

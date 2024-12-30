@@ -46,6 +46,22 @@ class ClassUtilsTest {
 	}
 
 	@Test
+	void testInvokeTestClassSetter() throws Exception {
+		DummyClassWithSetter clazz = new DummyClassWithSetter();
+		TestClass objectToSet = new TestClass();
+		ClassUtils.invokeSetter(clazz, "setTestClass", objectToSet);
+		assertEquals(objectToSet, clazz.getTestClass());
+	}
+
+	@Test
+	void testInvokeSuperTestClassSetter() throws Exception {
+		DummyClassWithSetter clazz = new DummyClassWithSetter();
+		TestClass objectToSet = new SuperTestClass();
+		ClassUtils.invokeSetter(clazz, "setTestClass", objectToSet);
+		assertEquals(objectToSet, clazz.getTestClass());
+	}
+
+	@Test
 	void testInvokeWithNullSetter() throws Exception {
 		DummyClassWithSetter clazz = new DummyClassWithSetter();
 		Method method = clazz.getClass().getDeclaredMethod("setEnumVarArgs", TestEnum[].class);
@@ -114,13 +130,15 @@ class ClassUtilsTest {
 	@SuppressWarnings("unused")
 	private static class TestClass {
 		private String field;
-
 	}
 
-	private class DummyClassWithSetter {
+	private static class SuperTestClass extends TestClass {}
+
+	private static class DummyClassWithSetter {
 		private @Getter @Setter String field;
 		private @Getter TestEnum[] testEnums;
 		private @Getter String[] testStrings;
+		private @Getter @Setter TestClass testClass;
 
 		@SuppressWarnings("unused") // not unused, but used with reflection!
 		public void setEnumVarArgs(TestEnum... testEnum) {
