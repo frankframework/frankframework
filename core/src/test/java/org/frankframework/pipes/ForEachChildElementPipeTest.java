@@ -6,11 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -1043,17 +1041,17 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	public void testElementName() throws Exception {
 		XsltSender sender = new XsltSender();
 		sender.setXpathExpression("concat(Person/PersonName/Id,'_',Person/Demographics/Gender)");
-		pipe.setProcessFile(true);
 		pipe.setSender(sender);
 		pipe.setTargetElement("Person");
 		pipe.configure();
 		pipe.start();
 
-		URL input = TestFileUtils.getTestFileURL("/XmlFileElementIteratorPipe/input.xml");
-		File file = new File(input.toURI());
+		String input = TestFileUtils.getTestFile("/XmlFileElementIteratorPipe/input.xml");
 		String expected = TestFileUtils.getTestFile("/XmlFileElementIteratorPipe/ElementNameOutput.xml");
-		PipeRunResult prr = doPipe(pipe, file.toString(), session);
+
+		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = prr.getResult().asString();
+
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 	}
 
@@ -1064,18 +1062,18 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	public void testElementChain() throws Exception {
 		XsltSender sender = new XsltSender();
 		sender.setXpathExpression("concat(Party/Person/PersonName/Id,'_',Party/Person/Demographics/Gender)");
-		pipe.setProcessFile(true);
 		pipe.setSender(sender);
 		pipe.setContainerElement("PartyInternalAgreementRole");
 		pipe.setTargetElement("Party");
 		pipe.configure();
 		pipe.start();
 
-		URL input = TestFileUtils.getTestFileURL("/XmlFileElementIteratorPipe/input.xml");
-		File file = new File(input.toURI());
+		String input = TestFileUtils.getTestFile("/XmlFileElementIteratorPipe/input.xml");
 		String expected = TestFileUtils.getTestFile("/XmlFileElementIteratorPipe/ElementChainOutput.xml");
-		PipeRunResult prr = doPipe(pipe, file.toString(), session);
+
+		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = prr.getResult().asString();
+
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 	}
 

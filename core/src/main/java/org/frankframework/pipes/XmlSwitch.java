@@ -122,7 +122,7 @@ public class XmlSwitch extends AbstractPipe {
 
 		if (StringUtils.isNotEmpty(getForwardNameSessionKey())) {
 			forward = session.getString(getForwardNameSessionKey());
-		} else if (!(StringUtils.isEmpty(getXpathExpression()) && StringUtils.isEmpty(getStyleSheetName()))) {
+		} else if (!(StringUtils.isEmpty(getXpathExpression()) && StringUtils.isEmpty(getStyleSheetName())) || StringUtils.isEmpty(getGetInputFromSessionKey())) {
 			try {
 				Map<String, Object> parametervalues = null;
 				ParameterList parameterList = getParameterList();
@@ -131,12 +131,19 @@ public class XmlSwitch extends AbstractPipe {
 					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
 				}
 
-				message.preserve();
-				forward = transformerPool.transform(message, parametervalues, isNamespaceAware());
+				if (StringUtils.isNotEmpty(getGetInputFromSessionKey())) {
+					forward = transformerPool.transform(session.getMessage(getGetInputFromSessionKey()), parametervalues, isNamespaceAware());
+				} else {
+					message.preserve();
+					forward = transformerPool.transform(message, parametervalues, isNamespaceAware());
+				}
 			} catch (Throwable e) {
 				throw new PipeRunException(this, "got exception on transformation", e);
 			}
+		} else if(StringUtils.isNotEmpty(getGetInputFromSessionKey())) {
+			forward = session.getString(getGetInputFromSessionKey());
 		}
+
 		log.debug("determined forward [{}]", forward);
 
 		if (StringUtils.isEmpty(forward) && getEmptyForwardName() != null) {
@@ -220,5 +227,4 @@ public class XmlSwitch extends AbstractPipe {
 	public void setNamespaceAware(boolean b) {
 		namespaceAware = b;
 	}
-
 }
