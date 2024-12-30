@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,12 @@
 */
 package org.frankframework.configuration.digester;
 
+import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.Attributes;
 
-public interface IDigesterRuleAware {
+public interface IDigesterRuleAware extends ApplicationContextAware {
 
-	Digester getDigester();
+	void setDigester(Digester digester);
 
 	void setDigesterRule(DigesterRule rule);
 
