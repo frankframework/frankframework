@@ -93,9 +93,14 @@ public class DelineaClientFactory {
 	}
 
 	private String formatUrlTemplateOrGetUrl(String urlTemplate, String url) {
-		return StringUtils.isNotEmpty(delineaClientSettings.tenant()) ? String.format(urlTemplate.replaceAll("/*$", ""),
+		return StringUtils.isNotEmpty(delineaClientSettings.tenant()) ? String.format(removeTrailingSlashes(urlTemplate),
 				delineaClientSettings.tenant(), delineaClientSettings.tld())
-				: url.replaceAll("/*$", "");
+				: removeTrailingSlashes(url);
+	}
+
+	private String removeTrailingSlashes(String url) {
+		// /*$ matches 0 or more slashes at the end of line
+		return url.replaceAll("/*$", "");
 	}
 
 	record AccessGrant(

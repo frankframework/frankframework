@@ -54,10 +54,13 @@ public class DelineaClient extends RestTemplate {
 
 		while (getNextPage) {
 			SecretsList page = getSecretsPage(skip);
-			resultPages.add(page);
-
-			getNextPage = page.hasNext();
-			skip = page.nextSkip();
+			if (page != null) {
+				resultPages.add(page);
+				getNextPage = page.hasNext();
+				skip = page.nextSkip();
+			} else {
+				getNextPage = false;
+			}
 		}
 
 		return resultPages.stream()
