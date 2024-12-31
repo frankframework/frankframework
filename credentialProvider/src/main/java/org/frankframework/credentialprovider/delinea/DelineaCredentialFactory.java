@@ -16,6 +16,7 @@
 package org.frankframework.credentialprovider.delinea;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -42,6 +43,12 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 	private static final String OAUTH_USERNAME_KEY = BASE_KEY + "oauth.username";
 
 	private static final String OAUTH_PASSWORD_KEY = BASE_KEY + "oauth.password";
+
+	private static final long CACHE_DURATION_MILLIS = 60_000L;
+
+	private List<String> configuredAliases; // Refreshed every CACHE_DURATION_MILLIS
+
+	private long lastFetch = 0;
 
 	static final String TENANT_KEY = BASE_KEY + "tenant";
 
@@ -93,14 +100,24 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 
 	@Override
 	public Collection<String> getConfiguredAliases() {
-		return delineaClient.getSecrets().stream()
+		// use a cache for the configured aliases
+		if (lastFetch + CACHE_DURATION_MILLIS > System.currentTimeMillis()) {
+			return configuredAliases;
+		}
+
+		configuredAliases = delineaClient.getSecrets().stream()
 				.map(Objects::toString)
 				.toList();
+
+		lastFetch = System.currentTimeMillis();
+
+		return configuredAliases;
 	}
 
 	@Override
 	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
 		if (StringUtils.isNotEmpty(alias)) {
+			// Make sure to always get a live copy of the secret
 			Secret secret = delineaClient.getSecret(alias);
 
 			if (secret != null) {

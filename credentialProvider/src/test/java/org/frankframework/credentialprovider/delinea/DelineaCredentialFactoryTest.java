@@ -65,8 +65,10 @@ public class DelineaCredentialFactoryTest {
 		assertNotNull(credentials);
 		assertEquals("user1", credentials.getUsername());
 
-		// Non-existing secret
+		// Get a non-existing secret
 		ICredentials credentials2 = credentialFactory.getCredentials("16", () -> null, () -> null);
+
+		// Expect a non-null return value, with a null username - the defaultUsernameSupplier (() -> null) is used
 		assertNotNull(credentials2);
 		assertNull(credentials2.getUsername());
 	}
