@@ -76,7 +76,7 @@
 		<property name="threadsTime" value="-1"/>
 	</bean>
 
-	<bean name="customReportAction" class="org.frankframework.ladybug.larva.ConvertToLarvaAction"/>
+<!-- 	<bean name="customReportAction" class="org.frankframework.ladybug.larva.ConvertToLarvaAction"/> -->
 
 	<task:scheduler id="closeReportsScheduler"/>
 
