@@ -1,0 +1,61 @@
+{
+    "batchCount": 0,
+    "currentPage": 2,
+    "hasNext": false,
+    "hasPrev": true,
+    "nextSkip": 0,
+    "pageCount": 2,
+    "prevSkip": 0,
+    "records": [
+        {
+            "active": true,
+            "autoChangeEnabled": true,
+            "checkedOut": true,
+            "checkOutEnabled": true,
+            "checkOutUserId": 0,
+            "checkOutUserName": "string",
+            "createDate": "2019-08-24T14:15:22Z",
+            "daysUntilExpiration": 0,
+            "doubleLockEnabled": true,
+            "extendedFields": [
+                {
+                    "name": "string",
+                    "value": "string"
+                }
+            ],
+            "folderId": 0,
+            "folderPath": "string",
+            "hasLauncher": true,
+            "hidePassword": true,
+            "id": 2,
+            "inheritsPermissions": true,
+            "isOutOfSync": true,
+            "isRestricted": true,
+            "lastAccessed": "2019-08-24T14:15:22Z",
+            "lastHeartBeatStatus": "Failed",
+            "lastPasswordChangeAttempt": "2019-08-24T14:15:22Z",
+            "name": "secret2",
+            "outOfSyncReason": "string",
+            "requiresApproval": true,
+            "requiresComment": true,
+            "responseCodes": [
+                "string"
+            ],
+            "secretTemplateId": 0,
+            "secretTemplateName": "string",
+            "siteId": 0
+        }
+    ],
+    "severity": "None",
+    "skip": 1,
+    "sortBy": [
+        {
+            "direction": "None",
+            "name": "string",
+            "priority": 0
+        }
+    ],
+    "success": true,
+    "take": 1,
+    "total": 2
+}

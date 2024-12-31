@@ -258,7 +258,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 			throw new FolderNotFoundException("folder [" + folder + "] does not exist");
 		}
 
-		// The inputStream content also be directly send to the s3Client.putObject(), when the File length is available.
+		// The inputStream content also be directly sent to the s3Client.putObject(), when the File length is available.
 		// When uploading of unknown size is needed, the S3AsyncClient or S3TransferManager can be used in the future.
 		MessageBuilder messageBuilder = new MessageBuilder();
 		try (OutputStream fos = messageBuilder.asOutputStream()) {
