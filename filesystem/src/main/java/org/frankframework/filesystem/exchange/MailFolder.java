@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -12,14 +12,28 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-*/
-package org.frankframework.align.content;
+ */
+package org.frankframework.filesystem.exchange;
 
-import org.apache.xerces.xs.XSSimpleTypeDefinition;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public interface ElementContainer {
+import lombok.Getter;
+import lombok.Setter;
 
-	void setNull();
-	void setAttribute(String Name, String value, XSSimpleTypeDefinition attTypeDefinition);
-	void characters(char[] ch, int start, int length);
+@Getter
+@Setter
+public class MailFolder extends MailItemId {
+
+	@JsonProperty("displayName")
+	private String name;
+
+	private int childFolderCount;
+	private int unreadItemCount;
+	private int totalItemCount;
+	private int sizeInBytes;
+
+	@Override
+	public String toString() {
+		return "MailFolder [%s] with id [%s]".formatted(name, getId());
+	}
 }

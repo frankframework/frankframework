@@ -1,11 +1,11 @@
 {
     "securityRoles": [
         {
-            "name": "IbisObserver",
+            "name": "IbisWebService",
             "allowed": false
         },
         {
-            "name": "IbisAdmin",
+            "name": "IbisObserver",
             "allowed": false
         },
         {
@@ -13,12 +13,12 @@
             "allowed": false
         },
         {
-            "name": "IbisTester",
-            "allowed": true
+            "name": "IbisAdmin",
+            "allowed": false
         },
         {
-            "name": "IbisWebService",
-            "allowed": false
+            "name": "IbisTester",
+            "allowed": true
         }
     ],
 	"supportedConnectionOptions": {

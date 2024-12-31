@@ -16,35 +16,57 @@
 package org.frankframework.filesystem;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
 
+import com.microsoft.aad.msal4j.ClientCredentialFactory;
+import com.microsoft.aad.msal4j.ClientCredentialParameters;
+import com.microsoft.aad.msal4j.ConfidentialClientApplication;
 import com.microsoft.aad.msal4j.HttpRequest;
+import com.microsoft.aad.msal4j.IAuthenticationResult;
 import com.microsoft.aad.msal4j.IHttpClient;
 import com.microsoft.aad.msal4j.IHttpResponse;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.Protected;
+import org.frankframework.filesystem.exchange.MailFolder;
+import org.frankframework.filesystem.exchange.MailFolderResponse;
+import org.frankframework.filesystem.exchange.MailMessage;
+import org.frankframework.filesystem.exchange.MailMessageResponse;
+import org.frankframework.http.AbstractHttpSender;
 import org.frankframework.http.HttpMessageEntity;
 import org.frankframework.http.HttpResponseHandler;
-import org.frankframework.http.AbstractHttpSender;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.EnumUtils;
+import org.frankframework.util.JacksonUtils;
 import org.frankframework.util.LogUtil;
 
 /**
@@ -60,6 +82,15 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 	private static final String URL_SESSION_KEY = "URL";
 	private static final String STATUS_CODE_SESSION_KEY = "HTTP_STATUSCODE";
 
+	private static final String SCOPE = "https://graph.microsoft.com/.default";
+	private static final String AUTHORITY = "https://login.microsoftonline.com/";
+
+	private ConfidentialClientApplication client;
+	private ExecutorService executor;
+	private ClientCredentialParameters clientCredentialParam;
+
+	private boolean configured = false;
+
 	public MsalClientAdapter() {
 		setName("MSAL Autentication Sender");
 
@@ -70,6 +101,138 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 
 		setResultStatusCodeSessionKey(STATUS_CODE_SESSION_KEY);
 	}
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		configured = true;
+	}
+
+	@Override
+	public void start() {
+		if (!configured) {
+			throw new LifecycleException("not yet configured");
+		}
+		super.start();
+	}
+
+	@Override
+	public void stop() {
+		if (executor != null) {
+			executor.shutdown();
+		}
+		if (client != null) {
+			client = null;
+		}
+		super.stop();
+	}
+
+	public GraphClient createGraphClient(String tenantId, CredentialFactory credentials) throws MalformedURLException {
+		if (getHttpClient() == null) {
+			throw new LifecycleException("not yet started");
+		}
+
+		executor = Executors.newSingleThreadExecutor(); // Create a new Executor in the same thread(context) to avoid SecurityExceptions when setting a ClassLoader on the Runnable.
+		clientCredentialParam = ClientCredentialParameters.builder(Collections.singleton(SCOPE)).tenant(tenantId).build();
+
+		client = ConfidentialClientApplication.builder(
+				credentials.getUsername(),
+				ClientCredentialFactory.createFromSecret(credentials.getPassword()))
+			.authority(AUTHORITY + tenantId)
+			.httpClient(this)
+			.executorService(executor)
+			.build();
+
+		return new GraphClient(this);
+	}
+
+	protected String getAuthenticationToken() throws IOException {
+		CompletableFuture<IAuthenticationResult> future = client.acquireToken(clientCredentialParam);
+		try {
+			String token = future.get().accessToken();
+			return "Bearer " + token;
+		} catch (InterruptedException | ExecutionException e) {
+			Thread.currentThread().interrupt();
+			throw new IOException("could not generate access token", e);
+		}
+	}
+
+	/** Silly wrapper to create a clean SDK */
+	public static class GraphClient {
+		private MsalClientAdapter msal;
+		public GraphClient(MsalClientAdapter msal) {
+			this.msal = msal;
+		}
+
+		public void execute(HttpRequestBase httpRequestBase) throws IOException {
+			execute(httpRequestBase, null);
+		}
+
+		@SuppressWarnings("unchecked")
+		public <T> T execute(HttpRequestBase httpRequestBase, Class<T> dto) throws IOException {
+			httpRequestBase.addHeader("Authorization", msal.getAuthenticationToken());
+			HttpResponse response = msal.execute(httpRequestBase.getURI(), httpRequestBase, null);
+			HttpStatus status = HttpStatus.valueOf(response.getStatusLine().getStatusCode());
+
+			if (status.is2xxSuccessful()) {
+				HttpEntity entity = response.getEntity();
+				if (entity != null && dto != null) {
+					try (InputStream contentStream = entity.getContent()) {
+						if(String.class.isAssignableFrom(dto)) {
+							return (T) new String(contentStream.readAllBytes());
+						}
+						return JacksonUtils.convertToDTO(contentStream, dto);
+					} finally {
+						EntityUtils.consume(entity);
+					}
+				}
+				return null;
+			}
+
+			throw new IOException(status.getReasonPhrase());
+		}
+
+		public List<MailFolder> getMailFolders(String email) throws IOException {
+			return MailFolderResponse.get(this, email, 200);
+		}
+
+		public List<MailFolder> getMailFolders(MailFolder folder) throws IOException {
+			return MailFolderResponse.get(this, folder);
+		}
+
+		public List<MailMessage> getMailMessages(MailFolder folder) throws IOException {
+			return getMailMessages(folder, 20);
+		}
+
+		public List<MailMessage> getMailMessages(MailFolder folder, int limit) throws IOException {
+			return MailMessageResponse.get(this, folder, limit);
+		}
+
+		public void createMailFolder(MailFolder mailFolder, String folderName) throws IOException {
+			MailFolderResponse.create(this, mailFolder, folderName);
+		}
+
+		public void deleteMailFolder(MailFolder folderToDelete) throws IOException {
+			MailFolderResponse.delete(this, folderToDelete);
+		}
+
+		public void deleteMailMessage(MailMessage file) throws IOException {
+			MailMessageResponse.delete(this, file);
+		}
+
+		public MailMessage getMailMessage(MailMessage file) throws IOException {
+			return MailMessageResponse.get(this, file);
+		}
+
+		public MailMessage moveMailMessage(MailMessage file, MailFolder destinationFolder) throws IOException {
+			return MailMessageResponse.move(this, file, destinationFolder);
+		}
+
+		public MailMessage copyMailMessage(MailMessage file, MailFolder destinationFolder) throws IOException {
+			return MailMessageResponse.copy(this, file, destinationFolder);
+		}
+	}
+
 
 	@Override
 	public IHttpResponse send(HttpRequest httpRequest) throws Exception {
@@ -101,6 +264,7 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 	@Override
 	protected HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
 		HttpMethod httpMethod = EnumUtils.parse(HttpMethod.class, (String) session.get(METHOD_SESSION_KEY));
+		@SuppressWarnings("unchecked")
 		Map<String, String> headers = (Map<String, String>) session.get(REQUEST_HEADERS_SESSION_KEY);
 
 		if(uri == null) {

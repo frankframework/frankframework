@@ -34,6 +34,7 @@
             <div class="ibox-right">
               <div class="pull-left">
                 <button
+                  appHasAccessToLink="updateAdapters"
                   (click)="stopAll()"
                   class="btn btn-danger btn-xs space-it-out"
                   id="stop-all-adapters"
@@ -43,6 +44,7 @@
                   <i class="fa fa-stop"></i>
                 </button>
                 <button
+                  appHasAccessToLink="updateAdapters"
                   (click)="startAll()"
                   class="btn btn-primary btn-xs"
                   id="start-all-adapters"
@@ -74,6 +76,7 @@
               </div>
               <div class="text-center">
                 <button
+                  appHasAccessToLink="reloadConfiguration"
                   (click)="reloadConfiguration()"
                   *ngIf="selectedConfiguration !== 'All' && !reloading && !isConfigReloading[selectedConfiguration]"
                   class="btn btn-info btn-xs space-it-out"
@@ -93,6 +96,7 @@
                   <i class="fa fa-spin fa-refresh"></i>
                 </button>
                 <button
+                  appHasAccessToLink="fullReload"
                   (click)="fullReload()"
                   *ngIf="selectedConfiguration === 'All' && !reloading"
                   class="btn btn-info btn-xs space-it-out"
@@ -112,6 +116,7 @@
                   <i class="fa fa-spin fa-refresh"></i>
                 </button>
                 <button
+                  appHasAccessToLink="getConfigurationFlow"
                   (click)="showReferences()"
                   *ngIf="configurationFlowDiagram"
                   class="btn btn-info btn-xs"

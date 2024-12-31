@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ErrorLevels, LogInformation, LoggingService, LoggingSettings, errorLevelsConst } from '../logging.service';
+import { ErrorLevels, errorLevelsConst, LoggingService, LoggingSettings, LogInformation } from '../logging.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -10,7 +10,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 })
 export class LoggingManageComponent implements OnInit {
   protected updateDynamicParams: boolean = false;
-  protected loggers: Record<string, string> = {};
+  protected loggers: Record<string, ErrorLevels[number]> = {};
   protected errorLevels: ErrorLevels = errorLevelsConst;
   protected form: LoggingSettings = {
     loglevel: 'DEBUG',

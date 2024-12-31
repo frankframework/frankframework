@@ -33,6 +33,7 @@
               <strong><span appToDate [time]="metadata?.insertDate ?? 0"></span></strong>
             </span>
             <button
+              appHasAccessToLink="resendReceiverMessage"
               *ngIf="storageParams.processState === 'Error'"
               [ladda]="message.resending"
               data-style="slide-down"
@@ -44,6 +45,7 @@
               <i class="fa fa-repeat"></i> Resend
             </button>
             <button
+              appHasAccessToLink="deleteReceiverMessage"
               *ngIf="storageParams.processState === 'Error'"
               [ladda]="message.deleting"
               data-style="slide-down"
@@ -55,6 +57,7 @@
               <i class="fa fa-times"></i> Delete
             </button>
             <button
+              appHasAccessToLink="downloadMessage"
               title="Download Message"
               (click)="downloadMessage(message.id)"
               class="btn btn-info btn-xs m-r-xs pull-right"

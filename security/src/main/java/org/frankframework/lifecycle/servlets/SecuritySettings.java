@@ -60,6 +60,10 @@ public class SecuritySettings {
 	}
 
 	public static boolean isWebSecurityEnabled() {
+		if (webSecurityEnabled == null) {
+			throw new IllegalStateException("SecuritySettings not yet initialized");
+		}
+
 		return webSecurityEnabled;
 	}
 

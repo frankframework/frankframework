@@ -15,6 +15,7 @@ limitations under the License.
 */
 package org.frankframework.http.rest;
 
+import static org.frankframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -28,6 +29,7 @@ import static org.mockito.Mockito.spy;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
@@ -95,6 +97,7 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.encryption.PkiUtil;
+import org.frankframework.http.HttpEntityType;
 import org.frankframework.http.HttpMessageEntity;
 import org.frankframework.http.mime.MultipartEntityBuilder;
 import org.frankframework.http.rest.ApiListener.AuthenticationMethods;
@@ -221,7 +224,7 @@ public class ApiListenerServletTest {
 		return request;
 	}
 
-	private Response service(HttpServletRequest request) throws ServletException, IOException {
+	private Response service(HttpServletRequest request) throws IOException {
 		MockHttpServletResponse response = new StricterMockHttpServletResponse();
 
 		servlet.service(request, response);
@@ -230,7 +233,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void noUri() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void noUri() throws IOException, ConfigurationException {
 		// Arrange
 		new ApiListenerBuilder("test", List.of(HttpMethod.GET)).build();
 
@@ -243,7 +246,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void uriNotFound() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void uriNotFound() throws IOException, ConfigurationException {
 		// Arrange
 		new ApiListenerBuilder("test", List.of(HttpMethod.GET)).build();
 
@@ -256,7 +259,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void methodNotAllowed() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void methodNotAllowed() throws IOException, ConfigurationException {
 		String uri="/test";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.GET)).build();
 
@@ -266,7 +269,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void simpleGet() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void simpleGet() throws IOException, ConfigurationException {
 		String uri="/test1";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.GET)).build();
 
@@ -277,7 +280,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void simpleHead() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void simpleHead() throws IOException, ConfigurationException {
 		String uri = "/test1";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.HEAD)).build();
 
@@ -289,7 +292,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void simpleGetMultiMethod() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void simpleGetMultiMethod() throws IOException, ConfigurationException {
 		String uri = "/test1";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.GET, HttpMethod.POST)).build();
 
@@ -300,7 +303,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void testAfterServiceMethodThreadContextMustBeCleared() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void testAfterServiceMethodThreadContextMustBeCleared() throws IOException, ConfigurationException {
 		// arrange
 		ThreadContext.put("fakeMdcKey", "fakeContextValue");
 		ThreadContext.push("fakeNdcKey", "fakeStackItem");
@@ -314,7 +317,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void simpleGetWithSlashes() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void simpleGetWithSlashes() throws IOException, ConfigurationException {
 		String uri="/test2";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.GET)).build();
 
@@ -325,7 +328,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void preFlightRequest() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void preFlightRequest() throws IOException, ConfigurationException {
 		String uri="/preflight/";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.GET)).build();
 
@@ -340,7 +343,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void preFlightRequestWithRequestHeader() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void preFlightRequestWithRequestHeader() throws IOException, ConfigurationException {
 		String uri="/preflight/";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.GET)).build();
 
@@ -358,7 +361,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void corsGetRequest() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void corsGetRequest() throws IOException, ConfigurationException {
 		String uri="/not-preflight/";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST)).build();
 
@@ -378,7 +381,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void apiListenerThatProducesXML() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void apiListenerThatProducesXML() throws IOException, ConfigurationException {
 		String uri="/ApiListenerThatProducesXML/";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.PUT), null, MediaTypes.XML).build();
 
@@ -391,7 +394,37 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void apiListenerThatProducesJSONForMethodPost() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void apiListenerThatProducesXMLViaOutputMethodBinary() throws IOException, ConfigurationException {
+		String uri="/ApiListenerThatProducesXML/";
+		ApiListener listener = new ApiListenerBuilder(uri, List.of(HttpMethod.PUT), null, MediaTypes.XML).build();
+		listener.setResponseType(HttpEntityType.BINARY);
+		listener.configure();
+
+		Response result = service(createRequest(uri, HttpMethod.PUT, "<xml>data</xml>"));
+		assertEquals(200, result.getStatus());
+		assertEquals("<xml>data</xml>", result.getContentAsString());
+		assertEquals("OPTIONS, PUT", result.getHeader("Allow"));
+		assertTrue(result.getContentType().contains("application/xml"), "Content-Type header does not contain [application/xml]");
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
+	public void apiListenerThatProducesXMLViaOutputMethodRaw() throws IOException, ConfigurationException {
+		String uri="/ApiListenerThatProducesXML/";
+		ApiListener listener = new ApiListenerBuilder(uri, List.of(HttpMethod.PUT), null, MediaTypes.XML).build();
+		listener.setResponseType(HttpEntityType.RAW);
+		listener.configure();
+
+		Response result = service(createRequest(uri, HttpMethod.PUT, "<xml>data</xml>"));
+		assertEquals(200, result.getStatus());
+		assertEquals("<xml>data</xml>", result.getContentAsString());
+		assertEquals("OPTIONS, PUT", result.getHeader("Allow"));
+		assertTrue(result.getContentType().contains("application/xml"), "Content-Type header does not contain [application/xml]");
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
+	public void apiListenerThatProducesJSONForMethodPost() throws IOException, ConfigurationException {
 		String uri="/ApiListenerThatProducesJSON/";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), null, MediaTypes.JSON).build();
 
@@ -404,7 +437,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void apiListenerThatProducesJSONReturnsNoOutput() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void apiListenerThatProducesJSONReturnsNoOutput() throws IOException, ConfigurationException {
 		// Arrange
 		String uri="/ApiListenerThatProducesJSONReturnsNoOutput/";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), null, MediaTypes.JSON)
@@ -427,7 +460,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void apiListenerThatProducesJSONReturnsNoOutputEmptyStream() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void apiListenerThatProducesJSONReturnsNoOutputEmptyStream() throws IOException, ConfigurationException {
 		// Arrange
 		String uri="/ApiListenerThatProducesJSONReturnsNoOutput/";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), null, MediaTypes.JSON)
@@ -450,7 +483,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void apiListenerThatProducesJSONReturnsNoOutputEmptyReader() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void apiListenerThatProducesJSONReturnsNoOutputEmptyReader() throws IOException, ConfigurationException {
 		// Arrange
 		String uri="/ApiListenerThatProducesJSONReturnsNoOutput/";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), null, MediaTypes.JSON)
@@ -473,7 +506,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void apiListenerThatProducesXMLReturnsNoOutputNonStringResultMessage() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void apiListenerThatProducesXMLReturnsNoOutputNonStringResultMessage() throws IOException, ConfigurationException {
 		// Arrange
 		String uri="/ApiListenerThatProducesXMLReturnsNoOutputNonStringResultMessage/";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), null, MediaTypes.XML).build();
@@ -496,7 +529,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void clientAcceptHeaderDoesNotLikeJSON() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void clientAcceptHeaderDoesNotLikeJSON() throws IOException, ConfigurationException {
 		// Arrange
 		String uri="/ApiListenerAllow/";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), null, MediaTypes.JSON)
@@ -515,7 +548,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void clientAcceptHeaderLovesJSON() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void clientAcceptHeaderLovesJSON() throws IOException, ConfigurationException {
 		String uri="/ApiListenerAllow/";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), null, MediaTypes.JSON).build();
 
@@ -530,7 +563,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void listenerDoesNotLikeContentTypeJSON() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void listenerDoesNotLikeContentTypeJSON() throws IOException, ConfigurationException {
 		String uri="/listenerDoesNotAcceptContentType";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), MediaTypes.XML, null).build();
 
@@ -543,7 +576,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void listenerLovesContentTypeJSON() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void listenerLovesContentTypeJSON() throws IOException, ConfigurationException {
 		String uri="/listenerLovesContentTypeJSON";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), MediaTypes.JSON, MediaTypes.JSON).build();
 
@@ -559,7 +592,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void listenerRejectsRequestWithoutContentTypeHeaderWhenConsumesAttributeSet() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void listenerRejectsRequestWithoutContentTypeHeaderWhenConsumesAttributeSet() throws IOException, ConfigurationException {
 		// Arrange
 		String uri="/listenerDoesNotAcceptRequestWithoutContentTypeHeader";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), MediaTypes.XML, null).build();
@@ -577,7 +610,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void listenerAcceptsRequestWithoutContentTypeHeaderWhenConsumesAttributeNotSet() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void listenerAcceptsRequestWithoutContentTypeHeaderWhenConsumesAttributeNotSet() throws IOException, ConfigurationException {
 		// Arrange
 		String uri="/listenerAcceptsContentTypeJSON";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), null, MediaTypes.JSON).build();
@@ -624,11 +657,11 @@ public class ApiListenerServletTest {
 		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
 		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");//Defaults to 'text/plain;charset=ISO-8859-1'
 
-		URL url1 = ClassLoaderUtils.getResourceURL("/Documents/doc001.pdf");
-		builder.addBinaryBody("file1", url1.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file1");
+		InputStream doc1 = getClass().getResourceAsStream("/Documents/doc001.pdf");
+		builder.addBinaryBody("file1", doc1, ContentType.APPLICATION_OCTET_STREAM, "file1");
 
-		URL url2 = ClassLoaderUtils.getResourceURL("/Documents/doc002.pdf");
-		builder.addBinaryBody("file2", url2.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file2");
+		InputStream doc2 = getClass().getResourceAsStream("/Documents/doc002.pdf");
+		builder.addBinaryBody("file2", doc2, ContentType.APPLICATION_OCTET_STREAM, "file2");
 
 		Response result = service(createRequest(uri, HttpMethod.POST, builder.build()));
 		assertEquals(200, result.getStatus());
@@ -640,7 +673,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void listenerMultipartContentISO8859_JSON() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void listenerMultipartContentISO8859_JSON() throws IOException, ConfigurationException {
 		String uri="/listenerMultipartContent_JSON";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), MediaTypes.MULTIPART, MediaTypes.JSON).build();
 
@@ -664,7 +697,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void listenerMultipartContentISO8859_ANY() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void listenerMultipartContentISO8859_ANY() throws IOException, ConfigurationException {
 		String uri="/listenerMultipartContent_ANY";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), MediaTypes.MULTIPART, MediaTypes.ANY).build();
 
@@ -672,11 +705,11 @@ public class ApiListenerServletTest {
 		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
 		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");// ISO_8859_1 encoded but is since we don't set the charset, it will be parsed as UTF-8 (€ è)
 
-		URL url1 = ClassLoaderUtils.getResourceURL("/Documents/doc001.pdf");
-		builder.addBinaryBody("file1", url1.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file1");
+		InputStream doc1 = getClass().getResourceAsStream("/Documents/doc001.pdf");
+		builder.addBinaryBody("file1", doc1, ContentType.APPLICATION_OCTET_STREAM, "file1");
 
-		URL url2 = ClassLoaderUtils.getResourceURL("/Documents/doc002.pdf");
-		builder.addBinaryBody("file2", url2.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file2");
+		InputStream doc2 = getClass().getResourceAsStream("/Documents/doc002.pdf");
+		builder.addBinaryBody("file2", doc2, ContentType.APPLICATION_OCTET_STREAM, "file2");
 
 		Response result = service(createRequest(uri, HttpMethod.POST, builder.build()));
 		assertEquals(200, result.getStatus());
@@ -688,7 +721,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void listenerMultipartContentUTF8() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void listenerMultipartContentUTF8() throws IOException, ConfigurationException {
 		String uri="/listenerMultipartContentCharset";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), MediaTypes.MULTIPART, MediaTypes.JSON, null, "string2").build();
 
@@ -722,7 +755,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void listenerMtomContent() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void listenerMtomContent() throws IOException, ConfigurationException {
 		String uri="/listenerMtomContent";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), MediaTypes.MULTIPART_RELATED, MediaTypes.JSON).build();
 
@@ -755,7 +788,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void listenerMultipartContentNoContentType() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void listenerMultipartContentNoContentType() throws IOException, ConfigurationException {
 		String uri="/listenerMultipartContentNoContentType";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), MediaTypes.MULTIPART, MediaTypes.JSON).build();
 
@@ -772,7 +805,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void listenerInvalidMultipartContent() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void listenerInvalidMultipartContent() throws IOException, ConfigurationException {
 
 		// Arrange
 		String uri="/listenerMultipartContentNoContent";
@@ -791,7 +824,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void getRequestWithQueryParameters() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void getRequestWithQueryParameters() throws IOException, ConfigurationException {
 		String uri="/queryParamTest";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.GET)).build();
 
@@ -826,7 +859,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void getRequestWithDynamicPath() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void getRequestWithDynamicPath() throws IOException, ConfigurationException {
 		String uri="/dynamic/";
 		new ApiListenerBuilder(uri + "{poef}", List.of(HttpMethod.GET)).build();
 
@@ -842,7 +875,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void getRequestWithAsteriskPath() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void getRequestWithAsteriskPath() throws IOException, ConfigurationException {
 		String uri="/dynamic/";
 		new ApiListenerBuilder(uri + "*", List.of(HttpMethod.GET)).build();
 
@@ -858,7 +891,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void customExitCode() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void customExitCode() throws IOException, ConfigurationException {
 		String uri="/exitcode";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.GET))
 			.withExitCode(234)
@@ -905,7 +938,7 @@ public class ApiListenerServletTest {
 	public void apiListenerWithRepeatableMessageAndGloballyDisabled() throws Exception {
 		// Arrange
 		String uri="/etag2";
-		Message repeatableMessage = new Message(new Message("{\"tralalalallala\":true}").asByteArray());
+		Message repeatableMessage = new Message("{\"tralalalallala\":true}".getBytes());
 		new ApiListenerBuilder(uri, List.of(HttpMethod.GET))
 			.withResponseContent(repeatableMessage)
 			.build();
@@ -930,7 +963,7 @@ public class ApiListenerServletTest {
 	public void apiListenerWithHeadMethodCall() throws Exception {
 		// Arrange
 		String uri = "/apiListenerWithHeadMethodCall";
-		Message repeatableMessage = new Message(new Message("{\"tralalalallala\":true}").asByteArray());
+		Message repeatableMessage = new Message("{\"tralalalallala\":true}".getBytes());
 		new ApiListenerBuilder(uri, List.of(HttpMethod.HEAD), MediaTypes.JSON, MediaTypes.JSON)
 				.withResponseContent(repeatableMessage)
 				.build();
@@ -958,7 +991,7 @@ public class ApiListenerServletTest {
 	public void apiListenerWithHeadMethodCallAndEmptyMessage() throws Exception {
 		// Arrange
 		String uri = "/apiListenerWithHeadMethodCall";
-		Message repeatableMessage = new Message(new Message("").asByteArray());
+		Message repeatableMessage = new Message("".getBytes());
 		new ApiListenerBuilder(uri, List.of(HttpMethod.HEAD), MediaTypes.JSON, MediaTypes.JSON)
 				.withResponseContent(repeatableMessage)
 				.build();
@@ -985,7 +1018,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void eTagGetEtagMatches() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void eTagGetEtagMatches() throws IOException, ConfigurationException {
 		// Arrange
 		String uri = "/etag31";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.GET))
@@ -1009,7 +1042,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void eTagGetEtagDoesNotMatch() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void eTagGetEtagDoesNotMatch() throws IOException, ConfigurationException {
 		// Arrange
 		String uri = "/etag32";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.GET))
@@ -1032,7 +1065,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void eTagPostEtagIfMatches() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void eTagPostEtagIfMatches() throws IOException, ConfigurationException {
 		String uri = "/etag45";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST)).build();
 		String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
@@ -1049,7 +1082,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void eTagPostEtagDoesNotMatch() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void eTagPostEtagDoesNotMatch() throws IOException, ConfigurationException {
 		String uri = "/etag46";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST)).build();
 		String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
@@ -1066,7 +1099,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void cookieAuthentication401() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void cookieAuthentication401() throws IOException, ConfigurationException {
 		String uri = "/cookie";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), AuthMethods.COOKIE).build();
 
@@ -1080,7 +1113,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void cookieNotFoundInCache401() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void cookieNotFoundInCache401() throws IOException, ConfigurationException {
 		String uri = "/cookie";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), AuthMethods.COOKIE).build();
 
@@ -1097,7 +1130,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void cookieAuthentication200() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void cookieAuthentication200() throws IOException, ConfigurationException {
 		String uri = "/cookie";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), AuthMethods.COOKIE).build();
 		String authToken = "random-token_thing";
@@ -1123,7 +1156,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void headerAuthentication401() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void headerAuthentication401() throws IOException, ConfigurationException {
 		String uri = "/cookie";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), AuthMethods.HEADER).build();
 
@@ -1138,7 +1171,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void headerAuthentication200() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void headerAuthentication200() throws IOException, ConfigurationException {
 		String uri = "/header";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), AuthMethods.HEADER).build();
 		String authToken = "random-token_thing";
@@ -1161,7 +1194,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void authRoleAuthentication401() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void authRoleAuthentication401() throws IOException, ConfigurationException {
 		String uri = "/authRole2";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), AuthMethods.AUTHROLE).build();
 
@@ -1181,7 +1214,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void authRoleAuthentication200() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void authRoleAuthentication200() throws IOException, ConfigurationException {
 		String uri = "/authRole2";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), AuthMethods.AUTHROLE).build();
 
@@ -1200,7 +1233,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void testRequestWithMessageId() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void testRequestWithMessageId() throws IOException, ConfigurationException {
 		// Arrange
 		String uri = "/messageIdTest1";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST))
@@ -1225,7 +1258,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void testRequestWithMessageIdAndCorrelationId() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void testRequestWithMessageIdAndCorrelationId() throws IOException, ConfigurationException {
 		// Arrange
 		String uri = "/messageIdTest2";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST))
@@ -1380,6 +1413,130 @@ public class ApiListenerServletTest {
 		String contextHeaderValue = (String) requestMessage.getContext().get("Header."+headerName.trim());
 		assertEquals(headerValue.trim(), contextHeaderValue, "header is incorrect or missing from MessageContext");
 		assertNull(result.getErrorMessage());
+	}
+
+	@Test
+	public void testMultiPartResponseMtom1() throws Exception {
+		// Arrange
+		ApiListener apiListener = new ApiListenerBuilder("/multipartResponse/1", List.of(HttpMethod.GET))
+				.withResponseContent("body pt1")
+				.withResultSessionKey("multipartXml", """
+					<parts><part name="dummy" \
+					value="{json:true}" size="72833" \
+					mimeType="application/json"/></parts>\
+					""")
+				.withResultSessionKey("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()))
+				.build();
+		apiListener.setResponseType(HttpEntityType.MTOM);
+		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
+		apiListener.configure();
+
+		// Act
+		Response result = service(createRequest("/multipartResponse/1", HttpMethod.GET));
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartMtom1.txt"), getResultAsStringWithIgnores(result));
+	}
+
+	@Test
+	public void testMultiPartResponseMtom2() throws Exception {
+		// Arrange
+		ApiListener apiListener = new ApiListenerBuilder("/multipartResponse/2", List.of(HttpMethod.GET))
+				.withResponseContent("body pt1")
+				.withResultSessionKey("multipartXml", """
+					<parts><part name="dummy" \
+					value="{json:true}" size="72833" \
+					mimeType="application/json"/></parts>\
+					""")
+				.withResultSessionKey("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()))
+				.build();
+		apiListener.setResponseType(HttpEntityType.MTOM);
+		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
+		apiListener.setResponseFirstBodyPartName("message");
+		apiListener.configure();
+
+		// Act
+		Response result = service(createRequest("/multipartResponse/2", HttpMethod.GET));
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartMtom2.txt"), getResultAsStringWithIgnores(result));
+	}
+
+	@Test
+	public void testMultiPartResponseMtom3() throws Exception {
+		// Arrange
+		ApiListener apiListener = new ApiListenerBuilder("/multipartResponse/3", List.of(HttpMethod.GET))
+				.withResponseContent("<body1/>".getBytes())
+				.withResultSessionKey("multipartXml", """
+					<parts><part name="dummy" \
+					value="{json:true}" size="72833" \
+					mimeType="application/json"/></parts>\
+					""")
+				.withResultSessionKey("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()))
+				.build();
+		apiListener.setResponseType(HttpEntityType.MTOM);
+		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
+		apiListener.setResponseFirstBodyPartName("message");
+		apiListener.setResponseMtomContentTransferEncoding("binary");
+		apiListener.configure();
+
+		// Act
+		Response result = service(createRequest("/multipartResponse/3", HttpMethod.GET));
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartMtom3.txt"), getResultAsStringWithIgnores(result));
+	}
+
+	@Test
+	public void testMultiPartResponseFormdata1() throws Exception {
+		// Arrange
+		ApiListener apiListener = new ApiListenerBuilder("/multipartResponse/4", List.of(HttpMethod.GET))
+				.withResponseContent("body pt1")
+				.withResultSessionKey("multipartXml", """
+					<parts><part name="dummy" \
+					value="{json:true}" size="72833" \
+					mimeType="application/json"/></parts>\
+					""")
+				.withResultSessionKey("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()))
+				.build();
+		apiListener.setResponseType(HttpEntityType.FORMDATA);
+		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
+		apiListener.configure();
+
+		// Act
+		Response result = service(createRequest("/multipartResponse/4", HttpMethod.GET));
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartFormdata1.txt"), getResultAsStringWithIgnores(result));
+	}
+
+	@Test
+	public void testMultiPartResponseFormdata2() throws Exception {
+		// Arrange
+		ApiListener apiListener = new ApiListenerBuilder("/multipartResponse/5", List.of(HttpMethod.GET))
+				.withResponseContent("body pt1")
+				.withResultSessionKey("multipartXml", """
+					<parts><part name="dummy" \
+					value="{json:true}" size="72833" \
+					mimeType="application/json"/></parts>\
+					""")
+				.withResultSessionKey("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()))
+				.build();
+		apiListener.setResponseType(HttpEntityType.FORMDATA);
+		apiListener.setResponseMultipartXmlSessionKey("multipartXml");
+		apiListener.setResponseFirstBodyPartName("message");
+		apiListener.configure();
+
+		// Act
+		Response result = service(createRequest("/multipartResponse/5", HttpMethod.GET));
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartFormdata2.txt"), getResultAsStringWithIgnores(result));
 	}
 
 	@Test
@@ -1676,6 +1833,32 @@ public class ApiListenerServletTest {
 		return createRequest(JWT_VALIDATION_URI, HttpMethod.GET, null, headers);
 	}
 
+
+	/**
+	 * Get the response as string, with content-type header, and all boundaries replaced with "IGNORE" for easier comparison to expected results.
+	 * Also, the values of the headers Last-Modified and Content-Length are replaced with "IGNORE", for the same reason.
+	 */
+	@Nonnull
+	private static String getResultAsStringWithIgnores(Response response) throws UnsupportedEncodingException {
+		String content = response.getContentAsString();
+		String boundary = getBoundary(response.getContentType());
+		String result = String.join("\n", response.getHeaders()) + "\n\n" + content;
+		return result.replace(boundary, "IGNORE").replaceAll("(?<=(Last-Modified|Content-Length): )([a-zA-Z0-9: ,-]+)", "IGNORE");
+	}
+
+	@Nonnull
+	private static String getBoundary(String contentType) {
+		String boundary = contentType.substring(contentType.indexOf("boundary=")+9);
+		boundary = boundary.substring(0, boundary.indexOf(";"));
+		return boundary.replace("\"", "");
+	}
+
+	private static String getFile(String file) throws IOException {
+		String content = TestFileUtils.getTestFile("/ApiListenerServlet/Responses/"+file);
+		assertNotNull(content, "file ["+"/ApiListenerServlet/Responses/"+file+"] not found");
+		return content;
+	}
+
 	@Log4j2
 	private static class StricterMockHttpServletResponse extends MockHttpServletResponse {
 		boolean responseAccessed = false;
@@ -1701,6 +1884,7 @@ public class ApiListenerServletTest {
 			return super.getWriter();
 		}
 
+		@Nonnull
 		@Override
 		public ServletOutputStream getOutputStream() {
 			responseAccessed = true;
@@ -1722,7 +1906,7 @@ public class ApiListenerServletTest {
 		}
 
 		@Override
-		public void sendError(int status, String errorMessage) throws IOException {
+		public void sendError(int status, @Nonnull String errorMessage) throws IOException {
 			log.info("Send Error. Committing response.");
 			assertResponseNotCommitted();
 			responseCommitted = true;
@@ -1770,31 +1954,31 @@ public class ApiListenerServletTest {
 		}
 
 		@Override
-		public void addDateHeader(String name, long value) {
+		public void addDateHeader(@Nonnull String name, long value) {
 			assertResponseNotAccessed();
 			super.addDateHeader(name, value);
 		}
 
 		@Override
-		public void setDateHeader(String name, long value) {
+		public void setDateHeader(@Nonnull String name, long value) {
 			assertResponseNotAccessed();
 			super.setDateHeader(name, value);
 		}
 
 		@Override
-		public void addIntHeader(String name, int value) {
+		public void addIntHeader(@Nonnull String name, int value) {
 			assertResponseNotAccessed();
 			super.addIntHeader(name, value);
 		}
 
 		@Override
-		public void setIntHeader(String name, int value) {
+		public void setIntHeader(@Nonnull String name, int value) {
 			assertResponseNotAccessed();
 			super.setIntHeader(name, value);
 		}
 
 		@Override
-		public void addHeader(String name, String value) {
+		public void addHeader(@Nonnull String name, String value) {
 			assertResponseNotAccessed();
 			super.addHeader(name, value);
 			if ("Content-Type".equalsIgnoreCase(name)) {
@@ -1803,7 +1987,7 @@ public class ApiListenerServletTest {
 		}
 
 		@Override
-		public void setHeader(String name, String value) {
+		public void setHeader(@Nonnull String name, String value) {
 			assertResponseNotAccessed();
 			super.setHeader(name, value);
 			if ("Content-Type".equalsIgnoreCase(name)) {
@@ -1812,7 +1996,7 @@ public class ApiListenerServletTest {
 		}
 
 		@Override
-		public void addCookie(Cookie cookie) {
+		public void addCookie(@Nonnull Cookie cookie) {
 			assertResponseNotAccessed();
 			super.addCookie(cookie);
 		}
@@ -1829,15 +2013,15 @@ public class ApiListenerServletTest {
 		private final ApiListener listener;
 		private final MessageHandler handler;
 
-		public ApiListenerBuilder(String uri, List<HttpMethod> method) throws ListenerException, ConfigurationException {
+		public ApiListenerBuilder(String uri, List<HttpMethod> method) {
 			this(uri, method, null, null);
 		}
 
-		public ApiListenerBuilder(String uri, List<HttpMethod> method, AuthMethods authMethod) throws ListenerException, ConfigurationException {
+		public ApiListenerBuilder(String uri, List<HttpMethod> method, AuthMethods authMethod) {
 			this(uri, method, null, null, authMethod,null);
 		}
 
-		public ApiListenerBuilder(String uri, List<HttpMethod> method, MediaTypes consumes, MediaTypes produces) throws ListenerException, ConfigurationException {
+		public ApiListenerBuilder(String uri, List<HttpMethod> method, MediaTypes consumes, MediaTypes produces) {
 			this(uri, method, consumes, produces, null, null);
 		}
 
@@ -1938,7 +2122,12 @@ public class ApiListenerServletTest {
 			return this;
 		}
 
-		public ApiListener build() throws ConfigurationException, ListenerException {
+		public ApiListenerBuilder withResultSessionKey(String key, Object value) {
+			handler.addSessionKey(key, value);
+			return this;
+		}
+
+		public ApiListener build() throws ConfigurationException {
 			listener.configure();
 			listener.start();
 
@@ -1953,6 +2142,11 @@ public class ApiListenerServletTest {
 		private @Setter int exitCode = 0;
 		private @Setter boolean shouldThrow = false;
 		private @Setter Object responseContent = null;
+		private final Map<String, Object> sessionKeysToSet = new HashMap<>();
+
+		public void addSessionKey(String sessionKey, Object value) {
+			sessionKeysToSet.put(sessionKey, value);
+		}
 
 		@Override
 		public void processRawMessage(IListener<Message> origin, RawMessageWrapper<Message> message, PipeLineSession session, boolean duplicatesAlreadyChecked) {
@@ -1967,6 +2161,7 @@ public class ApiListenerServletTest {
 			if (shouldThrow) {
 				throw new ListenerException("Hard Throw");
 			}
+			context.putAll(sessionKeysToSet);
 			if (exitCode > 0) {
 				context.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, exitCode);
 			}
@@ -2020,6 +2215,16 @@ public class ApiListenerServletTest {
 			return response.getContentType();
 		}
 
+		/**
+		 * Return a list of all headers of the request, where each entry is the header-name + header-value, sorted alphabetically.
+		 */
+		public List<String> getHeaders() {
+			return response.getHeaderNames()
+					.stream()
+					.<String> mapMulti((headerName, consumer) -> response.getHeaders(headerName).forEach(headerValue -> consumer.accept(headerName + ": " + headerValue)))
+					.sorted()
+					.toList();
+		}
 		@Override
 		public String toString() {
 			String content = "unknown";

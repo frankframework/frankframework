@@ -78,10 +78,6 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 
 	@Override
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
-		return new SenderResult(sendMessage(message, session, null));
-	}
-
-	public Message sendMessage(Message message, PipeLineSession session, String soapHeader) throws SenderException {
 		try {
 			if (!client.isConnected()) {
 				super.start();
@@ -96,7 +92,7 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 		catch (Exception e) {
 			throw new SenderException(e);
 		}
-		return message;
+		return new SenderResult(message);
 	}
 
 	@Override

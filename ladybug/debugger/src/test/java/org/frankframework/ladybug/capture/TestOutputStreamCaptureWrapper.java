@@ -10,34 +10,34 @@ import org.junit.jupiter.api.Test;
 public class TestOutputStreamCaptureWrapper {
 
 	@Test
-	void nothingWrittenToBOAS() throws IOException {
-		ByteArrayOutputStream boas = new ByteArrayOutputStream();
-		OutputStreamCaptureWrapper wrapper = new OutputStreamCaptureWrapper(boas);
+	void nothingWrittenToBAOS() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		OutputStreamCaptureWrapper wrapper = new OutputStreamCaptureWrapper(baos);
 
 		wrapper.close();
 
-		assertEquals(">> Captured stream was closed without being read.", boas.toString());
+		assertEquals(">> Captured stream was closed without being read.", baos.toString());
 	}
 
 	@Test
-	void somethingWrittenToBOAS() throws IOException {
-		ByteArrayOutputStream boas = new ByteArrayOutputStream();
-		OutputStreamCaptureWrapper wrapper = new OutputStreamCaptureWrapper(boas);
+	void somethingWrittenToBAOS() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		OutputStreamCaptureWrapper wrapper = new OutputStreamCaptureWrapper(baos);
 
 		wrapper.write("something".getBytes());
 		wrapper.close();
 
-		assertEquals("something", boas.toString());
+		assertEquals("something", baos.toString());
 	}
 
 	@Test
-	void emptyWrittenToBOAS() throws IOException {
-		ByteArrayOutputStream boas = new ByteArrayOutputStream();
-		OutputStreamCaptureWrapper wrapper = new OutputStreamCaptureWrapper(boas);
+	void emptyWrittenToBAOS() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		OutputStreamCaptureWrapper wrapper = new OutputStreamCaptureWrapper(baos);
 
 		wrapper.write("".getBytes());
 		wrapper.close();
 
-		assertEquals("", boas.toString());
+		assertEquals("", baos.toString());
 	}
 }

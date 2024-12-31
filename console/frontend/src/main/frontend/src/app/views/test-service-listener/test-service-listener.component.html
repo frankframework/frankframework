@@ -7,22 +7,11 @@
           <h4>Test a ServiceListener</h4>
         </div>
         <div class="ibox-content">
-          <form role="form" (submit)="submit($event)">
+          <form role="form" (submit)="submit($event)" appQuickSubmitForm>
             <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30">Select a service</label>
               <div class="col-sm-9">
-                <input
-                  list="services"
-                  autocomplete="off"
-                  class="form-control"
-                  name="service"
-                  [(ngModel)]="form.service"
-                />
-                <datalist id="services">
-                  <option *ngFor="let service of services">
-                    {{ service }}
-                  </option>
-                </datalist>
+                <app-combobox name="service" [options]="services" [(selectedOption)]="form.service"></app-combobox>
               </div>
             </div>
             <div class="row form-group">

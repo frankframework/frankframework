@@ -139,7 +139,7 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper {
 				out.write(contents.getBytes());
 			}
 		}
-		return path;
+		return filename;
 	}
 
 	@Override

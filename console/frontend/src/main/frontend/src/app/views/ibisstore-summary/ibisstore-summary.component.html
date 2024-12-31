@@ -9,7 +9,7 @@
           <h4>IbisStore Summary</h4>
         </div>
         <div class="ibox-content">
-          <form>
+          <form role="form" (submit)="submit(form)" appQuickSubmitForm>
             <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30">Datasource</label>
               <div class="col-sm-9">
@@ -25,7 +25,7 @@
                 <button class="btn btn-info btn-w-m font-bold" type="button" (click)="reset()">Reset</button>
               </div>
               <div class="col-sm-3 m-t-md">
-                <button class="btn btn-primary btn-w-m font-bold" type="submit" (click)="submit(form)">Send</button>
+                <button class="btn btn-primary btn-w-m font-bold" type="submit">Send</button>
               </div>
             </div>
           </form>
@@ -72,6 +72,7 @@
                   <td *ngIf="s.receiver">
                     <span class="text-success" title="View Messages Processed by {{ s.receiver }}">
                       <button
+                        appHasAccessToLink="browseMessages"
                         *ngIf="t.type === 'A'"
                         [routerLink]="[
                           '',
@@ -81,7 +82,7 @@
                           'receivers',
                           s.receiver,
                           'stores',
-                          'Done'
+                          'Done',
                         ]"
                         class="btn btn-xs btn-default m-l-xs"
                         type="button"
@@ -91,6 +92,7 @@
                     </span>
                     <span class="text-danger" title="View Messages in Error in {{ s.receiver }}">
                       <button
+                        appHasAccessToLink="browseMessages"
                         *ngIf="t.type === 'E'"
                         [routerLink]="[
                           '',
@@ -100,7 +102,7 @@
                           'receivers',
                           s.receiver,
                           'stores',
-                          'Error'
+                          'Error',
                         ]"
                         class="btn btn-xs btn-default m-l-xs"
                         type="button"

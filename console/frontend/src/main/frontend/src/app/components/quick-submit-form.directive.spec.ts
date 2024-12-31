@@ -1,45 +1,51 @@
-import { Component, DebugElement } from '@angular/core';
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { QuickSubmitFormDirective } from './quick-submit-form.directive';
 import { By } from '@angular/platform-browser';
+import { QuickSubmitFormDirective } from './quick-submit-form.directive';
 
 @Component({
   standalone: true,
-  template: `<form>
-    <textarea appQuickSubmitForm></textarea>
-    <button type="submit" (click)="changeTrigger($event)">Submit</button>
+  template: `<form (submit)="changeTrigger()" appQuickSubmitForm>
+    <input type="text" />
   </form>`,
   imports: [QuickSubmitFormDirective],
 })
 class TestComponent {
   triggered = false;
-  changeTrigger(event: Event): void {
-    event.preventDefault();
+  changeTrigger(): void {
     this.triggered = true;
-    event.stopPropagation();
   }
 }
 
 describe('QuickSubmitFormDirective', () => {
   let fixture: ComponentFixture<TestComponent>;
-  let directiveElement: DebugElement;
+  let directiveElement: HTMLFormElement;
+
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
       imports: [TestComponent, QuickSubmitFormDirective],
       declarations: [],
     }).createComponent(TestComponent);
 
-    fixture.detectChanges(); // initial binding
+    fixture.detectChanges();
 
-    directiveElement = fixture.debugElement.query(By.directive(QuickSubmitFormDirective));
+    directiveElement = fixture.debugElement.query(By.directive(QuickSubmitFormDirective)).nativeElement;
   });
 
-  it('emits event when ctrl+enter is pressed', () => {
-    const event = new KeyboardEvent('keydown', {
-      ctrlKey: true,
-      key: 'Enter',
-    });
-    directiveElement.nativeElement.dispatchEvent(event);
+  it('should prevent default behavior and stop propagation on Enter key', () => {
+    const event = new KeyboardEvent('keydown', { key: 'Enter' });
+    spyOn(event, 'preventDefault');
+    spyOn(event, 'stopPropagation');
+
+    directiveElement.dispatchEvent(event);
+
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(event.stopPropagation).toHaveBeenCalled();
+  });
+
+  it('should submit the form on Ctrl+Enter', () => {
+    const event = new KeyboardEvent('keydown', { key: 'Enter', ctrlKey: true });
+    directiveElement.dispatchEvent(event);
 
     expect(fixture.componentInstance.triggered).toBe(true);
   });

@@ -70,7 +70,7 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelperFullContr
 				out.write(contents.getBytes());
 			}
 		}
-		return folder == null ? filename : folder + "/" + filename;
+		return filename;
 	}
 
 	@Override
