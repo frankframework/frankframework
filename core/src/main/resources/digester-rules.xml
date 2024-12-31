@@ -17,7 +17,7 @@
 	<rule pattern="configuration/sapSystems" registerMethod="setSapSystems" beanClass="org.frankframework.configuration.extensions.SapSystems"/>
 	<rule pattern="*/sapSystem" registerMethod="addSapSystem" beanClass="org.frankframework.extensions.sap.SapSystem"/>
 
-	<rule pattern="*/adapter" registerMethod="addAdapter" factory="org.frankframework.configuration.digester.AdapterFactory"/>
+	<rule pattern="*/adapter" registerMethod="addAdapter" beanClass="org.frankframework.core.Adapter"/>
 	<rule pattern="*/adapter/pipeline" registerMethod="setPipeLine" beanClass="org.frankframework.core.PipeLine"/>
 	<rule pattern="*/errorMessageFormatter" registerMethod="setErrorMessageFormatter" beanClass="org.frankframework.errormessageformatters.XslErrorMessageFormatter"/>
 

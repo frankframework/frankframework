@@ -236,7 +236,10 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 	@Override
 	@SuppressWarnings("java:S4792") // Changing the logger level is not a security-sensitive operation, because roles originate from the properties file
 	public void configure() throws ConfigurationException {
-		if (!isActive() || configurationSucceeded) {
+		if (!isActive()) {
+			throw new LifecycleException("context is not active");
+		}
+		if (configurationSucceeded) {
 			throw new LifecycleException("already configured");
 		}
 

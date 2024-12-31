@@ -520,7 +520,6 @@ class FrankSenderTest {
 	private void createFrankListener(TestConfiguration configuration, Adapter targetAdapter) throws ListenerException {
 		@SuppressWarnings("unchecked")
 		Receiver<Message> receiver = configuration.createBean(Receiver.class);
-		configuration.autowireByName(receiver);
 		receiver.setName("TargetAdapter-receiver");
 
 		FrankListener listener = configuration.createBean(FrankListener.class);
@@ -539,7 +538,6 @@ class FrankSenderTest {
 	private void createJavaListener(TestConfiguration configuration, Adapter targetAdapter) throws ListenerException {
 		@SuppressWarnings("unchecked")
 		Receiver<String> receiver = configuration.createBean(Receiver.class);
-		configuration.autowireByName(receiver);
 		receiver.setName("TargetAdapter-receiver");
 
 		@SuppressWarnings("unchecked")
@@ -559,14 +557,12 @@ class FrankSenderTest {
 
 	private Adapter createAdapter(TestConfiguration configuration, IPipe pipe) throws ConfigurationException {
 		Adapter adapter = configuration.createBean(Adapter.class);
-		configuration.autowireByName(adapter);
 		adapter.setName(TARGET_SERVICE_NAME);
 
 		CorePipeLineProcessor plp = configuration.createBean(CorePipeLineProcessor.class);
 		PipeProcessor pp = configuration.createBean(CorePipeProcessor.class);
 		plp.setPipeProcessor(pp);
 		PipeLine pl = configuration.createBean(PipeLine.class);
-		configuration.autowireByName(pl);
 		pl.setPipeLineProcessor(plp);
 		pl.addPipe(pipe);
 		pl.setFirstPipe(pipe.getName());

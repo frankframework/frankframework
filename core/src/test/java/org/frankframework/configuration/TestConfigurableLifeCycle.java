@@ -18,15 +18,6 @@ public class TestConfigurableLifeCycle {
 	}
 
 	@Test
-	public void cantStartWithoutConfigure() {
-		AdapterManager manager = new AdapterManager();
-		manager.start();
-		assertFalse(manager.isRunning());
-
-		manager.close();
-	}
-
-	@Test
 	public void canStop() {
 		AdapterManager manager = new AdapterManager();
 		manager.configure();
@@ -44,22 +35,8 @@ public class TestConfigurableLifeCycle {
 		manager.start();
 		manager.stop();
 
-		manager.configure();
 		manager.start();
 		assertTrue(manager.isRunning());
-
-		manager.close();
-	}
-
-	@Test
-	public void cantStartAfterStoppedButNotReconfigured() {
-		AdapterManager manager = new AdapterManager();
-		manager.configure();
-		manager.start();
-		manager.stop();
-
-		manager.start();
-		assertFalse(manager.isRunning());
 
 		manager.close();
 	}

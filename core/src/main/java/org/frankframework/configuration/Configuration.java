@@ -60,6 +60,7 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.RunState;
+import org.frankframework.util.SpringUtils;
 
 /**
  * Container of {@link Adapter Adapters} that belong together.
@@ -234,7 +235,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 		String msg;
 		if (isAutoStartup()) {
-			start(); // Calls ConfiguringLifecycleProcessor#start() which starts all newly (non-started) registerd beans.
+			start(); // Calls ConfiguringLifecycleProcessor#start() which starts all newly (non-started) registered beans.
 			msg = "startup in " + (System.currentTimeMillis() - start) + " ms";
 		} else {
 			msg = "configured in " + (System.currentTimeMillis() - start) + " ms";
@@ -352,7 +353,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * Add adapter.
 	 */
 	public void addAdapter(Adapter adapter) {
-		adapter.setConfiguration(this);
+		SpringUtils.registerSingleton(this, adapter.getName(), adapter); // in time this will replace the adaptermanager
 		adapterManager.addAdapter(adapter);
 
 		log.debug("Configuration [{}] registered adapter [{}]", this::getName, adapter::toString);

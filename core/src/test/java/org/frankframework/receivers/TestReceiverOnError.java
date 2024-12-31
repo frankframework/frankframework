@@ -39,6 +39,7 @@ import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -72,6 +73,8 @@ public class TestReceiverOnError {
 	@AfterEach
 	void tearDown() throws Exception {
 		log.info("!> tearing down test");
+		DefaultListableBeanFactory cbf = (DefaultListableBeanFactory) configuration.getAutowireCapableBeanFactory();
+		configuration.getBeansOfType(Adapter.class).keySet().forEach(cbf::destroySingleton);
 		configuration.stop();
 		configuration.getBean("configurationMetrics", MetricsInitializer.class).destroy(); //Meters are cached...
 		log.info("!> Configuration Context for [{}] has been cleaned up.", TransactionManagerType.DATASOURCE);
@@ -84,7 +87,6 @@ public class TestReceiverOnError {
 	private Receiver<String> setupReceiver(MockListenerBase listener) {
 		@SuppressWarnings("unchecked")
 		Receiver<String> receiver = spy(configuration.createBean(Receiver.class));
-		configuration.autowireByName(listener);
 		doNothing().when(receiver).suspendReceiverThread(anyInt());
 		receiver.setListener(listener);
 		receiver.setName("receiver");

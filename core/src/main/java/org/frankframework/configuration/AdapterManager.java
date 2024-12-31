@@ -104,6 +104,7 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 
 	@Override
 	public void configure() {
+		updateState(RunState.STARTING);
 	}
 
 	/**
@@ -115,6 +116,7 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 	 */
 	@Override
 	public void start() {
+		updateState(RunState.STARTED);
 	}
 
 	/**
@@ -122,6 +124,7 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 	 */
 	@Override
 	public void stop() {
+		updateState(RunState.STOPPED);
 	}
 
 	/**

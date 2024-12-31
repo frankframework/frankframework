@@ -83,7 +83,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.SimpleApplicationEventMulticaster;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.task.TaskExecutor;
@@ -192,7 +191,6 @@ public class ReceiverTest {
 	public <M> Receiver<M> setupReceiver(IListener<M> listener) {
 		@SuppressWarnings("unchecked")
 		Receiver<M> receiver = spy(configuration.createBean(Receiver.class));
-		configuration.autowireByName(listener);
 		receiver.setListener(listener);
 		receiver.setName("receiver");
 		receiver.setStartTimeout(2);
@@ -854,8 +852,6 @@ public class ReceiverTest {
 			assertTrue(result.requiresStream(), "Result message should be a stream");
 			assertTrue(result.isRequestOfType(Reader.class), "Result message should be of type Reader");
 			assertEquals("TEST", result.asString());
-		} finally {
-			configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 		}
 	}
 
@@ -1427,15 +1423,10 @@ public class ReceiverTest {
 	})
 	public void testMaxBackoffDelayAdjustment(Integer maxBackoffDelay, int expectedBackoffDelay, boolean expectConfigWarning) throws Exception {
 		// Arrange
-		Adapter adapter = new Adapter();
+		configuration = buildConfiguration(null);
+		Adapter adapter = configuration.createBean(Adapter.class);
 		adapter.setName("adapter");
-		ConfigurationWarnings configWarnings = new ConfigurationWarnings();
-		ApplicationContext applicationContext = mock();
-		when(applicationContext.getClassLoader()).thenReturn(this.getClass().getClassLoader());
-		when(applicationContext.getBean("configurationWarnings", ConfigurationWarnings.class)).thenReturn(configWarnings);
-		adapter.setApplicationContext(applicationContext);
-		configWarnings.setApplicationContext(applicationContext);
-		configWarnings.afterPropertiesSet();
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 
 		Receiver<String> receiver = new Receiver<>();
 

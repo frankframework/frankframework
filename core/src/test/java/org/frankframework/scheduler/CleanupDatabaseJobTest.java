@@ -86,8 +86,7 @@ public class CleanupDatabaseJobTest {
 		// Ensure we have an IbisManager via side effects of method
 		//noinspection ResultOfMethodCallIgnored
 		configuration.getIbisManager();
-		jobDef = new CleanupDatabaseJob();
-		configuration.autowireByName(jobDef);
+		jobDef = configuration.createBean(CleanupDatabaseJob.class);
 	}
 
 	@DatabaseTest

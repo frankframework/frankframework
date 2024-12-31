@@ -117,7 +117,6 @@ public class JavaListenerTest {
 	}
 
 	void startAdapter() throws ConfigurationException {
-		configuration.configure();
 		configuration.start();
 
 		waitForState(adapter, RunState.STARTED);
