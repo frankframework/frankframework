@@ -52,7 +52,6 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.FrankDocGroup;
@@ -73,12 +72,12 @@ import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
-import org.frankframework.util.flow.SpringContextFlowDiagramProvider;
 import org.frankframework.util.Misc;
 import org.frankframework.util.RunState;
 import org.frankframework.util.RunStateManager;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
+import org.frankframework.util.flow.SpringContextFlowDiagramProvider;
 
 /**
  * The Adapter is the central manager in the framework. It has knowledge of both
@@ -239,9 +238,6 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 	public void configure() throws ConfigurationException {
 		if (!isActive() || configurationSucceeded) {
 			throw new LifecycleException("already configured");
-		}
-		if (!(getClassLoader() instanceof IConfigurationClassLoader)) {
-			throw new IllegalStateException("No IConfigurationClassLoader set");
 		}
 
 		msgLog = LogUtil.getMsgLogger(this);
