@@ -533,8 +533,8 @@ public class ValidateAttributeRuleTest {
 			assertEquals(3, configurationWarnings.getWarnings().size());
 			assertThat(configurationWarnings.getWarnings(), containsInAnyOrder(
 					containsString("[DeprecatedPipe2InAdapter2] on line [42] column [6]"),
-					containsString("[DeprecatedPipe1InAdapter4] on line [77] column [66]"),
-					containsString("[DeprecatedPipe2InAdapter4] on line [82] column [6]")
+					containsString("[DeprecatedPipe1InAdapter4] on line [77] column [52]"),
+					containsString("[DeprecatedPipe2InAdapter4] on line [82] colu0mn [6]")
 			));
 
 		} finally {
