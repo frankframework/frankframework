@@ -31,7 +31,7 @@ export class MonitorsNewComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.setConfigurations();
-    const configurationsSubscription = this.appService.configurations$.subscribe((configurations) => {
+    const configurationsSubscription = this.appService.configurations$.subscribe(() => {
       this.setConfigurations();
     });
     this.subscriptions.add(configurationsSubscription);

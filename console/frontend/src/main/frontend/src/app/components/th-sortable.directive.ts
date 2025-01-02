@@ -73,7 +73,7 @@ export class ThSortableDirective implements OnInit {
   }
   private headerText = '';
 
-  constructor(private elementRef: ElementRef<HTMLTableCellElement>) {}
+  constructor(private elementReference: ElementRef<HTMLTableCellElement>) {}
 
   ngOnInit(): void {
     this.headerText = this.elementRef.nativeElement.innerHTML;

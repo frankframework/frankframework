@@ -1,6 +1,6 @@
 import { NgModule, ValueProvider } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule, HttpClientXsrfModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { TitleStrategy } from '@angular/router';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
@@ -145,10 +145,8 @@ const windowProvider: ValueProvider = {
     ServerWarningsComponent,
     AdapterStatusComponent,
     LoggingAddComponent,
-
     //modals
     FlowModalComponent,
-
     // pipes
     ConfigurationFilterPipe,
     DropLastCharPipe,
@@ -159,28 +157,25 @@ const windowProvider: ValueProvider = {
     FormatStatKeysPipe,
     WithJavaListenerPipe,
     MarkDownPipe,
-
     // directives
     ConfigurationMessagesComponent,
     ConfigurationSummaryComponent,
   ],
+  bootstrap: [AppComponent],
+  exports: [TruncatePipe],
   imports: [
     BrowserModule,
     FormsModule,
-    HttpClientModule,
-    HttpClientXsrfModule.withOptions(),
     LaddaModule,
     NgbModule,
     AppRoutingModule,
     NgIdleModule.forRoot(),
     NgChartsModule.forRoot(),
-
     // standalone directives
     TimeSinceDirective,
     ToDateDirective,
     ThSortableDirective,
     QuickSubmitFormDirective,
-
     // standalone components
     CustomViewsComponent,
     FileViewerComponent,
@@ -198,7 +193,6 @@ const windowProvider: ValueProvider = {
     DatatableComponent,
     DtContentDirective,
     MonitorsNewComponent,
-
     // standalone pipes
     TruncatePipe,
     ConfigurationTabListComponent,
@@ -206,8 +200,11 @@ const windowProvider: ValueProvider = {
     HasAccessToLinkDirective,
     ComboboxComponent,
   ],
-  providers: [windowProvider, { provide: TitleStrategy, useClass: PagesTitleStrategy }, httpInterceptorProviders],
-  bootstrap: [AppComponent],
-  exports: [TruncatePipe],
+  providers: [
+    windowProvider,
+    { provide: TitleStrategy, useClass: PagesTitleStrategy },
+    httpInterceptorProviders,
+    provideHttpClient(withInterceptorsFromDi()),
+  ],
 })
 export class AppModule {}
