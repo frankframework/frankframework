@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ import org.frankframework.util.flow.SpringContextFlowDiagramProvider;
  * <br/>
  * Adapters can process messages in parallel. They are thread-safe.
  *
- * @author Johan Verrips
+ * @author Niels Meijer
  */
 @Log4j2
 @Category(Category.Type.BASIC)
@@ -836,7 +836,8 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 			}
 		};
 
-		taskExecutor.execute(runnable);
+		CompletableFuture.runAsync(super::start, taskExecutor) // Start all smart-lifecycles
+			.thenRun(runnable); // Then start the adapter it self
 	}
 
 	@Override

@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.util.Map;
 
 import org.hamcrest.collection.IsIterableContainingInOrder;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
@@ -33,23 +32,12 @@ import org.frankframework.util.StreamUtil;
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 public class TestPipelineTest extends BusTestBase {
 	private static final String TEST_PIPELINE_ADAPER_NAME = "TestPipelineAdapter";
-	private Adapter adapter;
 
 	@Override
 	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
-		adapter = registerTestPipelineAdapter(getConfiguration());
-	}
-
-	@AfterEach
-	@Override
-	public void tearDown() {
-		if(adapter != null) {
-			adapter.stop();
-			getConfiguration().getAdapterManager().removeAdapter(adapter);
-		}
-		super.tearDown();
+		registerTestPipelineAdapter(getConfiguration());
 	}
 
 	protected Adapter registerTestPipelineAdapter(Configuration configuration) {

@@ -39,7 +39,6 @@ import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -52,7 +51,6 @@ import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.receivers.Receiver.OnError;
-import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestConfiguration;
@@ -73,10 +71,7 @@ public class TestReceiverOnError {
 	@AfterEach
 	void tearDown() throws Exception {
 		log.info("!> tearing down test");
-		DefaultListableBeanFactory cbf = (DefaultListableBeanFactory) configuration.getAutowireCapableBeanFactory();
-		configuration.getBeansOfType(Adapter.class).keySet().forEach(cbf::destroySingleton);
-		configuration.stop();
-		configuration.getBean("configurationMetrics", MetricsInitializer.class).destroy(); //Meters are cached...
+		configuration.removeAdapters();
 		log.info("!> Configuration Context for [{}] has been cleaned up.", TransactionManagerType.DATASOURCE);
 	}
 

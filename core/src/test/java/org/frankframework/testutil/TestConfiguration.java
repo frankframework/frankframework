@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.sql.ResultSet;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
@@ -76,6 +77,11 @@ public class TestConfiguration extends Configuration {
 
 	public String getConfigWarning(int index) {
 		return getConfigurationWarnings().getWarnings().get(index);
+	}
+
+	public void removeAdapters() {
+		DefaultListableBeanFactory cbf = (DefaultListableBeanFactory) getAutowireCapableBeanFactory();
+		getAdapters().keySet().forEach(cbf::destroySingleton);
 	}
 
 	/**

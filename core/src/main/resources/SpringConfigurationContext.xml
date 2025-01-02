@@ -30,7 +30,6 @@
 <!-- Configurable Lifecycle beans -->
 		<bean name="jdbcMigrator" class="org.frankframework.jdbc.migration.LiquibaseMigrator" />
 		<bean name="configFlowGenerator" class="org.frankframework.util.flow.SpringContextFlowDiagramProvider" />
-		<bean name="adapterManager" class="org.frankframework.configuration.AdapterManager" autowire="byType" />
 		<bean name="scheduleManager" class="org.frankframework.configuration.ScheduleManager" autowire="byType" />
 		<bean name="monitorManager" class="org.frankframework.monitoring.MonitorManager" />
 
