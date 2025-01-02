@@ -1035,7 +1035,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		assertEquals(expected, actual);
 	}
 
-	//The XmlFileElementIteratorPipe has been deprecated, elementName has been replaced by targetElement.
+	//The XmlFileElementIteratorPipe has been removed, elementName has been replaced by targetElement.
 	//This test proves that the old method works with the ForEachChildElemenPipe
 	@Test
 	public void testElementName() throws Exception {
@@ -1055,7 +1055,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 	}
 
-	// The XmlFileElementIteratorPipe has been deprecated, elementChain has been replaced with targetElement + containerElement.
+	// The XmlFileElementIteratorPipe has been removed, elementChain has been replaced with targetElement + containerElement.
 	// This test proves that the old method works with the ForEachChildElemenPipe.
 	// The xPath in the sender was adjusted to match the targetElement
 	@Test
