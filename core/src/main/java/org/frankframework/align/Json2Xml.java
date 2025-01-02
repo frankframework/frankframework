@@ -48,7 +48,6 @@ import jakarta.json.JsonValue;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSAttributeUse;
@@ -389,13 +388,12 @@ public class Json2Xml extends XmlAligner {
 		return text.toString();
 	}
 
-	protected void processChildElement(JsonValue node, String parentName, XSElementDeclaration childElementDeclaration, boolean mandatory, Set<String> processedChildren, List<Pair<XSElementDeclaration, Boolean>> deepSearchCandidates) throws SAXException {
+	protected void processChildElement(JsonValue node, String parentName, XSElementDeclaration childElementDeclaration, boolean mandatory, Set<String> processedChildren, List<DeepSearchCandidateData> deepSearchCandidates) throws SAXException {
 		String childElementName = childElementDeclaration.getName();
-		if (log.isTraceEnabled())
-			log.trace("parentName [{}] childElementName [{}] node [{}] isParentOfSingleMultipleOccurringChildElement [{}]", parentName, childElementName, node, isParentOfSingleMultipleOccurringChildElement());
+		log.trace("parentName [{}] childElementName [{}] node [{}] isParentOfSingleMultipleOccurringChildElement [{}]", parentName, childElementName, node, isParentOfSingleMultipleOccurringChildElement());
 		if (isParentOfSingleMultipleOccurringChildElement()) {
 			if (node instanceof JsonArray ja) {
-				if (log.isTraceEnabled()) log.trace("array child node is JsonArray, handling each of the elements as a [{}]", childElementName);
+				log.trace("array child node is JsonArray, handling each of the elements as a [{}]", childElementName);
 				for (JsonValue child: ja) {
 					handleElement(childElementDeclaration, child);
 				}
@@ -404,14 +402,14 @@ public class Json2Xml extends XmlAligner {
 				return;
 			}
 			if (node instanceof JsonString) { // support normal (non list) parameters to supply array element values
-				if (log.isTraceEnabled()) log.trace("array child node is JsonString, handling as a [{}]", childElementName);
+				log.trace("array child node is JsonString, handling as a [{}]", childElementName);
 				handleElement(childElementDeclaration, node);
 				// mark that we have processed the array element
 				processedChildren.add(childElementName);
 				return;
 			}
 		}
-		Iterable<JsonValue> childNodes = getChildrenByName(node, childElementDeclaration);
+		final Iterable<JsonValue> childNodes = getChildrenByName(node, childElementDeclaration);
 		boolean childSeen = false;
 		if (childNodes != null) {
 			childSeen = true;
@@ -423,14 +421,13 @@ public class Json2Xml extends XmlAligner {
 			log.trace("processed [{}] children found by name [{}] in [{}]", i, childElementName, parentName);
 			if (i==0 && isDeepSearch() && childElementDeclaration.getTypeDefinition().getTypeCategory()!=XSTypeDefinition.SIMPLE_TYPE) {
 				log.trace("no children processed, and deepSearch, not a simple type therefore handle node [{}] in [{}]", childElementName, parentName);
-				// TODO: Call here tryDeepSearchForChildElement instead of handleElement?
-				deepSearchCandidates.add(Pair.of(childElementDeclaration, mandatory));
+				deepSearchCandidates.add(new DeepSearchCandidateData(childElementDeclaration, mandatory));
 			}
 		} else {
 			log.trace("no children found by name [{}] in [{}]", childElementName, parentName);
 			if (isDeepSearch() && childElementDeclaration.getTypeDefinition().getTypeCategory() != XSTypeDefinition.SIMPLE_TYPE) {
 				log.trace("no children found, and deepSearch, not a simple type therefore handle node [{}] in [{}]", childElementName, parentName);
-				deepSearchCandidates.add(Pair.of(childElementDeclaration, mandatory));
+				deepSearchCandidates.add(new DeepSearchCandidateData(childElementDeclaration, mandatory));
 			}
 		}
 		if (childSeen) {
@@ -718,10 +715,10 @@ public class Json2Xml extends XmlAligner {
 		validatorHandler.endElement(elementNamespace, name, qname);
 	}
 
-	protected void handleComplexTypedElement(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
-		String name = elementDeclaration.getName();
+	protected void handleComplexTypedElement(final XSElementDeclaration elementDeclaration, final JsonValue node) throws SAXException {
+		final String name = elementDeclaration.getName();
 		log.trace("ToXml.handleComplexTypedElement() search for best path for available children of element [{}]", name);
-		List<XSParticle> childParticles = getBestChildElementPath(elementDeclaration, node, false);
+		final List<XSParticle> childParticles = getBestChildElementPath(elementDeclaration, node, false);
 		if (log.isTraceEnabled()) {
 			if (childParticles.isEmpty()) {
 				log.trace("Examined node [{}] deepSearch [{}] path found is empty", name, isDeepSearch());
@@ -732,8 +729,8 @@ public class Json2Xml extends XmlAligner {
 						.collect(Collectors.joining(", ")));
 			}
 		}
-		Set<String> processedChildren = new HashSet<>();
-		List<Pair<XSElementDeclaration, Boolean>> deepSearchCandidates = new ArrayList<>();
+		final Set<String> processedChildren = new HashSet<>();
+		final List<DeepSearchCandidateData> deepSearchCandidates = new ArrayList<>();
 		for (int i = 0; i < childParticles.size(); i++) {
 			XSParticle childParticle = childParticles.get(i);
 			XSElementDeclaration childElementDeclaration = (XSElementDeclaration) childParticle.getTerm();
@@ -741,10 +738,10 @@ public class Json2Xml extends XmlAligner {
 			processChildElement(node, name, childElementDeclaration, childParticle.getMinOccurs() > 0, processedChildren, deepSearchCandidates);
 		}
 
-		Set<String> unProcessedChildren = getUnprocessedChildElementNames(node, processedChildren);
+		final Set<String> unProcessedChildren = getUnprocessedChildElementNames(node, processedChildren);
 
 		if (!unProcessedChildren.isEmpty()) {
-			Set<String> unProcessedChildrenWorkingCopy = new LinkedHashSet<>(unProcessedChildren);
+			final Set<String> unProcessedChildrenWorkingCopy = new LinkedHashSet<>(unProcessedChildren);
 			log.warn("processing [{}] unprocessed child elements{}", unProcessedChildren.size(), !unProcessedChildren.isEmpty() ? ", first [" + unProcessedChildren.iterator().next() + "]" : "");
 			// this loop is required to handle for mixed content element containing globally defined elements
 			for (String childName: unProcessedChildrenWorkingCopy) {
@@ -765,10 +762,11 @@ public class Json2Xml extends XmlAligner {
 			}
 		}
 
-		for (Pair<XSElementDeclaration, Boolean> pair: deepSearchCandidates) {
-			XSElementDeclaration childElementDeclaration = pair.getLeft();
-			Boolean mandatory = pair.getRight();
-			if (tryDeepSearchForChildElement(childElementDeclaration, mandatory, node, processedChildren)) {
+		// Process all candidates for deepSearch. Will only be filled if deepSearch was enabled in configuration.
+		// Do this after processing all children, so the search is breadth-first instead of depth-first.
+		// This makes the mapping more similar to the regular mapping when deepSearch is not enabled, and therefore more reliable and predictable.
+		for (DeepSearchCandidateData candidate: deepSearchCandidates) {
+			if (tryDeepSearchForChildElement(candidate, node, processedChildren)) {
 				processedChildren.add(name);
 			}
 		}
@@ -788,7 +786,7 @@ public class Json2Xml extends XmlAligner {
 		}
 	}
 
-	private boolean tryDeepSearchForChildElement(XSElementDeclaration childElementDeclaration, boolean mandatory, JsonValue node, Set<String> processedChildren) throws SAXException {
+	private boolean tryDeepSearchForChildElement(DeepSearchCandidateData candidate, JsonValue node, Set<String> processedChildren) throws SAXException {
 		// Steps for deep search:
 		//  - Create copy of node N that only contains child node that are allowed in the XSD declaration for the childElement which we
 		//    are trying to instantiate from the "deep search", so that there are no errors from unprocessed elements.
@@ -802,7 +800,7 @@ public class Json2Xml extends XmlAligner {
 		//
 		//  - If the copy of the node is not empty, then call handleElement for the copy and return true
 		//  - else return false
-		XSTypeDefinition typeDefinition = childElementDeclaration.getTypeDefinition();
+		XSTypeDefinition typeDefinition = candidate.childElementDeclaration.getTypeDefinition();
 		if (!(typeDefinition instanceof XSComplexTypeDefinition complexTypeDefinition)) {
 			return false;
 		}
@@ -811,11 +809,11 @@ public class Json2Xml extends XmlAligner {
 				.filter(p -> !processedChildren.contains(p.getTerm().getName()))
 				.toList();
 
-		JsonValue copy = filterNodeChildren(childElementDeclaration.getName(), node, allowedParticles);
-		if (isEmptyNode(copy) && !mandatory) {
+		JsonValue copy = filterNodeChildren(candidate.childElementDeclaration.getName(), node, allowedParticles);
+		if (isEmptyNode(copy) && !candidate.mandatory) {
 			return false;
 		}
-		handleElement(childElementDeclaration, copy);
+		handleElement(candidate.childElementDeclaration(), copy);
 		return true;
 	}
 
@@ -1055,4 +1053,6 @@ public class Json2Xml extends XmlAligner {
 			this.container=container;
 		}
 	}
+
+	private record DeepSearchCandidateData(XSElementDeclaration childElementDeclaration, boolean mandatory) {}
 }
