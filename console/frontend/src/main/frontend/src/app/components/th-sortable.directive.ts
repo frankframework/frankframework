@@ -1,4 +1,14 @@
-import { Directive, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, QueryList } from '@angular/core';
+import {
+  Directive,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  inject,
+  Input,
+  OnInit,
+  Output,
+  QueryList,
+} from '@angular/core';
 import { anyCompare, compare } from '../utils';
 
 export type SortDirection = 'asc' | 'desc' | null;
@@ -72,8 +82,7 @@ export class ThSortableDirective implements OnInit {
     }
   }
   private headerText = '';
-
-  constructor(private elementReference: ElementRef<HTMLTableCellElement>) {}
+  private elementRef: ElementRef<HTMLTableCellElement> = inject(ElementRef);
 
   ngOnInit(): void {
     this.headerText = this.elementRef.nativeElement.innerHTML;
