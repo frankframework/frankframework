@@ -56,7 +56,6 @@ public class StreamCaptureUtils {
 				}
 				return stream;
 			}
-
 		};
 	}
 
@@ -122,7 +121,6 @@ public class StreamCaptureUtils {
 				super.reset();
 			}
 		};
-
 	}
 
 	public static OutputStream captureOutputStream(OutputStream stream, OutputStream capture, int maxSize) {
@@ -190,7 +188,6 @@ public class StreamCaptureUtils {
 				markCompensatingWriter.reset();
 				super.reset();
 			}
-
 		};
 	}
 

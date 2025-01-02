@@ -12,22 +12,15 @@
           <h4>Create new Monitor</h4>
         </div>
         <div class="ibox-content">
-          <form role="form">
+          <form role="form" (submit)="submit()" appQuickSubmitForm>
             <div class="row form-group">
               <label class="col-sm-3 control-label">Configuration</label>
               <div class="col-sm-9">
-                <input
-                  list="configurations"
-                  autocomplete="off"
-                  [(ngModel)]="selectedConfiguration"
+                <app-combobox
                   name="configuration"
-                  class="form-control"
-                />
-                <datalist id="configurations">
-                  <option *ngFor="let config of configurations" [value]="config.name">
-                    {{ config.name }}
-                  </option>
-                </datalist>
+                  [options]="configurations"
+                  [(selectedOption)]="selectedConfiguration"
+                ></app-combobox>
               </div>
             </div>
             <div class="form-group">
@@ -37,9 +30,7 @@
               </div>
             </div>
             <div class="col-lg-9 m-t-md">
-              <button class="btn btn-primary btn-w-m font-bold" type="submit" [ladda]="ladda" (click)="submit()">
-                Create
-              </button>
+              <button class="btn btn-primary btn-w-m font-bold" type="submit" [ladda]="ladda">Create</button>
             </div>
           </form>
         </div>

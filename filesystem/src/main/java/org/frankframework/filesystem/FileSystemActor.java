@@ -99,8 +99,8 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	public static final String PARAMETER_DESTINATION="destination";	// destination for action rename and move
 	public static final String PARAMETER_TYPEFILTER = "typeFilter";
 
-	public static final FileSystemAction[] ACTIONS_BASIC= {FileSystemAction.CREATE, FileSystemAction.LIST, FileSystemAction.INFO, FileSystemAction.READ, FileSystemAction.DOWNLOAD, FileSystemAction.READDELETE, FileSystemAction.MOVE, FileSystemAction.COPY, FileSystemAction.DELETE, FileSystemAction.MKDIR, FileSystemAction.RMDIR};
-	public static final FileSystemAction[] ACTIONS_WRITABLE_FS= {FileSystemAction.WRITE, FileSystemAction.UPLOAD, FileSystemAction.APPEND, FileSystemAction.RENAME};
+	public static final FileSystemAction[] ACTIONS_BASIC= {FileSystemAction.LIST, FileSystemAction.INFO, FileSystemAction.READ, FileSystemAction.DOWNLOAD, FileSystemAction.READDELETE, FileSystemAction.MOVE, FileSystemAction.COPY, FileSystemAction.DELETE, FileSystemAction.MKDIR, FileSystemAction.RMDIR};
+	public static final FileSystemAction[] ACTIONS_WRITABLE_FS= {FileSystemAction.CREATE, FileSystemAction.WRITE, FileSystemAction.UPLOAD, FileSystemAction.APPEND, FileSystemAction.RENAME};
 	public static final FileSystemAction[] ACTIONS_MAIL_FS= {FileSystemAction.FORWARD};
 
 	private @Getter FileSystemAction action;

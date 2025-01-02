@@ -15,16 +15,10 @@
 */
 package org.frankframework.filesystem;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 
 import jakarta.annotation.Nonnull;
-
-import org.apache.commons.codec.binary.Base64InputStream;
-
-import microsoft.exchange.webservices.data.property.complex.FileAttachment;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
@@ -32,12 +26,12 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
-import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlBuilder;
 
 /**
  * FileSystem Sender extension to handle Attachments.
  */
+@Deprecated
 public class FileSystemSenderWithAttachments<F, A, FS extends IMailFileSystem<F,A>> extends AbstractFileSystemSender<F,FS> {
 
 	public final FileSystemActor.FileSystemAction[] ACTIONS_FS_WITH_ATTACHMENTS = {FileSystemActor.FileSystemAction.LISTATTACHMENTS};
@@ -77,7 +71,7 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IMailFileSystem<F,
 						attachmentXml.addAttribute("contentType", withAttachments.getAttachmentContentType(attachment));
 						attachmentXml.addAttribute("size", withAttachments.getAttachmentSize(attachment));
 						attachmentXml.addAttribute("filename", withAttachments.getAttachmentFileName(attachment));
-
+/*
 						FileAttachment fileAttachment = (FileAttachment) attachment;
 						fileAttachment.load();
 						if(!ATTACHMENTS_AS_SESSION_KEYS) {
@@ -88,6 +82,7 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IMailFileSystem<F,
 							attachmentXml.setValue(fileAttachment.getName());
 							session.put(fileAttachment.getName(), fileAttachment.getContent());
 						}
+*/
 						attachments.addSubElement(attachmentXml);
 					}
 				}

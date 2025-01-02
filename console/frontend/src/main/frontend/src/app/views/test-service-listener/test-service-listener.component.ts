@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { AppService } from 'src/app/app.service';
+import { Option } from '../../components/combobox/combobox.component';
 
 type AlertState = {
   type: string;
@@ -19,7 +20,7 @@ type ServiceListenerResult = {
 })
 export class TestServiceListenerComponent implements OnInit {
   protected state: AlertState[] = [];
-  protected services: string[] = [];
+  protected services: Option[] = [];
   protected processingMessage = false;
   protected result = '';
 
@@ -50,7 +51,7 @@ export class TestServiceListenerComponent implements OnInit {
         services: string[];
       }>(`${this.appService.absoluteApiPath}test-servicelistener`)
       .subscribe((data) => {
-        this.services = data.services;
+        this.services = data.services.map((service) => ({ label: service }));
       });
   }
 
