@@ -422,6 +422,7 @@ public class Json2Xml extends XmlAligner {
 			log.trace("processed [{}] children found by name [{}] in [{}]", i, childElementName, parentName);
 			if (i==0 && isDeepSearch() && childElementDeclaration.getTypeDefinition().getTypeCategory()!=XSTypeDefinition.SIMPLE_TYPE) {
 				log.trace("no children processed, and deepSearch, not a simple type therefore handle node [{}] in [{}]", childElementName, parentName);
+				// TODO: Call here tryDeepSearchForChildElement instead of handleElement?
 				handleElement(childElementDeclaration, node);
 			}
 		} else {
@@ -458,15 +459,15 @@ public class Json2Xml extends XmlAligner {
 	 * @param allowedChildren          Names of child-nodes to keep in the copy
 	 * @return Copy of the JSON node.
 	 */
-	protected @Nonnull JsonValue filterNodeChildren(JsonValue node, List<XSParticle> allowedChildren) {
+	protected @Nonnull JsonValue filterNodeChildren(String originalNodeName, JsonValue node, List<XSParticle> allowedChildren) {
 		if (node instanceof JsonArray jsonArray) {
-			return copyJsonArray(jsonArray, allowedChildren);
+			return copyJsonArray(originalNodeName, jsonArray, allowedChildren);
 		} else if (node instanceof JsonObject jsonObject) {
-			return copyJsonObject(jsonObject, allowedChildren);
+			return copyJsonObject(originalNodeName, jsonObject, allowedChildren);
 		} else return node;
 	}
 
-	private JsonValue copyJsonObject(JsonObject node, List<XSParticle> allowedChildren) {
+	private JsonValue copyJsonObject(String originalNodeName, JsonObject node, List<XSParticle> allowedChildren) {
 		Set<String> allowedNames = allowedChildren
 				.stream()
 				.map(p -> p.getTerm().getName())
@@ -479,25 +480,23 @@ public class Json2Xml extends XmlAligner {
 		// substitutions could fill in for absent names.
 		// This is perhaps not the cleanest way to make sure the substitutions are performed but this requires the least
 		// amount of code changes in other parts.
-		if (sp.isNotEmpty()) {
-			allowedChildren.forEach(childParticle -> {
-				String name = childParticle.getTerm().getName();
-				if (!node.containsKey(name) && sp.hasSubstitutionsFor(getContext(), name)) {
-					objectBuilder.add(name, getSubstitutedChild(name));
-				} else if (hasSubstitutionForChild(childParticle)) {
-					// A deeper child-node does have a substitution for this element, so add an empty object for it to further parse at later stage.
-					objectBuilder.add(name, Json.createObjectBuilder().build());
-				}
-			});
-		}
+		allowedChildren.forEach(childParticle -> {
+			String name = childParticle.getTerm().getName();
+			if (!node.containsKey(name) && sp.hasSubstitutionsFor(getContext(), name)) {
+				objectBuilder.add(name, getSubstitutedChild(name));
+			} else if (hasCandidateForChild(originalNodeName, childParticle)) {
+				// A deeper child-node does have a substitution for this element, so add an empty object for it to further parse at later stage.
+				objectBuilder.add(name, Json.createObjectBuilder().build());
+			}
+		});
 		return objectBuilder.build();
 	}
 
-	private boolean hasSubstitutionForChild(XSParticle childParticle) {
+	private boolean hasCandidateForChild(String originalNodeName, XSParticle childParticle) {
 		// Find a recursive list of all child-names of this type to see if any of these names has a substitution from parameters
 		Set<String> names = new HashSet<>();
 		getChildElementNamesRecursive(childParticle, names, new HashSet<>());
-		return names.contains(XSD_WILDCARD_ELEMENT_TOKEN) || names.stream().anyMatch(childName -> sp.hasSubstitutionsFor(getContext(), childName));
+		return names.contains(XSD_WILDCARD_ELEMENT_TOKEN) || names.contains(originalNodeName) || names.stream().anyMatch(childName -> sp.hasSubstitutionsFor(getContext(), childName));
 	}
 
 	private void getChildElementNamesRecursive(XSParticle particle, Set<String> names, Set<XSParticle> visitedTypes) {
@@ -526,9 +525,9 @@ public class Json2Xml extends XmlAligner {
 		}
 	}
 
-	private JsonValue copyJsonArray(JsonArray node, List<XSParticle> allowedChildren) {
+	private JsonValue copyJsonArray(String originalNodeName, JsonArray node, List<XSParticle> allowedChildren) {
 		JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-		node.forEach(value -> arrayBuilder.add(filterNodeChildren(value, allowedChildren)));
+		node.forEach(value -> arrayBuilder.add(filterNodeChildren(originalNodeName, value, allowedChildren)));
 		return arrayBuilder.build();
 	}
 
@@ -800,7 +799,7 @@ public class Json2Xml extends XmlAligner {
 				.filter(p -> !processedChildren.contains(p.getTerm().getName()))
 				.toList();
 
-		JsonValue copy = filterNodeChildren(node, allowedParticles);
+		JsonValue copy = filterNodeChildren(childElementDeclaration.getName(), node, allowedParticles);
 		if (isEmptyNode(copy) && !mandatory) {
 			return false;
 		}

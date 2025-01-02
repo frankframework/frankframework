@@ -822,9 +822,13 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	}
 
 	@Test
-	public void testSameNameDifferentLevelsWithDeepSearchFailingCase() throws Exception {
+	public void testSameNameDifferentLevelsFailingCase() throws Exception {
+		// Test for quickly testing a failing case from the above parameterized test
+
 		// Arrange
-		String testCase = "ChildTypeFirstInXsdMissingInInput";
+		final String testCase;
+		testCase = "WithIntermediateLevelChildMissing";
+//		testCase = "ChildTypeFirstInXsdMissingInInput";
 		pipe.setName("testSameNameDifferentLevelsDeepSearch=true");
 		pipe.setSchema("/Validation/Json2Xml/DeepSearch/" + testCase + "/Test.xsd");
 		pipe.setThrowException(true);
