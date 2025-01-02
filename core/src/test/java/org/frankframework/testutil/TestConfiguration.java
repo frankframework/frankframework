@@ -9,6 +9,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
 import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationAwareBeanPostProcessor;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.lifecycle.MessageEventListener;
@@ -61,6 +62,7 @@ public class TestConfiguration extends Configuration {
 		//Add Custom Pre-Instantiation Processor to mock statically created FixedQuerySenders.
 		qsPostProcessor.setApplicationContext(this);
 		getBeanFactory().addBeanPostProcessor(qsPostProcessor);
+		getBeanFactory().addBeanPostProcessor(new ConfigurationAwareBeanPostProcessor(this));
 
 		if (autoConfigure) {
 			try {

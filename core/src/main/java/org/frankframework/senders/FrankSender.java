@@ -296,7 +296,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	 */
 	public enum Scope { JVM, DLL, ADAPTER, LISTENER }
 
-	private @Getter Scope scope = Scope.LISTENER;
+	private @Getter Scope scope = Scope.ADAPTER;
 	private @Getter String target;
 	private @Getter String returnedSessionKeys=""; // do not initialize with null, returned session keys must be set explicitly
 
