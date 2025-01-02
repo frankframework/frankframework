@@ -79,7 +79,10 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = "Euro € single quote ' double quote escaped \" newline escaped \n";
 
-		pipe.setSessionKey("sessionKey");
+		// Use both setPreserveInput and setStoreResultInSessionKey to get the result in the sessionKey
+		pipe.setPreserveInput(true);
+		pipe.setStoreResultInSessionKey("sessionKey");
+
 		setXpathExpression("/request/g/@attr");
 		pipe.configure();
 		pipe.start();

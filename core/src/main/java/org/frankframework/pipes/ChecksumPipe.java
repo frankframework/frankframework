@@ -15,11 +15,8 @@
 */
 package org.frankframework.pipes;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
-import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -55,8 +52,6 @@ import org.frankframework.stream.Message;
 @ConfigurationWarning("Use the HashPipe")
 public class ChecksumPipe extends HashPipe {
 
-	private @Getter boolean inputIsFile;
-
 	@Override
 	public void configure() throws ConfigurationException {
 		// Set the defaults for this Pipe, these are different compared to the HashPipe
@@ -73,23 +68,12 @@ public class ChecksumPipe extends HashPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		try (InputStream fis = isInputIsFile() ? new FileInputStream(message.asString()) : message.asInputStream(getCharset())) {
+		try (InputStream fis = message.asInputStream(getCharset())) {
 
 			return super.doPipe(new Message(fis, message.getContext()), session);
 		} catch (IOException e) {
-			throw new PipeRunException(this, "Error reading input" + (isInputIsFile() ? " file [" + message + "]" : " using charset [" + getCharset() + "]"), e);
+			throw new PipeRunException(this, "Error reading input using charset [" + getCharset() + "]", e);
 		}
-	}
-
-	/**
-	 * If set <code>true</code>, the input is assumed to be a filename; otherwise the input itself is used in the calculations.
-	 *
-	 * @ff.default false
-	 */
-	@Deprecated(forRemoval = true, since = "7.7.0")
-	@ConfigurationWarning("Please use fileSystemPipe to read the file first.")
-	public void setInputIsFile(boolean b) {
-		inputIsFile = b;
 	}
 
 	/**

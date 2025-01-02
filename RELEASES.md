@@ -4,6 +4,11 @@ Frank!Framework Release Notes
 [Tags](https://github.com/frankframework/frankframework/releases)
 [JavaDocs](https://javadoc.frankframework.org/)
 
+Upcoming (9.1)
+--------------
+- Removed deprecated pipes with 'since' 7.8 or older. This means that the following pipes are now removed:
+  -  FileLineIteratorPipe, FilenameSwitch, PostboxRetrieverPipe, PutParametersInSession, Stream2StringPipe, XmlBuilderPipe, XmlFileElementIteratorPipe
+
 Upcoming (9.0)
 --------------
 [Commits](https://github.com/frankframework/frankframework/compare/8.3-release...HEAD)

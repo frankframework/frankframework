@@ -27,20 +27,18 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
 
-import lombok.Getter;
-
 import org.apache.commons.lang3.StringUtils;
-
-import org.frankframework.doc.Default;
-import org.frankframework.doc.EnterpriseIntegrationPattern;
-
 import org.springframework.http.MediaType;
 import org.xml.sax.SAXException;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.doc.Default;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.documentbuilder.ArrayBuilder;
 import org.frankframework.documentbuilder.DocumentBuilderFactory;
 import org.frankframework.documentbuilder.DocumentFormat;
@@ -167,13 +165,6 @@ public class JsonPipe extends FixedForwardPipe {
 	 */
 	public void setDirection(Direction value) {
 		direction = value;
-	}
-
-	@Deprecated(forRemoval = true, since = "7.8.0")
-	public void setVersion(String version) {
-		if("1".equals(version)) {
-			setAddXmlRootElement(true);
-		}
 	}
 
 	/**

@@ -16,7 +16,6 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
-import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -44,18 +43,15 @@ import org.frankframework.stream.Message;
 @EnterpriseIntegrationPattern(Type.ROUTER)
 @Deprecated(since = "9.0.0", forRemoval = true)
 public class XmlIf extends IfPipe {
-	private String sessionKey = null;
 	private String regex = null;
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		Message messageToUse = getMessageToUse(message, session);
-
 		if (transformationNeeded()) {
-			return super.doPipe(messageToUse, session);
+			return super.doPipe(message, session);
 		}
 
-		return new PipeRunResult(getForwardForStringInput(messageToUse), messageToUse);
+		return new PipeRunResult(getForwardForStringInput(message), message);
 	}
 
 	/**
@@ -79,38 +75,6 @@ public class XmlIf extends IfPipe {
 		}
 	}
 
-	private Message getMessageToUse(Message message, PipeLineSession session) throws PipeRunException {
-		Optional<String> inputFromSessionKey = getInputFromSessionKey(session);
-
-		if (inputFromSessionKey.isEmpty()) {
-			if (Message.isEmpty(message)) {
-				return Message.nullMessage();
-			}
-		} else {
-			return new Message(inputFromSessionKey.get());
-		}
-
-		return message;
-	}
-
-	private Optional<String> getInputFromSessionKey(PipeLineSession session) throws PipeRunException {
-		if (StringUtils.isNotEmpty(sessionKey)) {
-			log.debug("taking input from sessionKey [{}]", sessionKey);
-			String sessionString = session.getString(sessionKey);
-			if (sessionString == null) {
-				throw new PipeRunException(this, "unable to resolve session key [" + sessionKey + "]");
-			}
-
-			return Optional.of(sessionString);
-		}
-
-		return Optional.empty();
-	}
-
-	@Override
-	public boolean consumesSessionVariable(String sessionKey) {
-		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(this.sessionKey);
-	}
 
 	/**
 	 * Regular expression to be applied to the input-message (ignored if either <code>xpathExpression</code> or <code>jsonPathExpression</code> is specified).
@@ -120,13 +84,6 @@ public class XmlIf extends IfPipe {
 	@ConfigurationWarning(value = "Please use the RegExPipe instead")
 	public void setRegex(String regex) {
 		this.regex = regex;
-	}
-
-	/** name of the key in the <code>pipelinesession</code> to retrieve the input-message from. if not set, the current input message of the pipe is taken. n.b. same as <code>getinputfromsessionkey</code> */
-	@Deprecated(forRemoval = true, since = "7.7.0")
-	@ConfigurationWarning("Please use getInputFromSessionKey instead.")
-	public void setSessionKey(String sessionKey) {
-		this.sessionKey = sessionKey;
 	}
 
 	/**

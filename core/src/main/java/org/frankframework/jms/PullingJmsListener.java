@@ -31,7 +31,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.HasSender;
 import org.frankframework.core.ICorrelatedPullingListener;
 import org.frankframework.core.IListenerConnector;
-import org.frankframework.core.IPostboxListener;
 import org.frankframework.core.IPullingListener;
 import org.frankframework.core.ISender;
 import org.frankframework.core.ListenerException;
@@ -86,7 +85,7 @@ import org.frankframework.util.RunStateEnquiring;
  * @author Gerrit van Brakel
  * @since 4.0.1
  */
-public class PullingJmsListener extends AbstractJmsListener implements IPostboxListener<Message>, ICorrelatedPullingListener<Message>, HasSender, RunStateEnquiring {
+public class PullingJmsListener extends AbstractJmsListener implements IPullingListener<Message>, ICorrelatedPullingListener<Message>, HasSender, RunStateEnquiring {
 
 	private static final String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
 	private RunStateEnquirer runStateEnquirer=null;
@@ -258,35 +257,6 @@ public class PullingJmsListener extends AbstractJmsListener implements IPostboxL
 			} else {
 				releaseSession(session);
 			}
-		}
-	}
-
-	/**
-	 * @see IPostboxListener#retrieveRawMessage(String, Map)
-	 */
-	@Override
-	public RawMessageWrapper<Message> retrieveRawMessage(String messageSelector, Map<String,Object> threadContext) throws ListenerException {
-		Session session=null;
-		try {
-			session = getSession(threadContext);
-			MessageConsumer mc=null;
-			try {
-				mc = getMessageConsumer(session, getDestination(), messageSelector);
-				Message result = getTimeout()<0 ? mc.receiveNoWait() : mc.receive(getTimeout());
-				return new RawMessageWrapper<>(result, result.getJMSMessageID(), messageSelector);
-			} finally {
-				if (mc != null) {
-					try {
-						mc.close();
-					} catch(JMSException e) {
-						log.warn("{}exception closing messageConsumer", getLogPrefix(), e);
-					}
-				}
-			}
-		} catch (Exception e) {
-			throw new ListenerException(getLogPrefix()+"exception preparing to retrieve message", e);
-		} finally {
-			releaseSession(session);
 		}
 	}
 

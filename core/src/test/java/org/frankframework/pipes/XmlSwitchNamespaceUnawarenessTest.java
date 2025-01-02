@@ -46,7 +46,7 @@ public class XmlSwitchNamespaceUnawarenessTest extends PipeTestBase<XmlSwitch> {
 	public void testNamespaceAwarenessWithStylesheet(int xsltVersion, boolean namespaceAware, String expectedForwardName) throws Exception {
 		pipe.addForward(new PipeForward("1","FixedResult1"));
 		pipe.addForward(new PipeForward("NF","FixedResultNF"));
-		pipe.setServiceSelectionStylesheetFilename(TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_STYLESHEET);
+		pipe.setStyleSheetName(TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_STYLESHEET);
 		pipe.setNotFoundForwardName("NF");
 		pipe.setXsltVersion(xsltVersion);
 		pipe.setNamespaceAware(namespaceAware);

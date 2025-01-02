@@ -55,9 +55,9 @@
 					<Exit name="EXIT" state="SUCCESS" />
 				</Exits>
 				<!-- Test needs a deprecated (pipe) element -->
-				<PutParametersInSessionPipe name="DeprecatedPipe1InAdapter3">
+				<ChecksumPipe name="DeprecatedPipe1InAdapter3">
 					<Forward name="success" path="EXIT" />
-				</PutParametersInSessionPipe>
+				</ChecksumPipe>
 				<ZipWriterPipe name="DeprecatedPipe2InAdapter3"
 							   zipWriterHandle="x"
 				>
@@ -74,9 +74,9 @@
 					<Exit name="EXIT" state="SUCCESS" />
 				</Exits>
 				<!-- Test needs a deprecated (pipe) element -->
-				<PutParametersInSessionPipe name="DeprecatedPipe1InAdapter4">
+				<ChecksumPipe name="DeprecatedPipe1InAdapter4">
 					<Forward name="success" path="EXIT" />
-				</PutParametersInSessionPipe>
+				</ChecksumPipe>
 				<ZipWriterPipe name="DeprecatedPipe2InAdapter4"
 							   zipWriterHandle="x"
 				>

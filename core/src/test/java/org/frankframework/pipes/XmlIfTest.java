@@ -57,7 +57,6 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 
 	@Test
 	void emptySessionKeyTest() throws Exception {
-		pipe.setSessionKey("");
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, "<test123", session);
@@ -66,7 +65,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 
 	@Test
 	void someSessionKeyTest() throws Exception {
-		pipe.setSessionKey("test");
+		pipe.setGetInputFromSessionKey("test");
 		configureAndStartPipe();
 
 		session.put("test", "testValue");
@@ -89,7 +88,6 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 	@NullSource
 	@EmptySource
 	void emptySessionKeyNullInputTest(String message) throws Exception {
-		pipe.setSessionKey("");
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, message, session);
