@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,14 +21,15 @@ import java.util.Objects;
 
 import jakarta.annotation.Nonnull;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationAware;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.Adapter;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.ParameterException;
@@ -109,7 +110,7 @@ import org.frankframework.threading.ThreadLifeCycleEventListener;
  */
 @Forward(name = "*", description = "Exit code")
 @Category(Category.Type.BASIC)
-public class IbisLocalSender extends AbstractSenderWithParameters implements HasPhysicalDestination, IThreadCreator {
+public class IbisLocalSender extends AbstractSenderWithParameters implements HasPhysicalDestination, IThreadCreator, ConfigurationAware {
 
 	private final @Getter String domain = "Local";
 
@@ -142,15 +143,6 @@ public class IbisLocalSender extends AbstractSenderWithParameters implements Has
 				&& (StringUtils.isNotEmpty(getJavaListener())
 						|| StringUtils.isNotEmpty(getJavaListenerSessionKey()))) {
 			throw new ConfigurationException("serviceName and javaListener cannot be specified both");
-		}
-
-		if (getApplicationContext() instanceof Configuration config) {
-			configuration = config;
-		} else if (getApplicationContext() instanceof Adapter && getApplicationContext().getParent() instanceof Configuration config) {
-			configuration = config;
-		}
-		if(configuration == null) {
-			throw new ConfigurationException("unable to determine configuration");
 		}
 	}
 

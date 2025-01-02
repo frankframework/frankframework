@@ -33,7 +33,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +49,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationAwareBeanPostProcessor;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeLine.ExitState;
@@ -177,14 +177,6 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 		super.initLifecycleProcessor();
 	}
 
-	public void registerSingleton(String beanName, Object singletonObject) {
-		if (singletonObject instanceof BeanFactoryAware aware) {
-			aware.setBeanFactory(getBeanFactory());
-		}
-
-		getBeanFactory().registerSingleton(beanName, singletonObject);
-	}
-
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) {
 		setParent(applicationContext);
@@ -211,6 +203,7 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 		postProcessor.setAutowiredAnnotationType(Autowired.class);
 		postProcessor.setBeanFactory(getBeanFactory());
 		getBeanFactory().addBeanPostProcessor(postProcessor);
+		getBeanFactory().addBeanPostProcessor(new ConfigurationAwareBeanPostProcessor(configuration));
 
 		refresh();
 

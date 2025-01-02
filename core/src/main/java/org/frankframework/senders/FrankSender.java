@@ -33,6 +33,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 
 import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationAware;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
@@ -272,7 +273,7 @@ import org.frankframework.threading.ThreadLifeCycleEventListener;
  */
 @Forward(name = "*", description = "Exit code")
 @Category(Category.Type.BASIC)
-public class FrankSender extends AbstractSenderWithParameters implements HasPhysicalDestination, IThreadCreator {
+public class FrankSender extends AbstractSenderWithParameters implements HasPhysicalDestination, IThreadCreator, ConfigurationAware {
 
 	public static final String TARGET_PARAM_NAME = "target";
 	public static final String SCOPE_PARAM_NAME = "scope";
@@ -303,13 +304,12 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 
 	private @Autowired @Setter IsolatedServiceCaller isolatedServiceCaller;
 	private @Autowired @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
-	private @Autowired @Setter Configuration configuration;
+	private @Setter Configuration configuration;
 	private @Autowired @Setter IbisManager ibisManager;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		configuration = getConfiguration();
 		ParameterList pl = getParameterList();
 
 		if (StringUtils.isBlank(getTarget()) && (pl == null || !pl.hasParameter(TARGET_PARAM_NAME))) {
@@ -550,15 +550,6 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 			return targetParam.asStringValue(getTarget());
 		}
 		return getTarget();
-	}
-
-	private Configuration getConfiguration() {
-		if (getApplicationContext() instanceof Adapter) {
-			return (Configuration) getApplicationContext().getParent();
-		} else if (getApplicationContext() instanceof Configuration) {
-			return (Configuration) getApplicationContext();
-		}
-		throw new IllegalStateException("unable to locate Configuration");
 	}
 
 	/**

@@ -38,5 +38,154 @@
 		<bean name="eventPublisher" class="org.frankframework.monitoring.EventPublisher" />
 
 <!-- 	<bean name="applicationEventMulticaster" class="org.frankframework.lifecycle.FrankEventMulticaster" /> -->
+
+		<bean
+			name="pipeLineProcessor"
+			class="org.frankframework.processors.InputOutputPipeLineProcessor"
+			autowire="byName"
+			scope="prototype"
+			>
+			<property name="pipeLineProcessor">
+				<bean
+					class="org.frankframework.processors.CachePipeLineProcessor"
+					autowire="byName"
+					scope="prototype"
+					>
+					<property name="pipeLineProcessor">
+						<bean
+							class="org.frankframework.processors.LimitingParallelExecutionPipeLineProcessor"
+							autowire="byName"
+							scope="prototype"
+							>
+							<property name="pipeLineProcessor">
+								<bean
+									class="org.frankframework.processors.TransactionAttributePipeLineProcessor"
+									autowire="byName"
+									scope="prototype"
+									>
+									<property name="pipeLineProcessor">
+										<bean
+											class="org.frankframework.processors.LockerPipeLineProcessor"
+											autowire="byName"
+											scope="prototype"
+											>
+											<property name="pipeLineProcessor">
+												<bean
+													class="org.frankframework.processors.CorePipeLineProcessor"
+													autowire="byName"
+													scope="prototype"
+												/>
+											</property>
+										</bean>
+									</property>
+								</bean>
+							</property>
+						</bean>
+					</property>
+				</bean>
+			</property>
+		</bean>
+
+		<bean
+			name="pipeProcessor,inputValidatorProcessor,outputValidatorProcessor,inputWrapperProcessor,outputWrapperProcessor"
+			class="org.frankframework.processors.MonitoringPipeProcessor"
+			autowire="byName"
+			scope="prototype"
+			>
+			<property name="pipeProcessor">
+				<!-- allows a managed exception to be stored in the session -->
+				<bean
+					class="org.frankframework.processors.InputOutputPipeProcessor"
+					autowire="byName"
+					scope="prototype"
+					>
+					<property name="pipeProcessor">
+						<bean
+							class="org.frankframework.processors.ExceptionHandlingPipeProcessor"
+							autowire="byName"
+							scope="prototype"
+							>
+							<property name="pipeProcessor">
+								<bean
+									class="org.frankframework.processors.LimitingParallelExecutionPipeProcessor"
+									autowire="byName"
+									scope="prototype"
+									>
+									<property name="pipeProcessor">
+										<bean
+											class="org.frankframework.processors.TransactionAttributePipeProcessor"
+											autowire="byName"
+											scope="prototype"
+											>
+											<property name="pipeProcessor">
+												<bean
+													class="org.frankframework.processors.LockerPipeProcessor"
+													autowire="byName"
+													scope="prototype"
+													>
+													<property name="pipeProcessor">
+														<bean
+															class="org.frankframework.processors.CheckMessageSizePipeProcessor"
+															autowire="byName"
+															scope="prototype"
+															>
+															<property name="pipeProcessor">
+																<bean
+																	class="org.frankframework.processors.TrackPreviousPipeInMetadataProcessor"
+																	autowire="byName"
+																	scope="prototype">
+																	<property name="pipeProcessor">
+																		<bean
+																			class="org.frankframework.processors.CorePipeProcessor"
+																			autowire="byName"
+																			scope="prototype"
+																		/>
+																	</property>
+																</bean>
+															</property>
+														</bean>
+													</property>
+												</bean>
+											</property>
+										</bean>
+									</property>
+								</bean>
+							</property>
+						</bean>
+					</property>
+				</bean>
+			</property>
+		</bean>
+
+		<bean
+			name="senderWrapperProcessor"
+			class="org.frankframework.processors.InputOutputSenderWrapperProcessor"
+			autowire="byName"
+			scope="prototype"
+			>
+			<property name="senderWrapperProcessor">
+				<bean
+					class="org.frankframework.processors.CacheSenderWrapperProcessor"
+					autowire="byName"
+					scope="prototype"
+					>
+					<property name="senderWrapperProcessor">
+						<bean
+							class="org.frankframework.processors.CoreSenderWrapperProcessor"
+							autowire="byName"
+							scope="prototype"
+							>
+						</bean>
+					</property>
+				</bean>
+			</property>
+		</bean>
+
+		<bean
+			name="listenerProcessor"
+			class="org.frankframework.processors.CoreListenerProcessor"
+			autowire="byName"
+			scope="prototype"
+		/>
 	</beans>
 </beans>

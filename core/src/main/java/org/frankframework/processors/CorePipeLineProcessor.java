@@ -54,10 +54,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 	public void setApplicationContext(ApplicationContext applicationContext) {
 		if (applicationContext instanceof Configuration config) {
 			configuration = config;
-		} else if (applicationContext instanceof Adapter && applicationContext.getParent() instanceof Configuration config) {
-			configuration = config;
-		}
-		if(configuration == null) {
+		} else {
 			throw new IllegalStateException("unable to determine configuration");
 		}
 	}
