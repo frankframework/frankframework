@@ -588,7 +588,7 @@ public class Json2Xml extends XmlAligner {
 		return result;
 	}
 
-	protected Set<String> getUnprocessedChildElementNames(JsonValue node, Set<String> processedChildren) throws SAXException {
+	protected @Nonnull Set<String> getUnprocessedChildElementNames(JsonValue node, Set<String> processedChildren) throws SAXException {
 		Set<String> unProcessedChildren = getAllNodeChildNames(node);
 		if (!unProcessedChildren.isEmpty()) {
 			unProcessedChildren.removeAll(processedChildren);
@@ -635,7 +635,7 @@ public class Json2Xml extends XmlAligner {
 	 * Must push all nodes through validatorhandler, recursively, respecting the alignment request.
 	 * Must set current=node before calling validatorHandler.startElement(), in order to get the right argument for the onStartElement / performAlignment callbacks.
 	 */
-	public void handleRootNode(JsonValue container, String name, String nodeNamespace) throws SAXException {
+	private void handleRootNode(JsonValue container, String name, String nodeNamespace) throws SAXException {
 		if (log.isTraceEnabled()) log.trace("handleNode() name [{}] namespace [{}]", name, nodeNamespace);
 		if (StringUtils.isEmpty(nodeNamespace)) {
 			nodeNamespace=null;
@@ -647,20 +647,40 @@ public class Json2Xml extends XmlAligner {
 		handleElement(elementDeclaration, container);
 	}
 
-	public void handleElement(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
+	private void handleElement(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
 		String name = elementDeclaration.getName();
 		String elementNamespace = elementDeclaration.getNamespace();
 		String qname = getQName(elementNamespace, name);
 		log.trace("handleNode() name [{}] elementNamespace [{}]", name, elementNamespace);
 
 		newLine();
+		AttributesImpl attributes = collectElementAttributes(elementDeclaration, node, name);
+		if (isNil(node)) {
+			validatorHandler.startPrefixMapping(XSI_PREFIX_MAPPING, XML_SCHEMA_INSTANCE_NAMESPACE);
+			attributes.addAttribute(XML_SCHEMA_INSTANCE_NAMESPACE, XML_SCHEMA_NIL_ATTRIBUTE, XSI_PREFIX_MAPPING+":"+XML_SCHEMA_NIL_ATTRIBUTE, "xs:boolean", "true");
+			validatorHandler.startElement(elementNamespace, name, qname, attributes);
+			validatorHandler.endElement(elementNamespace, name, qname);
+			validatorHandler.endPrefixMapping(XSI_PREFIX_MAPPING);
+		} else {
+			if (isMultipleOccurringChildElement(name) && node instanceof JsonArray jsonArray) {
+				for(JsonValue n: jsonArray) {
+					doHandleElement(elementDeclaration, n, elementNamespace, name, qname, attributes);
+				}
+			} else {
+				doHandleElement(elementDeclaration, node, elementNamespace, name, qname, attributes);
+			}
+		}
+	}
+
+	@Nonnull
+	private AttributesImpl collectElementAttributes(XSElementDeclaration elementDeclaration, JsonValue node, String name) throws SAXException {
 		AttributesImpl attributes = new AttributesImpl();
 		Map<String,String> nodeAttributes = getAttributes(elementDeclaration, node);
 		log.trace("node [{}] search for attributeDeclaration", name);
 		XSTypeDefinition typeDefinition = elementDeclaration.getTypeDefinition();
 
 		List<XSAttributeUse> attributeUses = getAttributeUses(typeDefinition);
-		XSWildcard wildcard = typeDefinition instanceof XSComplexTypeDefinition xsctd ? xsctd.getAttributeWildcard():null;
+		XSWildcard wildcard = typeDefinition instanceof XSComplexTypeDefinition xsctd ? xsctd.getAttributeWildcard() : null;
 		if (attributeUses.isEmpty() && wildcard == null) {
 			if (!nodeAttributes.isEmpty()) {
 				log.warn("node [{}] found [{}] attributes, but no declared AttributeUses or wildcard", name, nodeAttributes.size());
@@ -690,22 +710,7 @@ public class Json2Xml extends XmlAligner {
 				nodeAttributes.clear();
 			}
 		}
-		if (isNil(node)) {
-			validatorHandler.startPrefixMapping(XSI_PREFIX_MAPPING, XML_SCHEMA_INSTANCE_NAMESPACE);
-			attributes.addAttribute(XML_SCHEMA_INSTANCE_NAMESPACE, XML_SCHEMA_NIL_ATTRIBUTE, XSI_PREFIX_MAPPING+":"+XML_SCHEMA_NIL_ATTRIBUTE, "xs:boolean", "true");
-			validatorHandler.startElement(elementNamespace, name, qname, attributes);
-			validatorHandler.endElement(elementNamespace, name, qname);
-			validatorHandler.endPrefixMapping(XSI_PREFIX_MAPPING);
-		} else {
-			if (isMultipleOccurringChildElement(name) && node instanceof List<?>) {
-				//noinspection unchecked
-				for(JsonValue n: (List<JsonValue>)node) {
-					doHandleElement(elementDeclaration, n, elementNamespace, name, qname, attributes);
-				}
-			} else {
-				doHandleElement(elementDeclaration, node, elementNamespace, name, qname, attributes);
-			}
-		}
+		return attributes;
 	}
 
 	private void doHandleElement(XSElementDeclaration elementDeclaration, JsonValue node, String elementNamespace, String name, String qname, Attributes attributes) throws SAXException {
@@ -739,7 +744,7 @@ public class Json2Xml extends XmlAligner {
 
 		Set<String> unProcessedChildren = getUnprocessedChildElementNames(node, processedChildren);
 
-		if (unProcessedChildren != null && !unProcessedChildren.isEmpty()) {
+		if (!unProcessedChildren.isEmpty()) {
 			Set<String> unProcessedChildrenWorkingCopy = new LinkedHashSet<>(unProcessedChildren);
 			log.warn("processing [{}] unprocessed child elements{}", unProcessedChildren.size(), !unProcessedChildren.isEmpty() ? ", first [" + unProcessedChildren.iterator()
 					.next() + "]" : "");
