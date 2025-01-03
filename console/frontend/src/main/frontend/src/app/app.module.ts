@@ -1,16 +1,10 @@
-import { NgModule, ValueProvider } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { TitleStrategy } from '@angular/router';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgIdleModule } from '@ng-idle/core';
 import { NgChartsModule } from 'ng2-charts';
 import { LaddaModule } from 'angular2-ladda';
-
-import { AppRoutingModule } from './app-routing.module';
-
-import { AppComponent } from './app.component';
 import { PagesFooterComponent } from './components/pages/pages-footer/pages-footer.component';
 import { PagesNavigationComponent } from './components/pages/pages-navigation/pages-navigation.component';
 import { CustomViewsComponent } from './components/custom-views/custom-views.component';
@@ -59,7 +53,6 @@ import { ConfigurationsUploadComponent } from './views/configurations/configurat
 import { ConfigurationsManageDetailsComponent } from './views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component';
 import { MonitorsComponent } from './views/monitors/monitors.component';
 import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
-import { PagesTitleStrategy } from './pages-title-strategy';
 import { WithJavaListenerPipe } from './pipes/with-java-listener.pipe';
 import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
 import { FlowModalComponent } from './views/status/flow/flow-modal/flow-modal.component';
@@ -75,7 +68,6 @@ import { MarkDownPipe } from './pipes/mark-down.pipe';
 import { TestPipelineComponent } from './views/test-pipeline/test-pipeline.component';
 import { TestServiceListenerComponent } from './views/test-service-listener/test-service-listener.component';
 import { LoginComponent } from './views/login/login.component';
-import { httpInterceptorProviders } from './http-interceptors';
 import { ToastsContainerComponent } from './components/toasts-container/toasts-container.component';
 import { ThSortableDirective } from './components/th-sortable.directive';
 import { FileViewerComponent } from './components/file-viewer/file-viewer.component';
@@ -93,90 +85,83 @@ import { ConfigurationTabListComponent } from './components/tab-list/configurati
 import { TabListComponent } from './components/tab-list/tab-list.component';
 import { HasAccessToLinkDirective } from './components/has-access-to-link.directive';
 import { ComboboxComponent } from './components/combobox/combobox.component';
+import { RouterLink, RouterLinkActive, RouterModule, RouterOutlet } from '@angular/router';
 
-const windowProvider: ValueProvider = {
-  provide: Window,
-  useValue: window,
-};
+const moduleComponents = [
+  ConfigurationsManageComponent,
+  ConfigurationsManageDetailsComponent,
+  ConfigurationsShowComponent,
+  ConfigurationsUploadComponent,
+  EnvironmentVariablesComponent,
+  FlowComponent,
+  IbisstoreSummaryComponent,
+  IframeCustomViewComponent,
+  IframeLadybugLegacyComponent,
+  IframeLadybugComponent,
+  IframeLarvaComponent,
+  InlinestoreComponent,
+  JdbcBrowseTablesComponent,
+  JdbcExecuteQueryComponent,
+  JmsBrowseQueueComponent,
+  JmsSendMessageComponent,
+  LiquibaseComponent,
+  SchedulerComponent,
+  SchedulerEditComponent,
+  SchedulerAddComponent,
+  StatusComponent,
+  StorageComponent,
+  StorageListComponent,
+  StorageViewComponent,
+  StorageListDtComponent,
+  AdapterstatisticsComponent,
+  SecurityItemsComponent,
+  WebservicesComponent,
+  MonitorsComponent,
+  MonitorsAddEditComponent,
+  ConnectionsComponent,
+  ErrorComponent,
+  LoadingComponent,
+  LoggingComponent,
+  LoggingManageComponent,
+  NotificationsComponent,
+  IafUpdateComponent,
+  TestPipelineComponent,
+  TestServiceListenerComponent,
+  LoginComponent,
+  ServerWarningsComponent,
+  AdapterStatusComponent,
+  LoggingAddComponent,
+  FlowModalComponent,
+  ConfigurationFilterPipe,
+  DropLastCharPipe,
+  OrderByPipe,
+  SearchFilterPipe,
+  VariablesFilterPipe,
+  FormatStatisticsPipe,
+  FormatStatKeysPipe,
+  WithJavaListenerPipe,
+  ConfigurationMessagesComponent,
+  ConfigurationSummaryComponent,
+];
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    ConfigurationsManageComponent,
-    ConfigurationsManageDetailsComponent,
-    ConfigurationsShowComponent,
-    ConfigurationsUploadComponent,
-    EnvironmentVariablesComponent,
-    FlowComponent,
-    IbisstoreSummaryComponent,
-    IframeCustomViewComponent,
-    IframeLadybugLegacyComponent,
-    IframeLadybugComponent,
-    IframeLarvaComponent,
-    InlinestoreComponent,
-    JdbcBrowseTablesComponent,
-    JdbcExecuteQueryComponent,
-    JmsBrowseQueueComponent,
-    JmsSendMessageComponent,
-    LiquibaseComponent,
-    SchedulerComponent,
-    SchedulerEditComponent,
-    SchedulerAddComponent,
-    StatusComponent,
-    StorageComponent,
-    StorageListComponent,
-    StorageViewComponent,
-    StorageListDtComponent,
-    AdapterstatisticsComponent,
-    SecurityItemsComponent,
-    WebservicesComponent,
-    MonitorsComponent,
-    MonitorsAddEditComponent,
-    ConnectionsComponent,
-    ErrorComponent,
-    LoadingComponent,
-    LoggingComponent,
-    LoggingManageComponent,
-    NotificationsComponent,
-    IafUpdateComponent,
-    TestPipelineComponent,
-    TestServiceListenerComponent,
-    LoginComponent,
-    ServerWarningsComponent,
-    AdapterStatusComponent,
-    LoggingAddComponent,
-    //modals
-    FlowModalComponent,
-    // pipes
-    ConfigurationFilterPipe,
-    DropLastCharPipe,
-    OrderByPipe,
-    SearchFilterPipe,
-    VariablesFilterPipe,
-    FormatStatisticsPipe,
-    FormatStatKeysPipe,
-    WithJavaListenerPipe,
-    MarkDownPipe,
-    // directives
-    ConfigurationMessagesComponent,
-    ConfigurationSummaryComponent,
-  ],
-  bootstrap: [AppComponent],
-  exports: [TruncatePipe],
+  declarations: moduleComponents,
+  exports: moduleComponents,
   imports: [
     BrowserModule,
     FormsModule,
     LaddaModule,
     NgbModule,
-    AppRoutingModule,
+    // AppRoutingModule,
     NgIdleModule.forRoot(),
     NgChartsModule.forRoot(),
-    // standalone directives
+    // Router
+    RouterModule,
+    // standalone
     TimeSinceDirective,
     ToDateDirective,
     ThSortableDirective,
     QuickSubmitFormDirective,
-    // standalone components
     CustomViewsComponent,
     FileViewerComponent,
     InputFileUploadComponent,
@@ -193,18 +178,12 @@ const windowProvider: ValueProvider = {
     DatatableComponent,
     DtContentDirective,
     MonitorsNewComponent,
-    // standalone pipes
     TruncatePipe,
     ConfigurationTabListComponent,
     TabListComponent,
     HasAccessToLinkDirective,
     ComboboxComponent,
-  ],
-  providers: [
-    windowProvider,
-    { provide: TitleStrategy, useClass: PagesTitleStrategy },
-    httpInterceptorProviders,
-    provideHttpClient(withInterceptorsFromDi()),
+    MarkDownPipe,
   ],
 })
 export class AppModule {}

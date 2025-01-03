@@ -20,6 +20,7 @@ import {
   NavigationStart,
   ParamMap,
   Router,
+  RouterOutlet,
 } from '@angular/router';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 // @ts-expect-error pace-js does not have types
@@ -38,12 +39,13 @@ import { ServerInfo, ServerInfoService } from './services/server-info.service';
 import { ClusterMemberEvent, ClusterMemberEventType, WebsocketService } from './services/websocket.service';
 import { deepMerge } from './utils';
 import { ServerTimeService } from './services/server-time.service';
+import { AppModule } from './app.module';
 
 @Component({
   selector: 'app-root',
+  imports: [AppModule, RouterOutlet],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  standalone: false,
 })
 export class AppComponent implements OnInit, OnDestroy {
   protected loading = true;
@@ -328,6 +330,7 @@ export class AppComponent implements OnInit, OnDestroy {
       const version = this.miscService.compare_version(newVersion, currentVersion) ?? 0;
       if (!currentVersion || currentVersion === '') {
         this.debugService.warn(`Latest version is '${newVersion}' but can't retrieve current version.`);
+        this.sessionService.set('IAF-Release', newVersion);
         return;
       }
 

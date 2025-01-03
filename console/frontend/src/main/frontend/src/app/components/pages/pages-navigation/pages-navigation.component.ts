@@ -4,7 +4,6 @@ import { MinimalizaSidebarComponent } from './minimaliza-sidebar.component';
 import { ScrollToTopComponent } from './scroll-to-top.component';
 import { CommonModule } from '@angular/common';
 import { CustomViewsComponent } from '../../custom-views/custom-views.component';
-import { InformationModalComponent } from '../information-modal/information-modal.component';
 import { ServerInfoService } from '../../../services/server-info.service';
 import { CdkAccordionItem, CdkAccordionModule } from '@angular/cdk/accordion';
 import { SidebarDirective } from './sidebar.directive';
@@ -26,7 +25,6 @@ type ExpandedItem = {
     CustomViewsComponent,
     MinimalizaSidebarComponent,
     ScrollToTopComponent,
-    InformationModalComponent,
     SidebarDirective,
     HasAccessToLinkDirective,
   ],

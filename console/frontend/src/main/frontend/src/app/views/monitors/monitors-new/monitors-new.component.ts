@@ -3,14 +3,13 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MonitorsService } from '../monitors.service';
 import { AppService } from '../../../app.service';
 import { FormsModule } from '@angular/forms';
-import { NgForOf } from '@angular/common';
 import { combineLatestWith, Subscription } from 'rxjs';
 import { LaddaModule } from 'angular2-ladda';
 import { ComboboxComponent, Option } from '../../../components/combobox/combobox.component';
 
 @Component({
   selector: 'app-monitors-new',
-  imports: [RouterLink, FormsModule, NgForOf, LaddaModule, ComboboxComponent],
+  imports: [RouterLink, FormsModule, LaddaModule, ComboboxComponent],
   templateUrl: './monitors-new.component.html',
   styleUrl: './monitors-new.component.scss',
 })
