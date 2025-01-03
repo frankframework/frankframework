@@ -687,7 +687,10 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	}
 
 	public int getTimeout(@Nullable ParameterValueList pvl) {
-		return pvl == null ? timeout : pvl.get("timeout").asIntegerValue(timeout);
+		if (pvl == null || !pvl.contains("timeout")) {
+			return timeout;
+		}
+		return pvl.get("timeout").asIntegerValue(timeout);
 	}
 
 	/**
