@@ -754,6 +754,7 @@ public class Json2Xml extends XmlAligner {
 						elementDeclarationStub.fName=childName;
 						childElementDeclaration = elementDeclarationStub;
 					} else {
+						// TODO: Check here if deepSearch would consume the element; currently deepSearch processes an element but it's not registered and thus gives error here.
 						handleRecoverableError(MSG_CANNOT_NOT_FIND_ELEMENT_DECLARATION+" ["+childName+"] in the definition of type [" + name + "]", isIgnoreUndeclaredElements());
 						continue;
 					}
