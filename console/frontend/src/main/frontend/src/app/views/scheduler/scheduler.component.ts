@@ -38,6 +38,7 @@ export type Job = {
   selector: 'app-scheduler',
   templateUrl: './scheduler.component.html',
   styleUrls: ['./scheduler.component.scss'],
+  standalone: false,
 })
 export class SchedulerComponent implements OnInit, OnDestroy {
   protected jobGroups: Record<string, Job[]> = {};

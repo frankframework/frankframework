@@ -7,6 +7,7 @@ import { BaseIframeComponent } from '../iframe.base';
   selector: 'app-iframe-ladybug-legacy',
   templateUrl: '../iframe.component.html',
   styleUrls: ['../iframe.component.scss'],
+  standalone: false,
 })
 export class IframeLadybugLegacyComponent extends BaseIframeComponent implements OnInit {
   constructor(sanitizer: DomSanitizer, appService: AppService) {

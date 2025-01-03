@@ -3,6 +3,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
   name: 'formatStatistics',
+  standalone: false,
 })
 export class FormatStatisticsPipe implements PipeTransform {
   transform(

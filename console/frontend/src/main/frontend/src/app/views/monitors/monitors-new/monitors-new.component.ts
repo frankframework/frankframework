@@ -10,7 +10,6 @@ import { ComboboxComponent, Option } from '../../../components/combobox/combobox
 
 @Component({
   selector: 'app-monitors-new',
-  standalone: true,
   imports: [RouterLink, FormsModule, NgForOf, LaddaModule, ComboboxComponent],
   templateUrl: './monitors-new.component.html',
   styleUrl: './monitors-new.component.scss',

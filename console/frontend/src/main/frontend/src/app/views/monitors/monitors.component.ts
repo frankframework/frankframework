@@ -8,6 +8,7 @@ import { Subscription } from 'rxjs';
   selector: 'app-monitors',
   templateUrl: './monitors.component.html',
   styleUrls: ['./monitors.component.scss'],
+  standalone: false,
 })
 export class MonitorsComponent implements OnInit, OnDestroy {
   protected selectedConfiguration: string = '';

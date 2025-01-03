@@ -10,6 +10,7 @@ import { Base64Service } from '../../../services/base64.service';
   selector: 'app-storage-view',
   templateUrl: './storage-view.component.html',
   styleUrls: ['./storage-view.component.scss'],
+  standalone: false,
 })
 export class StorageViewComponent implements OnInit {
   protected message: PartialMessage = {

@@ -22,6 +22,7 @@ export function ConfigurationFilter(
 
 @Pipe({
   name: 'configurationFilter',
+  standalone: false,
 })
 export class ConfigurationFilterPipe implements PipeTransform {
   transform(

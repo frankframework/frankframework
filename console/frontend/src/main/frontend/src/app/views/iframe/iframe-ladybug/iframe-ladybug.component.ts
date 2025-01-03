@@ -7,6 +7,7 @@ import { BaseIframeComponent } from '../iframe.base';
   selector: 'app-iframe-ladybug',
   templateUrl: '../iframe.component.html',
   styleUrls: ['../iframe.component.scss'],
+  standalone: false,
 })
 export class IframeLadybugComponent extends BaseIframeComponent implements OnInit, OnDestroy {
   constructor(sanitizer: DomSanitizer, appService: AppService) {

@@ -6,6 +6,7 @@ import { ApiListener, Service, WebservicesService, Wsdl } from './webservices.se
   selector: 'app-webservices',
   templateUrl: './webservices.component.html',
   styleUrls: ['./webservices.component.scss'],
+  standalone: false,
 })
 export class WebservicesComponent implements OnInit {
   protected rootURL: string = this.appService.getServerPath();

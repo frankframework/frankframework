@@ -6,7 +6,6 @@ import { Toast, ToastService, ToastType } from 'src/app/services/toast.service';
 @Component({
   selector: 'app-toasts-container',
   templateUrl: './toasts-container.component.html',
-  standalone: true,
   imports: [CommonModule, NgbToast],
 })
 export class ToastsContainerComponent {

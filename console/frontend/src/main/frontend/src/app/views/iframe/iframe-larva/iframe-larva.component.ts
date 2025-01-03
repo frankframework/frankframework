@@ -6,6 +6,7 @@ import { BaseIframeComponent } from '../iframe.base';
   selector: 'app-iframe-larva',
   templateUrl: '../iframe.component.html',
   styleUrls: ['../iframe.component.scss'],
+  standalone: false,
 })
 export class IframeLarvaComponent extends BaseIframeComponent implements OnInit {
   constructor(sanitizer: DomSanitizer, appService: AppService) {

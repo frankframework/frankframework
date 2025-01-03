@@ -21,6 +21,7 @@ interface Form {
   selector: 'app-jms-send-message',
   templateUrl: './jms-send-message.component.html',
   styleUrls: ['./jms-send-message.component.scss'],
+  standalone: false,
 })
 export class JmsSendMessageComponent implements OnInit {
   protected destinationTypes: string[] = ['QUEUE', 'TOPIC'];

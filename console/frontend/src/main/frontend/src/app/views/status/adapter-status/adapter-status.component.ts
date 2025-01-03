@@ -7,6 +7,7 @@ import { StatusService } from '../status.service';
   selector: 'app-adapter-status',
   templateUrl: './adapter-status.component.html',
   styleUrl: './adapter-status.component.scss',
+  standalone: false,
 })
 export class AdapterStatusComponent {
   @Input({ required: true }) adapter: Adapter | null = null;

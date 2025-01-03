@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
   selector: 'app-server-warnings',
   templateUrl: './server-warnings.component.html',
   styleUrl: './server-warnings.component.scss',
+  standalone: false,
 })
 export class ServerWarningsComponent {
   @Input({ required: true }) alerts: Alert[] = [];

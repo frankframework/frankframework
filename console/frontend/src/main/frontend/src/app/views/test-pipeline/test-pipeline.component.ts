@@ -26,6 +26,7 @@ type PipelineResult = {
   selector: 'app-test-pipeline',
   templateUrl: './test-pipeline.component.html',
   styleUrls: ['./test-pipeline.component.scss'],
+  standalone: false,
 })
 export class TestPipelineComponent implements OnInit, OnDestroy {
   @ViewChild(InputFileUploadComponent) formFile!: InputFileUploadComponent;

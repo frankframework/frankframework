@@ -9,6 +9,7 @@ type keyValueProperty = KeyValue<string, string>;
   selector: 'app-environment-variables',
   templateUrl: './environment-variables.component.html',
   styleUrls: ['./environment-variables.component.scss'],
+  standalone: false,
 })
 export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
   protected readonly GLOBAL_TAB_NAME = 'Global';

@@ -2,6 +2,7 @@ import { KeyValueDiffer, KeyValueDiffers, Pipe, PipeTransform } from '@angular/c
 
 @Pipe({
   name: 'formatStatKeys',
+  standalone: false,
 })
 export class FormatStatKeysPipe implements PipeTransform {
   private keyValues: string[] = [];

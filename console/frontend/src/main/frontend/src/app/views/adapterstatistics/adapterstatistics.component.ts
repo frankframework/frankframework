@@ -13,6 +13,7 @@ import { AdapterstatisticsService, Statistics } from './adapterstatistics.servic
   selector: 'app-adapterstatistics',
   templateUrl: './adapterstatistics.component.html',
   styleUrls: ['./adapterstatistics.component.scss'],
+  standalone: false,
 })
 export class AdapterstatisticsComponent implements OnInit, OnDestroy {
   defaults = {

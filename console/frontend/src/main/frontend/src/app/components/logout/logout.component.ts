@@ -8,7 +8,6 @@ import { PollerService } from 'src/app/services/poller.service';
 @Component({
   selector: 'app-logout',
   template: '',
-  standalone: true,
   imports: [CommonModule],
 })
 export class LogoutComponent implements OnInit {

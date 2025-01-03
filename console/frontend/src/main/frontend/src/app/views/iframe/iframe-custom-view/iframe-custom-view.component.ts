@@ -10,6 +10,7 @@ import { Subscription } from 'rxjs';
   selector: 'app-iframe-custom-view',
   templateUrl: '../iframe.component.html',
   styleUrls: ['../iframe.component.scss'],
+  standalone: false,
 })
 export class IframeCustomViewComponent extends BaseIframeComponent implements OnInit, OnDestroy {
   private routeSubscription?: Subscription;

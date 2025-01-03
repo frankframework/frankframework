@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
   selector: 'app-configuration-summary',
   templateUrl: './configuration-summary.component.html',
   styleUrl: './configuration-summary.component.scss',
+  standalone: false,
 })
 export class ConfigurationSummaryComponent implements OnInit, OnDestroy {
   @Input({ required: true }) isConfigStubbed: Record<string, boolean> = {};

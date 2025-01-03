@@ -3,7 +3,6 @@ import { NgClass, NgForOf } from '@angular/common';
 
 @Component({
   selector: 'app-tab-list',
-  standalone: true,
   imports: [NgForOf, NgClass],
   templateUrl: './tab-list.component.html',
   styleUrl: './tab-list.component.scss',

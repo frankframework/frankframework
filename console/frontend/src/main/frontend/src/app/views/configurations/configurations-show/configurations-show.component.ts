@@ -10,6 +10,7 @@ import { Subscription } from 'rxjs';
   selector: 'app-configurations-show',
   templateUrl: './configurations-show.component.html',
   styleUrls: ['./configurations-show.component.scss'],
+  standalone: false,
 })
 export class ConfigurationsShowComponent implements OnInit, OnDestroy {
   @ViewChild('editor') editor!: MonacoEditorComponent;

@@ -13,6 +13,7 @@ type EventSource = {
   selector: 'app-monitors-add-edit',
   templateUrl: './monitors-add-edit.component.html',
   styleUrls: ['./monitors-add-edit.component.scss'],
+  standalone: false,
 })
 export class MonitorsAddEditComponent implements OnInit {
   protected componentLoading = true;

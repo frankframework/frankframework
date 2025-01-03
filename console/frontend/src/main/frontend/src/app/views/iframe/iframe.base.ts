@@ -4,6 +4,7 @@ import { AppService } from 'src/app/app.service';
 
 @Component({
   template: '',
+  standalone: false,
 })
 export abstract class BaseIframeComponent implements OnInit, OnDestroy {
   protected url: string = '';

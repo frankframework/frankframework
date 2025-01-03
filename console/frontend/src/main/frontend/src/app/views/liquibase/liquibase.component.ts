@@ -12,6 +12,7 @@ interface Form {
   selector: 'app-liquibase',
   templateUrl: './liquibase.component.html',
   styleUrls: ['./liquibase.component.scss'],
+  standalone: false,
 })
 export class LiquibaseComponent implements OnInit, OnDestroy {
   protected form: Form = {

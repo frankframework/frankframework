@@ -19,6 +19,7 @@ type ConnectionsData = Connections['data'][number];
   selector: 'app-connections',
   templateUrl: './connections.component.html',
   styleUrls: ['./connections.component.scss'],
+  standalone: false,
 })
 export class ConnectionsComponent implements OnInit {
   protected datasource: DataTableDataSource<ConnectionsData> = new DataTableDataSource();

@@ -13,6 +13,7 @@ type Form = {
   selector: 'app-logging-add',
   templateUrl: './logging-add.component.html',
   styleUrl: './logging-add.component.scss',
+  standalone: false,
 })
 export class LoggingAddComponent {
   protected error: string | null = null;

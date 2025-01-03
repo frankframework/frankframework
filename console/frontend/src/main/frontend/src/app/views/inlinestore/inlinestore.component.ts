@@ -16,6 +16,7 @@ type InlineStore = Record<string, { items: stateItemItem[]; totalMessageCount: n
   selector: 'app-inlinestore',
   templateUrl: './inlinestore.component.html',
   styleUrls: ['./inlinestore.component.scss'],
+  standalone: false,
 })
 export class InlinestoreComponent implements OnInit {
   protected result: InlineStore = {};

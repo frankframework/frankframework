@@ -7,6 +7,7 @@ import { Subscription } from 'rxjs';
   selector: 'app-configurations-manage',
   templateUrl: './configurations-manage.component.html',
   styleUrls: ['./configurations-manage.component.scss'],
+  standalone: false,
 })
 export class ConfigurationsManageComponent implements OnInit, OnDestroy {
   protected configurations: Configuration[] = [];

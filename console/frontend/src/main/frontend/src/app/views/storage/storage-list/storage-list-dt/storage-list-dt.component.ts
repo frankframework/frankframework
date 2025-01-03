@@ -5,6 +5,7 @@ import { PartialMessage, StorageService } from '../../storage.service';
   selector: 'app-storage-list-dt',
   templateUrl: './storage-list-dt.component.html',
   styleUrls: ['./storage-list-dt.component.scss'],
+  standalone: false,
 })
 export class StorageListDtComponent {
   @Input({ required: true }) message!: PartialMessage;

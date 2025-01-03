@@ -8,6 +8,7 @@ import { filter } from 'rxjs';
   selector: 'app-storage',
   templateUrl: './storage.component.html',
   styleUrls: ['./storage.component.scss'],
+  standalone: false,
 })
 export class StorageComponent implements OnInit {
   constructor(

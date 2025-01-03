@@ -11,6 +11,7 @@ import { HttpErrorResponse } from '@angular/common/http';
   selector: 'app-jdbc-execute-query',
   templateUrl: './jdbc-execute-query.component.html',
   styleUrls: ['./jdbc-execute-query.component.scss'],
+  standalone: false,
 })
 export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
   protected datasources: string[] = [];

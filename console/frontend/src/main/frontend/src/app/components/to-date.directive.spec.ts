@@ -6,7 +6,6 @@ import { ToDateDirective } from './to-date.directive';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 @Component({
-  standalone: true,
   template: `
     <span appToDate [time]="1710111600000"></span>
     <span appToDate [time]="'Mon Mar 11 2024 00:00:00 GMT+0100'"></span>

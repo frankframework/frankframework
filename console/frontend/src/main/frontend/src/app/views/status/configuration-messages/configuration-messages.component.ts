@@ -5,6 +5,7 @@ import { AdapterMessage, MessageLog } from '../../../app.service';
   selector: 'app-configuration-messages',
   templateUrl: './configuration-messages.component.html',
   styleUrl: './configuration-messages.component.scss',
+  standalone: false,
 })
 export class ConfigurationMessagesComponent {
   @Input({ required: true }) messageLog: Record<string, MessageLog> = {};

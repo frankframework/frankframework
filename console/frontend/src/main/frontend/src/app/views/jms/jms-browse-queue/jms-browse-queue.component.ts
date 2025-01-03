@@ -8,6 +8,7 @@ import { ServerErrorResponse } from '../../../app.service';
   selector: 'app-jms-browse-queue',
   templateUrl: './jms-browse-queue.component.html',
   styleUrls: ['./jms-browse-queue.component.scss'],
+  standalone: false,
 })
 export class JmsBrowseQueueComponent implements OnInit {
   protected destinationTypes: string[] = ['QUEUE', 'TOPIC'];

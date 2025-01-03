@@ -3,6 +3,7 @@ import { Adapter } from '../app.service';
 
 @Pipe({
   name: 'withJavaListener',
+  standalone: false,
 })
 export class WithJavaListenerPipe implements PipeTransform {
   transform(adapters: Record<string, Adapter>): Adapter[] {

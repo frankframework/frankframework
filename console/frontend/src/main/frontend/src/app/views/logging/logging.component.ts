@@ -11,6 +11,7 @@ import { HttpErrorResponse } from '@angular/common/http';
   selector: 'app-logging',
   templateUrl: './logging.component.html',
   styleUrls: ['./logging.component.scss'],
+  standalone: false,
 })
 export class LoggingComponent implements OnInit {
   @ViewChildren(ThSortableDirective) headers!: QueryList<ThSortableDirective>;

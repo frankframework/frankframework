@@ -19,7 +19,6 @@ type ExpandedItem = {
   selector: 'app-pages-navigation',
   templateUrl: './pages-navigation.component.html',
   styleUrls: ['./pages-navigation.component.scss'],
-  standalone: true,
   imports: [
     CommonModule,
     RouterModule,

@@ -10,6 +10,7 @@ import { Subscription } from 'rxjs';
   selector: 'app-scheduler-edit',
   templateUrl: '../scheduler-add-edit-parent.component.html',
   styleUrls: ['./scheduler-edit.component.scss'],
+  standalone: false,
 })
 export class SchedulerEditComponent extends SchedulerAddEditParent implements OnInit, OnDestroy {
   override editMode = true;

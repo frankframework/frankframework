@@ -10,6 +10,7 @@ import { FlowModalComponent } from './flow-modal/flow-modal.component';
   selector: 'app-flow',
   templateUrl: './flow.component.html',
   styleUrls: ['./flow.component.scss'],
+  standalone: false,
 })
 export class FlowComponent implements OnChanges {
   @Input() adapter: Adapter | null = null;

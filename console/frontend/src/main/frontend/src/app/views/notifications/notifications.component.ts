@@ -6,6 +6,7 @@ import { NotificationService, Notification } from 'src/app/services/notification
   selector: 'app-notifications',
   templateUrl: './notifications.component.html',
   styleUrls: ['./notifications.component.scss'],
+  standalone: false,
 })
 export class NotificationsComponent implements OnInit {
   protected notification: Notification | false = {

@@ -9,6 +9,7 @@ import { Subscription } from 'rxjs';
   selector: 'app-scheduler-add',
   templateUrl: '../scheduler-add-edit-parent.component.html',
   styleUrls: ['./scheduler-add.component.scss'],
+  standalone: false,
 })
 export class SchedulerAddComponent extends SchedulerAddEditParent implements OnInit, OnDestroy {
   private subscriptions: Subscription = new Subscription();

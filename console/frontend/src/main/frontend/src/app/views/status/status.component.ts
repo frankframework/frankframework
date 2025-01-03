@@ -14,6 +14,7 @@ type Filter = Record<AdapterStatus, boolean>;
   selector: 'app-status',
   templateUrl: './status.component.html',
   styleUrls: ['./status.component.scss'],
+  standalone: false,
 })
 export class StatusComponent implements OnInit, OnDestroy {
   protected filter: Filter = {

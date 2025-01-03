@@ -10,6 +10,7 @@ import { SortEvent, ThSortableDirective, basicAnyValueTableSort } from 'src/app/
   selector: 'app-configurations-manage-details',
   templateUrl: './configurations-manage-details.component.html',
   styleUrls: ['./configurations-manage-details.component.scss'],
+  standalone: false,
 })
 export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
   protected configuration: Configuration = {

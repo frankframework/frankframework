@@ -7,6 +7,7 @@ import { SessionService } from 'src/app/services/session.service';
   selector: 'app-iaf-update',
   templateUrl: './iaf-update.component.html',
   styleUrls: ['./iaf-update.component.scss'],
+  standalone: false,
 })
 export class IafUpdateComponent implements OnInit {
   protected release?: IAFRelease;

@@ -43,6 +43,7 @@ import { ServerTimeService } from './services/server-time.service';
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
+  standalone: false,
 })
 export class AppComponent implements OnInit, OnDestroy {
   protected loading = true;

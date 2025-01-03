@@ -20,6 +20,7 @@ type Form = {
   selector: 'app-configurations-upload',
   templateUrl: './configurations-upload.component.html',
   styleUrls: ['./configurations-upload.component.scss'],
+  standalone: false,
 })
 export class ConfigurationsUploadComponent implements OnInit, OnDestroy {
   @ViewChild(InputFileUploadComponent) fileInput!: InputFileUploadComponent;

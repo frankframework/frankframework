@@ -2,6 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
   name: 'dropLastChar',
+  standalone: false,
 })
 export class DropLastCharPipe implements PipeTransform {
   transform(input: string): string {

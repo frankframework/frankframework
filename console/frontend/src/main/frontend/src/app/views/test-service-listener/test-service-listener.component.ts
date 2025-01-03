@@ -17,6 +17,7 @@ type ServiceListenerResult = {
   selector: 'app-test-service-listener',
   templateUrl: './test-service-listener.component.html',
   styleUrls: ['./test-service-listener.component.scss'],
+  standalone: false,
 })
 export class TestServiceListenerComponent implements OnInit {
   protected state: AlertState[] = [];

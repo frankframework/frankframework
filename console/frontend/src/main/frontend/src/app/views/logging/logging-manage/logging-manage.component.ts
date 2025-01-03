@@ -7,6 +7,7 @@ import { ActivatedRoute, Router } from '@angular/router';
   selector: 'app-logging-manage',
   templateUrl: './logging-manage.component.html',
   styleUrls: ['./logging-manage.component.scss'],
+  standalone: false,
 })
 export class LoggingManageComponent implements OnInit {
   protected updateDynamicParams: boolean = false;

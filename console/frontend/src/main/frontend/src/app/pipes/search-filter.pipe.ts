@@ -4,6 +4,7 @@ type Source<T> = Record<string, T> | T[];
 
 @Pipe({
   name: 'searchFilter',
+  standalone: false,
 })
 export class SearchFilterPipe implements PipeTransform {
   transform<T>(source: T[], searchText: string): T[];

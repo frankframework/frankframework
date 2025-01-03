@@ -6,7 +6,6 @@ import { By } from '@angular/platform-browser';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 @Component({
-  standalone: true,
   template: `
     <span appTimeSince [time]="fiveMinAgo"></span>
     <span appTimeSince [time]="oneHourAgo"></span>

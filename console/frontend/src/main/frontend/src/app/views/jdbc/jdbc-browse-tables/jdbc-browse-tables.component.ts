@@ -14,6 +14,7 @@ interface ColumnName {
   selector: 'app-jdbc-browse-tables',
   templateUrl: './jdbc-browse-tables.component.html',
   styleUrls: ['./jdbc-browse-tables.component.scss'],
+  standalone: false,
 })
 export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
   protected datasources: string[] = [];

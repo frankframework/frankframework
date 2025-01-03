@@ -8,7 +8,6 @@ import { WebsocketService } from 'src/app/services/websocket.service';
 
 @Component({
   selector: 'app-websocket-test',
-  standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './websocket-test.component.html',
   styleUrl: './websocket-test.component.scss',

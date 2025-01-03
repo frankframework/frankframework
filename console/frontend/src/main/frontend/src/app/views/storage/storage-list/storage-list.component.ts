@@ -26,6 +26,7 @@ type MessageData = MessageStore['messages'][number];
   selector: 'app-storage-list',
   templateUrl: './storage-list.component.html',
   styleUrls: ['./storage-list.component.scss'],
+  standalone: false,
 })
 export class StorageListComponent implements OnInit, AfterViewInit {
   @ViewChild('storageListDt') storageListDt!: TemplateRef<StorageListDtComponent>;

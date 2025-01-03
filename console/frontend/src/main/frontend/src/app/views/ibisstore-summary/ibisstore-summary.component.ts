@@ -9,6 +9,7 @@ import { ActivatedRoute, Router } from '@angular/router';
   selector: 'app-ibisstore-summary',
   templateUrl: './ibisstore-summary.component.html',
   styleUrls: ['./ibisstore-summary.component.scss'],
+  standalone: false,
 })
 export class IbisstoreSummaryComponent implements OnInit, OnDestroy {
   protected datasources: string[] = [];

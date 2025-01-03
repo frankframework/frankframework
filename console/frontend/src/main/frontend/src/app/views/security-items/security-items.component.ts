@@ -16,6 +16,7 @@ import {
   selector: 'app-security-items',
   templateUrl: './security-items.component.html',
   styleUrls: ['./security-items.component.scss'],
+  standalone: false,
 })
 export class SecurityItemsComponent implements OnInit {
   protected sapSystems: SapSystem[] = [];
