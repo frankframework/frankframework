@@ -171,7 +171,7 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 		@SuppressWarnings("unchecked")
 		public <T> T execute(HttpRequestBase httpRequestBase, Class<T> dto) throws IOException {
 			httpRequestBase.addHeader("Authorization", msal.getAuthenticationToken());
-			HttpResponse response = msal.execute(httpRequestBase.getURI(), httpRequestBase, null);
+			HttpResponse response = msal.execute(httpRequestBase.getURI(), httpRequestBase, null, null);
 			HttpStatus status = HttpStatus.valueOf(response.getStatusLine().getStatusCode());
 
 			if (status.is2xxSuccessful()) {

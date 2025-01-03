@@ -103,7 +103,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, HasSt
 		MESSAGEID,
 		/** set the correlationId of the pipeline as the correlationId of the message sent, and use that as the correlationId in the selector for response messages */
 		CORRELATIONID,
-		/** do not automatically set the correlationId of the message sent, but use use the value found in that header after sending the message as the selector for response messages */
+		/** do not automatically set the correlationId of the message sent, but use the value found in that header after sending the message as the selector for response messages */
 		CORRELATIONID_FROM_MESSAGE
 	}
 
@@ -211,6 +211,14 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, HasSt
 			jmsSession = createSession();
 			messageProducer = getMessageProducer(jmsSession, getDestination(pipeLineSession, pvl));
 
+			long replyTimeout = getReplyTimeout();
+			if (pvl != null) {
+				ParameterValue replyTimeoutValue = pvl.get("replyTimeout");
+				if (replyTimeoutValue != null) {
+					replyTimeout = replyTimeoutValue.asLongValue(getReplyTimeout());
+				}
+			}
+
 			// create message to send
 			jakarta.jms.Message messageToSend = createMessage(jmsSession, correlationID, message, getMessageClass());
 			enhanceMessage(messageToSend, messageProducer, pvl, jmsSession);
@@ -219,7 +227,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, HasSt
 			// send message
 			send(messageProducer, messageToSend);
 			if (isSynchronous()) {
-				return waitAndHandleResponseMessage(messageToSend, replyQueue, pipeLineSession, jmsSession);
+				return waitAndHandleResponseMessage(messageToSend, replyQueue, pipeLineSession, jmsSession, replyTimeout);
 			}
 			return new Message(messageToSend.getJMSMessageID(), getContext(messageToSend));
 		} catch (JMSException | IOException | NamingException | SAXException | TransformerException | JmsException | XmlException e) {
@@ -267,7 +275,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, HasSt
 		}
 	}
 
-	private Message waitAndHandleResponseMessage(jakarta.jms.Message msg, Destination replyQueue, PipeLineSession session, Session s) throws JMSException, TimeoutException, IOException, TransformerException, SAXException, XmlException {
+	private Message waitAndHandleResponseMessage(jakarta.jms.Message msg, Destination replyQueue, PipeLineSession session, Session s, long replyTimeout) throws JMSException, TimeoutException, IOException, TransformerException, SAXException, XmlException {
 		String jmsMessageID = msg.getJMSMessageID();
 		String replyCorrelationId;
 		if (getReplyToName() == null) {
@@ -288,12 +296,12 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, HasSt
 			}
 		}
 		log.debug("[{}] start waiting for reply on [{}] requestMsgId [{}] replyCorrelationId [{}] for [{}] ms",
-				this::getName, logValue(replyQueue), logValue(jmsMessageID), logValue(replyCorrelationId), this::getReplyTimeout);
+				this::getName, logValue(replyQueue), logValue(jmsMessageID), logValue(replyCorrelationId), logValue(replyTimeout));
 		MessageConsumer mc = getMessageConsumerForCorrelationId(s, replyQueue, replyCorrelationId);
 		try {
-			jakarta.jms.Message rawReplyMsg = mc.receive(getReplyTimeout());
+			jakarta.jms.Message rawReplyMsg = mc.receive(replyTimeout);
 			if (rawReplyMsg == null) {
-				throw new TimeoutException("did not receive reply on [" + replyQueue + "] requestMsgId [" + jmsMessageID + "] replyCorrelationId [" + replyCorrelationId + "] within [" + getReplyTimeout() + "] ms");
+				throw new TimeoutException("did not receive reply on [" + replyQueue + "] requestMsgId [" + jmsMessageID + "] replyCorrelationId [" + replyCorrelationId + "] within [" + replyTimeout + "] ms");
 			}
 			StringBuilder receivedJMSProperties = new StringBuilder();
 			if (!getResponseHeadersList().isEmpty()) {

@@ -71,6 +71,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.frankframework.http.authentication.IOauthAuthenticator;
 
+import org.frankframework.parameters.ParameterValueList;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 
@@ -170,7 +172,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private @Getter @Setter Adapter adapter;
 
 	/* CONNECTION POOL */
-	private @Getter int timeout = 10_000;
+	private int timeout = 10_000;
 	private @Getter int maxConnections = 10;
 	private @Getter int maxExecuteRetries = 1;
 	private @Getter boolean staleChecking=true;
@@ -181,6 +183,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private @Getter HttpClientContext defaultHttpClientContext;
 	private HttpClientContext httpClientContext;
 	private @Getter CloseableHttpClient httpClient;
+	private RequestConfig.Builder requestConfigBuilder;
 
 	/* SECURITY */
 	private @Getter String authAlias;
@@ -216,7 +219,6 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		 * to the authorization server. The {@literal accessToken} is then used in the Authorization header to authenticate against the resource server.
 		 */
 		CLIENT_CREDENTIALS_QUERY_PARAMETERS,
-
 		/**
 		 * Requires {@literal tokenEndpoint}, {@literal clientId}, {@literal clientSecret}, {@literal username} and {@literal password} to be set.
 		 * Implements <a href="https://datatracker.ietf.org/doc/html/rfc6749#section-4.3">rfc6749</a>. The {@literal clientId} and {@literal clientSecret} are sent as basic authorization
@@ -373,10 +375,10 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 		credentials = getCredentialFactory();
 
-		RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
-		requestConfigBuilder.setConnectTimeout(getTimeout());
-		requestConfigBuilder.setConnectionRequestTimeout(getTimeout());
-		requestConfigBuilder.setSocketTimeout(getTimeout());
+		requestConfigBuilder = RequestConfig.custom();
+		requestConfigBuilder.setConnectTimeout(getTimeout(null));
+		requestConfigBuilder.setConnectionRequestTimeout(getTimeout(null));
+		requestConfigBuilder.setSocketTimeout(getTimeout(null));
 
 		HttpHost proxy = null;
 		CredentialFactory pcf = null;
@@ -392,8 +394,6 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		} catch (HttpAuthenticationException e) {
 			throw new ConfigurationException("exception configuring authentication", e);
 		}
-
-		httpClientBuilder.setDefaultRequestConfig(requestConfigBuilder.build());
 
 		httpClientBuilder.setRetryHandler(new HttpRequestRetryHandler(getMaxExecuteRetries()));
 
@@ -653,12 +653,19 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		return sslConnectionSocketFactory;
 	}
 
-	protected HttpResponse execute(URI targetUri, HttpRequestBase httpRequestBase, PipeLineSession session) throws IOException {
+	protected HttpResponse execute(URI targetUri, HttpRequestBase httpRequestBase, PipeLineSession session, ParameterValueList pvl) throws IOException {
 		HttpHost targetHost = new HttpHost(targetUri.getHost(), targetUri.getPort(), targetUri.getScheme());
 
 		CloseableHttpClient client = getHttpClient();
 		HttpClientContext context = httpClientContext != null ? httpClientContext : getOrCreateHttpClientContext(client, session);
 		preAuthenticate(context);
+
+		requestConfigBuilder.setConnectTimeout(getTimeout(pvl));
+		requestConfigBuilder.setConnectionRequestTimeout(getTimeout(pvl));
+		requestConfigBuilder.setSocketTimeout(getTimeout(pvl));
+
+		context.setRequestConfig(requestConfigBuilder.build());
+
 		log.trace("executing request using HttpClient [{}] and HttpContext [{}]", client::hashCode, () -> context);
 		return client.execute(targetHost, httpRequestBase, context);
 	}
@@ -672,11 +679,15 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	}
 
 	/**
-	 * Timeout in ms of obtaining a connection/result.
+	 * Timeout in ms of obtaining a connection/result. Can be modified at runtime by adding a parameter called {@code timeout} with the desired value.
 	 * @ff.default 10000
 	 */
 	public void setTimeout(int i) {
 		timeout = i;
+	}
+
+	public int getTimeout(@Nullable ParameterValueList pvl) {
+		return pvl == null ? timeout : pvl.get("timeout").asIntegerValue(timeout);
 	}
 
 	/**
