@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,8 +35,11 @@ import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
+import lombok.Setter;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.Configuration;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
@@ -45,12 +48,14 @@ import org.frankframework.xml.FullXmlFilter;
 @Log4j2
 public class Digester extends FullXmlFilter implements InitializingBean, ApplicationContextAware {
 	private final Set<DigesterRule> parsedPatterns = new HashSet<>();
+
 	private Deque<String> elementNames = new ArrayDeque<>(); // XML element names
-	private Deque<BeanRuleWrapper> elementBeans = new ArrayDeque<>(); // Beans conform found element names, TODO turn into IConfigurable
+	private Deque<BeanRuleWrapper> elementBeans = new ArrayDeque<>(); // Beans conform found element names
 	private Deque<ApplicationContext> applicationContext = new ArrayDeque<>(); // Context Stack
 	private Map<DigesterRule, IDigesterFactory> beanFactories = new ConcurrentHashMap<>();
+
 	private ValidateAttributeRule handleAttributeRule;
-	private Locator locator;
+	private @Getter @Setter Locator documentLocator;
 
 	record BeanRuleWrapper (DigesterRule rule, Object bean) {}
 
@@ -72,13 +77,24 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 	 */
 	private ApplicationContext getCurrentApplicationContext() {
 		if (applicationContext.isEmpty()) {
-			throw new IllegalStateException("applicationContext stack should never be empty!");
+			throw new IllegalStateException("ApplicationContext stack should never be empty!");
 		}
 		return applicationContext.peek();
 	}
 
+	/**
+	 * List of DigesterRules that apply to elements created through this {@link Digester}.
+	 */
 	public void setParsedPatterns(Map<String, DigesterRule> parsedPatterns) {
 		this.parsedPatterns.addAll(parsedPatterns.values());
+	}
+
+	public String getCurrentElementName() {
+		return elementNames.peek();
+	}
+
+	public Object peek() {
+		return elementBeans.peek().bean();
 	}
 
 	@Override
@@ -92,27 +108,10 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 		elementNames.push(localName);
 		DigesterRule rule = findRuleForLocalName(localName);
 		if (StringUtils.isNotEmpty(rule.getRegisterTextMethod())) {
+			// Capture the character data first.
 			elementBeans.push(new BeanRuleWrapper(rule, new StringBuilder()));
 		} else {
-			try {
-				IDigesterFactory factory = getFactoryForRule(rule);
-				if (factory != null) { // Only the Configuration element doesn't have a factory
-					factory.setApplicationContext(getCurrentApplicationContext());
-					Object bean = factory.createObject(atts);
-					if (bean instanceof ApplicationContext a) {
-						applicationContext.push(a);
-					}
-					elementBeans.push(new BeanRuleWrapper(rule, bean));
-				}
-			} catch (Exception e) {
-				throw new SAXException("unable to create bean using DigesterRule ["+rule+"]", e);
-			}
-
-			try {
-				handleAttributeRule.begin(localName, atts);
-			} catch (Exception e) {
-				throw new SAXException("unable to populate bean attributes", e);
-			}
+			createBeanThroughFactory(rule, localName, atts);
 		}
 
 		super.startElement(uri, localName, qName, atts);
@@ -133,11 +132,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		try {
-			handleAttributeRule.end(localName);
-		} catch (Exception e) {
-			throw new SAXException("unable to finalize handling bean attributes", e);
-		}
+		handleAttributeRule.end(localName);
 
 		String poppedElementNamed = elementNames.pop();
 		if (!localName.equals(poppedElementNamed)) {
@@ -145,29 +140,66 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 		}
 
 		BeanRuleWrapper beanWrapper = elementBeans.pop();
-		DigesterRule rule = beanWrapper.rule();
-
-		if (rule != null) {
-			final Object parent = elementBeans.peek().bean();
-			try {
-				if (StringUtils.isNotEmpty(rule.getRegisterTextMethod())) {
-					if (beanWrapper.bean() instanceof StringBuilder buffer) {
-						ClassUtils.invokeSetter(parent, rule.getRegisterTextMethod(), buffer.toString());
-					}
-				} else if (StringUtils.isNotEmpty(rule.getRegisterMethod())) {
-					final Object bean = beanWrapper.bean();
-					ClassUtils.invokeSetter(parent, rule.getRegisterMethod(), bean);
-				}
-			} catch (Exception e) {
-				throw new SAXException("unable to register text or bean on parent [%s]".formatted(parent), e);
-			}
-		}
+		registerDigestedBeanOnParent(beanWrapper);
 
 		if (beanWrapper.bean() instanceof ApplicationContext) {
 			applicationContext.pop();
 		}
 
 		super.endElement(uri, localName, qName);
+	}
+
+	/**
+	 * Using the appropriate {@link DigesterRule} it attempts to create the bean using the top-level ApplicationContext.
+	 * This can either be a {@link Configuration} or {@link Adapter}.
+	 * Once created it uses the {@link ValidateAttributeRule} to call all setters and populate the bean properties.
+	 * <p>
+	 * The newly created bean is not yet added to the parent, see {@link #endElement(String, String, String)}.
+	 */
+	private void createBeanThroughFactory(DigesterRule rule, String localName, Attributes atts) throws SAXException {
+		try {
+			IDigesterFactory factory = getFactoryForRule(rule);
+			if (factory != null) { // Only the Configuration element doesn't have a factory
+				factory.setApplicationContext(getCurrentApplicationContext());
+				Object bean = factory.createObject(atts);
+				if (bean instanceof ApplicationContext a) {
+					applicationContext.push(a);
+				}
+				elementBeans.push(new BeanRuleWrapper(rule, bean));
+			}
+		} catch (Exception e) {
+			throw new SAXException("unable to create bean for element [%s] using DigesterRule [%s]".formatted(localName, rule), e);
+		}
+
+		try {
+			handleAttributeRule.begin(localName, atts);
+		} catch (Exception e) {
+			throw new SAXException("unable to populate bean attributes for element [%s]".formatted(localName), e);
+		}
+	}
+
+	/**
+	 * Verify if the target bean has a rule assigned to it, and if so register it with it's parent.
+	 */
+	private void registerDigestedBeanOnParent(BeanRuleWrapper beanWrapper) throws SAXException {
+		DigesterRule rule = beanWrapper.rule();
+		if (rule == null) {
+			return; // Technically this is possible for the first rule...
+		}
+
+		final Object parent = elementBeans.peek().bean();
+		try {
+			if (StringUtils.isNotEmpty(rule.getRegisterTextMethod())) {
+				if (beanWrapper.bean() instanceof StringBuilder buffer) {
+					ClassUtils.invokeSetter(parent, rule.getRegisterTextMethod(), buffer.toString());
+				}
+			} else if (StringUtils.isNotEmpty(rule.getRegisterMethod())) {
+				final Object bean = beanWrapper.bean();
+				ClassUtils.invokeSetter(parent, rule.getRegisterMethod(), bean);
+			}
+		} catch (Exception e) {
+			throw new SAXException("unable to register text or bean on parent [%s]".formatted(parent), e);
+		}
 	}
 
 	/**
@@ -226,22 +258,5 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 		}
 		log.trace("no factory specified, returing default [{}]", GenericFactory.class::getCanonicalName);
 		return SpringUtils.createBean(applicationContext.peekLast(), GenericFactory.class); // Wire the factory through Spring
-	}
-
-	public String getCurrentElementName() {
-		return elementNames.peek();
-	}
-
-	public Locator getDocumentLocator() {
-		return locator;
-	}
-
-	@Override
-	public void setDocumentLocator(Locator locator) {
-		this.locator = locator;
-	}
-
-	public Object peek() {
-		return elementBeans.peek().bean();
 	}
 }

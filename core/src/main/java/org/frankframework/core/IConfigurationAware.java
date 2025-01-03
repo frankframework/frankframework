@@ -22,6 +22,9 @@ import org.springframework.context.ApplicationContextAware;
  * We need to migrate away from this interface as it doesn't add anything anymore and is abused for it's many getters.
  * Classes that implement this for ConfigurationWarnings should publish events through a {@link ApplicationEventPublisher}.
  * Those that actually need the {@link Configuration} class need to be rewritten to use {@link ConfigurationAware}.
+ * 
+ * This interface has mostly been used to retrieve or create beans using a Spring context, as the Adapter context
+ * doesn't hold any bean references yet, for now it's fine to use either.
  */
 @Deprecated
 public interface IConfigurationAware extends IScopeProvider, ApplicationContextAware {
