@@ -1421,7 +1421,7 @@ public class ReceiverTest {
 			"50, 50, false",
 			"40, 40, false"
 	})
-	public void testMaxBackoffDelayAdjustment(Integer maxBackoffDelay, int expectedBackoffDelay, boolean expectConfigWarning) throws Exception {
+	public void testMaxBackoffDelayAdjustment(Integer maxBackoffDelay, int expectedBackoffDelay, boolean expectConfigWarning) {
 		// Arrange
 		configuration = buildConfiguration(null);
 		Adapter adapter = configuration.createBean(Adapter.class);

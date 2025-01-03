@@ -92,7 +92,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 		elementNames.push(localName);
 		DigesterRule rule = findRuleForLocalName(localName);
 		if (StringUtils.isNotEmpty(rule.getRegisterTextMethod())) {
-			elementBeans.push(new BeanRuleWrapper(rule, new StringBuffer()));
+			elementBeans.push(new BeanRuleWrapper(rule, new StringBuilder()));
 		} else {
 			try {
 				IDigesterFactory factory = getFactoryForRule(rule);
@@ -109,7 +109,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 			}
 
 			try {
-				handleAttributeRule.begin(uri, localName, atts);
+				handleAttributeRule.begin(localName, atts);
 			} catch (Exception e) {
 				throw new SAXException("unable to populate bean attributes", e);
 			}
@@ -123,7 +123,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 		BeanRuleWrapper beanWrapper = elementBeans.peek();
 		DigesterRule rule = beanWrapper.rule();
 		if (rule != null && StringUtils.isNotEmpty(rule.getRegisterTextMethod())) {
-			if (beanWrapper.bean() instanceof StringBuffer buffer) {
+			if (beanWrapper.bean() instanceof StringBuilder buffer) {
 				buffer.append(ch, start, length);
 			}
 		}
@@ -134,7 +134,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		try {
-			handleAttributeRule.end(uri, localName);
+			handleAttributeRule.end(localName);
 		} catch (Exception e) {
 			throw new SAXException("unable to finalize handling bean attributes", e);
 		}
@@ -151,7 +151,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 			final Object parent = elementBeans.peek().bean();
 			try {
 				if (StringUtils.isNotEmpty(rule.getRegisterTextMethod())) {
-					if (beanWrapper.bean() instanceof StringBuffer buffer) {
+					if (beanWrapper.bean() instanceof StringBuilder buffer) {
 						ClassUtils.invokeSetter(parent, rule.getRegisterTextMethod(), buffer.toString());
 					}
 				} else if (StringUtils.isNotEmpty(rule.getRegisterMethod())) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2024 WeAreFrank!
+   Copyright 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public class FrankDigesterRules extends AbstractDigesterRulesHandler {
 
 	@Override
 	protected void handle(DigesterRule rule) throws SAXException {
-		if(log.isTraceEnabled()) log.trace("adding digesterRule {}", rule.toString());
+		log.trace("adding digesterRule {}", rule::toString);
 
 		String pattern = rule.getPattern();
 

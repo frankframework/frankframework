@@ -18,6 +18,12 @@ package org.frankframework.core;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+/**
+ * We need to migrate away from this interface as it doesn't add anything anymore and is abused for it's many getters.
+ * Classes that implement this for ConfigurationWarnings should publish events through a {@link ApplicationEventPublisher}.
+ * Those that actually need the {@link Configuration} class need to be rewritten to use {@link ConfigurationAware}.
+ */
+@Deprecated
 public interface IConfigurationAware extends IScopeProvider, ApplicationContextAware {
 
 	String getName();

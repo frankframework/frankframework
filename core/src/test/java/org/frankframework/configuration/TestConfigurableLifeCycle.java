@@ -35,11 +35,12 @@ public class TestConfigurableLifeCycle {
 		pipe.setName("echo");
 		pipeline.addPipe(pipe);
 		adapter.setPipeLine(pipeline);
+		configuration.addAdapter(adapter);
 	}
 
 	@AfterEach
 	public void tearDown() {
-		adapter.close();
+		configuration.close();
 	}
 
 	@Test
@@ -58,16 +59,8 @@ public class TestConfigurableLifeCycle {
 	}
 
 	@Test
-	public void cantStartWithoutConfigure() throws Exception {
+	public void cantStartWithoutConfigure() {
 		adapter.start();
-		assertFalse(adapter.isRunning());
-	}
-
-	@Test
-	public void canStop() throws Exception {
-		adapter.configure();
-		adapter.start();
-		adapter.stop();
 		assertFalse(adapter.isRunning());
 	}
 
@@ -87,6 +80,10 @@ public class TestConfigurableLifeCycle {
 			.atMost(10, TimeUnit.SECONDS)
 			.until(()-> adapter.getRunState() == RunState.STOPPED);
 		log.debug("!> stopped");
+		// Assert
+		assertFalse(adapter.isRunning());
+
+		// Act
 		adapter.start();
 		await()
 			.atMost(10, TimeUnit.SECONDS)
@@ -95,5 +92,29 @@ public class TestConfigurableLifeCycle {
 
 		// Assert
 		assertTrue(adapter.isRunning());
+	}
+
+	@Test
+	public void verifyAdapterIsStoppedAfterConfigurationStop() throws Exception {
+		configuration.configure();
+		assertTrue(configuration.isConfigured());
+		configuration.start();
+		await()
+			.atMost(10, TimeUnit.SECONDS)
+			.until(()-> adapter.getRunState() == RunState.STARTED);
+		log.debug("!> started");
+		assertTrue(configuration.isRunning());
+		assertTrue(adapter.configurationSucceeded());
+		assertTrue(adapter.isRunning());
+
+		// Act
+		configuration.stop();
+		await()
+			.atMost(10, TimeUnit.SECONDS)
+			.until(()-> adapter.getRunState() == RunState.STOPPED);
+		log.debug("!> stopped");
+		// Assert
+		assertFalse(adapter.isRunning());
+		assertFalse(configuration.isRunning());
 	}
 }

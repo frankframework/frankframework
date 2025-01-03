@@ -491,8 +491,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 		};
 	}
 
-	//TODO This should be a private method!
-	ServiceClient getFrankListener(String target) throws SenderException {
+	protected ServiceClient getFrankListener(String target) throws SenderException {
 		String fullFrankListenerName;
 		int configNameSeparator = target.indexOf('/');
 		if (configNameSeparator > 0) {

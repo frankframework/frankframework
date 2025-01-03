@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 - 2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -147,7 +147,7 @@ public abstract class AbstractDigesterRule implements ApplicationContextAware {
 		return result;
 	}
 
-	public final void begin(String uri, String elementName, Attributes attributes) throws Exception {
+	public final void begin(String elementName, Attributes attributes) throws Exception {
 		Object top = getBean();
 
 		Map<String, String> map = copyAttrsToMap(attributes);
@@ -208,7 +208,7 @@ public abstract class AbstractDigesterRule implements ApplicationContextAware {
 		}
 	}
 
-	public void end(String namespace, String name) throws Exception {
+	public void end(String name) {
 		if ("adapter".equalsIgnoreCase(name)) {
 			currentAdapter = null;
 		}

@@ -98,8 +98,8 @@ class FrankSenderTest {
 	void configureNoTargetConfigured() {
 		// Arrange
 		FrankSender sender = new FrankSender();
-		Configuration configuration = mock();
-		sender.setConfiguration(configuration);
+		Configuration mockConfiguration = mock();
+		sender.setConfiguration(mockConfiguration);
 
 		// Act / Assert
 		assertThrows(ConfigurationException.class, sender::configure);
@@ -109,8 +109,8 @@ class FrankSenderTest {
 	void configureInvalidTargetConfigured() {
 		// Arrange
 		FrankSender sender = new FrankSender();
-		Configuration configuration = mock();
-		sender.setConfiguration(configuration);
+		Configuration mockConfiguration = mock();
+		sender.setConfiguration(mockConfiguration);
 
 		sender.setScope(FrankSender.Scope.ADAPTER);
 		sender.setTarget("invalid");
@@ -125,10 +125,10 @@ class FrankSenderTest {
 		FrankSender sender = new FrankSender();
 		sender.setScope(FrankSender.Scope.ADAPTER);
 		sender.setTarget("adapterName");
-		Configuration configuration = mock();
-		sender.setConfiguration(configuration);
+		Configuration mockConfiguration = mock();
+		sender.setConfiguration(mockConfiguration);
 		Adapter adapter = mock();
-		when(configuration.getRegisteredAdapter("adapterName")).thenReturn(adapter);
+		when(mockConfiguration.getRegisteredAdapter("adapterName")).thenReturn(adapter);
 
 		// Act / Assert
 		assertDoesNotThrow(sender::configure);
@@ -138,8 +138,8 @@ class FrankSenderTest {
 	void configureTargetViaParameter() {
 		// Arrange
 		FrankSender sender = new FrankSender();
-		Configuration configuration = mock();
-		sender.setConfiguration(configuration);
+		Configuration mockConfiguration = mock();
+		sender.setConfiguration(mockConfiguration);
 
 		sender.setScope(FrankSender.Scope.ADAPTER);
 		sender.addParameter(ParameterBuilder.create("target", "adapterName"));
@@ -152,8 +152,8 @@ class FrankSenderTest {
 	void configureTargetIsScopeJvm() {
 		// Arrange
 		FrankSender sender = new FrankSender();
-		Configuration configuration = mock();
-		sender.setConfiguration(configuration);
+		Configuration mockConfiguration = mock();
+		sender.setConfiguration(mockConfiguration);
 
 		sender.setScope(FrankSender.Scope.JVM);
 		sender.setTarget("serviceName");
@@ -253,22 +253,21 @@ class FrankSenderTest {
 			"noSuchConfig/adapterName",
 			"/noSuchAdapter"
 	})
-	void findAdapterFailure(String target) throws ConfigurationException {
+	void findAdapterFailure(String target) {
 		// Arrange
 		FrankSender sender = new FrankSender();
 		sender.setTarget(target);
 		sender.setScope(Scope.ADAPTER);
 
 		Adapter adapter = mock();
-		Configuration configuration = mock();
-		IbisManager ibisManager = mock();
 		Configuration mockConfiguration = mock();
+		IbisManager ibisManager = mock();
 
 		sender.setIbisManager(ibisManager);
-		sender.setConfiguration(configuration);
+		sender.setConfiguration(mockConfiguration);
 
 		when(ibisManager.getConfiguration("configurationName")).thenReturn(mockConfiguration);
-		when(configuration.getRegisteredAdapter("adapterName")).thenReturn(adapter);
+		when(mockConfiguration.getRegisteredAdapter("adapterName")).thenReturn(adapter);
 
 		// Act / Assert
 		assertThrows(ConfigurationException.class, sender::configure);
@@ -312,14 +311,14 @@ class FrankSenderTest {
 		FrankSender sender = new FrankSender();
 		sender.setScope(Scope.LISTENER);
 		sender.setTarget(target);
-		Configuration configuration = mock();
-		when(configuration.getName()).thenReturn("ConfigName");
-		sender.setConfiguration(configuration);
+		Configuration mockConfiguration = mock();
+		when(mockConfiguration.getName()).thenReturn("ConfigName");
+		sender.setConfiguration(mockConfiguration);
 		sender.configure();
 
 		frankListener = new FrankListener();
 		frankListener.setName("ListenerName");
-		frankListener.setConfiguration(configuration);
+		frankListener.setConfiguration(mockConfiguration);
 		frankListener.configure();
 		frankListener.start();
 
@@ -336,8 +335,8 @@ class FrankSenderTest {
 	void determineActualScope(FrankSender.Scope configuredScope, String scopeParamValue, FrankSender.Scope expected) throws Exception {
 		// Arrange
 		FrankSender sender = new FrankSender();
-		Configuration configuration = mock();
-		sender.setConfiguration(configuration);
+		Configuration mockConfiguration = mock();
+		sender.setConfiguration(mockConfiguration);
 
 		if (configuredScope != null) {
 			sender.setScope(configuredScope);
@@ -366,13 +365,13 @@ class FrankSenderTest {
 	void determineActualTarget(String configuredTarget, String targetParamValue, String expected) throws Exception {
 		// Arrange
 		FrankSender sender = new FrankSender();
-		Configuration configuration = mock();
+		Configuration mockConfiguration = mock();
 		if (configuredTarget != null) {
 			sender.setTarget(configuredTarget);
 			Adapter adapter = mock();
-			when(configuration.getRegisteredAdapter(anyString())).thenReturn(adapter);
+			when(mockConfiguration.getRegisteredAdapter(anyString())).thenReturn(adapter);
 		}
-		sender.setConfiguration(configuration);
+		sender.setConfiguration(mockConfiguration);
 		if (targetParamValue != null) {
 			sender.addParameter(ParameterBuilder.create("target", targetParamValue));
 		}

@@ -364,7 +364,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * Add adapter.
 	 */
 	public void addAdapter(Adapter adapter) {
-		log.debug("registering adapter [{}] with Configuration [{}]", adapter.toString(), this.toString());
+		log.debug("registering adapter [{}] with Configuration [{}]", adapter::toString, this::toString);
 		if(adapter.getName() == null) {
 			throw new IllegalStateException("adapter has no name");
 		}
