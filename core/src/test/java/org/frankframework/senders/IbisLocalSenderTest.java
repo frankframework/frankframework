@@ -384,7 +384,6 @@ class IbisLocalSenderTest {
 		ple.setState(PipeLine.ExitState.SUCCESS);
 		pl.addPipeLineExit(ple);
 		CorePipeLineProcessor plp = new CorePipeLineProcessor();
-		plp.setAdapterManager(configuration.getAdapterManager());
 		plp.setPipeProcessor(new CorePipeProcessor());
 		pl.setPipeLineProcessor(plp);
 		return pl;

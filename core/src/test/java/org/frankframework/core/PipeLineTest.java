@@ -310,6 +310,7 @@ public class PipeLineTest {
 		adapter.setConfiguration(configuration);
 		adapter.setApplicationContext(configuration);
 		adapter.setConfigurationMetrics(configuration.getBean(MetricsInitializer.class));
+		adapter.refresh();
 		adapter.configure();
 		return adapter;
 	}

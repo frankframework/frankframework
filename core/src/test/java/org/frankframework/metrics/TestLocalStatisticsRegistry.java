@@ -50,7 +50,7 @@ public class TestLocalStatisticsRegistry {
 		configuration.configure();
 
 		// Ensure only 1 adapter exists
-		assertEquals(1, configuration.getAdapterManager().getAdapterList().size());
+		assertEquals(1, configuration.getAdapterList().size());
 	}
 
 	@SuppressWarnings("unchecked")

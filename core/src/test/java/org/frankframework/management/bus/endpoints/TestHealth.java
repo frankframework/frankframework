@@ -2,7 +2,6 @@ package org.frankframework.management.bus.endpoints;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
@@ -19,13 +18,12 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.SpringUtils;
 
 public class TestHealth extends BusTestBase {
-	private Adapter adapter;
 
 	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
-		adapter = registerAdapter(getConfiguration());
+		registerAdapter(getConfiguration());
 	}
 
 	protected Adapter registerAdapter(Configuration configuration) throws Exception {
@@ -46,15 +44,6 @@ public class TestHealth extends BusTestBase {
 
 		getConfiguration().addAdapter(adapter);
 		return adapter;
-	}
-
-	@AfterEach
-	@Override
-	public void tearDown() {
-		if(adapter != null) {
-			getConfiguration().getAdapterManager().removeAdapter(adapter);
-		}
-		super.tearDown();
 	}
 
 	@Test

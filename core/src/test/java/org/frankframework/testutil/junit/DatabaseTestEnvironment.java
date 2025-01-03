@@ -125,7 +125,9 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 
 	public <T> T createBean(Class<T> beanClass) {
 		T bean = SpringUtils.createBean(configuration, beanClass);
-		autowire(bean);
+		if(bean instanceof JdbcFacade facade) {
+			facade.setDatasourceName(getDataSourceName());
+		}
 		return bean;
 	}
 

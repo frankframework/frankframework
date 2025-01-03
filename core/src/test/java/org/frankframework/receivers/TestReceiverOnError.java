@@ -51,7 +51,6 @@ import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.receivers.Receiver.OnError;
-import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestConfiguration;
@@ -72,8 +71,7 @@ public class TestReceiverOnError {
 	@AfterEach
 	void tearDown() throws Exception {
 		log.info("!> tearing down test");
-		configuration.stop();
-		configuration.getBean("configurationMetrics", MetricsInitializer.class).destroy(); //Meters are cached...
+		configuration.removeAdapters();
 		log.info("!> Configuration Context for [{}] has been cleaned up.", TransactionManagerType.DATASOURCE);
 	}
 
@@ -84,7 +82,6 @@ public class TestReceiverOnError {
 	private Receiver<String> setupReceiver(MockListenerBase listener) {
 		@SuppressWarnings("unchecked")
 		Receiver<String> receiver = spy(configuration.createBean(Receiver.class));
-		configuration.autowireByName(listener);
 		doNothing().when(receiver).suspendReceiverThread(anyInt());
 		receiver.setListener(listener);
 		receiver.setName("receiver");

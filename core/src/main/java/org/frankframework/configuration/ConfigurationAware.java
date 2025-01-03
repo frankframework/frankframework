@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,10 +13,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.configuration.digester;
+package org.frankframework.configuration;
 
-public interface IDigesterRuleAware {
+import org.springframework.beans.factory.Aware;
 
-	void setDigesterRule(DigesterRule rule);
+public interface ConfigurationAware extends Aware {
 
+	void setConfiguration(Configuration configuration);
 }

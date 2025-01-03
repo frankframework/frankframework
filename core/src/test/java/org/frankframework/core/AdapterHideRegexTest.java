@@ -73,7 +73,6 @@ public class AdapterHideRegexTest {
 	public JavaListener<String> setupJavaListener(String name) {
 		@SuppressWarnings("unchecked")
 		JavaListener<String> listener = configuration.createBean(JavaListener.class);
-		configuration.autowireByName(listener);
 		listener.setName(name);
 		return listener;
 	}
@@ -81,7 +80,6 @@ public class AdapterHideRegexTest {
 	private  <M> Receiver<M> setupReceiver(IListener<M> listener, String hideRegex) {
 		@SuppressWarnings("unchecked")
 		Receiver<M> receiver = configuration.createBean(Receiver.class);
-		configuration.autowireByName(receiver);
 		receiver.setListener(listener);
 		receiver.setName("receiver");
 		receiver.setStartTimeout(2);
@@ -97,14 +95,12 @@ public class AdapterHideRegexTest {
 		assertTrue(pipes.length > 0, "Should add at least 1 pipe");
 
 		Adapter adapter = configuration.createBean(Adapter.class);
-		configuration.autowireByName(adapter);
 		adapter.setName(name);
 
 		CorePipeLineProcessor plp = configuration.createBean(CorePipeLineProcessor.class);
 		PipeProcessor pp = configuration.createBean(CorePipeProcessor.class);
 		plp.setPipeProcessor(pp);
 		PipeLine pl = configuration.createBean(PipeLine.class);
-		configuration.autowireByName(pl);
 		pl.setPipeLineProcessor(plp);
 		pl.setFirstPipe(pipes[0].getName());
 		for (IPipe pipe : pipes) {
@@ -150,7 +146,6 @@ public class AdapterHideRegexTest {
 
 	private IPipe createSubAdapterCallPipe(String subAdapterName, String hideRegex, boolean subAdapterInSeparateThread) {
 		IbisLocalSender localSender = configuration.createBean(IbisLocalSender.class);
-		configuration.autowireByName(localSender);
 		localSender.setName(subAdapterName);
 		localSender.setJavaListener(subAdapterName);
 		localSender.setCheckDependency(true);
@@ -163,7 +158,6 @@ public class AdapterHideRegexTest {
 		}
 
 		SenderPipe senderPipe = configuration.createBean(SenderPipe.class);
-		configuration.autowireByName(senderPipe);
 		senderPipe.setName(subAdapterName);
 		senderPipe.setHideRegex(hideRegex);
 		senderPipe.setSender(localSender);
