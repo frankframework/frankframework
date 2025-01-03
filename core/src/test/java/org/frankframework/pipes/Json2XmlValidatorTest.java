@@ -786,6 +786,37 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
 	}
 
+	@Test
+	public void testJsonIntoDeepSearch() throws Exception {
+		// Arrange
+		pipe.setName("testJsonIntoDeepSearch");
+		pipe.setSchema("/Validation/Json2Xml/ParameterSubstitution/Main.xsd");
+		pipe.setThrowException(true);
+		pipe.setOutputFormat(DocumentFormat.JSON);
+		pipe.setRoot("GetDocumentAttributes_Error");
+		pipe.setDeepSearch(true);
+
+		pipe.configure();
+		pipe.start();
+
+		Message input = Message.asMessage("""
+				{
+					"type": "/errors/",
+					"title": "More than one document found",
+					"status": "DATA_ERROR",
+					"detail": "The Devil's In The Details",
+					"instance": "/archiving/documents"
+				}
+				""");
+
+		// Act
+		PipeRunResult result = pipe.doPipe(input, session);
+
+		// Assert
+		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/ParameterSubstitution/expected_output.json");
+		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
+	}
+
 	@ParameterizedTest(name = "With DeepSearch={0} Case={1}")
 	@DisplayName("Same Element-Name At Different Levels")
 	@CsvSource(value = {
@@ -799,6 +830,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 			"false, ParentNotRootChildMissing",
 			"true, WithIntermediateLevelChildMissing",
 			"false, WithIntermediateLevelChildMissing",
+			"true, PutFieldIntoChildElement",
 	})
 	public void testSameNameDifferentLevels(boolean deepSearch, String testCase) throws Exception {
 		// Arrange
