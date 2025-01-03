@@ -94,7 +94,7 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 		HttpRequestBase request = createRequest(credentials, new ArrayList<>());
 
 		CloseableHttpClient apacheHttpClient = session.getHttpClient();
-		TimeoutGuard tg = new TimeoutGuard(1 + session.getTimeout() / 1000, "token retrieval") {
+		TimeoutGuard tg = new TimeoutGuard(1 + session.getTimeout(null) / 1000, "token retrieval") {
 
 			@Override
 			protected void abort() {
@@ -130,14 +130,14 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 			request.abort();
 
 			if (tg.cancel()) {
-				throw new HttpAuthenticationException("timeout of [" + session.getTimeout() + "] ms exceeded", e);
+				throw new HttpAuthenticationException("timeout of [" + session.getTimeout(null) + "] ms exceeded", e);
 			}
 
 			throw new HttpAuthenticationException(e);
 		}
 
 		if (tg.cancel()) {
-			throw new HttpAuthenticationException("timeout of [" + session.getTimeout() + "] ms exceeded");
+			throw new HttpAuthenticationException("timeout of [" + session.getTimeout(null) + "] ms exceeded");
 		}
 	}
 

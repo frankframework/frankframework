@@ -409,7 +409,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 		boolean success;
 		String reasonPhrase;
 
-		TimeoutGuard tg = new TimeoutGuard(1+getTimeout()/1000, getName()) {
+		TimeoutGuard tg = new TimeoutGuard(1+getTimeout(pvl)/1000, getName()) {
 			@Override
 			protected void abort() {
 				httpRequestBase.abort();
@@ -418,7 +418,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 
 		try {
 			log.debug("executing method [{}]", httpRequestBase::getRequestLine);
-			HttpResponse httpResponse = execute(targetUri, httpRequestBase, session);
+			HttpResponse httpResponse = execute(targetUri, httpRequestBase, session, pvl);
 			log.debug("executed method");
 
 			HttpResponseHandler responseHandler = new HttpResponseHandler(httpResponse);
@@ -459,7 +459,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 			// This will cause the connection to become stale.
 
 			if (tg.cancel()) {
-				throw new TimeoutException("timeout of ["+getTimeout()+"] ms exceeded");
+				throw new TimeoutException("timeout of ["+getTimeout(pvl)+"] ms exceeded");
 			}
 		}
 
