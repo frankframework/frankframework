@@ -193,7 +193,7 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 		}
 
 		public List<MailFolder> getMailFolders(String email) throws IOException {
-			return MailFolderResponse.get(this, email);
+			return MailFolderResponse.get(this, email, 200);
 		}
 
 		public List<MailFolder> getMailFolders(MailFolder folder) throws IOException {

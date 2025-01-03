@@ -92,6 +92,7 @@ import { MonitorsNewComponent } from './views/monitors/monitors-new/monitors-new
 import { ConfigurationTabListComponent } from './components/tab-list/configuration-tab-list.component';
 import { TabListComponent } from './components/tab-list/tab-list.component';
 import { HasAccessToLinkDirective } from './components/has-access-to-link.directive';
+import { ComboboxComponent } from './components/combobox/combobox.component';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -203,6 +204,7 @@ const windowProvider: ValueProvider = {
     ConfigurationTabListComponent,
     TabListComponent,
     HasAccessToLinkDirective,
+    ComboboxComponent,
   ],
   providers: [windowProvider, { provide: TitleStrategy, useClass: PagesTitleStrategy }, httpInterceptorProviders],
   bootstrap: [AppComponent],

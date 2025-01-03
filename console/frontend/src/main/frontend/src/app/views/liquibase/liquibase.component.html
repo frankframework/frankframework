@@ -20,7 +20,7 @@
           <h4>Liquibase Migration</h4>
         </div>
         <div class="ibox-content">
-          <form role="form">
+          <form role="form" (submit)="submit(form)" appQuickSubmitForm>
             <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30">Configuration</label>
               <div class="col-sm-9">
@@ -43,12 +43,7 @@
             </div>
             <div class="row form-group">
               <div class="col-sm-offset-3 col-sm-9 m-t-md">
-                <button
-                  [ladda]="generateSql"
-                  class="btn btn-primary btn-w-m font-bold space-it-out"
-                  type="submit"
-                  (click)="submit(form)"
-                >
+                <button [ladda]="generateSql" class="btn btn-primary btn-w-m font-bold space-it-out" type="submit">
                   Generate SQL Changes
                 </button>
                 <button

@@ -34,15 +34,16 @@ import org.frankframework.util.StringUtil;
 
 @Log4j2
 public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
+	public static final int WAIT_MILLIS = 250;
+	public static final String DEFAULT_BASE_FOLDER = "Inbox/iaf-test";
 
 	private static final String SCOPE = "https://graph.microsoft.com/.default";
 
-	private String clientId;
-	private String clientSecret;
-	private String authAlias;
-	private String tenantId;
-	private String mailAddress;
-	private String baseFolder;
+	private final String clientId;
+	private final String clientSecret;
+	private final String tenantId;
+	private final String mailAddress;
+	private final String baseFolder;
 
 	private String baseFolderId;
 	private MailFolderItemRequestBuilder baseMailFolder;
@@ -62,7 +63,7 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 	@Override
 	public void setUp() throws Exception {
 		if (userId == null) {
-			CredentialFactory cf = new CredentialFactory(authAlias, clientId, clientSecret);
+			CredentialFactory cf = new CredentialFactory(null, clientId, clientSecret);
 			TokenCredential credential = new ClientSecretCredentialBuilder()
 					.tenantId(tenantId)
 					.clientId(cf.getUsername())
@@ -78,27 +79,51 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 
 			List<String> baseFolderList = StringUtil.split(baseFolder, "/");
 
+			log.debug("searching for mail folder [{}]", baseFolder);
 			UserItemRequestBuilder requestBuilder = getRequestBuilder();
 			List<MailFolder> folders = requestBuilder.mailFolders().get().getValue();
-			MailFolder base = folders.get(0);
+			MailFolder base = null;
 
 			for (String subMailFolder : baseFolderList) {
+				boolean found = false;
 				for (MailFolder mailFolder : folders) {
 					if (subMailFolder.equalsIgnoreCase(mailFolder.getDisplayName())) {
 						folders = requestBuilder.mailFolders().byMailFolderId(mailFolder.getId()).childFolders().get().getValue();
 						base = mailFolder;
+						found = true;
+						log.debug("found mail folder [{}] with id [{}]", subMailFolder, base.getId());
+						break;
 					}
+				}
+				if (!found) {
+					MailFolder mailFolder = new MailFolder();
+					mailFolder.setDisplayName(subMailFolder);
+					mailFolder.setIsHidden(false);
+					base = requestBuilder.mailFolders().byMailFolderId(base.getId()).childFolders().post(mailFolder);
+					log.debug("created mail folder [{}] with id [{}]", subMailFolder, base.getId());
 				}
 			}
 
+			log.debug("using MailFolder id [{}]", base.getId());
 			baseFolderId = base.getId();
 			baseMailFolder = requestBuilder.mailFolders().byMailFolderId(baseFolderId);
 
-			cleanMailFolder();
+			cleanBaseMailFolder();
 		}
 	}
 
-	private void cleanMailFolder() {
+	@Override
+	public void tearDown() {
+		cleanBaseMailFolder();
+
+		// Remove the base directory it self.
+		if(!"inbox".equalsIgnoreCase(baseMailFolder.get().getDisplayName())) {
+			deleteFolderById(baseFolderId);
+		}
+	}
+
+	/** Removes all files and folders in the base directory */
+	private void cleanBaseMailFolder() {
 		List<MailFolder> folders = baseMailFolder.childFolders().get().getValue();
 		for (MailFolder mailFolder : folders) {
 			deleteFolderById(mailFolder.getId());
@@ -133,11 +158,6 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 			}
 		}
 		return base;
-	}
-
-	@Override
-	public void tearDown() throws Exception {
-		// Nothing to do here
 	}
 
 	@Override

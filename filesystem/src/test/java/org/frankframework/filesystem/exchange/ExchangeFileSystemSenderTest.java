@@ -22,7 +22,7 @@ public class ExchangeFileSystemSenderTest extends FileSystemSenderTest<ExchangeF
 	private static String tenantId;
 
 	// Should ideally never be `inbox` as it removes all mail items!
-	private String baseFolder = properties.getProperty("baseFolder", "Inbox/iafTest");
+	private String baseFolder = properties.getProperty("baseFolder", ExchangeFileSystemTestHelper.DEFAULT_BASE_FOLDER);
 
 	@BeforeAll
 	public static void beforeAll() {
@@ -42,7 +42,7 @@ public class ExchangeFileSystemSenderTest extends FileSystemSenderTest<ExchangeF
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		setWaitMillis(250);
+		setWaitMillis(ExchangeFileSystemTestHelper.WAIT_MILLIS);
 		return new ExchangeFileSystemTestHelper(clientId, clientSecret, tenantId, mailAddress, baseFolder);
 	}
 

@@ -48,7 +48,7 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 
 	@Test
 	void assertFailOnDoubleStopAt() throws ConfigurationException {
-		pipe.addParameter(NumberParameterBuilder.create().withName(ForPipe.STOP_AT_PARAMETER_VALUE).withValue(10));
+		pipe.addParameter(NumberParameterBuilder.create().withName(ForPipe.STOP_AT_PARAMETER_NAME).withValue(10));
 		pipe.setStopAt(10);
 
 		pipe.addForward(new PipeForward("continue", null));
@@ -94,7 +94,7 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 		String dummyInput = "dummyInput";
 
 		if (useParameter) {
-			pipe.addParameter(NumberParameterBuilder.create().withName(ForPipe.STOP_AT_PARAMETER_VALUE).withValue(10));
+			pipe.addParameter(NumberParameterBuilder.create().withName(ForPipe.STOP_AT_PARAMETER_NAME).withValue(10));
 		} else {
 			pipe.setStopAt(10);
 		}
@@ -122,7 +122,7 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 	void testFailOnEmptyParameter() throws Exception {
 		String dummyInput = "dummyInput";
 
-		pipe.addParameter(new Parameter(ForPipe.STOP_AT_PARAMETER_VALUE, ""));
+		pipe.addParameter(new Parameter(ForPipe.STOP_AT_PARAMETER_NAME, ""));
 		pipe.addForward(new PipeForward("continue", null));
 		pipe.addForward(new PipeForward("stop", null));
 
