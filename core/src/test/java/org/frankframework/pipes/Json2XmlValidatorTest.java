@@ -846,11 +846,13 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String input = TestFileUtils.getTestFile("/Validation/Json2Xml/DeepSearch/" + testCase + "/Test-Input.json");
 
 		// Act
-		PipeRunResult result = pipe.doPipe(Message.asMessage(input), session);
+		try (Message message = Message.asMessage(input);
+			 PipeRunResult result = pipe.doPipe(message, session)) {
 
-		// Assert
-		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/DeepSearch/" + testCase + "/ExpectedOutput.xml");
-		assertXmlEquals(expectedResult, result.getResult().asString());
+			// Assert
+			String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/DeepSearch/" + testCase + "/ExpectedOutput.xml");
+			assertXmlEquals(expectedResult, result.getResult().asString());
+		}
 	}
 
 	@Test
@@ -871,10 +873,12 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String input = TestFileUtils.getTestFile("/Validation/Json2Xml/DeepSearch/" + testCase + "/Test-Input.json");
 
 		// Act
-		PipeRunResult result = pipe.doPipe(Message.asMessage(input), session);
+		try (Message message = Message.asMessage(input);
+			 PipeRunResult result = pipe.doPipe(message, session)) {
 
-		// Assert
-		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/DeepSearch/" + testCase + "/ExpectedOutput.xml");
-		assertXmlEquals(expectedResult, result.getResult().asString());
+			// Assert
+			String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/DeepSearch/" + testCase + "/ExpectedOutput.xml");
+			assertXmlEquals(expectedResult, result.getResult().asString());
+		}
 	}
 }
