@@ -487,7 +487,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 		};
 	}
 
-	ServiceClient getFrankListener(String target) throws SenderException {
+	protected ServiceClient getFrankListener(String target) throws SenderException {
 		String fullFrankListenerName;
 		int configNameSeparator = target.indexOf('/');
 		if (configNameSeparator > 0) {
@@ -505,7 +505,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	}
 
 	@Nonnull
-	Adapter findAdapter(String target) throws SenderException {
+	protected Adapter findAdapter(String target) throws SenderException {
 		AdapterManager actualAdapterManager;
 		String adapterName;
 		int configNameSeparator = target.indexOf('/');
@@ -569,8 +569,6 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	 * <br/>
 	 * It is possible to set this via a parameter. If the parameter is defined but the value at runtime
 	 * is empty, then the value set via this attribute will be used as default.
-	 *
-	 * @param scope Either {@code ADAPTER}, {@code  JVM} or {@code DLL}.
 	 *
 	 * @ff.default ADAPTER
 	 */
