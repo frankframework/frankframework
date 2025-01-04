@@ -831,6 +831,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 			"true, WithIntermediateLevelChildMissing",
 			"false, WithIntermediateLevelChildMissing",
 			"true, PutFieldIntoChildElement",
+			"true, MixedElementPlacement",
 	})
 	public void testSameNameDifferentLevels(boolean deepSearch, String testCase) throws Exception {
 		// Arrange
