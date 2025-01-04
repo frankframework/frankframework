@@ -18,6 +18,7 @@ package org.frankframework.align;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -468,8 +469,8 @@ public class Json2Xml extends XmlAligner {
 				.map(p -> p.getTerm().getName())
 				.collect(Collectors.toSet());
 		JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-		node.forEach((key, value) -> {
-			if (allowedNames.contains(key)) objectBuilder.add(key, value);
+		node.forEach((name, value) -> {
+			if (allowedNames.contains(name) || hasCandidateForChild(name, allowedChildren)) objectBuilder.add(name, value);
 		});
 		// Add in substitutions for allowed names not already in the object. This is so objects do not appear empty when
 		// substitutions could fill in for absent names.
@@ -487,11 +488,15 @@ public class Json2Xml extends XmlAligner {
 		return objectBuilder.build();
 	}
 
-	private boolean hasCandidateForChild(String originalNodeName, XSParticle childParticle) {
+	private boolean hasCandidateForChild(String name, Collection<XSParticle> childParticles) {
+		return childParticles.stream().anyMatch(childParticle -> hasCandidateForChild(name, childParticle));
+	}
+
+	private boolean hasCandidateForChild(String name, XSParticle childParticle) {
 		// Find a recursive list of all child-names of this type to see if any of these names has a substitution from parameters
 		Set<String> names = new HashSet<>();
 		getChildElementNamesRecursive(childParticle, names, new HashSet<>());
-		return names.contains(XSD_WILDCARD_ELEMENT_TOKEN) || names.contains(originalNodeName) || names.stream().anyMatch(childName -> sp.hasSubstitutionsFor(getContext(), childName));
+		return names.contains(XSD_WILDCARD_ELEMENT_TOKEN) || names.contains(name) || names.stream().anyMatch(childName -> sp.hasSubstitutionsFor(getContext(), childName));
 	}
 
 	private void getChildElementNamesRecursive(XSParticle particle, Set<String> names, Set<XSParticle> visitedTypes) {
@@ -755,7 +760,7 @@ public class Json2Xml extends XmlAligner {
 					// this clause is hit for mixed content element containing elements that are not defined
 					if (isTypeContainsWildcard()) {
 						XSElementDecl elementDeclarationStub = new XSElementDecl();
-						elementDeclarationStub.fName=childName;
+						elementDeclarationStub.fName = childName;
 						childElementDeclaration = elementDeclarationStub;
 					} else {
 						unProcessedUndeclaredElements.add(childName);
