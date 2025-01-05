@@ -48,6 +48,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.AopProxyBeanFactoryPostProcessor;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationAwareBeanPostProcessor;
 import org.frankframework.configuration.ConfigurationException;
@@ -205,6 +206,10 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 		getBeanFactory().addBeanPostProcessor(postProcessor);
 		getBeanFactory().addBeanPostProcessor(new ConfigurationAwareBeanPostProcessor(configuration));
 
+		if (getEnvironment().matchesProfiles("aop")) {
+			addBeanFactoryPostProcessor(new AopProxyBeanFactoryPostProcessor());
+		}
+
 		refresh();
 
 		SpringContextFlowDiagramProvider bean = SpringUtils.createBean(this, SpringContextFlowDiagramProvider.class);
@@ -235,21 +240,16 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 		if (configurationSucceeded) {
 			throw new LifecycleException("already configured");
 		}
+		log.debug("configuring adapter [{}]", name);
 
 		msgLog = LogUtil.getMsgLogger(this);
 		Configurator.setLevel(msgLog.getName(), msgLogLevel);
-		configurationSucceeded = false;
-		log.debug("configuring adapter [{}]", name);
-		if(getName().contains("/")) {
-			throw new ConfigurationException("It is not allowed to have '/' in adapter name ["+getName()+"]");
-		}
 
 		// Trigger a configure on all (Configurable) Lifecycle beans
 		LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
 		if (!(lifecycle instanceof ConfigurableLifecycle configurableLifecycle)) {
 			throw new ConfigurationException("wrong lifecycle processor found, unable to configure beans");
 		}
-
 		configurableLifecycle.configure();
 
 		numOfMessagesProcessed = configurationMetrics.createCounter(this, FrankMeterType.PIPELINE_PROCESSED);
@@ -284,7 +284,7 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 		if (StringUtils.isNotEmpty(composedHideRegex)) {
 			composedHideRegexPattern = Pattern.compile(composedHideRegex);
 		}
-		if(runState.getRunState()==RunState.ERROR) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
+		if(runState.getRunState() == RunState.ERROR) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
 			runState.setRunState(RunState.STOPPED);
 		}
 
@@ -947,7 +947,7 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 	}
 
 	@Override
-	public String toString() { //TODO update this with the ApplicationContext
+	public String toString() {
 		StringBuilder sb = new StringBuilder(super.toString());
 		sb.append(" ");
 		sb.append("[receivers=");
@@ -994,6 +994,10 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 	 */
 	@Override
 	public void setName(String name) {
+		if(name.contains("/")) {
+			throw new IllegalStateException("It is not allowed to have '/' in adapter name ["+name+"]");
+		}
+
 		setDisplayName("AdapterContext [" + name + "]");
 		this.name = name;
 		setId(name);

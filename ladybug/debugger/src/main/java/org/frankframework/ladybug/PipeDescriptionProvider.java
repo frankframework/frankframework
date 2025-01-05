@@ -123,14 +123,8 @@ public class PipeDescriptionProvider {
 			// object will be created. The old configuration object will be
 			// removed from pipeDescriptionCaches by the garbage collection as
 			// this is a WeakHashMap.
-			if(!(pipeLine.getApplicationContext() instanceof Configuration)) {
-				pipeDescription = new PipeDescription();
-				pipeDescription.setCheckpointName(getCheckpointName(pipe, checkpointName));
-				pipeDescription.setDescription("Unable to find pipe information, configuration not found.");
-				return pipeDescription;
-			}
+			Configuration configuration = pipeLine.getConfiguration();
 
-			Configuration configuration = (Configuration) pipeLine.getApplicationContext();
 			Map<String, PipeDescription> pipeDescriptionCache = pipeDescriptionCaches.computeIfAbsent(configuration, k -> new HashMap<>());
 			pipeDescription = pipeDescriptionCache.get(xpathExpression);
 			if (pipeDescription == null) {

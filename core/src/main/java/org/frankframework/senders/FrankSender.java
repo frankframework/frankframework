@@ -311,7 +311,6 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	public void configure() throws ConfigurationException {
 		super.configure();
 		ParameterList pl = getParameterList();
-
 		if (StringUtils.isBlank(getTarget()) && (pl == null || !pl.hasParameter(TARGET_PARAM_NAME))) {
 			throw new ConfigurationException("[target] required, either as parameter or as attribute in the configuration");
 		}
@@ -516,11 +515,10 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 		if (configNameSeparator > 0) {
 			adapterName = target.substring(configNameSeparator + 1);
 			String configurationName = target.substring(0, configNameSeparator);
-			Configuration configuration = ibisManager.getConfiguration(configurationName);
-			if (configuration == null) {
+			actualConfiguration = ibisManager.getConfiguration(configurationName);
+			if (actualConfiguration == null) {
 				throw new SenderException("Configuration [" + configurationName + "] not found");
 			}
-			actualConfiguration = configuration;
 		} else if (configNameSeparator == 0) {
 			adapterName = target.substring(1);
 			actualConfiguration = configuration;
@@ -570,7 +568,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	 * It is possible to set this via a parameter. If the parameter is defined but the value at runtime
 	 * is empty, then the value set via this attribute will be used as default.
 	 *
-	 * @ff.default LISTENER
+	 * @ff.default ADAPTER
 	 */
 	public void setScope(Scope scope) {
 		this.scope = scope;

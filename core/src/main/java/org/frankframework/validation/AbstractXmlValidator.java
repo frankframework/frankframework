@@ -182,7 +182,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		if (isThrowException()) {
 			throw new XmlValidatorException(fullReasons, t);
 		}
-		log.warn(getLogPrefix(session) + "validation failed: " + fullReasons, t);
+		if (log.isWarnEnabled()) log.warn("%svalidation failed: %s".formatted(getLogPrefix(session), fullReasons), t);
 		return result;
 	}
 

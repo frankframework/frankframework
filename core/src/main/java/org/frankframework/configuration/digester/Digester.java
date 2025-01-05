@@ -57,7 +57,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 	private ValidateAttributeRule handleAttributeRule;
 	private @Getter @Setter Locator documentLocator;
 
-	record BeanRuleWrapper (DigesterRule rule, Object bean) {}
+	record BeanRuleWrapper (DigesterRule rule, @Nonnull Object bean) {}
 
 	/**
 	 * This Class is created via the Configuration context. This is also the first element to populate.
@@ -93,6 +93,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 		return elementNames.peek();
 	}
 
+	@Nonnull
 	public Object peek() {
 		return elementBeans.peek().bean();
 	}
@@ -119,12 +120,8 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
-		BeanRuleWrapper beanWrapper = elementBeans.peek();
-		DigesterRule rule = beanWrapper.rule();
-		if (rule != null && StringUtils.isNotEmpty(rule.getRegisterTextMethod())) {
-			if (beanWrapper.bean() instanceof StringBuilder buffer) {
-				buffer.append(ch, start, length);
-			}
+		if (peek() instanceof StringBuilder buffer) {
+			buffer.append(ch, start, length);
 		}
 
 		super.characters(ch, start, length);

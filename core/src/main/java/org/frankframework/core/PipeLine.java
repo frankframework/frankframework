@@ -41,6 +41,8 @@ import lombok.Setter;
 
 import org.frankframework.cache.ICache;
 import org.frankframework.cache.ICacheEnabled;
+import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationAware;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -100,8 +102,9 @@ import org.frankframework.util.StringUtil;
  */
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics, IConfigurationAware {
+public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics, IConfigurationAware, ConfigurationAware {
 	private @Getter @Setter ApplicationContext applicationContext;
+	private @Getter @Setter Configuration configuration;
 	private @Getter final ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	public static final String INPUT_VALIDATOR_NAME  = "- pipeline inputValidator";
