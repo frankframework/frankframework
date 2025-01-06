@@ -97,7 +97,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 		String successResultsString = scenarios.stream().filter(scenario -> !scenario.error)
 				.map(scenario -> scenario.reportName)
 				.collect(Collectors.joining(", "));
-		String errorResultsString = scenarios.stream().filter(scenario -> !scenario.error)
+		String errorResultsString = scenarios.stream().filter(scenario -> scenario.error)
 				.map(scenario -> scenario.reportName)
 				.collect(Collectors.joining(", "));
 		if (!successResultsString.isEmpty()) {
@@ -259,6 +259,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			boolean skipUntilEndOfSender = false;
 			String skipUntilEndOfSenderName = "";
 			int skipUntilEndOfSenderLevel = -1;
+			String queueName = null;
 
 			Stack<SenderPipeCheckPoint> senderPipeStack = new Stack<>();
 
@@ -278,9 +279,8 @@ public class ConvertToLarvaAction implements CustomReportAction {
 					String checkpointName = checkpoint.getName();
 					if (checkpoint.getLevel() == skipUntilEndOfSenderLevel && checkpoint.getType() == CheckpointType.ENDPOINT.toInt() && checkpointName.equals(skipUntilEndOfSenderName)) {
 						String senderResponseMessage = checkpoint.getMessage();
-						String checkPointKey = getCheckPointKey(senderPipeStack.peek(), checkpoint.getName().toLowerCase());
-						String senderResponseFileName = getFileName(++current_step_nr, "stub", existingStubs.get(checkPointKey).substring(TESTTOOL_PREFIX.length()), false, senderResponseMessage);
-						putScenarioProperty("step" + current_step_nr + ".stub." + existingStubs.get(checkPointKey).substring(TESTTOOL_PREFIX.length()) + ".write",
+						String senderResponseFileName = getFileName(++current_step_nr, "stub", queueName, false, senderResponseMessage);
+						putScenarioProperty("step" + current_step_nr + ".stub." + queueName + ".write",
 								scenarioDirPrefix + senderResponseFileName);
 						if (!createInputOutputFile(scenarioDirPath, senderResponseFileName, senderResponseMessage)) {
 							return;
@@ -298,20 +298,23 @@ public class ConvertToLarvaAction implements CustomReportAction {
 						} else {
 							serviceName = determineStubName(checkpoints, checkpoint);
 						}
-						String serviceNameWithoutTesttool = serviceName.substring(TESTTOOL_PREFIX.length());
+						queueName = serviceName.substring(TESTTOOL_PREFIX.length());
 						// If sender is already being stubbed, use existing stub name
-						String checkPointKey = getCheckPointKey(sp, checkpoint.getName().toLowerCase());
-						existingStubs.putIfAbsent(checkPointKey, serviceName);
+						if(existingStubs.containsKey(serviceName)) {
+							queueName = existingStubs.get(serviceName);
+						} else {
+							existingStubs.put(serviceName, queueName);
+						}
 						String senderInputMessage = checkpoint.getMessage() == null ? "" : checkpoint.getMessage();
-						String senderInputFileName = getFileName(++current_step_nr, "stub", serviceNameWithoutTesttool, true, senderInputMessage);
-						putScenarioProperty( "step" + current_step_nr + ".stub." + serviceNameWithoutTesttool + ".read", scenarioDirPrefix + senderInputFileName);
+						String senderInputFileName = getFileName(++current_step_nr, "stub", queueName, true, senderInputMessage);
+						putScenarioProperty( "step" + current_step_nr + ".stub." + queueName + ".read", scenarioDirPrefix + senderInputFileName);
 
 						if (!createInputOutputFile(scenarioDirPath, senderInputFileName, senderInputMessage)) {
 							return;
 						}
 
-						putCommonProperty("stub." + serviceNameWithoutTesttool + ".className", "org.frankframework.receivers.JavaListener");
-						putCommonProperty("stub." + serviceNameWithoutTesttool + ".serviceName", serviceName);
+						putCommonProperty("stub." + queueName + ".className", "org.frankframework.receivers.JavaListener");
+						putCommonProperty("stub." + queueName + ".serviceName", serviceName);
 
 						skipUntilEndOfSender = true;
 						skipUntilEndOfSenderName = checkpoint.getName();
@@ -373,18 +376,6 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			} catch (IOException e) {
 				handleError();
 			}
-		}
-
-		private String getCheckPointKey(SenderPipeCheckPoint senderPipeCheckPoint, String checkpointNamelc) {
-			StringBuilder sb = new StringBuilder();
-			if(senderPipeCheckPoint != null) {
-				sb.append(senderPipeCheckPoint.getName());
-				sb.append("-");
-			}
-			sb.append(checkpointNamelc);
-			sb.append("-");
-			sb.append(senderPipeCheckPoint.getSenderIndex());
-			return sb.toString();
 		}
 
 		private String determineStubName(List<Checkpoint> checkpoints, Checkpoint checkpoint) {
@@ -536,12 +527,13 @@ public class ConvertToLarvaAction implements CustomReportAction {
 				handleError();
 				return false;
 			}
-
 			currentCommonProps.forEach((key, value) -> {
 				if (key instanceof String && value instanceof String) {
 					putCommonProperty((String) key, (String) value);
 					if (((String) key).matches("stub.[a-zA-Z0-9-_.]+\\.serviceName")) {
-						existingStubs.put(((String) value).toLowerCase(), ((String) key).substring(5, ((String) key).lastIndexOf('.')));
+						String stringKey = (String) key;
+						String queueName = stringKey.substring(stringKey.indexOf(".") + 1, stringKey.lastIndexOf('.'));
+						existingStubs.put(((String) value).toLowerCase(), queueName);
 					}
 				}
 			});

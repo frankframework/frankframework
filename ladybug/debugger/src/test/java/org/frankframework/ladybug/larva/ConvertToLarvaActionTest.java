@@ -199,24 +199,21 @@ public class ConvertToLarvaActionTest {
 
 		for (Path p: fileMap.values()) {
 			if(p.endsWith("scenarioForEachStubbedSender.properties")) {
-				assertTextEquals(Files.readString(p), scenarioPropertiesContent);
+				assertTextEquals(scenarioPropertiesContent, Files.readString(p));
 			} else if(p.endsWith("common.properties")) {
-				assertTextEquals(Files.readString(p), commonPropertiesContent);
+				assertTextEquals(commonPropertiesContent, Files.readString(p));
 			}
 		}
 	}
 
 	@Test
-	public void sameReportTwice() throws StorageException, IOException {
-		File file1 = new File(Objects.requireNonNull(this.getClass().getClassLoader().getResource("testReport/Pipeline_WithStubbedSenders.report.xml")).getFile());
-		Report report1 = xmlStorage.readReportFromFile(file1);
-
-		File file2 = new File(Objects.requireNonNull(this.getClass().getClassLoader().getResource("testReport/Pipeline_WithStubbedSenders.report.xml")).getFile());
-		Report report2 = xmlStorage.readReportFromFile(file2);
+	public void sameReportTwiceInAList() throws StorageException, IOException {
+		File file = new File(Objects.requireNonNull(this.getClass().getClassLoader().getResource("testReport/Pipeline_WithStubbedSenders.report.xml")).getFile());
+		Report report = xmlStorage.readReportFromFile(file);
 
 		List<Report> reports = new ArrayList<>();
-		reports.add(report1);
-		reports.add(report2);
+		reports.add(report);
+		reports.add(report);
 
 		// Create tempdir and set it as the log dir (scenarios will be created in the log dir)
 		String tmpDirPath = Files.createTempDirectory("testtool-").toFile().getAbsolutePath();
@@ -224,6 +221,7 @@ public class ConvertToLarvaActionTest {
 
 		// Init converter and set scenario suffix
 		ConvertToLarvaAction convertToLarvaAction = new ConvertToLarvaAction();
+		convertToLarvaAction.setScenarioSuffix(null);
 		convertToLarvaAction.handleReports(reports);
 
 		// Collect produced files
@@ -327,7 +325,7 @@ public class ConvertToLarvaActionTest {
 
 		for (Path p: fileSet) {
 			if(p.endsWith("scenarioparallelSenders.properties")) {
-				assertTextEquals(Files.readString(p), scenarioPropertiesContent);
+				assertTextEquals(scenarioPropertiesContent, Files.readString(p));
 			} else if(p.endsWith("common.properties")) {
 				assertTextEquals(commonPropertiesContent, Files.readString(p));
 			}
@@ -337,4 +335,5 @@ public class ConvertToLarvaActionTest {
 	public void assertTextEquals(String expected, String actual) {
 		assertEquals(expected.replaceAll("\\n|\\r\\n", lineSeparator).trim(), actual.replaceAll("\\n|\\r\\n", lineSeparator).trim());
 	}
+
 }
