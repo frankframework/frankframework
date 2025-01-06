@@ -861,12 +861,13 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		// Test for quickly testing a failing case from the above parameterized test
 
 		// Arrange
-		final String testCase = "PutFieldIntoChildElement"; // Put here name of testcase from list of Parameters above for testcase you want to debug
-		pipe.setName("testSameNameDifferentLevelsDeepSearch=true");
+		final String testCase = "MixedElementPlacement"; // Put here name of testcase from list of Parameters above for testcase you want to debug
+		final boolean deepSearch = true;
+		pipe.setName("test" + testCase + "DeepSearch=" + deepSearch);
 		pipe.setSchema("/Validation/Json2Xml/DeepSearch/" + testCase + "/Test.xsd");
 		pipe.setThrowException(true);
 		pipe.setRoot("root");
-		pipe.setDeepSearch(true);
+		pipe.setDeepSearch(deepSearch);
 
 		pipe.configure();
 		pipe.start();
