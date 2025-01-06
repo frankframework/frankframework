@@ -730,7 +730,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 			"true, partial4",
 			"true, partial5",
 	})
-//	@ValueSource(strings = { "partial2"})
 	public void issue7146AttributesOnMultipleLevels(boolean deepSearch, String input) throws Exception {
 		// Arrange
 		pipe.setSchema("/Validation/AttributesOnDifferentLevels/MultipleOptionalElements.xsd");
