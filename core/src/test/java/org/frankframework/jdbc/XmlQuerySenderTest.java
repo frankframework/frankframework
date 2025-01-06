@@ -41,7 +41,6 @@ public class XmlQuerySenderTest {
 		xmlQuerySender.setName(TEST_TABLE);
 		xmlQuerySender.setIncludeFieldDefinition(false);
 		configuration.autowireByName(xmlQuerySender);
-		configuration.autowireByName(xmlQuerySender);
 	}
 
 	@AfterEach
