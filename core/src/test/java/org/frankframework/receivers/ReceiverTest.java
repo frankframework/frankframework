@@ -382,7 +382,7 @@ public class ReceiverTest {
 							}
 							if (!tx.isCompleted()) {
 								// We do rollback inside the Receiver already but if the TX is aborted
-								/// it never seems to be marked "Completed" by Narayana.
+								// it never seems to be marked "Completed" by Narayana.
 								txNotCompletedAfterReceiverEnds.incrementAndGet();
 								txManager.rollback(tx);
 							}
@@ -522,7 +522,7 @@ public class ReceiverTest {
 							}
 							if (!tx.isCompleted()) {
 								// We do rollback inside the Receiver already but if the TX is aborted
-								/// it never seems to be marked "Completed" by Narayana.
+								// it never seems to be marked "Completed" by Narayana.
 								txNotCompletedAfterReceiverEnds.incrementAndGet();
 								txManager.rollback(tx);
 							}
@@ -1075,7 +1075,7 @@ public class ReceiverTest {
 				.atMost(10, TimeUnit.SECONDS)
 				.pollInterval(100, TimeUnit.MILLISECONDS)
 				.until(() -> {
-					System.out.println(receiver.getRunState());
+					LOG.info("<*> Receiver runstate: {}", receiver.getRunState());
 					return receiver.isInRunState(RunState.STOPPED);
 				});
 		assertEquals(RunState.STOPPED, receiver.getRunState());
