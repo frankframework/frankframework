@@ -1,14 +1,28 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AppService, Configuration } from 'src/app/app.service';
 import { Monitor, MonitorsService, Trigger } from './monitors.service';
-import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, ParamMap, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { ConfigurationTabListComponent } from '../../components/tab-list/configuration-tab-list.component';
+import { KeyValuePipe, NgFor, NgIf } from '@angular/common';
+import { HasAccessToLinkDirective } from '../../components/has-access-to-link.directive';
+import { FormsModule } from '@angular/forms';
+import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
 
 @Component({
   selector: 'app-monitors',
+  imports: [
+    ConfigurationTabListComponent,
+    NgIf,
+    HasAccessToLinkDirective,
+    RouterLink,
+    NgFor,
+    FormsModule,
+    QuickSubmitFormDirective,
+    KeyValuePipe,
+  ],
   templateUrl: './monitors.component.html',
   styleUrls: ['./monitors.component.scss'],
-  standalone: false,
 })
 export class MonitorsComponent implements OnInit, OnDestroy {
   protected selectedConfiguration: string = '';

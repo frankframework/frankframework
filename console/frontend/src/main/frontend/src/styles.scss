@@ -1,14 +1,12 @@
 /* You can add global styles to this file, and also import other style files */
 // @import 'bootstrap/scss/bootstrap'; only for v5 or newer
+@use './toast';
 
-// @import 'datatables.net-dt/css/jquery.dataTables.css';
-@import './toast';
-
-@import './assets/css/animate';
-@import './assets/css/plugins/iCheck/custom';
-@import './assets/css/style';
-@import './assets/css/bootstrap-fix';
-@import './assets/mermaid-boostrap';
+@use './assets/css/animate';
+@use './assets/css/plugins/iCheck/custom';
+@use './assets/css/style';
+@use './assets/css/bootstrap-fix';
+@use './assets/mermaid-boostrap';
 
 [sortable] {
   cursor: pointer;

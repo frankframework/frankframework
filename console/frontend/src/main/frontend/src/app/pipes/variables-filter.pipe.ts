@@ -2,7 +2,6 @@ import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
   name: 'variablesFilter',
-  standalone: false,
 })
 export class VariablesFilterPipe implements PipeTransform {
   transform<T>(variables: T[], filterText: string): T[] {

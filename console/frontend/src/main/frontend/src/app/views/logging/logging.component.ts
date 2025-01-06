@@ -6,12 +6,26 @@ import { LoggingService, LoggingFile } from './logging.service';
 import { SortEvent, ThSortableDirective, basicTableSort } from 'src/app/components/th-sortable.directive';
 import { copyToClipboard } from 'src/app/utils';
 import { HttpErrorResponse } from '@angular/common/http';
+import { NgFor, NgIf } from '@angular/common';
+import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+import { FormsModule } from '@angular/forms';
+import { SearchFilterPipe } from '../../pipes/search-filter.pipe';
+import { FileViewerComponent } from '../../components/file-viewer/file-viewer.component';
 
 @Component({
   selector: 'app-logging',
+  imports: [
+    FormsModule,
+    NgIf,
+    NgbAlert,
+    ThSortableDirective,
+    SearchFilterPipe,
+    NgFor,
+    SearchFilterPipe,
+    FileViewerComponent,
+  ],
   templateUrl: './logging.component.html',
   styleUrls: ['./logging.component.scss'],
-  standalone: false,
 })
 export class LoggingComponent implements OnInit {
   @ViewChildren(ThSortableDirective) headers!: QueryList<ThSortableDirective>;

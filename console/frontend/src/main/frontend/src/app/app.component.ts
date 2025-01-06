@@ -23,8 +23,6 @@ import {
   RouterOutlet,
 } from '@angular/router';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-// @ts-expect-error pace-js does not have types
-import * as Pace from 'pace-js';
 import { NotificationService } from './services/notification.service';
 import { MiscService } from './services/misc.service';
 import { DebugService } from './services/debug.service';
@@ -39,11 +37,26 @@ import { ServerInfo, ServerInfoService } from './services/server-info.service';
 import { ClusterMemberEvent, ClusterMemberEventType, WebsocketService } from './services/websocket.service';
 import { deepMerge } from './utils';
 import { ServerTimeService } from './services/server-time.service';
-import { AppModule } from './app.module';
+import { NgIf } from '@angular/common';
+import { ToastsContainerComponent } from './components/toasts-container/toasts-container.component';
+import { PagesNavigationComponent } from './components/pages/pages-navigation/pages-navigation.component';
+// @ts-expect-error pace-js does not have types
+import * as Pace from 'pace-js';
+import { PagesTopnavbarComponent } from './components/pages/pages-topnavbar/pages-topnavbar.component';
+import { PagesTopinfobarComponent } from './components/pages/pages-topinfobar/pages-topinfobar.component';
+import { PagesFooterComponent } from './components/pages/pages-footer/pages-footer.component';
 
 @Component({
   selector: 'app-root',
-  imports: [AppModule, RouterOutlet],
+  imports: [
+    NgIf,
+    ToastsContainerComponent,
+    PagesNavigationComponent,
+    PagesTopnavbarComponent,
+    PagesTopinfobarComponent,
+    RouterOutlet,
+    PagesFooterComponent,
+  ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })

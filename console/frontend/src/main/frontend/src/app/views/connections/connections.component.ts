@@ -1,7 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { AppService } from 'src/app/app.service';
-import { DataTableColumn, DataTableDataSource } from '../../components/datatable/datatable.component';
+import {
+  DataTableColumn,
+  DatatableComponent,
+  DataTableDataSource,
+} from '../../components/datatable/datatable.component';
 
 type Connections = {
   data: {
@@ -17,9 +21,9 @@ type ConnectionsData = Connections['data'][number];
 
 @Component({
   selector: 'app-connections',
+  imports: [DatatableComponent],
   templateUrl: './connections.component.html',
   styleUrls: ['./connections.component.scss'],
-  standalone: false,
 })
 export class ConnectionsComponent implements OnInit {
   protected datasource: DataTableDataSource<ConnectionsData> = new DataTableDataSource();

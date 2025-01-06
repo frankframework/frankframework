@@ -3,6 +3,10 @@ import { Subscription } from 'rxjs';
 import { AppService, Configuration, ServerErrorResponse } from 'src/app/app.service';
 import { JdbcService } from '../jdbc/jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
+import { InputFileUploadComponent } from '../../components/input-file-upload/input-file-upload.component';
+import { LaddaDirective } from 'angular2-ladda';
+import { NgIf } from '@angular/common';
 
 interface Form {
   configuration: string;
@@ -10,9 +14,9 @@ interface Form {
 
 @Component({
   selector: 'app-liquibase',
+  imports: [FormsModule, InputFileUploadComponent, LaddaDirective, NgIf],
   templateUrl: './liquibase.component.html',
   styleUrls: ['./liquibase.component.scss'],
-  standalone: false,
 })
 export class LiquibaseComponent implements OnInit, OnDestroy {
   protected form: Form = {

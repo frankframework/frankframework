@@ -1,8 +1,12 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Event, MonitorsService, Trigger } from '../monitors.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { combineLatestWith } from 'rxjs';
 import { AlertState } from '../../test-pipeline/test-pipeline.component';
+import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
+import { FormsModule } from '@angular/forms';
+import { NgFor, NgIf } from '@angular/common';
 
 type EventSource = {
   adapter: string;
@@ -11,9 +15,9 @@ type EventSource = {
 
 @Component({
   selector: 'app-monitors-add-edit',
+  imports: [NgbAlert, RouterLink, QuickSubmitFormDirective, FormsModule, NgIf, NgFor],
   templateUrl: './monitors-add-edit.component.html',
   styleUrls: ['./monitors-add-edit.component.scss'],
-  standalone: false,
 })
 export class MonitorsAddEditComponent implements OnInit {
   protected componentLoading = true;

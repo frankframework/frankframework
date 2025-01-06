@@ -1,11 +1,13 @@
 import { Component, Input } from '@angular/core';
 import { AdapterMessage, MessageLog } from '../../../app.service';
+import { NgClass, NgFor, NgIf } from '@angular/common';
+import { ToDateDirective } from '../../../components/to-date.directive';
 
 @Component({
   selector: 'app-configuration-messages',
+  imports: [NgIf, NgClass, NgFor, ToDateDirective],
   templateUrl: './configuration-messages.component.html',
   styleUrl: './configuration-messages.component.scss',
-  standalone: false,
 })
 export class ConfigurationMessagesComponent {
   @Input({ required: true }) messageLog: Record<string, MessageLog> = {};

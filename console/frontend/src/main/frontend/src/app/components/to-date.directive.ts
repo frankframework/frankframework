@@ -3,7 +3,6 @@ import { ServerTimeService } from '../services/server-time.service';
 
 @Directive({
   selector: '[appToDate]',
-  standalone: true,
 })
 export class ToDateDirective implements OnChanges {
   @Input() time: string | number = '';

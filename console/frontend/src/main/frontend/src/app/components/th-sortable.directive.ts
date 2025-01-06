@@ -58,7 +58,6 @@ export function basicAnyValueTableSort<T>(
 
 @Directive({
   selector: 'th[sortable]',
-  standalone: true,
 })
 export class ThSortableDirective implements OnInit {
   @Input() sortable: string = '';

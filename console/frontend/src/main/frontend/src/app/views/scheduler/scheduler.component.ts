@@ -4,6 +4,14 @@ import { AppService, JobMessage } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
 import { SchedulerService, Trigger } from './scheduler.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
+import { KeyValuePipe, NgFor, NgIf } from '@angular/common';
+import { HasAccessToLinkDirective } from '../../components/has-access-to-link.directive';
+import { LaddaDirective } from 'angular2-ladda';
+import { ToDateDirective } from '../../components/to-date.directive';
+import { TabListComponent } from '../../components/tab-list/tab-list.component';
+import { FormsModule } from '@angular/forms';
+import { SearchFilterPipe } from '../../pipes/search-filter.pipe';
+import { OrderByPipe } from '../../pipes/orderby.pipe';
 
 type Scheduler = {
   name: string;
@@ -36,9 +44,20 @@ export type Job = {
 
 @Component({
   selector: 'app-scheduler',
+  imports: [
+    NgIf,
+    HasAccessToLinkDirective,
+    LaddaDirective,
+    ToDateDirective,
+    TabListComponent,
+    FormsModule,
+    KeyValuePipe,
+    SearchFilterPipe,
+    OrderByPipe,
+    NgFor,
+  ],
   templateUrl: './scheduler.component.html',
   styleUrls: ['./scheduler.component.scss'],
-  standalone: false,
 })
 export class SchedulerComponent implements OnInit, OnDestroy {
   protected jobGroups: Record<string, Job[]> = {};

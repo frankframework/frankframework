@@ -3,6 +3,10 @@ import { Subscription } from 'rxjs';
 import { AppConstants, AppService, ServerErrorResponse } from 'src/app/app.service';
 import { JdbcBrowseForm, JdbcService } from '../jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
+import { LaddaDirective } from 'angular2-ladda';
+import { NgFor, NgIf } from '@angular/common';
+import { OrderByPipe } from '../../../pipes/orderby.pipe';
 
 interface ColumnName {
   id: number;
@@ -12,9 +16,9 @@ interface ColumnName {
 
 @Component({
   selector: 'app-jdbc-browse-tables',
+  imports: [FormsModule, LaddaDirective, NgIf, OrderByPipe, NgFor],
   templateUrl: './jdbc-browse-tables.component.html',
   styleUrls: ['./jdbc-browse-tables.component.scss'],
-  standalone: false,
 })
 export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
   protected datasources: string[] = [];

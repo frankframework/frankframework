@@ -1,16 +1,19 @@
 import { Component, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AppService, Configuration } from 'src/app/app.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { ConfigurationsService } from '../../configurations.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { SortEvent, ThSortableDirective, basicAnyValueTableSort } from 'src/app/components/th-sortable.directive';
+import { SearchFilterPipe } from '../../../../pipes/search-filter.pipe';
+import { NgFor } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-configurations-manage-details',
+  imports: [FormsModule, SearchFilterPipe, RouterLink, NgFor],
   templateUrl: './configurations-manage-details.component.html',
   styleUrls: ['./configurations-manage-details.component.scss'],
-  standalone: false,
 })
 export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
   protected configuration: Configuration = {

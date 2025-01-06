@@ -1,15 +1,19 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService, Configuration } from 'src/app/app.service';
-import { KeyValue } from '@angular/common';
+import { KeyValue, NgFor, NgIf } from '@angular/common';
+import { TabListComponent } from '../../components/tab-list/tab-list.component';
+import { FormsModule } from '@angular/forms';
+import { VariablesFilterPipe } from '../../pipes/variables-filter.pipe';
+import { OrderByPipe } from '../../pipes/orderby.pipe';
 
 type keyValueProperty = KeyValue<string, string>;
 
 @Component({
   selector: 'app-environment-variables',
+  imports: [TabListComponent, FormsModule, VariablesFilterPipe, OrderByPipe, NgIf, NgFor],
   templateUrl: './environment-variables.component.html',
   styleUrls: ['./environment-variables.component.scss'],
-  standalone: false,
 })
 export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
   protected readonly GLOBAL_TAB_NAME = 'Global';

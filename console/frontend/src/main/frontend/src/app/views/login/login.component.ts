@@ -2,6 +2,8 @@ import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Alert, AlertService } from 'src/app/services/alert.service';
 import { AuthService } from 'src/app/services/auth.service';
+import { FormsModule } from '@angular/forms';
+import { NgFor, NgIf } from '@angular/common';
 
 type Credentials = {
   username: string;
@@ -10,9 +12,9 @@ type Credentials = {
 
 @Component({
   selector: 'app-login',
+  imports: [FormsModule, NgIf, NgFor],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  standalone: false,
 })
 export class LoginComponent implements OnInit, AfterViewInit {
   protected credentials: Credentials = {

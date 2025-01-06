@@ -42,7 +42,7 @@ export class NotificationService {
     Tinycon.setBubble(this.count);
   }
 
-  get(id: number): Notification | false {
+  get(id: number): Notification | null {
     for (let index = 0; index < this.list.length; index++) {
       const notification = this.list[index];
       if (notification.id == id) {
@@ -55,7 +55,7 @@ export class NotificationService {
       }
     }
 
-    return false;
+    return null;
   }
 
   resetCount(): void {

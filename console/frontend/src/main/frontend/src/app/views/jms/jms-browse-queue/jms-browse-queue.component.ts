@@ -3,12 +3,17 @@ import { WebStorageService } from 'src/app/services/web-storage.service';
 import { JmsBrowseForm, JmsService, Message } from '../jms.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ServerErrorResponse } from '../../../app.service';
+import { FormsModule } from '@angular/forms';
+import { LaddaDirective } from 'angular2-ladda';
+import { NgFor, NgIf } from '@angular/common';
+import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
+import { ToDateDirective } from '../../../components/to-date.directive';
 
 @Component({
   selector: 'app-jms-browse-queue',
+  imports: [FormsModule, LaddaDirective, NgIf, NgFor, QuickSubmitFormDirective, ToDateDirective],
   templateUrl: './jms-browse-queue.component.html',
   styleUrls: ['./jms-browse-queue.component.scss'],
-  standalone: false,
 })
 export class JmsBrowseQueueComponent implements OnInit {
   protected destinationTypes: string[] = ['QUEUE', 'TOPIC'];

@@ -1,17 +1,22 @@
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../../../../../node_modules/monaco-editor/monaco.d.ts" />
+
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService, ServerErrorResponse } from 'src/app/app.service';
 import { WebStorageService } from 'src/app/services/web-storage.service';
 import { JdbcQueryForm, JdbcService } from '../jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
+import { MonitorsComponent } from '../../monitors/monitors.component';
+import { LaddaDirective } from 'angular2-ladda';
+import { NgFor, NgIf } from '@angular/common';
+import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 
 @Component({
   selector: 'app-jdbc-execute-query',
+  imports: [FormsModule, MonitorsComponent, LaddaDirective, NgIf, NgFor, QuickSubmitFormDirective],
   templateUrl: './jdbc-execute-query.component.html',
   styleUrls: ['./jdbc-execute-query.component.scss'],
-  standalone: false,
 })
 export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
   protected datasources: string[] = [];

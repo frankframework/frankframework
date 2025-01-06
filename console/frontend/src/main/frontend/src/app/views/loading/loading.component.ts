@@ -5,9 +5,9 @@ import { AppService } from 'src/app/app.service';
 
 @Component({
   selector: 'app-loading',
+  imports: [],
   templateUrl: './loading.component.html',
   styleUrls: ['./loading.component.scss'],
-  standalone: false,
 })
 export class LoadingComponent implements OnInit {
   constructor(
