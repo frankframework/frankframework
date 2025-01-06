@@ -320,7 +320,7 @@ public class OpenApiTestBase extends Mockito {
 				adapter.startRunning();
 			}
 			for (Adapter adapter : adapters) {
-				log.info("adapter RunState [{}]", adapter::getRunStateAsString);
+				log.info("adapter RunState [{}]", adapter::getRunState);
 				await().pollInterval(10, TimeUnit.MILLISECONDS)
 						.atMost(5, TimeUnit.SECONDS)
 						.until(() -> adapter.getRunState() == RunState.STARTED);

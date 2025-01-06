@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 */
 package org.frankframework.core;
 
-import org.frankframework.jmx.JmxOperation;
 import org.frankframework.util.RunState;
 
 /**
@@ -36,7 +35,6 @@ public interface IManagable extends IConfigurable {
 	 * The method does not wait for completion of the command; at return of this
 	 * method, the object might be still in the STARTING-runstate
 	 */
-	@JmxOperation(description = "Start the Adapter")
 	void startRunning();
 
 	/**
@@ -44,6 +42,5 @@ public interface IManagable extends IConfigurable {
 	 * The method does not wait for completion of the command; at return of this
 	 * method, the object might be still in the STOPPING-runstate
 	 */
-	@JmxOperation(description = "Stop the Adapter")
 	void stopRunning();
 }
