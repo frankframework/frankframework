@@ -134,7 +134,7 @@ public class ReceiverSubAdapterTest {
 	}
 
 	private MessageSendingPipe createMessageSendingPipe(TestConfiguration configuration, JavaListener<?> javaListener) {
-		IbisLocalSender sender = new IbisLocalSender();
+		IbisLocalSender sender = configuration.createBean(IbisLocalSender.class);
 		sender.setIsolated(false);
 		sender.setSynchronous(true);
 		sender.setJavaListener(javaListener.getName());

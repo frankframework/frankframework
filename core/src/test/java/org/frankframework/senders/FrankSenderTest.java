@@ -57,6 +57,7 @@ import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.receivers.ServiceDispatcher;
+import org.frankframework.senders.FrankSender.Scope;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestConfiguration;
@@ -244,6 +245,7 @@ class FrankSenderTest {
 	void findAdapterFailure(String target) {
 		// Arrange
 		FrankSender sender = new FrankSender();
+		sender.setTarget(target);
 
 		Adapter adapter = mock();
 		AdapterManager adapterManager = mock();
@@ -264,27 +266,28 @@ class FrankSenderTest {
 	@ParameterizedTest
 	@ValueSource(strings = {
 			"ListenerName",
-			"ConfigName/ListenerName",
+			"TestConfiguration/ListenerName",
 			"/ListenerName"
 	})
 	void getFrankListenerSuccess(String target) throws Exception {
 		// Arrange
-		FrankSender sender = new FrankSender();
-		Configuration mockConfiguration = mock();
-		when(mockConfiguration.getName()).thenReturn("ConfigName");
-		sender.setApplicationContext(mockConfiguration);
+		configuration = new TestConfiguration(false);
+		FrankSender sender = configuration.createBean(FrankSender.class);
+		sender.setScope(Scope.LISTENER);
+		sender.setTarget(target);
 
-		frankListener = new FrankListener();
+		frankListener = configuration.createBean(FrankListener.class);
 		frankListener.setName("ListenerName");
-		frankListener.setApplicationContext(mockConfiguration);
-		frankListener.configure();
-		frankListener.start();
 
 		// Act
+		sender.configure();
+		frankListener.configure();
+		frankListener.start();
 		ServiceClient actual = sender.getFrankListener(target);
 
 		// Assert
 		assertNotNull(actual, "Expected to have found a FrankListener for target [" + target + "]");
+		assertEquals(frankListener, actual);
 	}
 
 	@ParameterizedTest
@@ -520,7 +523,6 @@ class FrankSenderTest {
 	private void createFrankListener(TestConfiguration configuration, Adapter targetAdapter) throws ListenerException {
 		@SuppressWarnings("unchecked")
 		Receiver<Message> receiver = configuration.createBean(Receiver.class);
-		configuration.autowireByName(receiver);
 		receiver.setName("TargetAdapter-receiver");
 
 		FrankListener listener = configuration.createBean(FrankListener.class);
@@ -539,7 +541,6 @@ class FrankSenderTest {
 	private void createJavaListener(TestConfiguration configuration, Adapter targetAdapter) throws ListenerException {
 		@SuppressWarnings("unchecked")
 		Receiver<String> receiver = configuration.createBean(Receiver.class);
-		configuration.autowireByName(receiver);
 		receiver.setName("TargetAdapter-receiver");
 
 		@SuppressWarnings("unchecked")
@@ -559,14 +560,12 @@ class FrankSenderTest {
 
 	private Adapter createAdapter(TestConfiguration configuration, IPipe pipe) throws ConfigurationException {
 		Adapter adapter = configuration.createBean(Adapter.class);
-		configuration.autowireByName(adapter);
 		adapter.setName(TARGET_SERVICE_NAME);
 
 		CorePipeLineProcessor plp = configuration.createBean(CorePipeLineProcessor.class);
 		PipeProcessor pp = configuration.createBean(CorePipeProcessor.class);
 		plp.setPipeProcessor(pp);
 		PipeLine pl = configuration.createBean(PipeLine.class);
-		configuration.autowireByName(pl);
 		pl.setPipeLineProcessor(plp);
 		pl.addPipe(pipe);
 		pl.setFirstPipe(pipe.getName());
