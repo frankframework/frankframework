@@ -23,7 +23,8 @@
             },
             "index": "src/index.html",
             "polyfills": [
-              "zone.js"
+              "zone.js",
+              "@angular/localize/init"
             ],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
@@ -46,7 +47,6 @@
               "src/styles.scss"
             ],
             "scripts": [
-              "node_modules/chart.js/dist/chart.js",
               "node_modules/sockjs-client/dist/sockjs.min.js"
             ],
             "allowedCommonJsDependencies": [
@@ -114,7 +114,8 @@
           "options": {
             "polyfills": [
               "zone.js",
-              "zone.js/testing"
+              "zone.js/testing",
+              "@angular/localize/init"
             ],
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",

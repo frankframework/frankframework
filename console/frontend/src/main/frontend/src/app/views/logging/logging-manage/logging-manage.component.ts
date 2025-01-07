@@ -6,7 +6,7 @@ import { NgbAlert, NgbDropdown, NgbDropdownItem, NgbDropdownMenu, NgbDropdownTog
 import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
 import { KeyValuePipe, NgClass, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LaddaDirective } from 'angular2-ladda';
+import { LaddaModule } from 'angular2-ladda';
 
 @Component({
   selector: 'app-logging-manage',
@@ -19,7 +19,7 @@ import { LaddaDirective } from 'angular2-ladda';
     NgbDropdownMenu,
     NgFor,
     NgbDropdownItem,
-    LaddaDirective,
+    LaddaModule,
     NgIf,
     NgClass,
     KeyValuePipe,

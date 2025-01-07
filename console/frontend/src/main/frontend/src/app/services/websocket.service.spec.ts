@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import type * as SockJS from 'sockjs-client';
+import type SockJS from 'sockjs-client';
 
 import { WebsocketService } from './websocket.service';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';

@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { StorageService } from './storage.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
-import { ActivatedRoute, ActivationEnd, Router } from '@angular/router';
+import { ActivatedRoute, ActivationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-storage',
   templateUrl: './storage.component.html',
   styleUrls: ['./storage.component.scss'],
-  standalone: false,
+  imports: [RouterOutlet],
 })
 export class StorageComponent implements OnInit {
   constructor(

@@ -4,7 +4,7 @@ import { AppConstants, AppService, ServerErrorResponse } from 'src/app/app.servi
 import { JdbcBrowseForm, JdbcService } from '../jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { LaddaDirective } from 'angular2-ladda';
+import { LaddaModule } from 'angular2-ladda';
 import { NgFor, NgIf } from '@angular/common';
 import { OrderByPipe } from '../../../pipes/orderby.pipe';
 
@@ -16,7 +16,7 @@ interface ColumnName {
 
 @Component({
   selector: 'app-jdbc-browse-tables',
-  imports: [FormsModule, LaddaDirective, NgIf, OrderByPipe, NgFor],
+  imports: [FormsModule, LaddaModule, NgIf, OrderByPipe, NgFor],
   templateUrl: './jdbc-browse-tables.component.html',
   styleUrls: ['./jdbc-browse-tables.component.scss'],
 })

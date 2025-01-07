@@ -8,6 +8,7 @@ import { KeyValuePipe, NgFor, NgIf } from '@angular/common';
 import { HasAccessToLinkDirective } from '../../components/has-access-to-link.directive';
 import { FormsModule } from '@angular/forms';
 import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
+import { ToDateDirective } from '../../components/to-date.directive';
 
 @Component({
   selector: 'app-monitors',
@@ -20,6 +21,7 @@ import { QuickSubmitFormDirective } from '../../components/quick-submit-form.dir
     FormsModule,
     QuickSubmitFormDirective,
     KeyValuePipe,
+    ToDateDirective,
   ],
   templateUrl: './monitors.component.html',
   styleUrls: ['./monitors.component.scss'],

@@ -5,10 +5,11 @@ import { RouterModule } from '@angular/router';
 import { IMessage } from '@stomp/stompjs';
 import { Subscription } from 'rxjs';
 import { WebsocketService } from 'src/app/services/websocket.service';
+import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
 
 @Component({
   selector: 'app-websocket-test',
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, QuickSubmitFormDirective],
   templateUrl: './websocket-test.component.html',
   styleUrl: './websocket-test.component.scss',
 })

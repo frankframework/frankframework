@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
-import * as Tinycon from 'tinycon';
+import Tinycon from 'tinycon';
 
 export type Notification = {
   icon: string;

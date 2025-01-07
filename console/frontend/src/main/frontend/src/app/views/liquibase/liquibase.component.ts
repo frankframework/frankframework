@@ -5,8 +5,9 @@ import { JdbcService } from '../jdbc/jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { InputFileUploadComponent } from '../../components/input-file-upload/input-file-upload.component';
-import { LaddaDirective } from 'angular2-ladda';
-import { NgIf } from '@angular/common';
+import { LaddaModule } from 'angular2-ladda';
+import { NgForOf, NgIf } from '@angular/common';
+import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
 
 interface Form {
   configuration: string;
@@ -14,7 +15,7 @@ interface Form {
 
 @Component({
   selector: 'app-liquibase',
-  imports: [FormsModule, InputFileUploadComponent, LaddaDirective, NgIf],
+  imports: [FormsModule, InputFileUploadComponent, LaddaModule, NgIf, QuickSubmitFormDirective, NgForOf],
   templateUrl: './liquibase.component.html',
   styleUrls: ['./liquibase.component.scss'],
 })

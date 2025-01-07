@@ -1,7 +1,7 @@
 /// <reference types="@angular/localize" />
 
 import { bootstrapApplication } from '@angular/platform-browser';
-import type * as SockJS from 'sockjs-client';
+import type SockJS from 'sockjs-client';
 import { AppComponent } from './app/app.component';
 import { appConfig } from './app/app.config';
 import { whenElementExists } from './app/utils';

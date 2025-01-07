@@ -1,12 +1,12 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AppService, JobMessage } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
 import { SchedulerService, Trigger } from './scheduler.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
-import { KeyValuePipe, NgFor, NgIf } from '@angular/common';
+import { KeyValuePipe, NgClass, NgFor, NgIf } from '@angular/common';
 import { HasAccessToLinkDirective } from '../../components/has-access-to-link.directive';
-import { LaddaDirective } from 'angular2-ladda';
+import { LaddaModule } from 'angular2-ladda';
 import { ToDateDirective } from '../../components/to-date.directive';
 import { TabListComponent } from '../../components/tab-list/tab-list.component';
 import { FormsModule } from '@angular/forms';
@@ -47,7 +47,7 @@ export type Job = {
   imports: [
     NgIf,
     HasAccessToLinkDirective,
-    LaddaDirective,
+    LaddaModule,
     ToDateDirective,
     TabListComponent,
     FormsModule,
@@ -55,6 +55,8 @@ export type Job = {
     SearchFilterPipe,
     OrderByPipe,
     NgFor,
+    RouterLink,
+    NgClass,
   ],
   templateUrl: './scheduler.component.html',
   styleUrls: ['./scheduler.component.scss'],

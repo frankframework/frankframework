@@ -40,11 +40,11 @@ import { ServerTimeService } from './services/server-time.service';
 import { NgIf } from '@angular/common';
 import { ToastsContainerComponent } from './components/toasts-container/toasts-container.component';
 import { PagesNavigationComponent } from './components/pages/pages-navigation/pages-navigation.component';
-// @ts-expect-error pace-js does not have types
-import * as Pace from 'pace-js';
 import { PagesTopnavbarComponent } from './components/pages/pages-topnavbar/pages-topnavbar.component';
 import { PagesTopinfobarComponent } from './components/pages/pages-topinfobar/pages-topinfobar.component';
 import { PagesFooterComponent } from './components/pages/pages-footer/pages-footer.component';
+// @ts-expect-error pace-js does not have types
+import Pace from 'pace-js';
 
 @Component({
   selector: 'app-root',

@@ -5,7 +5,7 @@ import { ServerErrorResponse } from '../../../app.service';
 import { FormsModule } from '@angular/forms';
 import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
 import { InputFileUploadComponent } from '../../../components/input-file-upload/input-file-upload.component';
-import { LaddaDirective } from 'angular2-ladda';
+import { LaddaModule } from 'angular2-ladda';
 import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 import { NgFor, NgIf } from '@angular/common';
 
@@ -29,7 +29,7 @@ interface Form {
     FormsModule,
     MonacoEditorComponent,
     InputFileUploadComponent,
-    LaddaDirective,
+    LaddaModule,
     QuickSubmitFormDirective,
     NgIf,
     NgFor,

@@ -11,6 +11,7 @@ import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
 import { SearchFilterPipe } from '../../pipes/search-filter.pipe';
 import { FileViewerComponent } from '../../components/file-viewer/file-viewer.component';
+import { ToDateDirective } from '../../components/to-date.directive';
 
 @Component({
   selector: 'app-logging',
@@ -23,6 +24,7 @@ import { FileViewerComponent } from '../../components/file-viewer/file-viewer.co
     NgFor,
     SearchFilterPipe,
     FileViewerComponent,
+    ToDateDirective,
   ],
   templateUrl: './logging.component.html',
   styleUrls: ['./logging.component.scss'],
