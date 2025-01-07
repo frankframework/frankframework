@@ -46,7 +46,7 @@ public class DelineaClient extends RestTemplate {
 		// it is possible to provide an auto comment value, which is shown in the audit trail on the server
 		// see: https://docs.delinea.com/online-help/integrations/uipath/config/enable-auto-comment.htm
 		if (StringUtils.isNotBlank(autoCommentValue)) {
-			params.put("autoCommentValue", autoCommentValue);
+			params.put("autoComment", autoCommentValue);
 		}
 
 		return getForObject(SECRET_ID_URI, Secret.class, params);
