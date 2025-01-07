@@ -5,7 +5,6 @@ import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@
   selector: 'app-input-file-upload',
   templateUrl: './input-file-upload.component.html',
   styleUrls: ['./input-file-upload.component.scss'],
-  standalone: true,
   imports: [CommonModule],
 })
 export class InputFileUploadComponent {

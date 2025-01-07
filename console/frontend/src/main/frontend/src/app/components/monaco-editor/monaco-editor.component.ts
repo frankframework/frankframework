@@ -24,7 +24,6 @@ interface AMDRequire {
 
 @Component({
   selector: 'app-monaco-editor',
-  standalone: true,
   imports: [],
   templateUrl: './monaco-editor.component.html',
   styleUrls: ['./monaco-editor.component.scss'],

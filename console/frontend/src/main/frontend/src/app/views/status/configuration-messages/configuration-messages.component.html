@@ -4,7 +4,7 @@
     *ngIf="messageLog[selectedConfiguration]"
     [ngClass]="{
       warning: messageLog[selectedConfiguration].messageLevel === 'WARN',
-      danger: messageLog[selectedConfiguration].messageLevel === 'ERROR'
+      danger: messageLog[selectedConfiguration].messageLevel === 'ERROR',
     }"
     class="ibox-title pointer"
   >
@@ -28,7 +28,7 @@
                   *ngFor="let message of getMessageLog(selectedConfiguration)"
                   [ngClass]="{
                     'text-warning': message.level === 'WARN',
-                    'text-danger': message.level === 'ERROR'
+                    'text-danger': message.level === 'ERROR',
                   }"
                 >
                   <td class="text-center" style="width: 40px">
@@ -36,7 +36,7 @@
                       [ngClass]="{
                         'fa-info': message.level === 'INFO',
                         'fa-warning': message.level === 'WARN',
-                        'fa-times': message.level === 'ERROR'
+                        'fa-times': message.level === 'ERROR',
                       }"
                       class="m-l-md fa"
                     ></i>

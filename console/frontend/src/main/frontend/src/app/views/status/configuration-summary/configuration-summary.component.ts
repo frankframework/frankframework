@@ -1,11 +1,14 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { AppService, MessageSummary, Summary } from '../../../app.service';
 import { Subscription } from 'rxjs';
+import { NgClass, NgIf } from '@angular/common';
+import { FlowComponent } from '../flow/flow.component';
 
 @Component({
   selector: 'app-configuration-summary',
   templateUrl: './configuration-summary.component.html',
   styleUrl: './configuration-summary.component.scss',
+  imports: [NgIf, NgClass, FlowComponent],
 })
 export class ConfigurationSummaryComponent implements OnInit, OnDestroy {
   @Input({ required: true }) isConfigStubbed: Record<string, boolean> = {};

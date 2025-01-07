@@ -4,9 +4,30 @@ import { AppService, ServerErrorResponse } from 'src/app/app.service';
 import { SchedulerService } from '../scheduler.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subscription } from 'rxjs';
+import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+import { NgFor, NgIf } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
+import { FormsModule } from '@angular/forms';
+import { ConfigurationFilterPipe } from '../../../pipes/configuration-filter.pipe';
+import { WithJavaListenerPipe } from '../../../pipes/with-java-listener.pipe';
+import { TruncatePipe } from '../../../pipes/truncate.pipe';
+import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
 
 @Component({
   selector: 'app-scheduler-add',
+  imports: [
+    NgbAlert,
+    NgFor,
+    RouterLink,
+    QuickSubmitFormDirective,
+    FormsModule,
+    ConfigurationFilterPipe,
+    WithJavaListenerPipe,
+    TruncatePipe,
+    NgIf,
+    MonacoEditorComponent,
+  ],
   templateUrl: '../scheduler-add-edit-parent.component.html',
   styleUrls: ['./scheduler-add.component.scss'],
 })

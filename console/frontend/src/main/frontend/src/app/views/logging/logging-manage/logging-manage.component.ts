@@ -2,9 +2,28 @@ import { Component, OnInit } from '@angular/core';
 import { ErrorLevels, errorLevelsConst, LoggingService, LoggingSettings, LogInformation } from '../logging.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { NgbAlert, NgbDropdown, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap';
+import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
+import { KeyValuePipe, NgClass, NgFor, NgIf } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { LaddaModule } from 'angular2-ladda';
 
 @Component({
   selector: 'app-logging-manage',
+  imports: [
+    FormsModule,
+    NgbAlert,
+    HasAccessToLinkDirective,
+    NgbDropdown,
+    NgbDropdownToggle,
+    NgbDropdownMenu,
+    NgFor,
+    NgbDropdownItem,
+    LaddaModule,
+    NgIf,
+    NgClass,
+    KeyValuePipe,
+  ],
   templateUrl: './logging-manage.component.html',
   styleUrls: ['./logging-manage.component.scss'],
 })

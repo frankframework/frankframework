@@ -3,10 +3,15 @@ import { first, Subscription } from 'rxjs';
 import { AppConstants, AppService, ServerErrorResponse } from 'src/app/app.service';
 import { JdbcService, JdbcSummary, JdbcSummaryForm } from '../jdbc/jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { NgClass, NgFor, NgIf } from '@angular/common';
+import { HasAccessToLinkDirective } from '../../components/has-access-to-link.directive';
+import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-ibisstore-summary',
+  imports: [RouterLink, NgClass, NgIf, NgFor, HasAccessToLinkDirective, QuickSubmitFormDirective, FormsModule],
   templateUrl: './ibisstore-summary.component.html',
   styleUrls: ['./ibisstore-summary.component.scss'],
 })

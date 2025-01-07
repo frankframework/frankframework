@@ -14,7 +14,6 @@ import { ServerTimeService } from '../../../services/server-time.service';
   selector: 'app-information-modal',
   templateUrl: './information-modal.component.html',
   styleUrls: ['./information-modal.component.scss'],
-  standalone: true,
   imports: [CommonModule, TimeSinceDirective, ToDateDirective, HumanFileSizePipe],
 })
 export class InformationModalComponent implements OnInit, OnDestroy {

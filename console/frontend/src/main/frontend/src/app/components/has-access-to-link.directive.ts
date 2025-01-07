@@ -4,7 +4,6 @@ import { LinkName } from '../views/security-items/security-items.service';
 
 @Directive({
   selector: '[appHasAccessToLink]',
-  standalone: true,
 })
 export class HasAccessToLinkDirective implements OnInit {
   private readonly authService: AuthService = inject(AuthService);

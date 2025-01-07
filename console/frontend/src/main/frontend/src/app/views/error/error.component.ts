@@ -1,7 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AppService, ServerErrorResponse } from 'src/app/app.service';
+import { NgFor, NgIf } from '@angular/common';
 
 interface stackTrace {
   className: string;
@@ -15,6 +16,7 @@ type ServerError = ServerErrorResponse & {
 
 @Component({
   selector: 'app-error',
+  imports: [RouterLink, NgIf, NgFor],
   templateUrl: './error.component.html',
   styleUrls: ['./error.component.scss'],
 })
