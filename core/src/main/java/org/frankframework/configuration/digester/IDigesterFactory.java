@@ -15,14 +15,15 @@
 */
 package org.frankframework.configuration.digester;
 
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
 import org.xml.sax.Attributes;
 
-public interface IDigesterFactory extends ApplicationContextAware {
+public interface IDigesterFactory {
 
 	void setDigester(Digester digester);
 
 	void setDigesterRule(DigesterRule rule);
 
-	public Object createObject(Attributes attrs) throws Exception;
+	public Object createBean(ApplicationContext context, Attributes attrs) throws ClassNotFoundException, BeansException;
 }
