@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	private boolean publishHistograms;
 	private int percentilePrecision;
 	private List<String> percentiles;
-	private List<String> timeSLO; //ServiceLevelObjectives
+	private List<String> timeSLO; // ServiceLevelObjectives
 	private List<String> sizeSLO;
 
 	private @Setter MeterRegistry meterRegistry;
@@ -78,9 +78,9 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		publishPercentiles = appConstants.getBoolean("Statistics.percentiles.publish", false);
 		percentilePrecision = appConstants.getInt("Statistics.percentiles.precision", 1);
 		publishHistograms = appConstants.getBoolean("Statistics.histograms.publish", false);
-		percentiles = appConstants.getListProperty("Statistics.percentiles"); //50,90,95,98
-		timeSLO = appConstants.getListProperty("Statistics.boundaries"); //100,1000,2000,10000
-		sizeSLO = appConstants.getListProperty("Statistics.size.boundaries"); //100000,1000000
+		percentiles = appConstants.getListProperty("Statistics.percentiles"); // 50,90,95,98
+		timeSLO = appConstants.getListProperty("Statistics.boundaries"); // 100,1000,2000,10000
+		sizeSLO = appConstants.getListProperty("Statistics.size.boundaries"); // 100000,1000000
 	}
 
 	public Counter createCounter(@Nonnull IConfigurationAware frankElement, @Nonnull FrankMeterType type) {

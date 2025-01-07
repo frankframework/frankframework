@@ -45,7 +45,7 @@ public class FrankDigesterRules extends AbstractDigesterRulesHandler {
 		if (parsedPatterns.containsKey(pattern)) {
 			// Duplicate patterns are used to tell FrankDoc parser about changed multiplicity.
 			// Original method will still be available to be used by digester, so second instance of rule can be ignored here.
-			log.warn("pattern [{}] already parsed", pattern);
+			log.info("pattern [{}] already parsed", pattern);
 			return;
 		}
 
