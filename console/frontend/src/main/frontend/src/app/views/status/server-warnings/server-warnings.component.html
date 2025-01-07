@@ -8,26 +8,24 @@
     disk size ({{ serverInfo.fileSystem.totalSpace | humanFileSize }})
   </li>
   <ng-container *ngIf="alerts.length > 0">
-    <ng-container>
-      <li *ngIf="messageLog[selectedConfiguration].errorStoreCount === 1" class="list-group-item alert-danger">
-        <i class="m-r-md fa fa-info-circle"></i>
-        <span
-          >Errorlog contains 1 record. Service management should check whether this record has to be resent or
-          deleted</span
-        >
-      </li>
-      <li *ngIf="messageLog[selectedConfiguration].errorStoreCount > 1" class="list-group-item alert-danger">
-        <i class="m-r-md fa fa-info-circle"></i>
-        <span
-          >Errorlog contains {{ messageLog[selectedConfiguration].errorStoreCount }} records. Service management should
-          check whether this record has to be resent or deleted</span
-        >
-      </li>
-      <li *ngIf="messageLog[selectedConfiguration].errorStoreCount === -1" class="list-group-item alert-warning">
-        <i class="m-r-md fa fa-info-circle"></i>
-        <span>Errorlog might contain records. This is unknown because errorStore.count.show is not set to true</span>
-      </li>
-    </ng-container>
+    <li *ngIf="messageLog[selectedConfiguration].errorStoreCount === 1" class="list-group-item alert-danger">
+      <i class="m-r-md fa fa-info-circle"></i>
+      <span
+        >Errorlog contains 1 record. Service management should check whether this record has to be resent or
+        deleted</span
+      >
+    </li>
+    <li *ngIf="messageLog[selectedConfiguration].errorStoreCount > 1" class="list-group-item alert-danger">
+      <i class="m-r-md fa fa-info-circle"></i>
+      <span
+        >Errorlog contains {{ messageLog[selectedConfiguration].errorStoreCount }} records. Service management should
+        check whether this record has to be resent or deleted</span
+      >
+    </li>
+    <li *ngIf="messageLog[selectedConfiguration].errorStoreCount === -1" class="list-group-item alert-warning">
+      <i class="m-r-md fa fa-info-circle"></i>
+      <span>Errorlog might contain records. This is unknown because errorStore.count.show is not set to true</span>
+    </li>
     <ng-container *ngFor="let alert of alerts">
       <li
         *ngIf="
