@@ -157,8 +157,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 		try {
 			IDigesterFactory factory = getFactoryForRule(rule);
 			if (factory != null) { // Only the Configuration element doesn't have a factory
-				factory.setApplicationContext(getCurrentApplicationContext());
-				Object bean = factory.createObject(atts);
+				Object bean = factory.createBean(getCurrentApplicationContext(), atts);
 				if (bean instanceof ApplicationContext a) {
 					applicationContext.push(a);
 				}

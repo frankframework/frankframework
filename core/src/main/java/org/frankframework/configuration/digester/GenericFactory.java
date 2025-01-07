@@ -52,14 +52,13 @@ package org.frankframework.configuration.digester;
 public class GenericFactory extends AbstractSpringPoweredDigesterFactory {
 
 	/**
-	 * Return name of current element prefixed with the string "proto-" as
-	 * bean-name.
+	 * All Frank elements must be created via a className
 	 *
 	 * @see AbstractSpringPoweredDigesterFactory#getSuggestedBeanName()
 	 */
 	@Override
 	public String getSuggestedBeanName() {
-		return "proto-" + getDigester().getCurrentElementName();
+		throw new IllegalStateException("bean is missing mandatory attribute className");
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,12 @@ package org.frankframework.configuration.digester;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.core.SharedResource;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.Lifecycle;
+
+import org.frankframework.configuration.Configuration;
+import org.frankframework.core.SharedResource;
+import org.frankframework.util.SpringUtils;
 
 /**
  * Registers the newly created bean directly in Spring, which will manage it's {@link Lifecycle}.
@@ -33,10 +36,13 @@ public class SharedResourceFactory extends AbstractSpringPoweredDigesterFactory 
 	}
 
 	@Override
-	protected Object createObject(Map<String, String> attrs) throws ClassNotFoundException {
-		Object object = super.createObject(attrs);
+	protected Object createBean(ApplicationContext context, Map<String, String> attrs) throws ClassNotFoundException {
+		if (!(context instanceof Configuration)) {
+			throw new IllegalStateException("context must be of type Shared Resource");
+		}
 
-		if(!(object instanceof SharedResource)) {
+		Object object = super.createBean(context, attrs);
+		if (!(object instanceof SharedResource)) {
 			throw new IllegalStateException("bean must be of type Shared Resource");
 		}
 
@@ -47,13 +53,11 @@ public class SharedResourceFactory extends AbstractSpringPoweredDigesterFactory 
 
 		String beanName = SharedResource.SHARED_RESOURCE_PREFIX + objectName;
 
-		if(getApplicationContext().containsBean(beanName)) {
+		if(context.containsBean(beanName)) {
 			throw new IllegalStateException("shared resource ["+objectName+"] already exists");
 		}
 
-		ConfigurableBeanFactory configurableListableBeanFactory = (ConfigurableBeanFactory) getApplicationContext().getAutowireCapableBeanFactory();
-		configurableListableBeanFactory.registerSingleton(beanName, object);
-
+		SpringUtils.registerSingleton(context, beanName, object);
 		return object;
 	}
 }
