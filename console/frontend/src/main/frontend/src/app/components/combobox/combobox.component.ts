@@ -9,7 +9,7 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import { NgClass, NgForOf, NgIf } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 export type Option = {
@@ -19,7 +19,7 @@ export type Option = {
 
 @Component({
   selector: 'app-combobox',
-  imports: [NgClass, FormsModule, NgIf, NgForOf],
+  imports: [NgClass, FormsModule],
   templateUrl: './combobox.component.html',
   styleUrl: './combobox.component.scss',
 })

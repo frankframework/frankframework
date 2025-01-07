@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService } from 'src/app/app.service';
@@ -9,7 +8,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
   selector: 'app-custom-views',
   templateUrl: './custom-views.component.html',
   styleUrls: ['./custom-views.component.scss'],
-  imports: [CommonModule, RouterModule, NgbModule],
+  imports: [RouterModule, NgbModule],
 })
 export class CustomViewsComponent implements OnInit, OnDestroy {
   protected customViews: {

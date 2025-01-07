@@ -1,10 +1,14 @@
 <div class="wrapper wrapper-content animated fadeInRight">
-  <div class="alert alert-danger" role="alert" type="danger" *ngIf="error">
-    <span class="ng-binding ng-scope" [innerHTML]="error"></span>
-  </div>
-  <div class="alert alert-success" role="alert" type="success" *ngIf="result">
-    <span class="ng-binding ng-scope" [innerHTML]="result"></span>
-  </div>
+  @if (error) {
+    <div class="alert alert-danger" role="alert" type="danger">
+      <span class="ng-binding ng-scope" [innerHTML]="error"></span>
+    </div>
+  }
+  @if (result) {
+    <div class="alert alert-success" role="alert" type="success">
+      <span class="ng-binding ng-scope" [innerHTML]="result"></span>
+    </div>
+  }
   <div class="row">
     <div class="col-lg-12 table-responsive">
       <div class="ibox float-e-margins">
@@ -23,9 +27,11 @@
               <label class="col-sm-3 control-label">Datasource</label>
               <div class="col-sm-9">
                 <select class="form-control" name="datasource" [(ngModel)]="form.datasource">
-                  <option *ngFor="let datasource of datasources">
-                    {{ datasource }}
-                  </option>
+                  @for (datasource of datasources; track datasource) {
+                    <option>
+                      {{ datasource }}
+                    </option>
+                  }
                 </select>
               </div>
             </div>

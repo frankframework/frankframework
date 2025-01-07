@@ -43,19 +43,21 @@
             <h4>Total message processing duration (in ms)</h4>
             <table class="table">
               <tbody>
-                <ng-template
-                  ngFor
-                  let-totalMsgProcTime
-                  [ngForOf]="stats?.totalMessageProccessingTime ?? {} | formatStatistics: statisticsTimeBoundaries"
-                  let-$index="index"
-                >
-                  <tr *ngIf="$index > 0">
-                    <td>
-                      {{ statisticsTimeBoundaries[totalMsgProcTime.key] }}
-                    </td>
-                    <td>{{ totalMsgProcTime.value }}</td>
-                  </tr>
-                </ng-template>
+                @for (
+                  totalMsgProcTime of stats?.totalMessageProccessingTime ?? {}
+                    | formatStatistics: statisticsTimeBoundaries;
+                  track totalMsgProcTime.key;
+                  let $index = $index
+                ) {
+                  @if ($index > 0) {
+                    <tr>
+                      <td>
+                        {{ statisticsTimeBoundaries[totalMsgProcTime.key] }}
+                      </td>
+                      <td>{{ totalMsgProcTime.value }}</td>
+                    </tr>
+                  }
+                }
               </tbody>
             </table>
           </div>
@@ -69,10 +71,12 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let receiver of stats?.receivers">
-                  <td>{{ receiver.name }}</td>
-                  <td>{{ receiver.messagesReceived }}/{{ receiver.messagesRetried }}</td>
-                </tr>
+                @for (receiver of stats?.receivers; track receiver.name) {
+                  <tr>
+                    <td>{{ receiver.name }}</td>
+                    <td>{{ receiver.messagesReceived }}/{{ receiver.messagesRetried }}</td>
+                  </tr>
+                }
               </tbody>
             </table>
           </div>
@@ -83,24 +87,30 @@
                 <tr>
                   <th>Receiver</th>
                   <th># Threads Processing</th>
-                  <ng-template
-                    ngFor
-                    let-boundary
-                    [ngForOf]="statisticsTimeBoundaries | formatStatKeys"
-                    let-$index="index"
-                  >
-                    <th *ngIf="$index > 0">{{ boundary }}</th>
-                  </ng-template>
+                  @for (boundary of statisticsTimeBoundaries | formatStatKeys; track boundary; let $index = $index) {
+                    @if ($index > 0) {
+                      <th>{{ boundary }}</th>
+                    }
+                  }
                 </tr>
               </thead>
-              <tbody *ngFor="let receiver of stats?.receivers">
-                <tr *ngFor="let threadsProcessing of receiver.processing">
-                  <td>{{ receiver.name }}</td>
-                  <td *ngFor="let thread of threadsProcessing | formatStatistics: statisticsTimeBoundaries">
-                    {{ thread.value }}
-                  </td>
-                </tr>
-              </tbody>
+              @for (receiver of stats?.receivers; track receiver.name) {
+                <tbody>
+                  @for (threadsProcessing of receiver.processing; track threadsProcessing) {
+                    <tr>
+                      <td>{{ receiver.name }}</td>
+                      @for (
+                        thread of threadsProcessing | formatStatistics: statisticsTimeBoundaries;
+                        track thread.key
+                      ) {
+                        <td>
+                          {{ thread.value }}
+                        </td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              }
             </table>
           </div>
           <div class="col-md-12 m-t-md table-responsive">
@@ -108,17 +118,23 @@
             <table class="table">
               <thead>
                 <tr>
-                  <th *ngFor="let boundary of statisticsTimeBoundaries | formatStatKeys">
-                    {{ boundary }}
-                  </th>
+                  @for (boundary of statisticsTimeBoundaries | formatStatKeys; track boundary) {
+                    <th>
+                      {{ boundary }}
+                    </th>
+                  }
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let pipe of stats?.durationPerPipe">
-                  <td *ngFor="let pipeKV of pipe | formatStatistics: statisticsTimeBoundaries">
-                    {{ pipeKV.value }}
-                  </td>
-                </tr>
+                @for (pipe of stats?.durationPerPipe; track pipe) {
+                  <tr>
+                    @for (pipeKV of pipe | formatStatistics: statisticsTimeBoundaries; track pipeKV.key) {
+                      <td>
+                        {{ pipeKV.value }}
+                      </td>
+                    }
+                  </tr>
+                }
               </tbody>
             </table>
           </div>
@@ -127,17 +143,23 @@
             <table class="table">
               <thead>
                 <tr>
-                  <th *ngFor="let boundary of statisticsSizeBoundaries | formatStatKeys">
-                    {{ boundary }}
-                  </th>
+                  @for (boundary of statisticsSizeBoundaries | formatStatKeys; track boundary) {
+                    <th>
+                      {{ boundary }}
+                    </th>
+                  }
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let pipe of stats?.sizePerPipe">
-                  <td *ngFor="let pipeKV of pipe | formatStatistics: statisticsSizeBoundaries">
-                    {{ pipeKV.value }}
-                  </td>
-                </tr>
+                @for (pipe of stats?.sizePerPipe; track pipe.name) {
+                  <tr>
+                    @for (pipeKV of pipe | formatStatistics: statisticsSizeBoundaries; track pipeKV.key) {
+                      <td>
+                        {{ pipeKV.value }}
+                      </td>
+                    }
+                  </tr>
+                }
               </tbody>
             </table>
           </div>
