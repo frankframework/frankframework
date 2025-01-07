@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -182,7 +182,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		if (isThrowException()) {
 			throw new XmlValidatorException(fullReasons, t);
 		}
-		log.warn("{}validation failed: {}", getLogPrefix(session), fullReasons, t);
+		if (log.isWarnEnabled()) log.warn("%svalidation failed: %s".formatted(getLogPrefix(session), fullReasons), t);
 		return result;
 	}
 

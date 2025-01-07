@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ public class RecoverAdaptersJob extends AbstractJobDef {
 						}
 
 						if (adapter.configurationSucceeded()) {
-							startAdapter = adapter.isAutoStart(); // if configure has succeeded and adapter was in state ERROR try to auto (re-)start the adapter
+							startAdapter = adapter.isAutoStartup(); // if configure has succeeded and adapter was in state ERROR try to auto (re-)start the adapter
 						}
 
 						log.debug("finished recovering adapter[{}]", adapter::getName);
@@ -85,7 +85,7 @@ public class RecoverAdaptersJob extends AbstractJobDef {
 						if (adapterRunState==RunState.STARTED && (receiverRunState==RunState.ERROR || receiverRunState==RunState.EXCEPTION_STARTING) && receiver.configurationSucceeded()) {
 							log.debug("trying to recover receiver [{}] of adapter [{}]", receiver::getName, adapter::getName);
 
-							receiver.startRunning();
+							receiver.start();
 
 							log.debug("finished recovering receiver [{}] of adapter [{}]", receiver::getName, adapter::getName);
 						}
@@ -103,7 +103,7 @@ public class RecoverAdaptersJob extends AbstractJobDef {
 					}
 
 					if (startAdapter) { // Can only be true if adapter was in error before and AutoStart is enabled
-						adapter.startRunning(); // ASync startup can still cause the Adapter to end up in an ERROR state
+						adapter.start(); // ASync startup can still cause the Adapter to end up in an ERROR state
 					}
 				}
 			}

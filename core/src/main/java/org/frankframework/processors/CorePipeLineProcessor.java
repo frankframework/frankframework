@@ -1,6 +1,6 @@
 /*
 
-   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,10 +18,14 @@ package org.frankframework.processors;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.AdapterManager;
+
+import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.IPipe;
@@ -43,16 +47,24 @@ import org.frankframework.util.XmlUtils;
  * @author Jaco de Groot
  */
 @Log4j2
-public class CorePipeLineProcessor implements PipeLineProcessor {
+public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationContextAware {
 	private @Setter PipeProcessor pipeProcessor;
-	private @Setter AdapterManager adapterManager;
+	private Configuration configuration;
+
+	public void setApplicationContext(ApplicationContext applicationContext) {
+		if (applicationContext instanceof Configuration config) {
+			configuration = config;
+		} else {
+			throw new IllegalStateException("unable to determine configuration");
+		}
+	}
 
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 
 		if (message.isEmpty() && StringUtils.isNotEmpty(pipeLine.getAdapterToRunBeforeOnEmptyInput())) {
 			log.debug("running adapterBeforeOnEmptyInput");
-			Adapter adapter = adapterManager.getAdapter(pipeLine.getAdapterToRunBeforeOnEmptyInput());
+			Adapter adapter = configuration.getRegisteredAdapter(pipeLine.getAdapterToRunBeforeOnEmptyInput());
 			if (adapter == null) {
 				log.warn("adapterToRunBefore with specified name [{}] could not be retrieved", pipeLine.getAdapterToRunBeforeOnEmptyInput());
 			} else {

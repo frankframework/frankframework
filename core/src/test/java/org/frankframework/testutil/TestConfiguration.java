@@ -6,8 +6,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.sql.ResultSet;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
 import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationAwareBeanPostProcessor;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.lifecycle.MessageEventListener;
@@ -60,6 +62,7 @@ public class TestConfiguration extends Configuration {
 		//Add Custom Pre-Instantiation Processor to mock statically created FixedQuerySenders.
 		qsPostProcessor.setApplicationContext(this);
 		getBeanFactory().addBeanPostProcessor(qsPostProcessor);
+		getBeanFactory().addBeanPostProcessor(new ConfigurationAwareBeanPostProcessor(this));
 
 		if (autoConfigure) {
 			try {
@@ -76,6 +79,11 @@ public class TestConfiguration extends Configuration {
 
 	public String getConfigWarning(int index) {
 		return getConfigurationWarnings().getWarnings().get(index);
+	}
+
+	public void removeAdapters() {
+		DefaultListableBeanFactory cbf = (DefaultListableBeanFactory) getAutowireCapableBeanFactory();
+		getAdapters().keySet().forEach(cbf::destroySingleton);
 	}
 
 	/**

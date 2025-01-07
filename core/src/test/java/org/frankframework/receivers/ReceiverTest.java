@@ -83,7 +83,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.SimpleApplicationEventMulticaster;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.task.TaskExecutor;
@@ -158,7 +157,7 @@ public class ReceiverTest {
 	}
 
 	@AfterEach
-	@Timeout(value = 30) //Unfortunately this doesn't work on other threads
+	@Timeout(value = 30) // Unfortunately this doesn't work on other threads
 	void tearDown() {
 		if (configuration != null) {
 			configuration.close();
@@ -192,7 +191,6 @@ public class ReceiverTest {
 	public <M> Receiver<M> setupReceiver(IListener<M> listener) {
 		@SuppressWarnings("unchecked")
 		Receiver<M> receiver = spy(configuration.createBean(Receiver.class));
-		configuration.autowireByName(listener);
 		receiver.setListener(listener);
 		receiver.setName("receiver");
 		receiver.setStartTimeout(2);
@@ -384,7 +382,7 @@ public class ReceiverTest {
 							}
 							if (!tx.isCompleted()) {
 								// We do rollback inside the Receiver already but if the TX is aborted
-								/// it never seems to be marked "Completed" by Narayana.
+								// it never seems to be marked "Completed" by Narayana.
 								txNotCompletedAfterReceiverEnds.incrementAndGet();
 								txManager.rollback(tx);
 							}
@@ -524,7 +522,7 @@ public class ReceiverTest {
 							}
 							if (!tx.isCompleted()) {
 								// We do rollback inside the Receiver already but if the TX is aborted
-								/// it never seems to be marked "Completed" by Narayana.
+								// it never seems to be marked "Completed" by Narayana.
 								txNotCompletedAfterReceiverEnds.incrementAndGet();
 								txManager.rollback(tx);
 							}
@@ -677,7 +675,7 @@ public class ReceiverTest {
 
 		// Act
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
-			adapter.stopRunning();
+			adapter.stop();
 
 			waitForState(adapter, RunState.STOPPED);
 
@@ -854,8 +852,6 @@ public class ReceiverTest {
 			assertTrue(result.requiresStream(), "Result message should be a stream");
 			assertTrue(result.isRequestOfType(Reader.class), "Result message should be of type Reader");
 			assertEquals("TEST", result.asString());
-		} finally {
-			configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 		}
 	}
 
@@ -1079,7 +1075,7 @@ public class ReceiverTest {
 				.atMost(10, TimeUnit.SECONDS)
 				.pollInterval(100, TimeUnit.MILLISECONDS)
 				.until(() -> {
-					System.out.println(receiver.getRunState());
+					LOG.info("<*> Receiver runstate: {}", receiver.getRunState());
 					return receiver.isInRunState(RunState.STOPPED);
 				});
 		assertEquals(RunState.STOPPED, receiver.getRunState());
@@ -1425,17 +1421,12 @@ public class ReceiverTest {
 			"50, 50, false",
 			"40, 40, false"
 	})
-	public void testMaxBackoffDelayAdjustment(Integer maxBackoffDelay, int expectedBackoffDelay, boolean expectConfigWarning) throws Exception {
+	public void testMaxBackoffDelayAdjustment(Integer maxBackoffDelay, int expectedBackoffDelay, boolean expectConfigWarning) {
 		// Arrange
-		Adapter adapter = new Adapter();
+		configuration = buildConfiguration(null);
+		Adapter adapter = configuration.createBean(Adapter.class);
 		adapter.setName("adapter");
-		ConfigurationWarnings configWarnings = new ConfigurationWarnings();
-		ApplicationContext applicationContext = mock();
-		when(applicationContext.getClassLoader()).thenReturn(this.getClass().getClassLoader());
-		when(applicationContext.getBean("configurationWarnings", ConfigurationWarnings.class)).thenReturn(configWarnings);
-		adapter.setApplicationContext(applicationContext);
-		configWarnings.setApplicationContext(applicationContext);
-		configWarnings.afterPropertiesSet();
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 
 		Receiver<String> receiver = new Receiver<>();
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.frankframework.configuration.digester;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.digester3.AbstractObjectCreationFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -27,6 +26,7 @@ import org.xml.sax.Attributes;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
 
@@ -55,9 +55,10 @@ import org.frankframework.util.SpringUtils;
  * @since   4.8
  *
  */
-public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory<Object> implements ApplicationContextAware, IDigesterRuleAware {
+public abstract class AbstractSpringPoweredDigesterFactory implements ApplicationContextAware, IDigesterFactory {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter @Setter ApplicationContext applicationContext;
+	private @Getter @Setter Digester digester;
 	private DigesterRule rule = null;
 
 	protected AbstractSpringPoweredDigesterFactory() {
@@ -175,7 +176,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 		return createBeanAndAutoWire(beanClass);
 	}
 
-	protected <T> T createBeanAndAutoWire(Class<T> beanClass) {
+	private <T> T createBeanAndAutoWire(Class<T> beanClass) {
 		if (log.isDebugEnabled())
 			log.debug("instantiating bean class [{}] directly using Spring Factory [{}]", beanClass.getName(), applicationContext.getDisplayName());
 
