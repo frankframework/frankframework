@@ -15,24 +15,26 @@
 */
 package org.frankframework.scheduler;
 
+import org.apache.commons.lang3.StringUtils;
+import org.quartz.JobDetail;
+import org.springframework.context.ApplicationContext;
+
 import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
-import org.frankframework.core.IConfigurationAware;
 import org.frankframework.core.TransactionAttributes;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.scheduler.job.IJob;
 import org.frankframework.statistics.FrankMeterType;
+import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.Locker;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
-import org.quartz.JobDetail;
-import org.springframework.context.ApplicationContext;
 
 /**
  * <h3>Possible cron expressions:</h3>
@@ -260,7 +262,7 @@ import org.springframework.context.ApplicationContext;
  * @ff.tip  All registered jobs are displayed in the Frank!Console under 'Scheduler'.
  *
  */
-public abstract class AbstractJobDef extends TransactionAttributes implements IConfigurationAware, IJob {
+public abstract class AbstractJobDef extends TransactionAttributes implements HasStatistics, IJob {
 
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;

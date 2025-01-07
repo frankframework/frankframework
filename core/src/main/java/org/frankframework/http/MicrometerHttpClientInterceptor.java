@@ -1,5 +1,5 @@
 /*
-  Copyright 2024 WeAreFrank!
+  Copyright 2024-2025 WeAreFrank!
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -18,9 +18,6 @@ package org.frankframework.http;
 
 import java.util.function.Function;
 
-import io.micrometer.core.instrument.Tags;
-import io.micrometer.core.instrument.Timer;
-import io.micrometer.core.instrument.binder.http.Outcome;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
@@ -28,8 +25,12 @@ import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.protocol.HttpContext;
 
-import org.frankframework.core.IConfigurationAware;
+import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.binder.http.Outcome;
+
 import org.frankframework.statistics.FrankMeterType;
+import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 
 /**
@@ -56,8 +57,8 @@ public class MicrometerHttpClientInterceptor {
 	 * @param uriMapper            URI mapper to create {@code uri} tag
 	 * @param exportTagsForRoute   whether to export tags for route
 	 */
-	public MicrometerHttpClientInterceptor(MetricsInitializer configurationMetrics, IConfigurationAware parentFrankElement,
-										   Function<HttpRequest, String> uriMapper, boolean exportTagsForRoute) {
+	public MicrometerHttpClientInterceptor(MetricsInitializer configurationMetrics, HasStatistics parentFrankElement,
+										Function<HttpRequest, String> uriMapper, boolean exportTagsForRoute) {
 
 		this.requestInterceptor = (request, context) ->
 				threadLocal.set(configurationMetrics.createTimerResource(parentFrankElement, FrankMeterType.SENDER_HTTP,

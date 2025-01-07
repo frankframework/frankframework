@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.processors.SenderWrapperProcessor;
+import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 
@@ -40,7 +41,7 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class AbstractSenderWrapper extends AbstractSenderWithParameters implements AdapterAware, ICacheEnabled<String,String> {
+public abstract class AbstractSenderWrapper extends AbstractSenderWithParameters implements HasStatistics, AdapterAware, ICacheEnabled<String,String> {
 
 	private @Getter String getInputFromSessionKey;
 	private @Getter String getInputFromFixedValue=null;

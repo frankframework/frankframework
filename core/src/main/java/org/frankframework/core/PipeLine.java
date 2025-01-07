@@ -373,7 +373,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	/*
 	 * All pipe related statistics
 	 */
-	public @Nonnull DistributionSummary getPipeStatistics(IConfigurationAware pipe) {
+	public @Nonnull DistributionSummary getPipeStatistics(HasStatistics pipe) {
 		return pipeStatistics.computeIfAbsent(pipe.getName(), name -> configurationMetrics.createDistributionSummary(pipe, FrankMeterType.PIPE_DURATION));
 	}
 	public @Nonnull DistributionSummary getPipeWaitStatistics(IPipe pipe){

@@ -190,11 +190,6 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 	}
 
 	@Override
-	public Adapter getAdapter() {
-		return this;
-	}
-
-	@Override
 	public void afterPropertiesSet() throws Exception {
 		if (isActive()) {
 			throw new LifecycleException("unable to refresh, AdapterContext is already active");
