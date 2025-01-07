@@ -24,8 +24,6 @@ import javax.xml.transform.TransformerException;
 
 import jakarta.annotation.Nonnull;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.ContentHandler;
@@ -33,13 +31,14 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.documentbuilder.xml.XmlTap;
-import org.frankframework.jta.IThreadConnectableTransactionManager;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
@@ -47,10 +46,6 @@ import org.frankframework.parameters.ParameterType;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
-import org.frankframework.threading.IThreadCreator;
-import org.frankframework.threading.ThreadConnector;
-import org.frankframework.threading.ThreadLifeCycleEventListener;
-import org.frankframework.util.AppConstants;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
@@ -67,7 +62,7 @@ import org.frankframework.xml.XmlWriter;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class XsltSender extends AbstractSenderWithParameters implements IThreadCreator {
+public class XsltSender extends AbstractSenderWithParameters {
 
 	public final TransformerPool.OutputType DEFAULT_OUTPUT_METHOD= TransformerPool.OutputType.XML;
 	public final TransformerPool.OutputType DEFAULT_XPATH_OUTPUT_METHOD= TransformerPool.OutputType.TEXT;
@@ -93,10 +88,6 @@ public class XsltSender extends AbstractSenderWithParameters implements IThreadC
 	private Map<String, TransformerPool> dynamicTransformerPoolMap;
 	private int transformerPoolMapSize = 100;
 
-	protected @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
-	protected @Setter IThreadConnectableTransactionManager txManager;
-	private @Getter Boolean streamingXslt = null;
-
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
 	 * XSL. If the stylesheetName cannot be accessed, a ConfigurationException is thrown.
@@ -106,7 +97,6 @@ public class XsltSender extends AbstractSenderWithParameters implements IThreadC
 		parameterNamesMustBeUnique = true;
 		super.configure();
 
-		if(streamingXslt == null) streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, false);
 		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap<>(transformerPoolMapSize));
 
 		if(StringUtils.isNotEmpty(getXpathExpression()) && getOutputType()==null) {
@@ -201,7 +191,7 @@ public class XsltSender extends AbstractSenderWithParameters implements IThreadC
 		return poolToUse;
 	}
 
-	protected ContentHandler createHandler(Message input, ThreadConnector<Object> threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws TransformerException {
+	protected ContentHandler createHandler(Message input, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws TransformerException {
 		ParameterValueList pvl = null;
 		try {
 			if (paramList!=null) {
@@ -269,7 +259,7 @@ public class XsltSender extends AbstractSenderWithParameters implements IThreadC
 				handler = new SkipEmptyTagsFilter(handler);
 			}
 
-			TransformerFilter mainFilter = poolToUse.getTransformerFilter(threadConnector, handler, isRemoveNamespaces(), isHandleLexicalEvents());
+			TransformerFilter mainFilter = poolToUse.getTransformerFilter(handler, isRemoveNamespaces(), isHandleLexicalEvents());
 			if (pvl!=null) {
 				XmlUtils.setTransformerParameters(mainFilter.getTransformer(), pvl.getValueMap());
 			}
@@ -293,10 +283,10 @@ public class XsltSender extends AbstractSenderWithParameters implements IThreadC
 	@Override
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 
-		try (ThreadConnector<Object> threadConnector = streamingXslt ? new ThreadConnector<>(this, "sendMessage", threadLifeCycleEventListener, txManager, session) : null) {
+		try {
 			TransformerPool poolToUse = getTransformerPoolToUse(session);
 			MessageBuilder messageBuilder = new MessageBuilder();
-			ContentHandler handler = createHandler(message, threadConnector, session, poolToUse, null, messageBuilder);
+			ContentHandler handler = createHandler(message, session, poolToUse, null, messageBuilder);
 			if (isDebugInput() && log.isDebugEnabled()) {
 				handler = new XmlTap(handler) {
 					@Override
@@ -316,11 +306,11 @@ public class XsltSender extends AbstractSenderWithParameters implements IThreadC
 	}
 
 	/**
-	 * If true, then this sender will process the XSLT while streaming in a different thread. Can be used to switch streaming off for debugging purposes
-	 * @ff.default set by appconstant xslt.streaming.default
+	 * @deprecated No longer has any effect
 	 */
-	public void setStreamingXslt(Boolean streamingActive) {
-		this.streamingXslt = streamingActive;
+	@Deprecated
+	public void setStreamingXslt(Boolean ignored) {
+		// No-op
 	}
 
 	/** Location of stylesheet to apply to the input message */
