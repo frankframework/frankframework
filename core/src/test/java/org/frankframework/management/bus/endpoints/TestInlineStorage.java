@@ -22,13 +22,11 @@ import static org.mockito.Mockito.mock;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import org.frankframework.configuration.AdapterManager;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IMessageBrowser;
@@ -51,17 +49,12 @@ import org.frankframework.util.SpringUtils;
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 @WithMockUser(roles = { "IbisTester" })
 public class TestInlineStorage extends BusTestBase {
-	private Adapter adapter;
-
-	private AdapterManager getAdapterManager() {
-		return getConfiguration().getAdapterManager();
-	}
 
 	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
-		adapter = registerAdapter(getConfiguration());
+		registerAdapter(getConfiguration());
 	}
 
 	protected Adapter registerAdapter(Configuration configuration) throws Exception {
@@ -81,18 +74,9 @@ public class TestInlineStorage extends BusTestBase {
 		adapter.setPipeLine(pipeline);
 
 		adapter.configure();
-		getAdapterManager().addAdapter(adapter);
+		getConfiguration().addAdapter(adapter);
 
 		return adapter;
-	}
-
-	@AfterEach
-	@Override
-	public void tearDown() {
-		if(adapter != null) {
-			getConfiguration().getAdapterManager().removeAdapter(adapter);
-		}
-		super.tearDown();
 	}
 
 	@Test

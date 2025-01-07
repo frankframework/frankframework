@@ -96,7 +96,6 @@ public class ReceiverSubAdapterTest {
 		pl.setPipeLineExits(exits);
 
 		CorePipeLineProcessor plp = new CorePipeLineProcessor();
-		plp.setAdapterManager(configuration.getAdapterManager());
 		plp.setPipeProcessor(new CorePipeProcessor());
 		pl.setPipeLineProcessor(plp);
 		return pl;

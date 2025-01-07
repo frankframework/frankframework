@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.core.INamedObject;
@@ -62,7 +63,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	private boolean publishHistograms;
 	private int percentilePrecision;
 	private List<String> percentiles;
-	private List<String> timeSLO; //ServiceLevelObjectives
+	private List<String> timeSLO; // ServiceLevelObjectives
 	private List<String> sizeSLO;
 
 	private @Setter MeterRegistry meterRegistry;
@@ -77,9 +78,9 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		publishPercentiles = appConstants.getBoolean("Statistics.percentiles.publish", false);
 		percentilePrecision = appConstants.getInt("Statistics.percentiles.precision", 1);
 		publishHistograms = appConstants.getBoolean("Statistics.histograms.publish", false);
-		percentiles = appConstants.getListProperty("Statistics.percentiles"); //50,90,95,98
-		timeSLO = appConstants.getListProperty("Statistics.boundaries"); //100,1000,2000,10000
-		sizeSLO = appConstants.getListProperty("Statistics.size.boundaries"); //100000,1000000
+		percentiles = appConstants.getListProperty("Statistics.percentiles"); // 50,90,95,98
+		timeSLO = appConstants.getListProperty("Statistics.boundaries"); // 100,1000,2000,10000
+		sizeSLO = appConstants.getListProperty("Statistics.size.boundaries"); // 100000,1000000
 	}
 
 	public Counter createCounter(@Nonnull IConfigurationAware frankElement, @Nonnull FrankMeterType type) {
@@ -165,13 +166,15 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	}
 
 	private List<Tag> getTags(@Nonnull IConfigurationAware frankElement, @Nonnull String name, @Nullable List<Tag> extraTags) {
-		ApplicationContext configuration = frankElement.getApplicationContext();
 		List<Tag> tags = new ArrayList<>(5);
 		Adapter adapter = getAdapter(frankElement);
 		if(adapter != null) {
 			tags.add(Tag.of("adapter", adapter.getAdapter().getName()));
 		}
-		tags.add(Tag.of("configuration", configuration.getId()));
+		Configuration configuration = getConfiguration(frankElement);
+		if(configuration != null) {
+			tags.add(Tag.of("configuration", configuration.getId()));
+		}
 		tags.add(Tag.of("name", name));
 		tags.add(Tag.of("type", getElementType(frankElement)));
 		if(extraTags != null) {
@@ -179,6 +182,16 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		}
 
 		return tags;
+	}
+
+	private Configuration getConfiguration(@Nonnull IConfigurationAware frankElement) {
+		ApplicationContext ac = frankElement.getApplicationContext();
+		if (ac instanceof Configuration config) {
+			return config;
+		} else if (ac instanceof Adapter adapter) {
+			return (Configuration) adapter.getParent();
+		}
+		throw new IllegalStateException("No ConfigurationContext found");
 	}
 
 	private Adapter getAdapter(@Nonnull IConfigurationAware frankElement) {

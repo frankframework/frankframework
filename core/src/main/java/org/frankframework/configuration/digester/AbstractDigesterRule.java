@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 - 2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.digester3.Rule;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanUtils;
@@ -30,6 +29,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
 
+import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ApplicationWarnings;
@@ -54,8 +54,9 @@ import org.frankframework.util.StringResolver;
 /**
  * @author Niels Meijer
  */
-public abstract class AbstractDigesterRule extends Rule implements ApplicationContextAware {
+public abstract class AbstractDigesterRule implements ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
+	private @Getter @Setter Digester digester;
 	private @Setter ApplicationContext applicationContext;
 	private @Setter ConfigurationWarnings configurationWarnings;
 	private @Setter ApplicationWarnings applicationWarnings;
@@ -146,8 +147,7 @@ public abstract class AbstractDigesterRule extends Rule implements ApplicationCo
 		return result;
 	}
 
-	@Override
-	public final void begin(String uri, String elementName, Attributes attributes) throws Exception {
+	public final void begin(String elementName, Attributes attributes) throws Exception {
 		Object top = getBean();
 
 		Map<String, String> map = copyAttrsToMap(attributes);
@@ -208,8 +208,7 @@ public abstract class AbstractDigesterRule extends Rule implements ApplicationCo
 		}
 	}
 
-	@Override
-	public void end(String namespace, String name) throws Exception {
+	public void end(String name) {
 		if ("adapter".equalsIgnoreCase(name)) {
 			currentAdapter = null;
 		}

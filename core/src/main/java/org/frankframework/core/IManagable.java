@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package org.frankframework.core;
 
+import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.util.RunState;
 
 /**
@@ -23,24 +24,18 @@ import org.frankframework.util.RunState;
  * @author Gerrit van Brakel
  * @since 4.0
  */
-public interface IManagable extends IConfigurable {
+public interface IManagable extends IConfigurable, ConfigurableLifecycle {
 	/**
 	 * returns the runstate of the object. Possible values are defined by
 	 * {@link RunState}.
 	 */
 	RunState getRunState();
 
-	/**
-	 * Instruct the object that implements <code>IManagable</code> to start working.
-	 * The method does not wait for completion of the command; at return of this
-	 * method, the object might be still in the STARTING-runstate
-	 */
-	void startRunning();
+	// isConfigured
+	boolean configurationSucceeded();
 
-	/**
-	 * Instruct the object that implements <code>IManagable</code> to stop working.
-	 * The method does not wait for completion of the command; at return of this
-	 * method, the object might be still in the STOPPING-runstate
-	 */
-	void stopRunning();
+	@Override
+	default boolean isRunning() {
+		return getRunState() == RunState.STARTED;
+	}
 }

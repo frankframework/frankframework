@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -181,7 +181,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			} finally {
 				log.debug("closing down ControllerTask");
 				if(receiver.getRunState()!=RunState.STOPPING && receiver.getRunState()!=RunState.EXCEPTION_STOPPING && receiver.getRunState()!=RunState.STOPPED) { // Prevent circular reference in Receiver. IPullingListeners stop as their threads finish
-					receiver.stopRunning();
+					receiver.stop();
 				}
 				receiver.closeAllResources(); //We have to call closeAllResources as the receiver won't do this for IPullingListeners
 
@@ -441,7 +441,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			} catch (InterruptedException e2) {
 				Thread.currentThread().interrupt();
 				receiver.error("sleep interrupted", e2);
-				receiver.stopRunning();
+				receiver.stop();
 			}
 		}
 	}

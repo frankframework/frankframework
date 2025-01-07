@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import org.springframework.context.ApplicationContextAware;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.Adapter;
@@ -204,9 +203,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 */
 	@Override
 	public final void setApplicationContext(ApplicationContext applicationContext) {
-		if(!(applicationContext instanceof Configuration)) {
-			throw new IllegalArgumentException("ApplicationContext is not instance of Configuration");
-		}
 		this.applicationContext = applicationContext;
 	}
 

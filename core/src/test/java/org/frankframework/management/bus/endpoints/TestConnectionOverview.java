@@ -1,6 +1,5 @@
 package org.frankframework.management.bus.endpoints;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
@@ -23,13 +22,12 @@ import org.frankframework.util.SpringUtils;
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 @WithMockUser(roles = { "IbisTester" })
 public class TestConnectionOverview extends BusTestBase {
-	private Adapter adapter;
 
 	@Override
 	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
-		adapter = registerAdapter(getConfiguration());
+		registerAdapter(getConfiguration());
 	}
 
 	protected Adapter registerAdapter(Configuration configuration) throws Exception {
@@ -50,15 +48,6 @@ public class TestConnectionOverview extends BusTestBase {
 
 		getConfiguration().addAdapter(adapter);
 		return adapter;
-	}
-
-	@AfterEach
-	@Override
-	public void tearDown() {
-		if(adapter != null) {
-			getConfiguration().getAdapterManager().removeAdapter(adapter);
-		}
-		super.tearDown();
 	}
 
 	@Test
