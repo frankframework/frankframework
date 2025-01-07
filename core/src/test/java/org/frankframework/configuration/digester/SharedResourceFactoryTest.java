@@ -33,7 +33,7 @@ public class SharedResourceFactoryTest {
 			Map<String, String> attributes = new HashMap<>();
 			attributes.put("name", TEST_RESOURCE_NAME);
 			attributes.put("classname", SharedClass.class.getTypeName());
-			IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> factory.createObject(attributes));
+			IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> factory.createBean(config, attributes));
 			assertEquals("invalid attribute [classname]. Did you mean [className]?", e.getMessage());
 		}
 	}
@@ -46,7 +46,7 @@ public class SharedResourceFactoryTest {
 			factory.setDigester(digester);
 			Map<String, String> attributes = new HashMap<>();
 			attributes.put("className", SharedClass.class.getTypeName());
-			IllegalStateException e = assertThrows(IllegalStateException.class, () -> factory.createObject(attributes));
+			IllegalStateException e = assertThrows(IllegalStateException.class, () -> factory.createBean(config, attributes));
 			assertEquals("Shared Resource must have a name", e.getMessage());
 		}
 	}
@@ -60,7 +60,7 @@ public class SharedResourceFactoryTest {
 			Map<String, String> attributes = new HashMap<>();
 			attributes.put("name", TEST_RESOURCE_NAME);
 			attributes.put("className", SharedClass.class.getTypeName());
-			Object sharedResource = factory.createObject(attributes);
+			Object sharedResource = factory.createBean(config, attributes);
 
 			assertTrue(config.containsBean(SharedResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME));
 			assertEquals(sharedResource, config.getBean(SharedResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME));
@@ -78,7 +78,7 @@ public class SharedResourceFactoryTest {
 			Map<String, String> attributes = new HashMap<>();
 			attributes.put("name", TEST_RESOURCE_NAME);
 			attributes.put("className", SharedClass.class.getTypeName());
-			Object sharedResource = factory.createObject(attributes);
+			Object sharedResource = factory.createBean(config, attributes);
 
 			assertTrue(config.containsBean(SharedResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME));
 			assertEquals(sharedResource, config.getBean(SharedResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME)); // SharedClass

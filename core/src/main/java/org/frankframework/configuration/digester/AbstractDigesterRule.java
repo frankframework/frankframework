@@ -147,6 +147,7 @@ public abstract class AbstractDigesterRule implements ApplicationContextAware {
 		return result;
 	}
 
+	@SuppressWarnings("deprecation")
 	public final void begin(String elementName, Attributes attributes) throws Exception {
 		Object top = getBean();
 

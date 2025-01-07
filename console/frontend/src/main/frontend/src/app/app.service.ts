@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, Subject, catchError, of, BehaviorSubject, ReplaySubject } from 'rxjs';
+import { Observable, Subject, catchError, of, BehaviorSubject } from 'rxjs';
 import { DebugService } from './services/debug.service';
 import { Title } from '@angular/platform-browser';
 import { computeServerPath, deepMerge } from './utils';

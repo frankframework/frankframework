@@ -1,47 +1,46 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
+import { WebsocketTestComponent } from './views/websocket-test/websocket-test.component';
+import { LoginComponent } from './views/login/login.component';
 import { LogoutComponent } from './components/logout/logout.component';
 import { StatusComponent } from './views/status/status.component';
+import { authGuard } from './guards/auth.guard';
 import { AdapterstatisticsComponent } from './views/adapterstatistics/adapterstatistics.component';
 import { StorageComponent } from './views/storage/storage.component';
 import { StorageListComponent } from './views/storage/storage-list/storage-list.component';
 import { StorageViewComponent } from './views/storage/storage-view/storage-view.component';
-import { JmsBrowseQueueComponent } from './views/jms/jms-browse-queue/jms-browse-queue.component';
+import { ConfigurationsShowComponent } from './views/configurations/configurations-show/configurations-show.component';
+import { ConfigurationsUploadComponent } from './views/configurations/configurations-upload/configurations-upload.component';
+import { ConfigurationsManageComponent } from './views/configurations/configurations-manage/configurations-manage.component';
+import { ConfigurationsManageDetailsComponent } from './views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component';
+import { LoggingManageComponent } from './views/logging/logging-manage/logging-manage.component';
+import { LoggingAddComponent } from './views/logging/logging-add/logging-add.component';
+import { LoggingComponent } from './views/logging/logging.component';
 import { JmsSendMessageComponent } from './views/jms/jms-send-message/jms-send-message.component';
+import { JmsBrowseQueueComponent } from './views/jms/jms-browse-queue/jms-browse-queue.component';
+import { TestPipelineComponent } from './views/test-pipeline/test-pipeline.component';
+import { TestServiceListenerComponent } from './views/test-service-listener/test-service-listener.component';
 import { WebservicesComponent } from './views/webservices/webservices.component';
-import { EnvironmentVariablesComponent } from './views/environment-variables/environment-variables.component';
-import { SecurityItemsComponent } from './views/security-items/security-items.component';
-import { JdbcBrowseTablesComponent } from './views/jdbc/jdbc-browse-tables/jdbc-browse-tables.component';
-import { JdbcExecuteQueryComponent } from './views/jdbc/jdbc-execute-query/jdbc-execute-query.component';
-import { InlinestoreComponent } from './views/inlinestore/inlinestore.component';
-import { IbisstoreSummaryComponent } from './views/ibisstore-summary/ibisstore-summary.component';
-import { LiquibaseComponent } from './views/liquibase/liquibase.component';
-import { IframeCustomViewComponent } from './views/iframe/iframe-custom-view/iframe-custom-view.component';
-import { IframeLadybugLegacyComponent } from './views/iframe/iframe-ladybug-legacy/iframe-ladybug-legacy.component';
-import { IframeLarvaComponent } from './views/iframe/iframe-larva/iframe-larva.component';
-import { IframeLadybugComponent } from './views/iframe/iframe-ladybug/iframe-ladybug.component';
-import { MonitorsComponent } from './views/monitors/monitors.component';
-import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
 import { SchedulerComponent } from './views/scheduler/scheduler.component';
 import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
 import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
-import { ConfigurationsShowComponent } from './views/configurations/configurations-show/configurations-show.component';
-import { ConfigurationsManageComponent } from './views/configurations/configurations-manage/configurations-manage.component';
-import { ConfigurationsManageDetailsComponent } from './views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component';
-import { ConfigurationsUploadComponent } from './views/configurations/configurations-upload/configurations-upload.component';
-import { ErrorComponent } from './views/error/error.component';
-import { LoadingComponent } from './views/loading/loading.component';
-import { LoggingComponent } from './views/logging/logging.component';
-import { LoggingManageComponent } from './views/logging/logging-manage/logging-manage.component';
-import { IafUpdateComponent } from './views/iaf-update/iaf-update.component';
+import { EnvironmentVariablesComponent } from './views/environment-variables/environment-variables.component';
+import { JdbcExecuteQueryComponent } from './views/jdbc/jdbc-execute-query/jdbc-execute-query.component';
+import { JdbcBrowseTablesComponent } from './views/jdbc/jdbc-browse-tables/jdbc-browse-tables.component';
+import { SecurityItemsComponent } from './views/security-items/security-items.component';
 import { ConnectionsComponent } from './views/connections/connections.component';
-import { TestPipelineComponent } from './views/test-pipeline/test-pipeline.component';
-import { TestServiceListenerComponent } from './views/test-service-listener/test-service-listener.component';
-import { LoginComponent } from './views/login/login.component';
-import { WebsocketTestComponent } from './views/websocket-test/websocket-test.component';
-import { LoggingAddComponent } from './views/logging/logging-add/logging-add.component';
+import { InlinestoreComponent } from './views/inlinestore/inlinestore.component';
+import { MonitorsComponent } from './views/monitors/monitors.component';
+import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
 import { MonitorsNewComponent } from './views/monitors/monitors-new/monitors-new.component';
-import { authGuard } from './guards/auth.guard';
+import { IbisstoreSummaryComponent } from './views/ibisstore-summary/ibisstore-summary.component';
+import { LiquibaseComponent } from './views/liquibase/liquibase.component';
+import { IframeCustomViewComponent } from './views/iframe/iframe-custom-view/iframe-custom-view.component';
+import { IframeLarvaComponent } from './views/iframe/iframe-larva/iframe-larva.component';
+import { IframeLadybugLegacyComponent } from './views/iframe/iframe-ladybug-legacy/iframe-ladybug-legacy.component';
+import { IframeLadybugComponent } from './views/iframe/iframe-ladybug/iframe-ladybug.component';
+import { IafUpdateComponent } from './views/iaf-update/iaf-update.component';
+import { LoadingComponent } from './views/loading/loading.component';
+import { ErrorComponent } from './views/error/error.component';
 
 export const routes: Routes = [
   {
@@ -477,15 +476,3 @@ export const routes: Routes = [
     },
   },
 ];
-
-@NgModule({
-  imports: [
-    RouterModule.forRoot(routes, {
-      useHash: true,
-      enableTracing: false,
-      paramsInheritanceStrategy: 'always',
-    }),
-  ],
-  exports: [RouterModule],
-})
-export class AppRoutingModule {}

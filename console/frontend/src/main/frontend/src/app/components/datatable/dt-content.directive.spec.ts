@@ -3,7 +3,6 @@ import { Component, ViewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 @Component({
-  standalone: true,
   template: `<ng-template appDtContent>TEST</ng-template>`,
   imports: [DtContentDirective],
 })

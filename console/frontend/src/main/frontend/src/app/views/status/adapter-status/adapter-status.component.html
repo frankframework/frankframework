@@ -292,7 +292,7 @@
                       </span>
                       <button
                         appHasAccessToLink="updateReceiver"
-                        (click)="stopReceiver(adapter, receiver)"
+                        (click)="stopReceiver(adapter!, receiver)"
                         *ngIf="receiver.state === 'started' || receiver.state === 'exception_starting'"
                         class="btn btn-xs danger-hover"
                         title="Stop receiver"
@@ -301,7 +301,7 @@
                         <i class="fa fa-stop"></i>
                       </button>
                       <button
-                        (click)="startReceiver(adapter, receiver)"
+                        (click)="startReceiver(adapter!, receiver)"
                         *ngIf="receiver.state === 'stopped' || receiver.state === 'exception_stopping'"
                         class="btn btn-xs primary-hover"
                         title="Start receiver"

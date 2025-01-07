@@ -15,7 +15,6 @@ import { ServerTimeService } from '../../../services/server-time.service';
   selector: 'app-pages-topnavbar',
   templateUrl: './pages-topnavbar.component.html',
   styleUrls: ['./pages-topnavbar.component.scss'],
-  standalone: true,
   imports: [CommonModule, FormsModule, HamburgerComponent, RouterModule, TimeSinceDirective, NgbDropdownModule],
 })
 export class PagesTopnavbarComponent implements OnInit, OnChanges, OnDestroy {

@@ -5,7 +5,6 @@ import { By } from '@angular/platform-browser';
 import { NgForOf } from '@angular/common';
 
 @Component({
-  standalone: true,
   template: `
     <table>
       <thead>

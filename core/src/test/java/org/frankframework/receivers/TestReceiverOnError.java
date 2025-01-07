@@ -51,6 +51,7 @@ import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.receivers.Receiver.OnError;
+import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestConfiguration;
@@ -72,6 +73,7 @@ public class TestReceiverOnError {
 	void tearDown() throws Exception {
 		log.info("!> tearing down test");
 		configuration.removeAdapters();
+		configuration.getBean("configurationMetrics", MetricsInitializer.class).destroy(); // Meters are cached...
 		log.info("!> Configuration Context for [{}] has been cleaned up.", TransactionManagerType.DATASOURCE);
 	}
 
@@ -145,8 +147,8 @@ public class TestReceiverOnError {
 		log.info("Adapter RunState "+adapter.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
 
-		waitWhileInState(receiver, RunState.STOPPED); //Ensure the next waitWhileInState doesn't skip when STATE is still STOPPED
-		waitWhileInState(receiver, RunState.STARTING); //Don't continue until the receiver has been started.
+		waitWhileInState(receiver, RunState.STOPPED); // Ensure the next waitWhileInState doesn't skip when STATE is still STOPPED
+		waitWhileInState(receiver, RunState.STARTING); // Don't continue until the receiver has been started.
 		log.info("Receiver RunState "+receiver.getRunState());
 
 		assertEquals(RunState.STARTED, receiver.getRunState());
@@ -183,7 +185,7 @@ public class TestReceiverOnError {
 	public void testPullingListenerWithExceptionAndOnErrorContinue(final String message, final String logMessage) throws Exception {
 		MockListenerBase listener = createListener(MockPullingListener.class);
 		Receiver<String> receiver = startReceiver(listener);
-		receiver.setOnError(OnError.CONTINUE); //Luckily we can change this runtime...
+		receiver.setOnError(OnError.CONTINUE); // Luckily we can change this runtime...
 
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
 			// Act
@@ -209,7 +211,7 @@ public class TestReceiverOnError {
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
 			MockListenerBase listener = createListener(MockPullingListener.class);
 			Receiver<String> receiver = startReceiver(listener);
-			receiver.setOnError(OnError.CLOSE); //Luckily we can change this runtime...
+			receiver.setOnError(OnError.CLOSE); // Luckily we can change this runtime...
 
 			// Act
 			listener.offerMessage(message);
@@ -229,7 +231,7 @@ public class TestReceiverOnError {
 	public void testPushingListenerWithExceptionAndOnErrorContinue() throws Exception {
 		MockListenerBase listener = createListener(MockPushingListener.class);
 		Receiver<String> receiver = startReceiver(listener);
-		receiver.setOnError(OnError.CONTINUE); //Luckily we can change this runtime...
+		receiver.setOnError(OnError.CONTINUE); // Luckily we can change this runtime...
 
 		// Act
 		assertThrows(ListenerException.class, () -> listener.offerMessage("processMessageException"));
@@ -244,7 +246,7 @@ public class TestReceiverOnError {
 	public void testPushingListenerWithExceptionAndOnErrorClose() throws Exception {
 		MockListenerBase listener = createListener(MockPushingListener.class);
 		Receiver<String> receiver = startReceiver(listener);
-		receiver.setOnError(OnError.CLOSE); //Luckily we can change this runtime...
+		receiver.setOnError(OnError.CLOSE); // Luckily we can change this runtime...
 
 		// Act
 		assertThrows(ListenerException.class, () -> listener.offerMessage("processMessageException"));

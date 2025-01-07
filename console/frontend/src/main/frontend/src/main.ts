@@ -1,8 +1,9 @@
 /// <reference types="@angular/localize" />
 
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import { AppModule } from './app/app.module';
-import type * as SockJS from 'sockjs-client';
+import { bootstrapApplication } from '@angular/platform-browser';
+import type SockJS from 'sockjs-client';
+import { AppComponent } from './app/app.component';
+import { appConfig } from './app/app.config';
 import { whenElementExists } from './app/utils';
 
 declare global {
@@ -12,24 +13,8 @@ declare global {
   }
 }
 
-const scroll2TopAnimation: Animation | null = null;
-
 function main(): void {
-  platformBrowserDynamic()
-    .bootstrapModule(AppModule)
-    .catch((error) => console.error(error));
-
-  /* TODO: when all components are standalone, bootstrap using this
-  bootstrapApplication(AppCompponent, {
-    providers: [
-      provideRouter(...),
-      importProvidersFrom(
-        //  LibraryModule.forRoot()
-      ),
-      // other providers
-    ],
-  });
-  */
+  bootstrapApplication(AppComponent, appConfig).catch((error) => console.error(error));
 }
 
 if (location.hostname != 'localhost') {

@@ -8,7 +8,6 @@ import { AppService } from 'src/app/app.service';
   selector: 'app-pages-topinfobar',
   templateUrl: './pages-topinfobar.component.html',
   styleUrls: ['./pages-topinfobar.component.scss'],
-  standalone: true,
   imports: [CommonModule],
 })
 export class PagesTopinfobarComponent implements OnInit, OnDestroy {

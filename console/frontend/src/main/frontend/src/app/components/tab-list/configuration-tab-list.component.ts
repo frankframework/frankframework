@@ -7,7 +7,6 @@ import { first, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-configuration-tab-list',
-  standalone: true,
   imports: [NgForOf, NgClass],
   templateUrl: './tab-list.component.html',
   styleUrl: './tab-list.component.scss',

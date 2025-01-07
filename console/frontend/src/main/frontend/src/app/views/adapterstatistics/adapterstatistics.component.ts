@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import type { ChartData, ChartDataset, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { Subscription } from 'rxjs';
@@ -8,9 +8,14 @@ import { DebugService } from 'src/app/services/debug.service';
 import { MiscService } from 'src/app/services/misc.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { AdapterstatisticsService, Statistics } from './adapterstatistics.service';
+import { LaddaModule } from 'angular2-ladda';
+import { NgFor, NgIf } from '@angular/common';
+import { FormatStatKeysPipe } from './format-stat-keys.pipe';
+import { FormatStatisticsPipe } from './format-statistics.pipe';
 
 @Component({
   selector: 'app-adapterstatistics',
+  imports: [LaddaModule, RouterLink, NgIf, NgFor, BaseChartDirective, FormatStatKeysPipe, FormatStatisticsPipe],
   templateUrl: './adapterstatistics.component.html',
   styleUrls: ['./adapterstatistics.component.scss'],
 })

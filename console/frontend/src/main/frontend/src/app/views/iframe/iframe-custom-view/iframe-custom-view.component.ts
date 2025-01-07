@@ -3,11 +3,12 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService } from 'src/app/app.service';
-import { BaseIframeComponent } from '../iframe.base';
+import { BaseIframeComponent, baseImports } from '../iframe.base';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-iframe-custom-view',
+  imports: baseImports,
   templateUrl: '../iframe.component.html',
   styleUrls: ['../iframe.component.scss'],
 })

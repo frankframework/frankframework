@@ -31,7 +31,6 @@ const mermaid = mermaidImport;
       }
     `,
   ],
-  standalone: true,
   imports: [CommonModule],
 })
 export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
