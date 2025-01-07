@@ -36,6 +36,7 @@ public class DelineaClientTest {
 				"/oauth",
 				"user",
 				"pass",
+				"",
 				""
 		);
 

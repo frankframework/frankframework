@@ -27,7 +27,8 @@ public record DelineaClientSettings(String tenant,
 		String oauthTokenUrl,
 		String oauthUsername,
 		String oauthPassword,
-		String tld) {
+		String tld,
+		String autoCommentValue) {
 	private static final String DEFAULT_TLD = "com";
 
 	private static final String DEFAULT_ROOT_URL_TEMPLATE = "https://%s.secretservercloud.%s/api/v1";

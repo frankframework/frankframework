@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -35,13 +36,24 @@ public class DelineaClient extends RestTemplate {
 	 * Fetch and return a {@link Secret} from Delinea Secret Server, including {@code fileAttachments}
 	 *
 	 * @param id - the integer ID of the secret to be fetched
+	 * @param autoCommentValue - the auto comment value to be used if not empty
 	 * @return the {@link Secret} object
 	 */
-	public Secret getSecret(String id) {
+	public Secret getSecret(String id, String autoCommentValue) {
 		final Map<String, String> params = new HashMap<>();
 		params.put("id", id);
 
+		// it is possible to provide an auto comment value, which is shown in the audit trail on the server
+		// see: https://docs.delinea.com/online-help/integrations/uipath/config/enable-auto-comment.htm
+		if (StringUtils.isNotBlank(autoCommentValue)) {
+			params.put("autoCommentValue", autoCommentValue);
+		}
+
 		return getForObject(SECRET_ID_URI, Secret.class, params);
+	}
+
+	public Secret getSecret(String id) {
+		return getSecret(id, null);
 	}
 
 	/**

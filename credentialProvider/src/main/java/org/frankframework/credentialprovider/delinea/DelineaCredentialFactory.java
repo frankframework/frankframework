@@ -44,6 +44,9 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 
 	private static final String OAUTH_PASSWORD_KEY = BASE_KEY + "oauth.password";
 
+	// Leave empty to don't use autocomment
+	static final String USE_AUTO_COMMENT_VALUE = BASE_KEY + "autocomment.value";
+
 	private static final long CACHE_DURATION_MILLIS = 60_000L;
 
 	private List<String> configuredAliases; // Refreshed every CACHE_DURATION_MILLIS
@@ -89,7 +92,8 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 				appConstants.get(OAUTH_TOKEN_URL_KEY),
 				appConstants.get(OAUTH_USERNAME_KEY),
 				appConstants.get(OAUTH_PASSWORD_KEY),
-				appConstants.get(TLD_KEY)
+				appConstants.get(TLD_KEY),
+				appConstants.get(USE_AUTO_COMMENT_VALUE)
 		);
 	}
 
@@ -117,8 +121,9 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 	@Override
 	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
 		if (StringUtils.isNotEmpty(alias)) {
+
 			// Make sure to always get a live copy of the secret
-			Secret secret = delineaClient.getSecret(alias);
+			Secret secret = delineaClient.getSecret(alias, delineaClientSettings.autoCommentValue());
 
 			if (secret != null) {
 				return translate(secret);
