@@ -112,15 +112,6 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 		}
 	}
 
-	/**
-	 * @deprecated No longer has any effect
-	 */
-	@Deprecated
-	@ConfigurationWarning("This option is deprecated and has no effect anymore")
-	public void setStreamingXslt(boolean ignored) {
-		// No-op
-	}
-
 	@Override
 	public ParameterList getParameterList() {
 		return sender.getParameterList();

@@ -34,6 +34,8 @@ import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -41,6 +43,7 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.stream.Message;
+import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerErrorListener;
 import org.frankframework.util.TransformerPool;
@@ -88,6 +91,11 @@ public class ForEachChildElementPipe extends StringIteratorPipe {
 					setXsltVersion(DEFAULT_XSLT_VERSION);
 				}
 				extractElementsTp = TransformerPool.getInstance(makeEncapsulatingXslt("root", getElementXPathExpression(), getXsltVersion(), getNamespaceDefs()), getXsltVersion(), this);
+
+				boolean streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, false);
+				if (streamingXslt && getXsltVersion() != DEFAULT_XSLT_VERSION) {
+					ConfigurationWarnings.add(this, log, "XsltProcessor xsltVersion ["+getXsltVersion()+"] currently does not support streaming XSLT, might lead to memory problems for large messages", SuppressKeys.XSLT_STREAMING_SUPRESS_KEY);
+				}
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("elementXPathExpression ["+getElementXPathExpression()+"]",e);

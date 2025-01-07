@@ -305,14 +305,6 @@ public class XsltSender extends AbstractSenderWithParameters {
 		}
 	}
 
-	/**
-	 * @deprecated No longer has any effect
-	 */
-	@Deprecated
-	public void setStreamingXslt(Boolean ignored) {
-		// No-op
-	}
-
 	/** Location of stylesheet to apply to the input message */
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
