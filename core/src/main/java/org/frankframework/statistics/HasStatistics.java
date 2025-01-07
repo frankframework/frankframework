@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
 */
 package org.frankframework.statistics;
 
-import org.frankframework.core.Adapter;
-import org.frankframework.core.IConfigurationAware;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Interface to be implemented by objects like Pipes or Senders that maintain additional statistics themselves.
@@ -24,7 +23,8 @@ import org.frankframework.core.IConfigurationAware;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public interface HasStatistics extends IConfigurationAware {
+public interface HasStatistics {
 
-	Adapter getAdapter(); //Allows the statistic to be grouped by Adapter
+	String getName();
+	ApplicationContext getApplicationContext(); //Allows the statistic to be grouped by Configuration and Adapter
 }
