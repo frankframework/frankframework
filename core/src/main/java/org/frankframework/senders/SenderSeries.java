@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.AdapterAware;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -56,9 +55,6 @@ public class SenderSeries extends AbstractSenderWrapper {
 	@Override
 	public void configure() throws ConfigurationException {
 		for (ISender sender: getSenders()) {
-			if(sender instanceof AdapterAware aware) {
-				aware.setAdapter(adapter);
-			}
 			sender.configure();
 		}
 		super.configure();
