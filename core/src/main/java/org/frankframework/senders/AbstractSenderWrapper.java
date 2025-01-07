@@ -17,15 +17,14 @@ package org.frankframework.senders;
 
 import jakarta.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.cache.ICache;
 import org.frankframework.cache.ICacheEnabled;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.Adapter;
-import org.frankframework.core.AdapterAware;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -41,7 +40,7 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class AbstractSenderWrapper extends AbstractSenderWithParameters implements HasStatistics, AdapterAware, ICacheEnabled<String,String> {
+public abstract class AbstractSenderWrapper extends AbstractSenderWithParameters implements HasStatistics, ICacheEnabled<String,String> {
 
 	private @Getter String getInputFromSessionKey;
 	private @Getter String getInputFromFixedValue=null;
@@ -49,7 +48,6 @@ public abstract class AbstractSenderWrapper extends AbstractSenderWithParameters
 	private @Getter String storeInputInSessionKey;
 	private @Getter boolean preserveInput=false;
 
-	protected @Setter Adapter adapter;
 	protected @Setter MetricsInitializer configurationMetrics;
 
 	protected @Setter SenderWrapperProcessor senderWrapperProcessor;
