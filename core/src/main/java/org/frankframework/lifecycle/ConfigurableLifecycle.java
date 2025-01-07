@@ -37,7 +37,7 @@ public interface ConfigurableLifecycle extends SmartLifecycle {
 
 	@Override
 	default int getPhase() {
-		return Integer.MAX_VALUE; //Starts later, stops first
+		return Integer.MAX_VALUE; // Starts later, stops first
 	}
 
 	/**

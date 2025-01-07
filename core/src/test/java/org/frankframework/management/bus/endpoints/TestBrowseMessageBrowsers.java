@@ -35,7 +35,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -107,18 +106,9 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		adapter.setPipeLine(pipeline);
 
 		adapter.configure();
-		getConfiguration().getAdapterManager().addAdapter(adapter);
+		getConfiguration().addAdapter(adapter);
 
 		return adapter;
-	}
-
-	@AfterEach
-	@Override
-	public void tearDown() {
-		if(adapter != null) {
-			getConfiguration().getAdapterManager().removeAdapter(adapter);
-		}
-		super.tearDown();
 	}
 
 	@Test

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013-2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -750,7 +750,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	}
 
 	@Override
-	public void startRunning() {
+	public void start() {
 		try {
 			// if this receiver is on an adapter, the StartListening method
 			// may only be executed when the adapter is started.
@@ -808,7 +808,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	//after successfully closing all resources the state should be set to stopped
 	@Override
-	public void stopRunning() {
+	public void stop() {
 		// See also Adapter.stopRunning() and PullingListenerContainer.ControllerTask
 		log.trace("{} Receiver StopRunning - synchronize (lock) on Receiver runState[{}]", this::getLogPrefix, runState::toString);
 		synchronized (runState) {
@@ -1707,7 +1707,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				break;
 			case CLOSE:
 				error(errorMessage+", stopping receiver", t);
-				stopRunning();
+				stop();
 				break;
 		}
 	}
@@ -1795,7 +1795,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				Thread.sleep(1000L);
 			} catch (Exception e2) {
 				error("sleep interrupted", e2);
-				stopRunning();
+				stop();
 				Thread.currentThread().interrupt();
 			}
 		}
@@ -1866,7 +1866,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	public void setRunState(RunState state) {
 		if(RunState.ERROR == state) {
 			log.debug("{} Set RunState to ERROR -> Stop Running", this::getLogPrefix);
-			stopRunning();
+			stop();
 		}
 
 		synchronized (runState) {
@@ -1899,7 +1899,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			errorMessage = msg + ": " + e.getMessage();
 			if (OnError.CLOSE == getOnError()) {
 				log.info("closing after exception in post processing");
-				stopRunning();
+				stop();
 			}
 		}
 		return errorMessage;

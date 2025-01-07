@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -143,7 +143,7 @@ public class DefaultIbisManager implements IbisManager {
 				Assert.notNull(adapter, ()->"adapter ["+adapterName+"] not found");
 
 				log.info("Stopping adapter [{}], on request of [{}]", adapterName, commandIssuedBy);
-				configuration.getRegisteredAdapter(adapterName).stopRunning();
+				adapter.stop();
 			}
 			break;
 
@@ -169,7 +169,7 @@ public class DefaultIbisManager implements IbisManager {
 					Assert.notNull(adapter, ()->"adapter ["+adapterName+"] not found");
 
 					log.info("Starting adapter [{}] on request of [{}]", adapterName, commandIssuedBy);
-					configuration.getRegisteredAdapter(adapterName).startRunning();
+					adapter.start();
 				} catch (Exception e) {
 					log.error("error in execution of command [{}] for adapter [{}]", action, adapterName, e);
 				}
@@ -273,7 +273,7 @@ public class DefaultIbisManager implements IbisManager {
 			case STARTED:
 			case EXCEPTION_STARTING:
 			case EXCEPTION_STOPPING:
-				receiver.stopRunning();
+				receiver.stop();
 				log.info("receiver [{}] stopped by webcontrol on request of [{}]", receiverName, commandIssuedBy);
 				break;
 			default:
@@ -296,7 +296,7 @@ public class DefaultIbisManager implements IbisManager {
 				adapter.getMessageKeeper().info(receiver, "already in state [" + receiverRunState + "]");
 				break;
 			case STOPPED:
-				receiver.startRunning();
+				receiver.start();
 				log.info("receiver [{}] started by [{}]", receiverName, commandIssuedBy);
 				break;
 			default:
@@ -308,13 +308,13 @@ public class DefaultIbisManager implements IbisManager {
 	private void startAdapters(Configuration configuration) {
 		Assert.notNull(configuration, "no configuration provided");
 		log.info("Starting all autostart-configured adapters for configuation [{}]", configuration::getName);
-		configuration.getAdapterManager().start();
+		configuration.start();
 	}
 
 	private void stopAdapters(Configuration configuration) {
 		Assert.notNull(configuration, "no configuration provided");
 		log.info("Stopping all adapters for configuation [{}]", configuration::getName);
-		configuration.getAdapterManager().stop();
+		configuration.stop();
 	}
 
 	@Override

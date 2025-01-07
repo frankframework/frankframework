@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
 */
 package org.frankframework.configuration;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -27,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
@@ -38,7 +41,6 @@ import org.springframework.context.support.AbstractRefreshableConfigApplicationC
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.extensions.SapSystems;
@@ -60,6 +62,7 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.RunState;
+import org.frankframework.util.SpringUtils;
 
 /**
  * Container of {@link Adapter Adapters} that belong together.
@@ -72,7 +75,7 @@ import org.frankframework.util.RunState;
  * has a tab for each configuration that only shows information
  * about that configuration. See the Frank!Manual for details.
  *
- * @author Johan Verrips
+ * @author Niels Meijer
  */
 @FrankDocGroup(FrankDocGroupValue.OTHER)
 public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware, ConfigurableLifecycle {
@@ -81,9 +84,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private static final Logger applicationLog = LogUtil.getLogger("APPLICATION");
 
 	private Boolean autoStart = null;
-	private final boolean enabledAutowiredPostProcessing = false;
 
-	private @Getter @Setter AdapterManager adapterManager; // We have to manually inject the AdapterManager bean! See refresh();
 	private @Getter ScheduleManager scheduleManager; // We have to manually inject the ScheduleManager bean! See refresh();
 
 	private @Getter RunState state = RunState.STOPPED;
@@ -134,13 +135,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 		super.afterPropertiesSet(); // Triggers a context refresh
 
-		if (enabledAutowiredPostProcessing) {
-			// Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
-			AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
-			postProcessor.setAutowiredAnnotationType(Autowired.class);
-			postProcessor.setBeanFactory(getBeanFactory());
-			getBeanFactory().addBeanPostProcessor(postProcessor);
-		}
+		// Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
+		AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
+		postProcessor.setAutowiredAnnotationType(Autowired.class);
+		postProcessor.setBeanFactory(getBeanFactory());
+		getBeanFactory().addBeanPostProcessor(postProcessor);
 
 		ibisManager.addConfiguration(this); // Only if successfully refreshed, add the configuration
 		log.info("initialized Configuration [{}] with ClassLoader [{}]", this::toString, this::getClassLoader);
@@ -157,7 +156,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 		super.refresh();
 
-		setAdapterManager(getBean("adapterManager", AdapterManager.class));
 		setScheduleManager(getBean("scheduleManager", ScheduleManager.class));
 	}
 
@@ -237,7 +235,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 		String msg;
 		if (isAutoStartup()) {
-			start();
+			start(); // Calls ConfiguringLifecycleProcessor#start() which starts all newly (non-started) registered beans.
 			msg = "startup in " + (System.currentTimeMillis() - start) + " ms";
 		} else {
 			msg = "configured in " + (System.currentTimeMillis() - start) + " ms";
@@ -291,7 +289,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public boolean isUnloadInProgressOrDone() {
-		return inState(RunState.STOPPING) || inState(RunState.STOPPED);
+		return !isActive() || inState(RunState.STOPPING);
 	}
 
 	@Override
@@ -325,39 +323,34 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/**
-	 * Get a registered adapter by its name through {@link AdapterManager#getAdapter(String)}
+	 * Get a registered adapter by its name.
 	 * @param name the adapter to retrieve
 	 * @return Adapter
 	 */
+	@Nullable
 	public Adapter getRegisteredAdapter(String name) {
-		if (adapterManager == null || !isActive()) {
+		if (!isActive()) {
 			return null;
 		}
 
-		return adapterManager.getAdapter(name);
+		return getAdapters().get(name);
 	}
 
+	@Deprecated
 	public List<Adapter> getRegisteredAdapters() {
-		if (adapterManager == null || !isActive()) {
+		if (!isActive()) {
 			return Collections.emptyList();
 		}
-		return adapterManager.getAdapterList();
+		return new ArrayList<>(getAdapters().values());
+	}
+	@Nonnull
+	public List<Adapter> getAdapterList() {
+		return getRegisteredAdapters();
 	}
 
-	public void addStartAdapterThread(Runnable runnable) {
-		adapterManager.addStartAdapterThread(runnable);
-	}
-
-	public void removeStartAdapterThread(Runnable runnable) {
-		adapterManager.removeStartAdapterThread(runnable);
-	}
-
-	public void addStopAdapterThread(Runnable runnable) {
-		adapterManager.addStopAdapterThread(runnable);
-	}
-
-	public void removeStopAdapterThread(Runnable runnable) {
-		adapterManager.removeStopAdapterThread(runnable);
+	protected final Map<String, Adapter> getAdapters() {
+		Map<String, Adapter> adapters = getBeansOfType(Adapter.class);
+		return Collections.unmodifiableMap(adapters);
 	}
 
 	/**
@@ -371,10 +364,31 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * Add adapter.
 	 */
 	public void addAdapter(Adapter adapter) {
-		adapter.setConfiguration(this);
-		adapterManager.addAdapter(adapter);
+		log.debug("registering adapter [{}] with Configuration [{}]", adapter::toString, this::toString);
+		if(adapter.getName() == null) {
+			throw new IllegalStateException("adapter has no name");
+		}
 
+		SpringUtils.registerSingleton(this, adapter.getName(), adapter);
 		log.debug("Configuration [{}] registered adapter [{}]", this::getName, adapter::toString);
+	}
+
+	/**
+	 * Remove adapter.
+	 */
+	public void removeAdapter(Adapter adapter) {
+		if(!adapter.getRunState().isStopped()) {
+			log.warn("unable to remove adapter [{}] while in state [{}]", adapter::getName, adapter::getRunState);
+			return;
+		}
+
+		DefaultListableBeanFactory cbf = (DefaultListableBeanFactory) getAutowireCapableBeanFactory();
+		String name = adapter.getName();
+		getAdapters()
+				.keySet()
+				.stream()
+				.filter(name::equals)
+				.forEach(cbf::destroySingleton);
 	}
 
 	// explicitly in this position, to have the right location in the XSD
