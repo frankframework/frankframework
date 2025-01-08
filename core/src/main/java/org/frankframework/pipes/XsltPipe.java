@@ -15,7 +15,6 @@
 */
 package org.frankframework.pipes;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 
 import lombok.Getter;
@@ -96,11 +95,6 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 
 		try {
 			Message result = sender.sendMessage(input, session).getResult();
-
-			if (StringUtils.isNotEmpty(getStoreResultInSessionKey())) {
-				session.put(getStoreResultInSessionKey(), result.asString());
-				return new PipeRunResult(getSuccessForward(), input);
-			}
 
 			return new PipeRunResult(getSuccessForward(), result);
 		} catch (Exception e) {

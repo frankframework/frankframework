@@ -15,6 +15,7 @@
 */
 package org.frankframework.pipes;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -107,7 +108,6 @@ public class XmlSwitch extends AbstractPipe {
 		}
 	}
 
-
 	/**
 	 * This is where the action takes place, the switching is done. Pipes may only throw a PipeRunException,
 	 * to be handled by the caller of this object.<br/>
@@ -122,7 +122,7 @@ public class XmlSwitch extends AbstractPipe {
 
 		if (StringUtils.isNotEmpty(getForwardNameSessionKey())) {
 			forward = session.getString(getForwardNameSessionKey());
-		} else if (!(StringUtils.isEmpty(getXpathExpression()) && StringUtils.isEmpty(getStyleSheetName())) || StringUtils.isEmpty(getGetInputFromSessionKey())) {
+		} else if (StringUtils.isNotEmpty(getXpathExpression()) || StringUtils.isNotEmpty(getStyleSheetName()) || StringUtils.isEmpty(getGetInputFromSessionKey())) {
 			try {
 				Map<String, Object> parametervalues = null;
 				ParameterList parameterList = getParameterList();
@@ -131,17 +131,17 @@ public class XmlSwitch extends AbstractPipe {
 					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
 				}
 
-				if (StringUtils.isNotEmpty(getGetInputFromSessionKey())) {
-					forward = transformerPool.transform(session.getMessage(getGetInputFromSessionKey()), parametervalues, isNamespaceAware());
-				} else {
-					message.preserve();
-					forward = transformerPool.transform(message, parametervalues, isNamespaceAware());
-				}
+				message.preserve();
+				forward = transformerPool.transform(message, parametervalues, isNamespaceAware());
 			} catch (Throwable e) {
 				throw new PipeRunException(this, "got exception on transformation", e);
 			}
-		} else if(StringUtils.isNotEmpty(getGetInputFromSessionKey())) {
-			forward = session.getString(getGetInputFromSessionKey());
+		} else {
+			try {
+				forward = message.asString();
+			} catch (IOException e) {
+				throw new PipeRunException(this, "Error reading message", e);
+			}
 		}
 
 		log.debug("determined forward [{}]", forward);
