@@ -68,9 +68,6 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.pool.ConnPoolControl;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.logging.log4j.Logger;
-
-import org.frankframework.http.authentication.IOauthAuthenticator;
-
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 
@@ -80,9 +77,6 @@ import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.core.Adapter;
-import org.frankframework.core.AdapterAware;
-import org.frankframework.core.IConfigurationAware;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Unsafe;
 import org.frankframework.encryption.AuthSSLContextFactory;
@@ -93,6 +87,7 @@ import org.frankframework.http.authentication.AuthenticationScheme;
 import org.frankframework.http.authentication.ClientCredentialsBasicAuth;
 import org.frankframework.http.authentication.ClientCredentialsQueryParameters;
 import org.frankframework.http.authentication.HttpAuthenticationException;
+import org.frankframework.http.authentication.IOauthAuthenticator;
 import org.frankframework.http.authentication.OAuthPreferringAuthenticationStrategy;
 import org.frankframework.http.authentication.ResourceOwnerPasswordCredentialsBasicAuth;
 import org.frankframework.http.authentication.ResourceOwnerPasswordCredentialsQueryParameters;
@@ -158,7 +153,7 @@ import org.frankframework.util.StringUtil;
  * @author Niels Meijer
  * @since 7.0
  */
-public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasKeystore, HasTruststore, HasStatistics, AdapterAware {
+public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasKeystore, HasTruststore, HasStatistics {
 	protected final Logger log = LogUtil.getLogger(this);
 
 	public static final String AUTHENTICATION_METHOD_KEY = "OauthAuthentication";
@@ -167,7 +162,6 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private @Getter @Setter String name;
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Setter MetricsInitializer configurationMetrics;
-	private @Getter @Setter Adapter adapter;
 
 	/* CONNECTION POOL */
 	private @Getter int timeout = 10_000;
@@ -499,12 +493,9 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 			// and we can't construct the interceptor. Besides that, it's probably not worth instrumenting either.
 			httpClient = httpClientBuilder.build();
 		} else {
-			// Adapter is not always available, use this instead. Also see `org.frankframework.statistics.MetricsInitializer.getElementType`
-			IConfigurationAware element = (adapter != null) ? adapter : this;
+			registerConnectionMetrics(this, connectionManager);
 
-			registerConnectionMetrics(element, connectionManager);
-
-			MicrometerHttpClientInterceptor interceptor = new MicrometerHttpClientInterceptor(configurationMetrics, element,
+			MicrometerHttpClientInterceptor interceptor = new MicrometerHttpClientInterceptor(configurationMetrics, this,
 					request -> request.getRequestLine().getUri(),
 					true
 			);
@@ -521,7 +512,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	 * @param frankElement
 	 * @param connPoolControl
 	 */
-	private void registerConnectionMetrics(IConfigurationAware frankElement, ConnPoolControl<HttpRoute> connPoolControl) {
+	private void registerConnectionMetrics(HasStatistics frankElement, ConnPoolControl<HttpRoute> connPoolControl) {
 		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_POOL_MAX, () -> connPoolControl.getTotalStats().getMax());
 		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_POOL_AVAILABLE, () -> connPoolControl.getTotalStats().getAvailable());
 		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_POOL_LEASED, () -> connPoolControl.getTotalStats().getLeased());

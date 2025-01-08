@@ -1,8 +1,8 @@
-<a *ngIf="flow.isImage === true" [href]="flow.url" target="_blank" rel="noopener noreferrer">
+<a *ngIf="flow.isImage" [href]="flow.url" target="_blank" rel="noopener noreferrer">
   <img [src]="flow.url" alt="Flow Diagram" />
 </a>
 <div
-  *ngIf="flow.isImage === false"
+  *ngIf="!flow.isImage"
   (click)="openFlowModal(flow.data)"
   title="Generate Flow Diagram"
   [style.height]="height + 'px'"

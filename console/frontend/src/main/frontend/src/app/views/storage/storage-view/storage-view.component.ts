@@ -5,11 +5,18 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService } from 'src/app/app.service';
 import { Base64Service } from '../../../services/base64.service';
+import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+import { NgFor, NgIf } from '@angular/common';
+import { OrderByPipe } from '../../../pipes/orderby.pipe';
+import { ToDateDirective } from '../../../components/to-date.directive';
+import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
+import { LaddaModule } from 'angular2-ladda';
 
 @Component({
   selector: 'app-storage-view',
   templateUrl: './storage-view.component.html',
   styleUrls: ['./storage-view.component.scss'],
+  imports: [NgbAlert, NgFor, OrderByPipe, NgIf, ToDateDirective, HasAccessToLinkDirective, LaddaModule],
 })
 export class StorageViewComponent implements OnInit {
   protected message: PartialMessage = {

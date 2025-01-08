@@ -1,7 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { AppService } from 'src/app/app.service';
-import { Option } from '../../components/combobox/combobox.component';
+import { ComboboxComponent, Option } from '../../components/combobox/combobox.component';
+import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+import { NgForOf, NgIf } from '@angular/common';
+import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
+import { InputFileUploadComponent } from '../../components/input-file-upload/input-file-upload.component';
+import { FormsModule } from '@angular/forms';
+import { MonacoEditorComponent } from '../../components/monaco-editor/monaco-editor.component';
+import { LaddaModule } from 'angular2-ladda';
 
 type AlertState = {
   type: string;
@@ -17,6 +24,17 @@ type ServiceListenerResult = {
   selector: 'app-test-service-listener',
   templateUrl: './test-service-listener.component.html',
   styleUrls: ['./test-service-listener.component.scss'],
+  imports: [
+    NgbAlert,
+    NgForOf,
+    QuickSubmitFormDirective,
+    ComboboxComponent,
+    InputFileUploadComponent,
+    FormsModule,
+    MonacoEditorComponent,
+    LaddaModule,
+    NgIf,
+  ],
 })
 export class TestServiceListenerComponent implements OnInit {
   protected state: AlertState[] = [];

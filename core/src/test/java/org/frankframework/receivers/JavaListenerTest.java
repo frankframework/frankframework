@@ -23,7 +23,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
@@ -116,8 +115,7 @@ public class JavaListenerTest {
 		return adapter;
 	}
 
-	void startAdapter() throws ConfigurationException {
-		configuration.configure();
+	void startAdapter() {
 		configuration.start();
 
 		waitForState(adapter, RunState.STARTED);
@@ -197,12 +195,12 @@ public class JavaListenerTest {
 
 		// Act / Assert 1 - OnError.CONTINUE
 		assertThrows(ListenerException.class, () -> listener.processRequest(testMessage, session));
-    	assertSame(RunState.STARTED, receiver.getRunState(), "Receiver should still be in state STARTED");
+		assertSame(RunState.STARTED, receiver.getRunState(), "Receiver should still be in state STARTED");
 
 		// Arrange 2
 		receiver.setOnError(Receiver.OnError.CLOSE); // Put receiver in state STOPPED after an error occurs
 
-		// Act / Assert	2 - OnError.CLOSE
+		// Act / Assert 2 - OnError.CLOSE
 		assertThrows(ListenerException.class, () -> listener.processRequest(testMessage, session));
 		assertSame(RunState.STOPPED, receiver.getRunState(), "Receiver should be in state STOPPED");
 		testMessage.close();

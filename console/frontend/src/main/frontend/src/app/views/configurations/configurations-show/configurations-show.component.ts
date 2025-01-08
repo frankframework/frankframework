@@ -5,9 +5,12 @@ import { ConfigurationsService } from '../configurations.service';
 import { copyToClipboard } from 'src/app/utils';
 import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
 import { Subscription } from 'rxjs';
+import { ConfigurationTabListComponent } from '../../../components/tab-list/configuration-tab-list.component';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-configurations-show',
+  imports: [ConfigurationTabListComponent, NgClass, MonacoEditorComponent],
   templateUrl: './configurations-show.component.html',
   styleUrls: ['./configurations-show.component.scss'],
 })

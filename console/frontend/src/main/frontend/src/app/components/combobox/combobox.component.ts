@@ -19,7 +19,6 @@ export type Option = {
 
 @Component({
   selector: 'app-combobox',
-  standalone: true,
   imports: [NgClass, FormsModule, NgIf, NgForOf],
   templateUrl: './combobox.component.html',
   styleUrl: './combobox.component.scss',

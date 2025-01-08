@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 - 2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
 */
 package org.frankframework.scheduler.job;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.AdapterManager;
+
+import lombok.Getter;
+
+import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.doc.Mandatory;
@@ -32,7 +33,6 @@ import org.frankframework.util.EnumUtils;
  * {@inheritDoc}
  */
 public class ActionJob extends AbstractJobDef {
-	private @Getter @Setter AdapterManager adapterManager;
 	private @Getter String configurationName;
 	private @Getter String adapterName;
 	private @Getter String receiverName;
@@ -56,7 +56,10 @@ public class ActionJob extends AbstractJobDef {
 		if (StringUtils.isEmpty(getAdapterName())) {
 			throw new ConfigurationException("an adapterName must be specified");
 		}
-		Adapter adapter = adapterManager.getAdapter(getAdapterName());
+		if (!(getApplicationContext() instanceof Configuration configuration)) {
+			throw new ConfigurationException("unable to determine configuration");
+		}
+		Adapter adapter = configuration.getRegisteredAdapter(getAdapterName());
 		if (adapter == null) { // Make sure the adapter is registered in this configuration
 			String msg = "Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] not registered.";
 			throw new ConfigurationException(msg);

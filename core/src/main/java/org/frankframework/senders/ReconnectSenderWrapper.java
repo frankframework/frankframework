@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.frankframework.senders;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.AdapterAware;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -56,9 +55,6 @@ public class ReconnectSenderWrapper extends AbstractSenderWrapper {
 	@Override
 	public void configure() throws ConfigurationException {
 		sender.configure();
-		if(sender instanceof AdapterAware aware) {
-			aware.setAdapter(adapter);
-		}
 
 		super.configure();
 	}

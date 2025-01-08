@@ -8,10 +8,9 @@ describe('ComboboxComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ComboboxComponent]
-    })
-    .compileComponents();
-    
+      imports: [ComboboxComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(ComboboxComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
