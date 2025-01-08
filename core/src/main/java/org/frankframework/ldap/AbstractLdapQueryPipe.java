@@ -35,6 +35,7 @@ import org.frankframework.util.CredentialFactory;
  * @author Gerrit van Brakel
  */
 @Forward(name = "*", description = "When {@literal notFoundForwardName} or {@literal exceptionForwardName} is used")
+@Forward(name = "notFound", description = "Default forward used when member is not found. Overridable by {@literal notFoundForwardName}")
 public abstract class AbstractLdapQueryPipe extends FixedForwardPipe {
 
 	private @Getter String ldapProviderURL;
