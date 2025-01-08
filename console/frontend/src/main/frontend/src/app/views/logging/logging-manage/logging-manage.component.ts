@@ -4,7 +4,7 @@ import { ToastService } from 'src/app/services/toast.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbAlert, NgbDropdown, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap';
 import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
-import { KeyValuePipe, NgClass, NgFor, NgIf } from '@angular/common';
+import { KeyValuePipe, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LaddaModule } from 'angular2-ladda';
 
@@ -17,10 +17,8 @@ import { LaddaModule } from 'angular2-ladda';
     NgbDropdown,
     NgbDropdownToggle,
     NgbDropdownMenu,
-    NgFor,
     NgbDropdownItem,
     LaddaModule,
-    NgIf,
     NgClass,
     KeyValuePipe,
   ],

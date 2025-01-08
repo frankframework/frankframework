@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { AppService } from 'src/app/app.service';
 import { ApiListener, Service, WebservicesService, Wsdl } from './webservices.service';
-import { NgForOf, NgIf } from '@angular/common';
+
 import { HasAccessToLinkDirective } from '../../components/has-access-to-link.directive';
 
 @Component({
   selector: 'app-webservices',
   templateUrl: './webservices.component.html',
   styleUrls: ['./webservices.component.scss'],
-  imports: [NgIf, NgForOf, HasAccessToLinkDirective],
+  imports: [HasAccessToLinkDirective],
 })
 export class WebservicesComponent implements OnInit {
   protected rootURL: string = this.appService.getServerPath();

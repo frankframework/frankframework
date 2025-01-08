@@ -1,9 +1,9 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { NgClass, NgForOf } from '@angular/common';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-tab-list',
-  imports: [NgForOf, NgClass],
+  imports: [NgClass],
   templateUrl: './tab-list.component.html',
   styleUrl: './tab-list.component.scss',
 })

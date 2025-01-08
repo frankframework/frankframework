@@ -1,46 +1,50 @@
 <ul class="alert p-n m-n" data-cy-status-component="configuration-warnings">
-  <li
-    *ngIf="freeDiskSpacePercentage && serverInfo && freeDiskSpacePercentage < FREE_DISK_SPACE_ALERT_THRESHOLD"
-    class="list-group-item alert-danger"
-  >
-    Disk space is running low! Only
-    {{ serverInfo.fileSystem.freeSpace | humanFileSize }} available, that's {{ freeDiskSpacePercentage }}% of the total
-    disk size ({{ serverInfo.fileSystem.totalSpace | humanFileSize }})
-  </li>
-  <ng-container *ngIf="alerts.length > 0">
-    <li *ngIf="messageLog[selectedConfiguration].errorStoreCount === 1" class="list-group-item alert-danger">
-      <i class="m-r-md fa fa-info-circle"></i>
-      <span
-        >Errorlog contains 1 record. Service management should check whether this record has to be resent or
-        deleted</span
-      >
+  @if (freeDiskSpacePercentage && serverInfo && freeDiskSpacePercentage < FREE_DISK_SPACE_ALERT_THRESHOLD) {
+    <li class="list-group-item alert-danger">
+      Disk space is running low! Only
+      {{ serverInfo.fileSystem.freeSpace | humanFileSize }} available, that's {{ freeDiskSpacePercentage }}% of the
+      total disk size ({{ serverInfo.fileSystem.totalSpace | humanFileSize }})
     </li>
-    <li *ngIf="messageLog[selectedConfiguration].errorStoreCount > 1" class="list-group-item alert-danger">
-      <i class="m-r-md fa fa-info-circle"></i>
-      <span
-        >Errorlog contains {{ messageLog[selectedConfiguration].errorStoreCount }} records. Service management should
-        check whether this record has to be resent or deleted</span
-      >
-    </li>
-    <li *ngIf="messageLog[selectedConfiguration].errorStoreCount === -1" class="list-group-item alert-warning">
-      <i class="m-r-md fa fa-info-circle"></i>
-      <span>Errorlog might contain records. This is unknown because errorStore.count.show is not set to true</span>
-    </li>
-    <ng-container *ngFor="let alert of alerts">
-      <li
-        *ngIf="
-          alert.configuration === '' || selectedConfiguration === alert.configuration || selectedConfiguration === 'All'
-        "
-        class="alert-{{ alert.type }} list-group-item"
-      >
-        <div (click)="navigateByAlert(alert)" [ngClass]="{ pointer: !!alert.link }">
-          <i class="m-r-md fa fa-{{ alert.type === 'warning' ? 'warning' : 'times' }}"></i>
-          <span *ngIf="selectedConfiguration === 'All' && alert.configuration !== ''"
-            >Configuration [{{ alert.configuration }}] -
-          </span>
-          <span>{{ alert.message }}</span>
-        </div>
+  }
+  @if (alerts.length > 0) {
+    @if (messageLog[selectedConfiguration].errorStoreCount === 1) {
+      <li class="list-group-item alert-danger">
+        <i class="m-r-md fa fa-info-circle"></i>
+        <span
+          >Errorlog contains 1 record. Service management should check whether this record has to be resent or
+          deleted</span
+        >
       </li>
-    </ng-container>
-  </ng-container>
+    }
+    @if (messageLog[selectedConfiguration].errorStoreCount > 1) {
+      <li class="list-group-item alert-danger">
+        <i class="m-r-md fa fa-info-circle"></i>
+        <span
+          >Errorlog contains {{ messageLog[selectedConfiguration].errorStoreCount }} records. Service management should
+          check whether this record has to be resent or deleted</span
+        >
+      </li>
+    }
+    @if (messageLog[selectedConfiguration].errorStoreCount === -1) {
+      <li class="list-group-item alert-warning">
+        <i class="m-r-md fa fa-info-circle"></i>
+        <span>Errorlog might contain records. This is unknown because errorStore.count.show is not set to true</span>
+      </li>
+    }
+    @for (alert of alerts; track alert) {
+      @if (
+        alert.configuration === '' || selectedConfiguration === alert.configuration || selectedConfiguration === 'All'
+      ) {
+        <li class="alert-{{ alert.type }} list-group-item">
+          <div (click)="navigateByAlert(alert)" [ngClass]="{ pointer: !!alert.link }">
+            <i class="m-r-md fa fa-{{ alert.type === 'warning' ? 'warning' : 'times' }}"></i>
+            @if (selectedConfiguration === 'All' && alert.configuration !== '') {
+              <span>Configuration [{{ alert.configuration }}] - </span>
+            }
+            <span>{{ alert.message }}</span>
+          </div>
+        </li>
+      }
+    }
+  }
 </ul>

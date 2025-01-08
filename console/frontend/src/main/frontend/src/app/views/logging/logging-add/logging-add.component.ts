@@ -6,7 +6,6 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LaddaModule } from 'angular2-ladda';
 import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
-import { NgFor, NgIf } from '@angular/common';
 
 type Form = {
   logger: string;
@@ -15,7 +14,7 @@ type Form = {
 
 @Component({
   selector: 'app-logging-add',
-  imports: [FormsModule, LaddaModule, QuickSubmitFormDirective, NgIf, NgFor, RouterLink],
+  imports: [FormsModule, LaddaModule, QuickSubmitFormDirective, RouterLink],
   templateUrl: './logging-add.component.html',
   styleUrl: './logging-add.component.scss',
 })
