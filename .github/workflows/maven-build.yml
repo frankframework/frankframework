@@ -111,7 +111,7 @@ jobs:
         mailAddress: ${{ secrets.EXCHANGE_MAIL_ADDRESS }}
         clientId: ${{ secrets.EXCHANGE_MAIL_CLIENTID }}
         clientSecret: ${{ secrets.EXCHANGE_MAIL_CLIENTSECRET }}
-        tenantId: ${{ secrets.EXCHANGE_MAIL_TENANTID }}
+        tenantId: ${{ matrix.java == '17' && secrets.EXCHANGE_MAIL_TENANTID || '' }}
         baseFolder: "Inbox/${{env.PR_NUMBER}}-${{ matrix.java }}"
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam

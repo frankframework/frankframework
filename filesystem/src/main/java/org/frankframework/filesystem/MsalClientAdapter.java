@@ -17,7 +17,6 @@ package org.frankframework.filesystem;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,6 +52,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.Protected;
+import org.frankframework.filesystem.exchange.ExchangeFileSystem;
 import org.frankframework.filesystem.exchange.MailFolder;
 import org.frankframework.filesystem.exchange.MailFolderResponse;
 import org.frankframework.filesystem.exchange.MailMessage;
@@ -127,7 +127,7 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 		super.stop();
 	}
 
-	public GraphClient createGraphClient(String tenantId, CredentialFactory credentials) throws MalformedURLException {
+	public GraphClient createGraphClient(String tenantId, CredentialFactory credentials) throws IOException {
 		if (getHttpClient() == null) {
 			throw new LifecycleException("not yet started");
 		}
@@ -158,7 +158,7 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 	}
 
 	/** Silly wrapper to create a clean SDK */
-	public static class GraphClient {
+	public static class GraphClient implements AutoCloseable {
 		private MsalClientAdapter msal;
 		public GraphClient(MsalClientAdapter msal) {
 			this.msal = msal;
@@ -230,6 +230,11 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 
 		public MailMessage copyMailMessage(MailMessage file, MailFolder destinationFolder) throws IOException {
 			return MailMessageResponse.copy(this, file, destinationFolder);
+		}
+
+		@Override
+		public void close() throws IOException {
+			msal.stop();
 		}
 	}
 
