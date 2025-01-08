@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017, 2019 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import org.frankframework.doc.Protected;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ServiceClient;
+import org.frankframework.statistics.HasApplicationContext;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 
@@ -48,7 +49,7 @@ import org.frankframework.util.LogUtil;
  * @author  Gerrit van Brakel
  * @since   4.12
  */
-public class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient {
+public class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient, HasApplicationContext {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter String name;

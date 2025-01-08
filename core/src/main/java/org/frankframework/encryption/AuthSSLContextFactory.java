@@ -55,11 +55,8 @@ public class AuthSSLContextFactory {
 	protected SSLContext sslContext = null;
 
 	public static void verifyKeystoreConfiguration(HasKeystore keystoreOwner, HasTruststore truststoreOwner) throws ConfigurationException {
-		URL keystoreUrl = null;
-		URL truststoreUrl = null;
-
 		if (keystoreOwner != null && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
-			keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
+			URL keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
 			if (keystoreUrl == null) {
 				throw new ConfigurationException("cannot find URL for keystore resource [" + keystoreOwner.getKeystore() + "]");
 			}
@@ -70,7 +67,7 @@ public class AuthSSLContextFactory {
 			}
 		}
 		if (truststoreOwner != null && StringUtils.isNotEmpty(truststoreOwner.getTruststore())) {
-			truststoreUrl = ClassLoaderUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
+			URL truststoreUrl = ClassLoaderUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
 			if (truststoreUrl == null) {
 				throw new ConfigurationException("cannot find URL for truststore resource [" + truststoreOwner.getTruststore() + "]");
 			}

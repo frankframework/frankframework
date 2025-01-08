@@ -37,7 +37,7 @@ public class BusTestBase {
 
 			applicationContext.refresh();
 
-			//Add Custom Pre-Instantiation Processor to mock statically created FixedQuerySenders.
+			// Add Custom Pre-Instantiation Processor to mock statically created FixedQuerySenders.
 			qsPostProcessor.setApplicationContext(applicationContext);
 			applicationContext.getBeanFactory().addBeanPostProcessor(qsPostProcessor);
 
@@ -64,7 +64,7 @@ public class BusTestBase {
 				fail("unable to configure "+TestConfiguration.TEST_CONFIGURATION_NAME);
 			}
 
-			configuration.setLoadedConfiguration("<loaded authAlias=\"test\" />"); //AuthAlias is used in BusTopic.SECURITY_ITEMS
+			configuration.setLoadedConfiguration("<loaded authAlias=\"test\" />"); // AuthAlias is used in BusTopic.SECURITY_ITEMS
 			configuration.setOriginalConfiguration("<original authAlias=\"test\" />");
 		}
 		return configuration;
@@ -72,7 +72,7 @@ public class BusTestBase {
 
 	@BeforeEach
 	public void setUp() throws Exception {
-		getConfiguration(); //Create configuration
+		getConfiguration(); // Create configuration
 		mockConnectionFactoryFactory = getParentContext().getBean(MockRunnerConnectionFactoryFactory.class);
 	}
 

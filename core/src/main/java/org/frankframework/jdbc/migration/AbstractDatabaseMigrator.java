@@ -24,6 +24,7 @@ import javax.sql.DataSource;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -32,11 +33,12 @@ import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationMessageEvent;
 import org.frankframework.configuration.classloaders.AbstractClassLoader;
-import org.frankframework.core.IConfigurationAware;
+import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
+import org.frankframework.statistics.HasApplicationContext;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 
@@ -47,7 +49,7 @@ import org.frankframework.util.LogUtil;
  * @since	7.0-B4
  *
  */
-public abstract class AbstractDatabaseMigrator implements ConfigurableLifecycle, IConfigurationAware, InitializingBean {
+public abstract class AbstractDatabaseMigrator implements ConfigurableLifecycle, InitializingBean, ApplicationContextAware, HasApplicationContext, IScopeProvider {
 
 	protected Logger log = LogUtil.getLogger(this);
 	private @Setter IDataSourceFactory dataSourceFactory = null;
@@ -64,7 +66,7 @@ public abstract class AbstractDatabaseMigrator implements ConfigurableLifecycle,
 		}
 
 		configurationClassLoader = configuration.getClassLoader();
-		if(!(configurationClassLoader instanceof AbstractClassLoader)) { //Though this should technically never happen.. you never know!
+		if(!(configurationClassLoader instanceof AbstractClassLoader)) { // Though this should technically never happen.. you never know!
 			throw new IllegalStateException("unable to initialize database migrator");
 		}
 	}
@@ -120,7 +122,7 @@ public abstract class AbstractDatabaseMigrator implements ConfigurableLifecycle,
 	public abstract Resource getChangeLog();
 
 	protected final void logConfigurationMessage(String message) {
-		configuration.publishEvent(new ConfigurationMessageEvent(this, message));
+		configuration.publishEvent(new ConfigurationMessageEvent(configuration, message));
 	}
 
 	@Override
@@ -131,7 +133,7 @@ public abstract class AbstractDatabaseMigrator implements ConfigurableLifecycle,
 		this.configuration = (Configuration) applicationContext;
 	}
 
-	@Override //Can't lombok because the field name is configuration
+	@Override // Can't lombok because the field name is configuration
 	public final ApplicationContext getApplicationContext() {
 		return configuration;
 	}
@@ -147,12 +149,12 @@ public abstract class AbstractDatabaseMigrator implements ConfigurableLifecycle,
 
 	@Override
 	public void start() {
-		//Do nothing
+		// Do nothing
 	}
 
 	@Override
 	public void stop() {
-		//Do nothing
+		// Do nothing
 	}
 
 	@Override

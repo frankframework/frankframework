@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,16 @@
 */
 package org.frankframework.core;
 
+import org.springframework.context.ApplicationContextAware;
+
+import org.frankframework.statistics.HasApplicationContext;
+
 /**
- * Allows objects to declare that they have a Sender.
- * This is used for instance in ShowConfiguration, to show the Senders of receivers
- * that have one
- *
- * @author Gerrit van Brakel
+ * Digested FrankElements such as an {@link IPipe}/{@link ISender} or {@link IListener}.
+ * These elements contain a bunch of getters, but not necessarily setters.
+ * 
+ * NOTE: The {@link ApplicationContextAware} interface does not belong here.
  */
-public interface HasSender {
-	ISender getSender();
+public interface FrankElement extends HasApplicationContext, HasName, ApplicationContextAware {
+
 }

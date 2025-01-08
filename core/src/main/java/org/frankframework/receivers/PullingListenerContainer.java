@@ -35,8 +35,9 @@ import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.frankframework.core.HasName;
 import org.frankframework.core.IHasProcessState;
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.NameAware;
 import org.frankframework.core.IPeekableListener;
 import org.frankframework.core.IPullingListener;
 import org.frankframework.core.IThreadCountControllable;
@@ -142,9 +143,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		}
 	}
 
-	private class ControllerTask implements SchedulingAwareRunnable, INamedObject {
+	private class ControllerTask implements SchedulingAwareRunnable, HasName {
 
-		private @Getter @Setter String name;
+		private @Getter String name;
 
 		@Override
 		public boolean isLongLived() {
@@ -152,7 +153,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		}
 
 		public ControllerTask() {
-			setName(ClassUtils.nameOf(receiver));
+			name = ClassUtils.nameOf(receiver);
 		}
 
 		@Override
@@ -190,7 +191,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		}
 	}
 
-	private class ListenTask implements SchedulingAwareRunnable, INamedObject {
+	private class ListenTask implements SchedulingAwareRunnable, NameAware {
 
 		private @Getter @Setter String name;
 		private IHasProcessState<M> inProcessStateManager=null;

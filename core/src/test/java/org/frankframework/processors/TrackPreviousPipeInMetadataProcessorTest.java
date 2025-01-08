@@ -118,9 +118,9 @@ public class TrackPreviousPipeInMetadataProcessorTest {
 
 	private PipeLine getPipeLine() {
 		PipeLine pipeLine = configuration.createBean(PipeLine.class);
-		Adapter owner = new Adapter();
+		Adapter owner = configuration.createBean(Adapter.class);
 		owner.setName("PipeLine owner");
-		pipeLine.setOwner(owner);
+		pipeLine.setApplicationContext(owner);
 
 		PipeLineExit errorExit = new PipeLineExit();
 		errorExit.setName("error");

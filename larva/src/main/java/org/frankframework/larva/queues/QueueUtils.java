@@ -22,7 +22,7 @@ import java.util.Properties;
 import org.apache.logging.log4j.Logger;
 
 import org.frankframework.core.IConfigurable;
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.NameAware;
 import org.frankframework.http.AbstractHttpSender;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
@@ -58,7 +58,7 @@ public class QueueUtils {
 			Constructor<?> con = ClassUtils.getConstructorOnType(clazz, new Class[] {});
 			Object obj = con.newInstance();
 
-			if(obj instanceof INamedObject object) { //Set the name
+			if(obj instanceof NameAware object) { //Set the name
 				object.setName("Test Tool "+clazz.getSimpleName());
 			}
 

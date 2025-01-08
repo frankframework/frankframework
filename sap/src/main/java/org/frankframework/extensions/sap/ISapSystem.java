@@ -16,7 +16,7 @@
 package org.frankframework.extensions.sap;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.NameAware;
 
 /**
  * Common interface to be implemented by SapSystem implementations.
@@ -24,7 +24,7 @@ import org.frankframework.core.INamedObject;
  * @author Gerrit van Brakel
  * @since  7.3
  */
-public interface ISapSystem extends INamedObject, org.frankframework.configuration.extensions.ISapSystem {
+public interface ISapSystem extends NameAware, org.frankframework.configuration.extensions.ISapSystem {
 
 	void setGwhost(String string);
 	void setMandant(String string);

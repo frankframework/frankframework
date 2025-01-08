@@ -27,8 +27,17 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+
 import org.frankframework.configuration.Configuration;
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.HasName;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.pipes.MessageSendingPipe;
@@ -39,14 +48,6 @@ import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.XmlWriter;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
 
 /**
  * Get a description of a specified pipe. The description contains the XML
@@ -68,7 +69,7 @@ public class PipeDescriptionProvider {
 	 */
 	public PipeDescription getPipeDescription(PipeLine pipeLine, IPipe pipe) {
 		PipeDescription pipeDescription;
-		INamedObject pipeLineOwner = pipeLine.getOwner();
+		HasName pipeLineOwner = pipeLine.getOwner();
 		String adapterName = pipeLineOwner==null? "?": pipeLineOwner.getName();
 		String pipeName = pipe.getName();
 		String checkpointName = null;

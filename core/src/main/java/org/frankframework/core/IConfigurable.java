@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,11 @@ package org.frankframework.core;
 
 import org.frankframework.configuration.ConfigurationException;
 
-public interface IConfigurable extends INamedObject, IConfigurationAware {
+/**
+ * TODO remove the NameAware and FrankElement interfaces.
+ * These have nothing to do with configuring and are preventing this interface from being set on the PipeLine.
+ */
+public interface IConfigurable extends NameAware, FrankElement {
 
 	void configure() throws ConfigurationException;
 }

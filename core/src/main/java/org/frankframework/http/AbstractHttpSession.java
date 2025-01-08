@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2023 WeAreFrank!
+   Copyright 2017-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -77,6 +77,7 @@ import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.core.FrankElement;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Unsafe;
 import org.frankframework.encryption.AuthSSLContextFactory;
@@ -94,7 +95,6 @@ import org.frankframework.http.authentication.ResourceOwnerPasswordCredentialsQu
 import org.frankframework.http.authentication.SamlAssertionOauth;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.statistics.FrankMeterType;
-import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
@@ -153,7 +153,7 @@ import org.frankframework.util.StringUtil;
  * @author Niels Meijer
  * @since 7.0
  */
-public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasKeystore, HasTruststore, HasStatistics {
+public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasKeystore, HasTruststore, FrankElement {
 	protected final Logger log = LogUtil.getLogger(this);
 
 	public static final String AUTHENTICATION_METHOD_KEY = "OauthAuthentication";
@@ -512,7 +512,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	 * @param frankElement
 	 * @param connPoolControl
 	 */
-	private void registerConnectionMetrics(HasStatistics frankElement, ConnPoolControl<HttpRoute> connPoolControl) {
+	private void registerConnectionMetrics(FrankElement frankElement, ConnPoolControl<HttpRoute> connPoolControl) {
 		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_POOL_MAX, () -> connPoolControl.getTotalStats().getMax());
 		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_POOL_AVAILABLE, () -> connPoolControl.getTotalStats().getAvailable());
 		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_POOL_LEASED, () -> connPoolControl.getTotalStats().getLeased());

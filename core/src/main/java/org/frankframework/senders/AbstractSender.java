@@ -18,6 +18,7 @@ package org.frankframework.senders;
 import lombok.Getter;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
@@ -31,7 +32,7 @@ import org.frankframework.util.SpringUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class AbstractSender implements ISender {
+public abstract class AbstractSender implements ISender, ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private String name;
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();

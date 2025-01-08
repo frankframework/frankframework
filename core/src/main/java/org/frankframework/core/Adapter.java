@@ -38,6 +38,7 @@ import org.springframework.beans.factory.NamedBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.context.support.GenericApplicationContext;
@@ -64,7 +65,6 @@ import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
-import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
@@ -108,7 +108,7 @@ import org.frankframework.util.flow.SpringContextFlowDiagramProvider;
 @Log4j2
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class Adapter extends GenericApplicationContext implements IManagable, HasStatistics, NamedBean, InitializingBean {
+public class Adapter extends GenericApplicationContext implements IManagable, FrankElement, InitializingBean, ApplicationContextAware, NamedBean, NameAware {
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
 	public static final String PROCESS_STATE_OK = "OK";
@@ -260,7 +260,6 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 
 		if(!pipeline.configurationSucceeded()) { // only reconfigure pipeline when it hasn't been configured yet!
 			try {
-				pipeline.setAdapter(this);
 				pipeline.configure();
 				getMessageKeeper().add("pipeline successfully configured");
 			}
@@ -429,7 +428,7 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 		}
 	}
 
-	public Message formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, String messageID, INamedObject objectInError, long receivedTime) {
+	public Message formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, String messageID, HasName objectInError, long receivedTime) {
 		if (errorMessageFormatter == null) {
 			errorMessageFormatter = new ErrorMessageFormatter();
 		}
@@ -577,7 +576,7 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 				log.warn("Adapter [{}] error processing message with ID [{}]", name, messageId, t);
 				result.setState(ExitState.ERROR);
 				String msg = "Illegal exception ["+t.getClass().getName()+"]";
-				INamedObject objectInError = null;
+				HasName objectInError = null;
 				if (t instanceof ListenerException) {
 					Throwable cause = t.getCause();
 					if  (cause instanceof PipeRunException pre) {
@@ -723,7 +722,6 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 	 */
 	public void setPipeLine(PipeLine pipeline) {
 		this.pipeline = pipeline;
-		pipeline.setAdapter(this);
 		log.debug("Adapter [{}] registered pipeline [{}]", name, pipeline);
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2023 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.core.IConfigurationAware;
+
+import org.frankframework.statistics.HasApplicationContext;
 import org.frankframework.util.LogUtil;
 
 public class RootValidations implements Iterable<RootValidation> {
@@ -41,7 +42,7 @@ public class RootValidations implements Iterable<RootValidation> {
 		this(new RootValidation(rootElement));
 	}
 
-	public void check(IConfigurationAware source, Set<IXSD> xsds) {
+	public void check(HasApplicationContext source, Set<IXSD> xsds) {
 		for (RootValidation path: rootValidations) {
 			path.check(source, xsds);
 		}

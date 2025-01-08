@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.HasName;
 
 /**
  * This Class tests whether or not the spring-core dependency is present on the classpath.
@@ -29,12 +29,7 @@ public class ClassUtilsTest {
 		assertEquals("String", ClassUtils.nameOf("test"));
 		assertEquals("ClassUtilsTest", ClassUtils.nameOf(this));
 		assertEquals("ClassUtilsTest", ClassUtils.nameOf(this.getClass()));
-		assertEquals("org.frankframework.util.ClassUtilsTest$1", ClassUtils.nameOf(new INamedObject() {
-			@Override
-			public void setName(String name) {
-				// nothing to set
-			}
-
+		assertEquals("org.frankframework.util.ClassUtilsTest$1", ClassUtils.nameOf(new HasName() {
 			@Override
 			public String getName() {
 				return null;

@@ -9,6 +9,7 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.SpringUtils;
 
 public abstract class ConfiguredTestBase {
 	protected Logger log = LogUtil.getLogger(this);
@@ -31,8 +32,8 @@ public abstract class ConfiguredTestBase {
 
 	@BeforeEach
 	public void setUp() throws Exception {
-		pipeline = getConfiguration().createBean(PipeLine.class);
 		adapter = getConfiguration().createBean(Adapter.class);
+		pipeline = SpringUtils.createBean(adapter, PipeLine.class);
 		adapter.setName("TestAdapter of "+getClass().getSimpleName());
 		adapter.setPipeLine(pipeline);
 		session = new PipeLineSession();

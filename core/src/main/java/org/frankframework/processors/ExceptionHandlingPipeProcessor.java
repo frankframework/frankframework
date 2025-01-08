@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2023 WeAreFrank!
+   Copyright 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ import java.util.Map;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import org.frankframework.core.INamedObject;
+
+import org.frankframework.core.HasName;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
@@ -52,7 +53,7 @@ public class ExceptionHandlingPipeProcessor extends AbstractPipeProcessor {
 				ErrorMessageFormatter emf = new ErrorMessageFormatter();
 
 				if(e instanceof PipeRunException exception) {
-					INamedObject location = exception.getPipeInError();
+					HasName location = exception.getPipeInError();
 					errorMessage = emf.format(null, e.getCause(), location, message, pipeLineSession.getMessageId(), tsReceivedLong);
 				} else {
 					errorMessage = emf.format(null, e, pipeLine.getOwner(), message, pipeLineSession.getMessageId(), tsReceivedLong);

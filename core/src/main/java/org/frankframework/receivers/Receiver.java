@@ -63,6 +63,8 @@ import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.FrankElement;
+import org.frankframework.core.HasName;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.HasSender;
 import org.frankframework.core.IConfigurable;
@@ -74,7 +76,6 @@ import org.frankframework.core.IManagable;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowser.HideMethod;
 import org.frankframework.core.IMessageHandler;
-import org.frankframework.core.INamedObject;
 import org.frankframework.core.IProvidesMessageBrowsers;
 import org.frankframework.core.IPullingListener;
 import org.frankframework.core.IPushingListener;
@@ -86,6 +87,7 @@ import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.ListenerException;
+import org.frankframework.core.NameAware;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineResult;
@@ -107,7 +109,6 @@ import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.monitoring.EventPublisher;
 import org.frankframework.monitoring.EventThrowing;
 import org.frankframework.statistics.FrankMeterType;
-import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
@@ -206,7 +207,7 @@ import org.frankframework.util.XmlUtils;
  */
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class Receiver<M> extends TransactionAttributes implements IManagable, IMessageHandler<M>, IProvidesMessageBrowsers<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable {
+public class Receiver<M> extends TransactionAttributes implements IManagable, IMessageHandler<M>, IProvidesMessageBrowsers<M>, EventThrowing, IbisExceptionListener, HasSender, FrankElement, IThreadCountControllable {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -1686,7 +1687,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	}
 
 	@Override
-	public void exceptionThrown(INamedObject object, Throwable t) {
+	public void exceptionThrown(HasName object, Throwable t) {
 		String msg = getLogPrefix()+"received exception ["+t.getClass().getName()+"] from ["+object.getName()+"]";
 		exceptionThrown(msg, t);
 	}
@@ -2036,7 +2037,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	/**
 	 * Sets the name of the Receiver, as known to the Adapter.
-	 * If the listener implements the {@link INamedObject name} interface and <code>getName()</code>
+	 * If the listener implements the {@link NameAware name} interface and <code>getName()</code>
 	 * of the listener is empty, the name of this object is given to the listener.
 	 */
 	@Override

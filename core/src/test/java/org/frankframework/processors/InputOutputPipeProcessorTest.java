@@ -37,7 +37,7 @@ import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TemporaryDirectoryUtils;
 
-@NotThreadSafe //should be picked up by surefire
+@NotThreadSafe // should be picked up by surefire
 public class InputOutputPipeProcessorTest {
 
 	public static final String INPUT_MESSAGE_TEXT = "input message";
@@ -67,7 +67,7 @@ public class InputOutputPipeProcessorTest {
 		pipeLine = new PipeLine();
 		Adapter owner = new Adapter();
 		owner.setName("PipeLine owner");
-		pipeLine.setOwner(owner);
+		pipeLine.setApplicationContext(owner);
 
 		pipe = new EchoPipe();
 

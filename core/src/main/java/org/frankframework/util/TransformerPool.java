@@ -46,7 +46,7 @@ import org.springframework.http.MediaType;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.core.IConfigurationAware;
+import org.frankframework.core.FrankElement;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
 import org.frankframework.parameters.ParameterList;
@@ -224,7 +224,7 @@ public class TransformerPool {
 	}
 
 	@Nullable
-	public static TransformerPool configureTransformer(@Nullable IConfigurationAware scopeProvider, @Nullable String namespaceDefs, @Nullable String xPathExpression, @Nullable String styleSheetName, @Nonnull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean mandatory) throws ConfigurationException {
+	public static TransformerPool configureTransformer(@Nullable FrankElement scopeProvider, @Nullable String namespaceDefs, @Nullable String xPathExpression, @Nullable String styleSheetName, @Nonnull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean mandatory) throws ConfigurationException {
 		if (mandatory || StringUtils.isNotEmpty(xPathExpression) || StringUtils.isNotEmpty(styleSheetName)) {
 			return configureTransformer(scopeProvider,namespaceDefs,xPathExpression,styleSheetName,outputType, includeXmlDeclaration, params);
 		}
@@ -232,12 +232,12 @@ public class TransformerPool {
 	}
 
 	@Nonnull
-	public static TransformerPool configureTransformer(@Nullable IConfigurationAware scopeProvider, @Nullable String namespaceDefs, @Nullable String xPathExpression, @Nullable String styleSheetName, @Nullable OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params) throws ConfigurationException {
+	public static TransformerPool configureTransformer(@Nullable FrankElement scopeProvider, @Nullable String namespaceDefs, @Nullable String xPathExpression, @Nullable String styleSheetName, @Nullable OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params) throws ConfigurationException {
 		return configureTransformer0(scopeProvider,namespaceDefs,xPathExpression,styleSheetName,outputType,includeXmlDeclaration,params,0);
 	}
 
 	@Nonnull
-	public static TransformerPool configureTransformer0(@Nullable IConfigurationAware scopeProvider, @Nullable String namespaceDefs, @Nullable String xPathExpression, @Nullable String styleSheetName, @Nonnull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params, int xsltVersion) throws ConfigurationException {
+	public static TransformerPool configureTransformer0(@Nullable FrankElement scopeProvider, @Nullable String namespaceDefs, @Nullable String xPathExpression, @Nullable String styleSheetName, @Nonnull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params, int xsltVersion) throws ConfigurationException {
 		if (StringUtils.isNotEmpty(xPathExpression)) {
 			if (StringUtils.isNotEmpty(styleSheetName)) {
 				throw new ConfigurationException("cannot have both an xpathExpression and a styleSheetName specified");
@@ -258,7 +258,7 @@ public class TransformerPool {
 	}
 
 	@Nonnull
-	public static TransformerPool configureStyleSheetTransformer(@Nullable IConfigurationAware scopeProvider, @Nullable String styleSheetName, int xsltVersion) throws ConfigurationException {
+	public static TransformerPool configureStyleSheetTransformer(@Nullable FrankElement scopeProvider, @Nullable String styleSheetName, int xsltVersion) throws ConfigurationException {
 		if (StringUtils.isEmpty(styleSheetName)) {
 			throw new ConfigurationException("either xpathExpression or styleSheetName must be specified");
 		}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,16 +20,17 @@ import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLParseException;
 
 import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
-import org.frankframework.core.IConfigurationAware;
+import org.frankframework.statistics.HasApplicationContext;
 
 @Log4j2
 class XercesValidationErrorHandler implements XMLErrorHandler {
 	private final boolean allowConsoleWarnings;
-	private final IConfigurationAware source;
+	private final HasApplicationContext source;
 
-	public XercesValidationErrorHandler(IConfigurationAware source, boolean allowConsoleWarnings) {
+	public XercesValidationErrorHandler(HasApplicationContext source, boolean allowConsoleWarnings) {
 		this.source = source;
 		this.allowConsoleWarnings = allowConsoleWarnings;
 	}

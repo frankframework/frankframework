@@ -21,7 +21,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.core.INamedObject;
+
+import org.frankframework.core.HasName;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
@@ -70,7 +71,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 	@Override
 	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		Object preservedObject = message;
-		INamedObject owner = pipeLine.getOwner();
+		HasName owner = pipeLine.getOwner();
 
 		try (CloseableThreadContext.Instance ignored = CloseableThreadContext.put("pipe", pipe.getName())) {
 			if (StringUtils.isNotEmpty(pipe.getGetInputFromSessionKey())) {
@@ -159,7 +160,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		}
 	}
 
-	private void processMessageCompaction(IPipe pipe, PipeLineSession pipeLineSession, INamedObject owner, PipeRunResult pipeRunResult) throws PipeRunException {
+	private void processMessageCompaction(IPipe pipe, PipeLineSession pipeLineSession, HasName owner, PipeRunResult pipeRunResult) throws PipeRunException {
 		log.debug("Pipeline of adapter [{}] compact received message", owner::getName);
 		Message result = pipeRunResult.getResult();
 		if (Message.isEmpty(result)) {
@@ -185,7 +186,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		}
 	}
 
-	private void processRestoreMovedElements(IPipe pipe, PipeLineSession pipeLineSession, INamedObject owner, PipeRunResult pipeRunResult) throws PipeRunException {
+	private void processRestoreMovedElements(IPipe pipe, PipeLineSession pipeLineSession, HasName owner, PipeRunResult pipeRunResult) throws PipeRunException {
 		log.debug("Pipeline of adapter [{}] restoring from compacted result for pipe [{}]", owner::getName, pipe::getName);
 		Message result = pipeRunResult.getResult();
 		if (Message.isEmpty(result)) {
@@ -212,7 +213,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		}
 	}
 
-	private static InputSource getInputSourceFromResult(Message result, IPipe pipe, INamedObject owner) throws PipeRunException {
+	private static InputSource getInputSourceFromResult(Message result, IPipe pipe, HasName owner) throws PipeRunException {
 		try {
 			// Preserve the message so that it can be read again, in case there was an error during compacting
 			result.preserve();

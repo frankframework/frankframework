@@ -48,7 +48,7 @@ import org.frankframework.monitoring.EventPublisher;
 import org.frankframework.monitoring.EventThrowing;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
-import org.frankframework.statistics.HasStatistics;
+import org.frankframework.statistics.HasApplicationContext;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.Locker;
@@ -84,7 +84,7 @@ import org.frankframework.util.SpringUtils;
  * @see PipeLineSession
  */
 @Forward(name = "exception", description = "some error happened while processing the message; represents the 'unhappy or error flow' and is not limited to Java Exceptions.")
-public abstract class AbstractPipe extends TransactionAttributes implements IPipe, EventThrowing, ApplicationContextAware, IWithParameters, HasStatistics {
+public abstract class AbstractPipe extends TransactionAttributes implements IPipe, EventThrowing, ApplicationContextAware, IWithParameters, HasApplicationContext {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter ApplicationContext applicationContext;
 
