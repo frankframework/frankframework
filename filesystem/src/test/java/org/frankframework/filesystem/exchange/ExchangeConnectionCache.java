@@ -79,7 +79,9 @@ public class ExchangeConnectionCache {
 
 	private void doClose() {
 		log.debug("running after-all cleanup");
-		exchangeFileSystemHelper.afterAllCleanup();
+		if (exchangeFileSystemHelper != null) {
+			exchangeFileSystemHelper.afterAllCleanup();
+		}
 		CloseUtils.closeSilently(configuration, graphClient);
 	}
 
