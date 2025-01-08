@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.Adapter;
-import org.frankframework.core.AdapterAware;
 import org.frankframework.core.IBlockEnabledSender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -50,10 +48,9 @@ import org.frankframework.util.JdbcUtil;
  * @author  Gerrit van Brakel
  * @since 	4.2.h
  */
-public abstract class AbstractJdbcSender<H> extends JdbcFacade implements IBlockEnabledSender<H>, HasStatistics, AdapterAware {
+public abstract class AbstractJdbcSender<H> extends JdbcFacade implements IBlockEnabledSender<H>, HasStatistics {
 	private DistributionSummary connectionStatistics;
 	private @Setter MetricsInitializer configurationMetrics;
-	private @Getter @Setter Adapter adapter;
 
 	@Getter private int timeout = 0;
 
