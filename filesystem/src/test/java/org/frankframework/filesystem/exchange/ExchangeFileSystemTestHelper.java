@@ -29,12 +29,14 @@ import com.microsoft.graph.users.item.messages.item.move.MovePostRequestBody;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.filesystem.IFileSystemTestHelper;
+import org.frankframework.testutil.TestAssertions;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StringUtil;
 
 @Log4j2
 public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
-	public static final int WAIT_MILLIS = 250;
+	// On GitHub 50ms is way too short, locally this does not seem to be a problem...
+	public static final int WAIT_MILLIS = TestAssertions.isTestRunningOnGitHub() ? 500 : 50;
 	public static final String DEFAULT_BASE_FOLDER = "Inbox/iaf-test";
 
 	private static final String SCOPE = "https://graph.microsoft.com/.default";
@@ -59,18 +61,21 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 		this.baseFolder = baseFolder;
 	}
 
+	private GraphServiceClient getGraphServiceClient() {
+		CredentialFactory cf = new CredentialFactory(null, clientId, clientSecret);
+		TokenCredential credential = new ClientSecretCredentialBuilder()
+				.tenantId(tenantId)
+				.clientId(cf.getUsername())
+				.clientSecret(cf.getPassword())
+				.build();
+		return new GraphServiceClient(credential, SCOPE);
+	}
+
 	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
 		if (userId == null) {
-			CredentialFactory cf = new CredentialFactory(null, clientId, clientSecret);
-			TokenCredential credential = new ClientSecretCredentialBuilder()
-					.tenantId(tenantId)
-					.clientId(cf.getUsername())
-					.clientSecret(cf.getPassword())
-					.build();
-
-			msGraphClient = new GraphServiceClient(credential, SCOPE);
+			msGraphClient = getGraphServiceClient();
 			User user = msGraphClient.usersWithUserPrincipalName(mailAddress).get(rc -> {
 				rc.queryParameters.select = new String[]{"id", "userPrincipalName", "displayName", "givenName", "surname", "accountEnabled"};
 			});
@@ -112,8 +117,14 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 		}
 	}
 
+	// AfterEach Cleanup
 	@Override
 	public void tearDown() {
+		cleanBaseMailFolder();
+	}
+
+	// AfterAll Cleanup
+	public void afterAllCleanup() {
 		cleanBaseMailFolder();
 
 		// Remove the base directory it self.
