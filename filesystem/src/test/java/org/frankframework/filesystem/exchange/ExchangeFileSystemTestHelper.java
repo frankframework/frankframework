@@ -29,12 +29,14 @@ import com.microsoft.graph.users.item.messages.item.move.MovePostRequestBody;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.filesystem.IFileSystemTestHelper;
+import org.frankframework.testutil.TestAssertions;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StringUtil;
 
 @Log4j2
 public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
-	public static final int WAIT_MILLIS = 250;
+	// On GitHub 50ms is way too short, locally this does not seem to be a problem...
+	public static final int WAIT_MILLIS = TestAssertions.isTestRunningOnGitHub() ? 500 : 50;
 	public static final String DEFAULT_BASE_FOLDER = "Inbox/iaf-test";
 
 	private static final String SCOPE = "https://graph.microsoft.com/.default";
