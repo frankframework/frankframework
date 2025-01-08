@@ -52,10 +52,10 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 	public void configure() throws ConfigurationException {
 		if (paramList!=null) {
 			paramList.configure();
+		}
 
-			if (getTopic() == null && !paramList.hasParameter(TOPIC_PARAMETER_NAME)) {
-				throw new ConfigurationException("topic must be specified");
-			}
+		if (getTopic() == null && (paramList == null || !paramList.hasParameter(TOPIC_PARAMETER_NAME))) {
+			throw new ConfigurationException("topic must be specified");
 		}
 
 		super.configure();
