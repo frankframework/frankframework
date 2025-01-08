@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.util.Set;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.frankframework.stream.Message;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.cache.EhCache;
@@ -13,7 +15,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.testutil.PropertyUtil;
 
 public class LdapFindMembershipsPipeTest {
@@ -32,8 +33,8 @@ public class LdapFindMembershipsPipeTest {
 
 	private LdapFindGroupMembershipsPipe pipe;
 
-	@BeforeAll
-	public void setUp() throws ConfigurationException {
+	@BeforeEach
+	public void setUp() {
 		pipe = new LdapFindGroupMembershipsPipe();
 		pipe.addForward(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME,null));
 		pipe.setLdapProviderURL(ldapProviderUrl);
@@ -45,13 +46,13 @@ public class LdapFindMembershipsPipeTest {
 	}
 
 	@Test
-	public void createAndConfigure() throws ConfigurationException, PipeStartException {
+	public void createAndConfigure() throws ConfigurationException {
 		pipe.configure();
 		pipe.start();
 	}
 
 	@Test
-	public void findMemberships() throws ConfigurationException, PipeStartException, PipeRunException {
+	public void findMemberships() throws ConfigurationException, PipeRunException {
 		pipe.setBaseDN(baseDN);
 		pipe.setRecursiveSearch(false);
 		pipe.configure();
@@ -63,7 +64,7 @@ public class LdapFindMembershipsPipeTest {
 	}
 
 	@Test
-	public void findMembershipsRecursively() throws ConfigurationException, PipeStartException, PipeRunException {
+	public void findMembershipsRecursively() throws ConfigurationException, PipeRunException {
 		pipe.setBaseDN(baseDN);
 		pipe.setRecursiveSearch(true);
 		pipe.configure();
@@ -75,7 +76,7 @@ public class LdapFindMembershipsPipeTest {
 	}
 
 	@Test
-	public void findMembershipsRecursivelyWithCache() throws IOException {
+	public void findMembershipsRecursivelyWithCache() throws IOException, ConfigurationException, PipeRunException {
 		pipe.setBaseDN(baseDN);
 		pipe.setRecursiveSearch(true);
 
@@ -86,13 +87,13 @@ public class LdapFindMembershipsPipeTest {
 		pipe.start();
 
 		long time0=System.currentTimeMillis();
-		PipeRunResult prr1 = pipe.doPipe(new Message(pipeInput), null);
+		PipeRunResult prr1 = pipe.doPipe(Message.asMessage(pipeInput), null);
 		long time1=System.currentTimeMillis();
 
 		System.out.println("result:"+prr1.getResult());
 
 		long time2=System.currentTimeMillis();
-		PipeRunResult prr2 = pipe.doPipe(new Message(pipeInput), null);
+		PipeRunResult prr2 = pipe.doPipe(Message.asMessage(pipeInput), null);
 		long time3=System.currentTimeMillis();
 
 		System.out.println("first  duration ["+(time1-time0)+"] ms");

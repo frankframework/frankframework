@@ -1,6 +1,6 @@
 package org.frankframework.ldap;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -8,7 +8,6 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.PropertyUtil;
 
@@ -26,8 +25,8 @@ public class LdapFindMemberPipeTest {
 
 	private LdapFindMemberPipe pipe;
 
-	@BeforeAll
-	public void setUp() throws ConfigurationException {
+	@BeforeEach
+	public void setUp() {
 		pipe = new LdapFindMemberPipe();
 		pipe.addForward(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, null));
 		pipe.setHost(host);
@@ -38,13 +37,13 @@ public class LdapFindMemberPipeTest {
 	}
 
 	@Test
-	public void createAndConfigure() throws ConfigurationException, PipeStartException {
+	public void createAndConfigure() throws ConfigurationException {
 		pipe.configure();
 		pipe.start();
 	}
 
 	@Test
-	public void findMember() throws ConfigurationException, PipeStartException, PipeRunException {
+	public void findMember() throws ConfigurationException, PipeRunException {
 		pipe.setDnSearchIn(baseDN);
 		pipe.setDnFind(findDN);
 		pipe.setRecursiveSearch(true);
@@ -52,9 +51,8 @@ public class LdapFindMemberPipeTest {
 		pipe.start();
 
 		PipeLineSession session = new PipeLineSession();
-		String input = bindDN;
 
-		PipeRunResult prr = pipe.doPipe(new Message(input), session);
+		PipeRunResult prr = pipe.doPipe(new Message(bindDN), session);
 	}
 
 }
