@@ -170,7 +170,39 @@
 						<string/>
 					</void>
 					<void property="message">
-						<string>2nd test session key value</string>
+						<string>&lt;UNH&gt;
+		&lt;cmp01&gt;
+			&lt;e01_0065&gt;DESADV&lt;/e01_0065&gt;
+			&lt;e02_0052&gt;D&lt;/e02_0052&gt;
+			&lt;e03_0054&gt;01B&lt;/e03_0054&gt;
+			&lt;e04_0051&gt;UN&lt;/e04_0051&gt;
+			&lt;e05_0057&gt;EAN007&lt;/e05_0057&gt;
+		&lt;/cmp01&gt;
+	&lt;/UNH&gt;</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey json</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>{"test":"test",
+						"secondline":"test",
+						"newline":"test"}</string>
 					</void>
 				</object>
 			</void>

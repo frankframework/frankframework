@@ -271,7 +271,11 @@ public class ConvertToLarvaAction implements CustomReportAction {
 					if (!ignoredSessionKeys.contains(sessionKeyName)) {
 						String paramPropertyName = "adapter." + adapterName + ".param" + paramI;
 						putScenarioProperty(paramPropertyName + ".name ", sessionKeyName);
-						putScenarioProperty(paramPropertyName + ".value", checkpoint.getMessage());
+						String messageInOneLine = "";
+						if(checkpoint.getMessage() != null) {
+							messageInOneLine = checkpoint.getMessage().replaceAll("\\n|\\r\\n", "");
+						}
+						putScenarioProperty(paramPropertyName + ".value", messageInOneLine);
 						paramI++;
 					}
 				} else if (skipUntilEndOfSender && checkpoint.getName().startsWith("Sender ")) {

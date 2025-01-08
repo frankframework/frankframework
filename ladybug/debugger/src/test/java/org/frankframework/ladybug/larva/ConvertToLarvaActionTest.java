@@ -116,7 +116,9 @@ public class ConvertToLarvaActionTest {
 				+ "adapter.HelloWorld.param1.name  = testSessionKey" + lineSeparator
 				+ "adapter.HelloWorld.param1.value = Test session key value" + lineSeparator
 				+ "adapter.HelloWorld.param2.name  = 2nd testSessionKey" + lineSeparator
-				+ "adapter.HelloWorld.param2.value = 2nd test session key value" + lineSeparator
+				+ "adapter.HelloWorld.param2.value = <UNH>		<cmp01>			<e01_0065>DESADV</e01_0065>			<e02_0052>D</e02_0052>			<e03_0054>01B</e03_0054>			<e04_0051>UN</e04_0051>			<e05_0057>EAN007</e05_0057>		</cmp01>	</UNH>" + lineSeparator
+				+ "adapter.HelloWorld.param3.name  = json" + lineSeparator
+				+ "adapter.HelloWorld.param3.value = {\"test\":\"test\",						\"secondline\":\"test\",						\"newline\":\"test\"}" + lineSeparator
 				+ "" + lineSeparator
 				+ "step1.adapter.HelloWorld.write  = WithStubbedSenders/01-adapter-HelloWorld-in.txt" + lineSeparator
 				+ "step2.stub.SenderPipe.read      = WithStubbedSenders/02-stub-SenderPipe-in.txt" + lineSeparator
