@@ -2,12 +2,12 @@ import { Component, inject, Input, OnChanges, OnDestroy, OnInit } from '@angular
 import { TabListComponent } from './tab-list.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService, Configuration } from '../../app.service';
-import { NgClass, NgForOf } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { first, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-configuration-tab-list',
-  imports: [NgForOf, NgClass],
+  imports: [NgClass],
   templateUrl: './tab-list.component.html',
   styleUrl: './tab-list.component.scss',
 })

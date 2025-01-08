@@ -193,7 +193,7 @@
                     <td>{{ link.description }}</td>
                     @for (roles of securityRoles; track roles.name) {
                       <td>
-                        @if (!link.roles || link.roles?.includes(roles.name)) {
+                        @if (!link.roles || link.roles.includes(roles.name)) {
                           <i class="fa fa-check"></i>
                         }
                       </td>

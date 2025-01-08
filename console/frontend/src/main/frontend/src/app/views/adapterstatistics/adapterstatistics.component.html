@@ -47,9 +47,9 @@
                   totalMsgProcTime of stats?.totalMessageProccessingTime ?? {}
                     | formatStatistics: statisticsTimeBoundaries;
                   track totalMsgProcTime.key;
-                  let $index = $index
+                  let index = $index
                 ) {
-                  @if ($index > 0) {
+                  @if (index > 0) {
                     <tr>
                       <td>
                         {{ statisticsTimeBoundaries[totalMsgProcTime.key] }}
@@ -87,8 +87,8 @@
                 <tr>
                   <th>Receiver</th>
                   <th># Threads Processing</th>
-                  @for (boundary of statisticsTimeBoundaries | formatStatKeys; track boundary; let $index = $index) {
-                    @if ($index > 0) {
+                  @for (boundary of statisticsTimeBoundaries | formatStatKeys; track boundary; let index = $index) {
+                    @if (index > 0) {
                       <th>{{ boundary }}</th>
                     }
                   }

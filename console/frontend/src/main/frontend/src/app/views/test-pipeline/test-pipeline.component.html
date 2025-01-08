@@ -36,10 +36,10 @@
                 ></app-combobox>
               </div>
             </div>
-            @for (sessionKey of formSessionKeys; track sessionKey.key; let $index = $index) {
+            @for (sessionKey of formSessionKeys; track sessionKey.key; let index = $index) {
               <div class="row form-group test-pipeline-session-keys">
                 <label class="col-sm-3 control-label label-height-30">
-                  @if ($index === 0) {
+                  @if (index === 0) {
                     <span>Session Key</span>
                   }
                 </label>
@@ -49,7 +49,7 @@
                     (blur)="updateSessionKeys(sessionKey)"
                     [(ngModel)]="sessionKey.key"
                     class="form-control"
-                    name="sessionKey{{ $index }}"
+                    name="sessionKey{{ index }}"
                     placeholder="Name"
                     type="text"
                   />
@@ -60,7 +60,7 @@
                     (blur)="updateSessionKeys(sessionKey)"
                     [(ngModel)]="sessionKey.value"
                     class="form-control"
-                    name="sessionKeyValue{{ $index }}"
+                    name="sessionKeyValue{{ index }}"
                     placeholder="Value"
                     type="text"
                   />
