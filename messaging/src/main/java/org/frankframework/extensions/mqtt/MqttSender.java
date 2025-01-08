@@ -119,7 +119,7 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 	/**
 	 * {@inheritDoc}
 	 *
-	 * Can be dynamically set using the {@value TOPIC_PARAMETER_NAME} parameter.
+	 * Can be dynamically set using the {@value MqttSender#TOPIC_PARAMETER_NAME} parameter.
 	 */
 	@Override
 	@Optional
