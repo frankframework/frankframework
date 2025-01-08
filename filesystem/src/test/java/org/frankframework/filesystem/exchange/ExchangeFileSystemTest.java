@@ -8,64 +8,40 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import java.net.URL;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.filesystem.HelperedBasicFileSystemTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
-import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.JacksonUtils;
-import org.frankframework.util.PropertyLoader;
 
 /**
  * @author Niels Meijer
  */
 public class ExchangeFileSystemTest extends HelperedBasicFileSystemTest<MailItemId, ExchangeFileSystem> {
-	private static TestConfiguration configuration = new TestConfiguration();
-	private static PropertyLoader properties;
-
-	private static String mailAddress;
-	private static String clientId;
-	private static String clientSecret;
-	private static String tenantId;
-
-	// Should ideally never be `inbox` as it removes all mail items!
-	private String baseFolder = properties.getProperty("baseFolder", ExchangeFileSystemTestHelper.DEFAULT_BASE_FOLDER);
 
 	@BeforeAll
 	public static void beforeAll() {
-		try {
-			properties = new PropertyLoader("azure-credentials.properties");
+		assumeTrue(ExchangeConnectionCache.validateCredentials());
+	}
 
-			mailAddress = properties.getProperty("mailAddress");
-			clientId = properties.getProperty("clientId");
-			clientSecret = properties.getProperty("clientSecret");
-			tenantId = properties.getProperty("tenantId");
-		} catch (Exception e) {
-			// file not found
-		}
-
-		assumeTrue(StringUtils.isNoneEmpty(mailAddress, clientId, clientSecret, tenantId));
+	@AfterAll
+	public static void afterAll() {
+		ExchangeConnectionCache.close();
 	}
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
 		setWaitMillis(ExchangeFileSystemTestHelper.WAIT_MILLIS);
-		return new ExchangeFileSystemTestHelper(clientId, clientSecret, tenantId, mailAddress, baseFolder);
+
+		return ExchangeConnectionCache.getExchangeFileSystemTestHelper();
 	}
 
 	@Override
 	public ExchangeFileSystem createFileSystem() {
-		ExchangeFileSystem fileSystem = configuration.createBean(ExchangeFileSystem.class);
-		fileSystem.setClientId(clientId);
-		fileSystem.setClientSecret(clientSecret);
-		fileSystem.setTenantId(tenantId);
-		fileSystem.setMailAddress(mailAddress);
-		fileSystem.setBaseFolder(baseFolder);
-
-		return fileSystem;
+		return ExchangeConnectionCache.getExchangeFileSystem();
 	}
 
 	@Test

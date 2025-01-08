@@ -59,18 +59,21 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 		this.baseFolder = baseFolder;
 	}
 
+	private GraphServiceClient getGraphServiceClient() {
+		CredentialFactory cf = new CredentialFactory(null, clientId, clientSecret);
+		TokenCredential credential = new ClientSecretCredentialBuilder()
+				.tenantId(tenantId)
+				.clientId(cf.getUsername())
+				.clientSecret(cf.getPassword())
+				.build();
+		return new GraphServiceClient(credential, SCOPE);
+	}
+
 	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
 		if (userId == null) {
-			CredentialFactory cf = new CredentialFactory(null, clientId, clientSecret);
-			TokenCredential credential = new ClientSecretCredentialBuilder()
-					.tenantId(tenantId)
-					.clientId(cf.getUsername())
-					.clientSecret(cf.getPassword())
-					.build();
-
-			msGraphClient = new GraphServiceClient(credential, SCOPE);
+			msGraphClient = getGraphServiceClient();
 			User user = msGraphClient.usersWithUserPrincipalName(mailAddress).get(rc -> {
 				rc.queryParameters.select = new String[]{"id", "userPrincipalName", "displayName", "givenName", "surname", "accountEnabled"};
 			});
@@ -112,8 +115,14 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 		}
 	}
 
+	// AfterEach Cleanup
 	@Override
 	public void tearDown() {
+		cleanBaseMailFolder();
+	}
+
+	// AfterAll Cleanup
+	public void afterAllCleanup() {
 		cleanBaseMailFolder();
 
 		// Remove the base directory it self.
