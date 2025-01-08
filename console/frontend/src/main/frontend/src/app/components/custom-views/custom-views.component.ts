@@ -27,25 +27,30 @@ export class CustomViewsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
       this.appConstants = this.appService.APP_CONSTANTS;
-      const customViews = this.appConstants['customViews.names'] as string;
-      if (typeof customViews !== 'string') return;
-
-      if (customViews.length > 0) {
-        const views = customViews.split(',');
-        for (const index in views) {
-          const viewId = views[index];
-          const name = this.appConstants[`customViews.${viewId}.name`] as string;
-          const url = this.appConstants[`customViews.${viewId}.url`] as string;
-          if (name && url)
-            this.customViews.push({
-              view: viewId,
-              name: name,
-              url: url,
-            });
-        }
-      }
+      this.updateCustomViews();
     });
     this._subscriptions.add(appConstantsSubscription);
+    this.updateCustomViews();
+  }
+
+  updateCustomViews(): void {
+    const customViews = this.appConstants['customViews.names'] as string;
+    if (typeof customViews !== 'string') return;
+
+    if (customViews.length > 0) {
+      const views = customViews.split(',');
+      for (const index in views) {
+        const viewId = views[index];
+        const name = this.appConstants[`customViews.${viewId}.name`] as string;
+        const url = this.appConstants[`customViews.${viewId}.url`] as string;
+        if (name && url)
+          this.customViews.push({
+            view: viewId,
+            name: name,
+            url: url,
+          });
+      }
+    }
   }
 
   ngOnDestroy(): void {
