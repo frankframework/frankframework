@@ -107,6 +107,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private @Getter @Setter Configuration configuration;
 	private @Getter final ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
+	public static final String PIPELINE_NAME = "pipeline";
 	public static final String INPUT_VALIDATOR_NAME  = "- pipeline inputValidator";
 	public static final String OUTPUT_VALIDATOR_NAME = "- pipeline outputValidator";
 	public static final String INPUT_WRAPPER_NAME    = "- pipeline inputWrapper";
@@ -141,7 +142,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	private @Getter Adapter adapter;    // for transaction managing
 	@Deprecated @Getter private HasName owner; // for logging purposes
-	private @Getter String name; // for logging purposes
 	private @Setter PipeLineProcessor pipeLineProcessor;
 
 	private @Getter DistributionSummary requestSizeStats;
@@ -170,19 +170,25 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		if (context instanceof Adapter adapter) {
 			// This should always be the case, but in tests it may be a TestConfiguration instead...
 			this.adapter = adapter;
-			this.applicationContext = context;
-
-
-			this.name = context.getId(); // PipeLine name can be the same as the Adapter name?
-
-			// !!!
-			owner = new HasName() {
-				@Override
-				public String getName() {
-					return adapter.getName();
-				}
-			};
 		}
+		this.applicationContext = context;
+
+		// !!!
+		owner = new HasName() {
+			@Override
+			public String getName() {
+				return context.getId();
+			}
+		};
+	}
+
+	/**
+	 * Used by {@link MetricsInitializer} and {@link ConfigurationWarnings}.
+	 * When null either the ClassName or nothing is used.
+	 */
+	@Override
+	public String getName() {
+		return null;
 	}
 
 	public IPipe getPipe(String pipeName) {

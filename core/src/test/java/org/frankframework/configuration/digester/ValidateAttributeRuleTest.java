@@ -674,7 +674,7 @@ public class ValidateAttributeRuleTest {
 	}
 
 	@ConfigurationWarning("warning above test class")
-	public static class ConfigWarningTestClass implements HasName {
+	public static class ConfigWarningTestClass implements NameAware, HasName {
 		private @Getter @Setter String name;
 	}
 

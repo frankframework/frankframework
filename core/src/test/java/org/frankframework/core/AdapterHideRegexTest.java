@@ -90,7 +90,7 @@ public class AdapterHideRegexTest {
 		return receiver;
 	}
 
-	private  <M> Adapter setupAdapter(Receiver<M> receiver, PipeLine.ExitState exitState, String name, IPipe... pipes) throws ConfigurationException {
+	private <M> Adapter setupAdapter(Receiver<M> receiver, PipeLine.ExitState exitState, String name, IPipe... pipes) throws ConfigurationException {
 		assertNotNull(pipes);
 		assertTrue(pipes.length > 0, "Should add at least 1 pipe");
 

@@ -722,6 +722,7 @@ public class Adapter extends GenericApplicationContext implements IManagable, Fr
 	 */
 	public void setPipeLine(PipeLine pipeline) {
 		this.pipeline = pipeline;
+		pipeline.setApplicationContext(this); // Required for tests..
 		log.debug("Adapter [{}] registered pipeline [{}]", name, pipeline);
 	}
 
