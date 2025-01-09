@@ -2,4 +2,7 @@
     <given>Dave</given>
     <family>Orchard</family>
     <random>Text</random>
+	<nest>
+		<nested>Text</nested>
+	</nest>
 </personName>

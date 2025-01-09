@@ -83,7 +83,7 @@ public class XmlAligner extends XMLFilterImpl {
 	private @Getter @Setter Locator documentLocator;
 
 	private final Deque<Set<String>> multipleOccurringElements = new ArrayDeque<>();
-	private @Getter Set<String> multipleOccurringChildElements = Set.of(); // May not be null or cannot be put into ArrayDeQue
+	private @Getter @Nonnull Set<String> multipleOccurringChildElements = Set.of(); // May not be null or cannot be put into ArrayDeQue
 	private final Deque<Boolean> parentOfSingleMultipleOccurringChildElements = new ArrayDeque<>();
 	private @Getter boolean parentOfSingleMultipleOccurringChildElement = false;
 	private final Deque<Boolean> typeContainsWildcards = new ArrayDeque<>();
@@ -144,17 +144,17 @@ public class XmlAligner extends XMLFilterImpl {
 			typeContainsWildcards.push(typeContainsWildcard);
 			// call findMultipleOccurringChildElements, to obtain all child elements that could be part of an array
 			if (typeDefinition instanceof XSComplexTypeDefinition complexTypeDefinition) {
-				multipleOccurringChildElements=findMultipleOccurringChildElements(complexTypeDefinition.getParticle());
+				multipleOccurringChildElements = findMultipleOccurringChildElements(complexTypeDefinition.getParticle());
 				parentOfSingleMultipleOccurringChildElement=ChildOccurrence.ONE_MULTIPLE_OCCURRING_ELEMENT==determineIsParentOfSingleMultipleOccurringChildElement(complexTypeDefinition.getParticle());
 				typeContainsWildcard=typeContainsWildcard(complexTypeDefinition.getParticle());
 				if (log.isTraceEnabled())
 					log.trace("element [{}] is parentOfSingleMultipleOccurringChildElement [{}]", localName, parentOfSingleMultipleOccurringChildElement);
 			} else {
-				multipleOccurringChildElements = null;
+				multipleOccurringChildElements = Set.of();
 				parentOfSingleMultipleOccurringChildElement = false;
 				typeContainsWildcard = !typeContainsWildcards.isEmpty() && typeContainsWildcards.peek();
 				if (log.isTraceEnabled()) {
-					if (typeDefinition == null) {
+					if (typeDefinition != null) {
 						log.trace("element [{}] is a SimpleType, and therefor not multiple", localName);
 					} else {
 						log.trace("no type definition found for element [{}], assuming not multiple", localName);
@@ -176,7 +176,7 @@ public class XmlAligner extends XMLFilterImpl {
 		if (knownElement|| isTypeContainsWildcard()) {
 			typeDefinition = null;
 			super.endElement(uri, localName, qName);
-			multipleOccurringChildElements=multipleOccurringElements.pop();
+			multipleOccurringChildElements = multipleOccurringElements.pop();
 			parentOfSingleMultipleOccurringChildElement=parentOfSingleMultipleOccurringChildElements.pop();
 			typeContainsWildcards.pop();
 		}
