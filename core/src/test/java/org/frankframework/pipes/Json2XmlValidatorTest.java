@@ -784,4 +784,30 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/ParameterSubstitution/expected_output.json");
 		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
 	}
+
+	@Test
+	public void testWithWildcardInXsdAndNestedWildcardElements() throws Exception {
+		// Arrange
+		final boolean deepSearch = false;
+		pipe.setName("testWildcardElements");
+		pipe.setSchema("/Validation/Json2Xml/WildcardElements/Wildcard.xsd");
+		pipe.setThrowException(true);
+		pipe.setRoot("ZgwZaak");
+		pipe.setDeepSearch(deepSearch);
+		pipe.setOutputFormat(DocumentFormat.JSON);
+
+		pipe.configure();
+		pipe.start();
+
+		String input = TestFileUtils.getTestFile("/Validation/Json2Xml/WildcardElements/Wildcard-Input.xml");
+
+		// Act
+		try (Message message = Message.asMessage(input);
+			 PipeRunResult result = pipe.doPipe(message, session)) {
+
+			// Assert
+			String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/WildcardElements/ExpectedOutput.json");
+			assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
+		}
+	}
 }
