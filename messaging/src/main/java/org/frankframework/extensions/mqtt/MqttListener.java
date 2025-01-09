@@ -19,6 +19,7 @@ import java.util.Map;
 
 import jakarta.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -83,6 +84,11 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 		// could not start in which case client is already disconnected.
 
 		super.configure();
+
+		if (StringUtils.isEmpty(getTopic())) {
+			throw new ConfigurationException("topic must be specified");
+		}
+
 		client.setCallback(this);
 	}
 

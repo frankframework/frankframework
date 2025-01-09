@@ -28,6 +28,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.doc.Optional;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
@@ -42,12 +43,19 @@ import org.frankframework.stream.Message;
 
 @Log4j2
 public class MqttSender extends MqttFacade implements ISenderWithParameters {
+
+	private static final String TOPIC_PARAMETER_NAME = "topic";
+
 	protected ParameterList paramList = null;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		if (paramList!=null) {
 			paramList.configure();
+		}
+
+		if (getTopic() == null && (paramList == null || !paramList.hasParameter(TOPIC_PARAMETER_NAME))) {
+			throw new ConfigurationException("topic must be specified");
 		}
 
 		super.configure();
@@ -83,16 +91,40 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 				super.start();
 			}
 
+			String topic = getTopic();
+			if (getParameterList() != null) {
+				IParameter topicParameter = getParameterList().findParameter(TOPIC_PARAMETER_NAME);
+
+				if (topicParameter != null) {
+					topic = topicParameter.getValue();
+				}
+			}
+
+			if (topic == null) {
+				throw new SenderException("Topic must not be null");
+			}
+
 			log.debug(message);
 			MqttMessage mqttMessage = new MqttMessage();
 			mqttMessage.setPayload(message.asByteArray());
 			mqttMessage.setQos(getQos());
-			client.publish(getTopic(), mqttMessage);
+			client.publish(topic, mqttMessage);
 		}
 		catch (Exception e) {
 			throw new SenderException(e);
 		}
 		return new SenderResult(message);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * Can be dynamically set using the {@value MqttSender#TOPIC_PARAMETER_NAME} parameter.
+	 */
+	@Override
+	@Optional
+	public void setTopic(String topic) {
+		super.setTopic(topic);
 	}
 
 	@Override
