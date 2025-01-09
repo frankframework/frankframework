@@ -1,0 +1,14 @@
+{
+    "betalingsindicatie": "nog_niet",
+    "verlenging": {
+        "reden": "Overig",
+        "duur": "P99D"
+    },
+    "kenmerken": [
+        {
+            "kenmerk": "273846",
+            "bron": "GWS4all"
+        }
+    ],
+    "archiefnominatie": "vernietigen"
+}
