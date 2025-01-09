@@ -164,31 +164,47 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 		}
 	}
 
+	protected GraphClient getGraphClient() throws IOException {
+		return msalClientAdapter.createGraphClient(tenantId, getCredentials());
+	}
+
 	@Override
 	public void open() {
 		try {
 			super.open();
 
 			msalClientAdapter.start();
-			client = msalClientAdapter.createGraphClient(tenantId, getCredentials());
+			client = getGraphClient();
 
-			List<String> folder = StringUtil.split(baseFolder, "/");
-
-			String rootFolder = folder.remove(0);
-			List<MailFolder> folders = client.getMailFolders(mailAddress);
-			MailFolder foundMailFolder = folders.stream()
-					.filter(t -> rootFolder.equalsIgnoreCase(t.getName()))
-					.findFirst()
-					.orElseThrow(() -> new LifecycleException("unable to find folder [%s] in mailbox [%s]".formatted(rootFolder, mailAddress)));
-			log.trace("found id [{}] beloging to rootFolder [{}]", foundMailFolder.getId(), rootFolder);
-
-			if (folder.isEmpty()) {
-				this.mailFolder = foundMailFolder;
-			} else {
-				this.mailFolder = findSubFolder(foundMailFolder, String.join(",", folder));
-			}
+			this.mailFolder = configureBaseFolder();
 		} catch (FileSystemException | IOException e) {
 			throw new LifecycleException("Failed to initialize Microsoft Authentication client.", e);
+		}
+	}
+
+	private MailFolder configureBaseFolder() throws IOException, FileSystemException {
+		List<String> folder = StringUtil.split(baseFolder, "/");
+
+		String rootFolder = folder.remove(0);
+		List<MailFolder> folders = client.getMailFolders(mailAddress);
+		MailFolder foundMailFolder = folders.stream()
+				.filter(t -> rootFolder.equalsIgnoreCase(t.getName()))
+				.findFirst()
+				.orElseThrow(() -> new LifecycleException("unable to find folder [%s] in mailbox [%s]".formatted(rootFolder, mailAddress)));
+		log.trace("found id [{}] beloging to rootFolder [{}]", foundMailFolder.getId(), rootFolder);
+
+		if (folder.isEmpty()) {
+			return foundMailFolder;
+		} else {
+			return findSubFolder(foundMailFolder, String.join(",", folder));
+		}
+	}
+
+	@Override
+	public void close() throws FileSystemException {
+		super.close();
+		if (msalClientAdapter != null) {
+			msalClientAdapter.stop();
 		}
 	}
 
@@ -225,14 +241,6 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 		}
 
 		throw new FolderNotFoundException("unable to find sub-folder [%s] in mailbox [%s]".formatted(childFolderName, mailAddress));
-	}
-
-	@Override
-	public void close() throws FileSystemException {
-		super.close();
-		if (msalClientAdapter != null) {
-			msalClientAdapter.stop();
-		}
 	}
 
 	@Override
