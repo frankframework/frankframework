@@ -974,9 +974,9 @@ public class XmlUtils {
 		if (xsltVersion == 1) {
 			factory = new TransformerFactoryImpl();
 			factory.setErrorListener(errorListener);
-			if (isXsltStreamingByDefault()) {
-				factory.setAttribute(TransformerFactoryImpl.FEATURE_INCREMENTAL, Boolean.TRUE);
-			}
+//			if (isXsltStreamingByDefault()) {
+//				factory.setAttribute(TransformerFactoryImpl.FEATURE_INCREMENTAL, Boolean.TRUE);
+//			}
 			return factory;
 		}
 		// XSLT version 2 or 3.
