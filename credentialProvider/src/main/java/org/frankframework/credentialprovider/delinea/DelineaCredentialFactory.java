@@ -32,7 +32,7 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
 public class DelineaCredentialFactory implements ICredentialFactory {
 
 	private static final String BASE_KEY = "credentialFactory.delinea.";
-	// Leave empty to don't use autocomment
+	// Leave empty to not use autocomment
 	static final String USE_AUTO_COMMENT_VALUE = BASE_KEY + "autocomment.value";
 	static final String TENANT_KEY = BASE_KEY + "tenant";
 	static final String API_ROOT_URL_KEY = BASE_KEY + "apiRootUrl";
