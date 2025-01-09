@@ -99,7 +99,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @for (message of messages; track message.id; let i = $index) {
+                  @for (message of messages; track i; let i = $index) {
                     <tr>
                       <td>{{ i + 1 }}</td>
                       <td appToDate [time]="message.insertDate"></td>

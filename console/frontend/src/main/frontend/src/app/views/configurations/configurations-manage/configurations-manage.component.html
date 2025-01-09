@@ -37,29 +37,29 @@
               </tr>
             </thead>
             <tbody>
-              @for (conf of configurations; track conf.name) {
-                <tr [ngClass]="{ 'text-danger': conf.exception }" [title]="conf.exception ?? ''">
-                  @if (conf.type === 'DatabaseClassLoader') {
+              @for (configuration of configurations; track configuration.name) {
+                <tr [ngClass]="{ 'text-danger': configuration.exception }" [title]="configuration.exception ?? ''">
+                  @if (configuration.type === 'DatabaseClassLoader') {
                     <td>
                       <a
                         appHasAccessToLink="manageConfiguration"
-                        [routerLink]="['/configurations/manage/', conf.name]"
-                        [state]="{ configuration: conf }"
-                        >{{ conf.name }}</a
+                        [routerLink]="['/configurations/manage/', configuration.name]"
+                        [state]="{ configuration }"
+                        >{{ configuration.name }}</a
                       >
                     </td>
                   }
-                  @if (conf.type !== 'DatabaseClassLoader') {
+                  @if (configuration.type !== 'DatabaseClassLoader') {
                     <td>
-                      {{ conf.name }}
+                      {{ configuration.name }}
                     </td>
                   }
-                  <td>{{ conf.version ? conf.version : '-' }}</td>
-                  <td>{{ conf.type ? conf.type : '-' }}</td>
-                  <td>{{ conf.parent ? conf.parent : '-' }}</td>
-                  <td>{{ conf.filename ? conf.filename : '-' }}</td>
-                  <td>{{ conf.created ? conf.created : '-' }}</td>
-                  <td>{{ conf.user ? conf.user : '-' }}</td>
+                  <td>{{ configuration.version ? configuration.version : '-' }}</td>
+                  <td>{{ configuration.type ? configuration.type : '-' }}</td>
+                  <td>{{ configuration.parent ? configuration.parent : '-' }}</td>
+                  <td>{{ configuration.filename ? configuration.filename : '-' }}</td>
+                  <td>{{ configuration.created ? configuration.created : '-' }}</td>
+                  <td>{{ configuration.user ? configuration.user : '-' }}</td>
                 </tr>
               }
             </tbody>

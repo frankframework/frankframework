@@ -451,7 +451,7 @@
             <h4>Messages</h4>
             <table class="table table-striped" style="min-width: 620px">
               <tbody>
-                @for (message of adapter.messages; track message.message) {
+                @for (message of adapter.messages; track message) {
                   <tr>
                     @if (message.level === 'INFO') {
                       <td class="text-center" style="width: 40px">&nbsp;<i class="fa fa-info"></i></td>

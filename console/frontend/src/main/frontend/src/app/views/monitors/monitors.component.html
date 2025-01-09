@@ -53,7 +53,7 @@
   </div>
   @if (monitors.length > 0) {
     <div class="row">
-      @for (monitor of monitors; track monitor.name) {
+      @for (monitor of monitors; track index; let index = $index) {
         <div class="col-lg-12">
           <div class="ibox float-e-margins">
             <div class="ibox-title {{ monitor.raised ? 'danger' : 'primary' }}">
