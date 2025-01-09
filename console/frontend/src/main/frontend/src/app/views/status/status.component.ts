@@ -6,7 +6,7 @@ import { StatusService } from './status.service';
 import { Adapter, AdapterStatus, Alert, AppService, Configuration, MessageLog } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
 import { ServerInfo, ServerInfoService } from '../../services/server-info.service';
-import { KeyValue, KeyValuePipe, NgClass, NgFor, NgIf } from '@angular/common';
+import { KeyValue, KeyValuePipe, NgClass } from '@angular/common';
 import { ServerWarningsComponent } from './server-warnings/server-warnings.component';
 import { ConfigurationTabListComponent } from '../../components/tab-list/configuration-tab-list.component';
 import { ConfigurationSummaryComponent } from './configuration-summary/configuration-summary.component';
@@ -27,12 +27,10 @@ type Filter = Record<AdapterStatus, boolean>;
     ConfigurationTabListComponent,
     ConfigurationSummaryComponent,
     HasAccessToLinkDirective,
-    NgIf,
     NgClass,
     FormsModule,
     ConfigurationMessagesComponent,
     AdapterStatusComponent,
-    NgFor,
     ConfigurationFilterPipe,
     SearchFilterPipe,
     KeyValuePipe,

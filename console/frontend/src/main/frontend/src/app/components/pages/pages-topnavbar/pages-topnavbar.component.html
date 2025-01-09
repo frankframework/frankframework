@@ -24,18 +24,20 @@
       <li>
         <span class="m-r-sm stage">{{ dtapStage }}</span>
       </li>
-      <li *ngIf="dtapSide !== ''">
-        <span class="stage">({{ dtapSide }})</span>
-      </li>
+      @if (dtapSide !== '') {
+        <li>
+          <span class="stage">({{ dtapSide }})</span>
+        </li>
+      }
       <li ngbDropdown (click)="resetNotificationCount()">
         <a class="count-info" ngbDropdownToggle>
           <i class="fa fa-bell"></i>
-          <span *ngIf="notificationCount > 0" class="label label-primary">{{
-            notificationCount > 5 ? '5+' : notificationCount
-          }}</span>
+          @if (notificationCount > 0) {
+            <span class="label label-primary">{{ notificationCount > 5 ? '5+' : notificationCount }}</span>
+          }
         </a>
         <ul class="dropdown-alerts" ngbDropdownMenu>
-          <ng-container *ngFor="let message of notificationList; last as last">
+          @for (message of notificationList; track message.id; let last = $last) {
             <li ngbDropdownItem>
               <a routerLink="/notifications" [queryParams]="{ id: message.id }">
                 <div>
@@ -45,40 +47,50 @@
                 </div>
               </a>
             </li>
-            <li class="divider" *ngIf="!last"></li>
-          </ng-container>
-          <li class="text-center" *ngIf="notificationList.length <= 0">No notifications</li>
+            @if (!last) {
+              <li class="divider"></li>
+            }
+          }
+          @if (notificationList.length <= 0) {
+            <li class="text-center">No notifications</li>
+          }
         </ul>
       </li>
-      <li *ngIf="clusterMembers.length > 0">
-        <!-- <span>
+      @if (clusterMembers.length > 0) {
+        <li>
+          <!-- <span>
+              <select
+                class="cluster-member-selector"
+                name="selectedClusterMember"
+                [(ngModel)]="selectedClusterMember"
+                (ngModelChange)="selectClusterMember()">
+                <option
+                  *ngFor="let member of clusterMembers"
+                  [ngValue]="member"
+                  title="{{ member.name }}&#013;{{ member.id }}"
+                  >
+                  {{ member.address }}
+                </option>
+              </select>
+              <i class="fa fa-chevron-down" aria-hidden="true"></i>
+            </span> -->
           <select
             class="cluster-member-selector"
             name="selectedClusterMember"
             [(ngModel)]="selectedClusterMember"
-            (ngModelChange)="selectClusterMember()">
-            <option
-              *ngFor="let member of clusterMembers"
-              [ngValue]="member"
-              title="{{ member.name }}&#013;{{ member.id }}"
-            >
-              {{ member.address }}
-            </option>
+            (ngModelChange)="selectClusterMember()"
+          >
+            @for (member of clusterMembers; track member.id) {
+              <option [ngValue]="member" [title]="getClusterMemberTitle(member)">
+                {{ member.address }}
+              </option>
+            }
           </select>
-          <i class="fa fa-chevron-down" aria-hidden="true"></i>
-        </span> -->
-        <select
-          class="cluster-member-selector"
-          name="selectedClusterMember"
-          [(ngModel)]="selectedClusterMember"
-          (ngModelChange)="selectClusterMember()"
-        >
-          <option *ngFor="let member of clusterMembers" [ngValue]="member" [title]="getClusterMemberTitle(member)">
-            {{ member.address }}
-          </option>
-        </select>
-      </li>
-      <li *ngIf="userName">{{ userName }}</li>
+        </li>
+      }
+      @if (userName) {
+        <li>{{ userName }}</li>
+      }
     </ul>
   </nav>
 </div>

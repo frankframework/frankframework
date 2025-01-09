@@ -5,8 +5,9 @@ import { JdbcBrowseForm, JdbcService } from '../jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { LaddaModule } from 'angular2-ladda';
-import { NgFor, NgIf } from '@angular/common';
+
 import { OrderByPipe } from '../../../pipes/orderby.pipe';
+import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 
 interface ColumnName {
   id: number;
@@ -16,7 +17,7 @@ interface ColumnName {
 
 @Component({
   selector: 'app-jdbc-browse-tables',
-  imports: [FormsModule, LaddaModule, NgIf, OrderByPipe, NgFor],
+  imports: [FormsModule, LaddaModule, OrderByPipe, QuickSubmitFormDirective],
   templateUrl: './jdbc-browse-tables.component.html',
   styleUrls: ['./jdbc-browse-tables.component.scss'],
 })

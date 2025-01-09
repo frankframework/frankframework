@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { NgbToast } from '@ng-bootstrap/ng-bootstrap';
 import { Toast, ToastService, ToastType } from 'src/app/services/toast.service';
@@ -6,7 +5,7 @@ import { Toast, ToastService, ToastType } from 'src/app/services/toast.service';
 @Component({
   selector: 'app-toasts-container',
   templateUrl: './toasts-container.component.html',
-  imports: [CommonModule, NgbToast],
+  imports: [NgbToast],
 })
 export class ToastsContainerComponent {
   public toastService: ToastService = inject(ToastService);

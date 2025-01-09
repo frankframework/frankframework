@@ -4,11 +4,10 @@ import { IAFRelease } from 'src/app/app.service';
 import { SessionService } from 'src/app/services/session.service';
 import { MarkDownPipe } from '../../pipes/mark-down.pipe';
 import { ToDateDirective } from '../../components/to-date.directive';
-import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-iaf-update',
-  imports: [MarkDownPipe, ToDateDirective, NgIf],
+  imports: [MarkDownPipe, ToDateDirective],
   templateUrl: './iaf-update.component.html',
   styleUrls: ['./iaf-update.component.scss'],
 })

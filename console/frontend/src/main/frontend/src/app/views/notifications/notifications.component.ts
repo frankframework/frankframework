@@ -1,11 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NotificationService, Notification } from 'src/app/services/notification.service';
-import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-notifications',
-  imports: [NgIf],
+  imports: [],
   templateUrl: './notifications.component.html',
   styleUrls: ['./notifications.component.scss'],
 })

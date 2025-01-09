@@ -2,13 +2,13 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AppService, Configuration } from 'src/app/app.service';
 import { ConfigurationsService } from '../configurations.service';
 import { Subscription } from 'rxjs';
-import { NgClass, NgFor, NgIf } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
 
 @Component({
   selector: 'app-configurations-manage',
-  imports: [NgClass, RouterLink, HasAccessToLinkDirective, NgFor, NgIf],
+  imports: [NgClass, RouterLink, HasAccessToLinkDirective],
   templateUrl: './configurations-manage.component.html',
   styleUrls: ['./configurations-manage.component.scss'],
 })

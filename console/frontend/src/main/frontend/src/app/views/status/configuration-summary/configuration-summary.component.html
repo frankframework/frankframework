@@ -2,9 +2,15 @@
   <div class="ibox-title summary">
     <h4 class="col-md-9">
       Configuration Summary
-      <span *ngIf="isConfigStubbed[selectedConfiguration]" class="label label-warning">STUBBED</span>
-      <span *ngIf="isConfigAutoReloadable[selectedConfiguration]" class="label label-warning">AUTORELOADABLE</span>
-      <span *ngIf="isConfigReloading[selectedConfiguration]" class="label label-warning">RELOADING</span>
+      @if (isConfigStubbed[selectedConfiguration]) {
+        <span class="label label-warning">STUBBED</span>
+      }
+      @if (isConfigAutoReloadable[selectedConfiguration]) {
+        <span class="label label-warning">AUTORELOADABLE</span>
+      }
+      @if (isConfigReloading[selectedConfiguration]) {
+        <span class="label label-warning">RELOADING</span>
+      }
     </h4>
     <h4 class="hidden-sm col-md-3">Configuration Flow</h4>
   </div>
@@ -107,9 +113,11 @@
           </tbody>
         </table>
       </div>
-      <div *ngIf="configurationFlowDiagram && !reloading" class="col-md-3 configurationFlow">
-        <app-flow [configurationFlowDiagram]="configurationFlowDiagram" [height]="150" />
-      </div>
+      @if (configurationFlowDiagram && !reloading) {
+        <div class="col-md-3 configurationFlow">
+          <app-flow [configurationFlowDiagram]="configurationFlowDiagram" [height]="150" />
+        </div>
+      }
     </div>
   </div>
 </div>

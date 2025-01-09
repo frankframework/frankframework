@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { getProcessStateIcon, getProcessStateIconColor } from '../../../utils';
 import { Adapter, Receiver } from '../../../app.service';
 import { StatusService } from '../status.service';
-import { NgClass, NgForOf, NgIf } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { ToDateDirective } from '../../../components/to-date.directive';
 import { TimeSinceDirective } from '../../../components/time-since.directive';
 import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
@@ -13,7 +13,6 @@ import { FlowComponent } from '../flow/flow.component';
 @Component({
   selector: 'app-adapter-status',
   imports: [
-    NgIf,
     NgClass,
     ToDateDirective,
     TimeSinceDirective,
@@ -21,7 +20,6 @@ import { FlowComponent } from '../flow/flow.component';
     RouterLink,
     TruncatePipe,
     FlowComponent,
-    NgForOf,
   ],
   templateUrl: './adapter-status.component.html',
   styleUrl: './adapter-status.component.scss',

@@ -46,51 +46,55 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let config of versionsSorted | searchFilter: search">
-                <td>{{ config.version }}</td>
-                <td>{{ config.filename }}</td>
-                <td>{{ config.created }}</td>
-                <td>{{ config.user }}</td>
-                <td>
-                  <input
-                    type="checkbox"
-                    (ngModelChange)="activate(config)"
-                    name="activated"
-                    [(ngModel)]="config.actived"
-                  />
-                </td>
-                <td>
-                  <input
-                    type="checkbox"
-                    (ngModelChange)="scheduleReload(config)"
-                    name="autoreload"
-                    [(ngModel)]="config.autoreload"
-                  />
-                </td>
-                <td>
-                  <i class="fa fa-check btn-xs" *ngIf="config.loaded" aria-hidden="true"></i>
-                </td>
-                <td class="hideBtn1170 minw180px">
-                  <button
-                    title="Delete"
-                    (click)="deleteConfig(config)"
-                    class="btn btn-xs btn-danger pull-right"
-                    type="button"
-                  >
-                    <i class="fa fa-times aria-hidden='true'"></i>
-                    <span> Delete</span>
-                  </button>
-                  <button
-                    title="Download"
-                    (click)="download(config)"
-                    class="btn btn-xs btn-info pull-right"
-                    type="button"
-                  >
-                    <i class="fa fa-cloud-download aria-hidden='true'"></i>
-                    <span> Download</span>
-                  </button>
-                </td>
-              </tr>
+              @for (config of versionsSorted | searchFilter: search; track config.name) {
+                <tr>
+                  <td>{{ config.version }}</td>
+                  <td>{{ config.filename }}</td>
+                  <td>{{ config.created }}</td>
+                  <td>{{ config.user }}</td>
+                  <td>
+                    <input
+                      type="checkbox"
+                      (ngModelChange)="activate(config)"
+                      name="activated"
+                      [(ngModel)]="config.actived"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="checkbox"
+                      (ngModelChange)="scheduleReload(config)"
+                      name="autoreload"
+                      [(ngModel)]="config.autoreload"
+                    />
+                  </td>
+                  <td>
+                    @if (config.loaded) {
+                      <i class="fa fa-check btn-xs" aria-hidden="true"></i>
+                    }
+                  </td>
+                  <td class="hideBtn1170 minw180px">
+                    <button
+                      title="Delete"
+                      (click)="deleteConfig(config)"
+                      class="btn btn-xs btn-danger pull-right"
+                      type="button"
+                    >
+                      <i class="fa fa-times aria-hidden='true'"></i>
+                      <span> Delete</span>
+                    </button>
+                    <button
+                      title="Download"
+                      (click)="download(config)"
+                      class="btn btn-xs btn-info pull-right"
+                      type="button"
+                    >
+                      <i class="fa fa-cloud-download aria-hidden='true'"></i>
+                      <span> Download</span>
+                    </button>
+                  </td>
+                </tr>
+              }
             </tbody>
           </table>
         </div>

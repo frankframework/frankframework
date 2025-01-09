@@ -4,7 +4,7 @@ import { AppService, JobMessage } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
 import { SchedulerService, Trigger } from './scheduler.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
-import { KeyValuePipe, NgClass, NgFor, NgIf } from '@angular/common';
+import { KeyValuePipe, NgClass } from '@angular/common';
 import { HasAccessToLinkDirective } from '../../components/has-access-to-link.directive';
 import { LaddaModule } from 'angular2-ladda';
 import { ToDateDirective } from '../../components/to-date.directive';
@@ -45,7 +45,6 @@ export type Job = {
 @Component({
   selector: 'app-scheduler',
   imports: [
-    NgIf,
     HasAccessToLinkDirective,
     LaddaModule,
     ToDateDirective,
@@ -54,7 +53,6 @@ export type Job = {
     KeyValuePipe,
     SearchFilterPipe,
     OrderByPipe,
-    NgFor,
     RouterLink,
     NgClass,
   ],

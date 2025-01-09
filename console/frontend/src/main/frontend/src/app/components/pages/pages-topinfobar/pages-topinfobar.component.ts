@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, ActivationEnd, NavigationEnd, Router } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
@@ -8,7 +7,7 @@ import { AppService } from 'src/app/app.service';
   selector: 'app-pages-topinfobar',
   templateUrl: './pages-topinfobar.component.html',
   styleUrls: ['./pages-topinfobar.component.scss'],
-  imports: [CommonModule],
+  imports: [],
 })
 export class PagesTopinfobarComponent implements OnInit, OnDestroy {
   loading: boolean = true;
