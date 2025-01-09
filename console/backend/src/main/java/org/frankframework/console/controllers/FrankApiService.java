@@ -94,6 +94,11 @@ public class FrankApiService implements ApplicationContextAware, InitializingBea
 		return environment.getProperty(key, (Class<T>) defaultValue.getClass(), defaultValue);
 	}
 
+	@SuppressWarnings("unchecked")
+	protected <T> T getRequiredBooleanProperty(String key) {
+		return environment.getRequiredProperty(key, (Class<T>) boolean.class);
+	}
+
 	protected final boolean allowDeprecatedEndpoints() {
 		return getProperty(DeprecationInterceptor.ALLOW_DEPRECATED_ENDPOINTS_KEY, false);
 	}
