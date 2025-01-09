@@ -299,11 +299,10 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				try {
 					DistributionSummary senderStatistics = getStatisticsKeeper(sender.getName());
 					if (isParallel()) {
-						if (isCollectResults()) {
-							if (guard != null) {
-								guard.register();
-							}
+						if (isCollectResults() && guard != null) {
+							guard.register();
 						}
+
 						ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, senderStatistics);
 						pse.setThreadLimiter(childLimiter);
 						pse.setGuard(guard);

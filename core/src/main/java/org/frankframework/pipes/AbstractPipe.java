@@ -229,7 +229,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 * return the Parameters
 	 */
 	@Override
-	public ParameterList getParameterList() {
+	public @Nonnull ParameterList getParameterList() {
 		return parameterList;
 	}
 

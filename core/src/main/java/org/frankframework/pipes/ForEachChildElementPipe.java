@@ -198,10 +198,9 @@ public class ForEachChildElementPipe extends StringIteratorPipe {
 			xmlWriter.endDocument();
 			try {
 				stopReason = callback.handleItem(xmlWriter.toString());
+			} catch (TimeoutException e) {
+				throw new SaxTimeoutException(e);
 			} catch (Exception e) {
-				if (e instanceof TimeoutException) {
-					throw new SaxTimeoutException(e);
-				}
 				throw new SaxException(e);
 			}
 			checkInterrupt();
@@ -289,7 +288,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe {
 		private TransformerErrorListener transformerErrorListener=null;
 	}
 
-	protected void createHandler(HandlerRecord result, Message input, PipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
+	private void createHandler(HandlerRecord result, Message input, PipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
 		result.itemHandler = new ItemCallbackCallingHandler(callback);
 		result.inputHandler=result.itemHandler;
 
@@ -308,7 +307,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe {
 		if (getExtractElementsTp()!=null) {
 			log.debug("transforming input to obtain list of elements using xpath [{}]", getElementXPathExpression());
 			TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(result.inputHandler);
-			if (getParameterList()!=null) {
+			if (!getParameterList().isEmpty()) {
 				try {
 					XmlUtils.setTransformerParameters(transformerFilter.getTransformer(), getParameterList().getValues(input, session).getValueMap());
 				} catch (ParameterException | IOException e) {
@@ -391,8 +390,8 @@ public class ForEachChildElementPipe extends StringIteratorPipe {
 		} catch (Exception e) {
 			try {
 				if (e instanceof SaxTimeoutException) {
-					if (e.getCause()!=null && e.getCause() instanceof TimeoutException) {
-						throw (TimeoutException)e.getCause();
+					if (e.getCause() instanceof TimeoutException timeoutException) {
+						throw timeoutException;
 					}
 					throw new TimeoutException(e);
 				}
