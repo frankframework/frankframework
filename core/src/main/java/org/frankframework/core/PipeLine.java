@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -41,6 +41,8 @@ import lombok.Setter;
 
 import org.frankframework.cache.ICache;
 import org.frankframework.cache.ICacheEnabled;
+import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationAware;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -100,8 +102,9 @@ import org.frankframework.util.StringUtil;
  */
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics, IConfigurationAware {
+public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics, IConfigurationAware, ConfigurationAware {
 	private @Getter @Setter ApplicationContext applicationContext;
+	private @Getter @Setter Configuration configuration;
 	private @Getter final ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	public static final String INPUT_VALIDATOR_NAME  = "- pipeline inputValidator";
@@ -370,7 +373,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	/*
 	 * All pipe related statistics
 	 */
-	public @Nonnull DistributionSummary getPipeStatistics(IConfigurationAware pipe) {
+	public @Nonnull DistributionSummary getPipeStatistics(HasStatistics pipe) {
 		return pipeStatistics.computeIfAbsent(pipe.getName(), name -> configurationMetrics.createDistributionSummary(pipe, FrankMeterType.PIPE_DURATION));
 	}
 	public @Nonnull DistributionSummary getPipeWaitStatistics(IPipe pipe){

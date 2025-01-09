@@ -3,7 +3,6 @@ import { ServerTimeService } from '../services/server-time.service';
 
 @Directive({
   selector: '[appToDate]',
-  standalone: true,
 })
 export class ToDateDirective implements OnChanges {
   @Input() time: string | number = '';
@@ -12,7 +11,7 @@ export class ToDateDirective implements OnChanges {
   private serverTimeService: ServerTimeService = inject(ServerTimeService);
 
   ngOnChanges(): void {
-    if (this.time === undefined || Number.isNaN(this.time)) return;
+    if (this.time === undefined || this.time === '' || Number.isNaN(this.time)) return;
     if (Number.isNaN(Number(this.time))) this.time = new Date(this.time).getTime();
     this.element.nativeElement.textContent = this.serverTimeService.toServerTime(this.time as number);
   }

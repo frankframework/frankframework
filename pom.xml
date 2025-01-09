@@ -7,7 +7,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<revision>9.0.0-SNAPSHOT</revision>
+		<revision>9.1.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>17</maven.compiler.target>
 		<maven.compiler.source>17</maven.compiler.source>
@@ -55,7 +55,7 @@
 		<aws.java.sdk.version>2.29.1</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
-		<mockito.version>5.14.2</mockito.version>
+		<mockito.version>5.15.2</mockito.version>
 		<junit.version>5.11.4</junit.version>
 	</properties>
 
@@ -136,7 +136,7 @@
 			<dependency>
 				<groupId>commons-beanutils</groupId>
 				<artifactId>commons-beanutils</artifactId>
-				<version>1.9.4</version>
+				<version>1.10.0</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-fileupload</groupId>
@@ -156,7 +156,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.29.2</version>
+				<version>4.29.3</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
@@ -511,7 +511,7 @@
 			<dependency>
 				<groupId>commons-codec</groupId>
 				<artifactId>commons-codec</artifactId>
-				<version>1.17.1</version>
+				<version>1.17.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
@@ -1007,7 +1007,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>10.21.0</version>
+							<version>10.21.1</version>
 						</dependency>
 					</dependencies>
 				</plugin>

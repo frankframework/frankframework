@@ -27,6 +27,13 @@ updates:
     labels:
       - "Dependencies"
       - "JavaScript"
+    groups:
+      angular:
+        patterns: 
+        - "@angular*"
+        update-types:
+        - "minor"
+        - "patch"
     reviewers:
       - frankframework/maintainers
     ignore:

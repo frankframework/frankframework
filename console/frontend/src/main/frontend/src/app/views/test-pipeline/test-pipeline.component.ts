@@ -3,8 +3,14 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Adapter, AppService, Configuration } from 'src/app/app.service';
 import { InputFileUploadComponent } from 'src/app/components/input-file-upload/input-file-upload.component';
 import { Subscription } from 'rxjs';
-import { Option } from '../../components/combobox/combobox.component';
+import { ComboboxComponent, Option } from '../../components/combobox/combobox.component';
 import { ConfigurationFilter } from '../../pipes/configuration-filter.pipe';
+import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+import { NgForOf, NgIf } from '@angular/common';
+import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
+import { FormsModule } from '@angular/forms';
+import { MonacoEditorComponent } from '../../components/monaco-editor/monaco-editor.component';
+import { LaddaModule } from 'angular2-ladda';
 
 type FormSessionKey = {
   key: string;
@@ -26,6 +32,17 @@ type PipelineResult = {
   selector: 'app-test-pipeline',
   templateUrl: './test-pipeline.component.html',
   styleUrls: ['./test-pipeline.component.scss'],
+  imports: [
+    NgbAlert,
+    NgForOf,
+    QuickSubmitFormDirective,
+    ComboboxComponent,
+    FormsModule,
+    InputFileUploadComponent,
+    MonacoEditorComponent,
+    LaddaModule,
+    NgIf,
+  ],
 })
 export class TestPipelineComponent implements OnInit, OnDestroy {
   @ViewChild(InputFileUploadComponent) formFile!: InputFileUploadComponent;

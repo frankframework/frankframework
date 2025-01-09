@@ -96,7 +96,6 @@ public class ReceiverSubAdapterTest {
 		pl.setPipeLineExits(exits);
 
 		CorePipeLineProcessor plp = new CorePipeLineProcessor();
-		plp.setAdapterManager(configuration.getAdapterManager());
 		plp.setPipeProcessor(new CorePipeProcessor());
 		pl.setPipeLineProcessor(plp);
 		return pl;
@@ -134,7 +133,7 @@ public class ReceiverSubAdapterTest {
 	}
 
 	private MessageSendingPipe createMessageSendingPipe(TestConfiguration configuration, JavaListener<?> javaListener) {
-		IbisLocalSender sender = new IbisLocalSender();
+		IbisLocalSender sender = configuration.createBean(IbisLocalSender.class);
 		sender.setIsolated(false);
 		sender.setSynchronous(true);
 		sender.setJavaListener(javaListener.getName());

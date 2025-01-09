@@ -27,6 +27,7 @@ import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.SpringUtils;
 
 public class TestLocalStatisticsRegistry {
 	private TestConfiguration configuration;
@@ -50,22 +51,22 @@ public class TestLocalStatisticsRegistry {
 		configuration.configure();
 
 		// Ensure only 1 adapter exists
-		assertEquals(1, configuration.getAdapterManager().getAdapterList().size());
+		assertEquals(1, configuration.getAdapterList().size());
 	}
 
 	@SuppressWarnings("unchecked")
 	private <M> void createAndRegisterAdapter() throws ConfigurationException {
 		adapter = configuration.createBean(Adapter.class);
 		adapter.setName("myAdapter");
-		PipeLine pipeline = configuration.createBean(PipeLine.class);
-		EchoPipe echoPipe = configuration.createBean(EchoPipe.class);
+		PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
+		EchoPipe echoPipe = SpringUtils.createBean(adapter, EchoPipe.class);
 		echoPipe.setName("echoPipe");
 		pipeline.addPipe(echoPipe);
 		adapter.setPipeLine(pipeline);
 
-		Receiver<M> receiver = configuration.createBean(Receiver.class);
+		Receiver<M> receiver = SpringUtils.createBean(adapter, Receiver.class);
 		receiver.setName("myReceiver");
-		JavaListener<M> listener = configuration.createBean(JavaListener.class);
+		JavaListener<M> listener = SpringUtils.createBean(adapter, JavaListener.class);
 		receiver.setListener(listener);
 		adapter.addReceiver(receiver);
 

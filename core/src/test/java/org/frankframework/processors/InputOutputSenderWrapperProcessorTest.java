@@ -59,7 +59,7 @@ public class InputOutputSenderWrapperProcessorTest {
 		InputOutputSenderWrapperProcessor processor = new InputOutputSenderWrapperProcessor();
 
 		SenderWrapperProcessor target = AbstractSenderWrapper::sendMessage;
-
+		sender.setSenderWrapperProcessor(null);
 		processor.setSenderWrapperProcessor(target);
 
 		SenderResult actual = processor.sendMessage(sender, new Message(input), session);

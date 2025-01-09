@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.frankframework.configuration.digester;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
+
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.util.EnumUtils;
@@ -31,19 +33,19 @@ import org.frankframework.util.EnumUtils;
 public class ParameterFactory extends GenericFactory {
 
 	@Override
-	public Object createObject(Map<String, String> attrs) throws ClassNotFoundException {
+	public Object createBean(ApplicationContext applicationContext, Map<String, String> attrs) throws ClassNotFoundException {
 		String className = attrs.get("className");
-		if(StringUtils.isEmpty(className) || className.equals(Parameter.class.getCanonicalName())) { //Default empty, filled when using new pre-parsing
+		if(StringUtils.isEmpty(className) || className.equals(Parameter.class.getCanonicalName())) { // Default empty, filled when using new pre-parsing
 			String type = attrs.get("type");
 
 			className = determineClassNameFromCategory(type);
 			attrs.put("className", className);
 		}
-		return super.createObject(attrs);
+		return super.createBean(applicationContext, attrs);
 	}
 
 	private String determineClassNameFromCategory(String typeName) {
-		if(StringUtils.isEmpty(typeName)) { //StringParameter
+		if(StringUtils.isEmpty(typeName)) { // StringParameter
 			return Parameter.class.getCanonicalName();
 		}
 

@@ -12,7 +12,6 @@ import { Pipe, PipeTransform } from '@angular/core';
  */
 @Pipe({
   name: 'humanFileSize',
-  standalone: true,
 })
 export class HumanFileSizePipe implements PipeTransform {
   transform(bytes: number, useSiUnits = false, decimalPlaces = 1): string {

@@ -20,10 +20,9 @@ import {
   NavigationStart,
   ParamMap,
   Router,
+  RouterOutlet,
 } from '@angular/router';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-// @ts-expect-error pace-js does not have types
-import * as Pace from 'pace-js';
 import { NotificationService } from './services/notification.service';
 import { MiscService } from './services/misc.service';
 import { DebugService } from './services/debug.service';
@@ -38,9 +37,26 @@ import { ServerInfo, ServerInfoService } from './services/server-info.service';
 import { ClusterMemberEvent, ClusterMemberEventType, WebsocketService } from './services/websocket.service';
 import { deepMerge } from './utils';
 import { ServerTimeService } from './services/server-time.service';
+import { NgIf } from '@angular/common';
+import { ToastsContainerComponent } from './components/toasts-container/toasts-container.component';
+import { PagesNavigationComponent } from './components/pages/pages-navigation/pages-navigation.component';
+import { PagesTopnavbarComponent } from './components/pages/pages-topnavbar/pages-topnavbar.component';
+import { PagesTopinfobarComponent } from './components/pages/pages-topinfobar/pages-topinfobar.component';
+import { PagesFooterComponent } from './components/pages/pages-footer/pages-footer.component';
+// @ts-expect-error pace-js does not have types
+import Pace from 'pace-js';
 
 @Component({
   selector: 'app-root',
+  imports: [
+    NgIf,
+    ToastsContainerComponent,
+    PagesNavigationComponent,
+    PagesTopnavbarComponent,
+    PagesTopinfobarComponent,
+    RouterOutlet,
+    PagesFooterComponent,
+  ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
@@ -291,7 +307,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.appService.getEnvironmentVariables().subscribe((data) => {
       if (data['Application Constants']) {
-        this.appConstants = Object.assign(this.appConstants, data['Application Constants']['All']); //make FF!Application Constants default
+        this.appConstants = Object.assign(this.appConstants, data['Application Constants']['Global']); //make FF!Application Constants default
 
         const idleTime =
           Number.parseInt(this.appConstants['console.idle.time'] as string) > 0
@@ -327,6 +343,7 @@ export class AppComponent implements OnInit, OnDestroy {
       const version = this.miscService.compare_version(newVersion, currentVersion) ?? 0;
       if (!currentVersion || currentVersion === '') {
         this.debugService.warn(`Latest version is '${newVersion}' but can't retrieve current version.`);
+        this.sessionService.set('IAF-Release', newVersion);
         return;
       }
 

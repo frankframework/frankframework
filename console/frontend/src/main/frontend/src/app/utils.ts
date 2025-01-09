@@ -1,5 +1,5 @@
 // @ts-expect-error _.merge does not have correct types
-import * as _merge from 'lodash.merge';
+import _merge from 'lodash.merge';
 import type { merge } from 'lodash';
 
 export const deepMerge: typeof merge = _merge;

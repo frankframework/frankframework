@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.frankframework.configuration.digester;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
 
 import org.frankframework.scheduler.JobDefFunctions;
 import org.frankframework.scheduler.job.Job;
@@ -29,12 +30,13 @@ import org.frankframework.util.EnumUtils;
  *
  * @author Niels Meijer
  */
+@SuppressWarnings("deprecation")
 public class JobFactory extends GenericFactory {
 
 	@Override
-	public Object createObject(Map<String, String> attrs) throws ClassNotFoundException {
+	public Object createBean(ApplicationContext applicationContext, Map<String, String> attrs) throws ClassNotFoundException {
 		String className = attrs.get("className");
-		if(StringUtils.isEmpty(className) || className.equals(Job.class.getCanonicalName())) { //Default empty, filled when using new pre-parsing
+		if(StringUtils.isEmpty(className) || className.equals(Job.class.getCanonicalName())) { // Default empty, filled when using new pre-parsing
 			String function = attrs.get("function");
 			if(StringUtils.isEmpty(function)) {
 				throw new IllegalArgumentException("function may not be empty");
@@ -43,7 +45,7 @@ public class JobFactory extends GenericFactory {
 			className = determineClassNameFromFunction(function);
 			attrs.put("className", className);
 		}
-		return super.createObject(attrs);
+		return super.createBean(applicationContext, attrs);
 	}
 
 	private String determineClassNameFromFunction(String functionName) {
