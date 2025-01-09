@@ -8,7 +8,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -24,20 +25,31 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  */
 public class DelineaCredentialFactoryWithAutoCommentTest {
 
-	private static final DelineaCredentialFactory credentialFactory = new DelineaCredentialFactory();
-	private static final DelineaClient client = mock(DelineaClient.class);
+	private DelineaCredentialFactory credentialFactory;
+	private DelineaClient client;
 	private static final String AUTO_COMMENT_VALUE = "autoCommentValue";
 
-	@BeforeAll
-	public static void setUpBeforeClass() {
+	@BeforeEach
+	public void beforeEach() {
 		// setup constants
 		CredentialConstants.getInstance().setProperty(DelineaCredentialFactory.API_ROOT_URL_KEY, "http://localhost:8080");
 		CredentialConstants.getInstance().setProperty(DelineaCredentialFactory.OAUTH_TOKEN_URL_KEY, "http://localhost:8080");
 		CredentialConstants.getInstance().setProperty(DelineaCredentialFactory.TENANT_KEY, "testTenant");
 		CredentialConstants.getInstance().setProperty(DelineaCredentialFactory.USE_AUTO_COMMENT_VALUE, AUTO_COMMENT_VALUE);
 
+		client = mock(DelineaClient.class);
+		credentialFactory = new DelineaCredentialFactory();
 		credentialFactory.setDelineaClient(client);
 		credentialFactory.initialize();
+	}
+
+	@AfterAll
+	public static void tearDown() {
+		// Since credential constants is a singleton, make sure to clean up what we set up in the beforeEach
+		CredentialConstants.getInstance().remove(DelineaCredentialFactory.API_ROOT_URL_KEY);
+		CredentialConstants.getInstance().remove(DelineaCredentialFactory.OAUTH_TOKEN_URL_KEY);
+		CredentialConstants.getInstance().remove(DelineaCredentialFactory.TENANT_KEY);
+		CredentialConstants.getInstance().remove(DelineaCredentialFactory.USE_AUTO_COMMENT_VALUE);
 	}
 
 	@Test
@@ -56,8 +68,7 @@ public class DelineaCredentialFactoryWithAutoCommentTest {
 		// Get a non-existing secret
 		ICredentials credentials2 = credentialFactory.getCredentials("16", () -> null, () -> null);
 
-		// Expect a non-null return value, with a null username - the defaultUsernameSupplier (() -> null) is used
-		assertNotNull(credentials2);
-		assertNull(credentials2.getUsername());
+		// Expect a null return value, because alias 16 does not exist
+		assertNull(credentials2);
 	}
 }

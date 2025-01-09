@@ -16,18 +16,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.BeforeAll;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 public class DelineaClientTest {
 
-	private static DelineaClient delineaClient;
+	private DelineaClient delineaClient;
 
-	@BeforeAll
-	public static void setUpBeforeClass() {
+	@BeforeEach
+	public void beforeEach() {
 		DelineaClientSettings settings = new DelineaClientSettings(
 				"",
 				"/delinea",
@@ -59,7 +58,7 @@ public class DelineaClientTest {
 				.when(delineaClient)
 				.getForObject(eq(SECRET_ID_URI), eq(Secret.class), anyMap());
 
-		Secret secretFromClient = delineaClient.getSecret("3");
+		Secret secretFromClient = delineaClient.getSecret("3", null);
 
 		assertNotNull(secretFromClient);
 		assertEquals(3, secretFromClient.id());
