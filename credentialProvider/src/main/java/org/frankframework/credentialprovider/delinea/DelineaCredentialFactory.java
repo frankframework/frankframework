@@ -24,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.credentialprovider.Credentials;
 import org.frankframework.credentialprovider.ICredentialFactory;
 import org.frankframework.credentialprovider.ICredentials;
 import org.frankframework.credentialprovider.util.CredentialConstants;
@@ -33,32 +32,19 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
 public class DelineaCredentialFactory implements ICredentialFactory {
 
 	private static final String BASE_KEY = "credentialFactory.delinea.";
-
-	private static final String TLD_KEY = BASE_KEY + "tld";
-
-	private static final String API_ROOT_URL_TEMPLATE_KEY = BASE_KEY + "apiRootUrlTemplate";
-
-	private static final String OAUTH_TOKEN_URL_TEMPLATE_KEY = BASE_KEY + "oauth.tokenUrlTemplate";
-
-	private static final String OAUTH_USERNAME_KEY = BASE_KEY + "oauth.username";
-
-	private static final String OAUTH_PASSWORD_KEY = BASE_KEY + "oauth.password";
-
-	// Leave empty to don't use autocomment
+	// Leave empty to not use autocomment
 	static final String USE_AUTO_COMMENT_VALUE = BASE_KEY + "autocomment.value";
-
-	private static final long CACHE_DURATION_MILLIS = 60_000L;
-
-	private List<String> configuredAliases; // Refreshed every CACHE_DURATION_MILLIS
-
-	private long lastFetch = 0;
-
 	static final String TENANT_KEY = BASE_KEY + "tenant";
-
 	static final String API_ROOT_URL_KEY = BASE_KEY + "apiRootUrl";
-
 	static final String OAUTH_TOKEN_URL_KEY = BASE_KEY + "oauth.tokenUrl";
-
+	private static final String TLD_KEY = BASE_KEY + "tld";
+	private static final String API_ROOT_URL_TEMPLATE_KEY = BASE_KEY + "apiRootUrlTemplate";
+	private static final String OAUTH_TOKEN_URL_TEMPLATE_KEY = BASE_KEY + "oauth.tokenUrlTemplate";
+	private static final String OAUTH_USERNAME_KEY = BASE_KEY + "oauth.username";
+	private static final String OAUTH_PASSWORD_KEY = BASE_KEY + "oauth.password";
+	private static final long CACHE_DURATION_MILLIS = 60_000L;
+	private List<String> configuredAliases; // Refreshed every CACHE_DURATION_MILLIS
+	private long lastFetch = 0;
 	private DelineaClientSettings delineaClientSettings;
 
 	private DelineaClient delineaClient;
@@ -130,18 +116,18 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 			}
 		}
 
-		return new Credentials(null, defaultUsernameSupplier, defaultPasswordSupplier);
+		return null;
 	}
 
 	void setDelineaClient(DelineaClient delineaClient) {
 		this.delineaClient = delineaClient;
 	}
 
-	private Credentials translate(Secret secret) {
+	private DelineaCredentials translate(Secret secret) {
 		String username = getFieldValue(secret, "username");
 		String password = getFieldValue(secret, "password");
 
-		return new Credentials(String.valueOf(secret.id()), () -> username, () -> password);
+		return new DelineaCredentials(String.valueOf(secret.id()), username, password);
 	}
 
 	private String getFieldValue(Secret secret, String slugName) {

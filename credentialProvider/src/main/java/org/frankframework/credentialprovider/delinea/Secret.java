@@ -96,7 +96,7 @@ public record Secret(
 	 *     "isList": false,
 	 *     "listType": "None"
 	 *   }
-	 * </pre>
+	 * }</pre>
 	 */
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public record Field(
