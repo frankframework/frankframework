@@ -52,10 +52,6 @@ public class DelineaClient extends RestTemplate {
 		return getForObject(SECRET_ID_URI, Secret.class, params);
 	}
 
-	public Secret getSecret(String id) {
-		return getSecret(id, null);
-	}
-
 	/**
 	 * @return a list of all Secrets
 	 */
