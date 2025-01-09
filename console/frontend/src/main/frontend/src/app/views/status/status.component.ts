@@ -204,11 +204,11 @@ export class StatusComponent implements OnInit, OnDestroy {
   }
 
   stopAll(): void {
-    this.statusService.updateAdapters('stop', this.getCompiledAdapterList()).subscribe();
+    this.allAction('stop');
   }
 
   startAll(): void {
-    this.statusService.updateAdapters('start', this.getCompiledAdapterList()).subscribe();
+    this.allAction('start');
   }
 
   reloadConfiguration(): void {
@@ -297,6 +297,16 @@ export class StatusComponent implements OnInit, OnDestroy {
     this.selectedConfiguration = name;
     this.appService.updateAdapterSummary(name, true);
     this.updateConfigurationFlowDiagram(name);
+  }
+
+  private allAction(action: string): void {
+    if (this.searchText != '') {
+      this.statusService.updateAdapters(action, this.getCompiledAdapterList()).subscribe();
+    } else if (this.selectedConfiguration === 'All') {
+      this.statusService.updateConfigurations(action).subscribe();
+    } else {
+      this.statusService.updateSelectedConfiguration(this.selectedConfiguration, action).subscribe();
+    }
   }
 
   private getCompiledAdapterList(): string[] {
