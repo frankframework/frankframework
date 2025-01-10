@@ -33,7 +33,8 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
 	@BeforeAll
 	public static void setup() {
-		assumeFalse(TestAssertions.isTestRunningOnARM());
+		// Since it's not possible to conditionally check the EnumSource here, just disable all for now...
+		assumeFalse(TestAssertions.isTestRunningOnARM(), "uses J2V8 which does not work on ARM");
 	}
 
 	@Override

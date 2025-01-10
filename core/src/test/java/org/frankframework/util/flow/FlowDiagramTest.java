@@ -19,7 +19,7 @@ public class FlowDiagramTest {
 
 	@BeforeAll
 	public static void setup() {
-		assumeFalse(TestAssertions.isTestRunningOnARM());
+		assumeFalse(TestAssertions.isTestRunningOnARM(), "uses J2V8 which does not work on ARM");
 	}
 
 	@Test

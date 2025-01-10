@@ -155,9 +155,7 @@ public class TestAssertions extends org.junit.jupiter.api.Assertions {
 
 	public static boolean isTestRunningOnARM() {
 		String osArch = System.getProperty("os.arch").toLowerCase();
-		boolean isArm = osArch.contains("aarch64") || osArch.contains("arm");
-
-		return isArm;
+		return osArch.contains("aarch64") || osArch.contains("arm");
 	}
 
 	/**
