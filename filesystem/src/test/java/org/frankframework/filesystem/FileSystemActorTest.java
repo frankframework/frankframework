@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IConfigurable;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.parameters.Parameter;
@@ -35,7 +34,6 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 	protected FileSystemActor<F, FS> actor;
 	protected FS fileSystem;
-	protected IConfigurable owner;
 	protected Message result;
 
 	protected abstract FS createFileSystem();
@@ -44,10 +42,8 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
-		owner = adapter;
-		adapter.setName("fake owner of FileSystemActor");
 		fileSystem = createFileSystem();
-		autowireByName(fileSystem);
+		autowireBeanByNameInAdapter(fileSystem);
 		fileSystem.configure();
 		fileSystem.open();
 		actor = new FileSystemActor<>();
@@ -65,14 +61,14 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 	@Test
 	public void fileSystemActorTestConfigureBasic() throws Exception {
 		actor.setAction(FileSystemAction.LIST);
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 	}
 
 	@Test
 	public void fileSystemActorTestConfigureNoAction() throws Exception {
-		ConfigurationException e = assertThrows(ConfigurationException.class, () -> actor.configure(fileSystem, null, owner));
+		ConfigurationException e = assertThrows(ConfigurationException.class, () -> actor.configure(fileSystem, null, adapter));
 		assertThat(e.getMessage(), containsString("either attribute [action] or parameter [action] must be specified"));
-		assertThat(e.getMessage(), containsString("fake owner of FileSystemActor"));
+		assertThat(e.getMessage(), containsString("TestAdapter of " + this.getClass().getSimpleName()));
 	}
 
 	@Test
@@ -87,7 +83,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		params.add(new Parameter("action", ""));
 		params.configure();
 
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message(id);
@@ -109,7 +105,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		params.add(ParameterBuilder.create().withName("action"));
 		params.configure();
 		actor.setAction(FileSystemAction.READ);
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message(id);
@@ -123,7 +119,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 	@Test
 	public void fileSystemActorTestBasicOpen() throws Exception {
 		actor.setAction(FileSystemAction.LIST);
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 	}
 
@@ -131,7 +127,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 	public void fileSystemActorTestConfigureInputDirectoryForListActionDoesNotExist() throws Exception {
 		actor.setAction(FileSystemAction.LIST);
 		actor.setInputFolder("xxx");
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 
 		FolderNotFoundException e = assertThrows(FolderNotFoundException.class, actor::open);
 		assertThat(e.getMessage(), containsString("inputFolder [xxx], canonical name ["));
@@ -143,7 +139,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.setAction(FileSystemAction.LIST);
 		actor.setCreateFolder(true);
 		actor.setInputFolder("xxx");
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 	}
 
@@ -153,14 +149,14 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		_createFolder("folder");
 		actor.setAction(FileSystemAction.LIST);
 		actor.setInputFolder("folder");
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 	}
 
 	@Test()
 	public void fileSystemActorListActionTestForFolderExistenceWithRoot() throws Exception {
 		actor.setAction(FileSystemAction.LIST);
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 	}
 
@@ -170,7 +166,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.setInputFolder("folder1");
 		ParameterList params = new ParameterList();
 		params.add(new Parameter("inputFolder", "folder2"));
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 
 		FolderNotFoundException e = assertThrows(FolderNotFoundException.class, actor::open);
 		assertThat(e.getMessage(), containsString("inputFolder [folder1], canonical name ["));
@@ -190,7 +186,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		if (inputFolder != null) {
 			actor.setInputFolder(inputFolder);
 		}
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 
 		Message message = new Message("");
@@ -265,7 +261,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 		actor.setWildcard("*.xml");
 		actor.setAction(FileSystemAction.LIST);
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 
 		createFile(null, filename1, contents);
@@ -292,7 +288,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 		actor.setExcludeWildcard("*.bak");
 		actor.setAction(FileSystemAction.LIST);
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 
 		createFile(null, filename1, contents);
@@ -322,7 +318,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.setWildcard("*.xml");
 		actor.setExcludeWildcard("*.oud.xml");
 		actor.setAction(FileSystemAction.LIST);
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 
 		createFile(null, filename1, contents);
@@ -362,7 +358,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		params.add(new Parameter("inputFolder", inputFolder));
 		actor.setAction(FileSystemAction.LIST);
 		params.configure();
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		_createFolder(inputFolder);
@@ -394,7 +390,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		if (fileViaAttribute) {
 			actor.setFilename(id);
 		}
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 
 		Message message = new Message(fileViaAttribute ? null : id);
@@ -433,7 +429,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		params.add(new Parameter("action", "read"));
 		params.configure();
 
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message(id);
@@ -459,7 +455,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		if (fileViaAttribute) {
 			actor.setFilename(id);
 		}
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 
 		Message message = new Message(fileViaAttribute ? null : id);
@@ -514,7 +510,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 		actor.setDeleteEmptyFolder(true);
 		actor.setAction(FileSystemAction.READDELETE);
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 
 		Message message = new Message(folder + "/" + id);
@@ -539,7 +535,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 		actor.setAction(FileSystemAction.READ);
 		actor.setFilename(id);
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 
 		Message message = new Message(id);
@@ -561,7 +557,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.setAction(FileSystemAction.READ);
 		actor.setFilename(id);
 		actor.setCharset("ISO-8859-1");
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 
 		Message message = new Message(id);
@@ -600,7 +596,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		params.add(new Parameter("destination", destFolderName));
 		params.configure();
 		actor.setCreateFolder(true);
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message m = new Message("");
@@ -643,7 +639,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		params.add(new Parameter("destination", destFolderName));
 		params.configure();
 		actor.setCreateFolder(true);
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message m = new Message("");
@@ -661,7 +657,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 	public void fileSystemActorMoveActionTestForDestinationParameter() throws Exception {
 		actor.setAction(FileSystemAction.MOVE);
 
-		ConfigurationException e = assertThrows(ConfigurationException.class, () -> actor.configure(fileSystem, null, owner));
+		ConfigurationException e = assertThrows(ConfigurationException.class, () -> actor.configure(fileSystem, null, adapter));
 		assertThat(e.getMessage(), endsWith("the [MOVE] action requires the parameter [destination] or the attribute [destination] to be present"));
 	}
 
@@ -687,7 +683,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		if (setCreateFolderAttribute) {
 			actor.setCreateFolder(true);
 		}
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message(id);
@@ -747,7 +743,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		params.add(new Parameter("destination", destinationFolder));
 		params.configure();
 
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message("innerFolder/" + id);
@@ -792,7 +788,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		params.configure();
 
 		actor.setCreateFolder(true);
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message m = new Message("");
@@ -837,7 +833,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		params.configure();
 
 		actor.setCreateFolder(true);
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message m = new Message("");
@@ -872,7 +868,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 			actor.setCreateFolder(true);
 		}
 		params.configure();
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message(id);
@@ -905,7 +901,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		}
 
 		actor.setAction(FileSystemAction.MKDIR);
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 
 		Message message = new Message(folder);
@@ -930,7 +926,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		}
 
 		actor.setAction(FileSystemAction.RMDIR);
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 
 		Message message = new Message(folder);
@@ -964,7 +960,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 		actor.setAction(FileSystemAction.RMDIR);
 		actor.setRemoveNonEmptyFolder(true);
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 
 		Message message = new Message(folder);
@@ -1000,7 +996,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		assertTrue(_fileExists(innerFolder, fileIds.get(0)), "Expected file [" + innerFolder + "/file0file1.txt] to be present");
 
 		actor.setAction(FileSystemAction.RMDIR);
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 
 		Message message = new Message(folder);
@@ -1022,7 +1018,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		String id = createFile(null, filename, "is not empty");
 
 		actor.setAction(FileSystemAction.DELETE);
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 
 		Message message = new Message(id);
@@ -1050,7 +1046,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 		actor.setDeleteEmptyFolder(true);
 		actor.setAction(FileSystemAction.DELETE);
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 
 		Message message = new Message(folder + "/" + id);
@@ -1080,7 +1076,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 		actor.setDeleteEmptyFolder(true);
 		actor.setAction(FileSystemAction.DELETE);
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 
 		Message message = new Message(folder + "/" + filename);
@@ -1122,7 +1118,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.setAction(FileSystemAction.DELETE);
 		actor.setWildcard("tobedeleted*");
 		actor.setInputFolder(srcFolderName);
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 
 		Message m = new Message("");
@@ -1160,7 +1156,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.setAction(FileSystemAction.DELETE);
 		actor.setExcludeWildcard("tostay*");
 		actor.setInputFolder(srcFolderName);
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 
 		Message m = new Message("");

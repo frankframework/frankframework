@@ -43,7 +43,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		params.configure();
 
 		actor.setAction(FileSystemAction.WRITE);
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message(filename);
@@ -69,7 +69,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 		actor.setAction(FileSystemAction.WRITE);
 		actor.setFilename(filename);
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 
 		Message message = new Message(contents);
@@ -98,7 +98,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 		actor.setAction(FileSystemAction.UPLOAD);
 		params.configure();
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message(filename);
@@ -137,7 +137,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		actor.setAction(FileSystemAction.WRITE);
 		actor.setFilename(filename);
 		params.configure();
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message("fakeInputMessage");
@@ -174,7 +174,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 		actor.setAction(FileSystemAction.WRITE);
 		params.configure();
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message("should-not-be-used");
@@ -206,7 +206,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		actor.setAction(FileSystemAction.WRITE);
 		actor.setFilename(filename);
 		params.configure();
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message(new ThrowingAfterCloseInputStream(new ByteArrayInputStream(contents.getBytes())));
@@ -242,7 +242,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 		actor.setAction(FileSystemAction.WRITE);
 		params.configure();
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message(filename);
@@ -277,7 +277,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		params.configure();
 
 		actor.setAction(FileSystemAction.WRITE);
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message(filename);
@@ -315,7 +315,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 		actor.setAction(FileSystemAction.WRITE);
 		actor.setNumberOfBackups(numOfBackups);
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message(filename);
@@ -354,7 +354,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 		actor.setCreateFolder(true);
 		actor.setAction(FileSystemAction.WRITE);
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message(folderName + "/" + filename); //Flat file structure, should create folder
@@ -369,7 +369,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		//Test if we can list items in the folder
 		actor.setAction(FileSystemAction.LIST);
 		actor.setInputFolder(folderName);
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 		Message result2 = actor.doAction(new Message(folderName), null, session);
 		TestAssertions.assertXpathValueEquals(filename, result2.asString(), "directory/file/@name");
@@ -392,7 +392,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 		actor.setCreateFolder(true);
 		actor.setAction(FileSystemAction.WRITE);
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message(contents);
@@ -453,7 +453,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 		actor.setWriteLineSeparator(isWriteLineSeparator);
 		actor.setAction(FileSystemAction.APPEND);
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message(filename);
@@ -493,7 +493,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		actor.setAction(FileSystemAction.APPEND);
 		actor.setRotateSize(rotateSize);
 		actor.setNumberOfBackups(numOfBackups);
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message(filename);
@@ -532,7 +532,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		params.add(new Parameter("destination", dest));
 		actor.setAction(FileSystemAction.RENAME);
 		params.configure();
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		deleteFile(null, dest);
@@ -559,7 +559,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 		actor.setFilename(filename);
 		actor.setAction(FileSystemAction.CREATE);
-		actor.configure(fileSystem, null, owner);
+		actor.configure(fileSystem, null, adapter);
 		actor.open();
 
 		Message message = new Message(filename);
@@ -584,7 +584,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 		actor.setFilename(filename);
 		actor.setAction(FileSystemAction.CREATE);
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message(filename);
