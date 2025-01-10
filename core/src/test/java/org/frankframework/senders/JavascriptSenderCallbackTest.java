@@ -30,7 +30,7 @@ class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 
 	@BeforeAll
 	public static void setup() {
-		assumeFalse(TestAssertions.isTestRunningOnARMMacOS());
+		assumeFalse(TestAssertions.isTestRunningOnARM());
 	}
 
 	@Override

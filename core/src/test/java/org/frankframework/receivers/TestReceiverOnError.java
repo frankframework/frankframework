@@ -70,7 +70,7 @@ public class TestReceiverOnError {
 
 	@BeforeAll
 	public static void setup() {
-		assumeFalse(TestAssertions.isTestRunningOnARMMacOS());
+		assumeFalse(TestAssertions.isTestRunningOnARM());
 	}
 
 	@BeforeEach

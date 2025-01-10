@@ -32,7 +32,7 @@ public class GraphvizEngineTest {
 
 	@BeforeAll
 	public static void setup() {
-		assumeFalse(TestAssertions.isTestRunningOnARMMacOS());
+		assumeFalse(TestAssertions.isTestRunningOnARM());
 	}
 
 	@Test

@@ -84,7 +84,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
         //note: this test does not work on ARM64 MacOS. No clue why, but we do not really need it
 	@BeforeAll
 	public static void setup() {
-		assumeFalse(TestAssertions.isTestRunningOnARMMacOS());
+		assumeFalse(TestAssertions.isTestRunningOnARM());
 	}
 
 	@TempDir
