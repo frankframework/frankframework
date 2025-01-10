@@ -116,50 +116,11 @@ public class XmlSwitch extends AbstractPipe {
 	 */
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		String forward = "";
-		PipeForward pipeForward;
-
-		if (StringUtils.isNotEmpty(getForwardNameSessionKey())) {
-			forward = session.getString(getForwardNameSessionKey());
-		} else if (StringUtils.isNotEmpty(getXpathExpression()) || StringUtils.isNotEmpty(getStyleSheetName()) || StringUtils.isEmpty(getGetInputFromSessionKey())) {
-			try {
-				Map<String, Object> parametervalues = null;
-				ParameterList parameterList = getParameterList();
-
-				if (!parameterList.isEmpty()) {
-					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
-				}
-
-				message.preserve();
-				forward = transformerPool.transform(message, parametervalues, isNamespaceAware());
-			} catch (Throwable e) {
-				throw new PipeRunException(this, "got exception on transformation", e);
-			}
-		} else {
-			try {
-				// Use the message as forward if none of the cases above apply
-				forward = message.asString();
-			} catch (IOException e) {
-				throw new PipeRunException(this, "Error reading message", e);
-			}
-		}
+		String forward = getForward(message, session);
 
 		log.debug("determined forward [{}]", forward);
 
-		if (StringUtils.isEmpty(forward) && getEmptyForwardName() != null) {
-			throwEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
-			pipeForward = findForward(getEmptyForwardName());
-		} else {
-
-			if (findForward(forward) != null) {
-				throwEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
-				pipeForward = findForward(forward);
-			} else {
-				log.info("determined forward [{}], which is not defined. Will use [{}] instead", forward, getNotFoundForwardName());
-				throwEvent(XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
-				pipeForward = findForward(getNotFoundForwardName());
-			}
-		}
+		PipeForward pipeForward = getPipeForward(forward);
 
 		if (pipeForward == null) {
 			throw new PipeRunException(this, "cannot find forward or pipe named [" + forward + "]");
@@ -169,6 +130,57 @@ public class XmlSwitch extends AbstractPipe {
 		}
 
 		return new PipeRunResult(pipeForward, message);
+	}
+
+	private String getForward(Message message, PipeLineSession session) throws PipeRunException {
+		if (StringUtils.isNotEmpty(getForwardNameSessionKey())) {
+			return session.getString(getForwardNameSessionKey());
+		}
+
+		if (!(StringUtils.isEmpty(getXpathExpression()) && StringUtils.isEmpty(getStyleSheetName())) || StringUtils.isEmpty(getGetInputFromSessionKey())) {
+			try {
+				Map<String, Object> parametervalues = null;
+				ParameterList parameterList = getParameterList();
+
+				if (!parameterList.isEmpty()) {
+					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
+				}
+
+				message.preserve();
+				return transformerPool.transform(message, parametervalues, isNamespaceAware());
+			} catch (Throwable e) {
+				throw new PipeRunException(this, "got exception on transformation", e);
+			}
+		}
+
+		if (StringUtils.isNotEmpty(getGetInputFromSessionKey())) {
+			try {
+				// Use the message as forward if none of the cases above apply
+				return message.asString();
+			} catch (IOException e) {
+				throw new PipeRunException(this, "Error reading message", e);
+			}
+		}
+
+		return null;
+	}
+
+	private PipeForward getPipeForward(String forward) {
+		PipeForward pipeForward;
+		if (StringUtils.isEmpty(forward) && getEmptyForwardName() != null) {
+			throwEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
+			pipeForward = findForward(getEmptyForwardName());
+		} else {
+			if (findForward(forward) != null) {
+				throwEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
+				pipeForward = findForward(forward);
+			} else {
+				log.info("determined forward [{}], which is not defined. Will use [{}] instead", forward, getNotFoundForwardName());
+				throwEvent(XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
+				pipeForward = findForward(getNotFoundForwardName());
+			}
+		}
+		return pipeForward;
 	}
 
 	/**
