@@ -215,47 +215,15 @@ export class StatusComponent implements OnInit, OnDestroy {
     if (this.selectedConfiguration == 'All') return;
 
     this.isConfigReloading[this.selectedConfiguration] = true;
-
-    this.Poller.getAll().stop();
     this.statusService.updateSelectedConfiguration(this.selectedConfiguration, 'reload').subscribe(() => {
-      this.startPollingForConfigurationStateChanges(() => {
-        this.Poller.getAll().start();
-      });
+      this.isConfigReloading[this.selectedConfiguration] = false;
     });
   }
 
   fullReload(): void {
     this.reloading = true;
-    this.Poller.getAll().stop();
-    this.statusService.updateConfigurations('reload').subscribe(() => {
+    this.statusService.updateConfigurations('fullreload').subscribe(() => {
       this.reloading = false;
-      this.startPollingForConfigurationStateChanges(() => {
-        this.Poller.getAll().start();
-      });
-    });
-  }
-
-  startPollingForConfigurationStateChanges(callback?: () => void): void {
-    this.Poller.add('server/configurations', (data) => {
-      const configurations = data as Configuration[];
-      this.appService.updateConfigurations(configurations);
-
-      let ready = true;
-      for (const index in configurations) {
-        const config = configurations[index];
-        //When all configurations are in state STARTED or in state STOPPED with an exception, remove the poller
-        if (config.state != 'STARTED' && !(config.state == 'STOPPED' && config.exception != null)) {
-          ready = false;
-          break;
-        }
-      }
-      if (ready) {
-        //Remove poller once all states are STARTED
-        window.setTimeout(() => {
-          this.Poller.remove('server/configurations');
-          if (callback != null && typeof callback == 'function') callback();
-        });
-      }
     });
   }
 
@@ -311,7 +279,7 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   private getCompiledAdapterList(): string[] {
     const compiledAdapterList: string[] = [];
-    const adapters = ConfigurationFilter(this.adapters, this.selectedConfiguration, this.filter);
+    const adapters = ConfigurationFilter(this.adapters, this.selectedConfiguration, this.filter, this.searchText);
     for (const adapter of Object.values(adapters)) {
       const configuration = adapter.configuration;
       const adapterName = adapter.name;
