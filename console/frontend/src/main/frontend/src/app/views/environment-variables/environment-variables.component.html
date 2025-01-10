@@ -20,12 +20,9 @@
                 placeholder="Search ... (Ctrl + Shift + F)"
                 type="text"
               />
-              <i
-                *ngIf="searchFilter.length"
-                (click)="searchFilter = ''"
-                aria-hidden="true"
-                class="fa fa-times input-group-closeSearch"
-              ></i>
+              @if (searchFilter.length) {
+                <i (click)="searchFilter = ''" aria-hidden="true" class="fa fa-times input-group-closeSearch"></i>
+              }
               <span class="input-group-addon">
                 <i aria-hidden="true" class="fa fa-search"></i>
               </span>
@@ -44,13 +41,17 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let vari of configProperties | variablesFilter: this.searchFilter | orderby: 'key'">
-                  <td class="col-lg-3">{{ vari.key }}</td>
-                  <td class="col-lg-9">{{ vari.value }}</td>
-                </tr>
-                <tr *ngIf="(configProperties | variablesFilter: this.searchFilter).length === 0">
-                  <td colspan="2">No variables found matching '{{ searchFilter }}'</td>
-                </tr>
+                @for (vari of configProperties | variablesFilter: this.searchFilter | orderby: 'key'; track vari.key) {
+                  <tr>
+                    <td class="col-lg-3">{{ vari.key }}</td>
+                    <td class="col-lg-9">{{ vari.value }}</td>
+                  </tr>
+                }
+                @if ((configProperties | variablesFilter: this.searchFilter).length === 0) {
+                  <tr>
+                    <td colspan="2">No variables found matching '{{ searchFilter }}'</td>
+                  </tr>
+                }
               </tbody>
             </table>
           </div>
@@ -69,13 +70,20 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let vari of environmentProperties | variablesFilter: this.searchFilter | orderby: 'key'">
-                  <td class="col-lg-3">{{ vari.key }}</td>
-                  <td class="col-lg-9">{{ vari.value }}</td>
-                </tr>
-                <tr *ngIf="(environmentProperties | variablesFilter: this.searchFilter).length === 0">
-                  <td colspan="2">No variables found matching '{{ searchFilter }}'</td>
-                </tr>
+                @for (
+                  vari of environmentProperties | variablesFilter: this.searchFilter | orderby: 'key';
+                  track vari.key
+                ) {
+                  <tr>
+                    <td class="col-lg-3">{{ vari.key }}</td>
+                    <td class="col-lg-9">{{ vari.value }}</td>
+                  </tr>
+                }
+                @if ((environmentProperties | variablesFilter: this.searchFilter).length === 0) {
+                  <tr>
+                    <td colspan="2">No variables found matching '{{ searchFilter }}'</td>
+                  </tr>
+                }
               </tbody>
             </table>
           </div>
@@ -92,13 +100,17 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let vari of systemProperties | variablesFilter: this.searchFilter | orderby: 'key'">
-                  <td class="col-lg-3">{{ vari.key }}</td>
-                  <td class="col-lg-9">{{ vari.value }}</td>
-                </tr>
-                <tr *ngIf="(systemProperties | variablesFilter: this.searchFilter).length === 0">
-                  <td colspan="2">No variables found matching '{{ searchFilter }}'</td>
-                </tr>
+                @for (vari of systemProperties | variablesFilter: this.searchFilter | orderby: 'key'; track vari.key) {
+                  <tr>
+                    <td class="col-lg-3">{{ vari.key }}</td>
+                    <td class="col-lg-9">{{ vari.value }}</td>
+                  </tr>
+                }
+                @if ((systemProperties | variablesFilter: this.searchFilter).length === 0) {
+                  <tr>
+                    <td colspan="2">No variables found matching '{{ searchFilter }}'</td>
+                  </tr>
+                }
               </tbody>
             </table>
           </div>

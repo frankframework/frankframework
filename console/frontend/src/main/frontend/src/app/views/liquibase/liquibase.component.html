@@ -1,7 +1,9 @@
 <div class="wrapper wrapper-content animated fadeInRight">
-  <div class="alert alert-warning" role="alert" type="warning" *ngIf="error">
-    <span class="ng-binding ng-scope" [innerHTML]="error"></span>
-  </div>
+  @if (error) {
+    <div class="alert alert-warning" role="alert" type="warning">
+      <span class="ng-binding ng-scope" [innerHTML]="error"></span>
+    </div>
+  }
   <div class="row">
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
@@ -25,9 +27,11 @@
               <label class="col-sm-3 control-label label-height-30">Configuration</label>
               <div class="col-sm-9">
                 <select class="form-control" name="configuration" [(ngModel)]="form.configuration">
-                  <option *ngFor="let configuration of filteredConfigurations">
-                    {{ configuration.name }}
-                  </option>
+                  @for (configuration of filteredConfigurations; track configuration.name) {
+                    <option>
+                      {{ configuration.name }}
+                    </option>
+                  }
                 </select>
               </div>
             </div>
@@ -60,15 +64,17 @@
         </div>
       </div>
     </div>
-    <div class="col-lg-12" *ngIf="result">
-      <div class="ibox float-e-margins">
-        <div class="ibox-title">
-          <h4>Result</h4>
-        </div>
-        <div class="ibox-content">
-          <pre class="ng-binding" contenteditable="true">{{ result }}</pre>
+    @if (result) {
+      <div class="col-lg-12">
+        <div class="ibox float-e-margins">
+          <div class="ibox-title">
+            <h4>Result</h4>
+          </div>
+          <div class="ibox-content">
+            <pre class="ng-binding" contenteditable="true">{{ result }}</pre>
+          </div>
         </div>
       </div>
-    </div>
+    }
   </div>
 </div>

@@ -5,17 +5,16 @@ import { BaseChartDirective } from 'ng2-charts';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService } from 'src/app/app.service';
 import { DebugService } from 'src/app/services/debug.service';
-import { MiscService } from 'src/app/services/misc.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { AdapterstatisticsService, Statistics } from './adapterstatistics.service';
 import { LaddaModule } from 'angular2-ladda';
-import { NgFor, NgIf } from '@angular/common';
+
 import { FormatStatKeysPipe } from './format-stat-keys.pipe';
 import { FormatStatisticsPipe } from './format-statistics.pipe';
 
 @Component({
   selector: 'app-adapterstatistics',
-  imports: [LaddaModule, RouterLink, NgIf, NgFor, BaseChartDirective, FormatStatKeysPipe, FormatStatisticsPipe],
+  imports: [LaddaModule, RouterLink, BaseChartDirective, FormatStatKeysPipe, FormatStatisticsPipe],
   templateUrl: './adapterstatistics.component.html',
   styleUrls: ['./adapterstatistics.component.scss'],
 })
@@ -97,7 +96,6 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     private statisticsService: AdapterstatisticsService,
     private SweetAlert: SweetalertService,
     private Debug: DebugService,
-    private Misc: MiscService,
   ) {
     this.appConstants = this.appService.APP_CONSTANTS;
     const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {

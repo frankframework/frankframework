@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="ZgwZaak">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:any processContents="skip" minOccurs="0" maxOccurs="unbounded" />
+				<xs:element name="productenOfDiensten" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any processContents="skip" minOccurs="0" maxOccurs="unbounded" />
+				<xs:element name="relevanteAndereZaken" type="RelevanteAndereZaken" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any processContents="skip" minOccurs="0" maxOccurs="unbounded" />
+				<xs:element name="eigenschappen" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any processContents="skip" minOccurs="0" maxOccurs="unbounded" />
+				<xs:element name="kenmerken" type="Kenmerken" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any processContents="skip" minOccurs="0" maxOccurs="unbounded" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:complexType name="RelevanteAndereZaken">
+		<xs:sequence>
+			<xs:any processContents="skip" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Kenmerken">
+		<xs:sequence>
+			<xs:any processContents="skip" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

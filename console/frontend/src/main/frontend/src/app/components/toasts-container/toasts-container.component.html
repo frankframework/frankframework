@@ -1,18 +1,23 @@
-<ngb-toast
-  *ngFor="let toast of toastService.toasts"
-  [class]="getClassByType(toast.type)"
-  [class.clickable]="!!toast.clickHandler"
-  [autohide]="toast.timeout !== 0"
-  [delay]="toast.timeout || 10000"
-  (hidden)="toastService.remove(toast)"
-  (click)="toast.clickHandler ? toast.clickHandler(toast, $event) : null"
->
-  <div class="toast-header">
-    <strong class="title">{{ toast.title }}</strong>
-    <button class="toast-close" (click)="remove(toast, $event)">
-      <i class="fa fa-times" aria-hidden="true"></i>
-    </button>
-  </div>
-  <p *ngIf="toast.body">{{ toast.body }}</p>
-  <small *ngIf="toast.similarCount && toast.similarCount > 0">+{{ toast.similarCount }} {{ toast.type }}s</small>
-</ngb-toast>
+@for (toast of toastService.toasts; track toast) {
+  <ngb-toast
+    [class]="getClassByType(toast.type)"
+    [class.clickable]="!!toast.clickHandler"
+    [autohide]="toast.timeout !== 0"
+    [delay]="toast.timeout || 10000"
+    (hidden)="toastService.remove(toast)"
+    (click)="toast.clickHandler ? toast.clickHandler(toast, $event) : null"
+  >
+    <div class="toast-header">
+      <strong class="title">{{ toast.title }}</strong>
+      <button class="toast-close" (click)="remove(toast, $event)">
+        <i class="fa fa-times" aria-hidden="true"></i>
+      </button>
+    </div>
+    @if (toast.body) {
+      <p>{{ toast.body }}</p>
+    }
+    @if (toast.similarCount && toast.similarCount > 0) {
+      <small>+{{ toast.similarCount }} {{ toast.type }}s</small>
+    }
+  </ngb-toast>
+}
