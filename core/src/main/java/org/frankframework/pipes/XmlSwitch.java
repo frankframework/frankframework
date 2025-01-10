@@ -73,21 +73,20 @@ public class XmlSwitch extends AbstractPipe {
 	public void configure() throws ConfigurationException {
 		parameterNamesMustBeUnique = true;
 		super.configure();
-		if (getNotFoundForwardName() != null) {
-			if (findForward(getNotFoundForwardName()) == null) {
-				ConfigurationWarnings.add(this, log, "has a notFoundForwardName attribute. However, this forward [" + getNotFoundForwardName() + "] is not configured.");
-			}
+		if (getNotFoundForwardName() != null && findForward(getNotFoundForwardName()) == null) {
+			ConfigurationWarnings.add(this, log, "has a notFoundForwardName attribute. However, this forward [" + getNotFoundForwardName() + "] is not configured.");
 		}
-		if (getEmptyForwardName() != null) {
-			if (findForward(getEmptyForwardName()) == null) {
-				ConfigurationWarnings.add(this, log, "has a emptyForwardName attribute. However, this forward [" + getEmptyForwardName() + "] is not configured.");
-			}
+
+		if (getEmptyForwardName() != null && findForward(getEmptyForwardName()) == null) {
+			ConfigurationWarnings.add(this, log, "has a emptyForwardName attribute. However, this forward [" + getEmptyForwardName() + "] is not configured.");
 		}
+
 		if (StringUtils.isNotEmpty(getXpathExpression()) || StringUtils.isNotEmpty(getStyleSheetName())) {
 			transformerPool = TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), OutputType.TEXT, false, getParameterList(), getXsltVersion());
 		} else {
 			transformerPool = XmlUtils.getGetRootNodeNameTransformerPool();
 		}
+
 		registerEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
 		registerEvent(XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
 	}
@@ -138,6 +137,7 @@ public class XmlSwitch extends AbstractPipe {
 			}
 		} else {
 			try {
+				// Use the message as forward if none of the cases above apply
 				forward = message.asString();
 			} catch (IOException e) {
 				throw new PipeRunException(this, "Error reading message", e);
