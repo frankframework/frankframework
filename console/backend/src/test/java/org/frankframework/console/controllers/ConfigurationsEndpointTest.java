@@ -110,6 +110,25 @@ public class ConfigurationsEndpointTest extends FrankApiTestBase {
 	}
 
 	@Test
+	public void stopConfiguration() throws Exception {
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> msg = i.getArgument(0);
+			MessageHeaders headers = msg.getHeaders();
+
+			// assert that the parameters actually get sent to the outputGateway
+			assertEquals(Action.STOPADAPTER.name(), headers.get("meta-action"));
+
+			return new StringMessage(msg.getPayload(), MediaType.APPLICATION_JSON);
+		});
+
+		mockMvc.perform(MockMvcRequestBuilders.put("/configurations/name")
+						.content("{\"action\": \"stop\"}")
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.status().isAccepted())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+	}
+
+	@Test
 	public void fullReloadNoValidAction() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.put("/configurations")
 						.content("{\"action\": \"abc\"}")
@@ -131,6 +150,24 @@ public class ConfigurationsEndpointTest extends FrankApiTestBase {
 
 		mockMvc.perform(MockMvcRequestBuilders.put("/configurations")
 						.content("{\"action\": \"reload\"}")
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.status().isAccepted());
+	}
+
+	@Test
+	public void startConfigurations() throws Exception {
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
+			Message<String> msg = i.getArgument(0);
+			MessageHeaders headers = msg.getHeaders();
+
+			// assert that the parameters actually get sent to the outputGateway
+			assertEquals(Action.STARTADAPTER.name(), headers.get("meta-action"));
+
+			return new StringMessage(msg.getPayload(), MediaType.APPLICATION_JSON);
+		});
+
+		mockMvc.perform(MockMvcRequestBuilders.put("/configurations")
+						.content("{\"action\": \"start\"}")
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isAccepted());
 	}

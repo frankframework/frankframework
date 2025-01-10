@@ -18,6 +18,7 @@ package org.frankframework.console.controllers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Map;
 
 import jakarta.annotation.security.PermitAll;
@@ -82,19 +83,37 @@ public class ConfigurationsEndpoint {
 
 	@RolesAllowed({"IbisAdmin", "IbisTester"})
 	@Relation("application")
-	@Description("reload the entire application")
+	@Description("update the entire application using an action")
 	@PutMapping(value = "/configurations", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> fullReload(@RequestBody Map<String, Object> json) throws ApiException {
-		Object value = json.get("action");
+	public ResponseEntity<?> fullAction(@RequestBody Map<String, Object> json) throws ApiException {
+		ArrayList<String> configurations = new ArrayList<>();
 
-		if ("reload".equals(value)) {
-			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
-			builder.addHeader("action", Action.FULLRELOAD.name());
-			frankApiService.callAsyncGateway(builder);
-			return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");
+		String value = RequestUtils.getValue(json, "action");
+		Action action = getActionOrThrow(value, true);
+
+		Object configurationsList = json.get("configurations");
+		if (configurationsList != null) {
+			try {
+				configurations.addAll((ArrayList<String>) configurationsList);
+			} catch (Exception e) {
+				throw new ApiException(e);
+			}
 		}
 
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
+		builder.addHeader("action", action.name());
+		if (configurations.isEmpty()) {
+			builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, BusMessageUtils.ALL_CONFIGS_KEY);
+			frankApiService.callAsyncGateway(builder);
+		} else {
+			for (String configurationName : configurations) {
+				builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
+				builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, BusMessageUtils.ALL_CONFIGS_KEY);
+				frankApiService.callAsyncGateway(builder);
+			}
+		}
+
+		return ResponseEntity.status(HttpStatus.ACCEPTED).build();
 	}
 
 	@AllowAllIbisUserRoles
@@ -135,20 +154,17 @@ public class ConfigurationsEndpoint {
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("configuration")
-	@Description("reload a specific configuration")
+	@Description("update a specific configuration using an action")
 	@PutMapping(value = "/configurations/{configuration}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> reloadConfiguration(@PathVariable("configuration") String configurationName, @RequestBody Map<String, Object> json) throws ApiException {
-		Object value = json.get("action");
+	public ResponseEntity<?> updateConfiguration(@PathVariable("configuration") String configurationName, @RequestBody Map<String, Object> json) throws ApiException {
+		String value = RequestUtils.getValue(json, "action");
+		Action action = getActionOrThrow(value, false);
 
-		if ("reload".equals(value)) {
-			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
-			builder.addHeader("action", Action.RELOAD.name());
-			builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-			frankApiService.callAsyncGateway(builder);
-			return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");
-		}
-
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
+		builder.addHeader("action", action.name());
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
+		frankApiService.callAsyncGateway(builder);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");
 	}
 
 	@AllowAllIbisUserRoles
@@ -273,5 +289,26 @@ public class ConfigurationsEndpoint {
 			boolean activate_config,
 			boolean automatic_reload,
 			MultipartFile file) {
+	}
+
+	private Action getActionOrThrow(String value, boolean fullAction) {
+		if (StringUtils.isNotEmpty(value)) {
+			switch (value) {
+				case "stop" -> {
+					return Action.STOPADAPTER;
+				}
+				case "start" -> {
+					return Action.STARTADAPTER;
+				}
+				case "reload" -> {
+					return Action.RELOAD;
+				}
+				case "fullreload" -> {
+					if(fullAction) return Action.FULLRELOAD;
+				}
+			}
+		}
+
+		throw new ApiException("no or unknown action provided", HttpStatus.BAD_REQUEST);
 	}
 }
