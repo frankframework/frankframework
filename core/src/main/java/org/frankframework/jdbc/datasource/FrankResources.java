@@ -92,11 +92,13 @@ public class FrankResources {
 			throw new IllegalStateException("field url is required");
 		}
 
+		final String prefix = name.substring(0, name.indexOf('/'));
+
 		Properties properties = getConnectionProperties(resource, environment);
 		String url = StringResolver.substVars(resource.getUrl(), APP_CONSTANTS);
 		String type = StringResolver.substVars(resource.getType(), APP_CONSTANTS);
 
-		if (lookupClass.isAssignableFrom(MqttClient.class)) {
+		if (prefix.equals("mqtt")) {
 			return (O) loadMqttClient(url, resource.authalias, resource.username, resource.password, properties);
 		}
 
