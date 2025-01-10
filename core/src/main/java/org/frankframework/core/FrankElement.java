@@ -23,7 +23,8 @@ import org.frankframework.statistics.HasApplicationContext;
  * Digested FrankElements such as an {@link IPipe}/{@link ISender} or {@link IListener}.
  * These elements contain a bunch of getters, but not necessarily setters.
  * 
- * NOTE: The {@link ApplicationContextAware} interface does not belong here.
+ * NOTE: The {@link ApplicationContextAware} interface is here for ease of use. Ideally implementers should declare it them selves,
+ * but since it's almost always required. For now, this keeps things backwards compatible.
  */
 public interface FrankElement extends HasApplicationContext, HasName, ApplicationContextAware {
 
