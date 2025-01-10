@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -32,10 +31,7 @@ import static org.mockito.Mockito.spy;
 
 import java.util.concurrent.TimeUnit;
 
-import org.frankframework.testutil.TestAssertions;
-
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -67,11 +63,6 @@ import org.frankframework.util.RunState;
 public class TestReceiverOnError {
 	private static final TestConfiguration configuration = TransactionManagerType.DATASOURCE.create(false);
 	private String adapterName;
-
-	@BeforeAll
-	public static void setup() {
-		assumeFalse(TestAssertions.isTestRunningOnARM());
-	}
 
 	@BeforeEach
 	public void beforeEach(TestInfo testInfo) {
