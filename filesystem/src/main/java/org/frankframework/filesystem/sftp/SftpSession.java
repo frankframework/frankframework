@@ -52,8 +52,6 @@ public class SftpSession implements IConfigurable {
 		HTTP, SOCKS4, SOCKS5
 	}
 
-	private @Getter String name;
-
 	// configuration parameters, global for all types
 	private @Getter String host;
 	private @Getter int port = 21;
@@ -326,10 +324,5 @@ public class SftpSession implements IConfigurable {
 	 */
 	public void setStrictHostKeyChecking(boolean b) {
 		strictHostKeyChecking = b;
-	}
-
-	@Override
-	public void setName(String name) {
-		this.name = name;
 	}
 }

@@ -33,7 +33,7 @@ import org.frankframework.util.Locker;
  * @ff.defaultElement org.frankframework.pipes.SenderPipe
  */
 @FrankDocGroup(FrankDocGroupValue.PIPE)
-public interface IPipe extends IConfigurable, IForwardTarget, FrankElement {
+public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, NameAware {
 
 	String LONG_DURATION_MONITORING_EVENT = "Pipe Long Processing Duration";
 	String PIPE_EXCEPTION_MONITORING_EVENT = "Pipe Exception";

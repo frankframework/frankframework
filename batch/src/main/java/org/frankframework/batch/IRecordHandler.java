@@ -17,11 +17,14 @@ package org.frankframework.batch;
 
 import java.util.List;
 
+import org.frankframework.core.FrankElement;
 import org.frankframework.core.IConfigurable;
+import org.frankframework.core.NameAware;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.statistics.HasApplicationContext;
 
 /**
  * Interface for transforming a record (= structured ASCII line).
@@ -29,7 +32,7 @@ import org.frankframework.doc.FrankDocGroupValue;
  * @author John Dekker
  */
 @FrankDocGroup(FrankDocGroupValue.BATCH)
-public interface IRecordHandler extends IConfigurable {
+public interface IRecordHandler extends IConfigurable, FrankElement, NameAware {
 
 	public void open() throws SenderException;
 	public void close() throws SenderException;

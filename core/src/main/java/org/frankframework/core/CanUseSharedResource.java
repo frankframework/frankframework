@@ -19,7 +19,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 
-public interface CanUseSharedResource<T> extends IConfigurable, ConfigurableLifecycle {
+public interface CanUseSharedResource<T> extends FrankElement, ConfigurableLifecycle {
 
 	void setSharedResourceRef(String sharedResourceName);
 

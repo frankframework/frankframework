@@ -33,6 +33,7 @@ import org.springframework.context.ApplicationContext;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
+import org.frankframework.core.NameAware;
 import org.frankframework.jms.JmsRealm;
 import org.frankframework.statistics.HasApplicationContext;
 import org.frankframework.util.AppConstants;
@@ -42,11 +43,12 @@ import org.frankframework.util.LogUtil;
 
 /**
  * Provides all JNDI functions and is meant to act as a base class.
+ * TODO: Remove this base class!
  *
  * <br/>
  * @author Johan Verrips IOS
  */
-public class JndiBase implements IConfigurable, HasApplicationContext {
+public class JndiBase implements IConfigurable, HasApplicationContext, NameAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;

@@ -18,7 +18,9 @@ package org.frankframework.batch;
 import java.util.List;
 import java.util.Map;
 
+import org.frankframework.core.FrankElement;
 import org.frankframework.core.IConfigurable;
+import org.frankframework.core.NameAware;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.FrankDocGroup;
@@ -31,7 +33,7 @@ import org.frankframework.pipes.AbstractPipe;
  * @author  John Dekker
  */
 @FrankDocGroup(FrankDocGroupValue.BATCH)
-public interface IResultHandler extends IConfigurable {
+public interface IResultHandler extends IConfigurable, FrankElement, NameAware {
 
 	public void setPipe(AbstractPipe pipe);
 	public void open() throws SenderException;

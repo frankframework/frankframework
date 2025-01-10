@@ -16,12 +16,18 @@
 package org.frankframework.core;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.lifecycle.ConfigurableLifecycle;
 
 /**
- * TODO remove the NameAware and FrankElement interfaces.
- * These have nothing to do with configuring and are preventing this interface from being set on the PipeLine.
+ * To be replaced with {@link ConfigurableLifecycle}.
  */
-public interface IConfigurable extends NameAware, FrankElement {
+public interface IConfigurable {
 
+	/**
+	 * Configure this component.
+	 * <p>In the case of a container, this will propagate the start signal to all
+	 * components that apply.</p>
+	 * @throws ConfigurationException in case it was not able to configure the component.
+	 */
 	void configure() throws ConfigurationException;
 }

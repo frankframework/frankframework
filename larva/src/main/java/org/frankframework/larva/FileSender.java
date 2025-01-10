@@ -31,6 +31,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.FrankElement;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
@@ -43,7 +44,7 @@ import org.frankframework.util.Dir2Xml;
  *
  * @author Jaco de Groot
  */
-public class FileSender implements IConfigurable {
+public class FileSender implements IConfigurable, FrankElement {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter String name;

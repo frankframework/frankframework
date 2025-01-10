@@ -24,7 +24,7 @@ import org.frankframework.util.RunState;
  * @author Gerrit van Brakel
  * @since 4.0
  */
-public interface IManagable extends IConfigurable, ConfigurableLifecycle {
+public interface IManagable extends ConfigurableLifecycle, HasName {
 	/**
 	 * returns the runstate of the object. Possible values are defined by
 	 * {@link RunState}.
