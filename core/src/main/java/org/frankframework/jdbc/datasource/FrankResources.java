@@ -30,6 +30,14 @@ import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
+
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import org.frankframework.util.AppConstants;
@@ -42,8 +50,16 @@ public class FrankResources {
 
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
+	private static final String MQTT_CLEAN_SESSION = "cleanSession";
+	private static final String MQTT_AUTOMATIC_RECONNECT = "automaticReconnect";
+	private static final String MQTT_TIMEOUT = "timeout";
+	private static final String MQTT_KEEP_ALIVE_INTERVAL = "keepAliveInterval";
+	private static final String MQTT_PERSISTENCE_DIRECTORY = "persistenceDirectory";
+	private static final String MQTT_CLIENT_ID = "clientId";
+
 	private @Setter List<Resource> jdbc;
 	private @Setter List<Resource> jms;
+	private @Setter List<Resource> mqtt;
 	private @Setter List<Resource> other;
 
 	@Getter @Setter
@@ -65,7 +81,7 @@ public class FrankResources {
 	@SuppressWarnings("unchecked")
 	public @Nullable <O> O lookup(@Nonnull String name, @Nullable Properties environment, @Nonnull Class<O> lookupClass) throws ClassNotFoundException {
 		if(name.indexOf('/') == -1) {
-			throw new IllegalStateException("no resource prefix found, expected one of [jdbc/jms/mongodb]");
+			throw new IllegalStateException("no resource prefix found, expected one of [jdbc/jms/mongodb/mqtt]");
 		}
 
 		Resource resource = findResource(name);
@@ -79,11 +95,17 @@ public class FrankResources {
 		Properties properties = getConnectionProperties(resource, environment);
 		String url = StringResolver.substVars(resource.getUrl(), APP_CONSTANTS);
 		String type = StringResolver.substVars(resource.getType(), APP_CONSTANTS);
+
+		if (lookupClass.isAssignableFrom(MqttClient.class)) {
+			return (O) loadMqttClient(url, resource.authalias, resource.username, resource.password, properties);
+		}
+
 		Class<?> clazz = ClassUtils.loadClass(type);
 
 		if(lookupClass.isAssignableFrom(DataSource.class) && Driver.class.isAssignableFrom(clazz)) { // It's also possible to use the native drivers instead of the DataSources directly.
 			return (O) loadDataSourceThroughDriver(clazz, url, properties);
 		}
+
 		if(lookupClass.isAssignableFrom(clazz)) {
 			return (O) createInstance(clazz, url, properties);
 		}
@@ -100,6 +122,44 @@ public class FrankResources {
 		return dmds;
 	}
 
+	private MqttClient loadMqttClient(String url, String authAlias, String username, String password, Properties properties) {
+		MqttConnectOptions connectOptions = new MqttConnectOptions();
+		connectOptions.setCleanSession(Boolean.parseBoolean(properties.getProperty(MQTT_CLEAN_SESSION, "true")));
+		connectOptions.setAutomaticReconnect(Boolean.parseBoolean(properties.getProperty(MQTT_AUTOMATIC_RECONNECT, "true")));
+
+		if (properties.containsKey(MQTT_TIMEOUT)) {
+			connectOptions.setConnectionTimeout(Integer.parseInt(properties.getProperty(MQTT_TIMEOUT)));
+		}
+		if (properties.containsKey(MQTT_KEEP_ALIVE_INTERVAL)) {
+			connectOptions.setKeepAliveInterval(Integer.parseInt(properties.getProperty(MQTT_KEEP_ALIVE_INTERVAL)));
+		}
+		connectOptions.setMqttVersion(MqttConnectOptions.MQTT_VERSION_DEFAULT); //Default: 0, V3.1: 3, V3.1.1: 4
+
+		if(!StringUtils.isEmpty(authAlias) || (!StringUtils.isEmpty(username) && !StringUtils.isEmpty(password))) {
+			CredentialFactory credentialFactory = new CredentialFactory(authAlias, username, password);
+			connectOptions.setUserName(credentialFactory.getUsername());
+			connectOptions.setPassword(credentialFactory.getPassword().toCharArray());
+		}
+
+		try {
+			MqttClient client = new MqttClient(url, properties.getProperty(MQTT_CLIENT_ID), getMqttDataStore(properties.getProperty(MQTT_PERSISTENCE_DIRECTORY)));
+			client.connect(connectOptions);
+
+			return client;
+		} catch (MqttException e) {
+			// TODO
+			throw new RuntimeException(e);
+		}
+	}
+
+	private MqttClientPersistence getMqttDataStore(String persistenceDirectory) {
+		if (StringUtils.isEmpty(persistenceDirectory)) {
+			return new MemoryPersistence();
+		}
+
+		return new MqttDefaultFilePersistence(persistenceDirectory);
+	}
+
 	private @Nullable Resource findResource(@Nonnull String name) {
 		int slashPos = name.indexOf('/');
 		String prefix = name.substring(0, slashPos);
@@ -108,6 +168,7 @@ public class FrankResources {
 		return switch (prefix) {
 			case "jdbc" -> findResource(jdbc, resourceName);
 			case "jms" -> findResource(jms, resourceName);
+			case "mqtt" -> findResource(mqtt, resourceName);
 			case "mongodb" -> findResource(other, resourceName);
 			default -> throw new IllegalArgumentException("unexpected lookup type: " + prefix);
 		};

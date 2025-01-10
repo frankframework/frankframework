@@ -30,7 +30,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
 import org.frankframework.core.IbisExceptionListener;
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.lifecycle.LifecycleException;
@@ -44,6 +43,8 @@ import org.frankframework.util.RunState;
  * MQTT listener which will connect to a broker and subscribe to a topic.
  *
  * Links to <a href="https://www.eclipse.org/paho/files/javadoc" target="_blank">https://www.eclipse.org/paho/files/javadoc</a> are opened in a new window/tab because the response from eclipse.org contains header X-Frame-Options:SAMEORIGIN which will make the browser refuse to open the link inside this frame.
+ *
+ * {@inheritDoc}
  *
  * @author Jaco de Groot
  * @author Niels Meijer
@@ -95,12 +96,14 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	@Override
 	public void start() {
 		try {
-			super.start();
 			client.subscribe(getTopic(), getQos());
 		} catch (Exception e) {
 			throw new LifecycleException("Could not subscribe to topic", e);
 		}
 	}
+
+	@Override
+	public void stop() {}
 
 	@Override
 	public void connectComplete(boolean reconnect, String brokerUrl) {
@@ -147,7 +150,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	}
 
 	@Override
-	public RawMessageWrapper<MqttMessage> wrapRawMessage(MqttMessage message, PipeLineSession session) throws ListenerException {
+	public RawMessageWrapper<MqttMessage> wrapRawMessage(MqttMessage message, PipeLineSession session) {
 		return new RawMessageWrapper<>(message, String.valueOf(message.getId()), null);
 	}
 

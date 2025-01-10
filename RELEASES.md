@@ -4,6 +4,10 @@ Frank!Framework Release Notes
 [Tags](https://github.com/frankframework/frankframework/releases)
 [JavaDocs](https://javadoc.frankframework.org/)
 
+Upcoming (9.1)
+--------------
+- MqttSender and MqttListener now require a resource to be registered in resources.yml. This allows multiple senders/listeners to use the same connection at the same time.
+
 Upcoming (9.0)
 --------------
 [Commits](https://github.com/frankframework/frankframework/compare/8.3-release...HEAD)
