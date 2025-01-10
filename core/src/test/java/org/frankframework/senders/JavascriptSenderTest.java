@@ -3,10 +3,14 @@ package org.frankframework.senders;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.util.stream.Stream;
 
+import org.frankframework.testutil.TestAssertions;
+
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -26,6 +30,11 @@ import org.frankframework.testutil.ParameterBuilder;
 class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
 	private Message dummyInput;
+
+	@BeforeAll
+	public static void setup() {
+		assumeFalse(TestAssertions.isTestRunningOnARMMacOS());
+	}
 
 	@Override
 	public JavascriptSender createSender() {

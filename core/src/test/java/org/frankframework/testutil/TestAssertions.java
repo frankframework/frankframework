@@ -153,6 +153,20 @@ public class TestAssertions extends org.junit.jupiter.api.Assertions {
 		return StringUtils.isNotEmpty(System.getProperty("CI")) || StringUtils.isNotEmpty(System.getenv("CI")) || isTestRunningOnGitHub();
 	}
 
+	public static boolean isTestRunningOnARMMacOS() {
+		String osName = System.getProperty("os.name").toLowerCase();
+		String osArch = System.getProperty("os.arch").toLowerCase();
+
+		boolean isMac = osName.contains("mac");
+		boolean isArm = osArch.contains("aarch64") || osArch.contains("arm");
+
+		if (isMac && isArm) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	/**
 	 * When the JUnitTest is run via SureFire it uses the 'surefirebooter.jar'.
 	 * When run directly in an IDE, the IDE usually provides a 'Test Runner'.
