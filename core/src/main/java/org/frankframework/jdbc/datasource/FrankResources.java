@@ -29,6 +29,8 @@ import jakarta.annotation.Nullable;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
@@ -124,6 +126,7 @@ public class FrankResources {
 		return dmds;
 	}
 
+	@SneakyThrows
 	private MqttClient loadMqttClient(String url, String authAlias, String username, String password, Properties properties) {
 		MqttConnectOptions connectOptions = new MqttConnectOptions();
 		connectOptions.setCleanSession(Boolean.parseBoolean(properties.getProperty(MQTT_CLEAN_SESSION, "true")));
@@ -143,15 +146,10 @@ public class FrankResources {
 			connectOptions.setPassword(credentialFactory.getPassword().toCharArray());
 		}
 
-		try {
-			MqttClient client = new MqttClient(url, properties.getProperty(MQTT_CLIENT_ID), getMqttDataStore(properties.getProperty(MQTT_PERSISTENCE_DIRECTORY)));
-			client.connect(connectOptions);
+		MqttClient client = new MqttClient(url, properties.getProperty(MQTT_CLIENT_ID), getMqttDataStore(properties.getProperty(MQTT_PERSISTENCE_DIRECTORY)));
+		client.connect(connectOptions);
 
-			return client;
-		} catch (MqttException e) {
-			// TODO
-			throw new RuntimeException(e);
-		}
+		return client;
 	}
 
 	private MqttClientPersistence getMqttDataStore(String persistenceDirectory) {
