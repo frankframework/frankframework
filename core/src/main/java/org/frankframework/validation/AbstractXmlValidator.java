@@ -29,7 +29,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSModel;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -41,7 +40,6 @@ import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.FrankElement;
-import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.statistics.HasApplicationContext;
@@ -60,7 +58,7 @@ import org.frankframework.util.XmlUtils;
  * @author Johan Verrips IOS
  * @author Jaco de Groot
  */
-public abstract class AbstractXmlValidator implements IScopeProvider, ApplicationContextAware, FrankElement {
+public abstract class AbstractXmlValidator implements FrankElement {
 	protected static Logger log = LogUtil.getLogger(AbstractXmlValidator.class);
 
 	public enum ValidationResult {

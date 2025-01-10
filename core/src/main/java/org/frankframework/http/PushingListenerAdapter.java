@@ -38,7 +38,6 @@ import org.frankframework.doc.Protected;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ServiceClient;
-import org.frankframework.statistics.HasApplicationContext;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 
@@ -49,7 +48,7 @@ import org.frankframework.util.LogUtil;
  * @author  Gerrit van Brakel
  * @since   4.12
  */
-public class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient, HasApplicationContext {
+public class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter String name;

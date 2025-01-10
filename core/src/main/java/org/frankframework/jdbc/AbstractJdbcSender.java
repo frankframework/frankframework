@@ -37,7 +37,6 @@ import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.statistics.FrankMeterType;
-import org.frankframework.statistics.HasApplicationContext;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
@@ -48,7 +47,7 @@ import org.frankframework.util.JdbcUtil;
  * @author  Gerrit van Brakel
  * @since 	4.2.h
  */
-public abstract class AbstractJdbcSender<H> extends JdbcFacade implements IBlockEnabledSender<H>, HasApplicationContext {
+public abstract class AbstractJdbcSender<H> extends JdbcFacade implements IBlockEnabledSender<H> {
 	private DistributionSummary connectionStatistics;
 	private @Setter MetricsInitializer configurationMetrics;
 

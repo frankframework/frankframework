@@ -34,7 +34,6 @@ import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
@@ -102,7 +101,7 @@ import org.frankframework.util.StringUtil;
  */
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, ApplicationContextAware, FrankElement, ConfigurationAware {
+public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, FrankElement, ConfigurationAware {
 	private @Getter ApplicationContext applicationContext;
 	private @Getter @Setter Configuration configuration;
 	private @Getter final ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();

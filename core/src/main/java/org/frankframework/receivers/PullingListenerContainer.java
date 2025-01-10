@@ -184,14 +184,14 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 				if(receiver.getRunState()!=RunState.STOPPING && receiver.getRunState()!=RunState.EXCEPTION_STOPPING && receiver.getRunState()!=RunState.STOPPED) { // Prevent circular reference in Receiver. IPullingListeners stop as their threads finish
 					receiver.stop();
 				}
-				receiver.closeAllResources(); //We have to call closeAllResources as the receiver won't do this for IPullingListeners
+				receiver.closeAllResources(); // We have to call closeAllResources as the receiver won't do this for IPullingListeners
 
 				ThreadContext.removeStack(); // potentially redundant, makes sure to remove the NDC/MDC
 			}
 		}
 	}
 
-	private class ListenTask implements SchedulingAwareRunnable, NameAware {
+	private class ListenTask implements SchedulingAwareRunnable, HasName, NameAware {
 
 		private @Getter @Setter String name;
 		private IHasProcessState<M> inProcessStateManager=null;

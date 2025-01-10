@@ -74,7 +74,6 @@ public class LocalFileSystemSenderTest extends WritableFileSystemSenderTest<Loca
 		assertFalse(dest.exists());
 
 		LocalFileSystemSender sender = createBeanInAdapter(LocalFileSystemSender.class);
-		autowireBeanByNameInAdapter(sender);
 		sender.setAction(FileSystemAction.RENAME);
 		sender.addParameter(new Parameter("filename", src.getPath()));
 
