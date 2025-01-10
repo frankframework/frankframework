@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ZgwZaak>
+	<betalingsindicatie>nog_niet</betalingsindicatie>
+	<verlenging>
+		<reden>Overig</reden>
+		<duur>P99D</duur>
+	</verlenging>
+	<kenmerken>
+		<kenmerk>273846</kenmerk>
+		<bron>GWS4all</bron>
+	</kenmerken>
+	<archiefnominatie>vernietigen</archiefnominatie>
+</ZgwZaak>
