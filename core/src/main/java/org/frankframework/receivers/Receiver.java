@@ -307,7 +307,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	private int currentBackoffDelay =1;
 
 	private boolean suspensionMessagePending=false;
-	private boolean configurationSucceeded = false;
+	private @Getter boolean isConfigured = false;
 
 	protected final RunStateManager runState = new RunStateManager();
 	private PullingListenerContainer<M> listenerContainer;
@@ -367,11 +367,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		private int receiveCount;
 		private Instant receiveDate;
 		private String comments;
-	}
-
-	@Override
-	public boolean configurationSucceeded() {
-		return configurationSucceeded;
 	}
 
 	private void showProcessingContext(String messageId, String correlationId, PipeLineSession session) {
@@ -555,7 +550,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		configurationSucceeded = false;
+		isConfigured = false;
 		try {
 			super.configure();
 			if (StringUtils.isEmpty(getName())) {
@@ -734,7 +729,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			adapter.getMessageKeeper().add(getLogPrefix()+"initialization complete");
 		}
 		throwEvent(RCV_CONFIGURED_MONITOR_EVENT);
-		configurationSucceeded = true;
+		isConfigured = true;
 
 		if(isInRunState(RunState.ERROR)) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
 			runState.setRunState(RunState.STOPPED);
@@ -765,7 +760,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				}
 			}
 			// See also Adapter.startRunning()
-			if (!configurationSucceeded) {
+			if (!isConfigured) {
 				log.error("configuration of receiver [{}] did not succeed, therefore starting the receiver is not possible", getName());
 				warn("configuration did not succeed. Starting the receiver ["+getName()+"] is not possible");
 				runState.setRunState(RunState.ERROR);
@@ -783,7 +778,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						&& currentRunState!=RunState.EXCEPTION_STOPPING
 						&& currentRunState!=RunState.EXCEPTION_STARTING
 						&& currentRunState!=RunState.ERROR
-						&& configurationSucceeded()) { // Only start the receiver if it is properly configured, and is not already starting or still stopping
+						&& isConfigured()) { // Only start the receiver if it is properly configured, and is not already starting or still stopping
 					if (currentRunState==RunState.STARTING || currentRunState==RunState.STARTED) {
 						log.info("already in state [{}]", currentRunState);
 					} else {

@@ -301,8 +301,8 @@ public class OpenApiTestBase extends Mockito {
 			adapter.addReceiver(receiver);
 			adapter.configure();
 
-			assertTrue(adapter.configurationSucceeded(), "adapter failed to configure!?");
-			assertTrue(receiver.configurationSucceeded(), "receiver failed to configure!?");
+			assertTrue(adapter.isConfigured(), "adapter failed to configure!?");
+			assertTrue(receiver.isConfigured(), "receiver failed to configure!?");
 
 			if (start) {
 				start(adapter);

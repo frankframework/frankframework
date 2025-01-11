@@ -151,7 +151,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	private IErrorMessageFormatter errorMessageFormatter;
 
 	private final RunStateManager runState = new RunStateManager();
-	private @Getter boolean configurationSucceeded = false;
+	private @Getter boolean isConfigured = false;
 	private MessageKeeper messageKeeper; // Instantiated in configure()
 	private final boolean msgLogHumanReadable = appConstants.getBoolean("msg.log.humanReadable", false);
 
@@ -232,7 +232,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		if (!isActive()) {
 			throw new LifecycleException("context is not active");
 		}
-		if (configurationSucceeded) {
+		if (isConfigured) {
 			throw new LifecycleException("already configured");
 		}
 		log.debug("configuring adapter [{}]", name);
@@ -282,7 +282,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			runState.setRunState(RunState.STOPPED);
 		}
 
-		configurationSucceeded = true; // Only if there are no errors mark the adapter as `configurationSucceeded`!
+		isConfigured = true; // Only if there are no errors mark the adapter as `isConfigured`!
 	}
 
 	@Nonnull
@@ -300,7 +300,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	}
 
 	public void configureReceiver(Receiver<?> receiver) throws ConfigurationException {
-		if(receiver.configurationSucceeded()) { // It's possible when an adapter has multiple receivers that the last one fails. The others have already been configured the 2nd time the adapter tries to configure it self
+		if(receiver.isConfigured()) { // It's possible when an adapter has multiple receivers that the last one fails. The others have already been configured the 2nd time the adapter tries to configure it self
 			log.debug("already configured receiver, skipping");
 		}
 
@@ -316,7 +316,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	}
 
 	public boolean configurationSucceeded() {
-		return configurationSucceeded;
+		return isConfigured;
 	}
 
 	/**
@@ -762,7 +762,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 				Thread.currentThread().setName("starting Adapter "+getName());
 				try {
 					// See also Receiver.startRunning()
-					if (!configurationSucceeded) {
+					if (!isConfigured) {
 						log.error("configuration of adapter [{}] did not succeed, therefore starting the adapter is not possible", name);
 						warn("configuration did not succeed. Starting the adapter ["+getName()+"] is not possible");
 						runState.setRunState(RunState.ERROR);
@@ -1017,7 +1017,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	@Override
 	public boolean isAutoStartup() {
-		if (!isConfigurationSucceeded()) return false; // Don't startup until configured
+		if (!isConfigured()) return false; // Don't startup until configured
 
 		if (autoStart == null && getClassLoader() != null) {
 			autoStart = AppConstants.getInstance(getClassLoader()).getBoolean("adapters.autoStart", true);

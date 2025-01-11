@@ -82,7 +82,7 @@ public class RecoverAdaptersJob extends AbstractJobDef {
 
 						RunState receiverRunState = receiver.getRunState();
 						// Only try to (re-)start receivers in a running adapter. Receiver configure is done in Adapter.configure
-						if (adapterRunState==RunState.STARTED && (receiverRunState==RunState.ERROR || receiverRunState==RunState.EXCEPTION_STARTING) && receiver.configurationSucceeded()) {
+						if (adapterRunState==RunState.STARTED && (receiverRunState==RunState.ERROR || receiverRunState==RunState.EXCEPTION_STARTING) && receiver.isConfigured()) {
 							log.debug("trying to recover receiver [{}] of adapter [{}]", receiver::getName, adapter::getName);
 
 							receiver.start();
