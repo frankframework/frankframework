@@ -108,7 +108,7 @@ import org.frankframework.util.flow.SpringContextFlowDiagramProvider;
 @Log4j2
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class Adapter extends GenericApplicationContext implements IManagable, FrankElement, InitializingBean, ApplicationContextAware, NamedBean, NameAware {
+public class Adapter extends GenericApplicationContext implements ManagableLifecycle, FrankElement, InitializingBean, ApplicationContextAware, NamedBean, NameAware {
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
 	public static final String PROCESS_STATE_OK = "OK";

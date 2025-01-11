@@ -72,7 +72,7 @@ import org.frankframework.core.ICorrelatedSender;
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.IKnowsDeliveryCount;
 import org.frankframework.core.IListener;
-import org.frankframework.core.IManagable;
+import org.frankframework.core.ManagableLifecycle;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowser.HideMethod;
 import org.frankframework.core.IMessageHandler;
@@ -207,7 +207,7 @@ import org.frankframework.util.XmlUtils;
  */
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class Receiver<M> extends TransactionAttributes implements IManagable, IMessageHandler<M>, IProvidesMessageBrowsers<M>, EventThrowing, IbisExceptionListener, HasSender, FrankElement, IThreadCountControllable, NameAware {
+public class Receiver<M> extends TransactionAttributes implements ManagableLifecycle, IMessageHandler<M>, IProvidesMessageBrowsers<M>, EventThrowing, IbisExceptionListener, HasSender, FrankElement, IThreadCountControllable, NameAware {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -369,6 +369,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		private String comments;
 	}
 
+	@Override
 	public boolean configurationSucceeded() {
 		return configurationSucceeded;
 	}
