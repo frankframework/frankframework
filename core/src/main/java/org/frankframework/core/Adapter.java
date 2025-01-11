@@ -38,7 +38,6 @@ import org.springframework.beans.factory.NamedBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.context.support.GenericApplicationContext;
@@ -108,7 +107,7 @@ import org.frankframework.util.flow.SpringContextFlowDiagramProvider;
 @Log4j2
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class Adapter extends GenericApplicationContext implements ManagableLifecycle, FrankElement, InitializingBean, ApplicationContextAware, NamedBean, NameAware {
+public class Adapter extends GenericApplicationContext implements ManagableLifecycle, FrankElement, InitializingBean, NamedBean, NameAware {
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
 	public static final String PROCESS_STATE_OK = "OK";
@@ -722,7 +721,6 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 */
 	public void setPipeLine(PipeLine pipeline) {
 		this.pipeline = pipeline;
-		pipeline.setApplicationContext(this); // Required for tests..
 		log.debug("Adapter [{}] registered pipeline [{}]", name, pipeline);
 	}
 

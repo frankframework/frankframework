@@ -306,19 +306,17 @@ public class PipeLineTest {
 				return RunState.STARTED;
 			}
 		};
+		configuration.autowireByName(adapter);
 		adapter.setName("Adapter");
 		buildDummyPipeLine(adapter);
-		adapter.setConfiguration(configuration);
 		adapter.setApplicationContext(configuration);
 		adapter.setConfigurationMetrics(configuration.getBean(MetricsInitializer.class));
-		adapter.refresh();
 		adapter.configure();
 		return adapter;
 	}
 
 	private void buildDummyPipeLine(Adapter adapter) throws ConfigurationException {
-		PipeLine pipeLine = new PipeLine();
-		pipeLine.setApplicationContext(configuration);
+		PipeLine pipeLine = SpringUtils.createBean(adapter, PipeLine.class);
 		pipeLine.setConfigurationMetrics(configuration.getBean(MetricsInitializer.class));
 		CorePipeLineProcessor pipeLineProcessor = configuration.createBean(CorePipeLineProcessor.class);
 		pipeLineProcessor.setPipeProcessor(configuration.createBean(CorePipeProcessor.class));

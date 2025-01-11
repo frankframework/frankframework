@@ -43,6 +43,7 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.UUIDUtil;
 
 public class AdapterHideRegexTest {
@@ -100,7 +101,7 @@ public class AdapterHideRegexTest {
 		CorePipeLineProcessor plp = configuration.createBean(CorePipeLineProcessor.class);
 		PipeProcessor pp = configuration.createBean(CorePipeProcessor.class);
 		plp.setPipeProcessor(pp);
-		PipeLine pl = configuration.createBean(PipeLine.class);
+		PipeLine pl = SpringUtils.createBean(adapter, PipeLine.class);
 		pl.setPipeLineProcessor(plp);
 		pl.setFirstPipe(pipes[0].getName());
 		for (IPipe pipe : pipes) {
