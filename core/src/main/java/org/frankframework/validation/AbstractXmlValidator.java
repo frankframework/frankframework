@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSModel;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.Lifecycle;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -58,7 +59,7 @@ import org.frankframework.util.XmlUtils;
  * @author Johan Verrips IOS
  * @author Jaco de Groot
  */
-public abstract class AbstractXmlValidator implements FrankElement {
+public abstract class AbstractXmlValidator implements FrankElement, Lifecycle {
 	protected static Logger log = LogUtil.getLogger(AbstractXmlValidator.class);
 
 	public enum ValidationResult {
@@ -124,10 +125,14 @@ public abstract class AbstractXmlValidator implements FrankElement {
 		started = true;
 	}
 
+	@Override
 	public void stop() {
-		if(started) {
-			started = false;
-		}
+		started = false;
+	}
+
+	@Override
+	public boolean isRunning() {
+		return started;
 	}
 
 	public AbstractValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {

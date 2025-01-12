@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022, 2024 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,9 +20,9 @@ import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
-import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.stream.Message;
 
 /**

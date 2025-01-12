@@ -86,6 +86,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter ApplicationContext applicationContext;
 
+	private boolean started = false;
 	private @Getter String name;
 	private @Getter String getInputFromSessionKey=null;
 	private @Getter String getInputFromFixedValue=null;
@@ -209,10 +210,19 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	@Override
-	public void start() {}
+	public void start() {
+		started = true;
+	}
 
 	@Override
-	public void stop() {}
+	public void stop() {
+		started = false;
+	}
+
+	@Override
+	public boolean isRunning() {
+		return started;
+	}
 
 	/**
 	 * Add a parameter to the list of parameters

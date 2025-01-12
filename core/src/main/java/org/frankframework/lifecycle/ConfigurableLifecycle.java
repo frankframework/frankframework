@@ -15,14 +15,16 @@
 */
 package org.frankframework.lifecycle;
 
+import org.springframework.context.Lifecycle;
 import org.springframework.context.SmartLifecycle;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.IConfigurable;
 
 /**
- * Interface for Spring beans that require their Lifecycle to be managed by Spring.
- * See {@link ConfiguringLifecycleProcessor}
+ * Interface for Spring beans that require their {@link Lifecycle} to be managed by Spring.
+ * 
+ * See {@link ConfiguringLifecycleProcessor}.
  *
  * @author Niels
  */

@@ -78,8 +78,8 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 
 	@Override
 	public void start() {
-		super.start();
 		sender.start();
+		super.start();
 	}
 
 	@Override

@@ -32,10 +32,16 @@ public interface ManagableLifecycle extends ConfigurableLifecycle {
 	RunState getRunState();
 
 	/**
-	 * Verifies if this object may be started.
+	 * Check whether this component has successfully been configured.
+	 * Similar to {@link #isRunning()}, verifies if this object may be started.
 	 */
 	boolean isConfigured();
 
+	/**
+	 * Verifies if this object needs to be started or stopped.
+	 * 
+	 * {@inheritDoc}
+	 */
 	@Override
 	default boolean isRunning() {
 		return getRunState() == RunState.STARTED;

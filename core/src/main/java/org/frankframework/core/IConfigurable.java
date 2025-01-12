@@ -25,7 +25,7 @@ public interface IConfigurable {
 
 	/**
 	 * Configure this component.
-	 * <p>In the case of a container, this will propagate the start signal to all
+	 * <p>In the case of a container, this will propagate the configure signal to all
 	 * components that apply.</p>
 	 * @throws ConfigurationException in case it was not able to configure the component.
 	 */

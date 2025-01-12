@@ -35,6 +35,7 @@ import org.frankframework.util.Locker;
 public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidator> implements IValidator {
 
 	private @Getter @Setter String name;
+	private boolean started = false;
 
 	private final Map<String, PipeForward> forwards = new HashMap<>();
 
@@ -78,12 +79,17 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 
 	@Override
 	public void start() {
-		// Should not do anything
+		started = true;
 	}
 
 	@Override
 	public void stop() {
-		// Should not do anything
+		started = false;
+	}
+
+	@Override
+	public boolean isRunning() {
+		return started;
 	}
 
 	@Override

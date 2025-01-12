@@ -160,12 +160,12 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	private static final String FILTER = "filterExpression";
 	private static final String ENTRYNAME = "entryName";
-
-	private @Getter int searchTimeout = 20_000;
-
 	private static final String INITIAL_CONTEXT_FACTORY ="com.sun.jndi.ldap.LdapCtxFactory";
 
 	public static final String LDAP_ERROR_MAGIC_STRING="[LDAP: error code";
+
+	private boolean started = false;
+	private @Getter int searchTimeout = 20_000;
 
 	public @Getter Operation operation = Operation.READ;
 
@@ -409,6 +409,13 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	@Override
 	public void start() {
+		started = true;
+	}
+
+	@Override
+	public void stop() {
+		super.stop();
+		started = false;
 	}
 
 	@Override
