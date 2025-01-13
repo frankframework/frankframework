@@ -15,17 +15,20 @@
 */
 package org.frankframework.xml;
 
-import org.frankframework.threading.ThreadConnector;
+import jakarta.annotation.Nonnull;
+
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import org.frankframework.threading.ThreadConnector;
+
 public class ThreadConnectingFilter extends AbstractExceptionCatchingFilter {
 
-	private final ThreadConnector threadConnector;
+	private final @Nonnull ThreadConnector<?> threadConnector;
 
-	public ThreadConnectingFilter(ThreadConnector threadConnector, ContentHandler handler) {
+	public ThreadConnectingFilter(@Nonnull ThreadConnector<?> threadConnector, @Nonnull ContentHandler handler) {
 		super(handler);
-		this.threadConnector=threadConnector;
+		this.threadConnector = threadConnector;
 	}
 
 	@Override

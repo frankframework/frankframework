@@ -57,8 +57,10 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
+import org.frankframework.threading.ThreadConnector;
 import org.frankframework.xml.ClassLoaderURIResolver;
 import org.frankframework.xml.NonResolvingURIResolver;
+import org.frankframework.xml.ThreadConnectingFilter;
 import org.frankframework.xml.TransformerFilter;
 
 /**
@@ -517,12 +519,20 @@ public class TransformerPool {
 		return handler;
 	}
 
-	public TransformerFilter getTransformerFilter(ContentHandler handler) throws TransformerConfigurationException {
+	public TransformerFilter getTransformerFilter(@Nonnull ContentHandler handler) throws TransformerConfigurationException {
 		return getTransformerFilter(handler, false, false);
 	}
 
-	public TransformerFilter getTransformerFilter(ContentHandler handler, boolean removeNamespacesFromInput, boolean handleLexicalEvents) throws TransformerConfigurationException {
+	public TransformerFilter getTransformerFilter(@Nonnull ContentHandler handler, boolean removeNamespacesFromInput, boolean handleLexicalEvents) throws TransformerConfigurationException {
 		return new TransformerFilter(getTransformerHandler(), handler, removeNamespacesFromInput, handleLexicalEvents);
+	}
+
+	public TransformerFilter getTransformerFilter(@Nonnull ThreadConnector<?> threadConnector, @Nonnull ContentHandler handler) throws TransformerConfigurationException {
+		return getTransformerFilter(threadConnector, handler, false, false);
+	}
+
+	public TransformerFilter getTransformerFilter(@Nonnull ThreadConnector<?> threadConnector, @Nonnull ContentHandler handler, boolean removeNamespacesFromInput, boolean handleLexicalEvents) throws TransformerConfigurationException {
+		return new TransformerFilter(getTransformerHandler(), new ThreadConnectingFilter(threadConnector, handler), removeNamespacesFromInput, handleLexicalEvents);
 	}
 
 	@Nonnull

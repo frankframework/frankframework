@@ -26,6 +26,8 @@ import org.xml.sax.ext.LexicalHandler;
 
 import lombok.Getter;
 
+import org.frankframework.util.XmlUtils;
+
 public class TransformerFilter extends FullXmlFilter {
 
 	private final TransformerHandler transformerHandler;
@@ -42,7 +44,9 @@ public class TransformerFilter extends FullXmlFilter {
 		transformerHandler.setResult(transformedStream);
 		errorListener = transformerHandler.getTransformer().getErrorListener();
 		ExceptionInsertingFilter exceptionInsertingFilter = new ExceptionInsertingFilter(transformerHandler);
-		transformerHandler.getTransformer().setErrorListener(new TransformerFilterErrorListener(exceptionInsertingFilter));
+		if (XmlUtils.isXsltStreamingByDefault()) {
+			transformerHandler.getTransformer().setErrorListener(new TransformerFilterErrorListener(exceptionInsertingFilter));
+		}
 
 		ContentHandler inputHandler;
 		if (removeNamespacesFromInput) {
