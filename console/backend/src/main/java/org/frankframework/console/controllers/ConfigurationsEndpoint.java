@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.security.PermitAll;
@@ -86,7 +87,7 @@ public class ConfigurationsEndpoint {
 	@Description("update the entire application using an action")
 	@PutMapping(value = "/configurations", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> fullAction(@RequestBody Map<String, Object> json) throws ApiException {
-		ArrayList<String> configurations = new ArrayList<>();
+		List<String> configurations = new ArrayList<>();
 
 		String value = RequestUtils.getValue(json, "action");
 		Action action = getActionOrThrow(value, true);

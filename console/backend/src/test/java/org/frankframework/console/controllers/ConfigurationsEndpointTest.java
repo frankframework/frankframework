@@ -149,7 +149,7 @@ public class ConfigurationsEndpointTest extends FrankApiTestBase {
 		});
 
 		mockMvc.perform(MockMvcRequestBuilders.put("/configurations")
-						.content("{\"action\": \"reload\"}")
+						.content("{\"action\": \"fullreload\"}")
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isAccepted());
 	}
@@ -168,6 +168,11 @@ public class ConfigurationsEndpointTest extends FrankApiTestBase {
 
 		mockMvc.perform(MockMvcRequestBuilders.put("/configurations")
 						.content("{\"action\": \"start\"}")
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.status().isAccepted());
+
+		mockMvc.perform(MockMvcRequestBuilders.put("/configurations")
+						.content("{\"action\": \"start\", \"configurations\": [\"config1\", \"config2\"]}")
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isAccepted());
 	}
