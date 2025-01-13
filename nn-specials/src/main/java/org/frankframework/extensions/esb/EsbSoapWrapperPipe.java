@@ -778,8 +778,8 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 
 	@Override
 	public void validateListenerDestinations(PipeLine pipeLine) throws ConfigurationException {
-		HasName owner = pipeLine.getOwner();
-		if (owner instanceof Adapter owningAdapter) {
+		Adapter owningAdapter = pipeLine.getAdapter();
+		if (owningAdapter != null) {
 
 			for (Receiver<?> receiver : owningAdapter.getReceivers()) {
 				IListener<?> listener = receiver.getListener();
@@ -792,7 +792,6 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 				}
 			}
 		}
-
 	}
 
 	@Override

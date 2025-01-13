@@ -165,6 +165,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		public static final String SUCCESS_EXIT_STATE = "SUCCESS";
 	}
 
+	@Override
 	public final void setApplicationContext(ApplicationContext context) {
 		if (context instanceof Adapter adapter) {
 			// This should always be the case, but in tests it may be a TestConfiguration instead...

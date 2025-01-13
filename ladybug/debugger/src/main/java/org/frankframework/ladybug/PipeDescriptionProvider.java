@@ -69,8 +69,8 @@ public class PipeDescriptionProvider {
 	 */
 	public PipeDescription getPipeDescription(PipeLine pipeLine, IPipe pipe) {
 		PipeDescription pipeDescription;
-		HasName pipeLineOwner = pipeLine.getOwner();
-		String adapterName = pipeLineOwner==null? "?": pipeLineOwner.getName();
+		HasName adapter = pipeLine.getAdapter();
+		String adapterName = adapter==null? "?": adapter.getName();
 		String pipeName = pipe.getName();
 		String checkpointName = null;
 		String xpathExpression = null;
