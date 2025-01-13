@@ -1182,6 +1182,11 @@
 										<message>Dont use com.sun but glassfish instead</message>
 									</bannedDependencies>
 								</rules>
+								<rules>
+									<requireJavaVersion>
+										<version>[17,21]</version>
+									</requireJavaVersion>
+								</rules>
 							</configuration>
 						</execution>
 						<execution>
