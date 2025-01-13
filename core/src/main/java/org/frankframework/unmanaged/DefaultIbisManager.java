@@ -123,10 +123,9 @@ public class DefaultIbisManager implements IbisManager {
 	public void handleAction(Action action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin) {
 		switch (action) {
 		case STOPADAPTER:
-			Assert.notNull(adapterName, "no adapterName provided");
 			Assert.notNull(configurationName, "no configurationName provided");
 
-			if (adapterName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
+			if (adapterName == null || adapterName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
 				if (configurationName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
 					log.info("Stopping all adapters on request of [{}]", commandIssuedBy);
 					for (Configuration configuration : configurations) {
@@ -148,10 +147,9 @@ public class DefaultIbisManager implements IbisManager {
 			break;
 
 		case STARTADAPTER:
-			Assert.notNull(adapterName, "no adapterName provided");
 			Assert.notNull(configurationName, "no configurationName provided");
 
-			if (adapterName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
+			if (adapterName == null || adapterName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
 				if (configurationName.equals(BusMessageUtils.ALL_CONFIGS_KEY)) {
 					log.info("Starting all adapters on request of [{}]", commandIssuedBy);
 					for (Configuration configuration : configurations) {
