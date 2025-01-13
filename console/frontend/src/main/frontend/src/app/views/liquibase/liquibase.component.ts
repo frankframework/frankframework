@@ -6,7 +6,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { InputFileUploadComponent } from '../../components/input-file-upload/input-file-upload.component';
 import { LaddaModule } from 'angular2-ladda';
-import { NgForOf, NgIf } from '@angular/common';
+
 import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
 
 interface Form {
@@ -15,7 +15,7 @@ interface Form {
 
 @Component({
   selector: 'app-liquibase',
-  imports: [FormsModule, InputFileUploadComponent, LaddaModule, NgIf, QuickSubmitFormDirective, NgForOf],
+  imports: [FormsModule, InputFileUploadComponent, LaddaModule, QuickSubmitFormDirective],
   templateUrl: './liquibase.component.html',
   styleUrls: ['./liquibase.component.scss'],
 })

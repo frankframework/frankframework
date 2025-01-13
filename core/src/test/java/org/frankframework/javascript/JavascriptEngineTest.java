@@ -1,7 +1,11 @@
 package org.frankframework.javascript;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
+import org.frankframework.testutil.TestAssertions;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -11,6 +15,12 @@ import org.frankframework.senders.EchoSender;
 import org.frankframework.senders.JavascriptSender;
 
 class JavascriptEngineTest {
+
+	@BeforeAll
+	public static void setup() {
+		// Since it's not possible to conditionally check the EnumSource here, just disable all for now...
+		assumeFalse(TestAssertions.isTestRunningOnARM(), "uses J2V8 which does not work on ARM");
+	}
 
 	@ParameterizedTest
 	@EnumSource(JavascriptSender.JavaScriptEngines.class)

@@ -2,7 +2,6 @@ import { Component, DebugElement, QueryList, ViewChildren } from '@angular/core'
 import { SortEvent, ThSortableDirective, basicTableSort } from './th-sortable.directive';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { NgForOf } from '@angular/common';
 
 @Component({
   template: `
@@ -14,14 +13,16 @@ import { NgForOf } from '@angular/common';
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let item of items">
-          <td>{{ item.name }}</td>
-          <td>{{ item.value }}</td>
-        </tr>
+        @for (item of items; track item.name) {
+          <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.value }}</td>
+          </tr>
+        }
       </tbody>
     </table>
   `,
-  imports: [ThSortableDirective, NgForOf],
+  imports: [ThSortableDirective],
 })
 class TestComponent {
   items = [

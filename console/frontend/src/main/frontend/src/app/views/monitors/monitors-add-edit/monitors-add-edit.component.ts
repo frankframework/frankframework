@@ -6,7 +6,6 @@ import { AlertState } from '../../test-pipeline/test-pipeline.component';
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
 import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 import { FormsModule } from '@angular/forms';
-import { NgFor, NgIf } from '@angular/common';
 
 type EventSource = {
   adapter: string;
@@ -15,7 +14,7 @@ type EventSource = {
 
 @Component({
   selector: 'app-monitors-add-edit',
-  imports: [NgbAlert, RouterLink, QuickSubmitFormDirective, FormsModule, NgIf, NgFor],
+  imports: [NgbAlert, RouterLink, QuickSubmitFormDirective, FormsModule],
   templateUrl: './monitors-add-edit.component.html',
   styleUrls: ['./monitors-add-edit.component.scss'],
 })

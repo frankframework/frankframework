@@ -12,7 +12,7 @@ import {
   DataTableDataSource,
 } from '../../../components/datatable/datatable.component';
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
-import { KeyValuePipe, NgClass, NgFor, NgIf } from '@angular/common';
+import { KeyValuePipe, NgClass } from '@angular/common';
 import { OrderByPipe } from '../../../pipes/orderby.pipe';
 import { FormsModule } from '@angular/forms';
 import { LaddaModule } from 'angular2-ladda';
@@ -41,9 +41,7 @@ type MessageData = MessageStore['messages'][number];
   styleUrls: ['./storage-list.component.scss'],
   imports: [
     NgbAlert,
-    NgFor,
     OrderByPipe,
-    NgIf,
     FormsModule,
     LaddaModule,
     RouterLink,

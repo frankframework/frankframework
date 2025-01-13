@@ -1,10 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AppService, Configuration } from 'src/app/app.service';
 import { Monitor, MonitorsService, Trigger } from './monitors.service';
-import { ActivatedRoute, convertToParamMap, ParamMap, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, ParamMap, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ConfigurationTabListComponent } from '../../components/tab-list/configuration-tab-list.component';
-import { KeyValuePipe, NgFor, NgIf } from '@angular/common';
+import { KeyValuePipe } from '@angular/common';
 import { HasAccessToLinkDirective } from '../../components/has-access-to-link.directive';
 import { FormsModule } from '@angular/forms';
 import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
@@ -14,10 +14,8 @@ import { ToDateDirective } from '../../components/to-date.directive';
   selector: 'app-monitors',
   imports: [
     ConfigurationTabListComponent,
-    NgIf,
     HasAccessToLinkDirective,
     RouterLink,
-    NgFor,
     FormsModule,
     QuickSubmitFormDirective,
     KeyValuePipe,
@@ -38,7 +36,6 @@ export class MonitorsComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription = new Subscription();
 
   constructor(
-    private router: Router,
     private route: ActivatedRoute,
     private appService: AppService,
     private monitorsService: MonitorsService,

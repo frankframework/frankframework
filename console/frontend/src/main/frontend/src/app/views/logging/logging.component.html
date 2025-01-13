@@ -1,15 +1,19 @@
 <div class="wrapper wrapper-content animated fadeInRight">
-  <ngb-alert *ngIf="alert" type="danger" [dismissible]="false">{{ alert }}</ngb-alert>
+  @if (alert) {
+    <ngb-alert type="danger" [dismissible]="false">{{ alert }}</ngb-alert>
+  }
   <div class="row">
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
         <div class="ibox-title">
-          <div class="pull-right" *ngIf="viewFile">
-            <button (click)="closeFile()" class="btn btn-xs pull-right" type="button">
-              <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
-              <span> Back</span>
-            </button>
-          </div>
+          @if (viewFile) {
+            <div class="pull-right">
+              <button (click)="closeFile()" class="btn btn-xs pull-right" type="button">
+                <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
+                <span> Back</span>
+              </button>
+            </div>
+          }
           <h4>
             Logging
             <span class="m-l-md clipboard"
@@ -23,63 +27,75 @@
             ></span>
           </h4>
         </div>
-        <div class="ibox-content" *ngIf="!viewFile">
-          <div class="col-md-12">
-            <div class="ibox-stretch">
-              <div class="input-group" id="searchbar">
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Search ... (Ctrl + Shift + F)"
-                  [(ngModel)]="fileName"
-                  name="search"
-                />
-                <i
-                  (click)="fileName = ''"
-                  class="fa fa-times input-group-closeSearch{{ fileName.length < 1 ? ' hidden' : '' }}"
-                  aria-hidden="true"
-                ></i>
-                <span class="input-group-addon">
-                  <i class="fa fa-search" aria-hidden="true"></i>
-                </span>
+        @if (!viewFile) {
+          <div class="ibox-content">
+            <div class="col-md-12">
+              <div class="ibox-stretch">
+                <div class="input-group" id="searchbar">
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Search ... (Ctrl + Shift + F)"
+                    [(ngModel)]="fileName"
+                    name="search"
+                  />
+                  <i
+                    (click)="fileName = ''"
+                    class="fa fa-times input-group-closeSearch{{ fileName.length < 1 ? ' hidden' : '' }}"
+                    aria-hidden="true"
+                  ></i>
+                  <span class="input-group-addon">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </span>
+                </div>
               </div>
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th sortable="name" (sorted)="onSort($event)">Name</th>
+                    <th sortable="size" (sorted)="onSort($event)">Size</th>
+                    <th sortable="lastModified" (sorted)="onSort($event)">Date</th>
+                    <th>&nbsp;</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (file of sortedlist | searchFilter: fileName; track file.path) {
+                    <tr>
+                      <td class="pointer" (click)="open(file)">{{ file.name }}</td>
+                      <td>
+                        @if (file.type === 'file') {
+                          <span>{{ file.sizeDisplay }}</span>
+                        }
+                      </td>
+                      <td appToDate [time]="file.lastModified"></td>
+                      @if (file.type === 'file') {
+                        <td class="hideBtn1170">
+                          <button (click)="download(file)" class="btn btn-xs pull-right" type="button">
+                            <i class="fa fa-arrow-circle-o-down" aria-hidden="true"></i>
+                            <span> Download</span>
+                          </button>
+                        </td>
+                      }
+                      @if (file.type === 'directory') {
+                        <td class="loggingBtn">
+                          <button (click)="open(file)" class="btn btn-xs pull-right" type="button">
+                            <i class="fa fa-folder-open-o" aria-hidden="true"></i>
+                            <span> Open</span>
+                          </button>
+                        </td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
             </div>
-            <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th sortable="name" (sorted)="onSort($event)">Name</th>
-                  <th sortable="size" (sorted)="onSort($event)">Size</th>
-                  <th sortable="lastModified" (sorted)="onSort($event)">Date</th>
-                  <th>&nbsp;</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let file of sortedlist | searchFilter: fileName">
-                  <td class="pointer" (click)="open(file)">{{ file.name }}</td>
-                  <td>
-                    <span *ngIf="file.type === 'file'">{{ file.sizeDisplay }}</span>
-                  </td>
-                  <td appToDate [time]="file.lastModified"></td>
-                  <td class="hideBtn1170" *ngIf="file.type === 'file'">
-                    <button (click)="download(file)" class="btn btn-xs pull-right" type="button">
-                      <i class="fa fa-arrow-circle-o-down" aria-hidden="true"></i>
-                      <span> Download</span>
-                    </button>
-                  </td>
-                  <td class="loggingBtn" *ngIf="file.type === 'directory'">
-                    <button (click)="open(file)" class="btn btn-xs pull-right" type="button">
-                      <i class="fa fa-folder-open-o" aria-hidden="true"></i>
-                      <span> Open</span>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
           </div>
-        </div>
-        <div *ngIf="viewFile">
-          <app-file-viewer [fileName]="viewFile"></app-file-viewer>
-        </div>
+        }
+        @if (viewFile) {
+          <div>
+            <app-file-viewer [fileName]="viewFile"></app-file-viewer>
+          </div>
+        }
       </div>
     </div>
   </div>

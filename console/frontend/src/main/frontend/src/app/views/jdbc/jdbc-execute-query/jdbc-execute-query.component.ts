@@ -8,13 +8,13 @@ import { JdbcQueryForm, JdbcService } from '../jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { LaddaModule } from 'angular2-ladda';
-import { NgFor, NgIf } from '@angular/common';
+
 import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
 
 @Component({
   selector: 'app-jdbc-execute-query',
-  imports: [FormsModule, LaddaModule, NgIf, NgFor, QuickSubmitFormDirective, MonacoEditorComponent],
+  imports: [FormsModule, LaddaModule, QuickSubmitFormDirective, MonacoEditorComponent],
   templateUrl: './jdbc-execute-query.component.html',
   styleUrls: ['./jdbc-execute-query.component.scss'],
 })
