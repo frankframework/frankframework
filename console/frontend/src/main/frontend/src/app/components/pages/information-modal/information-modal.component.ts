@@ -2,7 +2,7 @@ import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { copyToClipboard } from '../../../utils';
 import { ToastService } from '../../../services/toast.service';
-import { CommonModule } from '@angular/common';
+
 import { TimeSinceDirective } from '../../time-since.directive';
 import { ToDateDirective } from '../../to-date.directive';
 import { HumanFileSizePipe } from '../../../pipes/human-file-size.pipe';
@@ -14,7 +14,7 @@ import { ServerTimeService } from '../../../services/server-time.service';
   selector: 'app-information-modal',
   templateUrl: './information-modal.component.html',
   styleUrls: ['./information-modal.component.scss'],
-  imports: [CommonModule, TimeSinceDirective, ToDateDirective, HumanFileSizePipe],
+  imports: [TimeSinceDirective, ToDateDirective, HumanFileSizePipe],
 })
 export class InformationModalComponent implements OnInit, OnDestroy {
   protected readonly serverTimeService: ServerTimeService = inject(ServerTimeService);

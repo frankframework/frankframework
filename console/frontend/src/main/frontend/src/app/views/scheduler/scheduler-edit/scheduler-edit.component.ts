@@ -6,7 +6,6 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
-import { NgFor, NgIf } from '@angular/common';
 import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 import { FormsModule } from '@angular/forms';
 import { ConfigurationFilterPipe } from '../../../pipes/configuration-filter.pipe';
@@ -18,14 +17,12 @@ import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-
   selector: 'app-scheduler-edit',
   imports: [
     NgbAlert,
-    NgFor,
     RouterLink,
     QuickSubmitFormDirective,
     FormsModule,
     ConfigurationFilterPipe,
     WithJavaListenerPipe,
     TruncatePipe,
-    NgIf,
     MonacoEditorComponent,
   ],
   templateUrl: '../scheduler-add-edit-parent.component.html',

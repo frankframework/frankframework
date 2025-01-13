@@ -11,26 +11,32 @@
       <button routerLink="/logging" class="btn btn-primary m-r">
         <i class="fa fa-life-ring" aria-hidden="true"></i> View Logs
       </button>
-      <button *ngIf="stackTrace" (click)="viewStackTrace = !viewStackTrace" class="btn btn-info m-r">
-        <i class="fa fa-bug" aria-hidden="true"></i>
-        {{ viewStackTrace ? 'Hide' : 'View' }} Stack Trace
-      </button>
-      <span *ngIf="cooldownCounter > 0">Refreshing in {{ cooldownCounter }} seconds.</span>
+      @if (stackTrace) {
+        <button (click)="viewStackTrace = !viewStackTrace" class="btn btn-info m-r">
+          <i class="fa fa-bug" aria-hidden="true"></i>
+          {{ viewStackTrace ? 'Hide' : 'View' }} Stack Trace
+        </button>
+      }
+      @if (cooldownCounter > 0) {
+        <span>Refreshing in {{ cooldownCounter }} seconds.</span>
+      }
     </p>
   </div>
 
-  <div class="row" *ngIf="viewStackTrace">
-    <div class="col-lg-offset-3 col-lg-6">
-      <div class="ibox">
-        <div class="ibox-title">
-          <h4>Stack Trace</h4>
-        </div>
-        <div class="ibox-content">
-          <div *ngFor="let trace of stackTrace">
-            {{ trace.className }}#{{ trace.methodName }}:{{ trace.lineNumber }}
+  @if (viewStackTrace) {
+    <div class="row">
+      <div class="col-lg-offset-3 col-lg-6">
+        <div class="ibox">
+          <div class="ibox-title">
+            <h4>Stack Trace</h4>
+          </div>
+          <div class="ibox-content">
+            @for (trace of stackTrace; track trace) {
+              <div>{{ trace.className }}#{{ trace.methodName }}:{{ trace.lineNumber }}</div>
+            }
           </div>
         </div>
       </div>
     </div>
-  </div>
+  }
 </div>

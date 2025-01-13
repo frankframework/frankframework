@@ -40,7 +40,7 @@
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-identity</artifactId>
-			<version>1.14.2</version>
+			<version>1.15.0</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -67,7 +67,7 @@
 		<dependency>
 			<groupId>com.github.mwiede</groupId>
 			<artifactId>jsch</artifactId>
-			<version>0.2.21</version>
+			<version>0.2.22</version>
 		</dependency>
 
 		<!-- Test scoped and provided dependencies -->

@@ -895,7 +895,7 @@ public class ParameterTest {
 	}
 
 	@Test
-	// Test for #2256 PutParametersInSession with xpathExpression with type=domdoc
+	// Test for #2256 PutInSession with xpathExpression with type=domdoc
 	// results in "Content is not allowed in prolog"
 	public void testPutInSessionPipeWithDomdocParamsUsedMoreThanOnce() throws Exception {
 		try(TestConfiguration configuration = new TestConfiguration()) {

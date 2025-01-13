@@ -71,9 +71,6 @@ public class MqttFacade implements HasPhysicalDestination, IConfigurable, NameAw
 		if (StringUtils.isEmpty(getBrokerUrl())) {
 			throw new ConfigurationException("brokerUrl must be specified");
 		}
-		if (StringUtils.isEmpty(getTopic())) {
-			throw new ConfigurationException("topic must be specified");
-		}
 		connectOptions = new MqttConnectOptions();
 		connectOptions.setCleanSession(isCleanSession());
 		connectOptions.setAutomaticReconnect(isAutomaticReconnect());

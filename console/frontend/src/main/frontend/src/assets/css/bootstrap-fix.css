@@ -283,3 +283,9 @@ div.dataTables_wrapper div.dataTables_paginate {
 .monaco-editor__line--highlighted {
   background: #fdc30055;
 }
+
+.btn-ff {
+  background-color: #FDC300;
+  border-color: #FDC300;
+  color: #ffffff;
+}
