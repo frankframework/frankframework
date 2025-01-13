@@ -18,12 +18,14 @@ package org.frankframework.validation;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.util.XmlBuilder;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
+import lombok.Getter;
+
+import org.frankframework.util.XmlBuilder;
 
 public class XmlValidatorErrorHandler implements ErrorHandler {
 	private @Getter boolean warningsOccurred = false;

@@ -16,7 +16,9 @@
 package org.frankframework.senders;
 
 import jakarta.annotation.Nonnull;
+
 import lombok.Setter;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.IbisManager;

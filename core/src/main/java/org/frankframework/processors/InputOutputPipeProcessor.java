@@ -18,9 +18,14 @@ package org.frankframework.processors;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import org.frankframework.core.HasName;
 import org.frankframework.core.IPipe;
@@ -38,11 +43,6 @@ import org.frankframework.util.RestoreMovedElementsHandler;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.XmlWriter;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
 /**
  * The InputOutputPipeProcessor class is a subclass of PipeProcessorBase and is responsible for processing pipes in a pipeline.

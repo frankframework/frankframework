@@ -24,14 +24,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.Logger;
+
+import lombok.Getter;
+
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
-
-import lombok.Getter;
 
 public class JwtSecurityHandler implements ISecurityHandler {
 	protected Logger log = LogUtil.getLogger(this);

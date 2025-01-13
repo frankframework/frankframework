@@ -22,6 +22,10 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 
+import jakarta.annotation.Nonnull;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -33,10 +37,9 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTClaimsSet.Builder;
 import com.nimbusds.jwt.SignedJWT;
 
-import jakarta.annotation.Nonnull;
 import lombok.AccessLevel;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;

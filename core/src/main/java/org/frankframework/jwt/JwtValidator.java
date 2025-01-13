@@ -20,6 +20,8 @@ import java.net.URL;
 import java.text.ParseException;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -39,7 +41,6 @@ import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
 
 public class JwtValidator<C extends SecurityContext> {
 

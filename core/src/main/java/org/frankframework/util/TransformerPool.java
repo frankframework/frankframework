@@ -34,7 +34,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import lombok.Getter;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.ObjectPool;
@@ -43,6 +43,10 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.SoftReferenceObjectPool;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -57,8 +61,6 @@ import org.frankframework.threading.ThreadConnector;
 import org.frankframework.xml.ClassLoaderURIResolver;
 import org.frankframework.xml.NonResolvingURIResolver;
 import org.frankframework.xml.TransformerFilter;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
 
 /**
  * Pool of transformers. As of IBIS 4.2.e the Templates object is used to

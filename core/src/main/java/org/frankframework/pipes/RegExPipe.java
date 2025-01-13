@@ -16,9 +16,15 @@
 
 package org.frankframework.pipes;
 
-import lombok.Getter;
+import java.io.IOException;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
@@ -30,12 +36,6 @@ import org.frankframework.doc.Forward;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlBuilder;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 /**
  * Tries to match the input against the provided regex.

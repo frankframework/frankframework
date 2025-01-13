@@ -20,13 +20,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonStructure;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class JsonDirectoryInfo {
 	private final File directory;

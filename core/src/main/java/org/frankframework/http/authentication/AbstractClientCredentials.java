@@ -15,18 +15,18 @@
 */
 package org.frankframework.http.authentication;
 
-import lombok.extern.log4j.Log4j2;
+import java.util.List;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.message.BasicNameValuePair;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.http.AbstractHttpSession;
-
-import java.util.List;
 
 @Log4j2
 public abstract class AbstractClientCredentials extends AbstractOauthAuthenticator {

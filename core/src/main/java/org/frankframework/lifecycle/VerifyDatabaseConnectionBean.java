@@ -16,14 +16,12 @@
 package org.frankframework.lifecycle;
 
 import java.sql.Connection;
+
 import javax.sql.DataSource;
 
 import jakarta.annotation.Nonnull;
+
 import org.apache.logging.log4j.Logger;
-import org.frankframework.jdbc.IDataSourceFactory;
-import org.frankframework.jta.SpringTxManagerProxy;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.InitializingBean;
@@ -36,6 +34,11 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import lombok.Setter;
+
+import org.frankframework.jdbc.IDataSourceFactory;
+import org.frankframework.jta.SpringTxManagerProxy;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
 
 /**
  * Verifies if a (valid) connection can be made.

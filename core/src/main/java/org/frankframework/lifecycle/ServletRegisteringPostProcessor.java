@@ -22,6 +22,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import lombok.Setter;
+
 import org.frankframework.lifecycle.DynamicRegistration.Servlet;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
 import org.frankframework.util.SpringUtils;

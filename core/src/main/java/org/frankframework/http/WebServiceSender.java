@@ -18,9 +18,10 @@ package org.frankframework.http;
 import java.io.IOException;
 import java.net.URI;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;

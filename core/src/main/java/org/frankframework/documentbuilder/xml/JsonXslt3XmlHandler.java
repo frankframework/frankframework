@@ -19,12 +19,15 @@ import java.io.IOException;
 
 import jakarta.json.stream.JsonParser;
 import jakarta.json.stream.JsonParser.Event;
-import lombok.Getter;
-import lombok.Setter;
-import org.frankframework.documentbuilder.JsonEventHandler;
+
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import org.frankframework.documentbuilder.JsonEventHandler;
 
 
 public class JsonXslt3XmlHandler implements JsonEventHandler {

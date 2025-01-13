@@ -21,6 +21,7 @@ import org.springframework.context.ApplicationContext;
 
 import org.frankframework.core.Adapter;
 import org.frankframework.core.HasApplicationContext;
+import org.frankframework.core.NameAware;
 import org.frankframework.util.ClassUtils;
 
 /**

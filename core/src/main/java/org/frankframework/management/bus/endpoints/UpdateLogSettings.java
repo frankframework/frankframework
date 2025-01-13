@@ -22,9 +22,13 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.messaging.Message;
+
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
@@ -36,8 +40,6 @@ import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.LOG_CONFIGURATION)

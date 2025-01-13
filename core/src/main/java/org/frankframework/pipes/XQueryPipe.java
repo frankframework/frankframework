@@ -29,6 +29,9 @@ import javax.xml.xquery.XQPreparedExpression;
 import javax.xml.xquery.XQResultSequence;
 
 import org.apache.commons.lang3.StringUtils;
+
+import com.saxonica.xqj.SaxonXQDataSource;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -38,8 +41,6 @@ import org.frankframework.parameters.IParameter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.StreamUtil;
-
-import com.saxonica.xqj.SaxonXQDataSource;
 
 /**
  * Perform an XQuery.

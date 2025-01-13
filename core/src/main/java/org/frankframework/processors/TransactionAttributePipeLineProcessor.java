@@ -19,6 +19,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLine.ExitState;

@@ -22,14 +22,16 @@ import javax.sql.CommonDataSource;
 import javax.sql.ConnectionPoolDataSource;
 import javax.sql.DataSource;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.dbcp.dbcp2.ConnectionFactory;
 import org.apache.tomcat.dbcp.dbcp2.DataSourceConnectionFactory;
 import org.apache.tomcat.dbcp.dbcp2.PoolableConnection;
 import org.apache.tomcat.dbcp.dbcp2.PoolableConnectionFactory;
 import org.apache.tomcat.dbcp.pool2.impl.GenericObjectPool;
+
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.util.AppConstants;
 
 /**

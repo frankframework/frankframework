@@ -15,6 +15,12 @@
 */
 package org.frankframework.management.bus.endpoints;
 import jakarta.annotation.security.RolesAllowed;
+
+import org.springframework.messaging.Message;
+
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+
 import org.frankframework.core.Adapter;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
@@ -25,10 +31,6 @@ import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.metrics.LocalStatisticsRegistry;
-import org.springframework.messaging.Message;
-
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.ADAPTER)

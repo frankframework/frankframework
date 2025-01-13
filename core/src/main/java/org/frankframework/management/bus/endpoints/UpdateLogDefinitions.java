@@ -24,13 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
 import jakarta.annotation.security.RolesAllowed;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
@@ -39,6 +34,15 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.spi.StandardLevel;
+import org.springframework.messaging.Message;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -49,7 +53,6 @@ import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.util.LogUtil;
-import org.springframework.messaging.Message;
 
 @Log4j2
 @BusAware("frank-management-bus")

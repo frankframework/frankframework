@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.jta.IThreadConnectableTransactionManager;
 import org.frankframework.jta.TransactionConnector;

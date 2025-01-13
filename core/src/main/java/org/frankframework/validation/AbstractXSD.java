@@ -44,16 +44,17 @@ import javax.xml.stream.events.XMLEvent;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import com.google.common.collect.Streams;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.xml.sax.InputSource;
+
+import com.google.common.collect.Streams;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;

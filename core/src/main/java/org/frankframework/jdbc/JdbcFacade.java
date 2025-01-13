@@ -25,6 +25,9 @@ import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.Lifecycle;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.HasPhysicalDestination;
@@ -38,9 +41,6 @@ import org.frankframework.jndi.JndiBase;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CredentialFactory;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Provides functions for JDBC connections.

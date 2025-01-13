@@ -17,8 +17,10 @@ package org.frankframework.pipes;
 
 import java.util.function.Supplier;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.AbstractResponseValidatorWrapper;

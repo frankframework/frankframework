@@ -16,6 +16,7 @@
 package org.frankframework.pipes;
 
 import lombok.Getter;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;

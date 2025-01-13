@@ -27,19 +27,22 @@ import jakarta.jms.JMSException;
 import jakarta.jms.Queue;
 import jakarta.jms.Session;
 import jakarta.jms.TemporaryQueue;
-import lombok.Getter;
-import lombok.Setter;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
+import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
+import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
+
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.core.IbisException;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
-import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
-import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
 
 /**
  * Generic Source for JMS connection, to be shared for JMS Objects that can use the same.

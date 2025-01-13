@@ -15,9 +15,9 @@
 */
 package org.frankframework.parameters;
 
-import org.frankframework.doc.Default;
-
 import lombok.Getter;
+
+import org.frankframework.doc.Default;
 
 /**
  * Placeholder class to allow legacy configuration notations <code>&lt;param type='number' /&gt;</code> in the new Frank!Config XSD.

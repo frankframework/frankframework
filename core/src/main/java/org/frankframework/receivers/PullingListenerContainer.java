@@ -37,11 +37,11 @@ import lombok.Setter;
 
 import org.frankframework.core.HasName;
 import org.frankframework.core.IHasProcessState;
-import org.frankframework.core.NameAware;
 import org.frankframework.core.IPeekableListener;
 import org.frankframework.core.IPullingListener;
 import org.frankframework.core.IThreadCountControllable;
 import org.frankframework.core.ListenerException;
+import org.frankframework.core.NameAware;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
 import org.frankframework.core.TransactionAttribute;

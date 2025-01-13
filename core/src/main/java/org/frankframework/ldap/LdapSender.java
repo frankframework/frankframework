@@ -41,10 +41,11 @@ import javax.naming.directory.SearchResult;
 
 import jakarta.annotation.Nonnull;
 
-import lombok.Getter;
-import lombok.Lombok;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+import lombok.Lombok;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
