@@ -138,13 +138,11 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		registeredForwards.forEach(this::configureForward);
 
 		ParameterList params = getParameterList();
-		if (params!=null) {
-			try {
-				params.setNamesMustBeUnique(parameterNamesMustBeUnique);
-				params.configure();
-			} catch (ConfigurationException e) {
-				throw new ConfigurationException("while configuring parameters",e);
-			}
+		try {
+			params.setNamesMustBeUnique(parameterNamesMustBeUnique);
+			params.configure();
+		} catch (ConfigurationException e) {
+			throw new ConfigurationException("while configuring parameters", e);
 		}
 
 		if (!StringUtils.isEmpty(getElementToMove()) && !StringUtils.isEmpty(getElementToMoveChain())) {
