@@ -314,10 +314,6 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		}
 	}
 
-	public boolean configurationSucceeded() {
-		return isConfigured;
-	}
-
 	/**
 	 * send a warning to the log and to the messagekeeper of the adapter
 	 */
@@ -1015,7 +1011,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	@Override
 	public boolean isAutoStartup() {
-		if (!isConfigured()) return false; // Don't startup until configured
+		if (!isConfigured) return false; // Don't startup until configured
 
 		if (autoStart == null && getClassLoader() != null) {
 			autoStart = AppConstants.getInstance(getClassLoader()).getBoolean("adapters.autoStart", true);

@@ -30,6 +30,6 @@ import org.frankframework.statistics.MetricsInitializer;
  * NOTE: The {@link ApplicationContextAware} interface is here for ease of use. Ideally implementers should declare it them selves,
  * but since it's almost always required. For now, this keeps things backwards compatible.
  */
-public interface FrankElement extends HasApplicationContext, HasName, ApplicationContextAware {
+public interface FrankElement extends ApplicationContextAware, HasApplicationContext, HasName {
 
 }

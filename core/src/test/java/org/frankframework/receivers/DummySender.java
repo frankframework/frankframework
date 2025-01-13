@@ -19,26 +19,26 @@ public class DummySender implements ICorrelatedSender {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter String name;
-	private @Getter boolean running = false;
+	private @Getter boolean closed = false;
 
 	@Override
 	public void configure() throws ConfigurationException {
-		// Nothing to configure
+		//Nothing to configure
 	}
 
 	@Override
 	public void start() {
-		running = false;
+		closed = false;
 	}
 
 	@Override
 	public void stop() {
-		running = true;
+		closed = true;
 	}
 
 	@Override
 	public boolean isSynchronous() { // This method is used during tests to check if close is called.
-		return isRunning();
+		return isClosed();
 	}
 
 	@Override

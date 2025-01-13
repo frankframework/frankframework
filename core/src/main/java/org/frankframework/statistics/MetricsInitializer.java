@@ -92,10 +92,6 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		return StringUtils.isNotEmpty(namedObject.getName()) ? namedObject.getName():ClassUtils.nameOf(namedObject);
 	}
 
-	private String findName(FrankElement namedObject) {
-		return StringUtils.isNotEmpty(namedObject.getName()) ? namedObject.getName():ClassUtils.nameOf(namedObject);
-	}
-
 	public Timer.ResourceSample createTimerResource(@Nonnull FrankElement frankElement, @Nonnull FrankMeterType type, String... tags) {
 		return Timer.resource(meterRegistry, type.getMeterName())
 				.tags(tags)

@@ -778,7 +778,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						&& currentRunState!=RunState.EXCEPTION_STOPPING
 						&& currentRunState!=RunState.EXCEPTION_STARTING
 						&& currentRunState!=RunState.ERROR
-						&& isConfigured()) { // Only start the receiver if it is properly configured, and is not already starting or still stopping
+						&& isConfigured) { // Only start the receiver if it is properly configured, and is not already starting or still stopping
 					if (currentRunState==RunState.STARTING || currentRunState==RunState.STARTED) {
 						log.info("already in state [{}]", currentRunState);
 					} else {
@@ -2033,8 +2033,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 	/**
 	 * Sets the name of the Receiver, as known to the Adapter.
-	 * If the listener implements the {@link NameAware name} interface and <code>getName()</code>
-	 * of the listener is empty, the name of this object is given to the listener.
+	 * If the listener <code>getName()</code> is empty, the name of this object is given to the listener.
 	 */
 	@Override
 	public void setName(String newName) {

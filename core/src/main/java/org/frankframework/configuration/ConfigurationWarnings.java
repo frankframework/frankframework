@@ -1,5 +1,5 @@
 /*
-Copyright 2021 WeAreFrank!
+Copyright 2021-2025 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,18 +21,23 @@ import org.springframework.context.ApplicationContext;
 
 import org.frankframework.core.Adapter;
 import org.frankframework.statistics.HasApplicationContext;
+import org.frankframework.util.ClassUtils;
 
+/**
+ * If the source implements {@link NameAware} it uses that as prefix, else it will use the ClassName.
+ * See {@link ClassUtils#nameOf(Object)}.
+ */
 public class ConfigurationWarnings extends AbstractApplicationWarnings {
 
 	/**
-	 * Add a ConfigurationWarning with NameAware prefix
+	 * Add a ConfigurationWarning. 
 	 */
 	public static void add(HasApplicationContext source, Logger log, String message) {
 		add(source, log, message, (Throwable) null);
 	}
 
 	/**
-	 * Add a ConfigurationWarning with NameAware prefix and log the exception stack
+	 * Add a ConfigurationWarning (optionally with NameAware prefix) and log the exception stack
 	 */
 	public static void add(HasApplicationContext source, Logger log, String message, Throwable t) {
 		ConfigurationWarnings instance = getInstance(source);
@@ -44,14 +49,14 @@ public class ConfigurationWarnings extends AbstractApplicationWarnings {
 	}
 
 	/**
-	 * Add a (globally-)suppressible ConfigurationWarning with NameAware prefix
+	 * Add a (globally-)suppressible ConfigurationWarning (optionally with NameAware prefix).
 	 */
 	public static void add(HasApplicationContext source, Logger log, String message, SuppressKeys suppressionKey) {
 		add(source, log, message, suppressionKey, null);
 	}
 
 	/**
-	 * Add a suppressible ConfigurationWarning with NameAware prefix
+	 * Add a suppressible ConfigurationWarning (optionally with NameAware prefix).
 	 */
 	public static void add(HasApplicationContext source, Logger log, String message, SuppressKeys suppressionKey, Adapter adapter) {
 		ConfigurationWarnings instance = getInstance(source); // We could call two statics, this prevents a double getInstance(..) lookup.

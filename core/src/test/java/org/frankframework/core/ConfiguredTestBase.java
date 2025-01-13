@@ -56,7 +56,7 @@ public abstract class ConfiguredTestBase {
 	}
 
 	/**
-	 * Performs full initialization of the bean, including all applicable BeanPostProcessors. This is effectively a supersetof what autowire provides, adding initializeBean behavior.
+	 * Performs full initialization of the bean, including all applicable BeanPostProcessors. This is effectively a superset of what autowire provides, adding initializeBean behavior.
 	 */
 	public <T> T createBeanInAdapter(Class<T> beanClass) {
 		assertNotNull(adapter, "Adapter does not exist");
