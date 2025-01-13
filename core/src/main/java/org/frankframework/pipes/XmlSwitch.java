@@ -103,10 +103,10 @@ public class XmlSwitch extends AbstractPipe {
 
 	@Override
 	public void stop() {
-		super.stop();
 		if (transformerPool!=null) {
 			transformerPool.close();
 		}
+		super.stop();
 	}
 
 

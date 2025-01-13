@@ -28,7 +28,6 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.ReferTo;
-import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.senders.XsltSender;
@@ -78,17 +77,13 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 
 	@Override
 	public void start() {
-		sender.start();
 		super.start();
+		sender.start();
 	}
 
 	@Override
 	public void stop() {
-		try {
-			sender.stop();
-		} catch (LifecycleException e) {
-			log.warn("exception closing XsltSender",e);
-		}
+		sender.stop();
 		super.stop();
 	}
 
