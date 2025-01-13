@@ -974,9 +974,10 @@ public class XmlUtils {
 		if (xsltVersion == 1) {
 			factory = new TransformerFactoryImpl();
 			factory.setErrorListener(errorListener);
-//			if (isXsltStreamingByDefault()) {
-//				factory.setAttribute(TransformerFactoryImpl.FEATURE_INCREMENTAL, Boolean.TRUE);
-//			}
+			if (isXsltStreamingByDefault()) {
+				// Enabling incremental reading in Xalan implies data will be read in a different thread, which is also the thread in which XmlContentHandler callbacks will be executed.
+				factory.setAttribute(TransformerFactoryImpl.FEATURE_INCREMENTAL, Boolean.TRUE);
+			}
 			return factory;
 		}
 		// XSLT version 2 or 3.
