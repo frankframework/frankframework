@@ -127,8 +127,10 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 	protected String makeEncapsulatingXslt(String rootElementName, String xpathExpression, int xsltVersion, String namespaceDefs) {
 		StringBuilder paramsString = new StringBuilder();
-		for (IParameter param : getParameterList()) {
-			paramsString.append("<xsl:param name=\"").append(param.getName()).append("\"/>");
+		if (getParameterList() != null) {
+			for (IParameter param : getParameterList()) {
+				paramsString.append("<xsl:param name=\"").append(param.getName()).append("\"/>");
+			}
 		}
 		String namespaceClause = XmlUtils.getNamespaceClause(namespaceDefs);
 		return
@@ -310,7 +312,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			} else {
 				transformerFilter = getExtractElementsTp().getTransformerFilter(result.inputHandler);
 			}
-			if (!getParameterList().isEmpty()) {
+			if (getParameterList() != null && !getParameterList().isEmpty()) {
 				try {
 					XmlUtils.setTransformerParameters(transformerFilter.getTransformer(), getParameterList().getValues(input, session).getValueMap());
 				} catch (ParameterException | IOException e) {
