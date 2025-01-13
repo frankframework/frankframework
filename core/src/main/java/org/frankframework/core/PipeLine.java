@@ -139,8 +139,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private final Map<String, IPipe> pipesByName = new LinkedHashMap<>();
 	private @Getter final List<IPipe> pipes	  = new ArrayList<>();
 
-	private @Getter Adapter adapter;    // for transaction managing
-	@Deprecated @Getter private HasName owner; // for logging purposes
+	private @Getter Adapter adapter;    // For transaction managing
+	@Deprecated @Getter private HasName owner; // LEGACy :: For logging purposes in pipe- and pipeline-processors
 	private @Setter PipeLineProcessor pipeLineProcessor;
 
 	private @Getter DistributionSummary requestSizeStats;
@@ -170,16 +170,18 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		if (context instanceof Adapter adapter) {
 			// This should always be the case, but in tests it may be a TestConfiguration instead...
 			this.adapter = adapter;
-		}
-		this.applicationContext = context;
 
-		// !!!
-		owner = new HasName() {
-			@Override
-			public String getName() {
-				return context.getId();
-			}
-		};
+			this.owner = adapter; // LEGACY REMOVE THIS ASAP!
+		} else {
+			owner = new HasName() {
+				@Override
+				public String getName() {
+					return "unknown pipeline beloging to context: "+context.getId();
+				}
+			};
+		}
+
+		this.applicationContext = context;
 	}
 
 	/**

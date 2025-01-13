@@ -24,7 +24,6 @@ import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.DestinationValidator;
-import org.frankframework.core.HasName;
 import org.frankframework.core.IListener;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLine;
@@ -780,7 +779,6 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 	public void validateListenerDestinations(PipeLine pipeLine) throws ConfigurationException {
 		Adapter owningAdapter = pipeLine.getAdapter();
 		if (owningAdapter != null) {
-
 			for (Receiver<?> receiver : owningAdapter.getReceivers()) {
 				IListener<?> listener = receiver.getListener();
 				try {
