@@ -32,6 +32,7 @@ public interface HasApplicationContext extends IScopeProvider {
 	 */
 	ApplicationContext getApplicationContext();
 
+	@Override
 	default ClassLoader getConfigurationClassLoader() {
 		return getApplicationContext().getClassLoader();
 	}
