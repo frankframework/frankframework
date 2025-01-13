@@ -11,6 +11,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>17</maven.compiler.target>
 		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.proc>full</maven.compiler.proc>
 		<log4j2.version>2.24.3</log4j2.version>
 
 		<sonar.organization>frank-framework</sonar.organization>
@@ -1181,6 +1182,11 @@
 										</excludes>
 										<message>Dont use com.sun but glassfish instead</message>
 									</bannedDependencies>
+								</rules>
+								<rules>
+									<requireJavaVersion>
+										<version>[17,24)</version>
+									</requireJavaVersion>
 								</rules>
 							</configuration>
 						</execution>
