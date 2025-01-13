@@ -1,5 +1,0 @@
-<project default="copy.files">
-	<target name="copy.files">
-		<copy file="GPOA.xml" tofile="${testdata.dir}/xfeip/GPOA.xml" overwrite="true" />
-	</target>
-</project>

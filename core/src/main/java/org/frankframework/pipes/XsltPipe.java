@@ -15,13 +15,11 @@
 */
 package org.frankframework.pipes;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -36,7 +34,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.TransformerPool.OutputType;
 
-
 /**
  * Perform an XSLT transformation with a specified stylesheet.
  *
@@ -47,8 +44,6 @@ import org.frankframework.util.TransformerPool.OutputType;
 @Category(Category.Type.BASIC)
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class XsltPipe extends FixedForwardPipe implements InitializingBean {
-
-	private String sessionKey=null;
 
 	private final @Getter XsltSender sender = createXsltSender();
 
@@ -97,15 +92,10 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 		if (Message.isEmpty(input)) {
 			throw new PipeRunException(this, "got null input");
 		}
+
 		try {
-			if (StringUtils.isNotEmpty(getSessionKey())) {
-				input.preserve();
-			}
 			Message result = sender.sendMessage(input, session).getResult();
-			if (StringUtils.isNotEmpty(getSessionKey())) {
-				session.put(getSessionKey(), result.asString());
-				return new PipeRunResult(getSuccessForward(), input);
-			}
+
 			return new PipeRunResult(getSuccessForward(), result);
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Exception on transforming input", e);
@@ -193,21 +183,9 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 		sender.setXsltVersion(xsltVersion);
 	}
 
-	@Deprecated(forRemoval = true, since = "7.7.0")
-	@ConfigurationWarning("Please use 'storeResultInSessionKey' with preserveInput=true")
-	/** If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result */
-	public void setSessionKey(String newSessionKey) {
-		sessionKey = newSessionKey;
-	}
-
-	private String getSessionKey() {
-		return sessionKey;
-	}
-
 	@Override
 	public void setName(String name) {
 		super.setName(name);
 		sender.setName("Sender of Pipe ["+name+"]");
 	}
-
 }

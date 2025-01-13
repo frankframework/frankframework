@@ -32,14 +32,6 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 	}
 
 	@Test
-	public void wrongPathToFile() throws Exception {
-		pipe.setInputIsFile(true);
-		configureAndStartPipe();
-		assertThrows(Exception.class, () -> doPipe(pipe, "dummyPathToFile", session));
-	}
-
-
-	@Test
 	public void badCharset() throws Exception {
 		pipe.setCharset("dummy");
 		configureAndStartPipe();
@@ -68,19 +60,13 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 	@ParameterizedTest
 	public void testChecksumAndForFiles(Algorithm algorithm, String fileUrl, String expectedHex, String expectedBase64) throws Exception {
 		URL file = TestFileUtils.getTestFileURL(fileUrl);
-		assertEquals(expectedHex, calculateChecksum(file.getPath(), algorithm, true, HashPipe.HashEncoding.Hex));
+
 		assertEquals(expectedHex, calculateChecksum(file.openStream(), algorithm, HashPipe.HashEncoding.Hex));
 
-		assertEquals(expectedBase64, calculateChecksum(file.getPath(), algorithm, true, HashPipe.HashEncoding.Base64));
 		assertEquals(expectedBase64, calculateChecksum(file.openStream(), algorithm, HashPipe.HashEncoding.Base64));
 	}
 
 	private String calculateChecksum(Object input, Algorithm type, HashPipe.HashEncoding hashEncoding) throws Exception {
-		return calculateChecksum(input, type, false, hashEncoding);
-	}
-
-	private String calculateChecksum(Object input, Algorithm type, boolean isFile, HashPipe.HashEncoding hashEncoding) throws Exception {
-		pipe.setInputIsFile(isFile);
 		pipe.setAlgorithm(type);
 		pipe.setHashEncoding(hashEncoding);
 		configureAndStartPipe();
