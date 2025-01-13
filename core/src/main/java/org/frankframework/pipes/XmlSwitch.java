@@ -132,6 +132,13 @@ public class XmlSwitch extends AbstractPipe {
 		return new PipeRunResult(pipeForward, message);
 	}
 
+	/**
+	 * Determine the forward to go to, based on the content of the message. If the forward is not found, the notFoundForwardName is used.
+	 * <p>
+	 * This method needs to be refactored. getInputFromSessionKey shouldn't be used here, only getForwardNameSessionKey should be used.
+	 * <p>
+	 * GetInputFromSessionKey can be removed in 9.2.0.
+	 */
 	private String getForward(Message message, PipeLineSession session) throws PipeRunException {
 		if (StringUtils.isNotEmpty(getForwardNameSessionKey())) {
 			return session.getString(getForwardNameSessionKey());
@@ -153,6 +160,7 @@ public class XmlSwitch extends AbstractPipe {
 			}
 		}
 
+		// It's unlikely that this code is ever reached, as the above code should always return a forward.
 		if (StringUtils.isNotEmpty(getGetInputFromSessionKey())) {
 			try {
 				// Use the message as forward if none of the cases above apply
@@ -175,11 +183,13 @@ public class XmlSwitch extends AbstractPipe {
 				throwEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
 				pipeForward = findForward(forward);
 			} else {
-				log.info("determined forward [{}], which is not defined. Will use [{}] instead", forward, getNotFoundForwardName());
 				throwEvent(XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
 				pipeForward = findForward(getNotFoundForwardName());
 			}
 		}
+
+		log.info("resolved forward [{}] to [{}]", forward, pipeForward);
+
 		return pipeForward;
 	}
 
