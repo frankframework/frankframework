@@ -5,10 +5,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.frankframework.configuration.ConfigurationException;
-
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.JsonPipe.Direction;
@@ -135,22 +134,6 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 	@Test
 	public void testXmlArray2JsonWithRoot() throws Exception {
 		pipe.setAddXmlRootElement(true);
-		pipe.setDirection(Direction.XML2JSON);
-		pipe.configure();
-		pipe.start();
-
-		String input = "<root><values><value>a</value><value>a</value><value>a</value></values></root>";
-		String expected = "{\"root\":{\"values\":{\"value\":[\"a\",\"a\",\"a\"]}}}";
-
-		PipeRunResult prr = doPipe(pipe, input, session);
-
-		String result = prr.getResult().asString();
-		assertEquals(expected, result);
-	}
-
-	@Test
-	public void testXmlArray2JsonWithVersion() throws Exception {
-		pipe.setVersion("1");
 		pipe.setDirection(Direction.XML2JSON);
 		pipe.configure();
 		pipe.start();

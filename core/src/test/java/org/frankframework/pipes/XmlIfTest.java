@@ -56,17 +56,8 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 	}
 
 	@Test
-	void emptySessionKeyTest() throws Exception {
-		pipe.setSessionKey("");
-		configureAndStartPipe();
-
-		pipeRunResult = doPipe(pipe, "<test123", session);
-		assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
-	}
-
-	@Test
 	void someSessionKeyTest() throws Exception {
-		pipe.setSessionKey("test");
+		pipe.setGetInputFromSessionKey("test");
 		configureAndStartPipe();
 
 		session.put("test", "testValue");
@@ -82,17 +73,6 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, "<test", session);
-		assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
-	}
-
-	@ParameterizedTest
-	@NullSource
-	@EmptySource
-	void emptySessionKeyNullInputTest(String message) throws Exception {
-		pipe.setSessionKey("");
-		configureAndStartPipe();
-
-		pipeRunResult = doPipe(pipe, message, session);
 		assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
 	}
 
