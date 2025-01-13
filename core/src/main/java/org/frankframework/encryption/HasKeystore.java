@@ -15,8 +15,8 @@
 */
 package org.frankframework.encryption;
 
+import org.frankframework.core.HasApplicationContext;
 import org.frankframework.core.IScopeProvider;
-import org.frankframework.statistics.HasApplicationContext;
 
 public interface HasKeystore extends IScopeProvider, HasApplicationContext {
 

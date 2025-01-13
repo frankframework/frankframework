@@ -197,7 +197,7 @@ public class AdapterStatus extends BusEndpointBase {
 
 	@Nullable
 	private ArrayList<Object> mapAdapterPipes(@Nonnull Adapter adapter) {
-		if(!adapter.configurationSucceeded())
+		if(!adapter.isConfigured())
 			return null;
 		PipeLine pipeline = adapter.getPipeLine();
 		int totalPipes = pipeline.getPipes().size();
@@ -417,7 +417,7 @@ public class AdapterStatus extends BusEndpointBase {
 		String state = adapterRunState.toString().toLowerCase().replace("*", "");
 		adapterInfo.put("state", state);
 
-		adapterInfo.put("configured", adapter.configurationSucceeded());
+		adapterInfo.put("configured", adapter.isConfigured());
 		adapterInfo.put("upSince", adapter.getStatsUpSinceDate().getTime());
 		Date lastMessage = adapter.getLastMessageDateDate();
 		if(lastMessage != null) {

@@ -32,10 +32,10 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.HasApplicationContext;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.NameAware;
 import org.frankframework.jms.JmsRealm;
-import org.frankframework.statistics.HasApplicationContext;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;

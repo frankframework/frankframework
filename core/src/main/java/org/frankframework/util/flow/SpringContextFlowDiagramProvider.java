@@ -27,8 +27,8 @@ import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.HasApplicationContext;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
-import org.frankframework.statistics.HasApplicationContext;
 import org.frankframework.util.AppConstants;
 
 /**

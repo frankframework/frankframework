@@ -61,8 +61,8 @@ import javanet.staxutils.events.StartElementEvent;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
+import org.frankframework.core.HasApplicationContext;
 import org.frankframework.core.IScopeProvider;
-import org.frankframework.statistics.HasApplicationContext;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.validation.xsd.StringXsd;
 

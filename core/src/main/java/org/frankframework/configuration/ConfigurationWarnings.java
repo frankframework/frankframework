@@ -20,7 +20,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
 import org.frankframework.core.Adapter;
-import org.frankframework.statistics.HasApplicationContext;
+import org.frankframework.core.HasApplicationContext;
 import org.frankframework.util.ClassUtils;
 
 /**

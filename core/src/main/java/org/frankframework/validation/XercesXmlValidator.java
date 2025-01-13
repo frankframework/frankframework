@@ -56,10 +56,10 @@ import lombok.Setter;
 import org.frankframework.cache.EhCache;
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.HasApplicationContext;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.lifecycle.LifecycleException;
-import org.frankframework.statistics.HasApplicationContext;
 import org.frankframework.util.AppConstants;
 
 

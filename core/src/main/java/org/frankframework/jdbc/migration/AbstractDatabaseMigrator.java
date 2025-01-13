@@ -33,12 +33,12 @@ import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationMessageEvent;
 import org.frankframework.configuration.classloaders.AbstractClassLoader;
+import org.frankframework.core.HasApplicationContext;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
-import org.frankframework.statistics.HasApplicationContext;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 

@@ -23,7 +23,7 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
-import org.frankframework.statistics.HasApplicationContext;
+import org.frankframework.core.HasApplicationContext;
 
 @Log4j2
 class XercesValidationErrorHandler implements XMLErrorHandler {

@@ -13,12 +13,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.statistics;
+package org.frankframework.core;
 
 import org.springframework.context.ApplicationContext;
 
 import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.core.IScopeProvider;
+import org.frankframework.statistics.MetricsInitializer;
 
 /**
  * Beans that have an {@link ApplicationContext}.

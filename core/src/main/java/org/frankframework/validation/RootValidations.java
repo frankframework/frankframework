@@ -21,7 +21,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.frankframework.statistics.HasApplicationContext;
+import org.frankframework.core.HasApplicationContext;
 import org.frankframework.util.LogUtil;
 
 public class RootValidations implements Iterable<RootValidation> {

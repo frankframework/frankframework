@@ -18,7 +18,6 @@ package org.frankframework.core;
 import org.springframework.context.ApplicationContextAware;
 
 import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.statistics.HasApplicationContext;
 import org.frankframework.statistics.MetricsInitializer;
 
 /**

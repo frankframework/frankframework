@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.statistics.HasApplicationContext;
+import org.frankframework.core.HasApplicationContext;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
 

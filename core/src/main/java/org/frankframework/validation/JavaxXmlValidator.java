@@ -45,10 +45,10 @@ import org.xml.sax.SAXParseException;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
+import org.frankframework.core.HasApplicationContext;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.lifecycle.LifecycleException;
-import org.frankframework.statistics.HasApplicationContext;
 
 /**
  * Straightforward XML-validation based on javax.validation. This is work in programs.
