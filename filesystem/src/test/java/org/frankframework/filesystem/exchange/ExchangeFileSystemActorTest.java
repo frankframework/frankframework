@@ -1,6 +1,7 @@
 package org.frankframework.filesystem.exchange;
 
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import org.junit.jupiter.api.AfterAll;
@@ -10,11 +11,13 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.filesystem.FileSystemActorTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
+import org.frankframework.testutil.TestAssertions;
 
 public class ExchangeFileSystemActorTest extends FileSystemActorTest<MailItemId, ExchangeFileSystem> {
 
 	@BeforeAll
 	public static void beforeAll() {
+		assumeFalse(TestAssertions.isTestRunningOnCI());
 		assumeTrue(ExchangeConnectionCache.validateCredentials());
 	}
 
