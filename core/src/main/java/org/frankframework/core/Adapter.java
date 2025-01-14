@@ -37,6 +37,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.SmartLifecycle;
@@ -50,7 +51,6 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.AopProxyBeanFactoryPostProcessor;
 import org.frankframework.configuration.Configuration;
-import org.frankframework.configuration.ConfigurationAwareBeanPostProcessor;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeLine.ExitState;
@@ -194,12 +194,6 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			throw new LifecycleException("unable to refresh, AdapterContext is already active");
 		}
 
-		AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
-		postProcessor.setAutowiredAnnotationType(Autowired.class);
-		postProcessor.setBeanFactory(getBeanFactory());
-		getBeanFactory().addBeanPostProcessor(postProcessor);
-		getBeanFactory().addBeanPostProcessor(new ConfigurationAwareBeanPostProcessor(configuration));
-
 		if (getEnvironment().matchesProfiles("aop")) {
 			addBeanFactoryPostProcessor(new AopProxyBeanFactoryPostProcessor());
 		}
@@ -208,6 +202,17 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 		SpringContextFlowDiagramProvider bean = SpringUtils.createBean(this, SpringContextFlowDiagramProvider.class);
 		getBeanFactory().registerSingleton("FlowGenerator", bean);
+	}
+
+	@Override
+	protected void registerBeanPostProcessors(ConfigurableListableBeanFactory beanFactory) {
+		super.registerBeanPostProcessors(beanFactory);
+
+		// Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
+		AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
+		postProcessor.setAutowiredAnnotationType(Autowired.class);
+		postProcessor.setBeanFactory(beanFactory);
+		beanFactory.addBeanPostProcessor(postProcessor);
 	}
 
 	/**
@@ -634,20 +639,14 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 			if (Message.isEmpty(message) && isReplaceNullMessage()) {
 				log.debug("Adapter [{}] replaces null message with messageId [{}] by empty message", name, messageId);
-				//noinspection resource
 				message = new Message("");
 				message.closeOnCloseOf(pipeLineSession, "Empty Message from Adapter");
 			}
 			result = pipeline.process(messageId, message, pipeLineSession);
 			return result;
 		} catch (Throwable t) {
-			// TODO: Check if it really can never be instance of ListenerException when caught. (Doesn't look likely, perhaps a SneakyThrows somewhere?)
-			ListenerException e;
-			if (t instanceof ListenerException) {
-				e = (ListenerException) t;
-			} else {
-				e = new ListenerException(t);
-			}
+			ListenerException e = new ListenerException(t);
+
 			processingSuccess = false;
 			incNumOfMessagesInError();
 			warn("error processing message with messageId [" + messageId + "]: " + e.getMessage());
