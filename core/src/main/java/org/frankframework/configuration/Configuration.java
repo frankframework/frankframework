@@ -154,6 +154,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 		setScheduleManager(getBean("scheduleManager", ScheduleManager.class));
 	}
 
+	/**
+	 * Enables the {@link Autowired} annotation and {@link ConfigurationAware} objects.
+	 */
 	@Override
 	protected void registerBeanPostProcessors(ConfigurableListableBeanFactory beanFactory) {
 		super.registerBeanPostProcessors(beanFactory);

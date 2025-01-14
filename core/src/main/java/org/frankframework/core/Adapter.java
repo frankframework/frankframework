@@ -51,6 +51,8 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.AopProxyBeanFactoryPostProcessor;
 import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationAware;
+import org.frankframework.configuration.ConfigurationAwareBeanPostProcessor;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeLine.ExitState;
@@ -204,6 +206,9 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		getBeanFactory().registerSingleton("FlowGenerator", bean);
 	}
 
+	/**
+	 * Enables the {@link Autowired} annotation and {@link ConfigurationAware} objects.
+	 */
 	@Override
 	protected void registerBeanPostProcessors(ConfigurableListableBeanFactory beanFactory) {
 		super.registerBeanPostProcessors(beanFactory);
@@ -213,6 +218,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		postProcessor.setAutowiredAnnotationType(Autowired.class);
 		postProcessor.setBeanFactory(beanFactory);
 		beanFactory.addBeanPostProcessor(postProcessor);
+		beanFactory.addBeanPostProcessor(new ConfigurationAwareBeanPostProcessor(configuration));
 	}
 
 	/**
