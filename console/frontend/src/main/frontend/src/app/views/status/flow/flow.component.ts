@@ -5,7 +5,7 @@ import { MiscService } from 'src/app/services/misc.service';
 import { Adapter, AppService } from 'src/app/app.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FlowModalComponent } from './flow-modal/flow-modal.component';
-import { NgIf } from '@angular/common';
+
 import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
 import { NgMermaidComponent } from '../../../components/ng-mermaid/ng-mermaid.component';
 
@@ -13,7 +13,7 @@ import { NgMermaidComponent } from '../../../components/ng-mermaid/ng-mermaid.co
   selector: 'app-flow',
   templateUrl: './flow.component.html',
   styleUrls: ['./flow.component.scss'],
-  imports: [NgIf, HasAccessToLinkDirective, NgMermaidComponent],
+  imports: [HasAccessToLinkDirective, NgMermaidComponent],
 })
 export class FlowComponent implements OnChanges {
   @Input() adapter: Adapter | null = null;

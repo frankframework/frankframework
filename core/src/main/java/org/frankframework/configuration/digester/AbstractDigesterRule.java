@@ -38,8 +38,8 @@ import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.CanUseSharedResource;
-import org.frankframework.core.INamedObject;
 import org.frankframework.core.IbisException;
+import org.frankframework.core.NameAware;
 import org.frankframework.core.SharedResource;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
@@ -152,7 +152,7 @@ public abstract class AbstractDigesterRule implements ApplicationContextAware {
 		Object top = getBean();
 
 		Map<String, String> map = copyAttrsToMap(attributes);
-		if(top instanceof INamedObject) { // We must set the name first, to improve logging and configuration warnings
+		if(top instanceof NameAware) { // We must set the name first, to improve logging and configuration warnings
 			final String name = map.remove("name");
 			if(StringUtils.isNotEmpty(name)) {
 				final String resolvedName = resolveValue(name);

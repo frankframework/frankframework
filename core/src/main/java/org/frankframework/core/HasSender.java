@@ -22,6 +22,6 @@ package org.frankframework.core;
  *
  * @author Gerrit van Brakel
  */
-public interface HasSender extends INamedObject {
+public interface HasSender {
 	ISender getSender();
 }

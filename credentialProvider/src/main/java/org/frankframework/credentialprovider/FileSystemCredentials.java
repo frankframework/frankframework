@@ -31,7 +31,6 @@ public class FileSystemCredentials extends Credentials {
 	private final String usernamefile;
 	private final String passwordfile;
 
-
 	public FileSystemCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier, Path root) {
 		this(alias, defaultUsernameSupplier, defaultPasswordSupplier, null, null, root);
 	}
@@ -42,7 +41,6 @@ public class FileSystemCredentials extends Credentials {
 		this.usernamefile = StringUtils.isNotEmpty(usernamefile) ? usernamefile : FileSystemCredentialFactory.USERNAME_FILE_DEFAULT;
 		this.passwordfile = StringUtils.isNotEmpty(passwordfile) ? passwordfile : FileSystemCredentialFactory.PASSWORD_FILE_DEFAULT;
 	}
-
 
 	private void populateFieldFromFile(String folder, String file, Consumer<String> setter) throws IOException {
 		Path p = Paths.get(root.toString(), folder, file);

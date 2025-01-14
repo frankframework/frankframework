@@ -17,12 +17,13 @@ package org.frankframework.configuration.filters;
 
 import java.util.Properties;
 
-import org.frankframework.util.StringResolver;
-import org.frankframework.xml.AttributesWrapper;
-import org.frankframework.xml.FullXmlFilter;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
+import org.frankframework.util.StringResolver;
+import org.frankframework.xml.AttributesWrapper;
+import org.frankframework.xml.FullXmlFilter;
 
 public class OnlyActiveFilter extends FullXmlFilter {
 

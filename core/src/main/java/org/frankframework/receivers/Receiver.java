@@ -63,6 +63,8 @@ import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.FrankElement;
+import org.frankframework.core.HasName;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.HasSender;
 import org.frankframework.core.IConfigurable;
@@ -70,11 +72,9 @@ import org.frankframework.core.ICorrelatedSender;
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.IKnowsDeliveryCount;
 import org.frankframework.core.IListener;
-import org.frankframework.core.IManagable;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowser.HideMethod;
 import org.frankframework.core.IMessageHandler;
-import org.frankframework.core.INamedObject;
 import org.frankframework.core.IProvidesMessageBrowsers;
 import org.frankframework.core.IPullingListener;
 import org.frankframework.core.IPushingListener;
@@ -86,6 +86,8 @@ import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.ListenerException;
+import org.frankframework.core.ManagableLifecycle;
+import org.frankframework.core.NameAware;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineResult;
@@ -107,7 +109,6 @@ import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.monitoring.EventPublisher;
 import org.frankframework.monitoring.EventThrowing;
 import org.frankframework.statistics.FrankMeterType;
-import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
@@ -206,7 +207,7 @@ import org.frankframework.util.XmlUtils;
  */
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class Receiver<M> extends TransactionAttributes implements IManagable, IMessageHandler<M>, IProvidesMessageBrowsers<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable {
+public class Receiver<M> extends TransactionAttributes implements ManagableLifecycle, IMessageHandler<M>, IProvidesMessageBrowsers<M>, EventThrowing, IbisExceptionListener, HasSender, FrankElement, IThreadCountControllable, NameAware {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -306,7 +307,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private int currentBackoffDelay =1;
 
 	private boolean suspensionMessagePending=false;
-	private boolean configurationSucceeded = false;
+	private @Getter boolean isConfigured = false;
 
 	protected final RunStateManager runState = new RunStateManager();
 	private PullingListenerContainer<M> listenerContainer;
@@ -366,10 +367,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		private int receiveCount;
 		private Instant receiveDate;
 		private String comments;
-	}
-
-	public boolean configurationSucceeded() {
-		return configurationSucceeded;
 	}
 
 	private void showProcessingContext(String messageId, String correlationId, PipeLineSession session) {
@@ -553,7 +550,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		configurationSucceeded = false;
+		isConfigured = false;
 		try {
 			super.configure();
 			if (StringUtils.isEmpty(getName())) {
@@ -732,7 +729,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			adapter.getMessageKeeper().add(getLogPrefix()+"initialization complete");
 		}
 		throwEvent(RCV_CONFIGURED_MONITOR_EVENT);
-		configurationSucceeded = true;
+		isConfigured = true;
 
 		if(isInRunState(RunState.ERROR)) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
 			runState.setRunState(RunState.STOPPED);
@@ -763,7 +760,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				}
 			}
 			// See also Adapter.startRunning()
-			if (!configurationSucceeded) {
+			if (!isConfigured) {
 				log.error("configuration of receiver [{}] did not succeed, therefore starting the receiver is not possible", getName());
 				warn("configuration did not succeed. Starting the receiver ["+getName()+"] is not possible");
 				runState.setRunState(RunState.ERROR);
@@ -781,7 +778,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 						&& currentRunState!=RunState.EXCEPTION_STOPPING
 						&& currentRunState!=RunState.EXCEPTION_STARTING
 						&& currentRunState!=RunState.ERROR
-						&& configurationSucceeded()) { // Only start the receiver if it is properly configured, and is not already starting or still stopping
+						&& isConfigured) { // Only start the receiver if it is properly configured, and is not already starting or still stopping
 					if (currentRunState==RunState.STARTING || currentRunState==RunState.STARTED) {
 						log.info("already in state [{}]", currentRunState);
 					} else {
@@ -1686,7 +1683,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	}
 
 	@Override
-	public void exceptionThrown(INamedObject object, Throwable t) {
+	public void exceptionThrown(HasName object, Throwable t) {
 		String msg = getLogPrefix()+"received exception ["+t.getClass().getName()+"] from ["+object.getName()+"]";
 		exceptionThrown(msg, t);
 	}
@@ -2036,8 +2033,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	/**
 	 * Sets the name of the Receiver, as known to the Adapter.
-	 * If the listener implements the {@link INamedObject name} interface and <code>getName()</code>
-	 * of the listener is empty, the name of this object is given to the listener.
+	 * If the listener <code>getName()</code> is empty, the name of this object is given to the listener.
 	 */
 	@Override
 	public void setName(String newName) {

@@ -29,7 +29,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
-		autowireByName(fileSystem);
+		autowireBeanByNameInAdapter(fileSystem);
 	}
 
 	@Test

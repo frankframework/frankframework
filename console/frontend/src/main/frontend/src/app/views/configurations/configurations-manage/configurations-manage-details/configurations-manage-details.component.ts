@@ -6,12 +6,12 @@ import { ConfigurationsService } from '../../configurations.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { SortEvent, ThSortableDirective, basicAnyValueTableSort } from 'src/app/components/th-sortable.directive';
 import { SearchFilterPipe } from '../../../../pipes/search-filter.pipe';
-import { NgFor, NgIf } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-configurations-manage-details',
-  imports: [FormsModule, SearchFilterPipe, RouterLink, NgFor, ThSortableDirective, NgIf],
+  imports: [FormsModule, SearchFilterPipe, RouterLink, ThSortableDirective],
   templateUrl: './configurations-manage-details.component.html',
   styleUrls: ['./configurations-manage-details.component.scss'],
 })

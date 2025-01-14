@@ -20,6 +20,7 @@ import {
   NavigationStart,
   ParamMap,
   Router,
+  RouterLink,
   RouterOutlet,
 } from '@angular/router';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
@@ -37,7 +38,7 @@ import { ServerInfo, ServerInfoService } from './services/server-info.service';
 import { ClusterMemberEvent, ClusterMemberEventType, WebsocketService } from './services/websocket.service';
 import { deepMerge } from './utils';
 import { ServerTimeService } from './services/server-time.service';
-import { NgIf } from '@angular/common';
+
 import { ToastsContainerComponent } from './components/toasts-container/toasts-container.component';
 import { PagesNavigationComponent } from './components/pages/pages-navigation/pages-navigation.component';
 import { PagesTopnavbarComponent } from './components/pages/pages-topnavbar/pages-topnavbar.component';
@@ -49,13 +50,13 @@ import Pace from 'pace-js';
 @Component({
   selector: 'app-root',
   imports: [
-    NgIf,
     ToastsContainerComponent,
     PagesNavigationComponent,
     PagesTopnavbarComponent,
     PagesTopinfobarComponent,
     RouterOutlet,
     PagesFooterComponent,
+    RouterLink,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
@@ -307,7 +308,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.appService.getEnvironmentVariables().subscribe((data) => {
       if (data['Application Constants']) {
-        this.appConstants = Object.assign(this.appConstants, data['Application Constants']['All']); //make FF!Application Constants default
+        this.appConstants = Object.assign(this.appConstants, data['Application Constants']['Global']); //make FF!Application Constants default
 
         const idleTime =
           Number.parseInt(this.appConstants['console.idle.time'] as string) > 0

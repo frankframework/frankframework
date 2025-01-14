@@ -22,14 +22,15 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.dbms.JdbcException;
-import org.frankframework.util.LogUtil;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import lombok.Setter;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.dbms.JdbcException;
+import org.frankframework.util.LogUtil;
 
 /**
  * See Spring's native PropertySourceFactory

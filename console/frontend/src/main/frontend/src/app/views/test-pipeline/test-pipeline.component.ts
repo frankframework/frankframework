@@ -6,7 +6,7 @@ import { Subscription } from 'rxjs';
 import { ComboboxComponent, Option } from '../../components/combobox/combobox.component';
 import { ConfigurationFilter } from '../../pipes/configuration-filter.pipe';
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
-import { NgForOf, NgIf } from '@angular/common';
+
 import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
 import { FormsModule } from '@angular/forms';
 import { MonacoEditorComponent } from '../../components/monaco-editor/monaco-editor.component';
@@ -34,14 +34,12 @@ type PipelineResult = {
   styleUrls: ['./test-pipeline.component.scss'],
   imports: [
     NgbAlert,
-    NgForOf,
     QuickSubmitFormDirective,
     ComboboxComponent,
     FormsModule,
     InputFileUploadComponent,
     MonacoEditorComponent,
     LaddaModule,
-    NgIf,
   ],
 })
 export class TestPipelineComponent implements OnInit, OnDestroy {

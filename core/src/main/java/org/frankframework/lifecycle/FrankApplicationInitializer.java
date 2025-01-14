@@ -21,10 +21,6 @@ import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.ServletException;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.configuration.IbisContext;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.LogUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -32,6 +28,11 @@ import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.configuration.IbisContext;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.LogUtil;
 
 /**
  * Spring WebApplicationInitializer that should start after the {@link FrankEnvironmentInitializer} has been configured.

@@ -22,20 +22,16 @@ public class ConsecutiveXsltPipeTest extends PipeTestBase<XsltPipe> {
 
 	@Test
 	public void testConsecutiveXsltPipes() throws ConfigurationException, PipeRunException, IOException {
-		XsltPipe first = new XsltPipe();
+		XsltPipe first = createBeanInAdapter(XsltPipe.class);
 		first.setName("XsltPipe");
 		first.setStyleSheetName("/Xslt/extract.xslt");
 		first.addForward(new PipeForward("success", "nextPipe"));
-		autowireByType(first);
-		autowireByName(first);
 		pipeline.addPipe(first);
 		pipeline.setFirstPipe("XsltPipe");
 
 		pipe.setName("nextPipe");
 		pipe.setStyleSheetName("/Xslt/map.xslt");
 		//second.setStoreResultInSessionKey("test");
-		autowireByType(pipe);
-		autowireByName(pipe);
 		pipeline.addPipe(pipe);
 
 

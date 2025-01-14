@@ -16,10 +16,11 @@
 package org.frankframework.core;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.jndi.JndiLocatorSupport;
+
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
 
 public class JndiContextPrefixFactory implements InitializingBean {
 

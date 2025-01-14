@@ -21,9 +21,10 @@ import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.core.AbstractRequestReplyExecutor;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.AbstractRequestReplyExecutor;
 import org.frankframework.receivers.ResourceLimiter;
 import org.frankframework.stream.Message;
 

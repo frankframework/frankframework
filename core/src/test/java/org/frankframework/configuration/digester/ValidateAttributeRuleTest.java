@@ -37,7 +37,8 @@ import lombok.Setter;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.HasName;
+import org.frankframework.core.NameAware;
 import org.frankframework.doc.Protected;
 import org.frankframework.doc.Unsafe;
 import org.frankframework.testutil.TestConfiguration;
@@ -87,7 +88,7 @@ public class ValidateAttributeRuleTest {
 
 		rule.begin(beanClass.getSimpleName(), copyMapToAttrs(attributes));
 
-		// Test the bean name with and without INamedObject interface
+		// Test the bean name with and without NameAware interface
 		if (topBean instanceof ConfigWarningTestClass) {
 			assertEquals("ConfigWarningTestClass [name here]", rule.getObjectName());
 		}
@@ -533,7 +534,7 @@ public class ValidateAttributeRuleTest {
 			assertEquals(3, configurationWarnings.getWarnings().size());
 			assertThat(configurationWarnings.getWarnings(), containsInAnyOrder(
 					containsString("[DeprecatedPipe2InAdapter2] on line [42] column [6]"),
-					containsString("[DeprecatedPipe1InAdapter4] on line [77] column [66]"),
+					containsString("[DeprecatedPipe1InAdapter4] on line [77] column [52]"),
 					containsString("[DeprecatedPipe2InAdapter4] on line [82] column [6]")
 			));
 
@@ -576,7 +577,7 @@ public class ValidateAttributeRuleTest {
 		ONE, TWO;
 	}
 
-	public static interface InterfaceWithDefaultMethod extends INamedObject {
+	public static interface InterfaceWithDefaultMethod extends NameAware, HasName {
 
 		default void setNaam(String naam) {
 			setName(naam);
@@ -587,7 +588,7 @@ public class ValidateAttributeRuleTest {
 		}
 	}
 
-	public static class ClassWithEnum extends ClassWithEnumBase implements INamedObject, InterfaceWithDefaultMethod {
+	public static class ClassWithEnum extends ClassWithEnumBase implements NameAware, InterfaceWithDefaultMethod {
 		private @Getter @Setter String name;
 		private @Getter @Setter TestEnum testEnum = TestEnum.ONE;
 		private @Getter @Setter String testString = "test";
@@ -673,7 +674,7 @@ public class ValidateAttributeRuleTest {
 	}
 
 	@ConfigurationWarning("warning above test class")
-	public static class ConfigWarningTestClass implements INamedObject {
+	public static class ConfigWarningTestClass implements NameAware, HasName {
 		private @Getter @Setter String name;
 	}
 

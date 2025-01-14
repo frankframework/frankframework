@@ -29,8 +29,6 @@ import jakarta.xml.soap.AttachmentPart;
 import jakarta.xml.soap.MimeHeader;
 import jakarta.xml.soap.SOAPException;
 
-import com.ibm.icu.text.CharsetDetector;
-import com.ibm.icu.text.CharsetMatch;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -44,6 +42,9 @@ import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.MimeType;
+
+import com.ibm.icu.text.CharsetDetector;
+import com.ibm.icu.text.CharsetMatch;
 
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;

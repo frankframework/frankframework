@@ -9,29 +9,29 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 
-import org.frankframework.core.IManagable;
+import org.frankframework.core.ManagableLifecycle;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.RunState;
 
 public class WaitUtils {
 	protected static final Logger LOG = LogUtil.getLogger(WaitUtils.class);
 
-	public static void waitWhileInState(IManagable object, RunState... state) {
+	public static void waitWhileInState(ManagableLifecycle object, RunState... state) {
 		Set<RunState> states = new HashSet<>();
 		Collections.addAll(states, state);
 
-		LOG.debug("Wait while runstate of [{}] (currently in [{}]) to change to not any of [{}]", object.getName(), object.getRunState(), states);
+		LOG.debug("Wait while runstate of [{}] (currently in [{}]) to change to not any of [{}]", object, object.getRunState(), states);
 		await()
 				.atMost(60, TimeUnit.SECONDS)
 				.pollInterval(100, TimeUnit.MILLISECONDS)
 				.until(()-> !states.contains(object.getRunState()));
 	}
 
-	public static void waitForState(IManagable object, RunState... state) {
+	public static void waitForState(ManagableLifecycle object, RunState... state) {
 		Set<RunState> states = new HashSet<>();
 		Collections.addAll(states, state);
 
-		LOG.debug("Wait for runstate of [{}] to go from [{}] to any of [{}]", object.getName(), object.getRunState(), states);
+		LOG.debug("Wait for runstate of [{}] to go from [{}] to any of [{}]", object, object.getRunState(), states);
 		await()
 				.atMost(10, TimeUnit.SECONDS)
 				.pollInterval(100, TimeUnit.MILLISECONDS)

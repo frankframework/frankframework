@@ -23,8 +23,6 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.core.JndiContextPrefixFactory;
-import org.frankframework.util.AppConstants;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -40,6 +38,9 @@ import com.arjuna.common.util.propertyservice.PropertiesFactoryStax;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.core.JndiContextPrefixFactory;
+import org.frankframework.util.AppConstants;
 
 @Log4j2
 public class NarayanaConfigurationBean implements InitializingBean, ApplicationContextAware {

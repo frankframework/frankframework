@@ -63,7 +63,7 @@ import org.xml.sax.SAXException;
 import lombok.Getter;
 import lombok.Lombok;
 
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.HasName;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -392,7 +392,7 @@ public class Message implements Serializable, Closeable {
 		resourcesToClose.add(resource);
 	}
 
-	public void closeOnCloseOf(@Nonnull PipeLineSession session, INamedObject requester) {
+	public void closeOnCloseOf(@Nonnull PipeLineSession session, HasName requester) {
 		closeOnCloseOf(session, ClassUtils.nameOf(requester));
 	}
 

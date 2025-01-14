@@ -11,6 +11,8 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.pipes.XsltPipe;
+import org.frankframework.processors.CorePipeProcessor;
+import org.frankframework.processors.InputOutputPipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.XmlParameterBuilder;
@@ -79,12 +81,20 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = "Euro € single quote ' double quote escaped \" newline escaped \n";
 
-		pipe.setSessionKey("sessionKey");
+		// Use both setPreserveInput and setStoreResultInSessionKey to get the result in the sessionKey
+		pipe.setPreserveInput(true);
+		pipe.setStoreResultInSessionKey("sessionKey");
 		setXpathExpression("/request/g/@attr");
-		pipe.configure();
-		pipe.start();
 
-		PipeRunResult prr = doPipe(pipe, input, session);
+		// Configure input/output pipe processor to enable storeResultInSessionKey
+		InputOutputPipeProcessor ioProcessor = new InputOutputPipeProcessor();
+		CorePipeProcessor coreProcessor = new CorePipeProcessor();
+		ioProcessor.setPipeProcessor(coreProcessor);
+
+		pipe.configure();
+
+		PipeRunResult prr = ioProcessor.processPipe(pipeline, pipe, Message.asMessage(input), session);
+
 		Message sessionKey = session.getMessage("sessionKey");
 		assertEquals(expected, sessionKey.asString());
 		String result = prr.getResult().asString();

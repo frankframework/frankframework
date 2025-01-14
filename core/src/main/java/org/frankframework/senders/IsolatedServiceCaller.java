@@ -18,9 +18,12 @@ package org.frankframework.senders;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
+import org.apache.logging.log4j.Logger;
+import org.springframework.core.task.TaskExecutor;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.logging.log4j.Logger;
+
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderResult;
@@ -29,7 +32,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.threading.ThreadLifeCycleEventListener;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
-import org.springframework.core.task.TaskExecutor;
 
 /**
  * Helper class for {@link IbisLocalSender} that wraps around {@link ServiceClient} implementation to make calls to a local Ibis adapter in a separate thread.

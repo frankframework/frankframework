@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,8 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import org.frankframework.core.INamedObject;
+
+import org.frankframework.core.NameAware;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
@@ -38,7 +39,7 @@ import org.frankframework.util.LogUtil;
  * @param <P> Parts to be added to each collection
  */
 @Log4j2
-public class Collection<C extends ICollector<P>, P> implements AutoCloseable, INamedObject {
+public class Collection<C extends ICollector<P>, P> implements AutoCloseable, NameAware {
 	private @Getter @Setter String name;
 	private final List<P> parts;
 	private final C collector;

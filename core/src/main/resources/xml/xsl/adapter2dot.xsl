@@ -11,7 +11,7 @@
 		- if the pipeline has an outputValidator element then this one is represented by a dashed box; between every exit element and the outputValidator a dashed line without arrowhead is drawn; for the outputValidators forwards a dashed line is used instead of the default solid line
 		- for every pipe input/outputValidator a dashed box is created; between the pipe element and the input/outputValidator a dashed line without arrowhead is drawn; for the input/outputValidator forwards a dashed line is used instead of the default solid line
 		- if a pipe isn't found in a forward (and not in the pipeline attribute firstPipe and not in the pipe attribute notFoundForwardName, emptyForwardName, thenForwardName or elseForwardName) then the first XmlSwitch pipe before it without forwards is assumed to be its caller; between the elements a dotted line is used instead of the default solid line
-		- if a pipe (not XmlSwitch, CompareIntegerPipe, CompareStringPipe, FilenameSwitch or XmlIf) has no forward then the next pipe in the sequence is assumed to be the 'success' forward; for the last pipe in the sequence the exit with attribute state 'success' is assumed to be the 'success' forward
+		- if a pipe (not XmlSwitch, CompareIntegerPipe, CompareStringPipe or XmlIf) has no forward then the next pipe in the sequence is assumed to be the 'success' forward; for the last pipe in the sequence the exit with attribute state 'success' is assumed to be the 'success' forward
 	-->
 	<xsl:variable name="space" select="' '" />
 	<xsl:template match="adapter">
@@ -97,7 +97,6 @@
 			<xsl:when test="@className='org.frankframework.pipes.XmlSwitch'
 							or@className='org.frankframework.pipes.CompareIntegerPipe'
 							or@className='org.frankframework.pipes.CompareStringPipe'
-							or@className='org.frankframework.pipes.FilenameSwitch'
 							or@className='org.frankframework.pipes.XmlIf'">
 				<xsl:text>&quot;</xsl:text>
 				<xsl:value-of select="@name" />

@@ -26,15 +26,15 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import jakarta.mail.BodyPart;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMultipart;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.mime.MultipartUtils;
@@ -42,7 +42,6 @@ import org.frankframework.http.rest.ApiCacheManager;
 import org.frankframework.http.rest.IApiCache;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.stream.Message;
-
 import org.frankframework.util.HttpUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;

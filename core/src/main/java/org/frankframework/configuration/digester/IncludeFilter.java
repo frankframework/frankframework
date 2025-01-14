@@ -20,17 +20,18 @@ import java.io.IOException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLFilterImpl;
+
 import org.frankframework.core.Resource;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.BodyOnlyFilter;
 import org.frankframework.xml.ClassLoaderURIResolver;
 import org.frankframework.xml.FullXmlFilter;
 import org.frankframework.xml.SaxException;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLFilterImpl;
 
 public class IncludeFilter extends FullXmlFilter {
 

@@ -22,8 +22,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
 import org.frankframework.util.StreamUtil;
-import org.frankframework.validation.IXSD;
 import org.frankframework.validation.AbstractXSD;
+import org.frankframework.validation.IXSD;
 
 /**
  * XSD based on a reference to a resource on the classPath.

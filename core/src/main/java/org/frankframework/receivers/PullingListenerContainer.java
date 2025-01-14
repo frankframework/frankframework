@@ -35,12 +35,13 @@ import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.frankframework.core.HasName;
 import org.frankframework.core.IHasProcessState;
-import org.frankframework.core.INamedObject;
 import org.frankframework.core.IPeekableListener;
 import org.frankframework.core.IPullingListener;
 import org.frankframework.core.IThreadCountControllable;
 import org.frankframework.core.ListenerException;
+import org.frankframework.core.NameAware;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
 import org.frankframework.core.TransactionAttribute;
@@ -142,9 +143,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		}
 	}
 
-	private class ControllerTask implements SchedulingAwareRunnable, INamedObject {
+	private class ControllerTask implements SchedulingAwareRunnable, HasName {
 
-		private @Getter @Setter String name;
+		private @Getter String name;
 
 		@Override
 		public boolean isLongLived() {
@@ -152,7 +153,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		}
 
 		public ControllerTask() {
-			setName(ClassUtils.nameOf(receiver));
+			name = ClassUtils.nameOf(receiver);
 		}
 
 		@Override
@@ -183,14 +184,14 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 				if(receiver.getRunState()!=RunState.STOPPING && receiver.getRunState()!=RunState.EXCEPTION_STOPPING && receiver.getRunState()!=RunState.STOPPED) { // Prevent circular reference in Receiver. IPullingListeners stop as their threads finish
 					receiver.stop();
 				}
-				receiver.closeAllResources(); //We have to call closeAllResources as the receiver won't do this for IPullingListeners
+				receiver.closeAllResources(); // We have to call closeAllResources as the receiver won't do this for IPullingListeners
 
 				ThreadContext.removeStack(); // potentially redundant, makes sure to remove the NDC/MDC
 			}
 		}
 	}
 
-	private class ListenTask implements SchedulingAwareRunnable, INamedObject {
+	private class ListenTask implements SchedulingAwareRunnable, HasName, NameAware {
 
 		private @Getter @Setter String name;
 		private IHasProcessState<M> inProcessStateManager=null;

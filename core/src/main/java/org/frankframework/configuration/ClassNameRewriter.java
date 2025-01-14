@@ -15,13 +15,14 @@
 */
 package org.frankframework.configuration;
 
-import org.frankframework.xml.FullXmlFilter;
-import org.frankframework.xml.WritableAttributes;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.xml.FullXmlFilter;
+import org.frankframework.xml.WritableAttributes;
 
 @Log4j2
 public class ClassNameRewriter extends FullXmlFilter {

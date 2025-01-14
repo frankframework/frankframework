@@ -21,13 +21,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.configuration.Configuration;
-import org.frankframework.configuration.IbisManager;
-import org.frankframework.scheduler.job.IJob;
-import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.MessageKeeper;
-import org.frankframework.util.XmlBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -39,6 +32,14 @@ import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.TriggerKey;
 import org.quartz.impl.matchers.GroupMatcher;
+
+import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.IbisManager;
+import org.frankframework.scheduler.job.IJob;
+import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.MessageKeeper;
+import org.frankframework.util.XmlBuilder;
 /**
  * The SchedulerAdapter is an adapter for the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> <br/>
  * It transforms the information from the scheduler to XML.

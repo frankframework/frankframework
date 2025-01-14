@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { AppService } from 'src/app/app.service';
 import { ComboboxComponent, Option } from '../../components/combobox/combobox.component';
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
-import { NgForOf, NgIf } from '@angular/common';
+
 import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
 import { InputFileUploadComponent } from '../../components/input-file-upload/input-file-upload.component';
 import { FormsModule } from '@angular/forms';
@@ -26,14 +26,12 @@ type ServiceListenerResult = {
   styleUrls: ['./test-service-listener.component.scss'],
   imports: [
     NgbAlert,
-    NgForOf,
     QuickSubmitFormDirective,
     ComboboxComponent,
     InputFileUploadComponent,
     FormsModule,
     MonacoEditorComponent,
     LaddaModule,
-    NgIf,
   ],
 })
 export class TestServiceListenerComponent implements OnInit {

@@ -92,13 +92,13 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		DummyListenerWithMessageBrowsers listener = new DummyListenerWithMessageBrowsers();
 		listener.setName("ListenerName");
-		Receiver<String> receiver = spy(SpringUtils.createBean(configuration, Receiver.class));
+		Receiver<String> receiver = spy(SpringUtils.createBean(adapter, Receiver.class));
 		receiver.setName("ReceiverName");
 		receiver.setListener(listener);
 		doAnswer(p -> { throw new ListenerException("testing message ->"+p.getArgument(0)); }).when(receiver).retryMessage(anyString()); //does not actually test the retry mechanism
 		adapter.addReceiver(receiver);
-		PipeLine pipeline = SpringUtils.createBean(configuration, PipeLine.class);
-		SenderPipe pipe = SpringUtils.createBean(configuration, SenderPipe.class);
+		PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
+		SenderPipe pipe = SpringUtils.createBean(adapter, SenderPipe.class);
 		pipe.setMessageLog(getTransactionalStorage());
 		pipe.setSender(new EchoSender());
 		pipe.setName("PipeName");

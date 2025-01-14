@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -9,7 +8,7 @@ import { QuickSubmitFormDirective } from '../../components/quick-submit-form.dir
 
 @Component({
   selector: 'app-websocket-test',
-  imports: [CommonModule, RouterModule, FormsModule, QuickSubmitFormDirective],
+  imports: [RouterModule, FormsModule, QuickSubmitFormDirective],
   templateUrl: './websocket-test.component.html',
   styleUrl: './websocket-test.component.scss',
 })

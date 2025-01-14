@@ -24,11 +24,11 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.Assert;
+
+import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
 /**
  * XAResourceRecoveryHelper implementation which gets XIDs, which needs to be recovered,

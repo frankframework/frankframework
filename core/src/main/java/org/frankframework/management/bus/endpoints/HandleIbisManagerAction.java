@@ -15,14 +15,16 @@
 */
 package org.frankframework.management.bus.endpoints;
 
-import org.frankframework.management.bus.TopicSelector;
-import org.springframework.messaging.Message;
 import jakarta.annotation.security.RolesAllowed;
+
+import org.springframework.messaging.Message;
+
 import org.frankframework.management.Action;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
 
 @BusAware("frank-management-bus")
 public class HandleIbisManagerAction extends BusEndpointBase {

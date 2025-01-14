@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import org.bouncycastle.util.io.Streams;
 
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BouncyGPG;
+
 import org.frankframework.configuration.ConfigurationException;
 
 public class Decrypt extends AbstractPGPAction {

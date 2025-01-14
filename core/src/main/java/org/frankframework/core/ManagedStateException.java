@@ -16,7 +16,7 @@
 package org.frankframework.core;
 
 /**
- * Exception thrown if a {@link IManagable ManagedObject} like an Adapter or Receiver is in
+ * Exception thrown if a {@link ManagableLifecycle ManagedObject} like an Adapter or Receiver is in
  * an unexpected or illegal state.
  *
  * @author Gerrit van Brakel

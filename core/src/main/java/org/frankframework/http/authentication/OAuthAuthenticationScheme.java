@@ -15,6 +15,8 @@
 */
 package org.frankframework.http.authentication;
 
+import static org.frankframework.http.AbstractHttpSession.AUTHENTICATION_METHOD_KEY;
+
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.auth.AUTH;
@@ -24,8 +26,6 @@ import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.Args;
-
-import static org.frankframework.http.AbstractHttpSession.AUTHENTICATION_METHOD_KEY;
 
 /**
  * HttpClient AuthScheme that uses OAuthAccessTokenManager to obtain an access token (via Client Credentials flow).

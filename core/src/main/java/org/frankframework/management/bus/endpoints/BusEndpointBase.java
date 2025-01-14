@@ -16,9 +16,16 @@
 package org.frankframework.management.bus.endpoints;
 
 import jakarta.annotation.Nonnull;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
@@ -28,11 +35,6 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.http.MediaType;
-import org.springframework.util.MimeType;
 
 public class BusEndpointBase implements ApplicationContextAware, InitializingBean {
 	protected Logger log = LogUtil.getLogger(this);

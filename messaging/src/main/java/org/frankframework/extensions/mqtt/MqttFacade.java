@@ -23,9 +23,6 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
-
-import org.frankframework.doc.Mandatory;
-
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -33,13 +30,16 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IConfigurable;
+import org.frankframework.core.NameAware;
+import org.frankframework.doc.Mandatory;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.util.CredentialFactory;
 
 @Log4j2
-public class MqttFacade implements HasPhysicalDestination, IConfigurable {
+public class MqttFacade implements HasPhysicalDestination, IConfigurable, NameAware, FrankElement {
 	private final @Getter String domain = "MQTT";
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -70,9 +70,6 @@ public class MqttFacade implements HasPhysicalDestination, IConfigurable {
 		}
 		if (StringUtils.isEmpty(getBrokerUrl())) {
 			throw new ConfigurationException("brokerUrl must be specified");
-		}
-		if (StringUtils.isEmpty(getTopic())) {
-			throw new ConfigurationException("topic must be specified");
 		}
 		connectOptions = new MqttConnectOptions();
 		connectOptions.setCleanSession(isCleanSession());

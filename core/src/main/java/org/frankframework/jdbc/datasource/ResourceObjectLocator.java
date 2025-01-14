@@ -20,10 +20,11 @@ import java.io.Reader;
 import java.net.URL;
 import java.util.Properties;
 
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.InitializingBean;
 import org.yaml.snakeyaml.Yaml;
+
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.StreamUtil;

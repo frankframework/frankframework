@@ -150,7 +150,7 @@ public class Init {
 	}
 
 	private boolean isMonitoringEnabled() {
-		return frankApiService.getProperty("monitoring.enabled", false);
+		return frankApiService.getProperty("monitoring.enabled", true);
 	}
 
 	private boolean shouldSkip(HandlerMethod handlerMethod) {

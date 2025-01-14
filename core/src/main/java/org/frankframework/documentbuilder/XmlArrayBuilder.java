@@ -15,8 +15,9 @@
 */
 package org.frankframework.documentbuilder;
 
-import org.frankframework.xml.SaxElementBuilder;
 import org.xml.sax.SAXException;
+
+import org.frankframework.xml.SaxElementBuilder;
 
 public class XmlArrayBuilder extends ArrayBuilder {
 

@@ -33,6 +33,7 @@ import net.spy.memcached.ConnectionObserver;
 import net.spy.memcached.FailureMode;
 import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.auth.AuthDescriptor;
+
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CredentialFactory;

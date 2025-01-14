@@ -22,13 +22,15 @@ import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.MessageConsumer;
 import jakarta.jms.Session;
+
 import org.apache.logging.log4j.Logger;
-import org.frankframework.unmanaged.SpringJmsConnector;
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.LogUtil;
 import org.springframework.jms.connection.JmsResourceHolder;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.transaction.TransactionStatus;
+
+import org.frankframework.unmanaged.SpringJmsConnector;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.LogUtil;
 
 /**
  * Extend the DefaultMessageListenerContainer from Spring to add trace logging and make it possible to monitor the last

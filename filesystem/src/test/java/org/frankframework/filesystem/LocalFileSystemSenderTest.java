@@ -44,13 +44,12 @@ public class LocalFileSystemSenderTest extends WritableFileSystemSenderTest<Loca
 		File dest = new File(folder1+"/bb.txt");
 		assertFalse(dest.exists());
 
-		LocalFileSystemSender sender = new LocalFileSystemSender();
+		LocalFileSystemSender sender = createBeanInAdapter(LocalFileSystemSender.class);
 		sender.setAction(FileSystemAction.RENAME);
 		sender.addParameter(new Parameter("filename", src.getPath()));
 
 		sender.addParameter(new Parameter("destination", dest.getPath()));
 		sender.setNumberOfBackups(1);
-		autowireByName(sender);
 		sender.configure();
 		sender.start();
 
@@ -74,8 +73,7 @@ public class LocalFileSystemSenderTest extends WritableFileSystemSenderTest<Loca
 		File dest = new File(folder2+"/bb.txt");
 		assertFalse(dest.exists());
 
-		LocalFileSystemSender sender = new LocalFileSystemSender();
-		autowireByName(sender);
+		LocalFileSystemSender sender = createBeanInAdapter(LocalFileSystemSender.class);
 		sender.setAction(FileSystemAction.RENAME);
 		sender.addParameter(new Parameter("filename", src.getPath()));
 

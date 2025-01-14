@@ -15,8 +15,9 @@
 */
 package org.frankframework.xml;
 
-import org.frankframework.core.PipeLineSession;
 import org.xml.sax.ContentHandler;
+
+import org.frankframework.core.PipeLineSession;
 
 /**
  * Utility interface to allow the debugger to inspect XML in the middle of a streaming execution.

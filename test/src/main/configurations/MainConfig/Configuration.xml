@@ -45,7 +45,6 @@
 	<Include ref="ConfigurationWsdlGeneratorPipe.xml"/>
 	<Include ref="ConfigurationFxF3.xml"/>
 	<Include ref="ConfigurationLocker.xml"/>
-	<Include ref="ConfigurationXmlFileElementIteratorPipe.xml"/>
 	<Include ref="ConfigurationCompactMessage.xml"/>
 	<Include ref="ConfigurationResultSet2FileSender.xml"/>
 	<Include ref="ConfigurationWsdlXmlValidator.xml"/>

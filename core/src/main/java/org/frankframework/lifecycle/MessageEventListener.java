@@ -18,10 +18,10 @@ package org.frankframework.lifecycle;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.frankframework.management.bus.BusMessageUtils;
 import org.springframework.context.ApplicationListener;
 
 import org.frankframework.configuration.ConfigurationMessageEvent;
+import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.util.MessageKeeper;
 
 public class MessageEventListener implements ApplicationListener<ApplicationMessageEvent> {

@@ -5,6 +5,7 @@ export function ConfigurationFilter(
   adapters: Record<string, Adapter>,
   selectedConfiguration: string,
   filter?: Record<AdapterStatus, boolean>,
+  filterQuery?: string,
 ): Record<string, Adapter> {
   if (!adapters || Object.keys(adapters).length === 0) return {};
   const filteredAdapters: Record<string, Adapter> = {};
@@ -12,8 +13,9 @@ export function ConfigurationFilter(
     const adapter = adapters[adapterName];
 
     if (
-      (adapter.configuration == selectedConfiguration || selectedConfiguration == 'All') &&
-      (filter == undefined || filter[adapter.status!])
+      (selectedConfiguration == 'All' || adapter.configuration == selectedConfiguration) &&
+      (filter === undefined || filter[adapter.status!]) &&
+      (filterQuery === undefined || filterQuery === '' || adapterName.toLowerCase().includes(filterQuery))
     )
       filteredAdapters[adapterName] = adapter;
   }

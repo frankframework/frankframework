@@ -18,6 +18,7 @@ package org.frankframework.core;
 import org.springframework.transaction.TransactionDefinition;
 
 import lombok.Getter;
+
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
 

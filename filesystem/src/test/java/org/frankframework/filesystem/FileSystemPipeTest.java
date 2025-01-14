@@ -46,11 +46,11 @@ public abstract class FileSystemPipeTest<FSP extends AbstractFileSystemPipe<F, F
 
 		fileSystemPipe = createFileSystemPipe();
 		fileSystemPipe.setName(getClass().getSimpleName());
-		PipeLine pipeLine = new PipeLine();
+		PipeLine pipeLine = createBeanInAdapter(PipeLine.class);
 		fileSystemPipe.setPipeLine(pipeLine);
 		pipeLine.addPipe(fileSystemPipe);
 
-		autowireByName(fileSystemPipe);
+		autowireBeanByNameInAdapter(fileSystemPipe);
 		fileSystemPipe.addForward(new PipeForward("success",null));
 	}
 

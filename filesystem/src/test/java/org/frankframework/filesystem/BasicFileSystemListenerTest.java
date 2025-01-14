@@ -58,7 +58,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 	public void setUp() throws Exception {
 		super.setUp();
 		fileSystemListener = createFileSystemListener();
-		autowireByName(fileSystemListener);
+		autowireBeanByNameInAdapter(fileSystemListener);
 		threadContext = new HashMap<>();
 	}
 

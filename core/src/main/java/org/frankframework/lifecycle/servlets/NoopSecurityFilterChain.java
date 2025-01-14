@@ -19,12 +19,12 @@ package org.frankframework.lifecycle.servlets;
 import java.util.Collections;
 import java.util.List;
 
+import jakarta.servlet.Filter;
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.filter.DelegatingFilterProxy;
-
-import jakarta.servlet.Filter;
-import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Since Spring 6, the `@EnableWebSecurity` annotation seems to be adding a default SecurityFilterChain, if not exist yet.

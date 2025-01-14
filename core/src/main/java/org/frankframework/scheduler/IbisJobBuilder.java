@@ -16,13 +16,13 @@
 package org.frankframework.scheduler;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.scheduler.job.DatabaseJob;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
 
 import org.frankframework.scheduler.IbisJobDetail.JobType;
+import org.frankframework.scheduler.job.DatabaseJob;
 
 public class IbisJobBuilder {
 

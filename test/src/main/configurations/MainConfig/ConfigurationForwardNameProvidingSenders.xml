@@ -89,7 +89,7 @@
 			<ReplacerPipe name="httpservice" getInputFromFixedValue="statuscodeselectable: [?{exit}]">
 				<param name="exit" sessionKey="exit"/>
 			</ReplacerPipe>
-			<XmlSwitchPipe name="exitXmlSwitch" sessionKey="exit"/>
+			<XmlSwitchPipe name="exitXmlSwitch" forwardNameSessionKey="exit"/>
 		</Pipeline>
 	</Adapter>
 </module>

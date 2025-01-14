@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2022, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,10 @@
 */
 package org.frankframework.encryption;
 
-import org.frankframework.core.IConfigurationAware;
+import org.frankframework.core.HasApplicationContext;
+import org.frankframework.core.IScopeProvider;
 
-public interface HasKeystore extends IConfigurationAware {
+public interface HasKeystore extends IScopeProvider, HasApplicationContext {
 
 	String getKeystore();
 	KeystoreType getKeystoreType();

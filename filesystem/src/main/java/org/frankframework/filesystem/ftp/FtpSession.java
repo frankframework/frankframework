@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -98,8 +98,6 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		DIRECT, HTTP, SOCKS
 	}
 
-	private @Getter String name;
-
 	// configuration parameters, global for all types
 	private @Getter String host;
 	private @Getter int port = 21;
@@ -194,7 +192,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		if (transport == FtpType.FTP) {
 			FTPClient client = new FTPClient();
 			if(proxy != null) {
-				client.setProxy(proxy); //May not set NULL
+				client.setProxy(proxy); // May not set NULL
 			}
 			return client;
 		}
@@ -208,10 +206,10 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		}
 
 		if(isVerifyHostname()) {
-			client.setTrustManager(null);//When NULL it overrides the default 'ValidateServerCertificateTrustManager' and uses the JVM Default
+			client.setTrustManager(null); // When NULL it overrides the default 'ValidateServerCertificateTrustManager' and uses the JVM Default
 		}
 
-		if(prot != Prot.C) { //Have to check if not C because that removes the SSLSocketFactory
+		if(prot != Prot.C) { // Have to check if not C because that removes the SSLSocketFactory
 			client.execPROT(prot.name());
 		}
 
@@ -438,10 +436,5 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	 */
 	public void setProt(Prot prot) {
 		this.prot = prot;
-	}
-
-	@Override
-	public void setName(String name) {
-		this.name = name;
 	}
 }

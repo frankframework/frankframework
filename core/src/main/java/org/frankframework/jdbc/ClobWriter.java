@@ -21,8 +21,8 @@ import java.io.Writer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.frankframework.dbms.JdbcException;
 import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.dbms.JdbcException;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.XmlBuilder;
 

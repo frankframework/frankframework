@@ -1,4 +1,4 @@
-<ng-container *ngIf="adapter">
+@if (adapter) {
   <div class="ibox float-e-margins" [id]="adapter.name">
     <div
       (click)="adapterShowContent[adapter.configuration + '/' + adapter.name] = !showContent(adapter)"
@@ -18,422 +18,479 @@
         </div>
         <div class="col-lg-6 col-md-12">
           <div class="row">
-            <div *ngIf="adapter.upSince > 0" class="col-sm-4" title="Uptime">
-              <span [time]="adapter.upSince" appToDate></span> (<span [time]="adapter.upSince" appTimeSince></span>)
-            </div>
-            <div *ngIf="adapter.upSince === 0" class="col-sm-4"></div>
-            <div *ngIf="(adapter.lastMessage ?? 0) > 0; else lastMessageElse" class="col-sm-4" title="Last Message">
-              <span [time]="adapter.lastMessage!" appToDate></span> (<span
-                [time]="adapter.lastMessage!"
-                appTimeSince
-              ></span
-              >)
-            </div>
-            <ng-template #lastMessageElse></ng-template>
+            @if (adapter.upSince > 0) {
+              <div class="col-sm-4" title="Uptime">
+                <span [time]="adapter.upSince" appToDate></span> (<span [time]="adapter.upSince" appTimeSince></span>)
+              </div>
+            }
+            @if (adapter.upSince === 0) {
+              <div class="col-sm-4"></div>
+            }
+            @if ((adapter.lastMessage ?? 0) > 0) {
+              <div class="col-sm-4" title="Last Message">
+                <span [time]="adapter.lastMessage!" appToDate></span> (<span
+                  [time]="adapter.lastMessage!"
+                  appTimeSince
+                ></span
+                >)
+              </div>
+            }
             <div class="col-sm-2" title="Messages Processed (Messages in Process) | Messages in Error">
               {{ adapter.messagesProcessed }}
-              <span *ngIf="(adapter.messagesInProcess ?? 0) > 0"
-                >({{ adapter.messagesInProcess }} <i aria-hidden="true" class="fa fa-cog fa-spin"></i>)</span
-              >
-              <span *ngIf="(adapter.messagesInError ?? 0) > 0"
-                >| {{ adapter.messagesInError }} <i aria-hidden="true" class="fa fa-exclamation-triangle"></i
-              ></span>
+              @if ((adapter.messagesInProcess ?? 0) > 0) {
+                <span>({{ adapter.messagesInProcess }} <i aria-hidden="true" class="fa fa-cog fa-spin"></i>)</span>
+              }
+              @if ((adapter.messagesInError ?? 0) > 0) {
+                <span
+                  >| {{ adapter.messagesInError }} <i aria-hidden="true" class="fa fa-exclamation-triangle"></i
+                ></span>
+              }
             </div>
-            <div *ngIf="!showContent(adapter)" class="col-sm-2" title="Adapter Store">
-              <span
-                *ngIf="(adapter.messageLogMessageCount ?? 0) > 0"
-                class="text-success"
-                title="Total # of processed messages by the adapter"
-              >
-                <i class="fa fa-sign-in"></i> ({{ adapter.messageLogMessageCount }})
-              </span>
-              <span
-                *ngIf="(adapter.errorStoreMessageCount ?? 0) > 0"
-                class="text-danger"
-                title="Total # of messages in Error"
-                >&nbsp;<i class="fa fa-times-circle"></i> ({{ adapter.errorStoreMessageCount }})
-              </span>
-              <span
-                *ngIf="(adapter.sendersMessageLogCount ?? 0) > 0"
-                class="text-success"
-                title="Total # of messages processed by senders that have a messagelog"
-              >
-                &nbsp;<i class="fa fa-database"></i> ({{ adapter.sendersMessageLogCount }})
-              </span>
-              <span
-                *ngIf="adapter.senderTransactionalStorageMessageCount! > 0"
-                class="text-primary"
-                title="Total # of messages in messageStoreSenders"
-              >
-                &nbsp;<i class="fa fa-sign-out"></i> ({{ adapter.senderTransactionalStorageMessageCount }})
-              </span>
-            </div>
+            @if (!showContent(adapter)) {
+              <div class="col-sm-2" title="Adapter Store">
+                @if ((adapter.messageLogMessageCount ?? 0) > 0) {
+                  <span class="text-success" title="Total # of processed messages by the adapter">
+                    <i class="fa fa-sign-in"></i> ({{ adapter.messageLogMessageCount }})
+                  </span>
+                }
+                @if ((adapter.errorStoreMessageCount ?? 0) > 0) {
+                  <span class="text-danger" title="Total # of messages in Error"
+                    >&nbsp;<i class="fa fa-times-circle"></i> ({{ adapter.errorStoreMessageCount }})
+                  </span>
+                }
+                @if ((adapter.sendersMessageLogCount ?? 0) > 0) {
+                  <span class="text-success" title="Total # of messages processed by senders that have a messagelog">
+                    &nbsp;<i class="fa fa-database"></i> ({{ adapter.sendersMessageLogCount }})
+                  </span>
+                }
+                @if (adapter.senderTransactionalStorageMessageCount! > 0) {
+                  <span class="text-primary" title="Total # of messages in messageStoreSenders">
+                    &nbsp;<i class="fa fa-sign-out"></i> ({{ adapter.senderTransactionalStorageMessageCount }})
+                  </span>
+                }
+              </div>
+            }
           </div>
         </div>
       </div>
     </div>
-    <div *ngIf="showContent(adapter)" class="ibox-content p-md">
-      <div class="row">
-        <div class="col-md-6">
-          <!-- adapter information -->
-          <span class="pull-right">
-            <a
-              appHasAccessToLink="getAdapterStatistics"
-              [routerLink]="['', adapter.configuration, 'adapter', adapter.name, 'statistics']"
-              class="btn btn-xs btn-info pull-right m-r-xs"
-              type="button"
-              ><i aria-hidden="true" class="fa fa-bar-chart m-r-xs"></i>More statistics</a
-            >
-          </span>
-          <h4>Adapter information</h4>
-          <table class="table">
-            <tbody>
-              <tr>
-                <td class="col-md-6">State</td>
-                <td *ngIf="adapter.state === 'starting'" class="col-md-6">
-                  <span><i class="fa fa-check-square-o lh22 m-r-xs"></i> Starting</span>
-                  <button class="btn btn-xs btn-warning" style="float: right" title="Starting adapter" type="button">
-                    <i class="fa fa-cog fa-spin"></i>
-                  </button>
-                </td>
-                <td *ngIf="adapter.state === 'started'" class="col-md-6">
-                  <span><i class="fa fa-check-square lh22 m-r-xs"></i> Started</span>
-                  <button
-                    appHasAccessToLink="updateAdapter"
-                    (click)="stopAdapter(adapter)"
-                    class="btn btn-xs danger-hover"
-                    style="float: right"
-                    title="Stop adapter"
-                    type="button"
-                  >
-                    <i class="fa fa-stop"></i>
-                  </button>
-                </td>
-                <td *ngIf="adapter.state === 'stopping'" class="col-md-6">
-                  <span><i class="fa fa-stop-circle-o lh22 m-r-xs"></i> Stopping</span>
-                  <button class="btn btn-xs btn-warning" style="float: right" title="Stopping adapter" type="button">
-                    <i class="fa fa-cog fa-spin"></i>
-                  </button>
-                </td>
-                <td *ngIf="adapter.state === 'stopped'" class="col-md-6">
-                  <span><i class="fa fa-stop-circle lh22 m-r-xs"></i> Stopped</span>
-                  <button
-                    appHasAccessToLink="updateAdapter"
-                    (click)="startAdapter(adapter)"
-                    class="btn btn-xs primary-hover"
-                    style="float: right"
-                    title="Start adapter"
-                    type="button"
-                  >
-                    <i class="fa fa-play"></i>
-                  </button>
-                </td>
-                <td *ngIf="adapter.state === 'error'" class="col-md-6">
-                  <span><i class="fa fa-warning lh22 m-r-xs"></i> ERROR</span>
-                </td>
-              </tr>
-              <tr>
-                <td>Configured</td>
-                <td>
-                  <i class="fa {{ adapter.configured ? 'fa-check-square' : 'fa-times-circle' }}"></i>
-                </td>
-              </tr>
-              <tr>
-                <td>Up since</td>
-                <td *ngIf="adapter.upSince > 0">
-                  <span [time]="adapter.upSince" appToDate></span> (<span [time]="adapter.upSince" appTimeSince></span>)
-                </td>
-                <td *ngIf="adapter.upSince === 0">-</td>
-              </tr>
-              <tr>
-                <td>Last message</td>
-                <td *ngIf="adapter.lastMessage">
-                  <span [time]="adapter.lastMessage" appToDate></span>
-                </td>
-                <td *ngIf="!adapter.lastMessage">-</td>
-              </tr>
-              <tr>
-                <td>Configuration</td>
-                <td>{{ adapter.configuration }}</td>
-              </tr>
-              <tr>
-                <td></td>
-                <td>
-                  <a
-                    appHasAccessToLink="getConfigurationXML"
-                    [queryParams]="{
-                      name: adapter.configuration,
-                      adapter: adapter.name,
-                    }"
-                    routerLink="/configurations"
-                  >
-                    View adapter configuration XML
-                  </a>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="col-md-6">
-          <!-- for Message sending pipe -> Sender -->
-          <h4>Messages Information</h4>
-          <table class="table">
-            <tbody>
-              <tr>
-                <td class="col-md-6">Processed</td>
-                <td class="col-md-6">
-                  {{ adapter.messagesProcessed ?? '0' }}
-                </td>
-              </tr>
-              <tr>
-                <td>In process</td>
-                <td>{{ adapter.messagesInProcess ?? '0' }}</td>
-              </tr>
-              <tr
-                [ngClass]="{
-                  hasErrors: (adapter.messagesInError ?? 0) > 0,
-                }"
+    @if (showContent(adapter)) {
+      <div class="ibox-content p-md">
+        <div class="row">
+          <div class="col-md-6">
+            <!-- adapter information -->
+            <span class="pull-right">
+              <a
+                appHasAccessToLink="getAdapterStatistics"
+                [routerLink]="['', adapter.configuration, 'adapter', adapter.name, 'statistics']"
+                class="btn btn-xs btn-info pull-right m-r-xs"
+                type="button"
+                ><i aria-hidden="true" class="fa fa-bar-chart m-r-xs"></i>More statistics</a
               >
-                <td>With error</td>
-                <td>{{ adapter.messagesInError ?? '0' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-12">
-          <h4>Receivers</h4>
-          <div class="table-responsive">
+            </span>
+            <h4>Adapter information</h4>
             <table class="table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Listener</th>
-                  <th>Retried</th>
-                  <th>Received</th>
-                  <th>Rejected</th>
-                  <th></th>
-                  <th></th>
-                </tr>
-              </thead>
               <tbody>
-                <tr
-                  *ngFor="let receiver of adapter.receivers"
-                  [ngClass]="{ 'text-danger': receiver.state === 'error' }"
-                >
-                  <td>{{ receiver.name }}</td>
-                  <td
-                    #listenerDestination
-                    *ngIf="receiver.listener && receiver.listener.destination; else noListener"
-                    [title]="receiver.listener.destination"
-                  >
-                    {{ receiver.listener.class }} ({{
-                      receiver.listener.destination | truncate: 150 : listenerDestination
-                    }})
-                  </td>
-                  <ng-template #noListener><td></td></ng-template>
-                  <td>{{ receiver.messages.retried }}</td>
-                  <td>{{ receiver.messages.received }}</td>
-                  <td>{{ receiver.messages.rejected }}</td>
-                  <td *ngIf="receiver.threadCount !== undefined">
-                    {{ receiver.threadCount }}/{{ receiver.maxThreadCount }}
-                    Threads
-                    <span *ngIf="receiver.threadCountControllable">
+                <tr>
+                  <td class="col-md-6">State</td>
+                  @if (adapter.state === 'starting') {
+                    <td class="col-md-6">
+                      <span><i class="fa fa-check-square-o lh22 m-r-xs"></i> Starting</span>
                       <button
-                        appHasAccessToLink="updateReceiver"
-                        (click)="addThread(adapter, receiver)"
-                        [disabled]="receiver.state === 'loading'"
-                        class="btn btn-xs btn-default m-l-xs"
-                        title="Increase the maximum numbers of threads"
-                        type="button"
-                      >
-                        <i class="fa fa-plus"></i> Inc
-                      </button>
-                      <button
-                        appHasAccessToLink="updateReceiver"
-                        (click)="removeThread(adapter, receiver)"
-                        [disabled]="receiver.state === 'loading' || (receiver.maxThreadCount ?? 0) < 2"
-                        class="btn btn-xs btn-default m-l-xs"
-                        title="Decrease the maximum numbers of threads"
-                        type="button"
-                      >
-                        <i class="fa fa-minus"></i> Dec
-                      </button>
-                    </span>
-                  </td>
-                  <td *ngIf="receiver.threadCount === undefined"></td>
-                  <td>
-                    <span class="pull-right">
-                      <span *ngFor="let store of getTransactionalStores(receiver)">
-                        <span
-                          class="text-{{ getProcessStateIconColorFn(store.name) }}"
-                          title="Browse messages with ProcessState: {{ store.name }}"
-                        >
-                          <a
-                            appHasAccessToLink="browseMessages"
-                            [routerLink]="[
-                              '',
-                              adapter.configuration,
-                              'adapters',
-                              adapter.name,
-                              'receivers',
-                              receiver.name,
-                              'stores',
-                              store.name,
-                            ]"
-                            class="btn btn-xs btn-default"
-                            type="button"
-                          >
-                            <i class="fa {{ getProcessStateIconFn(store.name) }}"></i>
-                            ({{ store.numberOfMessages }})
-                          </a>
-                        </span>
-                      </span>
-                      <button
-                        appHasAccessToLink="updateReceiver"
-                        (click)="stopReceiver(adapter!, receiver)"
-                        *ngIf="receiver.state === 'started' || receiver.state === 'exception_starting'"
-                        class="btn btn-xs danger-hover"
-                        title="Stop receiver"
-                        type="button"
-                      >
-                        <i class="fa fa-stop"></i>
-                      </button>
-                      <button
-                        (click)="startReceiver(adapter!, receiver)"
-                        *ngIf="receiver.state === 'stopped' || receiver.state === 'exception_stopping'"
-                        class="btn btn-xs primary-hover"
-                        title="Start receiver"
-                        type="button"
-                      >
-                        <i class="fa fa-play"></i>
-                      </button>
-                      <button
-                        *ngIf="
-                          receiver.state === 'loading' || receiver.state === 'starting' || receiver.state === 'stopping'
-                        "
-                        class="btn btn-warning btn-xs"
-                        title="Loading..."
+                        class="btn btn-xs btn-warning"
+                        style="float: right"
+                        title="Starting adapter"
                         type="button"
                       >
                         <i class="fa fa-cog fa-spin"></i>
                       </button>
+                    </td>
+                  }
+                  @if (adapter.state === 'started') {
+                    <td class="col-md-6">
+                      <span><i class="fa fa-check-square lh22 m-r-xs"></i> Started</span>
                       <button
-                        *ngIf="receiver.state === 'error'"
-                        class="btn btn-warning btn-xs"
-                        disabled
-                        title="RECEIVER IN ERROR STATE"
+                        appHasAccessToLink="updateAdapter"
+                        (click)="stopAdapter(adapter)"
+                        class="btn btn-xs danger-hover"
+                        style="float: right"
+                        title="Stop adapter"
                         type="button"
                       >
-                        <i class="fa fa-warning"></i>
+                        <i class="fa fa-stop"></i>
                       </button>
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div *ngIf="adapter.hasSender" class="row">
-        <div class="col-md-12">
-          <h4>Senders</h4>
-          <div class="table-responsive">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Sender</th>
-                  <th>SlotId</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                <ng-template [ngForOf]="adapter.pipes" let-pipes ngFor>
-                  <tr *ngIf="pipes.sender">
-                    <td>{{ pipes.name }}</td>
-                    <td>
-                      {{ pipes.sender
-                      }}<span #pipeDestination *ngIf="pipes.destination" title="{{ pipes.destination }}">
-                        ({{ pipes.destination | truncate: 150 : pipeDestination }})</span
+                    </td>
+                  }
+                  @if (adapter.state === 'stopping') {
+                    <td class="col-md-6">
+                      <span><i class="fa fa-stop-circle-o lh22 m-r-xs"></i> Stopping</span>
+                      <button
+                        class="btn btn-xs btn-warning"
+                        style="float: right"
+                        title="Stopping adapter"
+                        type="button"
                       >
+                        <i class="fa fa-cog fa-spin"></i>
+                      </button>
                     </td>
-                    <td>{{ pipes.message?.slotId }}</td>
+                  }
+                  @if (adapter.state === 'stopped') {
+                    <td class="col-md-6">
+                      <span><i class="fa fa-stop-circle lh22 m-r-xs"></i> Stopped</span>
+                      <button
+                        appHasAccessToLink="updateAdapter"
+                        (click)="startAdapter(adapter)"
+                        class="btn btn-xs primary-hover"
+                        style="float: right"
+                        title="Start adapter"
+                        type="button"
+                      >
+                        <i class="fa fa-play"></i>
+                      </button>
+                    </td>
+                  }
+                  @if (adapter.state === 'error') {
+                    <td class="col-md-6">
+                      <span><i class="fa fa-warning lh22 m-r-xs"></i> ERROR</span>
+                    </td>
+                  }
+                </tr>
+                <tr>
+                  <td>Configured</td>
+                  <td>
+                    <i class="fa {{ adapter.configured ? 'fa-check-square' : 'fa-times-circle' }}"></i>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Up since</td>
+                  @if (adapter.upSince > 0) {
                     <td>
-                      <span class="pull-right">
-                        <span [ngClass]="pipes.isSenderTransactionalStorage ? 'text-primary' : 'text-success'">
-                          <a
-                            *ngIf="pipes.hasMessageLog"
-                            appHasAccessToLink="browseMessages"
-                            [routerLink]="[
-                              '',
-                              adapter.configuration,
-                              'adapters',
-                              adapter.name,
-                              'pipes',
-                              pipes.name,
-                              'stores',
-                              'Done',
-                            ]"
-                            class="btn btn-xs btn-default m-l-xs"
-                            type="button"
-                          >
-                            <i [ngClass]="pipes.isSenderTransactionalStorage ? 'fa fa-sign-out' : 'fa fa-database'"></i>
-                            ({{ pipes.messageLogCount }})
-                          </a>
-                        </span>
-                      </span>
+                      <span [time]="adapter.upSince" appToDate></span> (<span
+                        [time]="adapter.upSince"
+                        appTimeSince
+                      ></span
+                      >)
                     </td>
-                  </tr>
-                </ng-template>
+                  }
+                  @if (adapter.upSince === 0) {
+                    <td>-</td>
+                  }
+                </tr>
+                <tr>
+                  <td>Last message</td>
+                  @if (adapter.lastMessage) {
+                    <td>
+                      <span [time]="adapter.lastMessage" appToDate></span>
+                    </td>
+                  }
+                  @if (!adapter.lastMessage) {
+                    <td>-</td>
+                  }
+                </tr>
+                <tr>
+                  <td>Configuration</td>
+                  <td>{{ adapter.configuration }}</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>
+                    <a
+                      appHasAccessToLink="getConfigurationXML"
+                      [queryParams]="{
+                        name: adapter.configuration,
+                        adapter: adapter.name,
+                      }"
+                      routerLink="/configurations"
+                    >
+                      View adapter configuration XML
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="col-md-6">
+            <!-- for Message sending pipe -> Sender -->
+            <h4>Messages Information</h4>
+            <table class="table">
+              <tbody>
+                <tr>
+                  <td class="col-md-6">Processed</td>
+                  <td class="col-md-6">
+                    {{ adapter.messagesProcessed ?? '0' }}
+                  </td>
+                </tr>
+                <tr>
+                  <td>In process</td>
+                  <td>{{ adapter.messagesInProcess ?? '0' }}</td>
+                </tr>
+                <tr
+                  [ngClass]="{
+                    hasErrors: (adapter.messagesInError ?? 0) > 0,
+                  }"
+                >
+                  <td>With error</td>
+                  <td>{{ adapter.messagesInError ?? '0' }}</td>
+                </tr>
               </tbody>
             </table>
           </div>
         </div>
-      </div>
-      <div class="row">
-        <div class="col-lg-9 col-md-12 messages table-responsive">
-          <h4>Messages</h4>
-          <table class="table table-striped" style="min-width: 620px">
-            <tbody>
-              <tr *ngFor="let message of adapter.messages">
-                <ng-template [ngIf]="message.level === 'INFO'">
-                  <td class="text-center" style="width: 40px">&nbsp;<i class="fa fa-info"></i></td>
-                  <td class="text-left" style="width: 200px">
-                    <span [time]="message.date" appToDate></span>
-                  </td>
-                  <td #messageInfo>
-                    {{ message.message | truncate: 700 : messageInfo }}
-                  </td>
-                </ng-template>
-                <ng-template [ngIf]="message.level === 'WARN'">
-                  <td class="text-center" style="width: 40px">&nbsp;<i class="fa fa-warning"></i></td>
-                  <td class="text-left" style="width: 200px">
-                    <span [time]="message.date" appToDate></span>
-                  </td>
-                  <td #messageWarn class="text-warning">
-                    {{ message.message | truncate: 700 : messageWarn }}
-                  </td>
-                </ng-template>
-                <ng-template [ngIf]="message.level === 'ERROR'">
-                  <td class="text-center" style="width: 40px">&nbsp;<i class="fa fa-times"></i></td>
-                  <td class="text-left" style="width: 200px">
-                    <span [time]="message.date" appToDate></span>
-                  </td>
-                  <td #messageError class="text-danger">
-                    {{ message.message | truncate: 700 : messageError }}
-                  </td>
-                </ng-template>
-              </tr>
-            </tbody>
-          </table>
+        <div class="row">
+          <div class="col-md-12">
+            <h4>Receivers</h4>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Listener</th>
+                    <th>Retried</th>
+                    <th>Received</th>
+                    <th>Rejected</th>
+                    <th></th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (receiver of adapter.receivers; track receiver.name) {
+                    <tr [ngClass]="{ 'text-danger': receiver.state === 'error' }">
+                      <td>{{ receiver.name }}</td>
+                      @if (receiver.listener && receiver.listener.destination) {
+                        <td #listenerDestination [title]="receiver.listener.destination">
+                          {{ receiver.listener.class }} ({{
+                            receiver.listener.destination | truncate: 150 : listenerDestination
+                          }})
+                        </td>
+                      } @else {
+                        <td></td>
+                      }
+                      <td>{{ receiver.messages.retried }}</td>
+                      <td>{{ receiver.messages.received }}</td>
+                      <td>{{ receiver.messages.rejected }}</td>
+                      @if (receiver.threadCount !== undefined) {
+                        <td>
+                          {{ receiver.threadCount }}/{{ receiver.maxThreadCount }}
+                          Threads
+                          @if (receiver.threadCountControllable) {
+                            <span>
+                              <button
+                                appHasAccessToLink="updateReceiver"
+                                (click)="addThread(adapter, receiver)"
+                                [disabled]="receiver.state === 'loading'"
+                                class="btn btn-xs btn-default m-l-xs"
+                                title="Increase the maximum numbers of threads"
+                                type="button"
+                              >
+                                <i class="fa fa-plus"></i> Inc
+                              </button>
+                              <button
+                                appHasAccessToLink="updateReceiver"
+                                (click)="removeThread(adapter, receiver)"
+                                [disabled]="receiver.state === 'loading' || (receiver.maxThreadCount ?? 0) < 2"
+                                class="btn btn-xs btn-default m-l-xs"
+                                title="Decrease the maximum numbers of threads"
+                                type="button"
+                              >
+                                <i class="fa fa-minus"></i> Dec
+                              </button>
+                            </span>
+                          }
+                        </td>
+                      }
+                      @if (receiver.threadCount === undefined) {
+                        <td></td>
+                      }
+                      <td>
+                        <span class="pull-right">
+                          @for (store of getTransactionalStores(receiver); track store) {
+                            <span>
+                              <span
+                                class="text-{{ getProcessStateIconColorFn(store.name) }}"
+                                title="Browse messages with ProcessState: {{ store.name }}"
+                              >
+                                <a
+                                  appHasAccessToLink="browseMessages"
+                                  [routerLink]="[
+                                    '',
+                                    adapter.configuration,
+                                    'adapters',
+                                    adapter.name,
+                                    'receivers',
+                                    receiver.name,
+                                    'stores',
+                                    store.name,
+                                  ]"
+                                  class="btn btn-xs btn-default"
+                                  type="button"
+                                >
+                                  <i class="fa {{ getProcessStateIconFn(store.name) }}"></i>
+                                  ({{ store.numberOfMessages }})
+                                </a>
+                              </span>
+                            </span>
+                          }
+                          @if (receiver.state === 'started' || receiver.state === 'exception_starting') {
+                            <button
+                              appHasAccessToLink="updateReceiver"
+                              (click)="stopReceiver(adapter!, receiver)"
+                              class="btn btn-xs danger-hover"
+                              title="Stop receiver"
+                              type="button"
+                            >
+                              <i class="fa fa-stop"></i>
+                            </button>
+                          }
+                          @if (receiver.state === 'stopped' || receiver.state === 'exception_stopping') {
+                            <button
+                              (click)="startReceiver(adapter!, receiver)"
+                              class="btn btn-xs primary-hover"
+                              title="Start receiver"
+                              type="button"
+                            >
+                              <i class="fa fa-play"></i>
+                            </button>
+                          }
+                          @if (
+                            receiver.state === 'loading' ||
+                            receiver.state === 'starting' ||
+                            receiver.state === 'stopping'
+                          ) {
+                            <button class="btn btn-warning btn-xs" title="Loading..." type="button">
+                              <i class="fa fa-cog fa-spin"></i>
+                            </button>
+                          }
+                          @if (receiver.state === 'error') {
+                            <button
+                              class="btn btn-warning btn-xs"
+                              disabled
+                              title="RECEIVER IN ERROR STATE"
+                              type="button"
+                            >
+                              <i class="fa fa-warning"></i>
+                            </button>
+                          }
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-        <div class="col-lg-3 col-md-0 flow">
-          <h4>Flow</h4>
-          <app-flow appHasAccessToLink="getAdapterFlow" [adapter]="adapter" [canLoadInline]="loadFlowInline" />
+        @if (adapter.hasSender) {
+          <div class="row">
+            <div class="col-md-12">
+              <h4>Senders</h4>
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Sender</th>
+                      <th>SlotId</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (pipes of adapter.pipes; track pipes.name) {
+                      @if (pipes.sender) {
+                        <tr>
+                          <td>{{ pipes.name }}</td>
+                          <td>
+                            {{ pipes.sender }}
+                            @if (pipes.destination) {
+                              <span #pipeDestination title="{{ pipes.destination }}">
+                                ({{ pipes.destination | truncate: 150 : pipeDestination }})</span
+                              >
+                            }
+                          </td>
+                          <td>{{ pipes.message?.slotId }}</td>
+                          <td>
+                            <span class="pull-right">
+                              <span [ngClass]="pipes.isSenderTransactionalStorage ? 'text-primary' : 'text-success'">
+                                @if (pipes.hasMessageLog) {
+                                  <a
+                                    appHasAccessToLink="browseMessages"
+                                    [routerLink]="[
+                                      '',
+                                      adapter.configuration,
+                                      'adapters',
+                                      adapter.name,
+                                      'pipes',
+                                      pipes.name,
+                                      'stores',
+                                      'Done',
+                                    ]"
+                                    class="btn btn-xs btn-default m-l-xs"
+                                    type="button"
+                                  >
+                                    <i
+                                      [ngClass]="
+                                        pipes.isSenderTransactionalStorage ? 'fa fa-sign-out' : 'fa fa-database'
+                                      "
+                                    ></i>
+                                    ({{ pipes.messageLogCount }})
+                                  </a>
+                                }
+                              </span>
+                            </span>
+                          </td>
+                        </tr>
+                      }
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        }
+        <div class="row">
+          <div class="col-lg-9 col-md-12 messages table-responsive">
+            <h4>Messages</h4>
+            <table class="table table-striped" style="min-width: 620px">
+              <tbody>
+                @for (message of adapter.messages; track message) {
+                  <tr>
+                    @if (message.level === 'INFO') {
+                      <td class="text-center" style="width: 40px">&nbsp;<i class="fa fa-info"></i></td>
+                      <td class="text-left" style="width: 200px">
+                        <span [time]="message.date" appToDate></span>
+                      </td>
+                      <td #messageInfo>
+                        {{ message.message | truncate: 700 : messageInfo }}
+                      </td>
+                    }
+                    @if (message.level === 'WARN') {
+                      <td class="text-center" style="width: 40px">&nbsp;<i class="fa fa-warning"></i></td>
+                      <td class="text-left" style="width: 200px">
+                        <span [time]="message.date" appToDate></span>
+                      </td>
+                      <td #messageWarn class="text-warning">
+                        {{ message.message | truncate: 700 : messageWarn }}
+                      </td>
+                    }
+                    @if (message.level === 'ERROR') {
+                      <td class="text-center" style="width: 40px">&nbsp;<i class="fa fa-times"></i></td>
+                      <td class="text-left" style="width: 200px">
+                        <span [time]="message.date" appToDate></span>
+                      </td>
+                      <td #messageError class="text-danger">
+                        {{ message.message | truncate: 700 : messageError }}
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="col-lg-3 col-md-0 flow">
+            <h4>Flow</h4>
+            <app-flow appHasAccessToLink="getAdapterFlow" [adapter]="adapter" [canLoadInline]="loadFlowInline" />
+          </div>
         </div>
       </div>
-    </div>
+    }
   </div>
-</ng-container>
+}
