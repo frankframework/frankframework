@@ -12,7 +12,6 @@ import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.lifecycle.MessageEventListener;
-import org.frankframework.testutil.mock.MockIbisManager;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.SpringUtils;
@@ -108,17 +107,16 @@ public class TestConfiguration extends Configuration {
 	}
 
 	/**
-	 * Create and register the IbisManger with the Configuration
+	 * Create and register the IbisManager with the Configuration
 	 */
 	@Override
 	public synchronized IbisManager getIbisManager() {
 		if(super.getIbisManager() == null) {
-			IbisManager ibisManager = new MockIbisManager();
-			ibisManager.addConfiguration(this);
-			getBeanFactory().registerSingleton("ibisManager", ibisManager);
-			setIbisManager(ibisManager);
-
 			assertTrue(containsBean("ibisManager"), "bean IbisManager not found");
+
+			IbisManager ibisManager = getBean(IbisManager.class);
+			ibisManager.addConfiguration(this);
+			setIbisManager(ibisManager);
 		}
 		return super.getIbisManager();
 	}
