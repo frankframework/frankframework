@@ -5,32 +5,6 @@
       <a [routerLink]="['messages', message.id]" class="btn btn-info btn-xs" type="button"
         ><i class="fa fa-file-text-o"></i> View</a
       >
-      @if (storageService.storageParams.processState === 'Error') {
-        <button
-          appHasAccessToLink="resendReceiverMessage"
-          [ladda]="message.resending"
-          data-style="slide-down"
-          title="Resend Message"
-          (click)="storageService.resendMessage(message)"
-          class="btn btn-warning btn-xs"
-          type="button"
-        >
-          <i class="fa fa-repeat"></i> Resend
-        </button>
-      }
-      @if (storageService.storageParams.processState === 'Error') {
-        <button
-          appHasAccessToLink="deleteReceiverMessage"
-          [ladda]="message.deleting"
-          data-style="slide-down"
-          title="Delete Message"
-          (click)="storageService.deleteMessage(message)"
-          class="btn btn-danger btn-xs"
-          type="button"
-        >
-          <i class="fa fa-times"></i> Delete
-        </button>
-      }
       <button
         appHasAccessToLink="downloadMessage"
         title="Download Message"
@@ -40,6 +14,44 @@
       >
         <i class="fa fa-arrow-circle-o-down"></i> Download
       </button>
+      @if (storageService.storageParams.processState === 'InProcess') {
+        <button
+          appHasAccessToLink="changeProcessState"
+          [ladda]="message.processing"
+          data-style="slide-down"
+          title="Move Message to Error"
+          (click)="storageService.moveMessage(message)"
+          class="btn btn-error btn-xs"
+          type="button"
+        >
+          <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+          Move to Error
+        </button>
+      }
+      @if (storageService.storageParams.processState === 'Error') {
+        <button
+          appHasAccessToLink="resendReceiverMessage"
+          [ladda]="message.processing"
+          data-style="slide-down"
+          title="Resend Message"
+          (click)="storageService.resendMessage(message)"
+          class="btn btn-warning btn-xs"
+          type="button"
+        >
+          <i class="fa fa-repeat"></i> Resend
+        </button>
+        <button
+          appHasAccessToLink="deleteReceiverMessage"
+          [ladda]="message.processing"
+          data-style="slide-down"
+          title="Delete Message"
+          (click)="storageService.deleteMessage(message)"
+          class="btn btn-danger btn-xs"
+          type="button"
+        >
+          <i class="fa fa-times"></i> Delete
+        </button>
+      }
     </div>
   }
 }

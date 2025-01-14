@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { MessageStore, Note, StorageService } from '../storage.service';
 import { StorageListDtComponent } from './storage-list-dt/storage-list-dt.component';
 import { SessionService } from 'src/app/services/session.service';
@@ -20,6 +20,7 @@ import { RouterLink } from '@angular/router';
 import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
 import { DtContentDirective } from '../../../components/datatable/dt-content.directive';
 import { DropLastCharPipe } from '../../../pipes/drop-last-char.pipe';
+import { Subscription } from 'rxjs';
 
 type DisplayColumn = {
   actions: boolean;
@@ -54,7 +55,7 @@ type MessageData = MessageStore['messages'][number];
     KeyValuePipe,
   ],
 })
-export class StorageListComponent implements OnInit, AfterViewInit {
+export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('storageListDt') storageListDt!: TemplateRef<StorageListDtComponent>;
 
   protected targetStates: Record<string, { name: string }> = {};
@@ -85,6 +86,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   };
 
   // service bindings
+  protected storageService: StorageService = inject(StorageService);
   protected storageParams = this.storageService.storageParams;
   closeNote = (index: number): void => {
     this.storageService.closeNote(index);
@@ -135,13 +137,12 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     { name: 'label', property: 'label', displayName: 'Label' },
   ];
 
-  constructor(
-    private webStorageService: WebStorageService,
-    private Session: SessionService,
-    private SweetAlert: SweetalertService,
-    protected storageService: StorageService,
-    private appService: AppService,
-  ) {}
+  private webStorageService: WebStorageService = inject(WebStorageService);
+  private Session: SessionService = inject(SessionService);
+  private SweetAlert: SweetalertService = inject(SweetalertService);
+  private appService: AppService = inject(AppService);
+
+  private subscriptions: Subscription = new Subscription();
 
   ngOnInit(): void {
     this.storageService.closeNotes();
@@ -218,6 +219,15 @@ export class StorageListComponent implements OnInit, AfterViewInit {
         label: true,
       };
     }
+
+    const tableTriggerSubscription = this.storageService.tableUpdateTrigger$.subscribe(() =>
+      this.datasource.updateTable(),
+    );
+    this.subscriptions.add(tableTriggerSubscription);
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   setupMessagesRequest(): void {
@@ -290,20 +300,20 @@ export class StorageListComponent implements OnInit, AfterViewInit {
 
   searchUpdated(): void {
     this.searching = true;
-    this.updateTable();
+    this.storageService.updateTable();
   }
 
   truncate(): void {
     this.truncated = !this.truncated;
     this.truncateButtonText = this.truncated ? 'Show original' : 'Truncate displayed data';
-    this.updateTable();
+    this.storageService.updateTable();
   }
 
   clearSearch(): void {
     this.clearSearchLadda = true;
     this.Session.remove('search');
     this.search = {};
-    this.updateTable();
+    this.storageService.updateTable();
   }
 
   updateFilter(column: string): void {
@@ -327,11 +337,6 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     }
   }
 
-  updateTable(): void {
-    this.datasource.updateTable();
-    this.storageService.updateTable();
-  }
-
   resendMessages(): void {
     const fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
@@ -340,12 +345,12 @@ export class StorageListComponent implements OnInit, AfterViewInit {
         next: () => {
           this.messagesResending = false;
           this.storageService.addNote('success', 'Selected messages will be reprocessed');
-          this.updateTable();
+          this.storageService.updateTable();
         },
         error: () => {
           this.messagesResending = false;
           this.storageService.addNote('danger', 'Something went wrong, unable to resend all messages!');
-          this.updateTable();
+          this.storageService.updateTable();
         },
       });
     }
@@ -359,12 +364,12 @@ export class StorageListComponent implements OnInit, AfterViewInit {
         next: () => {
           this.messagesDeleting = false;
           this.storageService.addNote('success', 'Successfully deleted messages');
-          this.updateTable();
+          this.storageService.updateTable();
         },
         error: () => {
           this.messagesDeleting = false;
           this.storageService.addNote('danger', 'Something went wrong, unable to delete all messages!');
-          this.updateTable();
+          this.storageService.updateTable();
         },
       });
     }
@@ -404,12 +409,12 @@ export class StorageListComponent implements OnInit, AfterViewInit {
         next: () => {
           this.changingProcessState = false;
           this.storageService.addNote('success', `Successfully changed the state of messages to ${targetState}`);
-          this.updateTable();
+          this.storageService.updateTable();
         },
         error: () => {
           this.changingProcessState = false;
           this.storageService.addNote('danger', 'Something went wrong, unable to move selected messages!');
-          this.updateTable();
+          this.storageService.updateTable();
         },
       });
     }
