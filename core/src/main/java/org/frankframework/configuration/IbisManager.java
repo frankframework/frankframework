@@ -18,12 +18,14 @@ package org.frankframework.configuration;
 import java.util.List;
 
 import jakarta.annotation.Nullable;
-import org.frankframework.core.Adapter;
-import org.frankframework.management.Action;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+
+import org.frankframework.core.Adapter;
+import org.frankframework.management.Action;
 
 /**
  * An IBIS Manager gives various methods for the control of an IBIS instance.

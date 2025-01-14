@@ -16,10 +16,10 @@
 package org.frankframework.scheduler;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.scheduler.job.IJob;
-import org.frankframework.scheduler.job.SendMessageJob;
 import org.quartz.impl.JobDetailImpl;
 
+import org.frankframework.scheduler.job.IJob;
+import org.frankframework.scheduler.job.SendMessageJob;
 import org.frankframework.util.Locker;
 
 public class IbisJobDetail extends JobDetailImpl {

@@ -20,11 +20,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import jakarta.activation.DataSource;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
-
-import jakarta.activation.DataSource;
 
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;

@@ -42,11 +42,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.Nonnull;
+
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.util.JdbcUtil;
-
-import jakarta.annotation.Nonnull;
 
 public class StoredProcedureResultWrapper implements ResultSet {
 

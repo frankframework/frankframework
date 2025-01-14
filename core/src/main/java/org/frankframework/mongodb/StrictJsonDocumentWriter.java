@@ -22,10 +22,11 @@ import org.bson.BSONException;
 import org.bson.BsonInvalidOperationException;
 import org.bson.json.StrictCharacterStreamJsonWriterSettings;
 import org.bson.json.StrictJsonWriter;
+import org.xml.sax.SAXException;
+
 import org.frankframework.documentbuilder.IArrayBuilder;
 import org.frankframework.documentbuilder.INodeBuilder;
 import org.frankframework.documentbuilder.IObjectBuilder;
-import org.xml.sax.SAXException;
 
 /**
  * StrictJsonWriter to write to FF DocumentBuilder, to generate JSON or XML.

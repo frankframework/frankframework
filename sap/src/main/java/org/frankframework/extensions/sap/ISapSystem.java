@@ -1,5 +1,5 @@
 /*
-   Copyright 2013,2019 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013,2019 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package org.frankframework.extensions.sap;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.INamedObject;
 
 /**
  * Common interface to be implemented by SapSystem implementations.
@@ -24,7 +23,7 @@ import org.frankframework.core.INamedObject;
  * @author Gerrit van Brakel
  * @since  7.3
  */
-public interface ISapSystem extends INamedObject, org.frankframework.configuration.extensions.ISapSystem {
+public interface ISapSystem extends org.frankframework.configuration.extensions.ISapSystem {
 
 	void setGwhost(String string);
 	void setMandant(String string);

@@ -26,6 +26,7 @@ import liquibase.exception.ChangeLogParseException;
 import liquibase.parser.core.ParsedNode;
 import liquibase.parser.core.xml.XMLChangeLogSAXParser;
 import liquibase.resource.ResourceAccessor;
+
 import org.frankframework.util.LogUtil;
 
 public class LiquibaseXmlChangeLogParser extends XMLChangeLogSAXParser {

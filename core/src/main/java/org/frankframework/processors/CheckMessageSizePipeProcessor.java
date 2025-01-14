@@ -15,6 +15,9 @@
 */
 package org.frankframework.processors;
 import jakarta.annotation.Nonnull;
+
+import io.micrometer.core.instrument.DistributionSummary;
+
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
@@ -23,8 +26,6 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.stream.Message;
 import org.frankframework.util.Misc;
-
-import io.micrometer.core.instrument.DistributionSummary;
 
 /**
  * @author Jaco de Groot

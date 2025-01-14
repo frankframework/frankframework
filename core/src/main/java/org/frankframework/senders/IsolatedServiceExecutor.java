@@ -20,8 +20,9 @@ import java.util.concurrent.CountDownLatch;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
-import org.frankframework.core.PipeLineSession;
+
 import org.frankframework.core.AbstractRequestReplyExecutor;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderResult;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.stream.Message;

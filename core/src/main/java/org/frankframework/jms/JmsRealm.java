@@ -20,8 +20,9 @@ import java.util.Iterator;
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.HasName;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.util.LogUtil;
@@ -86,7 +87,7 @@ public class JmsRealm {
 	 */
 	public void copyRealm(Object destination) {
 		String logPrefixDest=destination.getClass().getName()+" ";
-		if (destination instanceof INamedObject namedDestination) {
+		if (destination instanceof HasName namedDestination) {
 			logPrefixDest += "["+namedDestination.getName()+"] ";
 		}
 		try {

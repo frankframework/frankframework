@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2024 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,8 @@ package org.frankframework.batch;
 import java.util.Map;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.HasName;
+import org.frankframework.core.NameAware;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
@@ -34,7 +35,7 @@ import org.frankframework.doc.FrankDocGroupValue;
  * @author John Dekker
  */
 @FrankDocGroup(FrankDocGroupValue.BATCH)
-public interface IRecordHandlerManager extends INamedObject {
+public interface IRecordHandlerManager extends NameAware, HasName {
 
 	public void configure(Map<String, IRecordHandlerManager> registeredManagers, Map<String, IRecordHandler> registeredRecordHandlers, Map<String, IResultHandler> registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException;
 

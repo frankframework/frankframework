@@ -21,11 +21,9 @@ import java.util.List;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.RunState;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.util.Assert;
@@ -39,7 +37,10 @@ import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
 import org.frankframework.management.Action;
+import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.receivers.Receiver;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.RunState;
 
 /**
  * Implementation of IbisManager which does not use EJB for

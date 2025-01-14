@@ -15,15 +15,14 @@
 */
 package org.frankframework.http.authentication;
 
+import java.util.List;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-
 import org.apache.http.message.BasicNameValuePair;
 
 import org.frankframework.http.AbstractHttpSession;
-
-import java.util.List;
 
 public class ClientCredentialsQueryParameters extends AbstractClientCredentials {
 

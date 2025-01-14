@@ -17,10 +17,11 @@ package org.frankframework.monitoring.events;
 
 import java.time.Instant;
 
-import org.frankframework.monitoring.EventThrowing;
 import org.springframework.context.ApplicationEvent;
 
 import lombok.Getter;
+
+import org.frankframework.monitoring.EventThrowing;
 import org.frankframework.stream.Message;
 
 public class MonitorEvent extends ApplicationEvent {

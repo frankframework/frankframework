@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@ import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
+
 import org.frankframework.core.Adapter;
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.HasName;
 import org.frankframework.core.PipeLineSession;
 
 /**
@@ -71,7 +72,7 @@ public class LogUtil {
 	/**
 	 * Must be called during configure after setName has been set!
 	 */
-	public static Logger getMsgLogger(Adapter adapter, INamedObject object) {
+	public static Logger getMsgLogger(Adapter adapter, HasName object) {
 		if(adapter == null || StringUtils.isEmpty(adapter.getName()) || StringUtils.isEmpty(object.getName())) {
 			return getLogger(MESSAGE_LOGGER);
 		}

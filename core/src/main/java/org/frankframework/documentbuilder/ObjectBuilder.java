@@ -15,8 +15,9 @@
 */
 package org.frankframework.documentbuilder;
 
-import org.frankframework.util.XmlUtils;
 import org.xml.sax.SAXException;
+
+import org.frankframework.util.XmlUtils;
 
 public abstract class ObjectBuilder extends StructureBuilder implements IObjectBuilder {
 

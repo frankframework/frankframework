@@ -38,7 +38,7 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 		super.setUp();
 
 		fileSystemSender = createFileSystemSender();
-		autowireByName(fileSystemSender);
+		autowireBeanByNameInAdapter(fileSystemSender);
 	}
 
 	@Override

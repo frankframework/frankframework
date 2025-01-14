@@ -28,6 +28,7 @@ import org.bson.json.StrictCharacterStreamJsonWriterSettings;
 import org.bson.json.StrictJsonWriter;
 import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
+
 import org.frankframework.documentbuilder.INodeBuilder;
 
 /**

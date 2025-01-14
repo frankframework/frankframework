@@ -47,20 +47,21 @@ import javax.xml.stream.events.XMLEvent;
 
 import jakarta.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.google.common.collect.Streams;
 
 import javanet.staxutils.XMLStreamEventWriter;
 import javanet.staxutils.XMLStreamUtils;
 import javanet.staxutils.events.AttributeEvent;
 import javanet.staxutils.events.StartElementEvent;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
-import org.frankframework.core.IConfigurationAware;
+import org.frankframework.core.HasApplicationContext;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.validation.xsd.StringXsd;
@@ -272,7 +273,7 @@ public class SchemaUtils {
 		LOG.info(message);
 
 		// And check for duplicate XSDs included multiple times from multiple locations
-		if (scopeProvider instanceof IConfigurationAware aware) {
+		if (scopeProvider instanceof HasApplicationContext aware) {
 			IXSD[] xsdList = xsds.toArray(new IXSD[0]);
 			for (int i = 0; i < xsdList.length - 1; i++) {
 				IXSD xsd1 = xsdList[i];

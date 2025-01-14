@@ -22,6 +22,7 @@ import org.bouncycastle.util.io.Streams;
 
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BouncyGPG;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BuildEncryptionOutputStreamAPI;
+
 import org.frankframework.configuration.ConfigurationException;
 
 public class Sign extends AbstractPGPAction {

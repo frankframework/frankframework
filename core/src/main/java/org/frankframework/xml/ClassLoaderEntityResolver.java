@@ -18,13 +18,13 @@ package org.frankframework.xml;
 import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.util.LogUtil;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
+import org.frankframework.util.LogUtil;
 
 /**
  * @see org.xml.sax.EntityResolver

@@ -20,28 +20,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.logging.log4j.Logger;
-import org.frankframework.configuration.Configuration;
-import org.frankframework.configuration.IbisManager;
-import org.frankframework.core.Adapter;
-import org.frankframework.core.IListener;
-import org.frankframework.core.INamedObject;
-import org.frankframework.core.ISender;
-import org.frankframework.core.PipeLineResult;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.DebuggerStatusChangedEvent;
-import org.frankframework.stream.Message;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.RunState;
-import org.frankframework.util.UUIDUtil;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 
-import jakarta.annotation.Nonnull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -53,6 +40,21 @@ import nl.nn.testtool.SecurityContext;
 import nl.nn.testtool.StubType;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.run.ReportRunner;
+
+import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.IbisManager;
+import org.frankframework.core.Adapter;
+import org.frankframework.core.HasName;
+import org.frankframework.core.IListener;
+import org.frankframework.core.ISender;
+import org.frankframework.core.PipeLineResult;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.DebuggerStatusChangedEvent;
+import org.frankframework.stream.Message;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.RunState;
+import org.frankframework.util.UUIDUtil;
 
 /**
  * @author Jaco de Groot
@@ -230,7 +232,7 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 		return stubINamedObject("Listener ", listener, correlationId);
 	}
 
-	private boolean stubINamedObject(String checkpointNamePrefix, INamedObject namedObject, String correlationId) {
+	private boolean stubINamedObject(String checkpointNamePrefix, HasName namedObject, String correlationId) {
 		boolean rerun;
 		synchronized(inRerun) {
 			rerun = inRerun.contains(correlationId);
@@ -241,7 +243,7 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 				// stub = stub(getCheckpointNameForINamedObject(checkpointNamePrefix, namedObject), true, getDefaultStubStrategy());
 				// TODO zou ook gewoon het orginele report kunnen gebruiken (via opslaan in iets als inRerun) of inRerun ook via testtool doen?
 				Report reportInProgress = testtool.getReportInProgress(correlationId);
-				return stub(getCheckpointNameForINamedObject(checkpointNamePrefix, namedObject), true, (reportInProgress==null?null:reportInProgress.getStubStrategy()));
+				return stub(getCheckpointNameForNamedObject(checkpointNamePrefix, namedObject), true, (reportInProgress==null?null:reportInProgress.getStubStrategy()));
 			} else {
 				if (originalEndpoint.getStub() == StubType.FOLLOW_REPORT_STRATEGY.toInt()) {
 					return stub(originalEndpoint, originalEndpoint.getReport().getStubStrategy());
@@ -275,7 +277,7 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 		return false;
 	}
 
-	private static String getCheckpointNameForINamedObject(String checkpointNamePrefix, INamedObject object) {
+	private static String getCheckpointNameForNamedObject(String checkpointNamePrefix, HasName object) {
 		String name = object.getName();
 		if (name == null) {
 			name = object.getClass().getName();

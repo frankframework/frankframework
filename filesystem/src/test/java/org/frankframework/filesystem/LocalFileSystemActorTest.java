@@ -57,7 +57,7 @@ public class LocalFileSystemActorTest extends FileSystemActorRolloverTest<Path, 
 			actor.setCreateFolder(true);
 		}
 		params.configure();
-		actor.configure(localFileSystemNoRoot, params, owner);
+		actor.configure(localFileSystemNoRoot, params, adapter);
 		actor.open();
 
 		Message message = new Message(srcFolder + "/" + filename);
@@ -113,7 +113,7 @@ public class LocalFileSystemActorTest extends FileSystemActorRolloverTest<Path, 
 		actor.setAction(FileSystemAction.WRITE);
 		actor.setCreateFolder(true);
 		actor.setOverwrite(true);
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message(fileSystem.getRoot() + "/" + fileName);
@@ -137,7 +137,7 @@ public class LocalFileSystemActorTest extends FileSystemActorRolloverTest<Path, 
 		actor.setAction(FileSystemAction.WRITE);
 		actor.setCreateFolder(true);
 		actor.setOverwrite(true);
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message(fileName);
@@ -164,7 +164,7 @@ public class LocalFileSystemActorTest extends FileSystemActorRolloverTest<Path, 
 		actor.setAction(FileSystemAction.WRITE);
 		actor.setCreateFolder(true);
 		actor.setOverwrite(true);
-		actor.configure(fileSystem, params, owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message(fileSystem.getRoot() + "/" + fileName);

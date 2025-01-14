@@ -20,8 +20,9 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import org.frankframework.util.AppConstants;
 import org.springframework.jndi.JndiLocatorSupport;
+
+import org.frankframework.util.AppConstants;
 
 public interface IDataSourceFactory {
 

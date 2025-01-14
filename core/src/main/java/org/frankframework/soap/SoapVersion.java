@@ -19,7 +19,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.xml.soap.SOAPConstants;
+
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
 

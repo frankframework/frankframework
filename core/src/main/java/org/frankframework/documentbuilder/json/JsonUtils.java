@@ -23,10 +23,12 @@ import jakarta.json.Json;
 import jakarta.json.stream.JsonParser;
 import jakarta.json.stream.JsonParser.Event;
 import jakarta.json.stream.JsonParserFactory;
+
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.SAXException;
+
 import org.frankframework.documentbuilder.JsonEventHandler;
 import org.frankframework.util.LogUtil;
-import org.xml.sax.SAXException;
 
 public class JsonUtils {
 	private static final Logger log = LogUtil.getLogger(JsonUtils.class);

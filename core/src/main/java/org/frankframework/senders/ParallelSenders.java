@@ -23,6 +23,12 @@ import java.util.concurrent.Phaser;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.util.ConcurrencyThrottleSupport;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ISender;
@@ -36,11 +42,6 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.util.ConcurrencyThrottleSupport;
-
-import lombok.Getter;
 
 /**
  * Collection of Senders, that are executed all at the same time.

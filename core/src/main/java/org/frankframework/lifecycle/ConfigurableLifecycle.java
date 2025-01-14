@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,25 +15,20 @@
 */
 package org.frankframework.lifecycle;
 
-import org.frankframework.configuration.Configuration;
-import org.frankframework.configuration.ConfigurationException;
+import org.springframework.context.Lifecycle;
 import org.springframework.context.SmartLifecycle;
 
+import org.frankframework.configuration.Configuration;
+import org.frankframework.core.IConfigurable;
+
 /**
- * Interface for Spring beans that require their Lifecycle to be managed by Spring.
- * See {@link ConfiguringLifecycleProcessor}
+ * Interface for Spring beans that require their {@link Lifecycle} to be managed by Spring.
+ * 
+ * See {@link ConfiguringLifecycleProcessor}.
  *
  * @author Niels
  */
-public interface ConfigurableLifecycle extends SmartLifecycle {
-
-	/**
-	 * Configure this component.
-	 * <p>In the case of a container, this will propagate the start signal to all
-	 * components that apply.</p>
-	 * @throws ConfigurationException in case it was not able to configure the component.
-	 */
-	void configure() throws ConfigurationException;
+public interface ConfigurableLifecycle extends SmartLifecycle, IConfigurable {
 
 	@Override
 	default int getPhase() {

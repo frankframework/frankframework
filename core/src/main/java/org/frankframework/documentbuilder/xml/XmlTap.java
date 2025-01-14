@@ -15,8 +15,9 @@
 */
 package org.frankframework.documentbuilder.xml;
 
-import org.frankframework.xml.XmlWriter;
 import org.xml.sax.ContentHandler;
+
+import org.frankframework.xml.XmlWriter;
 
 public class XmlTap extends XmlTee {
 

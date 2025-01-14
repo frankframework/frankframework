@@ -23,6 +23,11 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.Lifecycle;
+
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.HasPhysicalDestination;
@@ -36,9 +41,6 @@ import org.frankframework.jndi.JndiBase;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CredentialFactory;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Provides functions for JDBC connections.
@@ -56,13 +58,14 @@ import lombok.Setter;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled {
+public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled, Lifecycle {
 	private final @Getter String domain = "JDBC";
 	private String datasourceName = null;
 	@Getter private String authAlias = null;
 	@Getter private String username = null;
 	private String password = null;
 
+	private boolean started = false;
 	private boolean transacted = false;
 	private boolean connectionsArePooled=true; // TODO: make this a property of the DataSourceFactory
 
@@ -94,6 +97,22 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		if (StringUtils.isNotEmpty(getUsername()) || StringUtils.isNotEmpty(getAuthAlias())) {
 			cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		}
+	}
+
+	@Override
+	public void start() {
+		started = true;
+	}
+
+	@Override
+	public void stop() {
+		super.stop();
+		started = false;
+	}
+
+	@Override
+	public boolean isRunning() {
+		return started;
 	}
 
 	protected DataSource getDatasource() throws JdbcException {

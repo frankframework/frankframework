@@ -15,25 +15,33 @@
 */
 package org.frankframework.core;
 
+import org.springframework.context.SmartLifecycle;
+
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.util.RunState;
 
 /**
  * Models starting and stopping of objects that support such behaviour.
- *
- * @author Gerrit van Brakel
- * @since 4.0
+ * Inherit's all {@link SmartLifecycle} methods and is {@link IConfigurable}.
  */
-public interface IManagable extends IConfigurable, ConfigurableLifecycle {
+public interface ManagableLifecycle extends ConfigurableLifecycle {
+
 	/**
-	 * returns the runstate of the object. Possible values are defined by
-	 * {@link RunState}.
+	 * Returns the RunState of the object.
 	 */
 	RunState getRunState();
 
-	// isConfigured
-	boolean configurationSucceeded();
+	/**
+	 * Check whether this component has successfully been configured.
+	 * Similar to {@link #isRunning()}, verifies if this object may be started.
+	 */
+	boolean isConfigured();
 
+	/**
+	 * Verifies if this object needs to be started or stopped.
+	 * 
+	 * {@inheritDoc}
+	 */
 	@Override
 	default boolean isRunning() {
 		return getRunState() == RunState.STARTED;

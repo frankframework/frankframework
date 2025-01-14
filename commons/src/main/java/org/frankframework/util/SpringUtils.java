@@ -22,7 +22,7 @@ import org.springframework.context.ApplicationContext;
 public class SpringUtils {
 
 	/**
-	 * This is effectively a supersetof what autowire provides, adding initializeBean behavior.
+	 * This is effectively a superset of what autowire provides, adding initializeBean behavior.
 	 * NB: Even though this has been deprecated, we cannot use the new/alternative method due to the autowireByName capability.
 	 */
 	@SuppressWarnings({ "unchecked", "deprecation" })

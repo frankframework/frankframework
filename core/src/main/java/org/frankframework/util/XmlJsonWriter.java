@@ -19,11 +19,12 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import org.frankframework.xml.SaxException;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import org.frankframework.xml.SaxException;
 
 public class XmlJsonWriter extends DefaultHandler implements ContentHandler {
 

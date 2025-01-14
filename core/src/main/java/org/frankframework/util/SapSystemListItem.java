@@ -26,7 +26,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.HasName;
+import org.frankframework.core.NameAware;
 
 /**
  * Base class for items of global lists.
@@ -36,7 +37,7 @@ import org.frankframework.core.INamedObject;
  * <br/>
  * @author Gerrit van Brakel
  */
-public abstract class SapSystemListItem implements INamedObject {
+public abstract class SapSystemListItem implements NameAware, HasName {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private static final Hashtable<String, SapSystemListItem> items = new Hashtable<>();

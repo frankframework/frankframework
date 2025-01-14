@@ -18,9 +18,11 @@ package org.frankframework.processors;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
+import io.micrometer.core.instrument.DistributionSummary;
+
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeLine;

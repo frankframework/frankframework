@@ -31,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.Lifecycle;
@@ -45,9 +44,10 @@ import lombok.Getter;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.extensions.SapSystems;
 import org.frankframework.core.Adapter;
-import org.frankframework.core.IConfigurable;
+import org.frankframework.core.FrankElement;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.doc.Optional;
 import org.frankframework.doc.Protected;
 import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
@@ -78,7 +78,7 @@ import org.frankframework.util.SpringUtils;
  * @author Niels Meijer
  */
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware, ConfigurableLifecycle {
+public class Configuration extends ClassPathXmlApplicationContext implements ConfigurableLifecycle, FrankElement {
 	protected Logger log = LogUtil.getLogger(this);
 	private static final Logger secLog = LogUtil.getLogger("SEC");
 	private static final Logger applicationLog = LogUtil.getLogger("APPLICATION");
@@ -423,7 +423,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 *
 	 * The DisplayName will always be updated, which is purely used for logging purposes.
 	 */
-	@Override
+	@Optional
 	public void setName(String name) {
 		if(StringUtils.isNotEmpty(name)) {
 			if(state == RunState.STARTING && !getName().equals(name)) {

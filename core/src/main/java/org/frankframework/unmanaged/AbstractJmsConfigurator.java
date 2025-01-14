@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IPortConnectedListener;
 import org.frankframework.core.IbisExceptionListener;

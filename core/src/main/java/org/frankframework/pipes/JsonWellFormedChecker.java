@@ -22,13 +22,12 @@ import jakarta.json.Json;
 import jakarta.json.JsonException;
 import jakarta.json.JsonReader;
 
-import org.frankframework.doc.EnterpriseIntegrationPattern;
-
 import org.springframework.http.MediaType;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.doc.Forward;
 import org.frankframework.stream.Message;
