@@ -817,8 +817,10 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			}
 		};
 
-		CompletableFuture.runAsync(super::start, taskExecutor) // Start all smart-lifecycles
-			.thenRun(runnable); // Then start the adapter it self
+		// Since we are catching all exceptions in the thread, the super start will always be called,
+		// not a problem for now but something we should look into in the furture...
+		CompletableFuture.runAsync(runnable, taskExecutor) // Start all smart-lifecycles
+				.thenRun(super::start); // Then start the adapter it self
 	}
 
 	@Override

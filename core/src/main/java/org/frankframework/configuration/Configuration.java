@@ -140,6 +140,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 		postProcessor.setAutowiredAnnotationType(Autowired.class);
 		postProcessor.setBeanFactory(getBeanFactory());
 		getBeanFactory().addBeanPostProcessor(postProcessor);
+		getBeanFactory().addBeanPostProcessor(new ConfigurationAwareBeanPostProcessor(this));
 
 		ibisManager.addConfiguration(this); // Only if successfully refreshed, add the configuration
 		log.info("initialized Configuration [{}] with ClassLoader [{}]", this::toString, this::getClassLoader);
@@ -336,16 +337,12 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 		return getAdapters().get(name);
 	}
 
-	@Deprecated
+	@Nonnull
 	public List<Adapter> getRegisteredAdapters() {
 		if (!isActive()) {
 			return Collections.emptyList();
 		}
 		return new ArrayList<>(getAdapters().values());
-	}
-	@Nonnull
-	public List<Adapter> getAdapterList() {
-		return getRegisteredAdapters();
 	}
 
 	protected final Map<String, Adapter> getAdapters() {

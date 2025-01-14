@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!
+   Copyright 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,12 +17,10 @@ package org.frankframework.testutil.mock;
 
 import static org.mockito.Mockito.spy;
 
-import org.springframework.context.ApplicationContextAware;
-
 import org.frankframework.configuration.IbisContext;
-import org.frankframework.unmanaged.DefaultIbisManager;
+import org.frankframework.configuration.IbisManager;
 
-public class MockIbisManager extends DefaultIbisManager implements ApplicationContextAware {
+public class MockIbisManager extends IbisManager {
 
 	public MockIbisManager() {
 		IbisContext ibisContext = spy(new IbisContext());
