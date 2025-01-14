@@ -249,10 +249,24 @@
             >
               <i class="fa fa-arrow-circle-o-down"></i> Download Selected
             </button>
+            @if (storageParams.processState === 'InProcess') {
+              <button
+                appHasAccessToLink="changeProcessState"
+                [ladda]="messagesProcessing"
+                data-style="slide-down"
+                title="Move Message to Error"
+                (click)="moveMessages()"
+                class="btn btn-danger btn-sm space-it-out"
+                type="button"
+              >
+                <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+                Move to Error
+              </button>
+            }
             @if (storageParams.processState === 'Error') {
               <button
                 appHasAccessToLink="resendReceiverMessages"
-                [ladda]="messagesResending"
+                [ladda]="messagesProcessing"
                 data-style="slide-right"
                 title="Resend Selected Messages"
                 (click)="resendMessages()"
@@ -261,11 +275,9 @@
               >
                 <i class="fa fa-repeat"></i> Resend Selected
               </button>
-            }
-            @if (storageParams.processState === 'Error') {
               <button
                 appHasAccessToLink="deleteReceiverMessages"
-                [ladda]="messagesDeleting"
+                [ladda]="messagesProcessing"
                 data-style="slide-right"
                 title="Delete Selected Messages"
                 (click)="deleteMessages()"

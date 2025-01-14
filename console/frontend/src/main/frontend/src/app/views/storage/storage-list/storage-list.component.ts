@@ -64,9 +64,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   protected truncateButtonText = 'Truncate displayed data';
   protected filterBoxExpanded = false;
 
-  protected messagesResending = false;
-  protected messagesDeleting = false;
-
+  protected messagesProcessing = false;
   protected changingProcessState = false;
 
   protected search: Record<string, string> = {};
@@ -340,15 +338,15 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   resendMessages(): void {
     const fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
-      this.messagesResending = true;
+      this.messagesProcessing = true;
       this.storageService.postResendMessages(fd).subscribe({
         next: () => {
-          this.messagesResending = false;
+          this.messagesProcessing = false;
           this.storageService.addNote('success', 'Selected messages will be reprocessed');
           this.storageService.updateTable();
         },
         error: () => {
-          this.messagesResending = false;
+          this.messagesProcessing = false;
           this.storageService.addNote('danger', 'Something went wrong, unable to resend all messages!');
           this.storageService.updateTable();
         },
@@ -359,20 +357,49 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   deleteMessages(): void {
     const fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
-      this.messagesDeleting = true;
+      this.messagesProcessing = true;
       this.storageService.deleteMessages(fd).subscribe({
         next: () => {
-          this.messagesDeleting = false;
+          this.messagesProcessing = false;
           this.storageService.addNote('success', 'Successfully deleted messages');
           this.storageService.updateTable();
         },
         error: () => {
-          this.messagesDeleting = false;
+          this.messagesProcessing = false;
           this.storageService.addNote('danger', 'Something went wrong, unable to delete all messages!');
           this.storageService.updateTable();
         },
       });
     }
+  }
+
+  moveMessages(): void {
+    const fd = this.getFormData();
+    if (!this.isSelectedMessages(fd)) return;
+
+    this.SweetAlert.Warning({
+      title: 'Move state of messages',
+      text: 'Are you sure you want to move selected messages to Error?',
+      confirmButtonText: 'Move to Error',
+      cancelButtonText: 'Cancel',
+      showCancelButton: true,
+    }).then((value) => {
+      if (!value.isConfirmed) return;
+
+      this.messagesProcessing = true;
+      this.storageService.postMoveMessages(fd).subscribe({
+        next: () => {
+          this.messagesProcessing = false;
+          this.storageService.addNote('success', 'Selected messages will be moved to Error state');
+          this.storageService.updateTable();
+        },
+        error: () => {
+          this.messagesProcessing = false;
+          this.storageService.addNote('danger', 'Something went wrong, unable to move all messages!');
+          this.storageService.updateTable();
+        },
+      });
+    });
   }
 
   downloadMessages(): void {

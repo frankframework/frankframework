@@ -176,6 +176,10 @@ export class StorageService {
     return this.http.post(this.baseUrl, data);
   }
 
+  postMoveMessages(data: FormData): Observable<object> {
+    return this.http.post(`${this.baseUrl}/move/Error`, data);
+  }
+
   postDownloadMessages(data: FormData): Observable<Blob> {
     return this.http.post(`${this.baseUrl}/messages/download`, data, {
       responseType: 'blob',
