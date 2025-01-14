@@ -526,16 +526,17 @@ public class TransformerPool {
 		return new TransformerFilter(threadConnector, getTransformerHandler(), handler, removeNamespacesFromInput, handleLexicalEvents);
 	}
 
-	@Nonnull
-	public Map<String, String> getConfigMap() throws TransformerException, IOException {
-		if (configMap == null) {
-			configMap = XmlUtils.getXsltConfig(configSource);
+
+	public @Nonnull Map<String, String> getConfigMap() throws TransformerException, IOException {
+		synchronized (configSource) {
+			if (configMap == null) {
+				configMap = XmlUtils.getXsltConfig(configSource);
+			}
 		}
 		return configMap;
 	}
 
-	@Nullable
-	public Boolean getOmitXmlDeclaration() throws TransformerException, IOException {
+	public @Nullable Boolean getOmitXmlDeclaration() throws TransformerException, IOException {
 		String setting = getConfigMap().get("output-omit-xml-declaration");
 		if (setting == null) {
 			return null;
@@ -543,8 +544,7 @@ public class TransformerPool {
 		return "yes".equals(setting);
 	}
 
-	@Nullable
-	public Boolean getIndent() throws TransformerException, IOException {
+	public @Nullable Boolean getIndent() throws TransformerException, IOException {
 		String setting = getConfigMap().get("output-indent");
 		if (setting == null) {
 			return null;
@@ -552,13 +552,11 @@ public class TransformerPool {
 		return "yes".equals(setting);
 	}
 
-	@Nullable
-	public String getOutputMethod() throws TransformerException, IOException {
+	public @Nullable String getOutputMethod() throws TransformerException, IOException {
 		return getConfigMap().get("output-method");
 	}
 
-	@Nullable
-	public Boolean getDisableOutputEscaping() throws TransformerException, IOException {
+	public @Nullable Boolean getDisableOutputEscaping() throws TransformerException, IOException {
 		String setting = getConfigMap().get("disable-output-escaping");
 		if (setting == null) {
 			return null;
