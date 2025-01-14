@@ -30,7 +30,6 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.processors.SenderWrapperProcessor;
-import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 
@@ -40,7 +39,7 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class AbstractSenderWrapper extends AbstractSenderWithParameters implements HasStatistics, ICacheEnabled<String,String> {
+public abstract class AbstractSenderWrapper extends AbstractSenderWithParameters implements ICacheEnabled<String,String> {
 
 	private @Getter String getInputFromSessionKey;
 	private @Getter String getInputFromFixedValue=null;

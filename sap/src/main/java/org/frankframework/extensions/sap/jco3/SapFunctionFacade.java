@@ -18,6 +18,10 @@ package org.frankframework.extensions.sap.jco3;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+
 import com.sap.conn.jco.JCoFunction;
 import com.sap.conn.jco.JCoFunctionTemplate;
 import com.sap.conn.jco.JCoParameterList;
@@ -25,9 +29,10 @@ import com.sap.conn.jco.JCoStructure;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
+
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.FrankElement;
+import org.frankframework.core.NameAware;
 import org.frankframework.extensions.sap.ISapFunctionFacade;
 import org.frankframework.extensions.sap.SapException;
 import org.frankframework.extensions.sap.jco3.handlers.Handler;
@@ -36,7 +41,6 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.XmlUtils;
-import org.springframework.context.ApplicationContext;
 /**
  * Wrapper round SAP-functions, either SAP calling Ibis, or Ibis calling SAP.
  *
@@ -47,7 +51,7 @@ import org.springframework.context.ApplicationContext;
  * @author  Jaco de Groot
  * @since   5.0
  */
-public abstract class SapFunctionFacade implements ISapFunctionFacade {
+public abstract class SapFunctionFacade implements ISapFunctionFacade, FrankElement, NameAware {
 	private final @Getter String domain = "SAP";
 	protected static Logger log = LogUtil.getLogger(SapFunctionFacade.class);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();

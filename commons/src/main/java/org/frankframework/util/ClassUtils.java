@@ -38,7 +38,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.HasName;
 
 /**
  * A collection of class management utility methods.
@@ -162,7 +162,7 @@ public class ClassUtils {
 	@Nonnull
 	public static String nameOf(Object o) {
 		String tail = null;
-		if (o instanceof INamedObject object) {
+		if (o instanceof HasName object) {
 			String name = object.getName();
 			if (StringUtils.isNotEmpty(name)) {
 				tail = "[" + name + "]";
@@ -172,7 +172,7 @@ public class ClassUtils {
 	}
 
 	/**
-	 * returns the className of the object, like {@link #nameOf(Object)}, but without [name] suffix for a {@link INamedObject}.
+	 * returns the className of the object, like {@link #nameOf(Object)}, but without [name] suffix for a {@link HasName}.
 	 */
 	@Nonnull
 	public static String classNameOf(Object o) {

@@ -20,9 +20,9 @@ import java.util.Properties;
 
 import javax.naming.NamingException;
 
-import com.mongodb.client.MongoClient;
-
 import org.springframework.jndi.JndiLocatorSupport;
+
+import com.mongodb.client.MongoClient;
 
 public interface IMongoClientFactory {
 

@@ -30,10 +30,11 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.core.Response;
 
-import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
 import org.springframework.util.MimeType;
+
+import lombok.NoArgsConstructor;
 
 import org.frankframework.align.XmlTypeToJsonSchemaConverter;
 import org.frankframework.core.Adapter;

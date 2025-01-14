@@ -38,8 +38,8 @@ import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.core.IConfigurable;
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.FrankElement;
+import org.frankframework.core.HasName;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
@@ -124,7 +124,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 
 	private final Set<FileSystemAction> actions = new LinkedHashSet<>(Arrays.asList(ACTIONS_BASIC));
 
-	private INamedObject owner;
+	private FrankElement owner;
 	private S fileSystem;
 	private ParameterList parameterList;
 	private boolean hasCustomFileAttributes = false;
@@ -172,7 +172,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 
 	}
 
-	public void configure(S fileSystem, ParameterList parameterList, IConfigurable owner) throws ConfigurationException {
+	public void configure(S fileSystem, ParameterList parameterList, FrankElement owner) throws ConfigurationException {
 		this.owner=owner;
 		this.fileSystem=fileSystem;
 		this.parameterList=parameterList;
@@ -244,7 +244,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, FileSystemAction.FORWARD, PARAMETER_DESTINATION, null, "destination", getDestination());
 	}
 
-	protected void actionRequiresAtLeastOneOfTwoParametersOrAttribute(INamedObject owner, ParameterList parameterList, FileSystemAction configuredAction, FileSystemAction action, String parameter1, String parameter2, String attributeName, String attributeValue) throws ConfigurationException {
+	protected void actionRequiresAtLeastOneOfTwoParametersOrAttribute(HasName owner, ParameterList parameterList, FileSystemAction configuredAction, FileSystemAction action, String parameter1, String parameter2, String attributeName, String attributeValue) throws ConfigurationException {
 		if (configuredAction == action) {
 			boolean parameter1Set = parameterList != null && parameterList.hasParameter(parameter1);
 			boolean parameter2Set = parameterList != null && parameterList.hasParameter(parameter2);

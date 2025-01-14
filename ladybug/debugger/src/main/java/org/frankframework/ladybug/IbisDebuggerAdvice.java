@@ -34,7 +34,7 @@ import org.xml.sax.ContentHandler;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.IBlockEnabledSender;
 import org.frankframework.core.ICorrelatedPullingListener;
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.HasName;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ISender;
 import org.frankframework.core.IValidator;
@@ -376,7 +376,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		threadInfo.correlationId = correlationId;
 		threadInfo.threadId = Integer.toString(threadCounter.incrementAndGet());
 		if (log.isDebugEnabled()) {
-			String nameClause=threadInfo.owner instanceof INamedObject ino?" name ["+ino.getName()+"]":"";
+			String nameClause=threadInfo.owner instanceof HasName ino?" name ["+ino.getName()+"]":"";
 			log.debug("announceChildThread thread id [{}] thread name [{}] owner [{}]{} threadId [{}] correlationId [{}]", Thread.currentThread()
 					.getId(), Thread.currentThread().getName(), threadInfo.owner.getClass()
 					.getSimpleName(), nameClause, threadInfo.threadId, threadInfo.correlationId);
@@ -391,7 +391,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			return;
 		}
 		if (log.isDebugEnabled()) {
-			String nameClause=threadInfo.owner instanceof INamedObject ino?" name ["+ino.getName()+"]":"";
+			String nameClause=threadInfo.owner instanceof HasName ino?" name ["+ino.getName()+"]":"";
 			log.debug("cancelChildThread thread id [{}] thread name [{}] owner [{}]{} threadId [{}] correlationId [{}]", Thread.currentThread()
 					.getId(), Thread.currentThread().getName(), threadInfo.owner.getClass()
 					.getSimpleName(), nameClause, threadInfo.threadId, threadInfo.correlationId);
@@ -405,7 +405,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			return request;
 		}
 		if (log.isDebugEnabled()) {
-			String nameClause=ref.owner instanceof INamedObject ino?" name ["+ino.getName()+"]":"";
+			String nameClause=ref.owner instanceof HasName ino?" name ["+ino.getName()+"]":"";
 			log.debug("threadCreated thread id [{}] thread name [{}] owner [{}]{} threadId [{}] correlationId [{}]", Thread.currentThread()
 					.getId(), Thread.currentThread().getName(), ref.owner.getClass().getSimpleName(), nameClause, ref.threadId, ref.correlationId);
 		}
@@ -418,7 +418,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			return result;
 		}
 		if (log.isDebugEnabled()) {
-			String nameClause=ref.owner instanceof INamedObject ino?" name ["+ino.getName()+"]":"";
+			String nameClause=ref.owner instanceof HasName ino?" name ["+ino.getName()+"]":"";
 			log.debug("threadEnded thread id [{}] thread name [{}] owner [{}]{} threadId [{}] correlationId [{}]", Thread.currentThread()
 					.getId(), Thread.currentThread().getName(), ref.owner.getClass().getSimpleName(), nameClause, ref.threadId, ref.correlationId);
 		}
@@ -431,7 +431,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			return t;
 		}
 		if (log.isDebugEnabled()) {
-			String nameClause=ref.owner instanceof INamedObject ino?" name ["+ino.getName()+"]":"";
+			String nameClause=ref.owner instanceof HasName ino?" name ["+ino.getName()+"]":"";
 			log.debug("threadAborted thread id [{}] thread name [{}] owner [{}]{} threadId [{}] correlationId [{}]", Thread.currentThread()
 					.getId(), Thread.currentThread().getName(), ref.owner.getClass().getSimpleName(), nameClause, ref.threadId, ref.correlationId);
 		}

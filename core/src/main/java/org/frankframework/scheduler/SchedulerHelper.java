@@ -21,7 +21,6 @@ import static org.quartz.TriggerBuilder.newTrigger;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.scheduler.job.IJob;
 import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
@@ -34,8 +33,9 @@ import org.quartz.TriggerKey;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.frankframework.configuration.ConfigurationException;
 
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.scheduler.job.IJob;
 import org.frankframework.util.LogUtil;
 
 /**

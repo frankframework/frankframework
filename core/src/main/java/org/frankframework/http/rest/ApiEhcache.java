@@ -15,14 +15,16 @@ limitations under the License.
 */
 package org.frankframework.http.rest;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import lombok.Setter;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.Status;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
+
 import org.frankframework.cache.IbisCacheManager;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;

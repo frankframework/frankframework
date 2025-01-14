@@ -20,19 +20,18 @@ import java.io.IOException;
 import java.io.Reader;
 
 import org.apache.commons.lang3.StringUtils;
-
-import org.frankframework.doc.EnterpriseIntegrationPattern;
-
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;

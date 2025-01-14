@@ -17,15 +17,14 @@ package org.frankframework.monitoring;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-
-import org.frankframework.doc.Mandatory;
-
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.doc.Mandatory;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;

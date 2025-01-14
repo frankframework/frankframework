@@ -131,7 +131,10 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			esbJmsListener.setDestinationName("jms/dest_" + fileBaseName);
 			receiver.setListener(esbJmsListener);
 			adapter.addReceiver(receiver);
+			pipeLine.setConfiguration(configuration);
+			pipeLine.setApplicationContext(adapter);
 			adapter.setPipeLine(pipeLine);
+
 			String generationInfo = "at " + RestListenerUtils.retrieveRequestURL(session);
 			WsdlGenerator wsdl = new WsdlGenerator(pipeLine, generationInfo);
 			wsdl.setIndent(true);

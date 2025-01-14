@@ -21,10 +21,11 @@ import java.nio.charset.StandardCharsets;
 
 import javax.xml.transform.TransformerException;
 
-import org.frankframework.core.Resource;
-import org.frankframework.util.TransformerPool;
 import org.springframework.http.MediaType;
 import org.xml.sax.SAXException;
+
+import org.frankframework.core.Resource;
+import org.frankframework.util.TransformerPool;
 
 /**
  * Flow generator to create DOT files

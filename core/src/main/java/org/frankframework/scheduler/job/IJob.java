@@ -15,17 +15,20 @@
 */
 package org.frankframework.scheduler.job;
 
+import org.quartz.JobDetail;
+
+import org.frankframework.core.FrankElement;
 import org.frankframework.core.IConfigurable;
+import org.frankframework.core.NameAware;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.scheduler.ConfiguredJob;
 import org.frankframework.util.Locker;
 import org.frankframework.util.MessageKeeper;
-import org.quartz.JobDetail;
 
 @FrankDocGroup(FrankDocGroupValue.JOB)
-public interface IJob extends IConfigurable {
+public interface IJob extends IConfigurable, FrankElement, NameAware {
 
 	/**
 	 * Actual implementation of the {@link IJob}. Is wrapped around a {@link Locker} and {@link MessageKeeper exceptions} will be managed automatically.

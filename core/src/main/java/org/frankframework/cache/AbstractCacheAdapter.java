@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013-2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IConfigurationAware;
+import org.frankframework.core.FrankElement;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
@@ -37,7 +37,7 @@ import org.frankframework.util.TransformerPool.OutputType;
  * @author  Gerrit van Brakel
  * @since   4.11
  */
-public abstract class AbstractCacheAdapter<V> implements ICache<String,V>, IConfigurationAware {
+public abstract class AbstractCacheAdapter<V> implements ICache<String,V>, FrankElement {
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;

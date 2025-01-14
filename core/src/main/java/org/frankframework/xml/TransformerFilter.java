@@ -21,10 +21,12 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 
-import lombok.Getter;
-import org.frankframework.threading.ThreadConnector;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ext.LexicalHandler;
+
+import lombok.Getter;
+
+import org.frankframework.threading.ThreadConnector;
 
 public class TransformerFilter extends FullXmlFilter {
 

@@ -27,6 +27,7 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -67,7 +68,7 @@ import org.frankframework.util.StringUtil;
  * 		<li>Make sure your application is able to reach <code>https://login.microsoftonline.com</code>. Required for token retrieval. </li>
  * </ol>
  */
-public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implements HasKeystore, HasTruststore {
+public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implements HasKeystore, HasTruststore, ApplicationContextAware {
 	private final @Getter String domain = "Azure";
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;

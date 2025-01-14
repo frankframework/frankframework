@@ -20,8 +20,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.frankframework.dbms.JdbcException;
-
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ApplicationWarnings;
@@ -29,10 +27,9 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.IDataIterator;
 import org.frankframework.core.SenderException;
-
 import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.dbms.JdbcException;
 import org.frankframework.util.AppConstants;
-
 import org.frankframework.util.StreamUtil;
 
 /**

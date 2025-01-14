@@ -19,10 +19,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.util.XmlUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import org.frankframework.util.XmlUtils;
 
 public class SaxElementBuilder implements AutoCloseable {
 

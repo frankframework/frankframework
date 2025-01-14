@@ -24,7 +24,7 @@ import java.io.Reader;
 import jakarta.json.Json;
 import jakarta.json.stream.JsonParser;
 import jakarta.json.stream.JsonParser.Event;
-import org.frankframework.util.StreamUtil;
+
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
 import org.xml.sax.EntityResolver;
@@ -35,6 +35,8 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
+
+import org.frankframework.util.StreamUtil;
 
 
 public class JsonXslt3XmlReader implements XMLReader {

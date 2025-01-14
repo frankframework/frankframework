@@ -15,19 +15,19 @@
 */
 package org.frankframework.http.authentication;
 
-import com.nimbusds.jose.util.Base64;
+import static org.apache.http.entity.mime.MIME.UTF8_CHARSET;
+
+import java.net.URLEncoder;
+import java.util.List;
 
 import org.apache.http.HttpHeaders;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
+import com.nimbusds.jose.util.Base64;
+
 import org.frankframework.http.AbstractHttpSession;
-
-import java.net.URLEncoder;
-import java.util.List;
-
-import static org.apache.http.entity.mime.MIME.UTF8_CHARSET;
 
 public class ClientCredentialsBasicAuth extends AbstractClientCredentials {
 

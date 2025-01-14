@@ -8,6 +8,7 @@ import java.io.InputStream;
 
 import org.frankframework.core.ConfiguredTestBase;
 import org.frankframework.stream.Message;
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
@@ -23,6 +24,9 @@ public abstract class FileSystemTestBase extends ConfiguredTestBase {
 
 	private long waitMillis = 0;
 
+	protected void autowireBeanByNameInAdapter(Object bean) {
+		SpringUtils.autowireByName(adapter, bean);
+	}
 
 	/**
 	 * Checks if a file with the specified name exists.

@@ -17,11 +17,12 @@ package org.frankframework.jms;
 
 import java.util.Map;
 
+import javax.naming.Context;
+import javax.naming.NamingException;
+
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.Destination;
 import jakarta.jms.Session;
-import javax.naming.Context;
-import javax.naming.NamingException;
 
 import org.apache.commons.lang3.StringUtils;
 

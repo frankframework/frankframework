@@ -15,8 +15,9 @@
 */
 package org.frankframework.core;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.springframework.transaction.TransactionDefinition;
+
+import org.frankframework.configuration.ConfigurationException;
 
 /**
  * The <code>HasTransactionAttribute</code> allows Pipes to declare transaction and isolation behavior.

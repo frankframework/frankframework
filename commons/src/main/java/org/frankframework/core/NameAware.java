@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,13 +16,10 @@
 package org.frankframework.core;
 
 /**
- * The <code>INamedObject</code> is implemented by all objects that have a name
- *
- * @author Gerrit van Brakel
+ * The <code>NameAware</code> is implemented by all objects where you can set a name.
+ * The {@link HasName} interface is the opposite, where all implemented objects have a name.
  */
-public interface INamedObject {
-
-	String getName();
+public interface NameAware {
 
 	/**
 	 * The functional name of the object.

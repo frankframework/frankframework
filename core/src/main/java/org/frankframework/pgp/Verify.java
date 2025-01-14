@@ -22,6 +22,7 @@ import org.bouncycastle.util.io.Streams;
 
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BouncyGPG;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BuildDecryptionInputStreamAPI;
+
 import org.frankframework.configuration.ConfigurationException;
 
 public class Verify extends AbstractPGPAction {

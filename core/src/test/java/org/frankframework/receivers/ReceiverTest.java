@@ -1083,9 +1083,13 @@ public class ReceiverTest {
 		assertTrue(listener.isClosed());
 	}
 
+	/*
+	 * This test is flaky when running with other tests because you don't know how many
+	 * threads exist in the threadpool and can run concurrently.
+	 */
 	@Test
 	public void testStopAdapterWhileReceiverIsStillStarting() throws Exception {
-		assumeFalse(TestAssertions.isTestRunningWithSurefire() || TestAssertions.isTestRunningOnCI(), "For unknown reasons this test is unreliable on Github and CI so only run locally for now until we have time to investigate");
+		assumeFalse(TestAssertions.isTestRunningWithSurefire() || TestAssertions.isTestRunningOnCI(), "flaky test, should not fail ci");
 
 		// Arrange
 		configuration = buildConfiguration(null);
@@ -1124,6 +1128,8 @@ public class ReceiverTest {
 
 			// If logs do not contain these lines, then we did not actually test what we meant to test. Perhaps receiver start delay need to be increased.
 			assertThat(appender.getLogLines(), hasItem(containsString("receiver currently in state [STARTING], ignoring stop() command")));
+
+			// This log line is not always present, it seems that the receiver sometimes starts/stops quicker then we expect...
 			assertThat(appender.getLogLines(), hasItem(containsString("which was still starting when stop() command was received")));
 		}
 	}

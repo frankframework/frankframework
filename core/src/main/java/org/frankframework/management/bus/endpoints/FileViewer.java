@@ -15,8 +15,16 @@
  */
 package org.frankframework.management.bus.endpoints;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.io.FilenameUtils;
+import org.springframework.http.MediaType;
+import org.springframework.messaging.Message;
+
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -28,12 +36,6 @@ import org.frankframework.management.bus.message.BinaryMessage;
 import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.FileUtils;
-import org.springframework.http.MediaType;
-import org.springframework.messaging.Message;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.FILE_VIEWER)

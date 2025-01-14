@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.frankframework.core.INamedObject;
+
+import org.frankframework.util.ClassUtils;
 
 public class NamedThreadFactory implements ThreadFactory {
 	private @Setter int threadPriority = Thread.NORM_PRIORITY;
@@ -38,10 +39,7 @@ public class NamedThreadFactory implements ThreadFactory {
 	}
 
 	private String getThreadName(Runnable runnable) {
-		String threadName = runnable.getClass().getSimpleName();
-		if(runnable instanceof INamedObject object) {
-			threadName += "["+object.getName()+"]";
-		}
+		String threadName = ClassUtils.nameOf(runnable);
 		threadName += "-"+this.threadCount.incrementAndGet();
 
 		return threadName;

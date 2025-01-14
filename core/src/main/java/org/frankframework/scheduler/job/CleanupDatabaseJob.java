@@ -22,9 +22,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
@@ -36,8 +37,8 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.Dbms;
-import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.AbstractJdbcQuerySender;
+import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.JdbcTransactionalStorage;
 import org.frankframework.parameters.DateParameter;
 import org.frankframework.parameters.DateParameter.DateFormatType;

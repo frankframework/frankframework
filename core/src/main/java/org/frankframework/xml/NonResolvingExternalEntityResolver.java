@@ -19,10 +19,11 @@ import java.io.IOException;
 import java.io.StringReader;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.util.LogUtil;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
+
+import org.frankframework.util.LogUtil;
 
 /**
  * Entity resolver which resolves external entities to an empty string. This

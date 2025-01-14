@@ -15,11 +15,11 @@
 */
 package org.frankframework.configuration.extensions;
 
+import static org.frankframework.util.SapSystemListItem.registerItem;
+
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.util.SapSystemListItem;
-
-import static org.frankframework.util.SapSystemListItem.registerItem;
 
 @FrankDocGroup(FrankDocGroupValue.OTHER)
 public class SapSystems {

@@ -27,7 +27,7 @@ import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.Adapter;
-import org.frankframework.core.IConfigurationAware;
+import org.frankframework.core.HasApplicationContext;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.util.AppConstants;
 
@@ -82,7 +82,7 @@ public class SpringContextFlowDiagramProvider implements ConfigurableLifecycle, 
 			// Exception is already logged when loglevel equals debug (see FlowDiagramManager#generateFlowDiagram(String, String, File))
 		} catch (IOException e) {
 			if(!suppressWarnings) {
-				ConfigurationWarnings.add((IConfigurationAware) applicationContext, log, "error generating flow diagram", e);
+				ConfigurationWarnings.add((HasApplicationContext) applicationContext, log, "error generating flow diagram", e);
 			}
 		}
 	}

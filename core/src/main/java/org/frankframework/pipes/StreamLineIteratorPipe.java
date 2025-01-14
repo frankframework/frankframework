@@ -21,6 +21,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+
 import org.frankframework.core.IDataIterator;
 import org.frankframework.core.PeekableDataIterator;
 import org.frankframework.core.PipeLineSession;

@@ -23,7 +23,15 @@ import java.util.Set;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
+import org.springframework.messaging.Message;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IMessageBrowser;
@@ -52,12 +60,6 @@ import org.frankframework.receivers.Receiver;
 import org.frankframework.util.MessageBrowsingFilter;
 import org.frankframework.util.MessageBrowsingUtil;
 import org.frankframework.util.StringUtil;
-import org.springframework.http.MediaType;
-import org.springframework.messaging.Message;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.MESSAGE_BROWSER)

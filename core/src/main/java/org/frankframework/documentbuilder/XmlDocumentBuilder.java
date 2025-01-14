@@ -18,10 +18,11 @@ package org.frankframework.documentbuilder;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import org.frankframework.xml.SaxDocumentBuilder;
-import org.frankframework.xml.XmlWriter;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
+import org.frankframework.xml.SaxDocumentBuilder;
+import org.frankframework.xml.XmlWriter;
 
 public class XmlDocumentBuilder extends XmlNodeBuilder implements IDocumentBuilder {
 

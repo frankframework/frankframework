@@ -24,14 +24,15 @@ import javax.xml.transform.TransformerException;
 
 import jakarta.annotation.Nonnull;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;

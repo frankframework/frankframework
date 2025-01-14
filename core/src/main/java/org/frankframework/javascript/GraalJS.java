@@ -19,15 +19,17 @@ import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Engine;
+
 import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.TemporaryDirectoryUtils;
 import org.frankframework.util.flow.ResultHandler;
-import org.graalvm.polyglot.Context;
-import org.graalvm.polyglot.Engine;
 
 /**
  * Javascript engine implementation of GraalJS. If high performance execution of JavaScript code is required, enable the following JVM options:

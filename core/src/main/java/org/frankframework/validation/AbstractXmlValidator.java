@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSModel;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.Lifecycle;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -39,7 +40,8 @@ import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.SuppressKeys;
-import org.frankframework.core.IConfigurationAware;
+import org.frankframework.core.FrankElement;
+import org.frankframework.core.HasApplicationContext;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.stream.Message;
@@ -57,7 +59,7 @@ import org.frankframework.util.XmlUtils;
  * @author Johan Verrips IOS
  * @author Jaco de Groot
  */
-public abstract class AbstractXmlValidator implements IConfigurationAware {
+public abstract class AbstractXmlValidator implements FrankElement, Lifecycle {
 	protected static Logger log = LogUtil.getLogger(AbstractXmlValidator.class);
 
 	public enum ValidationResult {
@@ -75,7 +77,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
-	private @Getter IConfigurationAware owner;
+	private @Getter HasApplicationContext owner;
 
 	private @Getter boolean throwException = false;
 	private @Getter boolean fullSchemaChecking = false;
@@ -105,7 +107,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	 *     <li>when the parser does not accept setting the properties for validating</li>
 	 * </ul>
 	 */
-	public void configure(IConfigurationAware owner) throws ConfigurationException {
+	public void configure(HasApplicationContext owner) throws ConfigurationException {
 		this.logPrefix = ClassUtils.nameOf(owner);
 		this.owner = owner;
 	}
@@ -123,10 +125,14 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		started = true;
 	}
 
+	@Override
 	public void stop() {
-		if(started) {
-			started = false;
-		}
+		started = false;
+	}
+
+	@Override
+	public boolean isRunning() {
+		return started;
 	}
 
 	public AbstractValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {

@@ -17,6 +17,13 @@ package org.frankframework.processors;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.core.HasSender;
 import org.frankframework.core.HasTransactionAttribute;
 import org.frankframework.core.IPipe;
@@ -33,11 +40,6 @@ import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.stream.Message;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.ClassUtils;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * @author Jaco de Groot

@@ -18,10 +18,13 @@ package org.frankframework.senders;
 import java.io.IOException;
 
 import jakarta.annotation.Nonnull;
-import lombok.Getter;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;

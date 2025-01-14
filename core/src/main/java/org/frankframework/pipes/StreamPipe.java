@@ -27,7 +27,10 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMultipart;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.MimeType;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
@@ -43,7 +46,6 @@ import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.StreamUtil;
-import org.springframework.util.MimeType;
 
 /**
  * Stream an input stream to an output stream.

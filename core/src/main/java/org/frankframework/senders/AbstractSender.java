@@ -15,9 +15,11 @@
 */
 package org.frankframework.senders;
 
-import lombok.Getter;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.Lifecycle;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
@@ -31,8 +33,9 @@ import org.frankframework.util.SpringUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class AbstractSender implements ISender {
+public abstract class AbstractSender implements ISender, Lifecycle {
 	protected Logger log = LogUtil.getLogger(this);
+	private boolean started = false;
 	private String name;
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter ApplicationContext applicationContext;
@@ -43,10 +46,17 @@ public abstract class AbstractSender implements ISender {
 
 	@Override
 	public void start() {
+		started = true;
 	}
 
 	@Override
 	public void stop() {
+		started = false;
+	}
+
+	@Override
+	public boolean isRunning() {
+		return started;
 	}
 
 	/**

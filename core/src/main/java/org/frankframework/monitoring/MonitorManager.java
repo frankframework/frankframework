@@ -69,7 +69,7 @@ public class MonitorManager extends AbstractConfigurableLifecyle implements Appl
 			destination.configure();
 		}
 
-		//Only configure Monitors if all destinations were able to configure successfully
+		// Only configure Monitors if all destinations were able to configure successfully
 		if (log.isDebugEnabled()) log.debug("{}configuring monitors", getLogPrefix());
 		for(Monitor monitor : monitors) {
 			monitor.configure();
@@ -137,7 +137,7 @@ public class MonitorManager extends AbstractConfigurableLifecyle implements Appl
 	}
 
 	public List<Monitor> getMonitors() {
-		//Monitors may not be added nor removed directly
+		// Monitors may not be added nor removed directly
 		return Collections.unmodifiableList(monitors);
 	}
 
@@ -147,7 +147,7 @@ public class MonitorManager extends AbstractConfigurableLifecyle implements Appl
 			throw new IllegalStateException("adapter ["+adapter+"] has no (usable) name");
 		}
 
-		//Update the list with potential events that can be thrown
+		// Update the list with potential events that can be thrown
 		Event event = events.computeIfAbsent(eventCode, e->new Event());
 		event.addThrower(eventThrowing);
 		events.put(eventCode, event);
@@ -163,7 +163,7 @@ public class MonitorManager extends AbstractConfigurableLifecyle implements Appl
 			IMonitorDestination ma=getDestination(name);
 
 			XmlBuilder destinationXml=new XmlBuilder("destination");
-			destinationXml.addAttribute("name",ma.getName());
+			destinationXml.addAttribute("name", ma.getName());
 			destinationXml.addAttribute("className",ma.getClass().getName());
 
 			configXml.addSubElement(ma.toXml());

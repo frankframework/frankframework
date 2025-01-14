@@ -32,6 +32,9 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -41,10 +44,8 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
-import org.frankframework.util.StringResolver;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.frankframework.util.StringResolver;
 
 /**
  * This ConfigurationFactory is loaded after the log4j2.properties file has been initialized.

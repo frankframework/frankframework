@@ -22,7 +22,7 @@ public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IMailFileSy
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
-		autowireByName(fileSystem);
+		autowireBeanByNameInAdapter(fileSystem);
 	}
 
 	@Test

@@ -16,7 +16,6 @@
 package org.frankframework.xml;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.util.LogUtil;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -26,6 +25,8 @@ import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import lombok.Setter;
+
+import org.frankframework.util.LogUtil;
 
 public class FullXmlFilter extends XMLFilterImpl implements LexicalHandler {
 	protected Logger log = LogUtil.getLogger(this);
