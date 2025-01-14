@@ -40,8 +40,8 @@ public class ConvertToLarvaActionTest {
 		AppConstants.getInstance().setProperty("log.dir", tmpDirPath);
 
 		// Init converter and set scenario suffix
+		ConvertToLarvaAction.scenarioSuffix = "simpleHelloWorldsAdapterWithNoStubbedSenderAndParam";
 		ConvertToLarvaAction convertToLarvaAction = new ConvertToLarvaAction();
-		convertToLarvaAction.setScenarioSuffix("simpleHelloWorldsAdapterWithNoStubbedSenderAndParam");
 		convertToLarvaAction.handleReports(Arrays.asList(report));
 
 		// Collect produced files
@@ -89,8 +89,8 @@ public class ConvertToLarvaActionTest {
 		AppConstants.getInstance().setProperty("log.dir", tmpDirPath);
 
 		// Init converter and set scenario suffix
+		ConvertToLarvaAction.scenarioSuffix = "WithStubbedSenders";
 		ConvertToLarvaAction convertToLarvaAction = new ConvertToLarvaAction();
-		convertToLarvaAction.setScenarioSuffix("WithStubbedSenders");
 		convertToLarvaAction.handleReports(Arrays.asList(report));
 
 		// Collect produced files
@@ -152,8 +152,8 @@ public class ConvertToLarvaActionTest {
 		AppConstants.getInstance().setProperty("log.dir", tmpDirPath);
 
 		// Init converter and set scenario suffix
+		ConvertToLarvaAction.scenarioSuffix = "ForEachStubbedSender";
 		ConvertToLarvaAction convertToLarvaAction = new ConvertToLarvaAction();
-		convertToLarvaAction.setScenarioSuffix("ForEachStubbedSender");
 		convertToLarvaAction.handleReports(Arrays.asList(report));
 
 		// Collect produced files
@@ -222,8 +222,8 @@ public class ConvertToLarvaActionTest {
 		AppConstants.getInstance().setProperty("log.dir", tmpDirPath);
 
 		// Init converter and set scenario suffix
+		ConvertToLarvaAction.scenarioSuffix = null;
 		ConvertToLarvaAction convertToLarvaAction = new ConvertToLarvaAction();
-		convertToLarvaAction.setScenarioSuffix(null);
 		convertToLarvaAction.handleReports(reports);
 
 		// Collect produced files
@@ -262,8 +262,8 @@ public class ConvertToLarvaActionTest {
 		AppConstants.getInstance().setProperty("log.dir", tmpDirPath);
 
 		// Init converter and set scenario suffix
+		ConvertToLarvaAction.scenarioSuffix = "parallelSenders";
 		ConvertToLarvaAction convertToLarvaAction = new ConvertToLarvaAction();
-		convertToLarvaAction.setScenarioSuffix("parallelSenders");
 		convertToLarvaAction.handleReports(reports);
 
 		// Collect produced files

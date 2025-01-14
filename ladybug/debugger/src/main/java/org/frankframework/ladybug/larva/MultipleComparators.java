@@ -33,8 +33,8 @@ public class MultipleComparators<T> implements Comparator<T> {
 
 		if (comparisonByOne == 0) {
 			return comparatorTwo.compare(one, another);
-		} else {
-			return comparisonByOne;
 		}
+		return comparisonByOne;
+		
 	}
 }

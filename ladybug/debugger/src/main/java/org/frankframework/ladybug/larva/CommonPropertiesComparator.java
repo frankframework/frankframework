@@ -24,23 +24,25 @@ public class CommonPropertiesComparator implements Comparator<String> {
 		return Integer.compare(getRank(o1), getRank(o2));
 	}
 
-	private static int getRank(String s) {
-		s = s.trim();
-		String[] sParts = s.split("\\.");
-		switch (sParts[0]) {
-			case "include":
-				return 0;
-			case "adapter":
-				return 1;
-			case "stub":
-				return 2;
-			default:
+	private static int getRank(String propertyKey) {
+		propertyKey = propertyKey.trim();
+		String[] sParts = propertyKey.split("\\.");
+		return switch (sParts[0]) {
+			case "include" -> 0;
+			case "adapter" -> 1;
+			case "stub" -> 2;
+			default -> {
 				if (sParts[0].startsWith("ignoreContentBetweenKeys")) {
-					String ignoreIdx = sParts[0].substring(24);
-					if (ignoreIdx.isEmpty()) return 3;
-					return 3 + 2 * Integer.parseInt(ignoreIdx) + Integer.parseInt(sParts[sParts.length - 1].substring(3));
+					String ignoreIdx = sParts[0].substring("ignoreContentBetweenKeys".length());
+					if (ignoreIdx.isEmpty()) {
+						yield 3;
+					} else {
+						yield 3 + 2 * Integer.parseInt(ignoreIdx) + Integer.parseInt(sParts[sParts.length - 1].substring(3));
+					}
+				} else {
+					yield -1;
 				}
-		}
-		return -1;
+			}
+		};
 	}
 }
