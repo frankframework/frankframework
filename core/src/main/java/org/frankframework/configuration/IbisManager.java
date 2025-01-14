@@ -38,7 +38,6 @@ import org.frankframework.management.Action;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.RunState;
 
 /**
  * Implementation of IbisManager which does not use EJB for
@@ -53,7 +52,7 @@ public class IbisManager implements ApplicationContextAware {
 
 	private IbisContext ibisContext;
 	private final List<Configuration> configurations = new ArrayList<>();
-	private @Getter @Setter ApplicationContext applicationContext;
+	private @Getter @Setter ApplicationContext applicationContext; // Only here for the DatabaseClassLoader to create a FixedQuerySender bean.
 
 	public void setIbisContext(IbisContext ibisContext) {
 		this.ibisContext = ibisContext;
@@ -255,22 +254,8 @@ public class IbisManager implements ApplicationContextAware {
 		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		Assert.notNull(receiver, ()->"receiver ["+receiverName+"] not found");
 
-		RunState receiverRunState = receiver.getRunState();
-		switch(receiverRunState) {
-			case STOPPING:
-			case STOPPED:
-				adapter.getMessageKeeper().info(receiver, "already in state [" + receiverRunState + "]");
-				break;
-			case STARTED:
-			case EXCEPTION_STARTING:
-			case EXCEPTION_STOPPING:
-				receiver.stop();
-				log.info("receiver [{}] stopped by webcontrol on request of [{}]", receiverName, commandIssuedBy);
-				break;
-			default:
-				log.warn("receiver [{}] currently in state [{}], ignoring stop() command", receiverName, receiverRunState);
-				break;
-		}
+		log.info("request to stop receiver [{}] on request of [{}]", receiverName, commandIssuedBy);
+		receiver.stop();
 	}
 
 	private void startReceiver(String configurationName, String adapterName, String receiverName, String commandIssuedBy) {
@@ -280,20 +265,8 @@ public class IbisManager implements ApplicationContextAware {
 		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		Assert.notNull(receiver, ()->"receiver ["+receiverName+"] not found");
 
-		RunState receiverRunState = receiver.getRunState();
-		switch(receiverRunState) {
-			case STARTING:
-			case STARTED:
-				adapter.getMessageKeeper().info(receiver, "already in state [" + receiverRunState + "]");
-				break;
-			case STOPPED:
-				receiver.start();
-				log.info("receiver [{}] started by [{}]", receiverName, commandIssuedBy);
-				break;
-			default:
-				log.warn("receiver [{}] currently in state [{}], ignoring start() command", receiverName, receiverRunState);
-				break;
-		}
+		log.info("request to start receiver [{}] on request of [{}]", receiverName, commandIssuedBy);
+		receiver.start();
 	}
 
 	private void startConfiguration(Configuration configuration) {

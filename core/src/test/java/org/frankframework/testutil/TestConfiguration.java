@@ -29,7 +29,7 @@ public class TestConfiguration extends Configuration {
 	private final QuerySenderPostProcessor qsPostProcessor = new QuerySenderPostProcessor();
 	private final boolean autoConfigure;
 
-	//Configures a standalone configuration.
+	// Configures a standalone configuration.
 	public TestConfiguration() {
 		this(true);
 	}
@@ -48,8 +48,8 @@ public class TestConfiguration extends Configuration {
 		setAutoStart(false);
 		this.autoConfigure = autoConfigure;
 
-		ClassLoader classLoader = new JunitTestClassLoaderWrapper(); //Add ability to retrieve classes from src/test/resources
-		setClassLoader(classLoader); //Add the test classpath
+		ClassLoader classLoader = new JunitTestClassLoaderWrapper(); // Add ability to retrieve classes from src/test/resources
+		setClassLoader(classLoader); // Add the test classpath
 		setConfigLocations(configurationFiles);
 		setName(TEST_CONFIGURATION_NAME);
 	}
@@ -58,7 +58,7 @@ public class TestConfiguration extends Configuration {
 	public void refresh() throws BeansException, IllegalStateException {
 		super.refresh();
 
-		//Add Custom Pre-Instantiation Processor to mock statically created FixedQuerySenders.
+		// Add Custom Pre-Instantiation Processor to mock statically created FixedQuerySenders.
 		qsPostProcessor.setApplicationContext(this);
 		getBeanFactory().addBeanPostProcessor(qsPostProcessor);
 
