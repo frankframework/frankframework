@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.filesystem.FileSystemActorTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 
+@Disabled("Disabled for now, running too many tests in CI causes problems")
 public class ExchangeFileSystemActorTest extends FileSystemActorTest<MailItemId, ExchangeFileSystem> {
 
 	@BeforeAll

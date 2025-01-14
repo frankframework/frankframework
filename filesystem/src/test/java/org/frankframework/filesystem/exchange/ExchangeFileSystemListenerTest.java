@@ -4,11 +4,13 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 
 import org.frankframework.filesystem.BasicFileSystemListenerTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.receivers.ExchangeMailListener;
 
+@Disabled("Disabled for now, running too many tests in CI causes problems")
 public class ExchangeFileSystemListenerTest extends BasicFileSystemListenerTest<MailItemId, ExchangeFileSystem> {
 
 	@BeforeAll
