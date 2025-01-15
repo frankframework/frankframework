@@ -303,7 +303,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	private @Getter boolean synchronous=true;
 
 	private @Autowired @Setter IsolatedServiceCaller isolatedServiceCaller;
-	private @Autowired @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	private @Autowired(required = false) @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 	private @Setter Configuration configuration;
 	private @Autowired @Setter IbisManager ibisManager;
 

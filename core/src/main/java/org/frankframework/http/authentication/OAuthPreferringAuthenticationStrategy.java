@@ -31,6 +31,7 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.TargetAuthenticationStrategy;
 import org.apache.http.protocol.HttpContext;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.util.LogUtil;
 
 /**

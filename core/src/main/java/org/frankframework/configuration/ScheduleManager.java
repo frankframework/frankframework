@@ -21,6 +21,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.quartz.SchedulerException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
@@ -28,12 +35,6 @@ import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
 import org.frankframework.scheduler.SchedulerHelper;
 import org.frankframework.scheduler.job.IJob;
 import org.frankframework.util.RunState;
-import org.quartz.SchedulerException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Container for jobs that are scheduled for periodic execution.

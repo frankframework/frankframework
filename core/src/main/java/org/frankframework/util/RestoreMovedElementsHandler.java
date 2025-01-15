@@ -15,13 +15,15 @@
 */
 package org.frankframework.util;
 
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.xml.FullXmlFilter;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.xml.FullXmlFilter;
 
 /**
  * Restore moved elements from pipelineSession.

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 - 2024 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,9 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.SpringUtils;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -51,6 +48,10 @@ import org.springframework.messaging.SubscribableChannel;
 
 import lombok.Setter;
 
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.SpringUtils;
+
 public class MessageDispatcher implements InitializingBean, ApplicationContextAware {
 	private final Logger log = LogUtil.getLogger(this);
 	private @Setter String packageName;
@@ -60,7 +61,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		nullChannel = applicationContext.getBean("nullChannel", MessageChannel.class); //Messages that do not match the TopicSelector will be discarded
+		nullChannel = applicationContext.getBean("nullChannel", MessageChannel.class); // Messages that do not match the TopicSelector will be discarded
 
 		ClassPathBeanDefinitionScanner scanner = scan();
 		String[] names = scanner.getRegistry().getBeanDefinitionNames();
@@ -92,7 +93,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 	private void findServiceActivators(BeanDefinition beanDef) throws ClassNotFoundException, IntrospectionException {
 		Class<?> beanClass = getBeanClass(beanDef);
 
-		SubscribableChannel inputChannel = findChannel(beanClass); //Validate the channel exists before continuing
+		SubscribableChannel inputChannel = findChannel(beanClass); // Validate the channel exists before continuing
 
 		BeanInfo beanInfo = Introspector.getBeanInfo(beanClass);
 		MethodDescriptor[] methodDescriptors =  beanInfo.getMethodDescriptors();

@@ -22,7 +22,7 @@ package org.frankframework.core;
  * @author  Gerrit van Brakel
  * @since   4.6.0
  */
-public interface IPipeLineExitHandler extends INamedObject {
+public interface IPipeLineExitHandler extends NameAware, HasName {
 
 	/**
 	 * Called to allow registered handler to perform cleanup or commit/rollback.

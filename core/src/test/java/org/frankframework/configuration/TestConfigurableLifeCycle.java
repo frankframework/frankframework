@@ -104,7 +104,7 @@ public class TestConfigurableLifeCycle {
 			.until(()-> adapter.getRunState() == RunState.STARTED);
 		log.debug("!> started");
 		assertTrue(configuration.isRunning());
-		assertTrue(adapter.configurationSucceeded());
+		assertTrue(adapter.isConfigured());
 		assertTrue(adapter.isRunning());
 
 		// Act

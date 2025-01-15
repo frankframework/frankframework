@@ -29,9 +29,9 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.Lifecycle;
@@ -45,9 +45,10 @@ import lombok.Getter;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.extensions.SapSystems;
 import org.frankframework.core.Adapter;
-import org.frankframework.core.IConfigurable;
+import org.frankframework.core.FrankElement;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.doc.Optional;
 import org.frankframework.doc.Protected;
 import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
@@ -78,7 +79,7 @@ import org.frankframework.util.SpringUtils;
  * @author Niels Meijer
  */
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware, ConfigurableLifecycle {
+public class Configuration extends ClassPathXmlApplicationContext implements ConfigurableLifecycle, FrankElement {
 	protected Logger log = LogUtil.getLogger(this);
 	private static final Logger secLog = LogUtil.getLogger("SEC");
 	private static final Logger applicationLog = LogUtil.getLogger("APPLICATION");
@@ -135,12 +136,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 		super.afterPropertiesSet(); // Triggers a context refresh
 
-		// Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
-		AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
-		postProcessor.setAutowiredAnnotationType(Autowired.class);
-		postProcessor.setBeanFactory(getBeanFactory());
-		getBeanFactory().addBeanPostProcessor(postProcessor);
-
 		ibisManager.addConfiguration(this); // Only if successfully refreshed, add the configuration
 		log.info("initialized Configuration [{}] with ClassLoader [{}]", this::toString, this::getClassLoader);
 	}
@@ -157,6 +152,21 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		super.refresh();
 
 		setScheduleManager(getBean("scheduleManager", ScheduleManager.class));
+	}
+
+	/**
+	 * Enables the {@link Autowired} annotation and {@link ConfigurationAware} objects.
+	 */
+	@Override
+	protected void registerBeanPostProcessors(ConfigurableListableBeanFactory beanFactory) {
+		super.registerBeanPostProcessors(beanFactory);
+
+		// Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
+		AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
+		postProcessor.setAutowiredAnnotationType(Autowired.class);
+		postProcessor.setBeanFactory(beanFactory);
+		beanFactory.addBeanPostProcessor(postProcessor);
+		beanFactory.addBeanPostProcessor(new ConfigurationAwareBeanPostProcessor(this));
 	}
 
 	// We do not want all listeners to be initialized upon context startup. Hence listeners implementing LazyLoadingEventListener will be excluded from the beanType[].
@@ -336,16 +346,12 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return getAdapters().get(name);
 	}
 
-	@Deprecated
+	@Nonnull
 	public List<Adapter> getRegisteredAdapters() {
 		if (!isActive()) {
 			return Collections.emptyList();
 		}
 		return new ArrayList<>(getAdapters().values());
-	}
-	@Nonnull
-	public List<Adapter> getAdapterList() {
-		return getRegisteredAdapters();
 	}
 
 	protected final Map<String, Adapter> getAdapters() {
@@ -423,7 +429,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 *
 	 * The DisplayName will always be updated, which is purely used for logging purposes.
 	 */
-	@Override
+	@Optional
 	public void setName(String name) {
 		if(StringUtils.isNotEmpty(name)) {
 			if(state == RunState.STARTING && !getName().equals(name)) {

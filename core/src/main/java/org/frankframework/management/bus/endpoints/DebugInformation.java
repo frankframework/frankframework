@@ -18,7 +18,10 @@ package org.frankframework.management.bus.endpoints;
 import java.util.List;
 
 import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.messaging.Message;
+
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -28,7 +31,6 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.util.ClassUtils;
-import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 public class DebugInformation extends BusEndpointBase {

@@ -15,15 +15,16 @@
 */
 package org.frankframework.http;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.Part;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
-
-import jakarta.mail.MessagingException;
-import jakarta.mail.Part;
 
 public class PartMessage extends Message {
 

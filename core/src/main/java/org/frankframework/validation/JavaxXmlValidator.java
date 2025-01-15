@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2022, 2023 WeAreFrank!
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ import org.xml.sax.SAXParseException;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
-import org.frankframework.core.IConfigurationAware;
+import org.frankframework.core.HasApplicationContext;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.lifecycle.LifecycleException;
@@ -65,7 +65,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	private final Map<String, Schema> javaxSchemas = new LinkedHashMap<>();
 
 	@Override
-	public void configure(IConfigurationAware owner) throws ConfigurationException {
+	public void configure(HasApplicationContext owner) throws ConfigurationException {
 		if (!isXmlSchema1_0()) {
 			throw new ConfigurationException("class ("+this.getClass().getName()+") only supports XmlSchema version 1.0, no ["+getXmlSchemaVersion()+"]");
 		}

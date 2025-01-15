@@ -27,9 +27,14 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
-import lombok.Getter;
+
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -44,8 +49,6 @@ import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  *

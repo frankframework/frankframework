@@ -18,7 +18,8 @@ package org.frankframework.lifecycle.servlets;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.frankframework.lifecycle.ServletManager;
+import jakarta.servlet.ServletContext;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,9 +34,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.context.WebApplicationContext;
 
-import jakarta.servlet.ServletContext;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.lifecycle.ServletManager;
 
 /**
  * The default SecurityFilterChain will be added by {@link SecurityFilterChainConfigurer}.

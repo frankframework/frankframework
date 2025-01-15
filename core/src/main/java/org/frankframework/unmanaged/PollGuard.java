@@ -21,13 +21,15 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.annotation.Nonnull;
+
 import org.apache.logging.log4j.Logger;
 
 import lombok.Setter;
+
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.RunState;
 import org.frankframework.util.MessageKeeper;
+import org.frankframework.util.RunState;
 
 public class PollGuard extends TimerTask {
 	private final Logger log = LogUtil.getLogger(this);

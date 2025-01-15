@@ -20,6 +20,7 @@ import java.util.HashMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.core.IListener;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;

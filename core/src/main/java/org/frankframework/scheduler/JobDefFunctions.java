@@ -16,6 +16,7 @@
 package org.frankframework.scheduler;
 
 import lombok.Getter;
+
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
 import org.frankframework.scheduler.job.ActionJob;

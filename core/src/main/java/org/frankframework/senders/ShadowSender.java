@@ -24,8 +24,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Phaser;
 
 import jakarta.annotation.Nonnull;
-import lombok.Getter;
+
 import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.SAXException;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -38,7 +42,6 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.SaxElementBuilder;
-import org.xml.sax.SAXException;
 
 /**
  * Collection of Senders, that are executed all at the same time. Once the results are processed, all results will be sent to the resultSender,

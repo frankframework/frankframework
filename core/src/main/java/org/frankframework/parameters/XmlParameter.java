@@ -20,8 +20,9 @@ import java.io.IOException;
 
 import jakarta.annotation.Nonnull;
 
-import lombok.extern.log4j.Log4j2;
 import org.w3c.dom.Document;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;

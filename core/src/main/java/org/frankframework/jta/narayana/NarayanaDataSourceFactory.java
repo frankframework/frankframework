@@ -20,16 +20,18 @@ import static java.util.Objects.requireNonNull;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
-
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 import org.apache.tomcat.dbcp.dbcp2.PoolableConnection;
 import org.apache.tomcat.dbcp.dbcp2.PoolableConnectionFactory;
 import org.apache.tomcat.dbcp.dbcp2.managed.DataSourceXAConnectionFactory;
 import org.apache.tomcat.dbcp.dbcp2.managed.PoolableManagedConnectionFactory;
 import org.apache.tomcat.dbcp.dbcp2.managed.XAConnectionFactory;
 import org.apache.tomcat.dbcp.pool2.impl.GenericObjectPool;
+
+import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
+
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.jdbc.datasource.AbstractXADataSourceFactory;
 import org.frankframework.jdbc.datasource.OpenManagedDataSource;
 import org.frankframework.util.AppConstants;

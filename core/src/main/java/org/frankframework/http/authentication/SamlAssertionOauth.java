@@ -41,10 +41,6 @@ import org.apache.xml.security.algorithms.MessageDigestAlgorithm;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.transforms.Transforms;
-
-import org.frankframework.util.DomBuilderException;
-import org.frankframework.util.XmlUtils;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -52,6 +48,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.encryption.EncryptionException;
 import org.frankframework.encryption.PkiUtil;
 import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.util.DomBuilderException;
+import org.frankframework.util.XmlUtils;
 
 public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 

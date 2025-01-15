@@ -15,9 +15,10 @@
 */
 package org.frankframework.core;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.stream.Message;

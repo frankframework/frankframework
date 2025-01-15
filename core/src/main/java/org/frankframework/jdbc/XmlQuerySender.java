@@ -32,10 +32,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import lombok.Getter;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;

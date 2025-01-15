@@ -17,8 +17,11 @@ package org.frankframework.extensions.mqtt;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.FrankElement;
+import org.frankframework.core.NameAware;
 import org.frankframework.doc.Mandatory;
 
 import org.springframework.context.ApplicationContext;
@@ -49,7 +52,7 @@ import org.frankframework.core.IConfigurable;
  * flag can be used to set the disk storage location.
  */
 @Log4j2
-public abstract class MqttFacade implements HasPhysicalDestination, IConfigurable {
+public abstract class MqttFacade implements HasPhysicalDestination, IConfigurable, NameAware, FrankElement {
 	private final @Getter String domain = "MQTT";
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;

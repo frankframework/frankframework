@@ -17,15 +17,17 @@ package org.frankframework.lifecycle;
 
 import java.time.Instant;
 
-import lombok.Getter;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.ApplicationContextEvent;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.MessageKeeperMessage;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.event.ApplicationContextEvent;
 
 public class ApplicationMessageEvent extends ApplicationContextEvent {
 	private @Getter MessageKeeperMessage messageKeeperMessage;

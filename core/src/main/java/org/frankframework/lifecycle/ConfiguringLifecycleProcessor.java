@@ -20,11 +20,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.springframework.context.Lifecycle;
 import org.springframework.context.support.DefaultLifecycleProcessor;
 
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.configuration.ConfigurationDigester;
+import org.frankframework.configuration.ConfigurationException;
 
 @Log4j2
 public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor implements ConfigurableLifecycle {

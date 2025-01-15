@@ -16,6 +16,9 @@
 package org.frankframework.pipes;
 
 import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -29,8 +32,6 @@ import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * Pipe that lexicographically compares two strings, that must NOT be empty.

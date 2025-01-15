@@ -21,8 +21,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -68,7 +66,6 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 
 	private FixedQuerySender qs;
 	private @Getter String query;
-	private @Getter String jmsRealm;
 	private @Getter String datasourceName;
 
 	@Override
@@ -76,12 +73,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		super.configure();
 
 		qs = createBean(FixedQuerySender.class);
-
-		if(StringUtils.isNotEmpty(getDatasourceName())) {
-			qs.setDatasourceName(getDatasourceName());
-		} else {
-			qs.setJmsRealm(getJmsRealm());
-		}
+		qs.setDatasourceName(getDatasourceName());
 
 		//dummy query required
 		qs.setQuery("SELECT count(*) FROM ALL_TABLES");
@@ -200,11 +192,6 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 	@Override
 	public void stop() {
 		qs.stop();
-	}
-
-	@Deprecated(forRemoval = true, since = "7.8.0")
-	public void setJmsRealm(String jmsRealm) {
-		this.jmsRealm = jmsRealm;
 	}
 
 	public void setDatasourceName(String datasourceName) {

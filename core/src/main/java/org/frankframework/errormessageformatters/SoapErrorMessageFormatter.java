@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 */
 package org.frankframework.errormessageformatters;
 
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.HasName;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 
@@ -27,7 +27,7 @@ import org.frankframework.stream.Message;
 public class SoapErrorMessageFormatter extends ErrorMessageFormatter {
 
 	@Override
-	public Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
+	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, String messageId, long receivedTime) {
 
 		try {
 			return SoapWrapper.getInstance().createSoapFaultMessage(getErrorMessage(errorMessage, t));

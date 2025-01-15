@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 */
 package org.frankframework.errormessageformatters;
 
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.HasName;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
@@ -33,7 +33,7 @@ public class Y01ErrorMessageFormatter extends ErrorMessageFormatter {
 	private final String applicationVersion = AppConstants.getInstance().getProperty("application.version");
 
 	@Override
-	public Message format(String message, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
+	public Message format(String message, Throwable t, HasName location, Message originalMessage, String messageId, long receivedTime) {
 		String result= "<ServiceResponse>\n" +
 				"   <ResponseEnvelope>\n" +
 				"       <serviceType>ING_RES1006</serviceType>\n" +

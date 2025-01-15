@@ -22,6 +22,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.SAXException;
+
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.documentbuilder.ArrayBuilder;
@@ -30,7 +32,6 @@ import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.documentbuilder.INodeBuilder;
 import org.frankframework.documentbuilder.ObjectBuilder;
 import org.frankframework.stream.MessageBuilder;
-import org.xml.sax.SAXException;
 
 public class DB2DocumentWriter {
 	protected static Logger log = LogUtil.getLogger(DB2DocumentWriter.class);

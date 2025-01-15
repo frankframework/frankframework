@@ -17,7 +17,11 @@ package org.frankframework.processors;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
 import org.apache.logging.log4j.Logger;
+
+import lombok.Setter;
+
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeLine;
@@ -27,8 +31,6 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
-
-import lombok.Setter;
 
 /**
  * Baseclass for PipeProcessors.

@@ -22,9 +22,10 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import org.apache.commons.text.StringEscapeUtils;
+import org.xml.sax.SAXException;
+
 import org.frankframework.documentbuilder.JsonEventHandler;
 import org.frankframework.xml.SaxException;
-import org.xml.sax.SAXException;
 
 public class JsonWriter implements JsonEventHandler {
 

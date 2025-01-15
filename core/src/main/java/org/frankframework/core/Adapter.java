@@ -37,6 +37,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.SmartLifecycle;
@@ -50,6 +51,7 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.AopProxyBeanFactoryPostProcessor;
 import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationAware;
 import org.frankframework.configuration.ConfigurationAwareBeanPostProcessor;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -64,7 +66,6 @@ import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
-import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
@@ -108,7 +109,7 @@ import org.frankframework.util.flow.SpringContextFlowDiagramProvider;
 @Log4j2
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class Adapter extends GenericApplicationContext implements IManagable, HasStatistics, NamedBean, InitializingBean {
+public class Adapter extends GenericApplicationContext implements ManagableLifecycle, FrankElement, InitializingBean, NamedBean, NameAware {
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
 	public static final String PROCESS_STATE_OK = "OK";
@@ -151,7 +152,7 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 	private IErrorMessageFormatter errorMessageFormatter;
 
 	private final RunStateManager runState = new RunStateManager();
-	private @Getter boolean configurationSucceeded = false;
+	private @Getter boolean isConfigured = false;
 	private MessageKeeper messageKeeper; // Instantiated in configure()
 	private final boolean msgLogHumanReadable = appConstants.getBoolean("msg.log.humanReadable", false);
 
@@ -195,12 +196,6 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 			throw new LifecycleException("unable to refresh, AdapterContext is already active");
 		}
 
-		AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
-		postProcessor.setAutowiredAnnotationType(Autowired.class);
-		postProcessor.setBeanFactory(getBeanFactory());
-		getBeanFactory().addBeanPostProcessor(postProcessor);
-		getBeanFactory().addBeanPostProcessor(new ConfigurationAwareBeanPostProcessor(configuration));
-
 		if (getEnvironment().matchesProfiles("aop")) {
 			addBeanFactoryPostProcessor(new AopProxyBeanFactoryPostProcessor());
 		}
@@ -209,6 +204,21 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 
 		SpringContextFlowDiagramProvider bean = SpringUtils.createBean(this, SpringContextFlowDiagramProvider.class);
 		getBeanFactory().registerSingleton("FlowGenerator", bean);
+	}
+
+	/**
+	 * Enables the {@link Autowired} annotation and {@link ConfigurationAware} objects.
+	 */
+	@Override
+	protected void registerBeanPostProcessors(ConfigurableListableBeanFactory beanFactory) {
+		super.registerBeanPostProcessors(beanFactory);
+
+		// Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
+		AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
+		postProcessor.setAutowiredAnnotationType(Autowired.class);
+		postProcessor.setBeanFactory(beanFactory);
+		beanFactory.addBeanPostProcessor(postProcessor);
+		beanFactory.addBeanPostProcessor(new ConfigurationAwareBeanPostProcessor(configuration));
 	}
 
 	/**
@@ -232,7 +242,7 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 		if (!isActive()) {
 			throw new LifecycleException("context is not active");
 		}
-		if (configurationSucceeded) {
+		if (isConfigured) {
 			throw new LifecycleException("already configured");
 		}
 		log.debug("configuring adapter [{}]", name);
@@ -260,7 +270,6 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 
 		if(!pipeline.configurationSucceeded()) { // only reconfigure pipeline when it hasn't been configured yet!
 			try {
-				pipeline.setAdapter(this);
 				pipeline.configure();
 				getMessageKeeper().add("pipeline successfully configured");
 			}
@@ -283,7 +292,7 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 			runState.setRunState(RunState.STOPPED);
 		}
 
-		configurationSucceeded = true; // Only if there are no errors mark the adapter as `configurationSucceeded`!
+		isConfigured = true; // Only if there are no errors mark the adapter as `isConfigured`!
 	}
 
 	@Nonnull
@@ -301,7 +310,7 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 	}
 
 	public void configureReceiver(Receiver<?> receiver) throws ConfigurationException {
-		if(receiver.configurationSucceeded()) { // It's possible when an adapter has multiple receivers that the last one fails. The others have already been configured the 2nd time the adapter tries to configure it self
+		if(receiver.isConfigured()) { // It's possible when an adapter has multiple receivers that the last one fails. The others have already been configured the 2nd time the adapter tries to configure it self
 			log.debug("already configured receiver, skipping");
 		}
 
@@ -314,10 +323,6 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 			getMessageKeeper().error(this, "error initializing " + ClassUtils.nameOf(receiver) + ": " + e.getMessage());
 			throw e;
 		}
-	}
-
-	public boolean configurationSucceeded() {
-		return configurationSucceeded;
 	}
 
 	/**
@@ -429,7 +434,7 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 		}
 	}
 
-	public Message formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, String messageID, INamedObject objectInError, long receivedTime) {
+	public Message formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, String messageID, HasName objectInError, long receivedTime) {
 		if (errorMessageFormatter == null) {
 			errorMessageFormatter = new ErrorMessageFormatter();
 		}
@@ -577,7 +582,7 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 				log.warn("Adapter [{}] error processing message with ID [{}]", name, messageId, t);
 				result.setState(ExitState.ERROR);
 				String msg = "Illegal exception ["+t.getClass().getName()+"]";
-				INamedObject objectInError = null;
+				HasName objectInError = null;
 				if (t instanceof ListenerException) {
 					Throwable cause = t.getCause();
 					if  (cause instanceof PipeRunException pre) {
@@ -640,20 +645,14 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 
 			if (Message.isEmpty(message) && isReplaceNullMessage()) {
 				log.debug("Adapter [{}] replaces null message with messageId [{}] by empty message", name, messageId);
-				//noinspection resource
 				message = new Message("");
 				message.closeOnCloseOf(pipeLineSession, "Empty Message from Adapter");
 			}
 			result = pipeline.process(messageId, message, pipeLineSession);
 			return result;
 		} catch (Throwable t) {
-			// TODO: Check if it really can never be instance of ListenerException when caught. (Doesn't look likely, perhaps a SneakyThrows somewhere?)
-			ListenerException e;
-			if (t instanceof ListenerException) {
-				e = (ListenerException) t;
-			} else {
-				e = new ListenerException(t);
-			}
+			ListenerException e = new ListenerException(t);
+
 			processingSuccess = false;
 			incNumOfMessagesInError();
 			warn("error processing message with messageId [" + messageId + "]: " + e.getMessage());
@@ -723,7 +722,6 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 	 */
 	public void setPipeLine(PipeLine pipeline) {
 		this.pipeline = pipeline;
-		pipeline.setAdapter(this);
 		log.debug("Adapter [{}] registered pipeline [{}]", name, pipeline);
 	}
 
@@ -763,7 +761,7 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 				Thread.currentThread().setName("starting Adapter "+getName());
 				try {
 					// See also Receiver.startRunning()
-					if (!configurationSucceeded) {
+					if (!isConfigured) {
 						log.error("configuration of adapter [{}] did not succeed, therefore starting the adapter is not possible", name);
 						warn("configuration did not succeed. Starting the adapter ["+getName()+"] is not possible");
 						runState.setRunState(RunState.ERROR);
@@ -824,8 +822,10 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 			}
 		};
 
-		CompletableFuture.runAsync(super::start, taskExecutor) // Start all smart-lifecycles
-			.thenRun(runnable); // Then start the adapter it self
+		// Since we are catching all exceptions in the thread, the super start will always be called,
+		// not a problem for now but something we should look into in the furture...
+		CompletableFuture.runAsync(runnable, taskExecutor) // Start all smart-lifecycles
+				.thenRun(super::start); // Then start the adapter it self
 	}
 
 	@Override
@@ -1018,7 +1018,7 @@ public class Adapter extends GenericApplicationContext implements IManagable, Ha
 
 	@Override
 	public boolean isAutoStartup() {
-		if (!isConfigurationSucceeded()) return false; // Don't startup until configured
+		if (!isConfigured) return false; // Don't startup until configured
 
 		if (autoStart == null && getClassLoader() != null) {
 			autoStart = AppConstants.getInstance(getClassLoader()).getBoolean("adapters.autoStart", true);

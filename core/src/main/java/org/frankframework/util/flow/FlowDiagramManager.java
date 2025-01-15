@@ -23,16 +23,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.List;
 
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.Configuration;
-import org.frankframework.core.Adapter;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.SpringUtils;
-import org.frankframework.util.XmlUtils;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.DisposableBean;
@@ -42,6 +34,16 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
+
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.configuration.Configuration;
+import org.frankframework.core.Adapter;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.SpringUtils;
+import org.frankframework.util.XmlUtils;
 
 /**
  * Utility class to generate the flow diagram for an adapter or a configuration.

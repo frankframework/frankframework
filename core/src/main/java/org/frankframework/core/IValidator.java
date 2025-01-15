@@ -15,9 +15,9 @@
 */
 package org.frankframework.core;
 
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
-import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Optional;
 import org.frankframework.stream.Message;
 

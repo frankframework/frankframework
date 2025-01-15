@@ -18,7 +18,6 @@ package org.frankframework.lifecycle.servlets;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.apache.logging.log4j.LogManager;
@@ -26,6 +25,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.WebApplicationInitializer;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * It's important this is loaded first, and before any programmatic listeners have been added to determine the Application Server type.

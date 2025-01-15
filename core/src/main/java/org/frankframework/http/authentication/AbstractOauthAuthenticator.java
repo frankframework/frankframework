@@ -17,15 +17,14 @@ package org.frankframework.http.authentication;
 
 import static org.frankframework.util.StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
-
-import jakarta.annotation.Nullable;
-import lombok.extern.log4j.Log4j2;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.annotation.Nullable;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
@@ -37,6 +36,8 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.task.TimeoutGuard;

@@ -274,7 +274,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		JsonArrayBuilder receivers = Json.createArrayBuilder();
 
 		for (Receiver<?> receiver: adapter.getReceivers()) {
-			if(!receiver.configurationSucceeded()) continue;
+			if(!receiver.isConfigured()) continue;
 			JsonObjectBuilder receiverMap = Json.createObjectBuilder();
 
 			String receiverName = receiver.getName();

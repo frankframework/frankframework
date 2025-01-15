@@ -26,21 +26,20 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
-
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasTransactionAttribute;
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.TransactionAttribute;
 import org.frankframework.core.TransactionAttributes;
-
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.jdbc.JdbcFacade;
 import org.frankframework.task.TimeoutGuard;

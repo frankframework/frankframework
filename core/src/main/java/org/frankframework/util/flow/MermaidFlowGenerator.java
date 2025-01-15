@@ -27,19 +27,6 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
-import lombok.extern.log4j.Log4j2;
-import org.frankframework.core.IConfigurable;
-import org.frankframework.core.Resource;
-import org.frankframework.doc.EnterpriseIntegrationPattern;
-import org.frankframework.doc.Protected;
-import org.frankframework.senders.IbisJavaSender;
-import org.frankframework.senders.IbisLocalSender;
-import org.frankframework.util.StringUtil;
-import org.frankframework.util.TransformerPool;
-import org.frankframework.util.XmlUtils;
-import org.frankframework.xml.SaxDocumentBuilder;
-import org.frankframework.xml.SaxElementBuilder;
-import org.frankframework.xml.XmlWriter;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -54,6 +41,21 @@ import org.springframework.util.Assert;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.core.IConfigurable;
+import org.frankframework.core.Resource;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.Protected;
+import org.frankframework.senders.IbisJavaSender;
+import org.frankframework.senders.IbisLocalSender;
+import org.frankframework.util.StringUtil;
+import org.frankframework.util.TransformerPool;
+import org.frankframework.util.XmlUtils;
+import org.frankframework.xml.SaxDocumentBuilder;
+import org.frankframework.xml.SaxElementBuilder;
+import org.frankframework.xml.XmlWriter;
 
 /**
  * Flow generator to create MERMAID files

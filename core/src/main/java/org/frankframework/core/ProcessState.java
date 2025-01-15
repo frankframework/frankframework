@@ -22,6 +22,7 @@ import java.util.Set;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.util.EnumUtils;
 
 public enum ProcessState {

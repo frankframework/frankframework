@@ -28,17 +28,22 @@ import java.util.SortedMap;
 
 import javax.xml.stream.XMLStreamException;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
-import lombok.Getter;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
+import org.springframework.messaging.Message;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
@@ -63,8 +68,6 @@ import org.frankframework.receivers.Receiver;
 import org.frankframework.soap.WsdlGenerator;
 import org.frankframework.soap.WsdlGeneratorUtils;
 import org.frankframework.util.EnumUtils;
-import org.springframework.http.MediaType;
-import org.springframework.messaging.Message;
 
 
 @BusAware("frank-management-bus")

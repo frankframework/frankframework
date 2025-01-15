@@ -15,6 +15,7 @@
 */
 package org.frankframework.pipes;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -22,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -56,7 +56,6 @@ public class XmlSwitch extends AbstractPipe {
 	private @Getter String styleSheetName = null;
 	private @Getter String xpathExpression = null;
 	private @Getter String namespaceDefs = null;
-	private String sessionKey = null;
 	private @Getter String storeForwardInSessionKey = null;
 	private @Getter String notFoundForwardName = null;
 	private @Getter String emptyForwardName = null;
@@ -74,21 +73,20 @@ public class XmlSwitch extends AbstractPipe {
 	public void configure() throws ConfigurationException {
 		parameterNamesMustBeUnique = true;
 		super.configure();
-		if (getNotFoundForwardName()!=null) {
-			if (findForward(getNotFoundForwardName())==null){
-				ConfigurationWarnings.add(this, log, "has a notFoundForwardName attribute. However, this forward ["+getNotFoundForwardName()+"] is not configured.");
-			}
+		if (getNotFoundForwardName() != null && findForward(getNotFoundForwardName()) == null) {
+			ConfigurationWarnings.add(this, log, "has a notFoundForwardName attribute. However, this forward [" + getNotFoundForwardName() + "] is not configured.");
 		}
-		if (getEmptyForwardName()!=null) {
-			if (findForward(getEmptyForwardName())==null){
-				ConfigurationWarnings.add(this, log, "has a emptyForwardName attribute. However, this forward ["+getEmptyForwardName()+"] is not configured.");
-			}
+
+		if (getEmptyForwardName() != null && findForward(getEmptyForwardName()) == null) {
+			ConfigurationWarnings.add(this, log, "has a emptyForwardName attribute. However, this forward [" + getEmptyForwardName() + "] is not configured.");
 		}
+
 		if (StringUtils.isNotEmpty(getXpathExpression()) || StringUtils.isNotEmpty(getStyleSheetName())) {
 			transformerPool = TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), OutputType.TEXT, false, getParameterList(), getXsltVersion());
 		} else {
 			transformerPool = XmlUtils.getGetRootNodeNameTransformerPool();
 		}
+
 		registerEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
 		registerEvent(XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
 	}
@@ -96,7 +94,7 @@ public class XmlSwitch extends AbstractPipe {
 	@Override
 	public void start() {
 		super.start();
-		if (transformerPool!=null) {
+		if (transformerPool != null) {
 			transformerPool.open();
 		}
 	}
@@ -104,11 +102,10 @@ public class XmlSwitch extends AbstractPipe {
 	@Override
 	public void stop() {
 		super.stop();
-		if (transformerPool!=null) {
+		if (transformerPool != null) {
 			transformerPool.close();
 		}
 	}
-
 
 	/**
 	 * This is where the action takes place, the switching is done. Pipes may only throw a PipeRunException,
@@ -119,79 +116,90 @@ public class XmlSwitch extends AbstractPipe {
 	 */
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		String forward="";
-		PipeForward pipeForward;
-		if(StringUtils.isNotEmpty(getForwardNameSessionKey())) {
-			forward = session.getString(getForwardNameSessionKey());
-		} else if(!(StringUtils.isEmpty(getXpathExpression()) && StringUtils.isEmpty(getStyleSheetName())) || StringUtils.isEmpty(getSessionKey())) {
-			try {
-				Map<String,Object> parametervalues = null;
-				ParameterList parameterList = getParameterList();
-				if (!parameterList.isEmpty()) {
-					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
-				}
-				if(StringUtils.isNotEmpty(getSessionKey())) {
-					forward = transformerPool.transform(session.getMessage(getSessionKey()), parametervalues, isNamespaceAware());
-				} else {
-					message.preserve();
-					forward = transformerPool.transform(message, parametervalues, isNamespaceAware());
-				}
-			} catch (Throwable e) {
-				throw new PipeRunException(this, "got exception on transformation", e);
-			}
-		} else if(StringUtils.isNotEmpty(getSessionKey())) {
-			forward = session.getString(getSessionKey());
-		}
+		String forward = getForward(message, session);
+
 		log.debug("determined forward [{}]", forward);
 
-		if (StringUtils.isEmpty(forward) && getEmptyForwardName()!=null) {
-			throwEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
-			pipeForward=findForward(getEmptyForwardName());
-		} else {
+		PipeForward pipeForward = getPipeForward(forward);
 
-			if (findForward(forward) != null) {
-				throwEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
-				pipeForward=findForward(forward);
-			}
-			else {
-				log.info("determined forward [{}], which is not defined. Will use [{}] instead", forward, getNotFoundForwardName());
-				throwEvent(XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
-				pipeForward=findForward(getNotFoundForwardName());
-			}
+		if (pipeForward == null) {
+			throw new PipeRunException(this, "cannot find forward or pipe named [" + forward + "]");
 		}
-
-		if (pipeForward==null) {
-			throw new PipeRunException (this, "cannot find forward or pipe named ["+forward+"]");
-		}
-		if(StringUtils.isNotEmpty(getStoreForwardInSessionKey())) {
+		if (StringUtils.isNotEmpty(getStoreForwardInSessionKey())) {
 			session.put(getStoreForwardInSessionKey(), pipeForward.getName());
 		}
 
 		return new PipeRunResult(pipeForward, message);
 	}
 
-	@Override
-	public boolean consumesSessionVariable(String sessionKey) {
-		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(getSessionKey());
+	/**
+	 * Determine the forward to go to, based on the content of the message. If the forward is not found, the notFoundForwardName is used.
+	 * <p>
+	 * This method needs to be refactored. getInputFromSessionKey shouldn't be used here, only getForwardNameSessionKey should be used.
+	 * <p>
+	 * GetInputFromSessionKey can be removed in 9.2.0.
+	 */
+	private String getForward(Message message, PipeLineSession session) throws PipeRunException {
+		if (StringUtils.isNotEmpty(getForwardNameSessionKey())) {
+			return session.getString(getForwardNameSessionKey());
+		}
+
+		if (!(StringUtils.isEmpty(getXpathExpression()) && StringUtils.isEmpty(getStyleSheetName())) || StringUtils.isEmpty(getGetInputFromSessionKey())) {
+			try {
+				Map<String, Object> parametervalues = null;
+				ParameterList parameterList = getParameterList();
+
+				if (!parameterList.isEmpty()) {
+					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
+				}
+
+				message.preserve();
+				return transformerPool.transform(message, parametervalues, isNamespaceAware());
+			} catch (Throwable e) {
+				throw new PipeRunException(this, "got exception on transformation", e);
+			}
+		}
+
+		// It's unlikely that this code is ever reached, as the above code should always return a forward.
+		if (StringUtils.isNotEmpty(getGetInputFromSessionKey())) {
+			try {
+				// Use the message as forward if none of the cases above apply
+				return message.asString();
+			} catch (IOException e) {
+				throw new PipeRunException(this, "Error reading message", e);
+			}
+		}
+
+		return null;
 	}
 
+	private PipeForward getPipeForward(String forward) {
+		PipeForward pipeForward;
+		if (StringUtils.isEmpty(forward) && getEmptyForwardName() != null) {
+			throwEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
+			pipeForward = findForward(getEmptyForwardName());
+		} else {
+			if (findForward(forward) != null) {
+				throwEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
+				pipeForward = findForward(forward);
+			} else {
+				throwEvent(XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
+				pipeForward = findForward(getNotFoundForwardName());
+			}
+		}
+
+		log.info("resolved forward [{}] to [{}]", forward, pipeForward);
+
+		return pipeForward;
+	}
 
 	/**
 	 * stylesheet may return a string representing the forward to look up
+	 *
 	 * @ff.default <i>a stylesheet that returns the name of the root-element</i>
 	 */
 	public void setStyleSheetName(String styleSheetName) {
 		this.styleSheetName = styleSheetName;
-	}
-
-	/**
-	 * stylesheet may return a string representing the forward to look up
-	 * @ff.default <i>a stylesheet that returns the name of the root-element</i>
-	 */
-	@Deprecated(forRemoval = true, since = "7.6.0")
-	@ConfigurationWarning("Please use the attribute styleSheetName.")
-	public void setServiceSelectionStylesheetFilename(String newServiceSelectionStylesheetFilename) {
-		setStyleSheetName(newServiceSelectionStylesheetFilename);
 	}
 
 	/** xpath-expression that returns a string representing the forward to look up. It's possible to refer to a parameter (which e.g. contains a value from a sessionkey) by using the parameter name prefixed with $ */
@@ -204,36 +212,23 @@ public class XmlSwitch extends AbstractPipe {
 		this.namespaceDefs = namespaceDefs;
 	}
 
-	/**
-	 * Name of the key in the <code>PipeLineSession</code> to retrieve the input message from, if a styleSheetName or a xpathExpression is specified.
-	 * If no styleSheetName or xpathExpression is specified, the value of the session variable is used as the name of the forward.
-	 * If none of sessionKey, styleSheetName or xpathExpression are specified, the element name of the root node of the input message is taken as the name of forward.
-	 */
-	@Deprecated(forRemoval = true, since = "7.7.0")
-	@ConfigurationWarning("Please use 'getInputFromSessionKey' or 'forwardNameSessionKey' attribute instead.")
-	public void setSessionKey(String sessionKey){
-		this.sessionKey = sessionKey;
-	}
-	public String getSessionKey() {
-		return this.sessionKey;
-	}
-
 	/** Forward returned when the pipename derived from the stylesheet could not be found. */
-	public void setNotFoundForwardName(String notFound){
-		notFoundForwardName=notFound;
+	public void setNotFoundForwardName(String notFound) {
+		notFoundForwardName = notFound;
 	}
 
 	/** Forward returned when the content, on which the switch is performed, is empty. if <code>emptyforwardname</code> is not specified, <code>notfoundforwardname</code> is used. */
-	public void setEmptyForwardName(String empty){
-		emptyForwardName=empty;
+	public void setEmptyForwardName(String empty) {
+		emptyForwardName = empty;
 	}
 
 	/**
 	 * If set to <code>2</code> or <code>3</code> a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto-detect
+	 *
 	 * @ff.default 0
 	 */
 	public void setXsltVersion(int xsltVersion) {
-		this.xsltVersion=xsltVersion;
+		this.xsltVersion = xsltVersion;
 	}
 
 	/** Selected forward name will be stored in the specified session key. */
@@ -248,10 +243,10 @@ public class XmlSwitch extends AbstractPipe {
 
 	/**
 	 * controls namespace-awareness of XSLT transformation
+	 *
 	 * @ff.default true
 	 */
 	public void setNamespaceAware(boolean b) {
 		namespaceAware = b;
 	}
-
 }

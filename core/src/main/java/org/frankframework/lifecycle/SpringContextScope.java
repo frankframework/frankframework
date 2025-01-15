@@ -15,9 +15,10 @@
 */
 package org.frankframework.lifecycle;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.ResourceUtils;
+
+import lombok.Getter;
 
 public enum SpringContextScope {
 	STANDALONE("SpringStandaloneContext.xml"), // Standalone Jar Environment

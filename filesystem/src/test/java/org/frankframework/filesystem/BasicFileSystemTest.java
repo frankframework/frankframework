@@ -41,8 +41,9 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
-		fileSystem = createFileSystem();
 		super.setUp();
+		fileSystem = createFileSystem();
+		autowireBeanByNameInAdapter(fileSystem);
 	}
 
 	@AfterEach

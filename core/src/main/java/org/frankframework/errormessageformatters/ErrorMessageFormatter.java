@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,8 +23,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
+
+import org.frankframework.core.HasName;
 import org.frankframework.core.IErrorMessageFormatter;
-import org.frankframework.core.INamedObject;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
@@ -64,7 +65,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 	 * Override this method in descender-classes to obtain the required behaviour.
 	 */
 	@Override
-	public Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
+	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, String messageId, long receivedTime) {
 
 		String details = null;
 		errorMessage = getErrorMessage(errorMessage, t);

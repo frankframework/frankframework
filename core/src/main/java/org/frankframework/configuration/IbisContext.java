@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.management.bus.BusMessageUtils;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -33,12 +32,14 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.http.RestServiceDispatcher;
 import org.frankframework.jdbc.JdbcPropertySourceFactory;
 import org.frankframework.lifecycle.ApplicationMessageEvent;
 import org.frankframework.lifecycle.IbisApplicationContext;
+import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;

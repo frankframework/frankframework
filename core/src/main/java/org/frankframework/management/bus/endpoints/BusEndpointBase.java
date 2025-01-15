@@ -16,9 +16,16 @@
 package org.frankframework.management.bus.endpoints;
 
 import jakarta.annotation.Nonnull;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
@@ -28,11 +35,6 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.http.MediaType;
-import org.springframework.util.MimeType;
 
 public class BusEndpointBase implements ApplicationContextAware, InitializingBean {
 	protected Logger log = LogUtil.getLogger(this);
@@ -111,8 +113,18 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 		if(StringUtils.isEmpty(adapterName)) {
 			throw new BusException("no adapter name specified");
 		}
+
 		if(BusMessageUtils.ALL_CONFIGS_KEY.equals(configurationName)) {
-			return getIbisManager().getRegisteredAdapter(adapterName);
+			for (Configuration configuration : getIbisManager().getConfigurations()) {
+				if(configuration.isActive()) {
+					for (Adapter adapter : configuration.getRegisteredAdapters()) {
+						if (adapterName.equals(adapter.getName())) {
+							return adapter;
+						}
+					}
+				}
+			}
+			throw new BusException("adapter not found");
 		}
 
 		Configuration config = getConfigurationByName(configurationName);

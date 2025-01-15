@@ -19,11 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import org.frankframework.functional.ThrowingRunnable;
 import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.util.LogUtil;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 	protected static Logger log = LogUtil.getLogger(TransactionConnectorCoordinator.class);

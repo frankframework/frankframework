@@ -29,7 +29,6 @@ import org.frankframework.core.TransactionAttributes;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.scheduler.job.IJob;
 import org.frankframework.statistics.FrankMeterType;
-import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.Locker;
@@ -262,7 +261,7 @@ import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
  * @ff.tip  All registered jobs are displayed in the Frank!Console under 'Scheduler'.
  *
  */
-public abstract class AbstractJobDef extends TransactionAttributes implements HasStatistics, IJob {
+public abstract class AbstractJobDef extends TransactionAttributes implements IJob {
 
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;

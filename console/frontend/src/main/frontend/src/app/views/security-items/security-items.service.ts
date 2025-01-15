@@ -133,7 +133,7 @@ export type LinkName =
   | 'downloadMessages'
   | 'putJmsMessage'
   | 'getSecurityItems'
-  | 'reloadConfiguration'
+  | 'updateConfiguration'
   | 'deleteReceiverMessages'
   | 'getConfigurationHealth'
   | 'updateTrigger'
@@ -145,7 +145,7 @@ export type LinkName =
   | 'getOpenApiSpec'
   | 'deleteConfiguration'
   | 'getMonitor'
-  | 'fullReload'
+  | 'fullAction'
   | 'downloadConfiguration';
 
 export type Link = {

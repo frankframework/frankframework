@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.NameAware;
 
 class ClassUtilsTest {
 
@@ -94,7 +94,7 @@ class ClassUtilsTest {
 		assertEquals("String", ClassUtils.nameOf("test"));
 		assertEquals("ClassUtilsTest", ClassUtils.nameOf(this));
 		assertEquals("ClassUtilsTest", ClassUtils.nameOf(this.getClass()));
-		assertEquals("org.frankframework.util.ClassUtilsTest$1", ClassUtils.nameOf(new INamedObject() {
+		assertEquals("org.frankframework.util.ClassUtilsTest$1", ClassUtils.nameOf(new NameAware() {
 			private @Getter @Setter String name;
 		}));
 	}

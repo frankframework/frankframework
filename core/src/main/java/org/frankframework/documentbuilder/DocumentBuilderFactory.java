@@ -17,9 +17,10 @@ package org.frankframework.documentbuilder;
 
 import java.io.Writer;
 
-import org.frankframework.stream.MessageBuilder;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
+import org.frankframework.stream.MessageBuilder;
 
 public class DocumentBuilderFactory {
 

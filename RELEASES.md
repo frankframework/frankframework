@@ -6,6 +6,8 @@ Frank!Framework Release Notes
 
 Upcoming (9.1)
 --------------
+- Removed deprecated pipes with 'since' 7.8 or older. This means that the following pipes are now removed:
+  -  FileLineIteratorPipe, FilenameSwitch, PostboxRetrieverPipe, PutParametersInSession, Stream2StringPipe, XmlBuilderPipe, XmlFileElementIteratorPipe
 - MqttSender and MqttListener now require a resource to be registered in resources.yml. This allows multiple senders/listeners to use the same connection at the same time.
 
 Upcoming (9.0)

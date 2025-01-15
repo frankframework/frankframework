@@ -15,11 +15,12 @@
 */
 package org.frankframework.documentbuilder.xml;
 
-import org.frankframework.xml.FullXmlFilter;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
+
+import org.frankframework.xml.FullXmlFilter;
 
 public class XmlTee extends FullXmlFilter {
 

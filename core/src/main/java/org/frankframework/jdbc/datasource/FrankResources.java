@@ -27,12 +27,11 @@ import javax.sql.DataSource;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
 import lombok.Getter;
 import lombok.Setter;
-
-import org.apache.commons.lang3.StringUtils;
-
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;

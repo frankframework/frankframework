@@ -31,10 +31,10 @@ public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<
 	public void setUp() throws Exception {
 		super.setUp();
 		pipe = createForEachAttachmentPipe();
-		autowireByName(pipe);
+		autowireBeanByNameInAdapter(pipe);
 		pipe.addForward(new PipeForward("success", null));
 		SenderSeries series = new SenderSeries();
-		autowireByName(series);
+		autowireBeanByNameInAdapter(series);
 		series.addSender(new EchoSender());
 		pipe.setSender(series);
 	}

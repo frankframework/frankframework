@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.frankframework.util.Locker;
 public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidator> implements IValidator {
 
 	private @Getter @Setter String name;
+	private boolean started = false;
 
 	private final Map<String, PipeForward> forwards = new HashMap<>();
 
@@ -78,12 +79,17 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 
 	@Override
 	public void start() {
-		// Should not do anything
+		started = true;
 	}
 
 	@Override
 	public void stop() {
-		// Should not do anything
+		started = false;
+	}
+
+	@Override
+	public boolean isRunning() {
+		return started;
 	}
 
 	@Override

@@ -18,11 +18,11 @@ package org.frankframework.xml;
 import java.util.Properties;
 import java.util.Set;
 
-import org.frankframework.util.AppConstants;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringResolver;
 
 

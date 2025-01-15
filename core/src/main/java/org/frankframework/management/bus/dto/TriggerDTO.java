@@ -20,6 +20,7 @@ import java.util.Map;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.monitoring.ITrigger.TriggerType;
 import org.frankframework.monitoring.Severity;
 import org.frankframework.monitoring.SourceFiltering;

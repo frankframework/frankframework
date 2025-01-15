@@ -3,7 +3,7 @@
     ],
     "sizePerPipe": [
         {
-            "name": "PipeLine of [myAdapter]",
+            "name": "PipeLine",
             "count": 0,
             "min": 0,
             "max": 0.0,
@@ -16,7 +16,7 @@
     ],
     "waitTimePerPipe": [
         {
-            "name": "PipeLine of [myAdapter]",
+            "name": "PipeLine",
             "count": 0,
             "min": 0,
             "max": 0.0,

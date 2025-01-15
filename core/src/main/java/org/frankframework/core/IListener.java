@@ -36,7 +36,7 @@ import org.frankframework.stream.Message;
  */
 @FrankDocGroup(FrankDocGroupValue.LISTENER)
 @EnterpriseIntegrationPattern(Type.LISTENER)
-public interface IListener<M> extends IConfigurable {
+public interface IListener<M> extends IConfigurable, FrankElement, NameAware {
 
 	/**
 	 * <code>configure()</code> is called once at startup of the framework in the <code>configure()</code> method
