@@ -17,7 +17,6 @@ package org.frankframework.extensions.mqtt;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.FrankElement;
