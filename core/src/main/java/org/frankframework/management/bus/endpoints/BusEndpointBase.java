@@ -113,8 +113,18 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 		if(StringUtils.isEmpty(adapterName)) {
 			throw new BusException("no adapter name specified");
 		}
+
 		if(BusMessageUtils.ALL_CONFIGS_KEY.equals(configurationName)) {
-			return getIbisManager().getRegisteredAdapter(adapterName);
+			for (Configuration configuration : getIbisManager().getConfigurations()) {
+				if(configuration.isActive()) {
+					for (Adapter adapter : configuration.getRegisteredAdapters()) {
+						if (adapterName.equals(adapter.getName())) {
+							return adapter;
+						}
+					}
+				}
+			}
+			throw new BusException("adapter not found");
 		}
 
 		Configuration config = getConfigurationByName(configurationName);

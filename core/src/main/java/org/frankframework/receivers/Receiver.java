@@ -781,6 +781,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						&& isConfigured) { // Only start the receiver if it is properly configured, and is not already starting or still stopping
 					if (currentRunState==RunState.STARTING || currentRunState==RunState.STARTED) {
 						log.info("already in state [{}]", currentRunState);
+						adapter.getMessageKeeper().info(this, "already in state [" + currentRunState + "]");
 					} else {
 						log.warn("currently in state [{}], ignoring start() command", currentRunState);
 					}
@@ -818,6 +819,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				case STOPPING:
 				case EXCEPTION_STOPPING:
 					log.info("receiver already in state [{}]", currentRunState);
+					adapter.getMessageKeeper().info(this, "already in state [" + currentRunState + "]");
 					return;
 				case EXCEPTION_STARTING:
 					if (getListener() instanceof IPullingListener) {

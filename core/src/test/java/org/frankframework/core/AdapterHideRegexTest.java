@@ -36,7 +36,6 @@ import org.frankframework.receivers.DummySender;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.senders.IbisLocalSender;
-import org.frankframework.senders.IsolatedServiceCaller;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestConfiguration;
@@ -152,11 +151,6 @@ public class AdapterHideRegexTest {
 		localSender.setCheckDependency(true);
 		localSender.setIsolated(subAdapterInSeparateThread);
 		localSender.setSynchronous(true);
-
-		if (subAdapterInSeparateThread) {
-			IsolatedServiceCaller serviceCaller = configuration.createBean(IsolatedServiceCaller.class);
-			localSender.setIsolatedServiceCaller(serviceCaller);
-		}
 
 		SenderPipe senderPipe = configuration.createBean(SenderPipe.class);
 		senderPipe.setName(subAdapterName);
