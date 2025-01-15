@@ -7,7 +7,6 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.jdbc.datasource.JndiMqttClientFactory;
 
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.SenderTestBase;
@@ -32,7 +31,7 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 
 	private static final String RESOURCE_NAME = "mqtt/hivemq";
 
-	private JndiMqttClientFactory clientFactory;
+	private MqttClientFactory clientFactory;
 
 	@Override
 	public MqttSender createSender() {
@@ -50,7 +49,7 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 		MqttClient client = new MqttClient(String.format("tcp://%s:%s", hivemqCe.getHost(), hivemqCe.getMqttPort()), "clientId", new MemoryPersistence());
 		client.connect();
 
-		clientFactory = new JndiMqttClientFactory();
+		clientFactory = new MqttClientFactory();
 		clientFactory.add(client, RESOURCE_NAME);
 
 		super.setUp();

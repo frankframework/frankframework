@@ -29,15 +29,8 @@ import jakarta.annotation.Nullable;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.SneakyThrows;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
-import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
@@ -50,13 +43,6 @@ import org.frankframework.util.StringUtil;
 public class FrankResources {
 
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-
-	private static final String MQTT_CLEAN_SESSION = "cleanSession";
-	private static final String MQTT_AUTOMATIC_RECONNECT = "automaticReconnect";
-	private static final String MQTT_TIMEOUT = "timeout";
-	private static final String MQTT_KEEP_ALIVE_INTERVAL = "keepAliveInterval";
-	private static final String MQTT_PERSISTENCE_DIRECTORY = "persistenceDirectory";
-	private static final String MQTT_CLIENT_ID = "clientId";
 
 	private @Setter List<Resource> jdbc;
 	private @Setter List<Resource> jms;
@@ -93,15 +79,9 @@ public class FrankResources {
 			throw new IllegalStateException("field url is required");
 		}
 
-		final String prefix = name.substring(0, name.indexOf('/'));
-
 		Properties properties = getConnectionProperties(resource, environment);
 		String url = StringResolver.substVars(resource.getUrl(), APP_CONSTANTS);
 		String type = StringResolver.substVars(resource.getType(), APP_CONSTANTS);
-
-		if (prefix.equals("mqtt")) {
-			return (O) loadMqttClient(url, resource.authalias, resource.username, resource.password, properties);
-		}
 
 		Class<?> clazz = ClassUtils.loadClass(type);
 
@@ -123,40 +103,6 @@ public class FrankResources {
 		DriverManagerDataSource dmds = new DriverManagerDataSource(url, properties);
 		dmds.setDriverClassName(clazz.getCanonicalName()); // Initialize the JDBC Driver
 		return dmds;
-	}
-
-	@SneakyThrows
-	private MqttClient loadMqttClient(String url, String authAlias, String username, String password, Properties properties) {
-		MqttConnectOptions connectOptions = new MqttConnectOptions();
-		connectOptions.setCleanSession(Boolean.parseBoolean(properties.getProperty(MQTT_CLEAN_SESSION, "true")));
-		connectOptions.setAutomaticReconnect(Boolean.parseBoolean(properties.getProperty(MQTT_AUTOMATIC_RECONNECT, "true")));
-
-		if (properties.containsKey(MQTT_TIMEOUT)) {
-			connectOptions.setConnectionTimeout(Integer.parseInt(properties.getProperty(MQTT_TIMEOUT)));
-		}
-		if (properties.containsKey(MQTT_KEEP_ALIVE_INTERVAL)) {
-			connectOptions.setKeepAliveInterval(Integer.parseInt(properties.getProperty(MQTT_KEEP_ALIVE_INTERVAL)));
-		}
-		connectOptions.setMqttVersion(MqttConnectOptions.MQTT_VERSION_DEFAULT); //Default: 0, V3.1: 3, V3.1.1: 4
-
-		if(!StringUtils.isEmpty(authAlias) || (!StringUtils.isEmpty(username) && !StringUtils.isEmpty(password))) {
-			CredentialFactory credentialFactory = new CredentialFactory(authAlias, username, password);
-			connectOptions.setUserName(credentialFactory.getUsername());
-			connectOptions.setPassword(credentialFactory.getPassword().toCharArray());
-		}
-
-		MqttClient client = new MqttClient(url, properties.getProperty(MQTT_CLIENT_ID), getMqttDataStore(properties.getProperty(MQTT_PERSISTENCE_DIRECTORY)));
-		client.connect(connectOptions);
-
-		return client;
-	}
-
-	private MqttClientPersistence getMqttDataStore(String persistenceDirectory) {
-		if (StringUtils.isEmpty(persistenceDirectory)) {
-			return new MemoryPersistence();
-		}
-
-		return new MqttDefaultFilePersistence(persistenceDirectory);
 	}
 
 	private @Nullable Resource findResource(@Nonnull String name) {

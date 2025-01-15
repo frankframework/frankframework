@@ -21,8 +21,6 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.Mandatory;
 
-import org.frankframework.jdbc.datasource.IMqttClientFactory;
-
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -38,9 +36,11 @@ import org.frankframework.core.IConfigurable;
  * <pre>{@code
  * mqtt:
  *   - name: "my-connection"
+ *     type: "org.frankframework.jdbc.datasource.MqttClientBuilder"
  *     url: "tcp://host:port"
  *     properties:
- *       clientId: "myClientId"
+ *       automaticReconnect: "true"
+ *       cleanSession: "false"
  * }</pre>
  *
  */
@@ -56,7 +56,7 @@ public abstract class MqttFacade implements HasPhysicalDestination, IConfigurabl
 	private @Getter int qos = 2;
 	private @Getter String charset = "UTF-8";
 
-	private @Getter @Setter IMqttClientFactory mqttClientFactory = null;
+	private @Getter @Setter MqttClientFactory mqttClientFactory = null;
 
 	protected MqttClient client;
 

@@ -46,16 +46,16 @@ import org.frankframework.util.LogUtil;
  * @author Gerrit van Brakel
  * @author Niels Meijer
  */
-public class ObjectFactory<O> implements InitializingBean, DisposableBean {
+public abstract class ObjectFactory<O, P> implements InitializingBean, DisposableBean {
 	protected final Logger log = LogUtil.getLogger(this);
-	private final Class<O> lookupClass;
+	private final Class<P> lookupClass;
 
 	private Map<String, O> objects = new ConcurrentHashMap<>();
 
 	@Autowired @Setter
 	private List<? extends IObjectLocator> objectLocators;
 
-	protected ObjectFactory(Class<O> lookupClass) {
+	protected ObjectFactory(Class<P> lookupClass) {
 		this.lookupClass = lookupClass;
 	}
 
@@ -65,6 +65,14 @@ public class ObjectFactory<O> implements InitializingBean, DisposableBean {
 	@SuppressWarnings("java:S1172")
 	protected O augment(O object, String objectName) {
 		return object;
+	}
+
+	/**
+	 * Allows the originally created object to be mutated to another object. Useful to generate an object from a filled DTO.
+	 */
+	@SuppressWarnings("unchecked")
+	protected O map(P object) {
+		return (O) object;
 	}
 
 	/**
@@ -86,10 +94,11 @@ public class ObjectFactory<O> implements InitializingBean, DisposableBean {
 	private O compute(String name, Properties environment) {
 		for(IObjectLocator objectLocator : objectLocators) {
 			try {
-				O ds = objectLocator.lookup(name, environment, lookupClass);
+				P ds = objectLocator.lookup(name, environment, lookupClass);
+				O object = map(ds);
 				if(ds != null) {
 					log.debug("located Object [{}] in objectLocator [{}]", name, objectLocator);
-					return augment(ds, name);
+					return augment(object, name);
 				}
 			} catch (Exception e) { // If an exception occurred, assume we were able to find the Object but unable to create it.
 				throw new IllegalStateException("unable to create resource ["+name+"] found in locator [" + objectLocator + "]", e);

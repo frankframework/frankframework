@@ -25,7 +25,7 @@ import jakarta.jms.ConnectionFactory;
 import org.frankframework.jdbc.datasource.ObjectFactory;
 import org.frankframework.jms.IConnectionFactoryFactory;
 
-public class JndiConnectionFactoryFactory extends ObjectFactory<ConnectionFactory> implements IConnectionFactoryFactory {
+public class JndiConnectionFactoryFactory extends ObjectFactory<ConnectionFactory, ConnectionFactory> implements IConnectionFactoryFactory {
 
 	public JndiConnectionFactoryFactory() {
 		super(ConnectionFactory.class);
