@@ -32,7 +32,6 @@ import org.frankframework.core.IConfigurable;
 
 /**
  * Requires a resource to be configured. Example {@literal resources.yml}:
- *
  * <pre>{@code
  * mqtt:
  *   - name: "my-connection"
@@ -42,7 +41,12 @@ import org.frankframework.core.IConfigurable;
  *       automaticReconnect: "true"
  *       cleanSession: "false"
  * }</pre>
- *
+ * <br>
+ * The clientId is automatically determined from {@code transactionmanager.uid}, but can optionally be overwritten. Be aware that the clientId must be unique
+ * for each instance of the framework.
+ * <br><br>
+ * Inbound and outbound messages are persisted while they are in flight to prevent data loss. The default is an in memory store, but the {@literal persistenceDirectory}
+ * flag can be used to set the disk storage location.
  */
 @Log4j2
 public abstract class MqttFacade implements HasPhysicalDestination, IConfigurable {
