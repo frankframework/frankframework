@@ -225,8 +225,22 @@
               Unselect All
             </button>
             @for (targetState of targetStates | keyvalue; track targetState.key) {
-              <span>
+              @if (storageParams.processState === 'InProcess' && targetState.value.name === 'Error') {
                 <button
+                  appHasAccessToLink="changeMessagesProcessState"
+                  [ladda]="messagesProcessing"
+                  data-style="slide-down"
+                  title="Move Message to Error"
+                  (click)="moveMessages()"
+                  class="btn btn-danger btn-sm space-it-out"
+                  type="button"
+                >
+                  <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+                  Move to Error
+                </button>
+              } @else {
+                <button
+                  appHasAccessToLink="changeMessagesProcessState"
                   [ladda]="changingProcessState"
                   data-style="slide-right"
                   (click)="changeProcessState(targetState.value.name)"
@@ -236,7 +250,7 @@
                   <i class="fa {{ getProcessStateIconFn(targetState.value.name) }}"></i>
                   Move to {{ targetState.value.name }}
                 </button>
-              </span>
+              }
             }
             <button
               appHasAccessToLink="downloadMessages"
@@ -249,20 +263,6 @@
             >
               <i class="fa fa-arrow-circle-o-down"></i> Download Selected
             </button>
-            @if (storageParams.processState === 'InProcess') {
-              <button
-                appHasAccessToLink="changeProcessState"
-                [ladda]="messagesProcessing"
-                data-style="slide-down"
-                title="Move Message to Error"
-                (click)="moveMessages()"
-                class="btn btn-danger btn-sm space-it-out"
-                type="button"
-              >
-                <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
-                Move to Error
-              </button>
-            }
             @if (storageParams.processState === 'Error') {
               <button
                 appHasAccessToLink="resendReceiverMessages"

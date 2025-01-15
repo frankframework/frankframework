@@ -16,7 +16,7 @@
       </button>
       @if (storageService.storageParams.processState === 'InProcess') {
         <button
-          appHasAccessToLink="changeProcessState"
+          appHasAccessToLink="changeMessagesProcessState"
           [ladda]="message.processing"
           data-style="slide-down"
           title="Move Message to Error"

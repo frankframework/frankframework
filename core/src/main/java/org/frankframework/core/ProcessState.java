@@ -54,6 +54,9 @@ public enum ProcessState {
 			if (knownProcessStates.contains(AVAILABLE)) {
 				targetProcessStates.get(ERROR).add(AVAILABLE);
 			}
+			if(knownProcessStates.contains(INPROCESS)) {
+				targetProcessStates.get(INPROCESS).add(ERROR);
+			}
 			if (knownProcessStates.contains(HOLD)) {
 				targetProcessStates.get(ERROR).add(HOLD);
 				targetProcessStates.get(HOLD).add(ERROR);
