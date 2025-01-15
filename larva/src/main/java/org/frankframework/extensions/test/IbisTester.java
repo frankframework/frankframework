@@ -21,6 +21,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -168,15 +169,17 @@ public class IbisTester {
 
 		ibisContext = new IbisContext();
 		long configLoadStartTime = System.currentTimeMillis();
-		ibisContext.init(false);
+		ibisContext.init(false); // Creates, configures and starts the necessary configurations
 		long configLoadEndTime = System.currentTimeMillis();
 		debug("***configuration loaded in ["+ (configLoadEndTime - configLoadStartTime) + "] msec***");
 
 		List<Configuration> configurations = ibisContext.getIbisManager().getConfigurations();
+		List<Adapter> adapters = new ArrayList<>();
 		for(Configuration configuration : configurations) {
 			if(configuration.getConfigurationException() != null) {
 				error("error loading configuration ["+configuration.getName()+"]: "+ configuration.getConfigurationException().getMessage());
 			} else {
+				adapters.addAll(configuration.getRegisteredAdapters());
 				debug("loading configuration ["+configuration.getName()+"] with ["+configuration.getRegisteredAdapters().size()+"] adapters");
 			}
 		}
@@ -184,7 +187,7 @@ public class IbisTester {
 		debug("***starting adapters***");
 		int adaptersStarted = 0;
 		int adaptersCount = 0;
-		for (Adapter adapter: ibisContext.getIbisManager().getRegisteredAdapters()) {
+		for (Adapter adapter: adapters) {
 			adaptersCount++;
 			RunState runState = adapter.getRunState();
 			if ((RunState.STARTED) != runState) {

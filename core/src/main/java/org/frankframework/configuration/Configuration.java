@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
@@ -135,12 +136,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 
 		super.afterPropertiesSet(); // Triggers a context refresh
 
-		// Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
-		AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
-		postProcessor.setAutowiredAnnotationType(Autowired.class);
-		postProcessor.setBeanFactory(getBeanFactory());
-		getBeanFactory().addBeanPostProcessor(postProcessor);
-
 		ibisManager.addConfiguration(this); // Only if successfully refreshed, add the configuration
 		log.info("initialized Configuration [{}] with ClassLoader [{}]", this::toString, this::getClassLoader);
 	}
@@ -157,6 +152,21 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 		super.refresh();
 
 		setScheduleManager(getBean("scheduleManager", ScheduleManager.class));
+	}
+
+	/**
+	 * Enables the {@link Autowired} annotation and {@link ConfigurationAware} objects.
+	 */
+	@Override
+	protected void registerBeanPostProcessors(ConfigurableListableBeanFactory beanFactory) {
+		super.registerBeanPostProcessors(beanFactory);
+
+		// Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
+		AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
+		postProcessor.setAutowiredAnnotationType(Autowired.class);
+		postProcessor.setBeanFactory(beanFactory);
+		beanFactory.addBeanPostProcessor(postProcessor);
+		beanFactory.addBeanPostProcessor(new ConfigurationAwareBeanPostProcessor(this));
 	}
 
 	// We do not want all listeners to be initialized upon context startup. Hence listeners implementing LazyLoadingEventListener will be excluded from the beanType[].
@@ -336,16 +346,12 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 		return getAdapters().get(name);
 	}
 
-	@Deprecated
+	@Nonnull
 	public List<Adapter> getRegisteredAdapters() {
 		if (!isActive()) {
 			return Collections.emptyList();
 		}
 		return new ArrayList<>(getAdapters().values());
-	}
-	@Nonnull
-	public List<Adapter> getAdapterList() {
-		return getRegisteredAdapters();
 	}
 
 	protected final Map<String, Adapter> getAdapters() {

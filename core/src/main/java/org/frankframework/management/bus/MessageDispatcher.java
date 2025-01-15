@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 - 2024 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		nullChannel = applicationContext.getBean("nullChannel", MessageChannel.class); //Messages that do not match the TopicSelector will be discarded
+		nullChannel = applicationContext.getBean("nullChannel", MessageChannel.class); // Messages that do not match the TopicSelector will be discarded
 
 		ClassPathBeanDefinitionScanner scanner = scan();
 		String[] names = scanner.getRegistry().getBeanDefinitionNames();
@@ -93,7 +93,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 	private void findServiceActivators(BeanDefinition beanDef) throws ClassNotFoundException, IntrospectionException {
 		Class<?> beanClass = getBeanClass(beanDef);
 
-		SubscribableChannel inputChannel = findChannel(beanClass); //Validate the channel exists before continuing
+		SubscribableChannel inputChannel = findChannel(beanClass); // Validate the channel exists before continuing
 
 		BeanInfo beanInfo = Introspector.getBeanInfo(beanClass);
 		MethodDescriptor[] methodDescriptors =  beanInfo.getMethodDescriptors();

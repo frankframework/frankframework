@@ -27,6 +27,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.ApplicationListener;
 
 import lombok.Getter;
@@ -60,7 +62,7 @@ import org.frankframework.util.UUIDUtil;
  * @author Jaco de Groot
  */
 @Log4j2
-public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerStatusChangedEvent>, InitializingBean, ApplicationContextAware {
+public class LadybugDebugger implements ApplicationContextAware, ApplicationListener<DebuggerStatusChangedEvent>, ApplicationEventPublisherAware, Debugger, InitializingBean {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 	private static final String REPORT_ROOT_PREFIX = "Pipeline ";
 	private static final String LADYBUG_TESTTOOL_NAME = "testTool";
@@ -71,6 +73,7 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 	protected @Setter @Getter IbisManager ibisManager;
 	private @Setter @Autowired List<String> testerRoles;
 	private @Setter ApplicationContext applicationContext;
+	private @Setter ApplicationEventPublisher applicationEventPublisher;
 
 	protected Set<String> inRerun = new HashSet<>();
 
@@ -293,10 +296,10 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 
 	@Override
 	public void updateReportGeneratorStatus(boolean enabled) {
-		if (ibisManager != null && ibisManager.getApplicationEventPublisher() != null) {
+		if (applicationEventPublisher != null) {
 			DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enabled);
 			log.debug("sending DebuggerStatusChangedEvent [{}]", event);
-			ibisManager.getApplicationEventPublisher().publishEvent(event);
+			applicationEventPublisher.publishEvent(event);
 		}
 	}
 

@@ -11,14 +11,12 @@ import java.util.Map;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.BeansException;
 import org.springframework.context.support.AbstractApplicationContext;
 
 import org.frankframework.configuration.classloaders.DummyClassLoader;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.lifecycle.MessageEventListener;
 import org.frankframework.testutil.TestClassLoader;
-import org.frankframework.testutil.mock.MockIbisManager;
 import org.frankframework.util.MessageKeeperMessage;
 
 public class IbisContextTest {
@@ -47,15 +45,7 @@ public class IbisContextTest {
 			return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
 		}
 
-		@Override
-		protected void createApplicationContext() throws BeansException {
-			super.createApplicationContext();
-
-			IbisManager ibisManager = new MockIbisManager();
-			ibisManager.setIbisContext(this);
-			getApplicationContext().getBeanFactory().registerSingleton("ibisManager", ibisManager);
-		}
-
+		// Make this getter public
 		@Override
 		public AbstractApplicationContext getApplicationContext() {
 			return super.getApplicationContext();
