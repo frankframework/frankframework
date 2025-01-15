@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import jakarta.annotation.Nonnull;
@@ -32,6 +33,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
@@ -39,6 +41,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.documentbuilder.xml.XmlTap;
+import org.frankframework.jta.IThreadConnectableTransactionManager;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
@@ -46,6 +49,7 @@ import org.frankframework.parameters.ParameterType;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
+import org.frankframework.threading.ThreadConnector;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
@@ -87,6 +91,8 @@ public class XsltSender extends AbstractSenderWithParameters {
 
 	private Map<String, TransformerPool> dynamicTransformerPoolMap;
 	private int transformerPoolMapSize = 100;
+
+	protected @Setter IThreadConnectableTransactionManager<?,?> txManager;
 
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
@@ -191,7 +197,7 @@ public class XsltSender extends AbstractSenderWithParameters {
 		return poolToUse;
 	}
 
-	protected ContentHandler createHandler(Message input, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws TransformerException {
+	protected ContentHandler createHandler(Message input, ThreadConnector<?> threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws TransformerException {
 		ParameterValueList pvl = null;
 		try {
 			if (paramList!=null) {
@@ -259,16 +265,26 @@ public class XsltSender extends AbstractSenderWithParameters {
 				handler = new SkipEmptyTagsFilter(handler);
 			}
 
-			TransformerFilter mainFilter = poolToUse.getTransformerFilter(handler, isRemoveNamespaces(), isHandleLexicalEvents());
-			if (pvl!=null) {
+			TransformerFilter mainFilter = createTransformerFilter(threadConnector, poolToUse, handler);
+			if (pvl != null) {
 				XmlUtils.setTransformerParameters(mainFilter.getTransformer(), pvl.getValueMap());
 			}
-			handler=filterInput(mainFilter, session);
+			handler = filterInput(mainFilter, session);
 
 			return handler;
 		} catch (IOException e) {
 			throw new TransformerException("exception on creating transformerHandler chain", e);
 		}
+	}
+
+	private TransformerFilter createTransformerFilter(ThreadConnector<?> threadConnector, TransformerPool poolToUse, ContentHandler handler) throws TransformerConfigurationException {
+		TransformerFilter mainFilter;
+		if (threadConnector != null) {
+			mainFilter = poolToUse.getTransformerFilter(threadConnector, handler, isRemoveNamespaces(), isHandleLexicalEvents());
+		} else {
+			mainFilter = poolToUse.getTransformerFilter(handler, isRemoveNamespaces(), isHandleLexicalEvents());
+		}
+		return mainFilter;
 	}
 
 
@@ -283,10 +299,10 @@ public class XsltSender extends AbstractSenderWithParameters {
 	@Override
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 
-		try {
+		try (ThreadConnector<Object> threadConnector = XmlUtils.isXsltStreamingByDefault() ? new ThreadConnector<>(this, "sendMessage", null, txManager, session) : null) {
 			TransformerPool poolToUse = getTransformerPoolToUse(session);
 			MessageBuilder messageBuilder = new MessageBuilder();
-			ContentHandler handler = createHandler(message, session, poolToUse, null, messageBuilder);
+			ContentHandler handler = createHandler(message, threadConnector, session, poolToUse, null, messageBuilder);
 			if (isDebugInput() && log.isDebugEnabled()) {
 				handler = new XmlTap(handler) {
 					@Override
