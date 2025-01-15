@@ -39,7 +39,6 @@
 	<bean id="dataSourceFactory" class="org.frankframework.jdbc.datasource.DataSourceFactory" autowire="byType"/>
 	<bean id="connectionFactoryFactory" class="org.frankframework.jndi.JndiConnectionFactoryFactory" autowire="byType" />
 	<bean id="mongoClientFactory" class="org.frankframework.mongodb.JndiMongoClientFactory" autowire="byType" />
-	<bean id="mqttClientFactory" class="org.frankframework.extensions.mqtt.MqttClientFactory" autowire="byType" />
 
 	<bean id="jdbcPropertySourceFactory" class="org.frankframework.jdbc.JdbcPropertySourceFactory" />
 

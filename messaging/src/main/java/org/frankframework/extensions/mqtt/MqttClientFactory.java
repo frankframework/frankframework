@@ -33,7 +33,16 @@ import java.util.Properties;
 
 public class MqttClientFactory extends ObjectFactory<MqttClient, MqttClientBuilder> {
 
-	public MqttClientFactory() {
+	// Thread-safe singleton
+	private static class MqttClientFactoryHolder {
+		private static final MqttClientFactory INSTANCE = new MqttClientFactory();
+	}
+
+	public static MqttClientFactory getInstance() {
+		return MqttClientFactoryHolder.INSTANCE;
+	}
+
+	private MqttClientFactory() {
 		super(MqttClientBuilder.class);
 	}
 

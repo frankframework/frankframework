@@ -49,7 +49,7 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 		MqttClient client = new MqttClient(String.format("tcp://%s:%s", hivemqCe.getHost(), hivemqCe.getMqttPort()), "clientId", new MemoryPersistence());
 		client.connect();
 
-		clientFactory = new MqttClientFactory();
+		clientFactory = MqttClientFactory.getInstance();
 		clientFactory.add(client, RESOURCE_NAME);
 
 		super.setUp();

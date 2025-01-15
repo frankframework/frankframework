@@ -62,8 +62,6 @@ public abstract class MqttFacade implements HasPhysicalDestination, IConfigurabl
 	private @Getter int qos = 2;
 	private @Getter String charset = "UTF-8";
 
-	private @Getter @Setter MqttClientFactory mqttClientFactory = null;
-
 	protected MqttClient client;
 
 	@Override
@@ -72,7 +70,7 @@ public abstract class MqttFacade implements HasPhysicalDestination, IConfigurabl
 			throw new ConfigurationException("resourceName is required");
 		}
 
-		client = mqttClientFactory.getClient(resourceName);
+		client = MqttClientFactory.getInstance().getClient(resourceName);
 	}
 
 	@Override
