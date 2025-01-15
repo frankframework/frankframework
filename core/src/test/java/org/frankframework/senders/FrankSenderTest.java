@@ -523,10 +523,6 @@ class FrankSenderTest {
 		} else if (scope == FrankSender.Scope.LISTENER) {
 			createFrankListener(configuration, targetAdapter);
 		}
-		if (!callSync) {
-			IsolatedServiceCaller isc = configuration.createBean(IsolatedServiceCaller.class);
-			sender.setIsolatedServiceCaller(isc);
-		}
 
 		configuration.configure();
 		configuration.start();

@@ -92,12 +92,13 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 		if (StringUtils.isBlank(getName())) {
 			Adapter adapter = getAdapter();
 			setName(adapter.getName());
-			log.debug("Name was not configured, defaulting to adapter name [{}]", this::getName);
+			log.debug("name was not configured, defaulting to adapter name [{}]", this::getName);
 		}
 		fullName = configuration.getName() + "/" + getName();
 		log.debug("FrankListener instance will be registered under full name [{}]", fullName);
 	}
 
+	// TODO this should be the applicationcontext...?
 	private Adapter getAdapter() {
 		return ((Receiver<?>) getHandler()).getAdapter();
 	}

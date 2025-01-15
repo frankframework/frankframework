@@ -22,7 +22,7 @@
 	<!-- IBIS Beans -->
 	<bean
 		name="ibisManager"
-		class="org.frankframework.unmanaged.DefaultIbisManager"
+		class="org.frankframework.configuration.IbisManager"
 		autowire="byName"
 		>
 	</bean>
