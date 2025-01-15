@@ -38,7 +38,6 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 		MqttSender sender = new MqttSender();
 		sender.setName("senderName");
 		sender.setResourceName(RESOURCE_NAME);
-		sender.setMqttClientFactory(clientFactory);
 
 		return sender;
 	}
