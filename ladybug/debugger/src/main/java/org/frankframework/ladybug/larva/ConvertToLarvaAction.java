@@ -184,7 +184,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 		private static final String TESTTOOL_PREFIX = "testtool-";
 		// step number - type- name - in/out . fileExtension
 		// E.g. 01-adapter-ItemIterator-in.xml
-		private static final String filenameFormat = "%s-%s-%s-%s.%s";
+		private static final String FILENAME_FORMAT = "%s-%s-%s-%s.%s";
 		private final String reportName;
 		private final String suffix;
 		private final HashMap<Path, String> originalFiles = new HashMap<>();
@@ -268,12 +268,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 				newFiles.add(scenarioFilePath);
 
 				if (!newFiles.contains(commonFilePath)) {
-					try {
-						addModifiedFile(commonFilePath, Files.readString(commonFilePath));
-					} catch (IOException ex) {
-						handleError();
-						return;
-					}
+					addModifiedFile(commonFilePath, Files.readString(commonFilePath));
 				}
 				Files.writeString(commonFilePath, commonPropertiesToString());
 				newFiles.add(commonFilePath);
@@ -454,7 +449,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 
 		private String getFileName(int step, String type, String name, boolean startPoint, String message) {
 			String fileExtension = determineFileExtension(message);
-			return String.format(filenameFormat,
+			return String.format(FILENAME_FORMAT,
 					stepPadding(step),
 					type,
 					name,
