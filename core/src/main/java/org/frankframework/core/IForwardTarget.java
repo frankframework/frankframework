@@ -23,7 +23,7 @@ package org.frankframework.core;
 public interface IForwardTarget {
 
 	/**
-	 * The part of the object that identifies its destination: The {@link IPipe#getName() name} of the Pipe or the {@link PipeLineExit#setPath(String) path} of the PipeLineExit.
+	 * The part of the object that identifies its destination: The {@link IPipe#getName() name} of the Pipe or the {@link PipeLineExit#setName(String) name} of the PipeLineExit.
 	 */
 	String getName();
 

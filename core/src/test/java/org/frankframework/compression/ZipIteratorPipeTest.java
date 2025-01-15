@@ -58,32 +58,6 @@ class ZipIteratorPipeTest extends PipeTestBase<ZipIteratorPipe> {
 		assertEquals(EXPECTED, prr.getResult().asString());
 	}
 
-	@ParameterizedTest
-	@ValueSource(booleans = {true, false})
-	void testZipIteratorPipeWithProcessFile(boolean streamingContents) throws Exception {
-		pipe.setSender(new EchoSender());
-		pipe.setProcessFile(true);
-		pipe.setStreamingContents(streamingContents);
-		pipe.configure();
-		pipe.start();
-
-		URL zip = TestFileUtils.getTestFileURL("/Unzip/ab.zip");
-
-		PipeRunResult prr = doPipe(new Message(zip.getFile()));
-
-		assertEquals(EXPECTED, prr.getResult().asString());
-	}
-
-	@Test
-	void testZipIteratorPipeWithInvalidProcessFile() throws Exception {
-		pipe.setSender(new EchoSender());
-		pipe.setProcessFile(true);
-		pipe.configure();
-		pipe.start();
-
-		assertThrows(PipeRunException.class, () -> doPipe(new Message("/Unzip/ab.zip")));
-	}
-
 	@Test
 	void testEmptyInput() throws Exception {
 		pipe.setSender(new EchoSender());
