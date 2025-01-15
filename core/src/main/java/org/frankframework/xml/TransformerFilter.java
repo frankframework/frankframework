@@ -48,16 +48,20 @@ public class TransformerFilter extends FullXmlFilter {
 			transformerHandler.getTransformer().setErrorListener(new TransformerFilterErrorListener(exceptionInsertingFilter));
 		}
 
+		setContentHandler(createContentHandler(removeNamespacesFromInput, exceptionInsertingFilter));
+		if (!handleLexicalEvents) {
+			setLexicalHandler(null);
+		}
+	}
+
+	private static ContentHandler createContentHandler(boolean removeNamespacesFromInput, ExceptionInsertingFilter exceptionInsertingFilter) {
 		ContentHandler inputHandler;
 		if (removeNamespacesFromInput) {
 			inputHandler = new NamespaceRemovingFilter(exceptionInsertingFilter);
 		} else {
 			inputHandler = exceptionInsertingFilter;
 		}
-		setContentHandler(inputHandler);
-		if (!handleLexicalEvents) {
-			setLexicalHandler(null);
-		}
+		return inputHandler;
 	}
 
 	public Transformer getTransformer() {

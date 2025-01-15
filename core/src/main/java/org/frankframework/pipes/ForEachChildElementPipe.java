@@ -306,12 +306,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 		if (getExtractElementsTp()!=null) {
 			log.debug("transforming input to obtain list of elements using xpath [{}]", getElementXPathExpression());
-			TransformerFilter transformerFilter;
-			if (threadConnector != null) {
-				transformerFilter = getExtractElementsTp().getTransformerFilter(threadConnector, result.inputHandler);
-			} else {
-				transformerFilter = getExtractElementsTp().getTransformerFilter(result.inputHandler);
-			}
+			TransformerFilter transformerFilter = getTransformerFilter(result, threadConnector);
 			if (getParameterList() != null && !getParameterList().isEmpty()) {
 				try {
 					XmlUtils.setTransformerParameters(transformerFilter.getTransformer(), getParameterList().getValues(input, session).getValueMap());
@@ -359,6 +354,14 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 				throw new SaxException(result.errorMessage,e);
 			}
 		};
+	}
+
+	private TransformerFilter getTransformerFilter(HandlerRecord result, ThreadConnector<?> threadConnector) throws TransformerConfigurationException {
+		if (threadConnector != null) {
+			return getExtractElementsTp().getTransformerFilter(threadConnector, result.inputHandler);
+		} else {
+			return getExtractElementsTp().getTransformerFilter(result.inputHandler);
+		}
 	}
 
 	@Override
