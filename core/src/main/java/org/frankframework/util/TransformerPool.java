@@ -528,6 +528,7 @@ public class TransformerPool {
 
 
 	public @Nonnull Map<String, String> getConfigMap() throws TransformerException, IOException {
+		// Due to lazy-loading of the config-map this can happen in multiple threads simultaneously. Hence we synchronize here, the config-source seems a logical choice that doesn't lock too much.
 		synchronized (configSource) {
 			if (configMap == null) {
 				configMap = XmlUtils.getXsltConfig(configSource);
