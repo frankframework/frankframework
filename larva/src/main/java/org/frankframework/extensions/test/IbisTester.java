@@ -169,7 +169,7 @@ public class IbisTester {
 
 		ibisContext = new IbisContext();
 		long configLoadStartTime = System.currentTimeMillis();
-		ibisContext.init(false); // Creates, configures and starts the necessarily configurations
+		ibisContext.init(false); // Creates, configures and starts the necessary configurations
 		long configLoadEndTime = System.currentTimeMillis();
 		debug("***configuration loaded in ["+ (configLoadEndTime - configLoadStartTime) + "] msec***");
 
