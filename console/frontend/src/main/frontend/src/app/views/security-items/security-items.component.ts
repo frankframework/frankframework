@@ -11,9 +11,11 @@ import {
   SecurityRole,
   supportedConnectionOptions,
 } from './security-items.service';
+import { KeyValuePipe, NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-security-items',
+  imports: [NgClass, KeyValuePipe],
   templateUrl: './security-items.component.html',
   styleUrls: ['./security-items.component.scss'],
 })

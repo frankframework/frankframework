@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,9 +22,16 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.messaging.Message;
+
+import lombok.Setter;
+
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
@@ -36,14 +43,13 @@ import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.LOG_CONFIGURATION)
-public class UpdateLogSettings extends BusEndpointBase {
+public class UpdateLogSettings extends BusEndpointBase implements ApplicationEventPublisherAware {
 	private static final String LOG_INTERMEDIARY_RESULTS_PROPERTY = "log.logIntermediaryResults";
 	private static final String TESTTOOL_ENABLED_PROPERTY = "testtool.enabled";
+	private @Setter ApplicationEventPublisher applicationEventPublisher;
 
 	@ActionSelector(BusAction.GET)
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
@@ -113,7 +119,6 @@ public class UpdateLogSettings extends BusEndpointBase {
 			if (testtoolEnabled!=enableDebugger) {
 				AppConstants.getInstance().put(TESTTOOL_ENABLED_PROPERTY, "" + enableDebugger);
 				DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enableDebugger);
-				ApplicationEventPublisher applicationEventPublisher = getIbisManager().getApplicationEventPublisher();
 				if (applicationEventPublisher!=null) {
 					log.info("setting debugger enabled [{}]", enableDebugger);
 					if(!msg.isEmpty())

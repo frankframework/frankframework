@@ -3,9 +3,15 @@ import { WebStorageService } from 'src/app/services/web-storage.service';
 import { JmsBrowseForm, JmsService, Message } from '../jms.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ServerErrorResponse } from '../../../app.service';
+import { FormsModule } from '@angular/forms';
+import { LaddaModule } from 'angular2-ladda';
+
+import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
+import { ToDateDirective } from '../../../components/to-date.directive';
 
 @Component({
   selector: 'app-jms-browse-queue',
+  imports: [FormsModule, LaddaModule, QuickSubmitFormDirective, ToDateDirective],
   templateUrl: './jms-browse-queue.component.html',
   styleUrls: ['./jms-browse-queue.component.scss'],
 })

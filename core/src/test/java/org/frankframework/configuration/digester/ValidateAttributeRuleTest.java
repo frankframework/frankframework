@@ -37,8 +37,10 @@ import lombok.Setter;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.HasName;
+import org.frankframework.core.NameAware;
 import org.frankframework.doc.Protected;
+import org.frankframework.doc.Unsafe;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
@@ -84,9 +86,9 @@ public class ValidateAttributeRuleTest {
 		};
 		configuration.autowireByName(rule);
 
-		rule.begin(null, beanClass.getSimpleName(), copyMapToAttrs(attributes));
+		rule.begin(beanClass.getSimpleName(), copyMapToAttrs(attributes));
 
-		// Test the bean name with and without INamedObject interface
+		// Test the bean name with and without NameAware interface
 		if (topBean instanceof ConfigWarningTestClass) {
 			assertEquals("ConfigWarningTestClass [name here]", rule.getObjectName());
 		}
@@ -443,6 +445,45 @@ public class ValidateAttributeRuleTest {
 	}
 
 	@Test
+	public void testUnsafeAttribute() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+
+		attr.put("testUnsafeAttribute", "unsafe");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum [testUnsafeAttribute] is unsafe and should not be used in a production environment", configWarnings.get(0));
+	}
+
+	@Test
+	public void testUnsafeAttributeWithDefault() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+
+		attr.put("testUnsafeAttributeWithDefault", "default");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum attribute [testUnsafeAttributeWithDefault] already has a default value [default]", configWarnings.get(0));
+	}
+
+	@Test
+	public void testUnsafeAttributeWithoutDefault() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+
+		attr.put("testUnsafeAttributeWithDefault", "unsafe");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum [testUnsafeAttributeWithDefault] is unsafe and should not be used in a production environment", configWarnings.get(0));
+	}
+
+	@Test
 	public void testSuppressDeprecationWarningsForSomeAdapters() throws IOException {
 		// Arrange
 		configuration = new TestConfiguration("testConfigurationWithDigester.xml");
@@ -493,7 +534,7 @@ public class ValidateAttributeRuleTest {
 			assertEquals(3, configurationWarnings.getWarnings().size());
 			assertThat(configurationWarnings.getWarnings(), containsInAnyOrder(
 					containsString("[DeprecatedPipe2InAdapter2] on line [42] column [6]"),
-					containsString("[DeprecatedPipe1InAdapter4] on line [77] column [66]"),
+					containsString("[DeprecatedPipe1InAdapter4] on line [77] column [52]"),
 					containsString("[DeprecatedPipe2InAdapter4] on line [82] column [6]")
 			));
 
@@ -536,7 +577,7 @@ public class ValidateAttributeRuleTest {
 		ONE, TWO;
 	}
 
-	public static interface InterfaceWithDefaultMethod extends INamedObject {
+	public static interface InterfaceWithDefaultMethod extends NameAware, HasName {
 
 		default void setNaam(String naam) {
 			setName(naam);
@@ -547,7 +588,7 @@ public class ValidateAttributeRuleTest {
 		}
 	}
 
-	public static class ClassWithEnum extends ClassWithEnumBase implements INamedObject, InterfaceWithDefaultMethod {
+	public static class ClassWithEnum extends ClassWithEnumBase implements NameAware, InterfaceWithDefaultMethod {
 		private @Getter @Setter String name;
 		private @Getter @Setter TestEnum testEnum = TestEnum.ONE;
 		private @Getter @Setter String testString = "test";
@@ -560,6 +601,7 @@ public class ValidateAttributeRuleTest {
 		private @Setter String testStringWithoutGetter = "string";
 		private @Setter int testIntegerWithoutGetter = 0;
 		private @Setter boolean testBooleanWithoutGetter = false;
+		private @Getter String testUnsafeAttributeWithDefault = "default";
 
 		public void setEnumWithDifferentName(TestEnum testEnum) {
 			this.testEnum = testEnum;
@@ -606,6 +648,16 @@ public class ValidateAttributeRuleTest {
 		public void setTestSuppressAttribute(String test) {
 			testString = test;
 		}
+
+		@Unsafe
+		public void setTestUnsafeAttribute(String test) {
+			// NO OP
+		}
+
+		@Unsafe
+		public void setTestUnsafeAttributeWithDefault(String testUnsafeAttributeWithDefault) {
+			this.testUnsafeAttributeWithDefault = testUnsafeAttributeWithDefault;
+		}
 	}
 
 	public abstract static class ClassWithEnumBase {
@@ -622,7 +674,7 @@ public class ValidateAttributeRuleTest {
 	}
 
 	@ConfigurationWarning("warning above test class")
-	public static class ConfigWarningTestClass implements INamedObject {
+	public static class ConfigWarningTestClass implements NameAware, HasName {
 		private @Getter @Setter String name;
 	}
 

@@ -1,16 +1,15 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MonitorsService } from '../monitors.service';
-import { AppService, Configuration } from '../../../app.service';
+import { AppService } from '../../../app.service';
 import { FormsModule } from '@angular/forms';
-import { NgForOf } from '@angular/common';
 import { combineLatestWith, Subscription } from 'rxjs';
 import { LaddaModule } from 'angular2-ladda';
+import { ComboboxComponent, Option } from '../../../components/combobox/combobox.component';
 
 @Component({
   selector: 'app-monitors-new',
-  standalone: true,
-  imports: [RouterLink, FormsModule, NgForOf, LaddaModule],
+  imports: [RouterLink, FormsModule, LaddaModule, ComboboxComponent],
   templateUrl: './monitors-new.component.html',
   styleUrl: './monitors-new.component.scss',
 })
@@ -21,7 +20,7 @@ export class MonitorsNewComponent implements OnInit, OnDestroy {
 
   private appService: AppService = inject(AppService);
 
-  protected configurations: Configuration[] = this.appService.configurations;
+  protected configurations: Option[] = [];
 
   private monitorsService: MonitorsService = inject(MonitorsService);
   private router: Router = inject(Router);
@@ -29,8 +28,9 @@ export class MonitorsNewComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription = new Subscription();
 
   ngOnInit(): void {
-    const configurationsSubscription = this.appService.configurations$.subscribe((configurations) => {
-      this.configurations = configurations;
+    this.setConfigurations();
+    const configurationsSubscription = this.appService.configurations$.subscribe(() => {
+      this.setConfigurations();
     });
     this.subscriptions.add(configurationsSubscription);
 
@@ -43,6 +43,10 @@ export class MonitorsNewComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+  }
+
+  private setConfigurations(): void {
+    this.configurations = this.appService.configurations.map((config) => ({ label: config.name }));
   }
 
   submit(): void {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,16 +18,16 @@ package org.frankframework.configuration.digester;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.digester3.AbstractObjectCreationFactory;
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.Attributes;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.frankframework.util.LogUtil;
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.util.SpringUtils;
 
 /**
@@ -55,9 +55,9 @@ import org.frankframework.util.SpringUtils;
  * @since   4.8
  *
  */
-public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory<Object> implements ApplicationContextAware, IDigesterRuleAware {
-	protected Logger log = LogUtil.getLogger(this);
-	private @Getter @Setter ApplicationContext applicationContext;
+@Log4j2
+public abstract class AbstractSpringPoweredDigesterFactory implements IDigesterFactory {
+	private @Getter @Setter Digester digester;
 	private DigesterRule rule = null;
 
 	protected AbstractSpringPoweredDigesterFactory() {
@@ -123,13 +123,11 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	 * the creating BeanFactory when they implement this interface.)</li>
 	 * <li></li>
 	 * </ol>
-	 *
-	 * @see org.apache.commons.digester.ObjectCreationFactory#createObject(org.xml.sax.Attributes)
 	 */
 	@Override
-	public Object createObject(Attributes attrs) throws Exception {
+	public Object createBean(ApplicationContext applicationContext, Attributes attrs) throws ClassNotFoundException {
 		Map<String, String> attrMap = copyAttrsToMap(attrs);
-		return createObject(attrMap);
+		return createBean(applicationContext, attrMap);
 	}
 
 	/**
@@ -138,31 +136,29 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	 * can override this method and change attributes in the map
 	 * before creating the object from the Spring factory.
 	 */
-	protected Object createObject(Map<String, String> attrs) throws ClassNotFoundException {
+	protected Object createBean(ApplicationContext applicationContext, Map<String, String> attrs) throws ClassNotFoundException {
 		String classname = attrs.get("classname");
 		if(StringUtils.isNotEmpty(classname)) {
 			throw new IllegalArgumentException("invalid attribute [classname]. Did you mean [className]?");
 		}
 
 		String className = attrs.get("className");
-		if (log.isDebugEnabled()) {
-			log.debug("CreateObject: Element=[{}], name=[{}], Configured ClassName=[{}], Suggested Spring Bean Name=[{}]",
-					getDigester().getCurrentElementName(), attrs.get("name"), className, getSuggestedBeanName());
-		}
+		log.debug("creating bean [{}] with className [{}] using context [{}]", attrs.get("name"), className, applicationContext);
 
 		if(className == null) {
 			className = rule.getBeanClass();
 		}
 
-		return createBeanFromClassName(className);
+		return createBeanFromClassName(applicationContext, className);
 	}
 
-	private Object createBeanFromClassName(String className) throws ClassNotFoundException {
+	@Nonnull
+	private Object createBeanFromClassName(ApplicationContext applicationContext, String className) throws ClassNotFoundException {
 		if(applicationContext == null) {
 			throw new IllegalStateException("No ApplicationContext found, unable to initialize class [" + className + "]");
 		}
 
-		if (className == null) { //See if a bean class has been defined
+		if (className == null) { // See if a bean class has been defined
 			String beanName = getSuggestedBeanName();
 			if (!isPrototypesOnly() && !applicationContext.isSingleton(beanName)) {
 				throw new IllegalStateException("bean ["+beanName+"] must be of type singleton");
@@ -172,14 +168,14 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 
 		ClassLoader classLoader = applicationContext.getClassLoader();
 		Class<?> beanClass = Class.forName(className, true, classLoader);
-		return createBeanAndAutoWire(beanClass);
+		return createBeanAndAutoWire(applicationContext, beanClass);
 	}
 
-	protected <T> T createBeanAndAutoWire(Class<T> beanClass) {
-		if (log.isDebugEnabled())
-			log.debug("instantiating bean class [{}] directly using Spring Factory [{}]", beanClass.getName(), applicationContext.getDisplayName());
+	@Nonnull
+	private <T> T createBeanAndAutoWire(ApplicationContext applicationContext, Class<T> beanClass) {
+		log.debug("instantiating bean class [{}] directly using Spring Factory [{}]", beanClass::getName, applicationContext::getDisplayName);
 
-		return SpringUtils.createBean(applicationContext, beanClass); //Autowire and initialize the bean through Spring
+		return SpringUtils.createBean(applicationContext, beanClass); // Autowire and initialize the bean through Spring
 	}
 
 	protected Map<String, String> copyAttrsToMap(Attributes attrs) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021, 2024 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.frankframework.core;
 import java.util.Collection;
 import java.util.Map;
 
+import org.springframework.context.Lifecycle;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
@@ -33,7 +35,7 @@ import org.frankframework.util.Locker;
  * @ff.defaultElement org.frankframework.pipes.SenderPipe
  */
 @FrankDocGroup(FrankDocGroupValue.PIPE)
-public interface IPipe extends IConfigurable, IForwardTarget {
+public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, NameAware, Lifecycle {
 
 	String LONG_DURATION_MONITORING_EVENT = "Pipe Long Processing Duration";
 	String PIPE_EXCEPTION_MONITORING_EVENT = "Pipe Exception";
@@ -45,6 +47,8 @@ public interface IPipe extends IConfigurable, IForwardTarget {
 	 * creating connections to databases etc. in the {@link #doPipe(Message, PipeLineSession) doPipe()} method.
 	 * As much as possible class-instantiating should take place in the
 	 * <code>configure()</code> method, to improve performance.
+	 * 
+	 * {@inheritDoc}
 	 */
 	@Override
 	void configure() throws ConfigurationException;

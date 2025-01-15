@@ -1,6 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { AppService } from 'src/app/app.service';
+import { ComboboxComponent, Option } from '../../components/combobox/combobox.component';
+import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+
+import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
+import { InputFileUploadComponent } from '../../components/input-file-upload/input-file-upload.component';
+import { FormsModule } from '@angular/forms';
+import { MonacoEditorComponent } from '../../components/monaco-editor/monaco-editor.component';
+import { LaddaModule } from 'angular2-ladda';
 
 type AlertState = {
   type: string;
@@ -16,10 +24,19 @@ type ServiceListenerResult = {
   selector: 'app-test-service-listener',
   templateUrl: './test-service-listener.component.html',
   styleUrls: ['./test-service-listener.component.scss'],
+  imports: [
+    NgbAlert,
+    QuickSubmitFormDirective,
+    ComboboxComponent,
+    InputFileUploadComponent,
+    FormsModule,
+    MonacoEditorComponent,
+    LaddaModule,
+  ],
 })
 export class TestServiceListenerComponent implements OnInit {
   protected state: AlertState[] = [];
-  protected services: string[] = [];
+  protected services: Option[] = [];
   protected processingMessage = false;
   protected result = '';
 
@@ -50,7 +67,7 @@ export class TestServiceListenerComponent implements OnInit {
         services: string[];
       }>(`${this.appService.absoluteApiPath}test-servicelistener`)
       .subscribe((data) => {
-        this.services = data.services;
+        this.services = data.services.map((service) => ({ label: service }));
       });
   }
 

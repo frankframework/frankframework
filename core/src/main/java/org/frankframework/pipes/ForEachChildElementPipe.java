@@ -15,8 +15,6 @@
 */
 package org.frankframework.pipes;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 
@@ -33,7 +31,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.ParameterException;
@@ -76,7 +73,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 	public static final int DEFAULT_XSLT_VERSION = 1; // currently only Xalan supports XSLT Streaming
 
-	private @Getter boolean processFile=false;
 	private @Getter String containerElement;
 	private @Getter String targetElement;
 	private @Getter String elementXPathExpression=null;
@@ -364,25 +360,13 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	@Override
 	protected StopReason iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeoutException {
 		InputSource src;
-		if (isProcessFile()) {
-			try {
-				String filename;
-				try {
-					filename = input.asString();
-				} catch (IOException e) {
-					throw new SenderException("cannot find filename", e);
-				}
-				src = new InputSource(new FileInputStream(filename));
-			} catch (FileNotFoundException e) {
-				throw new SenderException("could not find file ["+input+"]",e);
-			}
-		} else {
-			try {
-				src = input.asInputSource();
-			} catch (IOException e) {
-				throw new SenderException("could not get InputSource",e);
-			}
+
+		try {
+			src = input.asInputSource();
+		} catch (IOException e) {
+			throw new SenderException("could not get InputSource",e);
 		}
+
 		HandlerRecord handlerRecord = new HandlerRecord();
 		try (ThreadConnector<?> threadConnector = streamingXslt ? new ThreadConnector<>(this, "iterateOverInput", threadLifeCycleEventListener, txManager, session) : null) {
 			try {
@@ -418,16 +402,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 	protected TransformerPool getExtractElementsTp() {
 		return extractElementsTp;
-	}
-
-	/**
-	 * When set <code>true</code>, the input is assumed to be the name of a file to be processed. Otherwise, the input itself is transformed. The character encoding will be read from the XML declaration
-	 * @ff.default false
-	 */
-	@Deprecated(forRemoval = true, since = "7.7.0")
-	@ConfigurationWarning("Please add a LocalFileSystemPipe with action=read in front of this pipe instead")
-	public void setProcessFile(boolean b) {
-		processFile = b;
 	}
 
 	/**

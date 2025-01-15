@@ -6,7 +6,20 @@ import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { WebStorageService } from 'src/app/services/web-storage.service';
 import { getProcessStateIcon } from 'src/app/utils';
 import { AppService } from '../../../app.service';
-import { DataTableColumn, DataTableDataSource } from '../../../components/datatable/datatable.component';
+import {
+  DataTableColumn,
+  DatatableComponent,
+  DataTableDataSource,
+} from '../../../components/datatable/datatable.component';
+import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+import { KeyValuePipe, NgClass } from '@angular/common';
+import { OrderByPipe } from '../../../pipes/orderby.pipe';
+import { FormsModule } from '@angular/forms';
+import { LaddaModule } from 'angular2-ladda';
+import { RouterLink } from '@angular/router';
+import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
+import { DtContentDirective } from '../../../components/datatable/dt-content.directive';
+import { DropLastCharPipe } from '../../../pipes/drop-last-char.pipe';
 
 type DisplayColumn = {
   actions: boolean;
@@ -26,6 +39,20 @@ type MessageData = MessageStore['messages'][number];
   selector: 'app-storage-list',
   templateUrl: './storage-list.component.html',
   styleUrls: ['./storage-list.component.scss'],
+  imports: [
+    NgbAlert,
+    OrderByPipe,
+    FormsModule,
+    LaddaModule,
+    RouterLink,
+    NgClass,
+    HasAccessToLinkDirective,
+    DatatableComponent,
+    StorageListDtComponent,
+    DtContentDirective,
+    DropLastCharPipe,
+    KeyValuePipe,
+  ],
 })
 export class StorageListComponent implements OnInit, AfterViewInit {
   @ViewChild('storageListDt') storageListDt!: TemplateRef<StorageListDtComponent>;
@@ -173,7 +200,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     const filterCookie = this.webStorageService.get<DisplayColumn>(`${this.storageParams.processState}Filter`);
     if (filterCookie) {
       for (const column of this.displayedColumns) {
-        if (column.name && filterCookie[column.name as keyof DisplayColumn] === false) {
+        if (column.name && !filterCookie[column.name as keyof DisplayColumn]) {
           column.hidden = true;
         }
       }
@@ -284,7 +311,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
 
     const tableColumn = this.displayedColumns.find((displayedColumn) => displayedColumn.name === column);
     if (tableColumn) {
-      tableColumn.hidden = this.displayColumn[column as keyof typeof this.displayColumn] === false;
+      tableColumn.hidden = !this.displayColumn[column as keyof typeof this.displayColumn];
     }
   }
 

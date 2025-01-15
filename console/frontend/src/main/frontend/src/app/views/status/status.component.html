@@ -34,6 +34,7 @@
             <div class="ibox-right">
               <div class="pull-left">
                 <button
+                  appHasAccessToLink="updateAdapters"
                   (click)="stopAll()"
                   class="btn btn-danger btn-xs space-it-out"
                   id="stop-all-adapters"
@@ -43,6 +44,7 @@
                   <i class="fa fa-stop"></i>
                 </button>
                 <button
+                  appHasAccessToLink="updateAdapters"
                   (click)="startAll()"
                   class="btn btn-primary btn-xs"
                   id="start-all-adapters"
@@ -73,54 +75,62 @@
                 </button>
               </div>
               <div class="text-center">
-                <button
-                  (click)="reloadConfiguration()"
-                  *ngIf="selectedConfiguration !== 'All' && !reloading && !isConfigReloading[selectedConfiguration]"
-                  class="btn btn-info btn-xs space-it-out"
-                  id="reload-configuration"
-                  title="Reload Configuration"
-                  type="button"
-                >
-                  <i class="fa fa-undo"></i>
-                </button>
-                <button
-                  *ngIf="selectedConfiguration !== 'All' && !reloading && isConfigReloading[selectedConfiguration]"
-                  class="btn btn-warning btn-xs space-it-out"
-                  disabled="disabled"
-                  title="Reload Configuration"
-                  type="button"
-                >
-                  <i class="fa fa-spin fa-refresh"></i>
-                </button>
-                <button
-                  (click)="fullReload()"
-                  *ngIf="selectedConfiguration === 'All' && !reloading"
-                  class="btn btn-info btn-xs space-it-out"
-                  id="full-reload"
-                  title="Full Reload"
-                  type="button"
-                >
-                  <i class="fa fa-undo"></i>
-                </button>
-                <button
-                  *ngIf="reloading"
-                  class="btn btn-danger btn-xs space-it-out"
-                  disabled="disabled"
-                  title="Full Reload in process"
-                  type="button"
-                >
-                  <i class="fa fa-spin fa-refresh"></i>
-                </button>
-                <button
-                  (click)="showReferences()"
-                  *ngIf="configurationFlowDiagram"
-                  class="btn btn-info btn-xs"
-                  id="adapter-references"
-                  title="Show Adapter References"
-                  type="button"
-                >
-                  <i class="fa fa-file-picture-o"></i>
-                </button>
+                @if (selectedConfiguration !== 'All' && !reloading && !isConfigReloading[selectedConfiguration]) {
+                  <button
+                    appHasAccessToLink="updateConfiguration"
+                    (click)="reloadConfiguration()"
+                    class="btn btn-info btn-xs space-it-out"
+                    id="reload-configuration"
+                    title="Reload Configuration"
+                    type="button"
+                  >
+                    <i class="fa fa-undo"></i>
+                  </button>
+                }
+                @if (selectedConfiguration !== 'All' && !reloading && isConfigReloading[selectedConfiguration]) {
+                  <button
+                    class="btn btn-warning btn-xs space-it-out"
+                    disabled="disabled"
+                    title="Reload Configuration"
+                    type="button"
+                  >
+                    <i class="fa fa-spin fa-refresh"></i>
+                  </button>
+                }
+                @if (selectedConfiguration === 'All' && !reloading) {
+                  <button
+                    appHasAccessToLink="fullAction"
+                    (click)="fullReload()"
+                    class="btn btn-ff btn-xs space-it-out"
+                    id="full-reload"
+                    title="Full Reload"
+                    type="button"
+                  >
+                    <i class="fa fa-undo"></i>
+                  </button>
+                }
+                @if (reloading) {
+                  <button
+                    class="btn btn-danger btn-xs space-it-out"
+                    disabled="disabled"
+                    title="Full Reload in process"
+                    type="button"
+                  >
+                    <i class="fa fa-spin fa-refresh"></i>
+                  </button>
+                }
+                @if (configurationFlowDiagram) {
+                  <button
+                    appHasAccessToLink="getConfigurationFlow"
+                    (click)="showReferences()"
+                    class="btn btn-info btn-xs"
+                    id="adapter-references"
+                    title="Show Adapter References"
+                    type="button"
+                  >
+                    <i class="fa fa-file-picture-o"></i>
+                  </button>
+                }
               </div>
             </div>
             <div class="ibox-left">
@@ -186,21 +196,17 @@
   </div>
 
   <div class="row">
-    <div
-      *ngFor="
-        let adapterKV of adapters
-          | configurationFilter: selectedConfiguration : filter
-          | searchFilter: searchText
-          | keyvalue;
-        trackBy: trackAdaptersByFn
-      "
-      class="col-lg-12 adapters"
-    >
-      <app-adapter-status
-        [adapter]="adapterKV.value"
-        [adapterShowContent]="adapterShowContent"
-        [loadFlowInline]="loadFlowInline"
-      ></app-adapter-status>
-    </div>
+    @for (
+      adapterKV of adapters | configurationFilter: selectedConfiguration : filter | searchFilter: searchText | keyvalue;
+      track trackAdaptersByFn($index, adapterKV)
+    ) {
+      <div class="col-lg-12 adapters">
+        <app-adapter-status
+          [adapter]="adapterKV.value"
+          [adapterShowContent]="adapterShowContent"
+          [loadFlowInline]="loadFlowInline"
+        ></app-adapter-status>
+      </div>
+    }
   </div>
 </div>

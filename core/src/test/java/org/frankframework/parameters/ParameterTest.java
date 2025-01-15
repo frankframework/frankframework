@@ -35,6 +35,7 @@ import org.w3c.dom.Node;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLine.ExitState;
@@ -53,6 +54,7 @@ import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlUtils;
 
 public class ParameterTest {
@@ -893,11 +895,13 @@ public class ParameterTest {
 	}
 
 	@Test
-	// Test for #2256 PutParametersInSession with xpathExpression with type=domdoc
+	// Test for #2256 PutInSession with xpathExpression with type=domdoc
 	// results in "Content is not allowed in prolog"
 	public void testPutInSessionPipeWithDomdocParamsUsedMoreThanOnce() throws Exception {
 		try(TestConfiguration configuration = new TestConfiguration()) {
-			PipeLine pipeline = configuration.createBean(PipeLine.class);
+			Adapter adapter = configuration.createBean(Adapter.class);
+			adapter.setName("testAdapter"); // Required for Metrics
+			PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
 			String firstPipe = "PutInSession under test";
 			String secondPipe = "PutInSession next pipe";
 
@@ -941,7 +945,6 @@ public class ParameterTest {
 			CorePipeProcessor pipeProcessor = configuration.createBean(CorePipeProcessor.class);
 			cpp.setPipeProcessor(pipeProcessor);
 			PipeLineSession session = configuration.createBean(PipeLineSession.class);
-			pipeline.setOwner(pipe);
 			PipeLineResult pipeRunResult = cpp.processPipeLine(pipeline, "messageId", new Message(testMessage), session, firstPipe);
 
 			assertEquals(ExitState.SUCCESS, pipeRunResult.getState());

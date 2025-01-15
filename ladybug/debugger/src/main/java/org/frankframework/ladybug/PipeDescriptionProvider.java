@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2023 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,8 +27,17 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+
 import org.frankframework.configuration.Configuration;
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.HasName;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.pipes.MessageSendingPipe;
@@ -39,14 +48,6 @@ import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.XmlWriter;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
 
 /**
  * Get a description of a specified pipe. The description contains the XML
@@ -68,8 +69,8 @@ public class PipeDescriptionProvider {
 	 */
 	public PipeDescription getPipeDescription(PipeLine pipeLine, IPipe pipe) {
 		PipeDescription pipeDescription;
-		INamedObject pipeLineOwner = pipeLine.getOwner();
-		String adapterName = pipeLineOwner==null? "?": pipeLineOwner.getName();
+		HasName adapter = pipeLine.getAdapter();
+		String adapterName = adapter==null? "?": adapter.getName();
 		String pipeName = pipe.getName();
 		String checkpointName = null;
 		String xpathExpression = null;
@@ -123,14 +124,8 @@ public class PipeDescriptionProvider {
 			// object will be created. The old configuration object will be
 			// removed from pipeDescriptionCaches by the garbage collection as
 			// this is a WeakHashMap.
-			if(!(pipeLine.getApplicationContext() instanceof Configuration)) {
-				pipeDescription = new PipeDescription();
-				pipeDescription.setCheckpointName(getCheckpointName(pipe, checkpointName));
-				pipeDescription.setDescription("Unable to find pipe information, configuration not found.");
-				return pipeDescription;
-			}
+			Configuration configuration = pipeLine.getConfiguration();
 
-			Configuration configuration = (Configuration) pipeLine.getApplicationContext();
 			Map<String, PipeDescription> pipeDescriptionCache = pipeDescriptionCaches.computeIfAbsent(configuration, k -> new HashMap<>());
 			pipeDescription = pipeDescriptionCache.get(xpathExpression);
 			if (pipeDescription == null) {

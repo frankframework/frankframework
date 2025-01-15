@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -41,6 +41,8 @@ import lombok.Setter;
 
 import org.frankframework.cache.ICache;
 import org.frankframework.cache.ICacheEnabled;
+import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationAware;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -52,7 +54,6 @@ import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.processors.PipeLineProcessor;
 import org.frankframework.statistics.FrankMeterType;
-import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
@@ -100,10 +101,12 @@ import org.frankframework.util.StringUtil;
  */
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics, IConfigurationAware {
-	private @Getter @Setter ApplicationContext applicationContext;
+public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, FrankElement, ConfigurationAware {
+	private @Getter ApplicationContext applicationContext;
+	private @Getter @Setter Configuration configuration;
 	private @Getter final ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
+	public static final String PIPELINE_NAME = "pipeline";
 	public static final String INPUT_VALIDATOR_NAME  = "- pipeline inputValidator";
 	public static final String OUTPUT_VALIDATOR_NAME = "- pipeline outputValidator";
 	public static final String INPUT_WRAPPER_NAME    = "- pipeline inputWrapper";
@@ -136,8 +139,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private final Map<String, IPipe> pipesByName = new LinkedHashMap<>();
 	private @Getter final List<IPipe> pipes	  = new ArrayList<>();
 
-	private @Getter Adapter adapter;    // for transaction managing
-	private @Setter @Getter INamedObject owner; // for logging purposes
+	private @Getter Adapter adapter;    // For transaction managing
+	@Deprecated @Getter private HasName owner; // LEGACy :: For logging purposes in pipe- and pipeline-processors
 	private @Setter PipeLineProcessor pipeLineProcessor;
 
 	private @Getter DistributionSummary requestSizeStats;
@@ -145,7 +148,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private @Getter DistributionSummary pipelineWaitStatistics;
 	private final Map<String, DistributionSummary> pipeWaitStatistics = new ConcurrentHashMap<>();
 	private final Map<String, DistributionSummary> pipeSizeStats = new ConcurrentHashMap<>();
-
 
 	private @Getter final List<IPipeLineExitHandler> exitHandlers = new ArrayList<>();
 
@@ -161,6 +163,34 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		REJECTED;
 
 		public static final String SUCCESS_EXIT_STATE = "SUCCESS";
+	}
+
+	@Override
+	public final void setApplicationContext(ApplicationContext context) {
+		if (context instanceof Adapter adapter) {
+			// This should always be the case, but in tests it may be a TestConfiguration instead...
+			this.adapter = adapter;
+
+			this.owner = adapter; // LEGACY REMOVE THIS ASAP!
+		} else {
+			owner = new HasName() {
+				@Override
+				public String getName() {
+					return "unknown pipeline beloging to context: "+context.getId();
+				}
+			};
+		}
+
+		this.applicationContext = context;
+	}
+
+	/**
+	 * Used by {@link MetricsInitializer} and {@link ConfigurationWarnings}.
+	 * When null either the ClassName or nothing is used.
+	 */
+	@Override
+	public String getName() {
+		return null;
 	}
 
 	public IPipe getPipe(String pipeName) {
@@ -184,7 +214,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	public void configure() throws ConfigurationException {
 		ConfigurationException configurationException = null;
 		if (cache != null) {
-			cache.configure(owner.getName() + "-Pipeline");
+			cache.configure(getName());
 		}
 		if (pipeLineExits.isEmpty()) {
 			// if no Exits are configured, then insert a default one, named 'READY', with state 'SUCCESS'
@@ -370,7 +400,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	/*
 	 * All pipe related statistics
 	 */
-	public @Nonnull DistributionSummary getPipeStatistics(IConfigurationAware pipe) {
+	public @Nonnull DistributionSummary getPipeStatistics(IPipe pipe) {
 		return pipeStatistics.computeIfAbsent(pipe.getName(), name -> configurationMetrics.createDistributionSummary(pipe, FrankMeterType.PIPE_DURATION));
 	}
 	public @Nonnull DistributionSummary getPipeWaitStatistics(IPipe pipe){
@@ -427,11 +457,11 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 */
 	public IForwardTarget resolveForward(IPipe pipe, PipeForward forward) throws PipeRunException {
 		if (forward==null){
-			throw new PipeRunException(pipe, "Pipeline of ["+getOwner().getName()+"] got a null forward from pipe ["+pipe.getName()+"].");
+			throw new PipeRunException(pipe, "Pipeline of [%s] got a null forward from pipe [%s].".formatted(adapter.getName(), pipe.getName()));
 		}
 		String path = forward.getPath();
 		if (StringUtils.isEmpty(path)){
-			throw new PipeRunException(pipe, "Pipeline of ["+getOwner().getName()+"] got a forward ["+forward.getName()+"] with a path that equals null or has a zero-length value from pipe ["+pipe.getName()+"]. Check the configuration, probably forwards are not defined for this pipe.");
+			throw new PipeRunException(pipe, "Pipeline of [%s] got a forward [%s] with a path that equals null or has a zero-length value from pipe [%s]. Check the configuration, probably forwards are not defined for this pipe.".formatted(adapter.getName(), forward.getName(), pipe.getName()));
 		}
 		PipeLineExit plExit= getPipeLineExits().get(path);
 		if (plExit != null ) {
@@ -439,20 +469,10 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		}
 		IPipe nextPipe=getPipe(path);
 		if (nextPipe==null) {
-			throw new PipeRunException(pipe, "Pipeline of adapter ["+ getOwner().getName()+"] got an erroneous definition from pipe ["+pipe.getName()+"]. Target to execute ["+path+ "] is not defined as a Pipe or an Exit.");
+			throw new PipeRunException(pipe, "Pipeline of [%s] got an erroneous definition from pipe [%s]. Target to execute [%s] is not defined as a Pipe or an Exit.".formatted(adapter.getName(), pipe.getName(), path));
 		}
 		return nextPipe;
 	}
-
-	/**
-	 * Register the adapterName of this Pipelineprocessor.
-	 * @param adapter
-	 */
-	public void setAdapter(Adapter adapter) {
-		this.adapter = adapter;
-		setOwner(adapter);
-	}
-
 
 	public void start() {
 		log.info("starting pipeline");
@@ -519,15 +539,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		}
 	}
 
-	@Override
-	public String getName() {
-		String name = "PipeLine";
-		if(owner != null) {
-			name += " of [" + owner.getName() + "]";
-		}
-		return name;
-	}
-
 	/**
 	 *
 	 * @return an enumeration of all pipenames in the pipeline and the
@@ -537,10 +548,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	@Override
 	public String toString(){
 		StringBuilder result = new StringBuilder();
-		result.append("[ownerName=").append(owner == null ? "-none-" : owner.getName()).append("]");
 		result.append("[adapterName=").append(adapter == null ? "-none-" : adapter.getName()).append("]");
 		result.append("[startPipe=").append(firstPipe).append("]");
-//		result+="[transacted="+transacted+"]";
 		result.append("[transactionAttribute=").append(getTransactionAttribute()).append("]");
 		for (int i=0; i<pipes.size(); i++) {
 			result.append("pipe").append(i).append("=[").append(getPipe(i).getName()).append("]");

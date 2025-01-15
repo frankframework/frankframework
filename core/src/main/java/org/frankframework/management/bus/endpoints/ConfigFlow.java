@@ -19,10 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.BinaryMessage;
-import org.frankframework.management.bus.message.EmptyMessage;
 import org.springframework.messaging.Message;
 
 import lombok.Setter;
@@ -33,6 +31,9 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.BinaryMessage;
+import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.util.flow.FlowDiagramManager;
 
 @BusAware("frank-management-bus")

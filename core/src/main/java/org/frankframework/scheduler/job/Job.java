@@ -15,8 +15,9 @@
 */
 package org.frankframework.scheduler.job;
 
-import lombok.Getter;
 import org.apache.commons.lang3.NotImplementedException;
+
+import lombok.Getter;
 
 import org.frankframework.doc.Mandatory;
 import org.frankframework.scheduler.AbstractJobDef;

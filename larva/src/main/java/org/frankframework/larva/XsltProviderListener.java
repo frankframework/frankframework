@@ -27,6 +27,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.FrankElement;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.Resource;
@@ -37,7 +38,7 @@ import org.frankframework.util.TransformerPool;
  *
  * @author Jaco de Groot
  */
-public class XsltProviderListener implements IConfigurable, AutoCloseable {
+public class XsltProviderListener implements IConfigurable, AutoCloseable, FrankElement {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter String name;

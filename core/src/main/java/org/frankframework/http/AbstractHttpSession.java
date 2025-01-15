@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2023 WeAreFrank!
+   Copyright 2017-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -68,9 +68,6 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.pool.ConnPoolControl;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.logging.log4j.Logger;
-
-import org.frankframework.http.authentication.IOauthAuthenticator;
-
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 
@@ -80,9 +77,7 @@ import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.core.Adapter;
-import org.frankframework.core.AdapterAware;
-import org.frankframework.core.IConfigurationAware;
+import org.frankframework.core.FrankElement;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Unsafe;
 import org.frankframework.encryption.AuthSSLContextFactory;
@@ -93,13 +88,13 @@ import org.frankframework.http.authentication.AuthenticationScheme;
 import org.frankframework.http.authentication.ClientCredentialsBasicAuth;
 import org.frankframework.http.authentication.ClientCredentialsQueryParameters;
 import org.frankframework.http.authentication.HttpAuthenticationException;
+import org.frankframework.http.authentication.IOauthAuthenticator;
 import org.frankframework.http.authentication.OAuthPreferringAuthenticationStrategy;
 import org.frankframework.http.authentication.ResourceOwnerPasswordCredentialsBasicAuth;
 import org.frankframework.http.authentication.ResourceOwnerPasswordCredentialsQueryParameters;
 import org.frankframework.http.authentication.SamlAssertionOauth;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.statistics.FrankMeterType;
-import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
@@ -158,7 +153,7 @@ import org.frankframework.util.StringUtil;
  * @author Niels Meijer
  * @since 7.0
  */
-public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasKeystore, HasTruststore, HasStatistics, AdapterAware {
+public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasKeystore, HasTruststore, FrankElement {
 	protected final Logger log = LogUtil.getLogger(this);
 
 	public static final String AUTHENTICATION_METHOD_KEY = "OauthAuthentication";
@@ -167,7 +162,6 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private @Getter @Setter String name;
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Setter MetricsInitializer configurationMetrics;
-	private @Getter @Setter Adapter adapter;
 
 	/* CONNECTION POOL */
 	private @Getter int timeout = 10_000;
@@ -404,7 +398,6 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 		sslSocketFactory = getSSLConnectionSocketFactory(); //Configure it here, so we can handle exceptions
 
-		preAuthenticate();
 		configureRedirectStrategy();
 
 		httpClientContext = defaultHttpClientContext; //Ensure a local instance is used when no SharedResource is present.
@@ -500,12 +493,9 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 			// and we can't construct the interceptor. Besides that, it's probably not worth instrumenting either.
 			httpClient = httpClientBuilder.build();
 		} else {
-			// Adapter is not always available, use this instead. Also see `org.frankframework.statistics.MetricsInitializer.getElementType`
-			IConfigurationAware element = (adapter != null) ? adapter : this;
+			registerConnectionMetrics(this, connectionManager);
 
-			registerConnectionMetrics(element, connectionManager);
-
-			MicrometerHttpClientInterceptor interceptor = new MicrometerHttpClientInterceptor(configurationMetrics, element,
+			MicrometerHttpClientInterceptor interceptor = new MicrometerHttpClientInterceptor(configurationMetrics, this,
 					request -> request.getRequestLine().getUri(),
 					true
 			);
@@ -522,7 +512,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	 * @param frankElement
 	 * @param connPoolControl
 	 */
-	private void registerConnectionMetrics(IConfigurationAware frankElement, ConnPoolControl<HttpRoute> connPoolControl) {
+	private void registerConnectionMetrics(FrankElement frankElement, ConnPoolControl<HttpRoute> connPoolControl) {
 		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_POOL_MAX, () -> connPoolControl.getTotalStats().getMax());
 		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_POOL_AVAILABLE, () -> connPoolControl.getTotalStats().getAvailable());
 		configurationMetrics.createGauge(frankElement, FrankMeterType.SENDER_HTTP_POOL_LEASED, () -> connPoolControl.getTotalStats().getLeased());
@@ -595,12 +585,17 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
 	}
 
-	private void preAuthenticate() {
+	/**
+	 * Adds a new authState instance to the clientContext when none exists. The authState is in {@literal CHALLENGED} state, which causes the request to always
+	 * require a challenge. A new authentication scheme (basic auth or oauth) is created for each request.
+	 * {@link OAuthAccessTokenManager} decides if and when to refresh the access token.
+	 */
+	private void preAuthenticate(HttpClientContext clientContext) {
 		if (credentials != null && !StringUtils.isEmpty(credentials.getUsername())) {
-			AuthState authState = defaultHttpClientContext.getTargetAuthState();
+			AuthState authState = clientContext.getTargetAuthState();
 			if (authState==null) {
 				authState = new AuthState();
-				defaultHttpClientContext.setAttribute(HttpClientContext.TARGET_AUTH_STATE, authState);
+				clientContext.setAttribute(HttpClientContext.TARGET_AUTH_STATE, authState);
 			}
 			authState.setState(AuthProtocolState.CHALLENGED);
 			authState.update(getPreferredAuthenticationScheme().createScheme(), getCredentials());
@@ -654,6 +649,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 		CloseableHttpClient client = getHttpClient();
 		HttpClientContext context = httpClientContext != null ? httpClientContext : getOrCreateHttpClientContext(client, session);
+		preAuthenticate(context);
 		log.trace("executing request using HttpClient [{}] and HttpContext [{}]", client::hashCode, () -> context);
 		return client.execute(targetHost, httpRequestBase, context);
 	}

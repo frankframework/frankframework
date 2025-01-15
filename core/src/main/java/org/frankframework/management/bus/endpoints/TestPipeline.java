@@ -26,12 +26,13 @@ import javax.xml.transform.Transformer;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.security.RolesAllowed;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.Message;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.Data;
 
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineResult;

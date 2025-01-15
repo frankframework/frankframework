@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,13 @@ import java.util.function.Supplier;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.DistributionSummary.Builder;
@@ -33,16 +40,11 @@ import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.search.Search;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
+import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
-import org.frankframework.core.IConfigurationAware;
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.FrankElement;
+import org.frankframework.core.HasName;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLine;
@@ -62,7 +64,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	private boolean publishHistograms;
 	private int percentilePrecision;
 	private List<String> percentiles;
-	private List<String> timeSLO; //ServiceLevelObjectives
+	private List<String> timeSLO; // ServiceLevelObjectives
 	private List<String> sizeSLO;
 
 	private @Setter MeterRegistry meterRegistry;
@@ -77,40 +79,36 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		publishPercentiles = appConstants.getBoolean("Statistics.percentiles.publish", false);
 		percentilePrecision = appConstants.getInt("Statistics.percentiles.precision", 1);
 		publishHistograms = appConstants.getBoolean("Statistics.histograms.publish", false);
-		percentiles = appConstants.getListProperty("Statistics.percentiles"); //50,90,95,98
-		timeSLO = appConstants.getListProperty("Statistics.boundaries"); //100,1000,2000,10000
-		sizeSLO = appConstants.getListProperty("Statistics.size.boundaries"); //100000,1000000
+		percentiles = appConstants.getListProperty("Statistics.percentiles"); // 50,90,95,98
+		timeSLO = appConstants.getListProperty("Statistics.boundaries"); // 100,1000,2000,10000
+		sizeSLO = appConstants.getListProperty("Statistics.size.boundaries"); // 100000,1000000
 	}
 
-	public Counter createCounter(@Nonnull IConfigurationAware frankElement, @Nonnull FrankMeterType type) {
+	public Counter createCounter(@Nonnull FrankElement frankElement, @Nonnull FrankMeterType type) {
 		return createCounter(type, getTags(frankElement, frankElement.getName(), null));
 	}
 
-	private String findName(INamedObject namedObject) {
+	private String findName(HasName namedObject) {
 		return StringUtils.isNotEmpty(namedObject.getName()) ? namedObject.getName():ClassUtils.nameOf(namedObject);
 	}
 
-	private String findName(IConfigurationAware namedObject) {
-		return StringUtils.isNotEmpty(namedObject.getName()) ? namedObject.getName():ClassUtils.nameOf(namedObject);
-	}
-
-	public Timer.ResourceSample createTimerResource(@Nonnull IConfigurationAware frankElement, @Nonnull FrankMeterType type, String... tags) {
+	public Timer.ResourceSample createTimerResource(@Nonnull FrankElement frankElement, @Nonnull FrankMeterType type, String... tags) {
 		return Timer.resource(meterRegistry, type.getMeterName())
 				.tags(tags)
 				.tags(getTags(frankElement, findName(frankElement), null));
 	}
 
 	/** This DistributionSummary is suffixed under a pipe */
-	public DistributionSummary createSubDistributionSummary(@Nonnull IConfigurationAware parentFrankElement, @Nonnull INamedObject subFrankElement, @Nonnull FrankMeterType type) {
+	public DistributionSummary createSubDistributionSummary(@Nonnull FrankElement parentFrankElement, @Nonnull HasName subFrankElement, @Nonnull FrankMeterType type) {
 		return createSubDistributionSummary(parentFrankElement, findName(subFrankElement), type);
 	}
 
-	public DistributionSummary createSubDistributionSummary(@Nonnull IConfigurationAware parentFrankElement, @Nonnull String subFrankElement, @Nonnull FrankMeterType type) {
+	public DistributionSummary createSubDistributionSummary(@Nonnull FrankElement parentFrankElement, @Nonnull String subFrankElement, @Nonnull FrankMeterType type) {
 		List<Tag> tags = getTags(parentFrankElement, String.format(PARENT_CHILD_NAME_FORMAT, findName(parentFrankElement), subFrankElement), null);
 		return createDistributionSummary(type, tags);
 	}
 
-	public DistributionSummary createDistributionSummary(@Nonnull IConfigurationAware frankElement, @Nonnull FrankMeterType type) {
+	public DistributionSummary createDistributionSummary(@Nonnull FrankElement frankElement, @Nonnull FrankMeterType type) {
 		List<Tag> tags = getTags(frankElement, findName(frankElement), null);
 		return createDistributionSummary(type, tags);
 	}
@@ -120,7 +118,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		return createDistributionSummary(type, tags);
 	}
 
-	public Gauge createGauge(@Nonnull IConfigurationAware frankElement, @Nonnull FrankMeterType type, Supplier<Number> numberSupplier) {
+	public Gauge createGauge(@Nonnull FrankElement frankElement, @Nonnull FrankMeterType type, Supplier<Number> numberSupplier) {
 		return createGauge(type, getTags(frankElement, frankElement.getName(), null), numberSupplier);
 	}
 
@@ -164,14 +162,16 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		return builder.register(meterRegistry);
 	}
 
-	private List<Tag> getTags(@Nonnull IConfigurationAware frankElement, @Nonnull String name, @Nullable List<Tag> extraTags) {
-		ApplicationContext configuration = frankElement.getApplicationContext();
+	private List<Tag> getTags(@Nonnull FrankElement frankElement, @Nonnull String name, @Nullable List<Tag> extraTags) {
 		List<Tag> tags = new ArrayList<>(5);
 		Adapter adapter = getAdapter(frankElement);
 		if(adapter != null) {
-			tags.add(Tag.of("adapter", adapter.getAdapter().getName()));
+			tags.add(Tag.of("adapter", adapter.getName()));
 		}
-		tags.add(Tag.of("configuration", configuration.getId()));
+		Configuration configuration = getConfiguration(frankElement);
+		if(configuration != null) {
+			tags.add(Tag.of("configuration", configuration.getId()));
+		}
 		tags.add(Tag.of("name", name));
 		tags.add(Tag.of("type", getElementType(frankElement)));
 		if(extraTags != null) {
@@ -181,19 +181,30 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		return tags;
 	}
 
-	private Adapter getAdapter(@Nonnull IConfigurationAware frankElement) {
+	@Nullable
+	private Configuration getConfiguration(@Nonnull FrankElement frankElement) {
+		ApplicationContext ac = frankElement.getApplicationContext();
+		if (ac instanceof Configuration config) {
+			return config;
+		} else if (ac instanceof Adapter adapter) {
+			return (Configuration) adapter.getParent();
+		}
+		return null; //TODO throw new IllegalStateException("No ConfigurationContext found");
+	}
+
+	private Adapter getAdapter(@Nonnull FrankElement frankElement) {
 		if (frankElement instanceof Adapter adapter) {
 			return adapter;
 		}
 
-		if (frankElement instanceof HasStatistics elm && elm.getAdapter() != null) {
-			return elm.getAdapter();
+		if (frankElement.getApplicationContext() instanceof Adapter adapter) {
+			return adapter;
 		}
 
 		return null;
 	}
 
-	private String getElementType(@Nonnull IConfigurationAware frankElement) {
+	private String getElementType(@Nonnull FrankElement frankElement) {
 		if (frankElement instanceof Receiver) {
 			return "receiver";
 		} else if (frankElement instanceof PipeLine) {
@@ -218,7 +229,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		if (percentiles.size() > 4) {
 			log.warn("using more than 4 percentiles is heavily discouraged");
 		}
-		//Validate must be whole number between 50 and 100.
+		// Validate must be whole number between 50 and 100.
 		return percentiles.stream()
 				.mapToDouble(Double::parseDouble)
 				.map(e -> e / 100)

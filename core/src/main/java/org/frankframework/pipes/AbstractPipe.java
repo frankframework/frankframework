@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,12 +27,10 @@ import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.Adapter;
@@ -49,7 +47,6 @@ import org.frankframework.monitoring.EventPublisher;
 import org.frankframework.monitoring.EventThrowing;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
-import org.frankframework.statistics.HasStatistics;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.Locker;
@@ -85,10 +82,11 @@ import org.frankframework.util.SpringUtils;
  * @see PipeLineSession
  */
 @Forward(name = "exception", description = "some error happened while processing the message; represents the 'unhappy or error flow' and is not limited to Java Exceptions.")
-public abstract class AbstractPipe extends TransactionAttributes implements IPipe, EventThrowing, ApplicationContextAware, IWithParameters, HasStatistics {
+public abstract class AbstractPipe extends TransactionAttributes implements IPipe, EventThrowing, IWithParameters {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter ApplicationContext applicationContext;
 
+	private boolean started = false;
 	private @Getter String name;
 	private @Getter String getInputFromSessionKey=null;
 	private @Getter String getInputFromFixedValue=null;
@@ -204,9 +202,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 */
 	@Override
 	public final void setApplicationContext(ApplicationContext applicationContext) {
-		if(!(applicationContext instanceof Configuration)) {
-			throw new IllegalArgumentException("ApplicationContext is not instance of Configuration");
-		}
 		this.applicationContext = applicationContext;
 	}
 
@@ -215,10 +210,19 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	@Override
-	public void start() {}
+	public void start() {
+		started = true;
+	}
 
 	@Override
-	public void stop() {}
+	public void stop() {
+		started = false;
+	}
+
+	@Override
+	public boolean isRunning() {
+		return started;
+	}
 
 	/**
 	 * Add a parameter to the list of parameters

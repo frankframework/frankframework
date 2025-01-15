@@ -46,9 +46,9 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.validation.AbstractXSD;
 import org.frankframework.validation.IXSD;
 import org.frankframework.validation.SchemaUtils;
-import org.frankframework.validation.AbstractXSD;
 import org.frankframework.validation.xsd.ResourceXsd;
 
 /**

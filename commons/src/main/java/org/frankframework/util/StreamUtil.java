@@ -196,19 +196,19 @@ public class StreamUtil {
 	 * @param chunkSize      The size of the buffer used for copying.
 	 * @throws IOException Thrown if any exception occurs while reading or writing from either stream.
 	 */
-	public static void copyPartialStream(InputStream in, OutputStream out, long maxBytesToCopy, int chunkSize) throws IOException {
+	public static long copyPartialStream(InputStream in, OutputStream out, long maxBytesToCopy, int chunkSize) throws IOException {
 		if (in == null || maxBytesToCopy == 0L) {
-			return;
+			return 0L;
 		}
 
 		if (maxBytesToCopy < 0L) {
-			in.transferTo(out);
-			return;
+			return in.transferTo(out);
 		}
 
 		byte[] buffer = new byte[chunkSize];
 		long bytesLeft = maxBytesToCopy;
 		int bytesRead;
+		long totalBytesCopied = 0L;
 		while (bytesLeft != 0L) {
 			int toRead = (int) Math.min(chunkSize, bytesLeft);
 			bytesRead = in.read(buffer, 0, toRead);
@@ -216,8 +216,10 @@ public class StreamUtil {
 				break;
 			}
 			out.write(buffer, 0, bytesRead);
+			totalBytesCopied += bytesRead;
 			bytesLeft -= bytesRead;
 		}
+		return totalBytesCopied;
 	}
 
 	public static void copyReaderToWriter(Reader reader, Writer writer, int chunkSize) throws IOException {

@@ -15,54 +15,38 @@
  */
 package org.frankframework.receivers;
 
-import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.ReferTo;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
-import org.frankframework.filesystem.ExchangeAttachmentReference;
-import org.frankframework.filesystem.ExchangeFileSystem;
-import org.frankframework.filesystem.ExchangeMessageReference;
+import org.frankframework.filesystem.AbstractFileSystemListener;
 import org.frankframework.filesystem.AbstractMailFileSystem;
-import org.frankframework.filesystem.AbstractMailListener;
+import org.frankframework.filesystem.exchange.ExchangeFileSystem;
+import org.frankframework.filesystem.exchange.MailItemId;
+import org.frankframework.util.SpringUtils;
 
 /**
- * Microsoft Exchange Implementation of a mail filesystem.
- *
- * @author Gerrit van Brakel
+ * Microsoft Exchange Implementation of a mailbox based filesystem.
  */
 @Category(Category.Type.ADVANCED)
-public class ExchangeMailListener extends AbstractMailListener<ExchangeMessageReference, ExchangeAttachmentReference,ExchangeFileSystem> {
-
-	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-		String separator = getFileSystem().getMailboxObjectSeparator();
-		if (StringUtils.isNotEmpty(getInputFolder()) && getInputFolder().contains(separator) ||
-			StringUtils.isNotEmpty(getInProcessFolder()) && getInProcessFolder().contains(separator)){
-			throw new ConfigurationException("Moving items across mailboxes is not supported by ExchangeMailListener for attributes [inputFolder,inProcessFolder]. " +
-				"Please do not use dynamic mailboxes / folders separated by ["+separator+"].");
-		}
-	}
+public class ExchangeMailListener extends AbstractFileSystemListener<MailItemId, ExchangeFileSystem> {
 
 	@Override
 	protected ExchangeFileSystem createFileSystem() {
-		log.debug("Creating new ExchangeFileSystem");
 		return new ExchangeFileSystem();
+	}
+
+	@Override
+	public void configure() throws ConfigurationException {
+		SpringUtils.autowireByType(getApplicationContext(), getFileSystem());
+		super.configure();
 	}
 
 	@ReferTo(ExchangeFileSystem.class)
 	public void setMailAddress(String mailAddress) {
 		getFileSystem().setMailAddress(mailAddress);
-	}
-
-	@ReferTo(ExchangeFileSystem.class)
-	public void setUrl(String url) {
-		getFileSystem().setUrl(url);
 	}
 
 	@ReferTo(ExchangeFileSystem.class)
@@ -80,20 +64,6 @@ public class ExchangeMailListener extends AbstractMailListener<ExchangeMessageRe
 		getFileSystem().setTenantId(tenantId);
 	}
 
-	@Deprecated
-	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to modern authentication using clientId and clientSecret. N.B. username no longer defaults to mailaddress")
-	@ReferTo(ExchangeFileSystem.class)
-	public void setUsername(String username) {
-		getFileSystem().setUsername(username);
-	}
-
-	@Deprecated
-	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to modern authentication using clientId and clientSecret.")
-	@ReferTo(ExchangeFileSystem.class)
-	public void setPassword(String password) {
-		getFileSystem().setPassword(password);
-	}
-
 	@ReferTo(ExchangeFileSystem.class)
 	public void setAuthAlias(String authAlias) {
 		getFileSystem().setAuthAlias(authAlias);
@@ -102,11 +72,6 @@ public class ExchangeMailListener extends AbstractMailListener<ExchangeMessageRe
 	@ReferTo(AbstractMailFileSystem.class)
 	public void setBaseFolder(String baseFolder) {
 		getFileSystem().setBaseFolder(baseFolder);
-	}
-
-	@ReferTo(ExchangeFileSystem.class)
-	public void setFilter(String filter) {
-		getFileSystem().setFilter(filter);
 	}
 
 	@ReferTo(AbstractMailFileSystem.class)
@@ -144,10 +109,6 @@ public class ExchangeMailListener extends AbstractMailListener<ExchangeMessageRe
 		getFileSystem().setProxyDomain(domain);
 	}
 
-	@ReferTo(ExchangeFileSystem.class)
-	public void setMailboxObjectSeparator(String separator) {
-		getFileSystem().setMailboxObjectSeparator(separator);
-	}
 	@ReferTo(HasKeystore.class)
 	public void setKeystore(String keystore) {
 		getFileSystem().setKeystore(keystore);

@@ -3,8 +3,10 @@
     <h4 class="modal-title"><i class="fa fa-info-circle"></i> Information</h4>
   </div>
   <div class="modal-body">
-    <ng-container *ngIf="initialized; else information">
-      <h3 *ngIf="framework.name === ''">Loading...</h3>
+    @if (initialized) {
+      @if (framework.name === '') {
+        <h3>Loading...</h3>
+      }
       <p>
         <strong>{{ framework.name }}{{ framework.version ? ' ' + framework.version : '' }}</strong
         >: {{ instance.name }} {{ instance.version }}<br />
@@ -28,7 +30,9 @@
         <strong><span appToDate [time]="uptime"></span></strong> (<span appTimeSince [time]="uptime"></span>), timezone:
         <strong>{{ serverTimeService.timezone }}</strong>
       </p>
-    </ng-container>
+    } @else {
+      <h3 class="text-center">Server info not (yet) available.</h3>
+    }
     <ng-template #information>
       <h3 class="text-center">Server info not (yet) available.</h3>
     </ng-template>

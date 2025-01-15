@@ -28,10 +28,6 @@ import java.util.stream.Collectors;
 
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.Environment;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.SpringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -40,6 +36,11 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.ResourceUtils;
+
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.Environment;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.SpringUtils;
 
 /**
  * Creates and maintains the (Spring) Application Context. If the context is loaded through a {@link FrankApplicationInitializer servlet}
@@ -127,7 +128,6 @@ public class IbisApplicationContext implements Closeable {
 		springConfigurationFiles.add(SpringContextScope.APPLICATION.getContextFile());
 		String configLocations = AppConstants.getInstance().getProperty("SPRING.CONFIG.LOCATIONS");
 		springConfigurationFiles.addAll(splitIntoConfigFiles(classLoader, configLocations));
-		addJmxConfigurationIfEnabled(springConfigurationFiles);
 
 		LOG.info("loading Spring configuration files {}", springConfigurationFiles);
 		return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
@@ -154,13 +154,6 @@ public class IbisApplicationContext implements Closeable {
 			return filename;
 		}
 		return ResourceUtils.CLASSPATH_URL_PREFIX + "/" + filename;
-	}
-
-	private void addJmxConfigurationIfEnabled(List<String> springConfigurationFiles) {
-		boolean jmxEnabled = AppConstants.getInstance().getBoolean("management.endpoints.jmx.enabled", false);
-		if (jmxEnabled) {
-			springConfigurationFiles.add(ResourceUtils.CLASSPATH_URL_PREFIX + "/" + "SpringApplicationContextJMX.xml");
-		}
 	}
 
 	/**

@@ -1,52 +1,54 @@
 <div class="ibox float-e-margins">
-  <div
-    (click)="msgBoxExpanded = !msgBoxExpanded"
-    *ngIf="messageLog[selectedConfiguration]"
-    [ngClass]="{
-      warning: messageLog[selectedConfiguration].messageLevel === 'WARN',
-      danger: messageLog[selectedConfiguration].messageLevel === 'ERROR'
-    }"
-    class="ibox-title pointer"
-  >
-    <div class="ibox-tools pull-right">
-      <a> <i class="fa fa-chevron-{{ msgBoxExpanded ? 'up' : 'down' }}"></i></a>
-    </div>
-    <div class="row full-width">
-      <div class="col-lg-6 col-md-12 clear">
-        <h4>Configuration Messages</h4>
+  @if (messageLog[selectedConfiguration]) {
+    <div
+      (click)="msgBoxExpanded = !msgBoxExpanded"
+      [ngClass]="{
+        warning: messageLog[selectedConfiguration].messageLevel === 'WARN',
+        danger: messageLog[selectedConfiguration].messageLevel === 'ERROR',
+      }"
+      class="ibox-title pointer"
+    >
+      <div class="ibox-tools pull-right">
+        <a> <i class="fa fa-chevron-{{ msgBoxExpanded ? 'up' : 'down' }}"></i></a>
+      </div>
+      <div class="row full-width">
+        <div class="col-lg-6 col-md-12 clear">
+          <h4>Configuration Messages</h4>
+        </div>
       </div>
     </div>
-  </div>
+  }
   <div [hidden]="!msgBoxExpanded" class="ibox-content p-w-sm">
     <div class="row">
       <div class="col-md-12" style="padding: 0 1px">
         <div class="table-responsive">
           <table class="table table-striped table-nohead m-b-none">
             <tbody>
-              <ng-template [ngIf]="messageLog[selectedConfiguration] !== null">
-                <tr
-                  *ngFor="let message of getMessageLog(selectedConfiguration)"
-                  [ngClass]="{
-                    'text-warning': message.level === 'WARN',
-                    'text-danger': message.level === 'ERROR'
-                  }"
-                >
-                  <td class="text-center" style="width: 40px">
-                    <i
-                      [ngClass]="{
-                        'fa-info': message.level === 'INFO',
-                        'fa-warning': message.level === 'WARN',
-                        'fa-times': message.level === 'ERROR'
-                      }"
-                      class="m-l-md fa"
-                    ></i>
-                  </td>
-                  <td class="text-center" style="width: 200px">
-                    <span [time]="message.date" appToDate></span>
-                  </td>
-                  <td>{{ message.message }}</td>
-                </tr>
-              </ng-template>
+              @if (messageLog[selectedConfiguration] !== null) {
+                @for (message of getMessageLog(selectedConfiguration); track message) {
+                  <tr
+                    [ngClass]="{
+                      'text-warning': message.level === 'WARN',
+                      'text-danger': message.level === 'ERROR',
+                    }"
+                  >
+                    <td class="text-center" style="width: 40px">
+                      <i
+                        [ngClass]="{
+                          'fa-info': message.level === 'INFO',
+                          'fa-warning': message.level === 'WARN',
+                          'fa-times': message.level === 'ERROR',
+                        }"
+                        class="m-l-md fa"
+                      ></i>
+                    </td>
+                    <td class="text-center" style="width: 200px">
+                      <span [time]="message.date" appToDate></span>
+                    </td>
+                    <td>{{ message.message }}</td>
+                  </tr>
+                }
+              }
             </tbody>
           </table>
         </div>

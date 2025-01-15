@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2017, 2020 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
+   Copyright 2013-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.DestinationValidator;
 import org.frankframework.core.IListener;
-import org.frankframework.core.INamedObject;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLine;
 import org.frankframework.doc.Category;
@@ -778,9 +777,8 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 
 	@Override
 	public void validateListenerDestinations(PipeLine pipeLine) throws ConfigurationException {
-		INamedObject owner = pipeLine.getOwner();
-		if (owner instanceof Adapter owningAdapter) {
-
+		Adapter owningAdapter = pipeLine.getAdapter();
+		if (owningAdapter != null) {
 			for (Receiver<?> receiver : owningAdapter.getReceivers()) {
 				IListener<?> listener = receiver.getListener();
 				try {
@@ -792,7 +790,6 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 				}
 			}
 		}
-
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationAware;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IMessageHandler;
@@ -52,12 +53,13 @@ import org.frankframework.stream.Message;
  */
 @Category(Category.Type.BASIC)
 @Log4j2
-public class FrankListener implements IPushingListener<Message>, HasPhysicalDestination, ServiceClient {
+public class FrankListener implements IPushingListener<Message>, HasPhysicalDestination, ServiceClient, ConfigurationAware {
 
 	private static final ConcurrentMap<String, FrankListener> listeners = new ConcurrentHashMap<>();
 
 	private final @Getter String domain = "JVM";
-	private @Getter @Setter ApplicationContext applicationContext;
+	private @Setter @Getter ApplicationContext applicationContext;
+	private @Setter Configuration configuration;
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private @Getter String name;
@@ -90,18 +92,15 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 		if (StringUtils.isBlank(getName())) {
 			Adapter adapter = getAdapter();
 			setName(adapter.getName());
-			log.debug("Name was not configured, defaulting to adapter name [{}]", this::getName);
+			log.debug("name was not configured, defaulting to adapter name [{}]", this::getName);
 		}
-		fullName = getConfiguration().getName() + "/" + getName();
+		fullName = configuration.getName() + "/" + getName();
 		log.debug("FrankListener instance will be registered under full name [{}]", fullName);
 	}
 
+	// TODO this should be the applicationcontext...?
 	private Adapter getAdapter() {
 		return ((Receiver<?>) getHandler()).getAdapter();
-	}
-
-	private Configuration getConfiguration() {
-		return (Configuration) applicationContext;
 	}
 
 	@Override

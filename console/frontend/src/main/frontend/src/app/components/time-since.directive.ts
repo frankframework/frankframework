@@ -3,7 +3,6 @@ import { ServerTimeService } from '../services/server-time.service';
 
 @Directive({
   selector: '[appTimeSince]',
-  standalone: true,
 })
 export class TimeSinceDirective implements OnInit, OnChanges, OnDestroy {
   @Input() time!: number;

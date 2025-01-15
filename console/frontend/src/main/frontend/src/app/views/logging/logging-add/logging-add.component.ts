@@ -2,7 +2,10 @@ import { Component } from '@angular/core';
 import { ErrorLevels, errorLevelsConst, LoggingService } from '../logging.service';
 import { ServerErrorResponse } from '../../../app.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { LaddaModule } from 'angular2-ladda';
+import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 
 type Form = {
   logger: string;
@@ -11,6 +14,7 @@ type Form = {
 
 @Component({
   selector: 'app-logging-add',
+  imports: [FormsModule, LaddaModule, QuickSubmitFormDirective, RouterLink],
   templateUrl: './logging-add.component.html',
   styleUrl: './logging-add.component.scss',
 })

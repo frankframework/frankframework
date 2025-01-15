@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, inject, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { NotificationService } from 'src/app/services/notification.service';
@@ -15,8 +14,7 @@ import { ServerTimeService } from '../../../services/server-time.service';
   selector: 'app-pages-topnavbar',
   templateUrl: './pages-topnavbar.component.html',
   styleUrls: ['./pages-topnavbar.component.scss'],
-  standalone: true,
-  imports: [CommonModule, FormsModule, HamburgerComponent, RouterModule, TimeSinceDirective, NgbDropdownModule],
+  imports: [FormsModule, HamburgerComponent, RouterModule, TimeSinceDirective, NgbDropdownModule],
 })
 export class PagesTopnavbarComponent implements OnInit, OnChanges, OnDestroy {
   @Input() dtapSide: string = '';

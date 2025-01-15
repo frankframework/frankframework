@@ -8,7 +8,6 @@ import static org.mockito.Mockito.mock;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.digester3.Digester;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 
@@ -34,7 +33,7 @@ public class SharedResourceFactoryTest {
 			Map<String, String> attributes = new HashMap<>();
 			attributes.put("name", TEST_RESOURCE_NAME);
 			attributes.put("classname", SharedClass.class.getTypeName());
-			IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> factory.createObject(attributes));
+			IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> factory.createBean(config, attributes));
 			assertEquals("invalid attribute [classname]. Did you mean [className]?", e.getMessage());
 		}
 	}
@@ -47,7 +46,7 @@ public class SharedResourceFactoryTest {
 			factory.setDigester(digester);
 			Map<String, String> attributes = new HashMap<>();
 			attributes.put("className", SharedClass.class.getTypeName());
-			IllegalStateException e = assertThrows(IllegalStateException.class, () -> factory.createObject(attributes));
+			IllegalStateException e = assertThrows(IllegalStateException.class, () -> factory.createBean(config, attributes));
 			assertEquals("Shared Resource must have a name", e.getMessage());
 		}
 	}
@@ -61,7 +60,7 @@ public class SharedResourceFactoryTest {
 			Map<String, String> attributes = new HashMap<>();
 			attributes.put("name", TEST_RESOURCE_NAME);
 			attributes.put("className", SharedClass.class.getTypeName());
-			Object sharedResource = factory.createObject(attributes);
+			Object sharedResource = factory.createBean(config, attributes);
 
 			assertTrue(config.containsBean(SharedResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME));
 			assertEquals(sharedResource, config.getBean(SharedResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME));
@@ -79,12 +78,12 @@ public class SharedResourceFactoryTest {
 			Map<String, String> attributes = new HashMap<>();
 			attributes.put("name", TEST_RESOURCE_NAME);
 			attributes.put("className", SharedClass.class.getTypeName());
-			Object sharedResource = factory.createObject(attributes);
+			Object sharedResource = factory.createBean(config, attributes);
 
 			assertTrue(config.containsBean(SharedResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME));
-			assertEquals(sharedResource, config.getBean(SharedResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME)); //SharedClass
+			assertEquals(sharedResource, config.getBean(SharedResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME)); // SharedClass
 
-			assertEquals(TEST_RESOURCE_VALUE, ((SharedClass) sharedResource).getSharedResource()); //String
+			assertEquals(TEST_RESOURCE_VALUE, ((SharedClass) sharedResource).getSharedResource()); // String
 
 			DummyClass2 dummyClass2 = config.createBean(DummyClass2.class);
 			IllegalStateException e = assertThrows(IllegalStateException.class, () -> dummyClass2.getSharedResource(TEST_RESOURCE_NAME));
@@ -110,17 +109,17 @@ public class SharedResourceFactoryTest {
 
 		@Override
 		public void configure() throws ConfigurationException {
-			//Nothing to configure
+			// Nothing to configure
 		}
 
 		@Override
 		public void start() {
-			//Nothing to start
+			// Nothing to start
 		}
 
 		@Override
 		public void stop() {
-			//Nothing to stop
+			// Nothing to stop
 		}
 
 		@Override
@@ -148,17 +147,17 @@ public class SharedResourceFactoryTest {
 
 		@Override
 		public void configure() throws ConfigurationException {
-			//Nothing to configure
+			// Nothing to configure
 		}
 
 		@Override
 		public void start() {
-			//Nothing to start
+			// Nothing to start
 		}
 
 		@Override
 		public void stop() {
-			//Nothing to stop
+			// Nothing to stop
 		}
 
 		@Override

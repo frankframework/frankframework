@@ -6,12 +6,12 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.sql.ResultSet;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.lifecycle.MessageEventListener;
-import org.frankframework.testutil.mock.MockIbisManager;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.SpringUtils;
@@ -28,7 +28,7 @@ public class TestConfiguration extends Configuration {
 	private final QuerySenderPostProcessor qsPostProcessor = new QuerySenderPostProcessor();
 	private final boolean autoConfigure;
 
-	//Configures a standalone configuration.
+	// Configures a standalone configuration.
 	public TestConfiguration() {
 		this(true);
 	}
@@ -47,8 +47,8 @@ public class TestConfiguration extends Configuration {
 		setAutoStart(false);
 		this.autoConfigure = autoConfigure;
 
-		ClassLoader classLoader = new JunitTestClassLoaderWrapper(); //Add ability to retrieve classes from src/test/resources
-		setClassLoader(classLoader); //Add the test classpath
+		ClassLoader classLoader = new JunitTestClassLoaderWrapper(); // Add ability to retrieve classes from src/test/resources
+		setClassLoader(classLoader); // Add the test classpath
 		setConfigLocations(configurationFiles);
 		setName(TEST_CONFIGURATION_NAME);
 	}
@@ -57,7 +57,7 @@ public class TestConfiguration extends Configuration {
 	public void refresh() throws BeansException, IllegalStateException {
 		super.refresh();
 
-		//Add Custom Pre-Instantiation Processor to mock statically created FixedQuerySenders.
+		// Add Custom Pre-Instantiation Processor to mock statically created FixedQuerySenders.
 		qsPostProcessor.setApplicationContext(this);
 		getBeanFactory().addBeanPostProcessor(qsPostProcessor);
 
@@ -78,6 +78,11 @@ public class TestConfiguration extends Configuration {
 		return getConfigurationWarnings().getWarnings().get(index);
 	}
 
+	public void removeAdapters() {
+		DefaultListableBeanFactory cbf = (DefaultListableBeanFactory) getAutowireCapableBeanFactory();
+		getAdapters().keySet().forEach(cbf::destroySingleton);
+	}
+
 	/**
 	 * Add the ability to mock FixedQuerySender ResultSets. Enter the initial query and a mocked
 	 * ResultSet using a {@link org.frankframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder ResultSetBuilder}.
@@ -94,22 +99,24 @@ public class TestConfiguration extends Configuration {
 		SpringUtils.autowireByName(this, bean);
 	}
 
+	/**
+	 * Performs full initialization of the bean, including all applicable BeanPostProcessors. This is effectively a supersetof what autowire provides, adding initializeBean behavior.
+	 */
 	public <T> T createBean(Class<T> beanClass) {
 		return SpringUtils.createBean(this, beanClass);
 	}
 
 	/**
-	 * Create and register the IbisManger with the Configuration
+	 * Create and register the IbisManager with the Configuration
 	 */
 	@Override
 	public synchronized IbisManager getIbisManager() {
 		if(super.getIbisManager() == null) {
-			IbisManager ibisManager = new MockIbisManager();
-			ibisManager.addConfiguration(this);
-			getBeanFactory().registerSingleton("ibisManager", ibisManager);
-			setIbisManager(ibisManager);
-
 			assertTrue(containsBean("ibisManager"), "bean IbisManager not found");
+
+			IbisManager ibisManager = getBean(IbisManager.class);
+			ibisManager.addConfiguration(this);
+			setIbisManager(ibisManager);
 		}
 		return super.getIbisManager();
 	}

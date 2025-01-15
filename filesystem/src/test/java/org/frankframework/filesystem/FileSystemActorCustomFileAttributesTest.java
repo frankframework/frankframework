@@ -17,7 +17,7 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
 
-public abstract class FileSystemActorCustomFileAttributesTest<F, S extends IWritableFileSystem<F>> extends FileSystemActorTest<F, S> {
+public abstract class FileSystemActorCustomFileAttributesTest<F, S extends IWritableFileSystem<F>> extends WritableFileSystemActorTest<F, S> {
 
 	private Message input;
 
@@ -45,7 +45,7 @@ public abstract class FileSystemActorCustomFileAttributesTest<F, S extends IWrit
 		ParameterValueList pvl = parameters.getValues(input, session);
 
 		actor.setAction(FileSystemActor.FileSystemAction.CREATE);
-		actor.configure(fileSystem, parameters, owner);
+		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
 		// Act
@@ -74,7 +74,7 @@ public abstract class FileSystemActorCustomFileAttributesTest<F, S extends IWrit
 
 		actor.setAction(FileSystemActor.FileSystemAction.WRITE);
 		actor.setFilename("message-data.txt");
-		actor.configure(fileSystem, parameters, owner);
+		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
 		// Act
@@ -112,7 +112,7 @@ public abstract class FileSystemActorCustomFileAttributesTest<F, S extends IWrit
 		ParameterValueList pvl = parameters.getValues(input, session);
 
 		actor.setAction(FileSystemActor.FileSystemAction.CREATE);
-		actor.configure(fileSystem, parameters, owner);
+		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
 		actor.doAction(input, pvl, session);

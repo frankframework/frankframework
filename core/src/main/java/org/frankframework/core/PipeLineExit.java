@@ -16,6 +16,7 @@
 package org.frankframework.core;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.doc.Category;

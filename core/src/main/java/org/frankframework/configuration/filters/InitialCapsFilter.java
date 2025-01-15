@@ -18,6 +18,7 @@ package org.frankframework.configuration.filters;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
 import org.frankframework.util.StringUtil;
 import org.frankframework.xml.FullXmlFilter;
 

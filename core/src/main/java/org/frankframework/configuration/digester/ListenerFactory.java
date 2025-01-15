@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import java.util.Map;
 
 import org.xml.sax.Attributes;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.pipes.MessageSendingPipe;
 
 /**
@@ -28,6 +30,7 @@ import org.frankframework.pipes.MessageSendingPipe;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
+@Log4j2
 public class ListenerFactory extends GenericFactory {
 	public static final String JMS_LISTENER_CLASSNAME_SUFFIX = ".JmsListener";
 	protected static final String CORRELATED_LISTENER_CLASSNAME = "org.frankframework.jms.PullingJmsListener";
@@ -37,9 +40,7 @@ public class ListenerFactory extends GenericFactory {
 		Map<String, String> map = super.copyAttrsToMap(attrs);
 		String className = attrs.getValue("className");
 		if (className != null && getDigester().peek() instanceof MessageSendingPipe && className.endsWith(JMS_LISTENER_CLASSNAME_SUFFIX)) {
-			if (log.isDebugEnabled()) {
-				log.debug("JmsListener is created as part of a MessageSendingPipe; replace classname with '" + CORRELATED_LISTENER_CLASSNAME + "' to ensure compatibility");
-			}
+			log.debug("JmsListener is created as part of a MessageSendingPipe; replace classname with '{}' to ensure compatibility", CORRELATED_LISTENER_CLASSNAME);
 			map.put("className", CORRELATED_LISTENER_CLASSNAME);
 		}
 		return map;

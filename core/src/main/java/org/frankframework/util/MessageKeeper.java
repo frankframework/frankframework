@@ -18,7 +18,8 @@ package org.frankframework.util;
 import java.time.Instant;
 
 import lombok.extern.log4j.Log4j2;
-import org.frankframework.core.INamedObject;
+
+import org.frankframework.core.HasName;
 
 /**
  * Keeps a list of <code>MessageKeeperMessage</code>s.
@@ -78,7 +79,7 @@ public class MessageKeeper extends SizeLimitedVector<MessageKeeperMessage> {
 		add(msg);
 	}
 
-	public void info(INamedObject namedObject, String msg) {
+	public void info(HasName namedObject, String msg) {
 		info(ClassUtils.nameOf(namedObject) + ": " + msg);
 	}
 
@@ -86,7 +87,7 @@ public class MessageKeeper extends SizeLimitedVector<MessageKeeperMessage> {
 		add("WARNING: " + msg, MessageKeeperLevel.WARN);
 	}
 
-	public void warn(INamedObject namedObject, String msg) {
+	public void warn(HasName namedObject, String msg) {
 		warn(ClassUtils.nameOf(namedObject) + ": " + msg);
 	}
 
@@ -94,7 +95,7 @@ public class MessageKeeper extends SizeLimitedVector<MessageKeeperMessage> {
 		add("ERROR: " + msg, MessageKeeperLevel.ERROR);
 	}
 
-	public void error(INamedObject namedObject, String msg) {
+	public void error(HasName namedObject, String msg) {
 		error(ClassUtils.nameOf(namedObject) + ": " + msg);
 	}
 }

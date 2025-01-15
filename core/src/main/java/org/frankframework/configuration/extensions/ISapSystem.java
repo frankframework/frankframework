@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,12 @@
 */
 package org.frankframework.configuration.extensions;
 
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.HasName;
+import org.frankframework.core.NameAware;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public interface ISapSystem extends INamedObject {
+public interface ISapSystem extends NameAware, HasName {
 	String getDestinationAsString();
 }

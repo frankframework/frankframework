@@ -2,6 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { JmsService } from '../jms.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ServerErrorResponse } from '../../../app.service';
+import { FormsModule } from '@angular/forms';
+import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
+import { InputFileUploadComponent } from '../../../components/input-file-upload/input-file-upload.component';
+import { LaddaModule } from 'angular2-ladda';
+import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 
 interface Form {
   destination: string;
@@ -19,6 +24,7 @@ interface Form {
 
 @Component({
   selector: 'app-jms-send-message',
+  imports: [FormsModule, MonacoEditorComponent, InputFileUploadComponent, LaddaModule, QuickSubmitFormDirective],
   templateUrl: './jms-send-message.component.html',
   styleUrls: ['./jms-send-message.component.scss'],
 })

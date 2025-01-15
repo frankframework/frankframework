@@ -1,5 +1,5 @@
 // /// <reference path="../../../../node_modules/mermaid/dist/mermaid.d.ts" /> doesnt work
-import { CommonModule } from '@angular/common';
+
 import {
   Component,
   ElementRef,
@@ -31,8 +31,7 @@ const mermaid = mermaidImport;
       }
     `,
   ],
-  standalone: true,
-  imports: [CommonModule],
+  imports: [],
 })
 export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
   @Input() nmModel?: string;

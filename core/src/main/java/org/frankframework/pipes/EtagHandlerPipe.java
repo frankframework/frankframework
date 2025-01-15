@@ -18,6 +18,7 @@ package org.frankframework.pipes;
 import java.io.IOException;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;

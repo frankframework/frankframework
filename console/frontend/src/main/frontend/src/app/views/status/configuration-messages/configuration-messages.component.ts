@@ -1,8 +1,11 @@
 import { Component, Input } from '@angular/core';
 import { AdapterMessage, MessageLog } from '../../../app.service';
+import { NgClass } from '@angular/common';
+import { ToDateDirective } from '../../../components/to-date.directive';
 
 @Component({
   selector: 'app-configuration-messages',
+  imports: [NgClass, ToDateDirective],
   templateUrl: './configuration-messages.component.html',
   styleUrl: './configuration-messages.component.scss',
 })

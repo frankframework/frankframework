@@ -5,19 +5,25 @@ export type ToastType = 'error' | 'warning' | 'success' | 'info';
 export type ToastOptions = {
   timeout?: number;
   clickHandler?: (toast: Toast, event: MouseEvent) => boolean;
+  similarCount?: number;
 };
 
-export type Toast = {
+export type ToastBody = {
   type: ToastType;
   title: string;
   body?: string;
-} & ToastOptions;
+};
+
+export type Toast = ToastBody & ToastOptions;
+
+export type DuplicateToast = ToastBody & { count: number };
 
 @Injectable({
   providedIn: 'root',
 })
 export class ToastService {
   toasts: Toast[] = [];
+  private duplicates: DuplicateToast[] = [];
 
   constructor() {}
 
@@ -26,14 +32,38 @@ export class ToastService {
   warning = (title: string, body?: string, options?: ToastOptions): void => this.show('warning', title, body, options);
 
   show(type: ToastType, title: string, body?: string, options?: ToastOptions): void {
-    this.toasts.push({ type, title, body, ...options });
+    const toast: Toast = { type, title, body, ...options };
+    this.removeFromList(toast);
+    toast.similarCount = this.duplicateCheck(toast).count;
+    this.toasts.push(toast);
   }
 
-  remove(toast: Toast): void {
-    this.toasts = this.toasts.filter((t) => t !== toast);
+  remove(toast: ToastBody): void {
+    this.removeFromDuplicates(toast);
+    this.removeFromList(toast);
   }
 
   clear(): void {
     this.toasts = [];
+  }
+
+  private duplicateCheck(toast: ToastBody): DuplicateToast {
+    const duplicate = this.duplicates.find((t) => t.type === toast.type && t.title === toast.title);
+    if (duplicate) {
+      duplicate.count += 1;
+      return duplicate;
+    }
+    const newLength = this.duplicates.push({ count: 0, ...toast });
+    return this.duplicates[newLength - 1];
+  }
+
+  private removeFromDuplicates(toast: ToastBody): void {
+    this.duplicates = this.duplicates.filter(
+      (duplicate) => !(duplicate.type === toast.type && duplicate.title === toast.title),
+    );
+  }
+
+  private removeFromList(toast: ToastBody): void {
+    this.toasts = this.toasts.filter((t) => !(t.type === toast.type && t.title === toast.title));
   }
 }

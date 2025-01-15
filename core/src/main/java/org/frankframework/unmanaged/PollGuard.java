@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,13 +21,15 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.annotation.Nonnull;
+
 import org.apache.logging.log4j.Logger;
 
 import lombok.Setter;
+
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.RunState;
 import org.frankframework.util.MessageKeeper;
+import org.frankframework.util.RunState;
 
 public class PollGuard extends TimerTask {
 	private final Logger log = LogUtil.getLogger(this);
@@ -63,7 +65,7 @@ public class PollGuard extends TimerTask {
 
 				// Try to auto-recover the listener, when PollGuard detects `no activity` AND `threadsProcessing` == 0
 				try {
-					springJmsConnector.getReceiver().stopRunning();
+					springJmsConnector.getReceiver().stop();
 				} catch (Exception e) {
 					log.warn(() -> "JMS poll timeout ["+pollTimeoutNr+"] handling caught Exception when stopping receiver ["+springJmsConnector.getListener().getReceiver().getName()+"]", e);
 				} finally {
@@ -73,7 +75,7 @@ public class PollGuard extends TimerTask {
 						// Before restarting the receiver, update poll-finished time to current time so that
 						// the PollGuard is not instantly triggered again.
 						springJmsConnector.setLastPollFinishedTime(currentCheck);
-						springJmsConnector.getReceiver().startRunning();
+						springJmsConnector.getReceiver().start();
 						if (springJmsConnector.getReceiver().isInRunState(RunState.EXCEPTION_STARTING)) {
 							error("PollGuard: Failed to restart receiver [" + springJmsConnector.getReceiver().getName() + "], no exception");
 						} else {

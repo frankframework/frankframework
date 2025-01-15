@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.management.bus.BusMessageUtils;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -33,12 +32,14 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.http.RestServiceDispatcher;
 import org.frankframework.jdbc.JdbcPropertySourceFactory;
 import org.frankframework.lifecycle.ApplicationMessageEvent;
 import org.frankframework.lifecycle.IbisApplicationContext;
+import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
@@ -136,12 +137,12 @@ public class IbisContext extends IbisApplicationContext {
 			APPLICATION_LOG.info("Application [{}] startup in {} ms", this::getApplicationName, ()-> startupTime);
 		}
 		catch (Exception e) {
-			//Catch all exceptions, the IBIS failed to startup...
+			// Catch all exceptions, the IBIS failed to startup...
 			if(reconnect) {
 				APPLICATION_LOG.error("Failed to initialize IbisContext, retrying in 1 minute!", e);
 
 				ibisContextReconnectThread = new Thread(new IbisContextRunnable(this));
-				ibisContextReconnectThread.setName("IbisContext-ReconnectThread"); //Give the thread a somewhat descriptive name
+				ibisContextReconnectThread.setName("IbisContext-ReconnectThread"); // Give the thread a somewhat descriptive name
 				ibisContextReconnectThread.start();
 			}
 			else {
@@ -164,7 +165,7 @@ public class IbisContext extends IbisApplicationContext {
 		if(ibisManager != null) {
 			ibisManager.shutdown();
 		}
-		if(ibisContextReconnectThread != null) { //If the ibis failed to initialize, and is trying to shutdown
+		if(ibisContextReconnectThread != null) { // If the ibis failed to initialize, and is trying to shutdown
 			ibisContextReconnectThread.interrupt();
 		}
 		if(classLoaderManager != null) {
@@ -172,7 +173,7 @@ public class IbisContext extends IbisApplicationContext {
 		}
 
 		long shutdownTime = System.currentTimeMillis() - start;
-		log("shutdown in " + shutdownTime + " ms"); //Should log this before the actual Context is destroyed
+		log("shutdown in " + shutdownTime + " ms"); // Should log this before the actual Context is destroyed
 		super.close();
 		APPLICATION_LOG.info("Application [{}] shutdown in {} ms", this::getApplicationName, ()-> shutdownTime);
 	}
@@ -273,7 +274,7 @@ public class IbisContext extends IbisApplicationContext {
 	public void load(String configurationName) {
 		boolean configFound = false;
 
-		//We have an ordered list with all configurations, lets loop through!
+		// We have an ordered list with all configurations, lets loop through!
 		Map<String, Class<? extends IConfigurationClassLoader>> allConfigNamesItems = retrieveAllConfigNames();
 		for (Entry<String, Class<? extends IConfigurationClassLoader>> currentConfigNameItem : allConfigNamesItems.entrySet()) {
 			String currentConfigurationName = currentConfigNameItem.getKey();
@@ -288,8 +289,8 @@ public class IbisContext extends IbisApplicationContext {
 				try {
 					classLoader = classLoaderManager.get(currentConfigurationName, classLoaderType);
 
-					//An error occurred but we don't want to throw any exceptions.
-					//Skip configuration digesting so it can be done at a later time.
+					// An error occurred but we don't want to throw any exceptions.
+					// Skip configuration digesting so it can be done at a later time.
 					if(classLoader == null)
 						continue;
 
@@ -314,7 +315,7 @@ public class IbisContext extends IbisApplicationContext {
 		}
 
 		generateFlow();
-		//Check if the configuration we try to reload actually exists
+		// Check if the configuration we try to reload actually exists
 		if (!configFound && configurationName != null) {
 			log(configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageKeeperLevel.ERROR);
 		}
@@ -338,7 +339,7 @@ public class IbisContext extends IbisApplicationContext {
 		bean.setClassLoader(classLoader);
 		Configuration configuration = (Configuration) getApplicationContext().getAutowireCapableBeanFactory().initializeBean(bean, name);
 
-		//Pre-digest validation to make sure no extra Spring magic happened.
+		// Pre-digest validation to make sure no extra Spring magic happened.
 		if(!configuration.getName().equals(name)) {
 			throw new IllegalStateException("configuration name mismatch");
 		}
@@ -359,12 +360,12 @@ public class IbisContext extends IbisApplicationContext {
 
 		Configuration configuration = null;
 		try {
-			try { //May throw Spring Bean instantiation exceptions
+			try { // May throw Spring Bean instantiation exceptions
 				configuration = createConfiguration(currentConfigurationName, classLoader);
-			} catch (Exception e) { //Instantiate a placeholder to store the exception in.
+			} catch (Exception e) { // Instantiate a placeholder to store the exception in.
 				configuration = new Configuration();
 				configuration.setName(currentConfigurationName);
-				ibisManager.addConfiguration(configuration); //Manually add the configuration else it will be GC'd
+				ibisManager.addConfiguration(configuration); // Manually add the configuration else it will be GC'd
 				if(classLoaderException != null) {
 					classLoaderException.addSuppressed(e);
 					throw new ConfigurationException("error instantiating ClassLoader", classLoaderException);
@@ -383,7 +384,7 @@ public class IbisContext extends IbisApplicationContext {
 		}
 	}
 
-	private void generateFlow() { //Generate big flow diagram file for all configurations
+	private void generateFlow() { // Generate big flow diagram file for all configurations
 		if (flowDiagramManager != null) {
 			List<Configuration> configurations = ibisManager.getConfigurations();
 			try {

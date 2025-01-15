@@ -2,12 +2,29 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { SchedulerAddEditParent } from '../scheduler-add-edit-parent';
 import { AppService } from 'src/app/app.service';
 import { SchedulerService } from '../scheduler.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subscription } from 'rxjs';
+import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
+import { FormsModule } from '@angular/forms';
+import { ConfigurationFilterPipe } from '../../../pipes/configuration-filter.pipe';
+import { WithJavaListenerPipe } from '../../../pipes/with-java-listener.pipe';
+import { TruncatePipe } from '../../../pipes/truncate.pipe';
+import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
 
 @Component({
   selector: 'app-scheduler-edit',
+  imports: [
+    NgbAlert,
+    RouterLink,
+    QuickSubmitFormDirective,
+    FormsModule,
+    ConfigurationFilterPipe,
+    WithJavaListenerPipe,
+    TruncatePipe,
+    MonacoEditorComponent,
+  ],
   templateUrl: '../scheduler-add-edit-parent.component.html',
   styleUrls: ['./scheduler-edit.component.scss'],
 })

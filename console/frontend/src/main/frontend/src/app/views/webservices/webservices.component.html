@@ -1,139 +1,165 @@
 <div class="wrapper wrapper-content animated fadeInRight">
-  <div class="row" *ngIf="services.length > 0">
-    <div class="col-lg-12">
-      <div class="ibox float-e-margins">
-        <div class="ibox-title">
-          <h4>Available REST Services</h4>
-        </div>
-        <div class="ibox-content">
-          <div class="col-md-12">
-            <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th>&nbsp;</th>
-                  <th>Name</th>
-                  <th>Method</th>
-                  <th>IsView</th>
-                  <th>UriPattern</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let service of services; index as index">
-                  <td>{{ index }}</td>
-                  <td>{{ service.name }}</td>
-                  <td>{{ service.methods }}</td>
-                  <td>{{ service.view }}</td>
-                  <td>
-                    <a target="_blank" rel="noopener noreferrer" href="{{ rootURL }}rest/{{ service.uriPattern }}">{{
-                      service.uriPattern
-                    }}</a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+  @if (services.length > 0) {
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="ibox float-e-margins">
+          <div class="ibox-title">
+            <h4>Available REST Services</h4>
+          </div>
+          <div class="ibox-content">
+            <div class="col-md-12">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>&nbsp;</th>
+                    <th>Name</th>
+                    <th>Method</th>
+                    <th>IsView</th>
+                    <th>UriPattern</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (service of services; track service.name; let index = $index) {
+                    <tr>
+                      <td>{{ index }}</td>
+                      <td>{{ service.name }}</td>
+                      <td>{{ service.methods }}</td>
+                      <td>{{ service.view }}</td>
+                      <td>
+                        <a
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          href="{{ rootURL }}rest/{{ service.uriPattern }}"
+                          >{{ service.uriPattern }}</a
+                        >
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="row" *ngIf="apiListeners.length > 0">
-    <div class="col-lg-12">
-      <div class="ibox float-e-margins">
-        <div class="ibox-title">
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            href="{{ rootURL }}iaf/api/webservices/openapi.json"
-            class="btn btn-info btn-xs pull-right"
-            type="button"
-            ><i aria-hidden="true" class="fa fa-external-link"></i><span> Full OpenAPI 3.0</span></a
-          >
-          <h4>Available ApiListeners</h4>
-        </div>
-        <div class="ibox-content">
-          <div class="col-md-12">
-            <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th>&nbsp;</th>
-                  <th>URI pattern</th>
-                  <th>Method(s)</th>
-                  <th>&nbsp;</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let apiListener of apiListeners; index as index">
-                  <td>{{ index }}</td>
-                  <td>{{ apiListener.uriPattern }}</td>
-                  <td>{{ apiListener.methods.join(', ') }}</td>
-                  <td *ngIf="apiListener.error">{{ apiListener.error }}</td>
-                  <td class="hideBtn1170">
-                    <a
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      href="{{ compileURL(apiListener) }}"
-                      class="btn btn-xs pull-right default"
-                      type="button"
-                      ><i class="fa fa-arrow-circle-o-down" aria-hidden="true"></i> <span> OpenAPI 3.0</span></a
-                    >
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+  }
+  @if (apiListeners.length > 0) {
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="ibox float-e-margins">
+          <div class="ibox-title">
+            <a
+              appHasAccessToLink="getOpenApiSpec"
+              target="_blank"
+              rel="noopener noreferrer"
+              href="{{ rootURL }}iaf/api/webservices/openapi.json"
+              class="btn btn-info btn-xs pull-right"
+              type="button"
+              ><i aria-hidden="true" class="fa fa-external-link"></i><span> Full OpenAPI 3.0</span></a
+            >
+            <h4>Available ApiListeners</h4>
+          </div>
+          <div class="ibox-content">
+            <div class="col-md-12">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>&nbsp;</th>
+                    <th>URI pattern</th>
+                    <th>Method(s)</th>
+                    <th>&nbsp;</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (apiListener of apiListeners; track apiListener.uriPattern; let index = $index) {
+                    <tr>
+                      <td>{{ index }}</td>
+                      <td>{{ apiListener.uriPattern }}</td>
+                      <td>{{ apiListener.methods.join(', ') }}</td>
+                      @if (apiListener.error) {
+                        <td>{{ apiListener.error }}</td>
+                      }
+                      <td class="hideBtn1170">
+                        <a
+                          appHasAccessToLink="getOpenApiSpec"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          href="{{ compileURL(apiListener) }}"
+                          class="btn btn-xs pull-right default"
+                          type="button"
+                          ><i class="fa fa-arrow-circle-o-down" aria-hidden="true"></i> <span> OpenAPI 3.0</span></a
+                        >
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="row" *ngIf="wsdls.length > 0">
-    <div class="col-lg-12">
-      <div class="ibox float-e-margins">
-        <div class="ibox-title">
-          <h4>Available WSDL's</h4>
-        </div>
-        <div class="ibox-content">
-          <div class="col-md-12">
-            <table class="table table-striped">
-              <tbody>
-                <tr *ngFor="let wsdl of wsdls; index as index">
-                  <td>{{ index }}</td>
-                  <td>{{ wsdl.configuration }} - {{ wsdl.adapter }}</td>
-                  <td *ngIf="wsdl.error">{{ wsdl.error }}</td>
-                  <td *ngIf="!wsdl.error" class="hideBtn1170">
-                    <a
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      href="{{ rootURL }}iaf/api/webservices/{{ wsdl.configuration }}/{{ wsdl.adapter }}.zip"
-                      class="btn btn-xs pull-right default"
-                      type="button"
-                      ><i aria-hidden="true" class="fa fa-arrow-circle-o-down"></i> <span> Download</span></a
-                    >
-                    <a
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      href="{{ rootURL }}iaf/api/webservices/{{ wsdl.configuration }}/{{ wsdl.adapter }}.wsdl"
-                      class="btn btn-xs pull-right default"
-                      type="button"
-                      ><i aria-hidden="true" class="fa fa-file-archive-o"></i>
-                      <span> WSDL including dependencies</span></a
-                    >
-                    <a
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      href="{{ rootURL }}iaf/api/webservices/{{ wsdl.configuration }}/{{
-                        wsdl.adapter
-                      }}.wsdl?useIncludes=true"
-                      class="btn btn-xs pull-right default"
-                      type="button"
-                      ><i aria-hidden="true" class="fa fa-file-code-o"></i> <span> WSDL</span></a
-                    >
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+  }
+  @if (wsdls.length > 0) {
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="ibox float-e-margins">
+          <div class="ibox-title">
+            <h4>Available WSDL's</h4>
+          </div>
+          <div class="ibox-content">
+            <div class="col-md-12">
+              <table class="table table-striped">
+                <tbody>
+                  @for (wsdl of wsdls; track wsdl; let index = $index) {
+                    <tr>
+                      <td>{{ index }}</td>
+                      <td>{{ wsdl.configuration }} - {{ wsdl.adapter }}</td>
+                      @if (wsdl.error) {
+                        <td>{{ wsdl.error }}</td>
+                      }
+                      @if (!wsdl.error) {
+                        <td class="hideBtn1170">
+                          <a
+                            appHasAccessToLink="getWsdl"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            href="{{ rootURL }}iaf/api/webservices/{{ wsdl.configuration }}/{{ wsdl.adapter }}.zip"
+                            class="btn btn-xs pull-right default"
+                            type="button"
+                            ><i aria-hidden="true" class="fa fa-arrow-circle-o-down"></i> <span> Download</span></a
+                          >
+                          <a
+                            appHasAccessToLink="getWsdl"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            href="{{ rootURL }}iaf/api/webservices/{{ wsdl.configuration }}/{{ wsdl.adapter }}.wsdl"
+                            class="btn btn-xs pull-right default"
+                            type="button"
+                            ><i aria-hidden="true" class="fa fa-file-archive-o"></i>
+                            <span> WSDL including dependencies</span></a
+                          >
+                          <a
+                            appHasAccessToLink="getWsdl"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            href="{{ rootURL }}iaf/api/webservices/{{ wsdl.configuration }}/{{
+                              wsdl.adapter
+                            }}.wsdl?useIncludes=true"
+                            class="btn btn-xs pull-right default"
+                            type="button"
+                            ><i aria-hidden="true" class="fa fa-file-code-o"></i> <span> WSDL</span></a
+                          >
+                        </td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  }
 </div>

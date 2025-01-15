@@ -15,7 +15,9 @@
 */
 package org.frankframework.parameters;
 
+import org.frankframework.core.FrankElement;
 import org.frankframework.core.IConfigurable;
+import org.frankframework.core.NameAware;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.FrankDocGroup;
@@ -24,7 +26,7 @@ import org.frankframework.parameters.AbstractParameter.ParameterMode;
 import org.frankframework.stream.Message;
 
 @FrankDocGroup(FrankDocGroupValue.PARAMETER)
-public interface IParameter extends IConfigurable {
+public interface IParameter extends IConfigurable, FrankElement, NameAware {
 
 	ParameterType getType();
 

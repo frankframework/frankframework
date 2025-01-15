@@ -18,7 +18,7 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.LocalFileSystemSender;
 import org.frankframework.stream.Message;
 
-public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSystemSender, Path, LocalFileSystem>{
+public class LocalFileSystemSenderTest extends WritableFileSystemSenderTest<LocalFileSystemSender, Path, LocalFileSystem>{
 
 	@TempDir
 	public Path folder;
@@ -44,13 +44,12 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 		File dest = new File(folder1+"/bb.txt");
 		assertFalse(dest.exists());
 
-		LocalFileSystemSender sender = new LocalFileSystemSender();
+		LocalFileSystemSender sender = createBeanInAdapter(LocalFileSystemSender.class);
 		sender.setAction(FileSystemAction.RENAME);
 		sender.addParameter(new Parameter("filename", src.getPath()));
 
 		sender.addParameter(new Parameter("destination", dest.getPath()));
 		sender.setNumberOfBackups(1);
-		autowireByName(sender);
 		sender.configure();
 		sender.start();
 
@@ -74,8 +73,7 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 		File dest = new File(folder2+"/bb.txt");
 		assertFalse(dest.exists());
 
-		LocalFileSystemSender sender = new LocalFileSystemSender();
-		autowireByName(sender);
+		LocalFileSystemSender sender = createBeanInAdapter(LocalFileSystemSender.class);
 		sender.setAction(FileSystemAction.RENAME);
 		sender.addParameter(new Parameter("filename", src.getPath()));
 

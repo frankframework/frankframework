@@ -16,7 +16,7 @@
 package org.frankframework.util;
 
 /**
- * Enumeration of states for IManagable
+ * Enumeration of states for ManagableLifecycle
  * @author Gerrit van Brakel
  */
 public enum RunState {

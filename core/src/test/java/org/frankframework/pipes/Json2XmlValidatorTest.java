@@ -1,6 +1,7 @@
 package org.frankframework.pipes;
 
 import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
+import static org.frankframework.testutil.TestAssertions.assertEqualsIgnoreWhitespaces;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -13,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -728,7 +730,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 			"true, partial4",
 			"true, partial5",
 	})
-//	@ValueSource(strings = { "partial2"})
 	public void issue7146AttributesOnMultipleLevels(boolean deepSearch, String input) throws Exception {
 		// Arrange
 		pipe.setSchema("/Validation/AttributesOnDifferentLevels/MultipleOptionalElements.xsd");
@@ -751,5 +752,160 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		System.err.println(result.getResult().asString());
 		String expected = TestFileUtils.getTestFile("/Validation/AttributesOnDifferentLevels/output-" + input + ".xml");
 		assertXmlEquals(expected, result.getResult().asString());
+	}
+
+	@Test
+	public void testExpandParameters() throws Exception {
+		// Arrange
+		pipe.setName("testExpandParameters");
+		pipe.setSchema("/Validation/Json2Xml/ParameterSubstitution/Main.xsd");
+		pipe.setThrowException(true);
+		pipe.setOutputFormat(DocumentFormat.JSON);
+		pipe.setRoot("GetDocumentAttributes_Error");
+		pipe.setDeepSearch(true);
+
+		pipe.addParameter(new Parameter("type", "/errors/"));
+		pipe.addParameter(ParameterBuilder.create().withName("title").withSessionKey("errorReason"));
+		pipe.addParameter(ParameterBuilder.create().withName("status").withSessionKey("errorCode"));
+		pipe.addParameter(ParameterBuilder.create().withName("detail").withSessionKey("errorDetailText"));
+		pipe.addParameter(new Parameter("instance", "/archiving/documents"));
+
+		pipe.configure();
+		pipe.start();
+
+		session.put("errorReason", "More than one document found");
+		session.put("errorCode", "DATA_ERROR");
+		session.put("errorDetailText", "The Devil's In The Details");
+
+		// Act
+		PipeRunResult result = pipe.doPipe(Message.asMessage("{}"), session);
+
+		// Assert
+		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/ParameterSubstitution/expected_output.json");
+		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
+	}
+
+	@Test
+	public void testJsonIntoDeepSearch() throws Exception {
+		// Arrange
+		pipe.setName("testJsonIntoDeepSearch");
+		pipe.setSchema("/Validation/Json2Xml/ParameterSubstitution/Main.xsd");
+		pipe.setThrowException(true);
+		pipe.setOutputFormat(DocumentFormat.JSON);
+		pipe.setRoot("GetDocumentAttributes_Error");
+		pipe.setDeepSearch(true);
+
+		pipe.configure();
+		pipe.start();
+
+		Message input = Message.asMessage("""
+				{
+					"type": "/errors/",
+					"title": "More than one document found",
+					"status": "DATA_ERROR",
+					"detail": "The Devil's In The Details",
+					"instance": "/archiving/documents"
+				}
+				""");
+
+		// Act
+		PipeRunResult result = pipe.doPipe(input, session);
+
+		// Assert
+		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/ParameterSubstitution/expected_output.json");
+		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
+	}
+
+	@ParameterizedTest(name = "With DeepSearch={0} Case={1}")
+	@DisplayName("Same Element-Name At Different Levels")
+	@CsvSource(value = {
+			"true, ChildTypeFirstInXsdMissingInInput",
+			"false, ChildTypeFirstInXsdMissingInInput",
+			"true, ChildTypeFirstInXsdPresentInInput",
+			"false, ChildTypeFirstInXsdPresentInInput",
+			"true, ChildTypeLastInXsd",
+			"false, ChildTypeLastInXsd",
+			"true, ParentNotRootChildMissing",
+			"false, ParentNotRootChildMissing",
+			"true, WithIntermediateLevelChildMissing",
+			"false, WithIntermediateLevelChildMissing",
+			"true, PutFieldIntoChildElement",
+			"true, MixedElementPlacement",
+	})
+	public void testSameNameDifferentLevels(boolean deepSearch, String testCase) throws Exception {
+		// Arrange
+		pipe.setName("testSameNameDifferentLevelsDeepSearch=" + deepSearch);
+		pipe.setSchema("/Validation/Json2Xml/DeepSearch/" + testCase + "/Test.xsd");
+		pipe.setThrowException(true);
+		pipe.setRoot("root");
+		pipe.setDeepSearch(deepSearch);
+
+		pipe.configure();
+		pipe.start();
+
+		String input = TestFileUtils.getTestFile("/Validation/Json2Xml/DeepSearch/" + testCase + "/Test-Input.json");
+
+		// Act
+		try (Message message = Message.asMessage(input);
+			 PipeRunResult result = pipe.doPipe(message, session)) {
+
+			// Assert
+			String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/DeepSearch/" + testCase + "/ExpectedOutput.xml");
+			assertXmlEquals(expectedResult, result.getResult().asString());
+		}
+	}
+
+	@Test
+	public void testSameNameDifferentLevelsFailingCase() throws Exception {
+		// Test for quickly testing a failing case from the above parameterized test
+
+		// Arrange
+		final String testCase = "MixedElementPlacement"; // Put here name of testcase from list of Parameters above for testcase you want to debug
+		final boolean deepSearch = true;
+		pipe.setName("test" + testCase + "DeepSearch=" + deepSearch);
+		pipe.setSchema("/Validation/Json2Xml/DeepSearch/" + testCase + "/Test.xsd");
+		pipe.setThrowException(true);
+		pipe.setRoot("root");
+		pipe.setDeepSearch(deepSearch);
+
+		pipe.configure();
+		pipe.start();
+
+		String input = TestFileUtils.getTestFile("/Validation/Json2Xml/DeepSearch/" + testCase + "/Test-Input.json");
+
+		// Act
+		try (Message message = Message.asMessage(input);
+			 PipeRunResult result = pipe.doPipe(message, session)) {
+
+			// Assert
+			String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/DeepSearch/" + testCase + "/ExpectedOutput.xml");
+			assertXmlEquals(expectedResult, result.getResult().asString());
+		}
+	}
+
+	@Test
+	public void testWithWildcardInXsdAndNestedWildcardElements() throws Exception {
+		// Arrange
+		final boolean deepSearch = false;
+		pipe.setName("testWildcardElements");
+		pipe.setSchema("/Validation/Json2Xml/WildcardElements/Wildcard.xsd");
+		pipe.setThrowException(true);
+		pipe.setRoot("ZgwZaak");
+		pipe.setDeepSearch(deepSearch);
+		pipe.setOutputFormat(DocumentFormat.JSON);
+
+		pipe.configure();
+		pipe.start();
+
+		String input = TestFileUtils.getTestFile("/Validation/Json2Xml/WildcardElements/Wildcard-Input.xml");
+
+		// Act
+		try (Message message = Message.asMessage(input);
+			 PipeRunResult result = pipe.doPipe(message, session)) {
+
+			// Assert
+			String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/WildcardElements/ExpectedOutput.json");
+			assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
+		}
 	}
 }

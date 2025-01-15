@@ -8,33 +8,36 @@
     ></app-configuration-tab-list>
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
-        <div *ngIf="monitors.length > 0; else noMonitorsFound" class="ibox-title summary">
-          <div class="pull-right">
-            <button
-              class="btn btn-primary btn-xs"
-              [routerLink]="['/monitors', 'new']"
-              [queryParams]="{ configuration: selectedConfiguration }"
-            >
-              <i class="fa fa-plus"></i> Add Monitor</button
-            >&nbsp;
-            <button
-              title="Download Monitor Configuration"
-              class="btn btn-secondary btn-xs"
-              type="button"
-              (click)="downloadXML()"
-            >
-              <i class="fa fa-file-code-o"></i> XML
-            </button>
-          </div>
-          <h4>
-            <span class="badge badge-secondary">{{ totalRaised }}</span>
-            monitors in state raised
-          </h4>
-        </div>
-        <ng-template #noMonitorsFound>
+        @if (monitors.length > 0) {
           <div class="ibox-title summary">
             <div class="pull-right">
               <button
+                appHasAccessToLink="addMonitor"
+                class="btn btn-primary btn-xs"
+                [routerLink]="['/monitors', 'new']"
+                [queryParams]="{ configuration: selectedConfiguration }"
+              >
+                <i class="fa fa-plus"></i> Add Monitor</button
+              >&nbsp;
+              <button
+                title="Download Monitor Configuration"
+                class="btn btn-secondary btn-xs"
+                type="button"
+                (click)="downloadXML()"
+              >
+                <i class="fa fa-file-code-o"></i> XML
+              </button>
+            </div>
+            <h4>
+              <span class="badge badge-secondary">{{ totalRaised }}</span>
+              monitors in state raised
+            </h4>
+          </div>
+        } @else {
+          <div class="ibox-title summary">
+            <div class="pull-right">
+              <button
+                appHasAccessToLink="addMonitor"
                 class="btn btn-primary btn-xs"
                 [routerLink]="['/monitors', 'new']"
                 [queryParams]="{ configuration: selectedConfiguration }"
@@ -44,208 +47,270 @@
             </div>
             <h4>No monitors found in this configuration</h4>
           </div>
-        </ng-template>
+        }
       </div>
     </div>
   </div>
-  <div class="row" *ngIf="monitors.length > 0">
-    <div *ngFor="let monitor of monitors" class="col-lg-12">
-      <div class="ibox float-e-margins">
-        <div class="ibox-title {{ monitor.raised ? 'danger' : 'primary' }}">
-          <div class="pull-right">
-            <button
-              *ngIf="!monitor.raised && !monitor.edit"
-              title="Raise alarm {{ monitor.name }}"
-              class="btn btn-warning btn-xs space-it-out"
-              type="button"
-              (click)="raise(monitor)"
-            >
-              <i class="fa fa-arrow-circle-o-right"></i> Raise
-            </button>
-            <button
-              *ngIf="monitor.raised"
-              title="Clear alarm {{ monitor.name }}"
-              class="btn btn-primary btn-xs space-it-out"
-              type="button"
-              (click)="clear(monitor)"
-            >
-              <i class="fa fa-arrow-circle-o-right"></i> Clear
-            </button>
-            <button
-              *ngIf="!monitor.raised && monitor.edit"
-              title="Delete Monitor {{ monitor.name }}"
-              class="btn btn-danger btn-xs space-it-out"
-              type="button"
-              (click)="deleteMonitor(monitor)"
-            >
-              <i class="fa fa-close"></i> Delete
-            </button>
-            <button
-              *ngIf="!monitor.raised && !monitor.edit"
-              title="Edit Monitor {{ monitor.name }}"
-              class="btn btn-info btn-xs space-it-out"
-              type="button"
-              (click)="monitor.edit = true"
-            >
-              <i class="fa fa-pencil"></i> Edit
-            </button>
-            <button
-              *ngIf="!monitor.raised && monitor.edit"
-              title="Save Monitor {{ monitor.name }}"
-              class="btn btn-primary btn-xs space-it-out"
-              type="button"
-              (click)="edit(monitor)"
-            >
-              <i class="fa fa-save"></i> Save
-            </button>
-            <button
-              title="Download Monitor Configuration"
-              class="btn btn-secondary btn-xs"
-              type="button"
-              (click)="downloadXML(monitor.name)"
-            >
-              <i class="fa fa-file-code-o"></i> XML
-            </button>
-          </div>
-          <div class="m-l-n m-r-n almost-full-width">
-            <div class="col-lg-5 col-md-8 m-r m-t-n-xs">
-              <h4>
-                {{ monitor.displayName }}
-                <span class="m-l-sm badge badge-info">{{ monitor.type }}</span>
-              </h4>
-            </div>
-            <div class="col-lg-3 hidden-md" *ngIf="monitor.lastHit">
-              Last Hit: <span appToDate [time]="monitor.lastHit"></span>
-            </div>
-            <div class="col-lg-2 hidden-md" *ngIf="monitor.hits">Hits: {{ monitor.hits }} since last raise</div>
-          </div>
-        </div>
-        <div class="ibox-content">
-          <div *ngIf="monitor.raised" role="alert">
-            <div class="col-md-6">
-              Source:
-              {{ monitor.alarm.source ? monitor.alarm.source : 'Manually Triggered' }}<br />
-              Severity: {{ monitor.alarm.severity }}<br />
-            </div>
-          </div>
-          <div *ngIf="monitor.edit">
-            <form role="form">
-              <div class="form-group">
-                <label class="col-sm-3 control-label">Name</label>
-                <div class="col-sm-9">
-                  <input class="form-control m-b" name="name" type="text" [(ngModel)]="monitor.displayName" />
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="col-sm-3 control-label">Type</label>
-                <div class="col-sm-9">
-                  <select class="form-control m-b" name="type" [(ngModel)]="monitor.type">
-                    <option *ngFor="let type of eventTypes" [ngValue]="type">
-                      {{ type }}
-                    </option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="col-sm-3 control-label">Destinations</label>
-                <div class="col-sm-2" *ngFor="let destination of destinations; index as index">
-                  <span class="form-control m-b" style="border: none"
-                    ><input type="checkbox" name="destination" [(ngModel)]="monitor.activeDestinations[destination]" />
-                    {{ destination }}</span
+  @if (monitors.length > 0) {
+    <div class="row">
+      @for (monitor of monitors; track index; let index = $index) {
+        <div class="col-lg-12">
+          <div class="ibox float-e-margins">
+            <div class="ibox-title {{ monitor.raised ? 'danger' : 'primary' }}">
+              <div class="pull-right">
+                @if (!monitor.raised && !monitor.edit) {
+                  <button
+                    appHasAccessToLink="updateMonitor"
+                    title="Raise alarm {{ monitor.name }}"
+                    class="btn btn-warning btn-xs space-it-out"
+                    type="button"
+                    (click)="raise(monitor)"
                   >
+                    <i class="fa fa-arrow-circle-o-right"></i> Raise
+                  </button>
+                }
+                @if (monitor.raised) {
+                  <button
+                    appHasAccessToLink="updateMonitor"
+                    title="Clear alarm {{ monitor.name }}"
+                    class="btn btn-primary btn-xs space-it-out"
+                    type="button"
+                    (click)="clear(monitor)"
+                  >
+                    <i class="fa fa-arrow-circle-o-right"></i> Clear
+                  </button>
+                }
+                @if (!monitor.raised && monitor.edit) {
+                  <button
+                    appHasAccessToLink="deleteMonitor"
+                    title="Delete Monitor {{ monitor.name }}"
+                    class="btn btn-danger btn-xs space-it-out"
+                    type="button"
+                    (click)="deleteMonitor(monitor)"
+                  >
+                    <i class="fa fa-close"></i> Delete
+                  </button>
+                }
+                @if (!monitor.raised && !monitor.edit) {
+                  <button
+                    appHasAccessToLink="updateMonitor"
+                    title="Edit Monitor {{ monitor.name }}"
+                    class="btn btn-info btn-xs space-it-out"
+                    type="button"
+                    (click)="monitor.edit = true"
+                  >
+                    <i class="fa fa-pencil"></i> Edit
+                  </button>
+                }
+                @if (!monitor.raised && monitor.edit) {
+                  <button
+                    appHasAccessToLink="updateMonitor"
+                    title="Save Monitor {{ monitor.name }}"
+                    class="btn btn-primary btn-xs space-it-out"
+                    type="button"
+                    (click)="edit(monitor)"
+                  >
+                    <i class="fa fa-save"></i> Save
+                  </button>
+                }
+                <button
+                  title="Download Monitor Configuration"
+                  class="btn btn-secondary btn-xs"
+                  type="button"
+                  (click)="downloadXML(monitor.name)"
+                >
+                  <i class="fa fa-file-code-o"></i> XML
+                </button>
+              </div>
+              <div class="m-l-n m-r-n almost-full-width">
+                <div class="col-lg-5 col-md-8 m-r m-t-n-xs">
+                  <h4>
+                    {{ monitor.displayName }}
+                    <span class="m-l-sm badge badge-info">{{ monitor.type }}</span>
+                  </h4>
+                </div>
+                @if (monitor.lastHit) {
+                  <div class="col-lg-3 hidden-md">Last Hit: <span appToDate [time]="monitor.lastHit"></span></div>
+                }
+                @if (monitor.hits) {
+                  <div class="col-lg-2 hidden-md">Hits: {{ monitor.hits }} since last raise</div>
+                }
+              </div>
+            </div>
+            <div class="ibox-content">
+              @if (monitor.raised) {
+                <div role="alert">
+                  <div class="col-md-6">
+                    Source:
+                    {{ monitor.alarm.source ? monitor.alarm.source : 'Manually Triggered' }}<br />
+                    Severity: {{ monitor.alarm.severity }}<br />
+                  </div>
+                </div>
+              }
+              @if (monitor.edit) {
+                <div>
+                  <form role="form" (submit)="edit(monitor)" appQuickSubmitForm>
+                    <div class="form-group">
+                      <label class="col-sm-3 control-label">Name</label>
+                      <div class="col-sm-9">
+                        <input class="form-control m-b" name="name" type="text" [(ngModel)]="monitor.displayName" />
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="col-sm-3 control-label">Type</label>
+                      <div class="col-sm-9">
+                        <select class="form-control m-b" name="type" [(ngModel)]="monitor.type">
+                          @for (type of eventTypes; track type) {
+                            <option [ngValue]="type">
+                              {{ type }}
+                            </option>
+                          }
+                        </select>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="col-sm-3 control-label">Destinations</label>
+                      @for (destination of destinations; track destination) {
+                        <div class="col-sm-2">
+                          <span class="form-control m-b" style="border: none"
+                            ><input
+                              type="checkbox"
+                              name="destination"
+                              [(ngModel)]="monitor.activeDestinations[destination]"
+                            />
+                            {{ destination }}</span
+                          >
+                        </div>
+                      }
+                    </div>
+                  </form>
+                </div>
+              }
+              @if (!monitor.edit) {
+                <div>
+                  <p>
+                    <strong>Log Destinations:</strong>
+                    @for (destination of monitor.destinations; track destination; let last = $last) {
+                      <span>
+                        {{ destination }}
+                        @if (!last) {
+                          <span>,</span>
+                        }
+                      </span>
+                    }
+                    @if (monitor.destinations.length === 0) {
+                      <span>None</span>
+                    }
+                  </p>
+                </div>
+              }
+              <div class="row">
+                <div class="col-md-12 table-responsive">
+                  <table class="table no-margins">
+                    <thead>
+                      <tr>
+                        <th class="col-md-1">Type</th>
+                        <th class="col-md-{{ monitor.edit ? 3 : 4 }}">EventCodes</th>
+                        <th class="col-md-4">Sources</th>
+                        <th class="col-md-1">Severity</th>
+                        <th class="col-md-1">Threshold</th>
+                        <th class="col-md-1">Period</th>
+                        @if (monitor.edit) {
+                          <th class="col-md-1"></th>
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (trigger of monitor.triggers; track trigger.id) {
+                        <tr>
+                          @if (trigger.type === 'ALARM') {
+                            <td><i class="fa fa-warning m-r-xs"></i> Alarm</td>
+                          }
+                          @if (trigger.type === 'CLEARING') {
+                            <td><i class="fa fa-eraser m-r-xs"></i> Clearing</td>
+                          }
+                          <td>
+                            <ul class="unstyled no-margins">
+                              @for (event of trigger.events; track event) {
+                                <li>
+                                  {{ event }}
+                                </li>
+                              }
+                            </ul>
+                          </td>
+                          @if (trigger.filter !== 'none') {
+                            <td>
+                              <ul class="unstyled no-margins">
+                                @for (sources of trigger.sources | keyvalue; track sources.key) {
+                                  @if (sources) {
+                                    <li>
+                                      {{ sources.key }}
+                                      <ul>
+                                        @for (source of sources.value; track source) {
+                                          <li>
+                                            {{ source }}
+                                          </li>
+                                        }
+                                      </ul>
+                                    </li>
+                                  }
+                                }
+                              </ul>
+                            </td>
+                          }
+                          @if (trigger.filter === 'none') {
+                            <td>All</td>
+                          }
+                          <td>{{ trigger.severity }}</td>
+                          <td>{{ trigger.threshold }}</td>
+                          <td>{{ trigger.period }}</td>
+                          @if (monitor.edit) {
+                            <td class="pull-right">
+                              <button
+                                appHasAccessToLink="updateTrigger"
+                                title="Edit trigger {{ trigger.name }}"
+                                class="btn btn-info btn-xs space-it-out"
+                                type="button"
+                                [routerLink]="['/monitors', monitor.name, 'triggers', trigger.id]"
+                                [queryParams]="{ configuration: selectedConfiguration }"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                appHasAccessToLink="deleteTrigger"
+                                title="Delete trigger {{ trigger.name }}"
+                                class="btn btn-danger btn-xs"
+                                type="button"
+                                (click)="deleteTrigger(monitor, trigger)"
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          }
+                        </tr>
+                      }
+                      @if (monitor.edit) {
+                        <tr>
+                          <td colspan="7" class="text-center">
+                            <button
+                              appHasAccessToLink="addTrigger"
+                              class="btn btn-primary btn-outline btn-xs"
+                              [routerLink]="['/monitors', monitor.name, 'triggers', 'new']"
+                              [queryParams]="{ configuration: selectedConfiguration }"
+                            >
+                              <i class="fa fa-plus"></i> <i>Add Trigger</i>
+                            </button>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
                 </div>
               </div>
-            </form>
-          </div>
-          <div *ngIf="!monitor.edit">
-            <p>
-              <strong>Log Destinations:</strong>
-              <span *ngFor="let destination of monitor.destinations; let last = last">
-                {{ destination }}<span *ngIf="!last">,</span>
-              </span>
-              <span *ngIf="monitor.destinations.length === 0">None</span>
-            </p>
-          </div>
-          <div class="row">
-            <div class="col-md-12 table-responsive">
-              <table class="table no-margins">
-                <thead>
-                  <tr>
-                    <th class="col-md-1">Type</th>
-                    <th class="col-md-{{ monitor.edit ? 3 : 4 }}">EventCodes</th>
-                    <th class="col-md-4">Sources</th>
-                    <th class="col-md-1">Severity</th>
-                    <th class="col-md-1">Threshold</th>
-                    <th class="col-md-1">Period</th>
-                    <th *ngIf="monitor.edit" class="col-md-1"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let trigger of monitor.triggers">
-                    <td *ngIf="trigger.type === 'ALARM'"><i class="fa fa-warning m-r-xs"></i> Alarm</td>
-                    <td *ngIf="trigger.type === 'CLEARING'"><i class="fa fa-eraser m-r-xs"></i> Clearing</td>
-                    <td>
-                      <ul class="unstyled no-margins">
-                        <li *ngFor="let event of trigger.events">
-                          {{ event }}
-                        </li>
-                      </ul>
-                    </td>
-                    <td *ngIf="trigger.filter !== 'none'">
-                      <ul class="unstyled no-margins">
-                        <ng-container *ngFor="let sources of trigger.sources | keyvalue">
-                          <li *ngIf="sources">
-                            {{ sources.key }}
-                            <ul>
-                              <li *ngFor="let source of sources.value">
-                                {{ source }}
-                              </li>
-                            </ul>
-                          </li>
-                        </ng-container>
-                      </ul>
-                    </td>
-                    <td *ngIf="trigger.filter === 'none'">All</td>
-                    <td>{{ trigger.severity }}</td>
-                    <td>{{ trigger.threshold }}</td>
-                    <td>{{ trigger.period }}</td>
-                    <td *ngIf="monitor.edit" class="pull-right">
-                      <button
-                        title="Edit trigger {{ trigger.name }}"
-                        class="btn btn-info btn-xs space-it-out"
-                        type="button"
-                        [routerLink]="['/monitors', monitor.name, 'triggers', trigger.id]"
-                        [queryParams]="{ configuration: selectedConfiguration }"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        title="Delete trigger {{ trigger.name }}"
-                        class="btn btn-danger btn-xs"
-                        type="button"
-                        (click)="deleteTrigger(monitor, trigger)"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                  <tr *ngIf="monitor.edit">
-                    <td colspan="7" class="text-center">
-                      <button
-                        class="btn btn-primary btn-outline btn-xs"
-                        [routerLink]="['/monitors', monitor.name, 'triggers', 'new']"
-                        [queryParams]="{ configuration: selectedConfiguration }"
-                      >
-                        <i class="fa fa-plus"></i> <i>Add Trigger</i>
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
             </div>
           </div>
         </div>
-      </div>
+      }
     </div>
-  </div>
+  }
 </div>

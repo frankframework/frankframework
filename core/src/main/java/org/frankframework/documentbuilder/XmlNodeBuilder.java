@@ -15,9 +15,10 @@
 */
 package org.frankframework.documentbuilder;
 
+import org.xml.sax.SAXException;
+
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.SaxElementBuilder;
-import org.xml.sax.SAXException;
 
 public class XmlNodeBuilder implements INodeBuilder {
 

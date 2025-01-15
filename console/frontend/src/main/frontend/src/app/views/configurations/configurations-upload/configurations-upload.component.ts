@@ -5,6 +5,10 @@ import { JdbcService } from '../../jdbc/jdbc.service';
 import { ConfigurationsService } from '../configurations.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subscription } from 'rxjs';
+import { FormsModule } from '@angular/forms';
+
+import { RouterLink } from '@angular/router';
+import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 
 type Form = {
   name: string;
@@ -18,6 +22,7 @@ type Form = {
 
 @Component({
   selector: 'app-configurations-upload',
+  imports: [FormsModule, InputFileUploadComponent, RouterLink, QuickSubmitFormDirective],
   templateUrl: './configurations-upload.component.html',
   styleUrls: ['./configurations-upload.component.scss'],
 })

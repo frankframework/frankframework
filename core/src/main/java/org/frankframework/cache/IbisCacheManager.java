@@ -17,8 +17,6 @@ package org.frankframework.cache;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
@@ -26,6 +24,9 @@ import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.Configuration;
 import net.sf.ehcache.config.DiskStoreConfiguration;
+
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
 
 /**
  * Common manager for caching.

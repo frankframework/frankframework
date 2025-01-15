@@ -1,16 +1,33 @@
 import { Component, OnInit } from '@angular/core';
-import { ErrorLevels, LogInformation, LoggingService, LoggingSettings, errorLevelsConst } from '../logging.service';
+import { ErrorLevels, errorLevelsConst, LoggingService, LoggingSettings, LogInformation } from '../logging.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { NgbAlert, NgbDropdown, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap';
+import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
+import { KeyValuePipe, NgClass } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { LaddaModule } from 'angular2-ladda';
 
 @Component({
   selector: 'app-logging-manage',
+  imports: [
+    FormsModule,
+    NgbAlert,
+    HasAccessToLinkDirective,
+    NgbDropdown,
+    NgbDropdownToggle,
+    NgbDropdownMenu,
+    NgbDropdownItem,
+    LaddaModule,
+    NgClass,
+    KeyValuePipe,
+  ],
   templateUrl: './logging-manage.component.html',
   styleUrls: ['./logging-manage.component.scss'],
 })
 export class LoggingManageComponent implements OnInit {
   protected updateDynamicParams: boolean = false;
-  protected loggers: Record<string, string> = {};
+  protected loggers: Record<string, ErrorLevels[number]> = {};
   protected errorLevels: ErrorLevels = errorLevelsConst;
   protected form: LoggingSettings = {
     loglevel: 'DEBUG',

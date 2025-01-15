@@ -4,11 +4,12 @@ import { NotificationService, Notification } from 'src/app/services/notification
 
 @Component({
   selector: 'app-notifications',
+  imports: [],
   templateUrl: './notifications.component.html',
   styleUrls: ['./notifications.component.scss'],
 })
 export class NotificationsComponent implements OnInit {
-  protected notification: Notification | false = {
+  protected notification: Notification | null = {
     icon: '',
     title: '',
     message: false,

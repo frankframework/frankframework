@@ -95,7 +95,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 
 	@Test
 	public void paramSha512hex() throws Exception {
-		pipe.setBinaryToTextEncoding(HashEncoding.Hex); //also tests deprecated BinaryToTextEncoding. same output as above test
+		pipe.setHashEncoding(HashEncoding.Hex); //also tests deprecated BinaryToTextEncoding. same output as above test
 		pipe.setAlgorithm(Algorithm.HmacSHA512);
 		pipe.addParameter(new Parameter("secret", "Potato"));
 		configureAndStartPipe();

@@ -17,9 +17,10 @@ package org.frankframework.pipes;
 
 import java.security.Principal;
 
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.Getter;
 
-import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;

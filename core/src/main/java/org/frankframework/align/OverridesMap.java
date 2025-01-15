@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -94,4 +94,8 @@ public class OverridesMap<V> extends SubstitutionNode<V> implements Substitution
 		return null;
 	}
 
+	@Override
+	public boolean isNotEmpty() {
+		return !allParents.isEmpty();
+	}
 }

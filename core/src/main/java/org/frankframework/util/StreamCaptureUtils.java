@@ -23,7 +23,6 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.input.TeeInputStream;
 import org.apache.commons.io.input.TeeReader;
@@ -31,6 +30,9 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.io.output.TeeWriter;
 import org.apache.commons.io.output.ThresholdingOutputStream;
+
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.functional.ThrowingSupplier;
 
 @Log4j2
@@ -56,7 +58,6 @@ public class StreamCaptureUtils {
 				}
 				return stream;
 			}
-
 		};
 	}
 
@@ -122,7 +123,6 @@ public class StreamCaptureUtils {
 				super.reset();
 			}
 		};
-
 	}
 
 	public static OutputStream captureOutputStream(OutputStream stream, OutputStream capture, int maxSize) {
@@ -190,7 +190,6 @@ public class StreamCaptureUtils {
 				markCompensatingWriter.reset();
 				super.reset();
 			}
-
 		};
 	}
 

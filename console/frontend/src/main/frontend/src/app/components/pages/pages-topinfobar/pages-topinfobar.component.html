@@ -4,21 +4,25 @@
       <li class="active">
         <strong>{{ breadcrumbs }}</strong>
       </li>
-      <li *ngIf="popoutUrl">
-        <button (click)="navigateToUrl()" class="btn btn-xs pull-right">
-          <i class="fa fa-arrow-circle-right"></i>
-          Pop Out
-        </button>
-      </li>
+      @if (popoutUrl) {
+        <li>
+          <button (click)="navigateToUrl()" class="btn btn-xs pull-right">
+            <i class="fa fa-arrow-circle-right"></i>
+            Pop Out
+          </button>
+        </li>
+      }
     </ol>
   </div>
   <div class="col-sm-4">
-    <div *ngIf="loading" class="sk-spinner sk-spinner-wave pull-right text-right loading-indicator">
-      <div class="sk-rect1"></div>
-      <div class="sk-rect2"></div>
-      <div class="sk-rect3"></div>
-      <div class="sk-rect4"></div>
-      <div class="sk-rect5"></div>
-    </div>
+    @if (loading) {
+      <div class="sk-spinner sk-spinner-wave pull-right text-right loading-indicator">
+        <div class="sk-rect1"></div>
+        <div class="sk-rect2"></div>
+        <div class="sk-rect3"></div>
+        <div class="sk-rect4"></div>
+        <div class="sk-rect5"></div>
+      </div>
+    }
   </div>
 </div>

@@ -29,6 +29,9 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
@@ -44,8 +47,6 @@ import org.frankframework.util.CloseUtils;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
-
-import lombok.Getter;
 
 /**
  * Pipe to zip or unzip a message or file.

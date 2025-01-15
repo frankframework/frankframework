@@ -1,15 +1,14 @@
-import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { IMessage } from '@stomp/stompjs';
 import { Subscription } from 'rxjs';
 import { WebsocketService } from 'src/app/services/websocket.service';
+import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
 
 @Component({
   selector: 'app-websocket-test',
-  standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [RouterModule, FormsModule, QuickSubmitFormDirective],
   templateUrl: './websocket-test.component.html',
   styleUrl: './websocket-test.component.scss',
 })

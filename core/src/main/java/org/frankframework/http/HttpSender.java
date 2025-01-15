@@ -17,15 +17,9 @@ package org.frankframework.http;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
-import jakarta.annotation.Nonnull;
 import jakarta.mail.BodyPart;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMultipart;
@@ -33,9 +27,6 @@ import jakarta.mail.internet.MimeMultipart;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
@@ -44,15 +35,8 @@ import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.entity.mime.FormBodyPart;
-import org.apache.http.entity.mime.FormBodyPartBuilder;
-import org.apache.http.entity.mime.MIME;
-import org.apache.http.message.BasicNameValuePair;
-import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 import lombok.Getter;
 
@@ -61,14 +45,10 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
-import org.frankframework.http.mime.MessageContentBody;
-import org.frankframework.http.mime.MultipartEntityBuilder;
-import org.frankframework.parameters.ParameterValue;
+import org.frankframework.http.mime.HttpEntityFactory;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.DomBuilderException;
-import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
 
@@ -89,28 +69,14 @@ public class HttpSender extends AbstractHttpSender {
 	private @Getter boolean encodeMessages = false;
 	private @Getter Boolean treatInputMessageAsParameters = null;
 
-	private @Getter PostType postType = PostType.RAW;
+	private @Getter HttpEntityType postType = HttpEntityType.RAW;
 
-	private static final MimeType APPLICATION_XOP_XML = MimeType.valueOf("application/xop+xml");
-
-	public enum PostType {
-		/** The input message is sent unchanged as character data, like text, XML or JSON, with possibly parameter data appended */
-		RAW, // text/html;charset=UTF8
-		/** The input message is sent unchanged as binary data */
-		BINARY, //application/octet-stream
-//		SWA("Soap with Attachments"), // text/xml
-		/** Yields a x-www-form-urlencoded form entity */
-		URLENCODED,
-		/** Yields a multipart/form-data form entity */
-		FORMDATA,
-		/** Yields a MTOM multipart/related form entity */
-		MTOM
-	}
+	private HttpEntityFactory entityBuilder;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		//For backwards compatibility we have to set the contentType to text/html on POST and PUT requests
-		if(StringUtils.isEmpty(getContentType()) && postType == PostType.RAW && (getHttpMethod() == HttpMethod.POST || getHttpMethod() == HttpMethod.PUT || getHttpMethod() == HttpMethod.PATCH)) {
+		if(StringUtils.isEmpty(getContentType()) && postType == HttpEntityType.RAW && (getHttpMethod() == HttpMethod.POST || getHttpMethod() == HttpMethod.PUT || getHttpMethod() == HttpMethod.PATCH)) {
 			setContentType("text/html");
 		}
 
@@ -128,6 +94,24 @@ public class HttpSender extends AbstractHttpSender {
 				throw new ConfigurationException("firstBodyPartName can only be set for methodType POST");
 			}
 		}
+
+		if (!paramsInUrl && postType == HttpEntityType.URLENCODED && StringUtils.isNotBlank(getMultipartXmlSessionKey())) {
+			// Some weird backwards-compatibility hacks with deprecated "paramsInUrl" to be worked around. Now in better place than before, hopefully.
+			postType = HttpEntityType.FORMDATA;
+		}
+
+		entityBuilder = HttpEntityFactory.Builder.create()
+				.charSet(getCharSet())
+				.entityType(postType)
+				.contentType(getFullContentType())
+				.parametersToSkipWhenEmpty(parametersToSkipWhenEmptySet)
+				.parametersToUse(requestOrBodyParamsSet)
+				.firstBodyPartName(getFirstBodyPartName())
+				.mtomContentTransferEncoding(mtomContentTransferEncoding)
+				.multipartXmlSessionKey(multipartXmlSessionKey)
+				.rawWithParametersAppendsInputMessage(BooleanUtils.isTrue(getTreatInputMessageAsParameters()))
+				.build();
+
 	}
 
 	@Override
@@ -173,25 +157,6 @@ public class HttpSender extends AbstractHttpSender {
 			case POST:
 			case PUT:
 			case PATCH:
-				HttpEntity entity;
-				if(postType == PostType.RAW) {
-					String messageString = BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message) ? message.asString() : "";
-					if (parameters!=null) {
-						StringBuilder msg = new StringBuilder(messageString);
-						appendParameters(true,msg,parameters);
-						if (StringUtils.isEmpty(messageString) && msg.length()>1) {
-							messageString=msg.substring(1);
-						} else {
-							messageString=msg.toString();
-						}
-					}
-					entity = new ByteArrayEntity(messageString.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING), getFullContentType());
-				} else if(postType == PostType.BINARY) {
-					entity = new HttpMessageEntity(message, getFullContentType());
-				} else {
-					entity = createHttpEntity(message, parameters, session);
-				}
-
 				HttpEntityEnclosingRequestBase method;
 				if (getHttpMethod() == HttpMethod.POST) {
 					method = new HttpPost(relativePath.toString());
@@ -201,7 +166,7 @@ public class HttpSender extends AbstractHttpSender {
 					method = new HttpPut(relativePath.toString());
 				}
 
-				method.setEntity(entity);
+				method.setEntity(entityBuilder.create(message, parameters, session));
 				return method;
 
 			case DELETE:
@@ -229,137 +194,6 @@ public class HttpSender extends AbstractHttpSender {
 			//Catch all exceptions and throw them as SenderException
 			throw new SenderException(e);
 		}
-	}
-
-	private HttpEntity createHttpEntity(Message message, ParameterValueList parameters, PipeLineSession session) throws IOException, SenderException {
-		if (postType==PostType.URLENCODED && StringUtils.isEmpty(getMultipartXmlSessionKey())) { // x-www-form-urlencoded
-			return createUrlEncodedFormEntity(message, parameters);
-		}
-		else { //formdata and mtom
-			return createMultiPartEntity(message, parameters, session);
-		}
-	}
-
-	@Nonnull
-	private HttpEntity createUrlEncodedFormEntity(Message message, ParameterValueList parameters) throws IOException, SenderException {
-		List<NameValuePair> requestFormElements = new ArrayList<>();
-
-		if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
-			requestFormElements.add(new BasicNameValuePair(getFirstBodyPartName(), message.asString()));
-			log.debug("appended parameter [{}] with value [{}]", getFirstBodyPartName(), message);
-		}
-		if (parameters !=null) {
-			for(ParameterValue pv : parameters) {
-				String name = pv.getDefinition().getName();
-				String value = pv.asStringValue("");
-
-				if (requestOrBodyParamsSet.contains(name) && (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(name))) {
-					requestFormElements.add(new BasicNameValuePair(name,value));
-					log.debug("appended parameter [{}] with value [{}]", name, value);
-				}
-			}
-		}
-		try {
-			return new UrlEncodedFormEntity(requestFormElements, getCharSet());
-		} catch (UnsupportedEncodingException e) {
-			throw new SenderException("unsupported encoding for one or more POST parameters", e);
-		}
-	}
-
-	private FormBodyPart createStringBodyPart(Message message) {
-		MimeType mimeType = postType == PostType.MTOM ? APPLICATION_XOP_XML : MediaType.TEXT_PLAIN; // only the first part is XOP+XML, other parts should use their own content-type
-		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create(getFirstBodyPartName(), new MessageContentBody(message, mimeType));
-
-		// Should only be set when request is MTOM and it's the first BodyPart
-		if (postType == PostType.MTOM && StringUtils.isNotEmpty(getMtomContentTransferEncoding())) {
-			bodyPart.setField(MIME.CONTENT_TRANSFER_ENC, getMtomContentTransferEncoding());
-		}
-
-		return bodyPart.build();
-	}
-
-	private HttpEntity createMultiPartEntity(Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
-		MultipartEntityBuilder entity = MultipartEntityBuilder.create();
-
-		entity.setCharset(Charset.forName(getCharSet()));
-		if(postType == PostType.MTOM)
-			entity.setMtomMultipart();
-
-		if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
-			entity.addPart(createStringBodyPart(message));
-			if (log.isDebugEnabled()) log.debug("appended stringpart [{}] with value [{}]", getFirstBodyPartName(), message);
-		}
-		if (parameters!=null) {
-			for(ParameterValue pv : parameters) {
-				String name = pv.getDefinition().getName();
-				if (requestOrBodyParamsSet.contains(name)) {
-					Message msg = pv.asMessage();
-					if (!msg.isEmpty() || !parametersToSkipWhenEmptySet.contains(name)) {
-
-						String fileName = null;
-						String sessionKey = pv.getDefinition().getSessionKey();
-						if (sessionKey != null) {
-							fileName = session.getString(sessionKey + "Name");
-						}
-						if(fileName != null) {
-							log.warn("setting filename using [{}Name] for bodypart [{}]. Consider using a MultipartXml with the attribute [name] instead.", sessionKey, fileName, name);
-						}
-
-						entity.addPart(name, new MessageContentBody(msg, null, fileName));
-						if (log.isDebugEnabled()) log.debug("appended bodypart [{}] with message [{}]", name, msg);
-					}
-				}
-			}
-		}
-
-		if (StringUtils.isNotEmpty(getMultipartXmlSessionKey())) {
-			String multipartXml = session.getString(getMultipartXmlSessionKey());
-			log.debug("building multipart message with MultipartXmlSessionKey [{}]", multipartXml);
-			if (StringUtils.isEmpty(multipartXml)) {
-				log.warn("sessionKey [{}] is empty", getMultipartXmlSessionKey());
-			} else {
-				Element partsElement;
-				try {
-					partsElement = XmlUtils.buildElement(multipartXml);
-				} catch (DomBuilderException e) {
-					throw new SenderException("error building multipart xml", e);
-				}
-				Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
-				if (parts.isEmpty()) {
-					log.warn("no part(s) in multipart xml [{}]", multipartXml);
-				} else {
-					for (final Node part : parts) {
-						Element partElement = (Element) part;
-						entity.addPart(elementToFormBodyPart(partElement, session));
-					}
-				}
-			}
-		}
-		return entity.build();
-	}
-
-	protected FormBodyPart elementToFormBodyPart(Element element, PipeLineSession session) throws IOException {
-		String part = element.getAttribute("name"); //Name of the part
-		boolean isFile = "file".equals(element.getAttribute("type")); //text of file, empty == text
-		String filename = element.getAttribute("filename"); //if type == file, the filename
-		String partSessionKey = element.getAttribute("sessionKey"); //SessionKey to retrieve data from
-		String partMimeType = element.getAttribute("mimeType"); //MimeType of the part
-		Message partObject = session.getMessage(partSessionKey);
-		MimeType mimeType = null;
-		if(StringUtils.isNotEmpty(partMimeType)) {
-			mimeType = MimeType.valueOf(partMimeType);
-		}
-
-		final String filenameToUse;
-		if(isFile || StringUtils.isNotBlank(filename)) {
-			String filenamebackup = StringUtils.isBlank(part) ? partSessionKey : part;
-			filenameToUse = StringUtils.isNotBlank(filename) ? filename : filenamebackup;
-		} else {
-			filenameToUse = null;
-		}
-
-		String partname = isFile || StringUtils.isBlank(part) ? partSessionKey : part;
-		return FormBodyPartBuilder.create(partname, new MessageContentBody(partObject, mimeType, filenameToUse)).build();
 	}
 
 	@Override
@@ -442,7 +276,7 @@ public class HttpSender extends AbstractHttpSender {
 	 * If <code>methodType</code>=<code>POST</code>, <code>PUT</code> or <code>PATCH</code>, the type of post request
 	 * @ff.default RAW
 	 */
-	public void setPostType(PostType type) {
+	public void setPostType(HttpEntityType type) {
 		this.postType = type;
 	}
 
@@ -453,8 +287,8 @@ public class HttpSender extends AbstractHttpSender {
 	@Deprecated(forRemoval = true, since = "7.6.0")
 	public void setParamsInUrl(boolean b) {
 		if(!b) {
-			if(postType != PostType.MTOM && postType != PostType.FORMDATA) { //Don't override if another type has explicitly been set
-				postType = PostType.URLENCODED;
+			if(postType != HttpEntityType.MTOM && postType != HttpEntityType.FORMDATA) { //Don't override if another type has explicitly been set
+				postType = HttpEntityType.URLENCODED;
 				ConfigurationWarnings.add(this, log, "attribute [paramsInUrl] is deprecated: please use postType='URLENCODED' instead", SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
 			} else {
 				ConfigurationWarnings.add(this, log, "attribute [paramsInUrl] is deprecated: no longer required when using FORMDATA or MTOM requests", SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
@@ -474,6 +308,7 @@ public class HttpSender extends AbstractHttpSender {
 	 * <ul>
 	 * <li>name: optional, used as 'filename' in Content-Disposition</li>
 	 * <li>sessionKey: mandatory, refers to contents of part</li>
+	 * <li>value: optional, the contents of the part if the sessionKey specified contains no data</li>
 	 * <li>mimeType: optional MIME type</li>
 	 * </ul>
 	 * The name of the part is determined by the name attribute, unless that is empty, or the contents is binary. In those cases the sessionKey name is used as name of the part.

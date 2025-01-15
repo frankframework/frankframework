@@ -26,7 +26,12 @@ import java.util.Map;
 
 import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.ServletContext;
+
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.messaging.Message;
+import org.springframework.web.context.WebApplicationContext;
+
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -48,9 +53,6 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.Misc;
 import org.frankframework.util.ProcessMetrics;
-import org.springframework.context.ApplicationContext;
-import org.springframework.messaging.Message;
-import org.springframework.web.context.WebApplicationContext;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.APPLICATION)

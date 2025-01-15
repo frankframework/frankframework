@@ -1,0 +1,50 @@
+<div class="combobox">
+  <div class="combobox__input-container">
+    <input
+      type="text"
+      placeholder="Select one..."
+      [name]="name"
+      [id]="id"
+      [disabled]="disabled"
+      class="form-control"
+      [(ngModel)]="input"
+      (ngModelChange)="onUpdateInput()"
+      (keyup)="onKeyPress($event)"
+      (blur)="hideListDisplay()"
+      (focus)="showListDisplay()"
+      (click)="showListDisplay()"
+      [ngClass]="{ 'combobox__input--error': showError }"
+    />
+    <div #comboboxDropdownIcon class="combobox__dropdown-icon">&#9660;</div>
+  </div>
+  @if (listShown) {
+    <div #comboboxOptions class="combobox__options">
+      @for (item of filteredOptions; track item.label; let i = $index) {
+        <div
+          class="combobox__list-item"
+          [ngClass]="{ 'combobox__list-item--selected': i === selectedIndex }"
+          (mousedown)="clickItem(i); $event.preventDefault()"
+        >
+          <div class="combobox__list-item__label">{{ item.label }}</div>
+          @if (item.description) {
+            <div class="combobox__list-item__description">{{ item.description }}</div>
+          }
+        </div>
+      }
+      @if (!filteredOptions.length) {
+        <div class="combobox__list-item combobox__list-item--empty">No results</div>
+      }
+      @if (input) {
+        <div
+          class="combobox__list-item combobox__list-item--clear"
+          (mousedown)="clearSelectedItem(); $event.preventDefault()"
+        >
+          &times; clear
+        </div>
+      }
+    </div>
+  }
+</div>
+@if (showError) {
+  <i class="combobox__error-text">Invalid Selection</i>
+}

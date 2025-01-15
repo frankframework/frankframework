@@ -4,10 +4,20 @@
       <div class="ibox float-e-margins">
         <div class="ibox-title">
           <div class="pull-right">
-            <button class="btn btn-xs btn-info space-it-out" type="button" (click)="downloadAll()">
+            <button
+              appHasAccessToLink="downloadActiveConfigurations"
+              class="btn btn-xs btn-info space-it-out"
+              type="button"
+              (click)="downloadAll()"
+            >
               <i class="fa fa-download" aria-hidden="true"></i><span> Download Active Configs</span>
             </button>
-            <button routerLink="/configurations/upload" class="btn btn-xs btn-info" type="button">
+            <button
+              appHasAccessToLink="uploadConfiguration"
+              routerLink="/configurations/upload"
+              class="btn btn-xs btn-info"
+              type="button"
+            >
               <i class="fa fa-upload" aria-hidden="true"></i><span> Upload Config</span>
             </button>
           </div>
@@ -27,26 +37,31 @@
               </tr>
             </thead>
             <tbody>
-              <tr
-                *ngFor="let conf of configurations"
-                [ngClass]="{ 'text-danger': conf.exception }"
-                [title]="conf.exception ?? ''"
-              >
-                <td *ngIf="conf.type === 'DatabaseClassLoader'">
-                  <a [routerLink]="['/configurations/manage/', conf.name]" [state]="{ configuration: conf }">{{
-                    conf.name
-                  }}</a>
-                </td>
-                <td *ngIf="conf.type !== 'DatabaseClassLoader'">
-                  {{ conf.name }}
-                </td>
-                <td>{{ conf.version ? conf.version : '-' }}</td>
-                <td>{{ conf.type ? conf.type : '-' }}</td>
-                <td>{{ conf.parent ? conf.parent : '-' }}</td>
-                <td>{{ conf.filename ? conf.filename : '-' }}</td>
-                <td>{{ conf.created ? conf.created : '-' }}</td>
-                <td>{{ conf.user ? conf.user : '-' }}</td>
-              </tr>
+              @for (configuration of configurations; track configuration.name) {
+                <tr [ngClass]="{ 'text-danger': configuration.exception }" [title]="configuration.exception ?? ''">
+                  @if (configuration.type === 'DatabaseClassLoader') {
+                    <td>
+                      <a
+                        appHasAccessToLink="manageConfiguration"
+                        [routerLink]="['/configurations/manage/', configuration.name]"
+                        [state]="{ configuration }"
+                        >{{ configuration.name }}</a
+                      >
+                    </td>
+                  }
+                  @if (configuration.type !== 'DatabaseClassLoader') {
+                    <td>
+                      {{ configuration.name }}
+                    </td>
+                  }
+                  <td>{{ configuration.version ? configuration.version : '-' }}</td>
+                  <td>{{ configuration.type ? configuration.type : '-' }}</td>
+                  <td>{{ configuration.parent ? configuration.parent : '-' }}</td>
+                  <td>{{ configuration.filename ? configuration.filename : '-' }}</td>
+                  <td>{{ configuration.created ? configuration.created : '-' }}</td>
+                  <td>{{ configuration.user ? configuration.user : '-' }}</td>
+                </tr>
+              }
             </tbody>
           </table>
         </div>

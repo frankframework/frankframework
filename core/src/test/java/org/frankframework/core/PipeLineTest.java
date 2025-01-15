@@ -26,8 +26,9 @@ import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.RunState;
+import org.frankframework.util.SpringUtils;
 
-@SuppressWarnings("deprecation") //Part of the tests!
+@SuppressWarnings("deprecation") // Part of the tests!
 public class PipeLineTest {
 	private int pipeNr = 0;
 
@@ -45,10 +46,10 @@ public class PipeLineTest {
 
 	@Test
 	public void testDuplicateExits() {
-		Adapter adapter = new Adapter();
-		PipeLine pipeline = new PipeLine();
-		pipeline.setApplicationContext(configuration);
-		PipeLineExit exit = new PipeLineExit();
+		Adapter adapter = configuration.createBean(Adapter.class);
+		adapter.setName("testAdapter");
+		PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
+		PipeLineExit exit = SpringUtils.createBean(adapter, PipeLineExit.class);
 		exit.setName("success");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.addPipeLineExit(exit);
@@ -58,7 +59,7 @@ public class PipeLineTest {
 		List<String> warnings = configuration.getConfigurationWarnings().getWarnings();
 		assertEquals(1, warnings.size());
 		String lastWarning = warnings.get(warnings.size()-1);
-		assertThat(lastWarning,StringEndsWith.endsWith("PipeLine exit named [success] already exists"));
+		assertThat(lastWarning, StringEndsWith.endsWith("PipeLine exit named [success] already exists"));
 	}
 
 	@Test
@@ -305,9 +306,9 @@ public class PipeLineTest {
 				return RunState.STARTED;
 			}
 		};
+		configuration.autowireByName(adapter);
 		adapter.setName("Adapter");
 		buildDummyPipeLine(adapter);
-		adapter.setConfiguration(configuration);
 		adapter.setApplicationContext(configuration);
 		adapter.setConfigurationMetrics(configuration.getBean(MetricsInitializer.class));
 		adapter.configure();
@@ -315,8 +316,7 @@ public class PipeLineTest {
 	}
 
 	private void buildDummyPipeLine(Adapter adapter) throws ConfigurationException {
-		PipeLine pipeLine = new PipeLine();
-		pipeLine.setApplicationContext(configuration);
+		PipeLine pipeLine = SpringUtils.createBean(adapter, PipeLine.class);
 		pipeLine.setConfigurationMetrics(configuration.getBean(MetricsInitializer.class));
 		CorePipeLineProcessor pipeLineProcessor = configuration.createBean(CorePipeLineProcessor.class);
 		pipeLineProcessor.setPipeProcessor(configuration.createBean(CorePipeProcessor.class));

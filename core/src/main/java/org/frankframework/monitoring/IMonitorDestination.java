@@ -16,7 +16,8 @@
 package org.frankframework.monitoring;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.HasName;
+import org.frankframework.core.NameAware;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.monitoring.events.MonitorEvent;
@@ -29,7 +30,7 @@ import org.frankframework.util.XmlBuilder;
  * @since   4.7
  */
 @FrankDocGroup(FrankDocGroupValue.MONITORING)
-public interface IMonitorDestination extends INamedObject {
+public interface IMonitorDestination extends NameAware, HasName {
 
 	void configure() throws ConfigurationException;
 

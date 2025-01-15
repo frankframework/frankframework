@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2017 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013-2017 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -37,7 +38,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.HasName;
 
 /**
  * A collection of class management utility methods.
@@ -161,7 +162,7 @@ public class ClassUtils {
 	@Nonnull
 	public static String nameOf(Object o) {
 		String tail = null;
-		if (o instanceof INamedObject object) {
+		if (o instanceof HasName object) {
 			String name = object.getName();
 			if (StringUtils.isNotEmpty(name)) {
 				tail = "[" + name + "]";
@@ -171,7 +172,7 @@ public class ClassUtils {
 	}
 
 	/**
-	 * returns the className of the object, like {@link #nameOf(Object)}, but without [name] suffix for a {@link INamedObject}.
+	 * returns the className of the object, like {@link #nameOf(Object)}, but without [name] suffix for a {@link HasName}.
 	 */
 	@Nonnull
 	public static String classNameOf(Object o) {
@@ -301,8 +302,19 @@ public class ClassUtils {
 	}
 
 	public static void invokeSetter(Object o, String name, Object value, Class<?> clazz) throws SecurityException, ReflectiveOperationException, IllegalArgumentException {
-		Class<?>[] argsTypes = { clazz };
-		Method setterMtd = o.getClass().getMethod(name, argsTypes);
+		List<Method> methods = Stream.of(o.getClass().getMethods())
+				.filter(m -> m.getParameterCount() == 1) // Only Setters with 1 argument
+				.filter(m -> name.equals(m.getName())) // Method name must match
+				.filter(m -> m.getParameterTypes()[0].isAssignableFrom(clazz)) // Method argument must be assignable from the value class
+				.toList();
+
+		if (methods.isEmpty()) {
+			throw new ReflectiveOperationException("no setter found matching signature "+o.getClass().getCanonicalName()+"."+name+"("+clazz.getCanonicalName()+")");
+		} else if (methods.size() > 1) {
+			throw new ReflectiveOperationException("more then one setter found matching signature "+o.getClass().getCanonicalName()+"."+name+"("+clazz.getCanonicalName()+")");
+		}
+
+		Method setterMtd = methods.get(0);
 		Object[] args = { value };
 		setterMtd.invoke(o, args);
 	}

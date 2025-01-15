@@ -1,6 +1,8 @@
 <div class="wrapper wrapper-content animated fadeInRight">
-  <ngb-alert *ngIf="alert" type="danger" [dismissible]="false">alert</ngb-alert>
-  <div class="row">
+  @if (alert) {
+    <ngb-alert type="danger" [dismissible]="false">alert</ngb-alert>
+  }
+  <div class="row" noAccessToLinkClassName="hidden" appHasAccessToLink="getLogConfiguration">
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
         <div class="ibox-title">
@@ -15,13 +17,26 @@
                 </div>
                 <div class="col-md-4">
                   <div class="btn-group w-100" ngbDropdown>
-                    <button type="button" class="btn btn-default w-100" ngbDropdownToggle>
-                      {{ form.loglevel }} <span class="caret"></span>
+                    <button
+                      noAccessToLinkClassName="_"
+                      appHasAccessToLink="updateLogConfiguration"
+                      type="button"
+                      class="btn btn-default w-100"
+                      ngbDropdownToggle
+                    >
+                      {{ form.loglevel }}
+                      <span
+                        noAccessToLinkClassName="hidden"
+                        appHasAccessToLink="updateLogConfiguration"
+                        class="caret"
+                      ></span>
                     </button>
                     <ul role="menu" ngbDropdownMenu>
-                      <li *ngFor="let loglevel of form.errorLevels">
-                        <a ngbDropdownItem (click)="changeRootLoglevel(loglevel)">{{ loglevel }}</a>
-                      </li>
+                      @for (loglevel of form.errorLevels; track loglevel) {
+                        <li>
+                          <a ngbDropdownItem (click)="changeRootLoglevel(loglevel)">{{ loglevel }}</a>
+                        </li>
+                      }
                     </ul>
                   </div>
                 </div>
@@ -32,7 +47,10 @@
                 </div>
                 <div class="col-md-3 col-xs-2">
                   <span class="form-control m-b no-border"
-                    ><input type="checkbox" [(ngModel)]="form.logIntermediaryResults"
+                    ><input
+                      type="checkbox"
+                      appHasAccessToLink="updateLogConfiguration"
+                      [(ngModel)]="form.logIntermediaryResults"
                   /></span>
                 </div>
               </div>
@@ -45,6 +63,7 @@
                     class="form-control m-b"
                     name="maxMessageLength"
                     type="text"
+                    appHasAccessToLink="updateLogConfiguration"
                     [(ngModel)]="form.maxMessageLength"
                   />
                 </div>
@@ -55,19 +74,28 @@
                 </div>
                 <div class="col-md-3 col-xs-2">
                   <span class="form-control m-b no-border"
-                    ><input type="checkbox" [(ngModel)]="form.enableDebugger"
+                    ><input
+                      type="checkbox"
+                      appHasAccessToLink="updateLogConfiguration"
+                      [(ngModel)]="form.enableDebugger"
                   /></span>
                 </div>
               </div>
               <div class="row">
                 <div class="col-md-offset-3 col-md-10">
-                  <button class="btn btn-info btn-w-m font-bold space-it-out" type="button" (click)="reset()">
+                  <button
+                    class="btn btn-info btn-w-m font-bold space-it-out"
+                    type="button"
+                    appHasAccessToLink="updateLogConfiguration"
+                    (click)="reset()"
+                  >
                     Reset
                   </button>
                   <button
                     [ladda]="updateDynamicParams"
                     class="btn btn-primary btn-w-m font-bold"
                     type="submit"
+                    appHasAccessToLink="updateLogConfiguration"
                     (click)="submit(form)"
                   >
                     Send
@@ -81,97 +109,148 @@
     </div>
   </div>
 
-  <div class="row">
+  <div class="row" noAccessToLinkClassName="hidden" appHasAccessToLink="getLogDefinitions">
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
         <div class="ibox-title">
           <div class="pull-right">
-            <button (click)="addLogger()" class="btn btn-xs btn-primary m-r-md" type="button">
+            <button
+              appHasAccessToLink="createLogDefinition"
+              (click)="addLogger()"
+              class="btn btn-xs btn-primary m-r-md"
+              type="button"
+            >
               <span>Add Logger</span>
             </button>
-            <button (click)="reconfigure()" class="btn btn-xs pull-right btn-warning m-r-xs" type="button">
+            <button
+              appHasAccessToLink="updateLogConfiguration"
+              (click)="reconfigure()"
+              class="btn btn-xs pull-right btn-warning m-r-xs"
+              type="button"
+            >
               <i class="fa fa-warning" aria-hidden="true"></i>
               <span> Reconfigure</span>
             </button>
           </div>
           <h4>Log Definitions</h4>
         </div>
-        <div class="ibox-content" *ngIf="loggers">
-          <p>
-            Log levels can be changed to control the amount of logging of the framework and the libraries it uses.
-            Custom Log Definitions can be removed by reconfiguring Log4J2.
-          </p>
-          <table class="table table-striped table-definitions">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Level</th>
-                <th>Appenders</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let definition of definitions; index as index">
-                <td>{{ definition.name }}</td>
-                <td ngbDropdown [ngClass]="index > 4 && index >= definitions.length - 5 ? 'dropup' : ''">
-                  <button type="button" class="btn-invisible" ngbDropdownToggle>
-                    {{ definition.level }} <span class="caret"></span>
-                  </button>
-                  <ul role="menu" ngbDropdownMenu="">
-                    <li *ngFor="let loglevel of errorLevels">
-                      <a ngbDropdownItem (click)="changeLoglevel(definition.name, loglevel)">{{ loglevel }}</a>
-                    </li>
-                  </ul>
-                </td>
-                <td *ngIf="definition.appenders">
-                  <span *ngFor="let name of definition.appenders; let last = last"
-                    >{{ name }}<span *ngIf="!last">, </span></span
-                  >
-                </td>
-                <td *ngIf="!definition.appenders">RootLogger</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        @if (loggers) {
+          <div class="ibox-content">
+            <p>
+              Log levels can be changed to control the amount of logging of the framework and the libraries it uses.
+              Custom Log Definitions can be removed by reconfiguring Log4J2.
+            </p>
+            <table class="table table-striped table-definitions">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Level</th>
+                  <th>Appenders</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (definition of definitions; track definition.name; let index = $index) {
+                  <tr>
+                    <td>{{ definition.name }}</td>
+                    <td ngbDropdown [ngClass]="index > 4 && index >= definitions.length - 5 ? 'dropup' : ''">
+                      <button
+                        appHasAccessToLink="updateLogDefinition"
+                        type="button"
+                        class="btn-invisible"
+                        ngbDropdownToggle
+                      >
+                        {{ definition.level }}
+                        <span
+                          noAccessToLinkClassName="hidden"
+                          appHasAccessToLink="updateLogDefinition"
+                          class="caret"
+                        ></span>
+                      </button>
+                      <ul role="menu" ngbDropdownMenu="">
+                        @for (loglevel of errorLevels; track loglevel) {
+                          <li>
+                            <a ngbDropdownItem (click)="changeLoglevel(definition.name, loglevel)">{{ loglevel }}</a>
+                          </li>
+                        }
+                      </ul>
+                    </td>
+                    @if (definition.appenders) {
+                      <td>
+                        @for (name of definition.appenders; track name; let last = $last) {
+                          <span
+                            >{{ name }}
+                            @if (!last) {
+                              <span>, </span>
+                            }
+                          </span>
+                        }
+                      </td>
+                    }
+                    @if (!definition.appenders) {
+                      <td>RootLogger</td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
       </div>
     </div>
   </div>
 
-  <div class="row">
+  <div class="row" noAccessToLinkClassName="hidden" appHasAccessToLink="getLogDefinitions">
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
         <div class="ibox-title">
           <h4>Framework Loggers</h4>
         </div>
-        <div class="ibox-content" *ngIf="loggers">
-          <p>
-            Each logger in the Framework uses the log level from its Log Definition or from the RootLogger log level by
-            default. Changing the log level creates a new Log Definition for the specified package.
-          </p>
-          <p>New Log Definitions takes precedence over the RootLogger!</p>
-          <table class="table table-striped table-framework-loggers">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Level</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let logger of loggers | keyvalue; index as index">
-                <td>{{ logger.key }}</td>
-                <td ngbDropdown [ngClass]="index > 4 && index >= loggersLength - 5 ? 'dropup' : ''">
-                  <button type="button" class="btn-invisible" ngbDropdownToggle>
-                    {{ logger.value }} <span class="caret"></span>
-                  </button>
-                  <ul role="menu" ngbDropdownMenu>
-                    <li *ngFor="let loglevel of errorLevels">
-                      <a ngbDropdownItem (click)="changeLoglevel(logger.key, loglevel)">{{ loglevel }}</a>
-                    </li>
-                  </ul>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        @if (loggers) {
+          <div class="ibox-content">
+            <p>
+              Each logger in the Framework uses the log level from its Log Definition or from the RootLogger log level
+              by default. Changing the log level creates a new Log Definition for the specified package.
+            </p>
+            <p>New Log Definitions takes precedence over the RootLogger!</p>
+            <table class="table table-striped table-framework-loggers">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Level</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (logger of loggers | keyvalue; track logger; let index = $index) {
+                  <tr>
+                    <td>{{ logger.key }}</td>
+                    <td ngbDropdown [ngClass]="index > 4 && index >= loggersLength - 5 ? 'dropup' : ''">
+                      <button
+                        appHasAccessToLink="updateLogDefinition"
+                        type="button"
+                        class="btn-invisible"
+                        ngbDropdownToggle
+                      >
+                        {{ logger.value }}
+                        <span
+                          noAccessToLinkClassName="hidden"
+                          appHasAccessToLink="updateLogDefinition"
+                          class="caret"
+                        ></span>
+                      </button>
+                      <ul role="menu" ngbDropdownMenu>
+                        @for (loglevel of errorLevels; track loglevel) {
+                          <li>
+                            <a ngbDropdownItem (click)="changeLoglevel(logger.key, loglevel)">{{ loglevel }}</a>
+                          </li>
+                        }
+                      </ul>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
       </div>
     </div>
   </div>

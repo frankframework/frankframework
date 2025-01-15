@@ -20,6 +20,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.MediaType;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.ext.LexicalHandler;
+import org.xml.sax.helpers.AttributesImpl;
+
 import org.frankframework.documentbuilder.DocumentBuilderFactory;
 import org.frankframework.documentbuilder.IDocumentBuilder;
 import org.frankframework.stream.Message;
@@ -27,11 +33,6 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.XmlWriter;
-import org.springframework.http.MediaType;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.ext.LexicalHandler;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * Builds an XML-element with attributes and sub-elements. Attributes can be

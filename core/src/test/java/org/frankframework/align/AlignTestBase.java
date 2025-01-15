@@ -5,16 +5,12 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.net.URL;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.util.LogUtil;
 
 public abstract class AlignTestBase {
-	protected final Logger LOG = LogUtil.getLogger(AlignTestBase.class);
-
-	public static String BASEDIR="/Align/";
+	public static final String BASEDIR="/Align/";
 
 	public abstract void testFiles(String schemaFile, String namespace, String rootElement, String inputFile, boolean potentialCompactionProblems, String expectedFailureReason) throws Exception;
 

@@ -47,7 +47,6 @@ export type DataTableServerResponseInfo<T> = {
 
 @Component({
   selector: 'app-datatable',
-  standalone: true,
   imports: [CommonModule, FormsModule, CdkTableModule, TruncatePipe, ToDateDirective, ToDateDirective],
   templateUrl: './datatable.component.html',
   styleUrl: './datatable.component.scss',

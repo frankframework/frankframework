@@ -7,8 +7,23 @@ import { SortEvent, ThSortableDirective, basicTableSort } from 'src/app/componen
 import { copyToClipboard } from 'src/app/utils';
 import { HttpErrorResponse } from '@angular/common/http';
 
+import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+import { FormsModule } from '@angular/forms';
+import { SearchFilterPipe } from '../../pipes/search-filter.pipe';
+import { FileViewerComponent } from '../../components/file-viewer/file-viewer.component';
+import { ToDateDirective } from '../../components/to-date.directive';
+
 @Component({
   selector: 'app-logging',
+  imports: [
+    FormsModule,
+    NgbAlert,
+    ThSortableDirective,
+    SearchFilterPipe,
+    SearchFilterPipe,
+    FileViewerComponent,
+    ToDateDirective,
+  ],
   templateUrl: './logging.component.html',
   styleUrls: ['./logging.component.scss'],
 })
