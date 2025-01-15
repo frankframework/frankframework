@@ -72,12 +72,10 @@ public class IbisManager implements ApplicationContextAware {
 
 	@Nullable
 	public Configuration getConfiguration(String configurationName) {
-		for (Configuration configuration : configurations) {
-			if (configurationName.equals(configuration.getName())) {
-				return configuration;
-			}
-		}
-		return null;
+        return configurations.stream()
+                .filter(configuration -> configurationName.equals(configuration.getName()))
+				.findFirst()
+				.orElse(null);
 	}
 
 	/**
