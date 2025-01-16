@@ -2,6 +2,7 @@ package org.frankframework.extensions.mqtt;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
 
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -13,6 +14,8 @@ import org.frankframework.senders.SenderTestBase;
 
 import org.frankframework.stream.Message;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.hivemq.HiveMQContainer;
@@ -31,8 +34,6 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 
 	private static final String RESOURCE_NAME = "mqtt/hivemq";
 
-	private MqttClientFactory clientFactory;
-
 	@Override
 	public MqttSender createSender() {
 		MqttSender sender = new MqttSender();
@@ -42,16 +43,12 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 		return sender;
 	}
 
-	@Override
-	@BeforeEach
-	public void setUp() throws Exception {
+	@BeforeAll
+	public static void beforeAll() throws Exception {
 		MqttClient client = new MqttClient(String.format("tcp://%s:%s", hivemqCe.getHost(), hivemqCe.getMqttPort()), "clientId", new MemoryPersistence());
 		client.connect();
 
-		clientFactory = MqttClientFactory.getInstance();
-		clientFactory.add(client, RESOURCE_NAME);
-
-		super.setUp();
+		MqttClientFactory.getInstance().add(client, RESOURCE_NAME);
 	}
 
 	@Test
