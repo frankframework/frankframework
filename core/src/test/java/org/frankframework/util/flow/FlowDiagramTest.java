@@ -32,7 +32,7 @@ public class FlowDiagramTest {
 		generator.generateFlow(adapter, out);
 
 		String dot = TestFileUtils.getTestFile("/FlowDiagram/dot.txt");
-		assertEquals(dot, new String(out.toByteArray()));
+		assertEquals(dot, out.toString());
 	}
 
 	@Test
@@ -45,7 +45,7 @@ public class FlowDiagramTest {
 		generator.generateFlow(adapter, out);
 
 		String dot = TestFileUtils.getTestFile("/FlowDiagram/pipelineWithoutFirstPipe.svg");
-		MatchUtils.assertXmlEquals(dot, new String(out.toByteArray()));
+		MatchUtils.assertXmlEquals(dot, out.toString());
 	}
 
 	@Test

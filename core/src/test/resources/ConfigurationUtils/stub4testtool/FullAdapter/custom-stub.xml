@@ -1,6 +1,6 @@
 <configuration>
 	<adapter name="FullAdapter">
-		<stub/>
+		<stub xmlns:stub="http://frankframework.org/stub" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>
 		<receiver name="FullAdapter" transactionAttribute="Required">
 			<listener className="org.frankframework.jms.JmsListener" lookupDestination="false" name="FullAdapter"/>
 			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" retention="7" slotId="FullAdapter"/>
