@@ -43,7 +43,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.CanUseSharedResource;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ISenderWithParameters;
@@ -54,7 +53,6 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Forward;
-import org.frankframework.encryption.KeystoreType;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
@@ -545,27 +543,6 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	 */
 	public void setCharSet(String string) {
 		charSet = string;
-	}
-
-	@Deprecated(forRemoval = true, since = "7.7.0")
-	@ConfigurationWarning("Please use attribute keystore instead")
-	public void setCertificate(String string) {
-		setKeystore(string);
-	}
-	@Deprecated(forRemoval = true, since = "7.7.0")
-	@ConfigurationWarning("has been replaced with keystoreType")
-	public void setCertificateType(KeystoreType value) {
-		setKeystoreType(value);
-	}
-	@Deprecated(forRemoval = true, since = "7.7.0")
-	@ConfigurationWarning("Please use attribute keystoreAuthAlias instead")
-	public void setCertificateAuthAlias(String string) {
-		setKeystoreAuthAlias(string);
-	}
-	@Deprecated(forRemoval = true, since = "7.7.0")
-	@ConfigurationWarning("Please use attribute keystorePassword instead")
-	public void setCertificatePassword(String string) {
-		setKeystorePassword(string);
 	}
 
 	/** Comma separated list of parameter names which should be set as HTTP headers */

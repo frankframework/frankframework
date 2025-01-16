@@ -56,7 +56,6 @@
 				name="Iterate over a zip file and add the content to a new zip archive"
 				getInputFromSessionKey="stream"
 				className="org.frankframework.compression.ZipIteratorPipe"
-
 				>
 				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ibis4test-RecreateZip" >
 					<param name="zipdata" sessionKey="zipdata" />
