@@ -29,7 +29,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.documentbuilder.xml.JsonXslt3XmlReader;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
-import org.frankframework.threading.ThreadConnector;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlJsonWriter;
 import org.frankframework.xml.IXmlDebugger;
@@ -57,13 +56,13 @@ public class JsonXsltSender extends XsltSender {
 	}
 
 	@Override
-	protected ContentHandler createHandler(Message input, ThreadConnector<?> threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws TransformerException {
+	protected ContentHandler createHandler(Message input, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws TransformerException {
 		if (!isJsonResult()) {
-			return super.createHandler(input, threadConnector, session, poolToUse, handler, messageBuilder);
+			return super.createHandler(input, session, poolToUse, handler, messageBuilder);
 		}
 
 		XmlJsonWriter xjw = new XmlJsonWriter(messageBuilder.asWriter());
-		handler = super.createHandler(input, threadConnector, session, poolToUse, xjw, messageBuilder);
+		handler = super.createHandler(input, session, poolToUse, xjw, messageBuilder);
 		if (getXmlDebugger() != null) {
 			handler = getXmlDebugger().inspectXml(session, "output XML to be converted to JSON", handler);
 		}
