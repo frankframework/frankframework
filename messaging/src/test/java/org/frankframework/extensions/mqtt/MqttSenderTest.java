@@ -2,7 +2,6 @@ package org.frankframework.extensions.mqtt;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
 
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -14,9 +13,7 @@ import org.frankframework.senders.SenderTestBase;
 
 import org.frankframework.stream.Message;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.hivemq.HiveMQContainer;
 import org.testcontainers.junit.jupiter.Container;
