@@ -5,7 +5,7 @@
 		</receiver>
 		<pipeline firstPipe="HelloWorld">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<inputValidator className="org.frankframework.extensions.api.ApiWsdlXmlValidator" wsdl="/ApiWsdlGenerator/wsdl/HelloWorld.wsdl" soapBody="HelloWorld_Request" soapBodyNamespace="http://api.nn.nl/HelloWorld" outputSoapBody="HelloWorld_Response" throwException="true" />
 			<inputWrapper className="org.frankframework.extensions.api.ApiSoapWrapperPipe" direction="unwrap" />
@@ -21,7 +21,7 @@
 		</receiver>
 		<pipeline firstPipe="HelloWorld">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<inputValidator className="org.frankframework.extensions.api.ApiWsdlXmlValidator" wsdl="/ApiWsdlGenerator/wsdl/HelloWorld.wsdl" soapBody="HelloWorld_Request" soapBodyNamespace="http://api.nn.nl/HelloWorld" outputSoapBody="HelloWorld_Response" multipart="true" throwException="true" />
 			<inputWrapper className="org.frankframework.extensions.api.ApiSoapWrapperPipe" direction="unwrap" />

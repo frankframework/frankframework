@@ -5,7 +5,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<inputValidator className="org.frankframework.soap.SoapValidator"
 				schemaLocation="urn:items /Validators/xsd/Items.xsd"

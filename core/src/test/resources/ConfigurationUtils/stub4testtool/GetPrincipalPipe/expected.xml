@@ -14,7 +14,7 @@
       </receiver>
 		    <pipeline firstPipe="GetPrincipalPipe">
 			      <exits>
-				        <exit path="EXIT" state="success"/>
+				        <exit name="EXIT" state="success"/>
 			      </exits>
 			      <pipe name="GetPrincipalPipe"
                className="org.frankframework.pipes.EchoPipe"

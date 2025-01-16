@@ -7,7 +7,7 @@
 		</receiver>
 		<pipeline firstPipe="echo">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="echo" className="org.frankframework.pipes.EchoPipe"
 				restoreMovedElements="true">
@@ -23,7 +23,7 @@
 		</receiver>
 		<pipeline firstPipe="echo">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<outputValidator className="org.frankframework.pipes.XmlValidator"
 				schema="xsd/any.xsd"
@@ -41,7 +41,7 @@
 		</receiver>
 		<pipeline firstPipe="echo">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="echo" className="org.frankframework.pipes.EchoPipe"
 				  elementToMoveChain="AuditLog_Action;Message;Text">

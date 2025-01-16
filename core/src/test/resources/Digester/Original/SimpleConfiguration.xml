@@ -6,7 +6,7 @@
 			</receiver>
 			<pipeline firstPipe="HelloWorld">
 				<exits>
-					<exit path="EXIT" state="success"/>
+					<exit name="EXIT" state="success"/>
 				</exits>
 				<pipe name="HelloWorld" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="Hello World">
 					<forward name="success" path="EXIT"/>
@@ -23,7 +23,7 @@
 			</receiver>
 			<pipeline firstPipe="HelloUniverse">
 				<exits>
-					<exit path="EXIT" state="success"/>
+					<exit name="EXIT" state="success"/>
 				</exits>
 				<pipe name="HelloUniverse" className="org.frankframework.pipes.SenderPipe">
 					<sender className="org.frankframework.senders.FixedResultSender" returnString="Hello, Universe! ${digester.property} &lt;@quot;&gt;"/>
@@ -39,7 +39,7 @@
 				<JavaListener name="HelloBeautifulWorld"/>
 			</Receiver>
 			<Pipeline firstPipe="HelloBeautifulWorld">
-				<Exit path="EXIT" state="success"/>
+				<Exit name="EXIT" state="success"/>
 				<EchoPipe name="HelloBeautifulWorld" getInputFromFixedValue="Hello Beautiful World ${digester.property} &lt;@quot;&gt;">
 					<Forward name="success" path="EXIT"/>
 				</EchoPipe>

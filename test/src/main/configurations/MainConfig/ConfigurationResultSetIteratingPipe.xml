@@ -5,7 +5,7 @@
 		</receiver>
 		<pipeline firstPipe="SelectRecords-A" transactionAttribute="RequiresNew">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe className="org.frankframework.jdbc.ResultSetIteratingPipe" name="SelectRecords-A" lockRows="true" query="SELECT TKEY FROM IBISTEMP
 						WHERE TCHAR = 'A'
@@ -29,7 +29,7 @@
 		</receiver>
 		<pipeline firstPipe="echo">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="echo" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />

@@ -7,7 +7,7 @@
 
 		<pipeline firstPipe="getFileInfo">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 
 			<pipe name="getFileInfo" className="org.frankframework.pipes.LocalFileSystemPipe"

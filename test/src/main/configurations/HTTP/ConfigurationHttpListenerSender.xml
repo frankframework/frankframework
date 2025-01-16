@@ -6,7 +6,7 @@
 		</receiver>
 		<pipeline firstPipe="EchoPipe">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="EchoPipe" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
@@ -20,7 +20,7 @@
 		</receiver>
 		<pipeline firstPipe="LocalHttp">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="LocalHttp">
 				<sender className="org.frankframework.http.HttpSender"
@@ -40,7 +40,7 @@
 		</receiver>
 		<pipeline firstPipe="LocalHttp">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="LocalHttp">
 				<sender className="org.frankframework.http.HttpSender"
@@ -62,7 +62,7 @@
 		</receiver>
 		<pipeline firstPipe="DelayPipe">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="DelayPipe" className="org.frankframework.pipes.DelayPipe"
 				delayTime="2000">
@@ -77,7 +77,7 @@
 		</receiver>
 		<pipeline firstPipe="LocalHttp">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="LocalHttp">
 				<sender className="org.frankframework.http.HttpSender"

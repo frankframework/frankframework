@@ -18,7 +18,7 @@
       </receiver>
 		    <pipeline firstPipe="switch">
 			      <exits>
-				        <exit path="EXIT" state="success"/>
+				        <exit name="EXIT" state="success"/>
 			      </exits>
 			      <inputWrapper className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
                        useFixedValues="true">

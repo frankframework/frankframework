@@ -32,7 +32,7 @@
 				<param name="destination" value="ESB.PropertyAndCasualtyRetail.BS.Policy.PolicyPropertyAndCasualtyRetail.1.WrapMessage.1.Response" />
 			</outputWrapper>
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch"
 				xpathExpression="Request/@action"></pipe>

@@ -5,7 +5,7 @@
 		</receiver>
 		<pipeline firstPipe="DelayPipe">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="DelayPipe" className="org.frankframework.pipes.DelayPipe" delayTime="${delay.time}">
 				<forward name="success" path="EXIT" />
@@ -18,7 +18,7 @@
 		</receiver>
 		<pipeline firstPipe="DelayPipe">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="DelayPipe" className="org.frankframework.pipes.DelayPipe">
 				<forward name="success" path="EXIT" />

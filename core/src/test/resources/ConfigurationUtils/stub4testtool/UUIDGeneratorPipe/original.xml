@@ -5,7 +5,7 @@
 		</receiver>
 		<pipeline firstPipe="UUIDGeneratorPipe-numeric">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="UUIDGeneratorPipe-numeric"
 				className="org.frankframework.pipes.UUIDGeneratorPipe"

@@ -6,7 +6,7 @@
 		</receiver>
 		<pipeline firstPipe="switch">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" forwardNameSessionKey="action" />
 <!-- unwrap -->

@@ -8,7 +8,7 @@
 		</receiver>
 		<pipeline firstPipe="getStartTime">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 			<!-- Puts the time stamp in milliseconds in timeStampInMillis session
 				Key -->
@@ -41,7 +41,7 @@
 		</receiver>
 		<pipeline firstPipe="Pass through">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
 				className="org.frankframework.pipes.SenderPipe">
@@ -63,7 +63,7 @@
 
 		<pipeline firstPipe="Pass through">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
 				className="org.frankframework.pipes.SenderPipe">
@@ -84,7 +84,7 @@
 		</receiver>
 		<pipeline firstPipe="Pass through">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
 				className="org.frankframework.pipes.SenderPipe">
@@ -105,7 +105,7 @@
 		</receiver>
 		<pipeline firstPipe="Pass through">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
 				className="org.frankframework.pipes.SenderPipe">
@@ -126,7 +126,7 @@
 		</receiver>
 		<pipeline firstPipe="Pass through">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
 				className="org.frankframework.pipes.SenderPipe">
@@ -147,7 +147,7 @@
 		</receiver>
 		<pipeline firstPipe="Pass through">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
 				className="org.frankframework.pipes.SenderPipe">
@@ -168,7 +168,7 @@
 		</receiver>
 		<pipeline firstPipe="Pass through">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
 				className="org.frankframework.pipes.SenderPipe">
@@ -189,7 +189,7 @@
 		</receiver>
 		<pipeline firstPipe="Pass through">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
 				className="org.frankframework.pipes.SenderPipe">
@@ -210,7 +210,7 @@
 		</receiver>
 		<pipeline firstPipe="Pass through">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
 				className="org.frankframework.pipes.SenderPipe">
@@ -231,7 +231,7 @@
 		</receiver>
 		<pipeline firstPipe="Pass through">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
 				className="org.frankframework.pipes.SenderPipe">
@@ -250,7 +250,7 @@
 		</receiver>
 		<pipeline firstPipe="getEndTime">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 			<!-- Puts the time stamp in milliseconds in systemDate session
 				Key -->
@@ -282,7 +282,7 @@
 		</receiver>
 		<pipeline firstPipe="getStartTime">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 			<pipe name="getStartTime" action="read"
 				className="org.frankframework.pipes.LocalFileSystemPipe"
