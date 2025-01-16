@@ -379,7 +379,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.SweetAlert.Warning({
       title: 'Move state of messages',
-      text: 'Are you sure you want to move selected messages to Error?',
+      text: 'The messages might still be processing in the background. Are you sure you want to move them to Error?',
       confirmButtonText: 'Move to Error',
       cancelButtonText: 'Cancel',
       showCancelButton: true,
