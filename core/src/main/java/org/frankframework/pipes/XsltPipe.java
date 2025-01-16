@@ -46,7 +46,7 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 
 	private final @Getter XsltSender sender = createXsltSender();
 
-	{
+	public XsltPipe() {
 		setSizeStatistics(true);
 	}
 
