@@ -5,8 +5,8 @@
 		</receiver>
 		<pipeline firstPipe="cleanup dir">
 			<exits>
-				<exit path="EXIT" state="success"/>
-				<exit path="ERROR" state="error"/>
+				<exit name="EXIT" state="success"/>
+				<exit name="ERROR" state="error"/>
 			</exits>
 
 			<LocalFileSystemPipe

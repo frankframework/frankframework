@@ -147,7 +147,7 @@
 									<xsl:value-of select="parent::*[name()='pipeline']/pipe[$pos+1]/@name" />
 								</xsl:when>
 								<xsl:otherwise>
-									<xsl:value-of select="parent::*[name()='pipeline']/exits/exit[@state='success']/@path" />
+									<xsl:value-of select="parent::*[name()='pipeline']/exits/exit[@state='success']/@name" />
 								</xsl:otherwise>
 							</xsl:choose>
 						</xsl:with-param>
@@ -221,13 +221,13 @@
 	</xsl:template>
 	<xsl:template match="exit">
 		<xsl:text>&quot;</xsl:text>
-		<xsl:value-of select="@path" />
+		<xsl:value-of select="@name" />
 		<xsl:text>&quot;</xsl:text>
 		<xsl:value-of select="$space" />
 		<xsl:text>[style=rounded]</xsl:text>
 		<xsl:text>&#10;</xsl:text>
 		<xsl:text>&quot;</xsl:text>
-		<xsl:value-of select="@path" />
+		<xsl:value-of select="@name" />
 		<xsl:text>&quot;</xsl:text>
 		<xsl:value-of select="$space" />
 		<xsl:text>-&gt;</xsl:text>
@@ -275,7 +275,7 @@
 		<xsl:choose>
 			<xsl:when test="string-length($caller)=0">
 				<xsl:for-each select="exits/exit">
-					<xsl:value-of select="@path" />
+					<xsl:value-of select="@name" />
 					<xsl:value-of select="$space" />
 					<xsl:text>-&gt;</xsl:text>
 					<xsl:value-of select="$space" />

@@ -5,7 +5,7 @@
 		</receiver>
 		<pipeline firstPipe="sendMessage">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="sendMessage" className="org.frankframework.pipes.SenderPipe" retryXPath="(reply/textIn='goodbye')=false()" maxRetries="5" retryMinInterval="2" retryMaxInterval="5">
 				<sender className="org.frankframework.senders.IbisJavaSender" serviceName="testtool-SenderPipe" />

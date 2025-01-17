@@ -7,7 +7,7 @@
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="make unique message"
                   className="org.frankframework.pipes.ReplacerPipe"
@@ -51,8 +51,8 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success" />
-				<exit path="ERROR" state="error" />
+				<exit name="EXIT" state="success" />
+				<exit name="ERROR" state="error" />
 			</exits>
 			<EchoPipe name="echo message" />
 			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch"

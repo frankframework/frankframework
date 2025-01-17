@@ -1183,8 +1183,16 @@
 										<message>Dont use com.sun but glassfish instead</message>
 									</bannedDependencies>
 								</rules>
+							</configuration>
+						</execution>
+						<execution>
+							<id>enforce-jdk-version</id>
+							<goals>
+								<goal>enforce</goal>
+							</goals>
+							<configuration>
 								<rules>
-									<requireJavaVersion>
+										<requireJavaVersion>
 										<version>[17,24)</version>
 									</requireJavaVersion>
 								</rules>

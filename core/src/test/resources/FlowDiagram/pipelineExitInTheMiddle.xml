@@ -16,7 +16,7 @@
 		</pipe>
 
 		<exits>
-			<exit path="EXIT" state="success"/>
+			<exit name="EXIT" state="success"/>
 		</exits>
 
 		<pipe className="org.frankframework.pipes.EchoPipe" name="echoSomething1">

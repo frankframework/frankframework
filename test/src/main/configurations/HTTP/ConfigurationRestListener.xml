@@ -6,7 +6,7 @@
 		</receiver>
 		<pipeline firstPipe="insertDoc" transactionAttribute="Required">
 			<exits>
-				<exit state="success" path="EXIT" />
+				<exit state="success" name="EXIT" />
 			</exits>
 
 			<pipe name="insertDoc"
@@ -28,7 +28,7 @@
 		</receiver>
 		<pipeline firstPipe="readFile">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 
 			<pipe name="readFile" className="org.frankframework.pipes.FixedResultPipe"
@@ -77,7 +77,7 @@
 		</receiver>
 		<pipeline firstPipe="setContentType">
 			<exits>
-				<exit state="success" path="EXIT" />
+				<exit state="success" name="EXIT" />
 			</exits>
 
 			<pipe name="setContentType" className="org.frankframework.pipes.PutInSession"
@@ -129,7 +129,7 @@
 		</receiver>
 		<pipeline firstPipe="getId">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 
 			<pipe name="getId" className="org.frankframework.pipes.XsltPipe"
@@ -165,7 +165,7 @@
 		</receiver>
 		<pipeline firstPipe="getFileName">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 
 			<pipe name="getFileName" className="org.frankframework.pipes.XsltPipe"
@@ -215,7 +215,7 @@
 		</receiver>
 		<pipeline firstPipe="readFile">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 
 			<pipe name="readFile" className="org.frankframework.pipes.FixedResultPipe"
@@ -231,7 +231,7 @@
 		</receiver>
 		<pipeline firstPipe="createFileNameKey">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 
 			<pipe name="createFileNameKey" className="org.frankframework.pipes.PutInSession"

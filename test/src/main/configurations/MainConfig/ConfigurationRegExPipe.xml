@@ -4,7 +4,7 @@
 			<JavaListener name="RegExPipe" serviceName="ibis4test-RegExPipe" />
 		</Receiver>
 		<Pipeline firstPipe="regExPipe">
-			<Exit path="EXIT" state="success" />
+			<Exit name="EXIT" state="success" />
 
 			<RegExPipe name="regExPipe" regex="^(.*?)(name!)$">
 				<Forward name="then" path="EXIT" />

@@ -5,7 +5,7 @@
 		</receiver>
 		<pipeline firstPipe="unwrap">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="unwrap" className="org.frankframework.soap.SoapWrapperPipe" direction="unwrap">
 				<forward name="success" path="EchoPipe" />
@@ -24,7 +24,7 @@
 		</receiver>
 		<pipeline firstPipe="wrap">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="wrap" className="org.frankframework.soap.SoapWrapperPipe" serviceNamespace="urn:wsns">
 				<forward name="success" path="Send2WS" />

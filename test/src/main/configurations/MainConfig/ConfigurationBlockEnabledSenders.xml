@@ -5,7 +5,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe className="org.frankframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe" >
 				<sender className="org.frankframework.jdbc.FixedQuerySender" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)" />
@@ -24,7 +24,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe className="org.frankframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe" blockSize="2" combineBlocks="false" >
 				<sender className="org.frankframework.jdbc.FixedQuerySender" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)" />
@@ -43,7 +43,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe className="org.frankframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe">
 				<sender className="org.frankframework.jdbc.FixedQuerySender" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)"
@@ -63,7 +63,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe className="org.frankframework.pipes.StreamLineIteratorPipe" name="StreamLineIteratorPipe_Record" >
 				<sender className="org.frankframework.jdbc.DirectQuerySender" />

@@ -5,7 +5,7 @@
 		</Receiver>
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<XsltPipe name="extractJson" xpathExpression="request/json" outputType="text" storeResultInSessionKey="json" />
 			<XmlSwitchPipe name="switchAction" xpathExpression="request/@action" getInputFromSessionKey="originalMessage"/>

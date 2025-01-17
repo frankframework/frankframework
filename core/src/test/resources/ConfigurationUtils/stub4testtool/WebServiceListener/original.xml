@@ -6,7 +6,7 @@
 		</receiver>
 		<pipeline firstPipe="EchoPipe">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="EchoPipe" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />

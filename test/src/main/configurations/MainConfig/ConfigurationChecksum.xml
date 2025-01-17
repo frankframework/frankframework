@@ -9,8 +9,8 @@
 		</receiver>
 		<pipeline firstPipe="selectSenderBasedOnRootNode">
 			<exits>
-				<exit path="READY" state="success"/>
-				<exit path="ERROR" state="error"/>
+				<exit name="READY" state="success"/>
+				<exit name="ERROR" state="error"/>
 			</exits>
 
 			<pipe
@@ -66,8 +66,8 @@
 		</receiver>
 		<pipeline firstPipe="selectSenderBasedOnTransferName">
 			<exits>
-				<exit path="READY" state="success"/>
-				<exit path="ERROR" state="error"/>
+				<exit name="READY" state="success"/>
+				<exit name="ERROR" state="error"/>
 			</exits>
 
 			<pipe

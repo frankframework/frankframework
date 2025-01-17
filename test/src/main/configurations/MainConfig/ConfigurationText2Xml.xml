@@ -6,7 +6,7 @@
 		</receiver>
 		<pipeline firstPipe="text2xml">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="text2xml" className="org.frankframework.pipes.Text2XmlPipe"
 				xmlTag="MessageLogCorrelationID" getInputFromSessionKey="cid">

@@ -6,7 +6,7 @@
 
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 
 			<pipe
@@ -88,7 +88,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 			<pipe
 			  name="pion.csv"
@@ -163,7 +163,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 			<pipe
 			  name="fixedwidth.txt"
@@ -192,7 +192,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 			<pipe
 			  name="structured.txt"
@@ -270,7 +270,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 			<pipe
 			  name="substructured.txt"
@@ -311,7 +311,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 		<pipe name="i4redifact.txt" className="org.frankframework.batch.StreamTransformerPipe">
 			<manager name="rhmBody" className="org.frankframework.batch.FieldPositionRecordHandlerManager" separator="+" fieldNr="1" initial="true">

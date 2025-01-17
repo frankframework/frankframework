@@ -7,7 +7,7 @@
 		</receiver>
 		<pipeline firstPipe="EchoPipe">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe className="org.frankframework.pipes.EchoPipe" name="EchoPipe" getInputFromSessionKey="attachment1">
 				<forward name="success" path="EXIT"/>
@@ -21,7 +21,7 @@
 		</receiver>
 		<pipeline firstPipe="MergeAttachments">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe className="org.frankframework.pipes.XsltPipe" name="MergeAttachments"
                   styleSheetName="WebServiceListenerSender/mergeAttachments.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
@@ -41,7 +41,7 @@
 		</receiver>
 		<pipeline firstPipe="EchoMessage">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe className="org.frankframework.pipes.EchoPipe" name="EchoMessage" getInputFromFixedValue="&lt;xml/&gt;">
 				<forward name="success" path="GetFile"/>
@@ -64,7 +64,7 @@
 		</receiver>
 		<pipeline firstPipe="EchoMessage">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe className="org.frankframework.pipes.EchoPipe" name="EchoMessage" getInputFromFixedValue="&lt;xml/&gt;">
 				<forward name="success" path="GetFile"/>
@@ -93,7 +93,7 @@
 		</receiver>
 		<pipeline firstPipe="Send2WS">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
@@ -116,7 +116,7 @@
 		</receiver>
 		<pipeline firstPipe="GetAttachment1">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="GetAttachment1" className="org.frankframework.pipes.LocalFileSystemPipe"
 				action="read" filename="${testdata.dir}/webservices/textfile.txt" storeResultInSessionKey="file"
@@ -157,7 +157,7 @@
 		</receiver>
 		<pipeline firstPipe="Send2WS">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
@@ -189,7 +189,7 @@
 		</receiver>
 		<pipeline firstPipe="Send2WS">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">

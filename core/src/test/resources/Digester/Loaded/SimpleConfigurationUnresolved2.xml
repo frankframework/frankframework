@@ -7,7 +7,7 @@
 			/>
 		</receiver>
 		<pipeline firstPipe="HelloWorld">
-			<exit path="EXIT" state="success"/>
+			<exit name="EXIT" state="success"/>
 			<pipe
 					name="HelloWorld"
 					className="org.frankframework.testdummies.TestDummyPipe"

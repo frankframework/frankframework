@@ -4,7 +4,7 @@
 			<JavaListener name="ForPipe" serviceName="ibis4test-ForPipe" />
 		</Receiver>
 		<Pipeline firstPipe="forPipe">
-			<Exit path="EXIT" state="success" />
+			<Exit name="EXIT" state="success" />
 
 			<ForPipe name="forPipe" stopAt="10">
 				<Forward name="stop" path="EXIT" />
@@ -20,7 +20,7 @@
 			<JavaListener name="ForPipeWithParam" serviceName="ibis4test-ForPipeWithParam" />
 		</Receiver>
 		<Pipeline firstPipe="forPipe">
-			<Exit path="EXIT" state="success" />
+			<Exit name="EXIT" state="success" />
 
 			<ForPipe name="forPipe">
 				<NumberParam name="stopAt" value="10" />

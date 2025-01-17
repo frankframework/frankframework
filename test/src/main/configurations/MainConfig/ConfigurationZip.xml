@@ -10,7 +10,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 			<pipe
 				name="selectSenderBasedOnRootElement"
@@ -187,7 +187,7 @@
 
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 
 			<pipe
@@ -222,7 +222,7 @@
 		</receiver>
 		<pipeline firstPipe="make entry">
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 
 			<pipe
@@ -283,7 +283,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 
 			<pipe
@@ -405,7 +405,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 
 			<pipe name="Extract File Contents From Message Into Session"
@@ -438,7 +438,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 
 			<pipe
