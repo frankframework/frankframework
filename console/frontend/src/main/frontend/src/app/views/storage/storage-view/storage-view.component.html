@@ -37,7 +37,7 @@
             @if (storageParams.processState === 'Error') {
               <button
                 appHasAccessToLink="resendReceiverMessage"
-                [ladda]="message.resending"
+                [ladda]="message.processing"
                 data-style="slide-down"
                 title="Resend Message"
                 (click)="resendMessage(message)"
@@ -46,11 +46,9 @@
               >
                 <i class="fa fa-repeat"></i> Resend
               </button>
-            }
-            @if (storageParams.processState === 'Error') {
               <button
                 appHasAccessToLink="deleteReceiverMessage"
-                [ladda]="message.deleting"
+                [ladda]="message.processing"
                 data-style="slide-down"
                 title="Delete Message"
                 (click)="deleteMessage(message)"
