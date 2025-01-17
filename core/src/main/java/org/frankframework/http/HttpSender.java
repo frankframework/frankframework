@@ -41,8 +41,6 @@ import org.w3c.dom.Element;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.http.mime.HttpEntityFactory;
@@ -87,16 +85,13 @@ public class HttpSender extends AbstractHttpSender {
 		}
 
 		if (getHttpMethod() != HttpMethod.POST) {
-			if (!isParamsInUrl()) {
-				throw new ConfigurationException("paramsInUrl can only be set to false for methodType POST");
-			}
 			if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
 				throw new ConfigurationException("firstBodyPartName can only be set for methodType POST");
 			}
 		}
 
-		if (!paramsInUrl && postType == HttpEntityType.URLENCODED && StringUtils.isNotBlank(getMultipartXmlSessionKey())) {
-			// Some weird backwards-compatibility hacks with deprecated "paramsInUrl" to be worked around. Now in better place than before, hopefully.
+		if (postType == HttpEntityType.URLENCODED && StringUtils.isNotBlank(getMultipartXmlSessionKey())) {
+			// Some weird backwards-compatibility hacks to be worked around. Now in better place than before, hopefully.
 			postType = HttpEntityType.FORMDATA;
 		}
 
@@ -278,23 +273,6 @@ public class HttpSender extends AbstractHttpSender {
 	 */
 	public void setPostType(HttpEntityType type) {
 		this.postType = type;
-	}
-
-	/**
-	 * If false and <code>methodType</code>=<code>POST</code>, request parameters are put in the request body instead of in the url
-	 * @ff.default true
-	 */
-	@Deprecated(forRemoval = true, since = "7.6.0")
-	public void setParamsInUrl(boolean b) {
-		if(!b) {
-			if(postType != HttpEntityType.MTOM && postType != HttpEntityType.FORMDATA) { //Don't override if another type has explicitly been set
-				postType = HttpEntityType.URLENCODED;
-				ConfigurationWarnings.add(this, log, "attribute [paramsInUrl] is deprecated: please use postType='URLENCODED' instead", SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
-			} else {
-				ConfigurationWarnings.add(this, log, "attribute [paramsInUrl] is deprecated: no longer required when using FORMDATA or MTOM requests", SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
-			}
-		}
-		paramsInUrl = b;
 	}
 
 	/** (Only used when <code>methodType=POST</code> and <code>postType=URLENCODED</code>, <code>FORM-DATA</code> or <code>MTOM</code>) Prepends a new BodyPart using the specified name and uses the input of the Sender as content */
