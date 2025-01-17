@@ -1,6 +1,7 @@
 name: Feature request
 description: Request a new feature.
-labels: ['Feature', 'Needs Triage']
+labels: ['Needs Triage']
+type: Feature
 projects: ['frankframework/2']
 body:
   - type: markdown
