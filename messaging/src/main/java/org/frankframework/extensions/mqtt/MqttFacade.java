@@ -37,7 +37,7 @@ import org.frankframework.core.IConfigurable;
  * <pre>{@code
  * mqtt:
  *   - name: "my-connection"
- *     type: "org.frankframework.jdbc.datasource.MqttClientBuilder"
+ *     type: "org.frankframework.jdbc.datasource.MqttClientSettings"
  *     url: "tcp://host:port"
  *     properties:
  *       automaticReconnect: "true"

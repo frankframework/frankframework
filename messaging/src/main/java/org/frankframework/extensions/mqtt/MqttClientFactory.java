@@ -25,13 +25,13 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
-import org.frankframework.jdbc.datasource.MqttClientBuilder;
+import org.frankframework.jdbc.datasource.MqttClientSettings;
 import org.frankframework.jdbc.datasource.ObjectFactory;
 import org.frankframework.util.AppConstants;
 
 import java.util.Properties;
 
-public class MqttClientFactory extends ObjectFactory<MqttClient, MqttClientBuilder> {
+public class MqttClientFactory extends ObjectFactory<MqttClient, MqttClientSettings> {
 
 	// Thread-safe singleton
 	private static class MqttClientFactoryHolder {
@@ -43,12 +43,12 @@ public class MqttClientFactory extends ObjectFactory<MqttClient, MqttClientBuild
 	}
 
 	private MqttClientFactory() {
-		super(MqttClientBuilder.class);
+		super(MqttClientSettings.class);
 	}
 
 	@SneakyThrows
 	@Override
-	protected MqttClient map(MqttClientBuilder data) {
+	protected MqttClient map(MqttClientSettings data) {
 		MqttConnectOptions connectOptions = new MqttConnectOptions();
 		connectOptions.setCleanSession(data.isCleanSession());
 		connectOptions.setAutomaticReconnect(data.isAutomaticReconnect());
