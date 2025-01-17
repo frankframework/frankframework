@@ -32,7 +32,7 @@
 	<adapter name="EsbJmsRRListenerTibco" description="Test the functioning of the EsbJmsListener (RR) - Tibco"
 		active="${active.tibco}">
 		<errorMessageFormatter
-			className="org.frankframework.errormessageformatters.SoapErrorMessage" />
+			className="org.frankframework.errormessageformatters.SoapErrorMessageFormatter" />
 		<receiver>
 			<listener className="org.frankframework.extensions.esb.EsbJmsListener"
 				destinationName="${tibco.rr_queue}" jmsRealm="qcf_tibco_esb_rr"
@@ -304,8 +304,8 @@
 	</adapter>
 	<adapter name="EsbJmsRRListener" description="Test the functioning of the EsbJmsListener (RR)"
 		active="${active.jms}">
-		<errorMessageFormatter
-			className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
+		<soapErrorMessageFormatter
+			className="org.frankframework.errormessageformatters.SoapErrorMessageFormatter" />
 		<receiver>
 			<listener className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
 		  		destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf"

@@ -22,7 +22,7 @@
 
 		<jackson.version>2.18.2</jackson.version>
 		<cxf.version>4.1.0</cxf.version>
-		<spring.version>6.2.1</spring.version>
+		<spring.version>6.2.2</spring.version>
 		<spring-security.version>6.4.2</spring-security.version>
 		<spring-integration.version>6.4.1</spring-integration.version>
 		<spring.boot.version>3.4.1</spring.boot.version>
@@ -53,7 +53,7 @@
 		<activemq.driver.version>6.1.5</activemq.driver.version>
 		<artemis.driver.version>2.39.0</artemis.driver.version>
 
-		<aws.java.sdk.version>2.29.1</aws.java.sdk.version>
+		<aws.java.sdk.version>2.29.52</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.15.2</mockito.version>

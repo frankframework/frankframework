@@ -20,7 +20,6 @@
 	<Include ref="./ConfigurationWebServiceListenerSenderServiceNamespaceURI.xml"/>
 	<Include ref="./ConfigurationWebServiceListenerSenderNoSoap.xml"/>
 	<Include ref="./ConfigurationApiListener.xml"/>
-	<Include ref="./ConfigurationHttpListenerSender.xml"/>
 	<Include ref="./ConfigurationRestListener.xml"/>
 	<Include ref="./ConfigurationSharedHttpResource.xml"/>
 </configuration>
