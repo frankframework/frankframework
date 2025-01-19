@@ -9935,7 +9935,16 @@
     </xs:choice>
   </xs:group>
   <xs:group name="ChildElementGroup_2">
-    <xs:choice />
+    <xs:choice>
+      <xs:element name="Child">
+        <xs:complexType>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="child" />
+          <xs:attribute name="className" type="xs:string" use="required" />
+          <xs:anyAttribute processContents="skip" />
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
   </xs:group>
   <xs:group name="ChildElementGroupBase">
     <xs:choice>
@@ -10518,12 +10527,15 @@
       </xs:element>
       <xs:element name="Manager">
         <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="RecordHandlerManagerType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="manager" />
-              <xs:anyAttribute processContents="skip" />
-            </xs:extension>
-          </xs:complexContent>
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="Flow" type="FlowType" />
+            </xs:choice>
+          </xs:sequence>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="manager" />
+          <xs:attribute name="className" type="xs:string" default="org.frankframework.batch.RecordHandlerManager" />
+          <xs:anyAttribute processContents="skip" />
         </xs:complexType>
       </xs:element>
     </xs:choice>
