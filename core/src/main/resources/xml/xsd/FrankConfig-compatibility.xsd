@@ -8502,12 +8502,15 @@
     <xs:choice>
       <xs:element name="ErrorMessageFormatter">
         <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="ErrorMessageFormatterType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="errorMessageFormatter" />
-              <xs:anyAttribute processContents="skip" />
-            </xs:extension>
-          </xs:complexContent>
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:group ref="ParamElementGroup" />
+            </xs:choice>
+          </xs:sequence>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="errorMessageFormatter" />
+          <xs:attribute name="className" type="xs:string" default="org.frankframework.errormessageformatters.ErrorMessageFormatter" />
+          <xs:anyAttribute processContents="skip" />
         </xs:complexType>
       </xs:element>
       <xs:element name="FixedErrorMessageFormatter">
