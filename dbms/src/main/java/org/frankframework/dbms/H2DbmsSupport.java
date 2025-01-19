@@ -23,6 +23,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+
 
 /**
  * Support for H2.
@@ -34,6 +36,25 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 	@Override
 	public Dbms getDbms() {
 		return Dbms.H2;
+	}
+
+	@Override
+	public boolean hasSkipLockedFunctionality() {
+		return true;
+	}
+
+	// See OracleDbmsSupport
+	@Override
+	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws DbmsException {
+		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
+			throw new DbmsException("query [" + selectQuery + "] must start with keyword [" + KEYWORD_SELECT + "]");
+		}
+
+		if (wait < 0) {
+			return selectQuery + " FOR UPDATE SKIP LOCKED";
+		} else {
+			return selectQuery + " FOR UPDATE WAIT " + wait;
+		}
 	}
 
 	@Override
@@ -63,20 +84,6 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 	public Object getBlobHandle(ResultSet rs, int column) throws SQLException, DbmsException {
 		return rs.getStatement().getConnection().createBlob();
 	}
-
-	//	@Override
-//	// 2020-07-13 GvB: Did not get "SET SESSION CHARACTERISTICS" to work
-//	public JdbcSession prepareSessionForDirtyRead(Connection conn) throws DbmsException {
-//		JdbcUtil.executeStatement(conn, "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
-//		return new AutoCloseable() {
-//
-//			@Override
-//			public void close() throws Exception {
-//				JdbcUtil.executeStatement(conn, "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED");
-//			}
-//
-//		}
-//	}
 
 	@Override
 	public ResultSet getTableColumns(Connection conn, String schemaName, String tableName, String columnNamePattern) throws DbmsException {
