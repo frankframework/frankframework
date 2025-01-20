@@ -98,6 +98,8 @@ public class HttpSender extends AbstractHttpSender {
 		if (!paramsInUrl && postType == HttpEntityType.URLENCODED && StringUtils.isNotBlank(getMultipartXmlSessionKey())) {
 			// Some weird backwards-compatibility hacks with deprecated "paramsInUrl" to be worked around. Now in better place than before, hopefully.
 			postType = HttpEntityType.FORMDATA;
+
+			ConfigurationWarnings.add(this, log, "please set postType to FORMDATA or MTOM to use multipartXmlSessionKey");
 		}
 
 		entityBuilder = HttpEntityFactory.Builder.create()
