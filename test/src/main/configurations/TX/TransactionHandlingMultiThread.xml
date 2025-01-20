@@ -50,7 +50,7 @@
 				throwException="false"
 			/>
 		</receiver>
-		<errorMessageFormatter className="org.frankframework.errormessageformatters.XslErrorMessageFormatter" xpathExpression="/errorMessage/@message" />
+		<XslErrorMessageFormatter xpathExpression="/errorMessage/@message" />
 
 		<pipeline transactionAttribute="RequiresNew" transactionTimeout="10">
 			<exits>
@@ -127,7 +127,7 @@
 				throwException="false"
 			/>
 		</receiver>
-		<errorMessageFormatter className="org.frankframework.errormessageformatters.XslErrorMessageFormatter" xpathExpression="/errorMessage/@message" />
+		<XslErrorMessageFormatter xpathExpression="/errorMessage/@message" />
 
 		<pipeline transactionAttribute="Required" transactionTimeout="10">
 			<exits>
@@ -148,7 +148,7 @@
 				throwException="false"
 			/>
 		</receiver>
-		<errorMessageFormatter className="org.frankframework.errormessageformatters.XslErrorMessageFormatter" xpathExpression="/errorMessage/@message" />
+		<XslErrorMessageFormatter xpathExpression="/errorMessage/@message" />
 
 		<pipeline transactionAttribute="Required" transactionTimeout="10">
 			<exits>
