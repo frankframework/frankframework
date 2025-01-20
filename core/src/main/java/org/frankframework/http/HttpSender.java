@@ -41,6 +41,7 @@ import org.w3c.dom.Element;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.http.mime.HttpEntityFactory;
@@ -59,40 +60,39 @@ import org.frankframework.util.XmlUtils;
  */
 public class HttpSender extends AbstractHttpSender {
 
-	private @Getter boolean paramsInUrl=true;
 	private @Getter String firstBodyPartName=null;
-
 	private @Getter String multipartXmlSessionKey;
-	private @Getter String mtomContentTransferEncoding = null; //Defaults to 8-bit for normal String messages, 7-bit for e-mails and binary for streams
+	private @Getter String mtomContentTransferEncoding = null; // Defaults to 8-bit for normal String messages, 7-bit for e-mails and binary for streams
 	private @Getter boolean encodeMessages = false;
 	private @Getter Boolean treatInputMessageAsParameters = null;
-
 	private @Getter HttpEntityType postType = HttpEntityType.RAW;
 
 	private HttpEntityFactory entityBuilder;
 
 	@Override
 	public void configure() throws ConfigurationException {
-		//For backwards compatibility we have to set the contentType to text/html on POST and PUT requests
-		if(StringUtils.isEmpty(getContentType()) && postType == HttpEntityType.RAW && (getHttpMethod() == HttpMethod.POST || getHttpMethod() == HttpMethod.PUT || getHttpMethod() == HttpMethod.PATCH)) {
+		// For backwards compatibility we have to set the contentType to text/html on POST and PUT requests
+		if (StringUtils.isEmpty(getContentType()) && postType == HttpEntityType.RAW
+				&& (getHttpMethod() == HttpMethod.POST || getHttpMethod() == HttpMethod.PUT || getHttpMethod() == HttpMethod.PATCH)) {
 			setContentType("text/html");
 		}
 
 		super.configure();
 
-		if (getTreatInputMessageAsParameters()==null && getHttpMethod()!=HttpMethod.GET) {
+		if (getTreatInputMessageAsParameters() == null && getHttpMethod() != HttpMethod.GET) {
 			setTreatInputMessageAsParameters(Boolean.TRUE);
 		}
 
-		if (getHttpMethod() != HttpMethod.POST) {
-			if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
-				throw new ConfigurationException("firstBodyPartName can only be set for methodType POST");
-			}
+		if (getHttpMethod() != HttpMethod.POST && StringUtils.isNotEmpty(getFirstBodyPartName())) {
+			throw new ConfigurationException("firstBodyPartName can only be set for methodType POST");
 		}
 
+		// This was introduced in 9.0.0 (issue #8088) but shouldn't be here
 		if (postType == HttpEntityType.URLENCODED && StringUtils.isNotBlank(getMultipartXmlSessionKey())) {
 			// Some weird backwards-compatibility hacks to be worked around. Now in better place than before, hopefully.
 			postType = HttpEntityType.FORMDATA;
+
+			ConfigurationWarnings.add(this, log, "please set postType to FORMDATA or MTOM to use multipartXmlSessionKey");
 		}
 
 		entityBuilder = HttpEntityFactory.Builder.create()
@@ -106,7 +106,6 @@ public class HttpSender extends AbstractHttpSender {
 				.multipartXmlSessionKey(multipartXmlSessionKey)
 				.rawWithParametersAppendsInputMessage(BooleanUtils.isTrue(getTreatInputMessageAsParameters()))
 				.build();
-
 	}
 
 	@Override
