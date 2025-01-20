@@ -62,7 +62,7 @@ public abstract class AbstractSenderWrapper extends AbstractSenderWithParameters
 			throw new ConfigurationException("cannot have both attributes inputFromSessionKey and inputFromFixedValue configured");
 		}
 		if (cache!=null) {
-			cache.configure(getName());
+			cache.configure();
 		}
 	}
 

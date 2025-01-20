@@ -62,9 +62,9 @@ public abstract class AbstractCacheAdapter<V> implements ICache<String,V>, Frank
 	private TransformerPool valueTp=null;
 
 	@Override
-	public void configure(String ownerName) throws ConfigurationException {
+	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getName())) {
-			setName(ownerName+"_cache");
+			setName(applicationContext.getId()+"_cache");
 		}
 		if (StringUtils.isNotEmpty(getKeyXPath()) || StringUtils.isNotEmpty(getKeyStyleSheet())) {
 			keyTp=TransformerPool.configureTransformer(this, getKeyNamespaceDefs(), getKeyXPath(), getKeyStyleSheet(), getKeyXPathOutputType(),false,null);
