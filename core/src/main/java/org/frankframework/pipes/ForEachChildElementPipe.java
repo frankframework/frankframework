@@ -83,6 +83,8 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	private @Setter IThreadConnectableTransactionManager<?,?> txManager;
 	private @Getter @Setter IXmlDebugger xmlDebugger;
 
+	private boolean createStreamingThreadConnector;
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -97,6 +99,8 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 					ConfigurationWarnings.add(this, log, "XsltProcessor xsltVersion [" + getXsltVersion() + "] currently does not support streaming XSLT, might lead to memory problems for large messages", SuppressKeys.XSLT_STREAMING_SUPRESS_KEY);
 				}
 			}
+
+			createStreamingThreadConnector = StringUtils.isNotEmpty(getElementXPathExpression()) && XmlUtils.isXsltStreamingByDefault();
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("elementXPathExpression ["+getElementXPathExpression()+"]",e);
 		}
@@ -375,7 +379,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		}
 
 		HandlerRecord handlerRecord = new HandlerRecord();
-		try (ThreadConnector<?> threadConnector = XmlUtils.isXsltStreamingByDefault() ? new ThreadConnector<>(this, "iterateOverInput", threadLifeCycleEventListener, txManager, session) : null) {
+		try (ThreadConnector<?> threadConnector = createStreamingThreadConnector ? new ThreadConnector<>(this, "iterateOverInput", threadLifeCycleEventListener, txManager, session) : null) {
 			try {
 				createHandler(handlerRecord, threadConnector, input, session, callback);
 			} catch (TransformerException e) {
