@@ -441,7 +441,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			}
 			if(!isIgnoreExceptions() && !exceptions.isEmpty()) {
 				SenderException se = new SenderException("an error occurred during parallel execution");
-				exceptions.stream().forEach(se::addSuppressed);
+				exceptions.forEach(se::addSuppressed);
 				throw se;
 			}
 		}
