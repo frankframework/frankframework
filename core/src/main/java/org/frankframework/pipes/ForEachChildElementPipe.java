@@ -83,7 +83,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	private @Setter IThreadConnectableTransactionManager<?,?> txManager;
 	private @Getter @Setter IXmlDebugger xmlDebugger;
 
-	private boolean createStreamingThreadConnector;
+	private boolean createThreadConnectorForXsltStreaming;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -100,7 +100,11 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 				}
 			}
 
-			createStreamingThreadConnector = StringUtils.isNotEmpty(getElementXPathExpression()) && XmlUtils.isXsltStreamingByDefault();
+			// ThreadConnector should only be created when there is an XPath expression to iterate over elements, and XSLT Streaming is enabled.
+			// Otherwise there can be a transaction-deadlock as creating the ThreadConnector suspends the current transaction, and the ForEachChildElementPipe
+			// might be delegating work to a sender that does database-work.
+			// Cache the value here, so that we don't have to repeat the check on every invocation.
+			createThreadConnectorForXsltStreaming = StringUtils.isNotEmpty(getElementXPathExpression()) && XmlUtils.isXsltStreamingByDefault();
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("elementXPathExpression ["+getElementXPathExpression()+"]",e);
 		}
@@ -379,7 +383,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		}
 
 		HandlerRecord handlerRecord = new HandlerRecord();
-		try (ThreadConnector<?> threadConnector = createStreamingThreadConnector ? new ThreadConnector<>(this, "iterateOverInput", threadLifeCycleEventListener, txManager, session) : null) {
+		try (ThreadConnector<?> threadConnector = createThreadConnectorForXsltStreaming ? new ThreadConnector<>(this, "iterateOverInput", threadLifeCycleEventListener, txManager, session) : null) {
 			try {
 				createHandler(handlerRecord, threadConnector, input, session, callback);
 			} catch (TransformerException e) {
