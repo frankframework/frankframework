@@ -15,6 +15,7 @@
 */
 package org.frankframework.cache;
 
+import org.frankframework.core.FrankElement;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.NameAware;
 import org.frankframework.core.PipeLineSession;
@@ -28,7 +29,7 @@ import org.frankframework.stream.Message;
  *
  * @ff.defaultElement org.frankframework.cache.EhCache
  */
-public interface ICache<K,V> extends IConfigurable, NameAware {
+public interface ICache<K,V> extends IConfigurable, FrankElement, NameAware {
 
 	void open();
 	void close();

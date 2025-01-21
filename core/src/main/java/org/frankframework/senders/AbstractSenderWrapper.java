@@ -85,6 +85,17 @@ public abstract class AbstractSenderWrapper extends AbstractSenderWithParameters
 		}
 	}
 
+	@Override
+	public void setName(String name) {
+		super.setName(name);
+
+		// Far from the best solution as a sender may get it's name from the MessageSendingPipe.
+		// This results in names such as <pipe>-sender-cache, which is technically not wrong, but it seems very wrong to do it this way.
+		if (cache != null && StringUtils.isEmpty(cache.getName())) {
+			cache.setName(getName() + "-cache");
+		}
+	}
+
 	protected abstract boolean isSenderConfigured();
 
 	public abstract SenderResult doSendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException;
