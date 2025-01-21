@@ -6,6 +6,7 @@ services:
   ff-test:
     volumes:
       - "../test/src/test/testtool:/opt/frank/testtool-ext"
+    image: private.docker.nexus.frankframework.org/ff-test:${VERSION:-latest}-tomcat
     build: Tomcat/test
     ports:
       - "8080:8080"
