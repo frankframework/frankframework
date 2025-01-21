@@ -190,10 +190,10 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				throw new ConfigurationException("got exception loading stubfile ["+getStubFilename()+"] from resource ["+stubUrl.toExternalForm()+"]", e);
 			}
 		} else {
-			propagateName();
 			if (getSender() == null) {
 				throw new ConfigurationException("no sender defined ");
 			}
+			propagateName();
 			// copying of pipe parameters to sender must be done at configure(), not by overriding addParam()
 			// because sender might not have been set when addPipe() is called.
 			if (getParameterList()!=null && getSender() instanceof ISenderWithParameters) {
@@ -205,9 +205,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			}
 
 			try {
-				if(StringUtils.isEmpty(sender.getName())) {
-					sender.setName(ClassUtils.nameOf(sender));
-				}
 				// In order to be able to suppress 'xxxSender may cause potential SQL injections!' config warnings
 				if(sender instanceof DirectQuerySender) {
 					((DirectQuerySender) getSender()).configure(getAdapter());
@@ -312,8 +309,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	}
 
 	protected void propagateName() {
-		ISender sender=getSender();
-		if (sender!=null && StringUtils.isEmpty(sender.getName())) {
+		ISender sender = getSender();
+		if (sender != null && StringUtils.isEmpty(sender.getName())) {
 			sender.setName(getName() + "-sender");
 		}
 	}

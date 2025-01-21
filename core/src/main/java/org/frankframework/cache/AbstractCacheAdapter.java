@@ -25,6 +25,7 @@ import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.doc.Optional;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.TransformerPool;
@@ -62,9 +63,9 @@ public abstract class AbstractCacheAdapter<V> implements ICache<String,V>, Frank
 	private TransformerPool valueTp=null;
 
 	@Override
-	public void configure(String ownerName) throws ConfigurationException {
+	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getName())) {
-			setName(ownerName+"_cache");
+			setName(applicationContext.getId()+"_cache");
 		}
 		if (StringUtils.isNotEmpty(getKeyXPath()) || StringUtils.isNotEmpty(getKeyStyleSheet())) {
 			keyTp=TransformerPool.configureTransformer(this, getKeyNamespaceDefs(), getKeyXPath(), getKeyStyleSheet(), getKeyXPathOutputType(),false,null);
@@ -139,9 +140,11 @@ public abstract class AbstractCacheAdapter<V> implements ICache<String,V>, Frank
 
 
 	/**
-	 * name of the cache, will be lowercased
+	 * Name of the cache, will be lowercased
 	 * @ff.default <code>&lt;ownerName&gt;</code>_cache
 	 */
+	@Override
+	@Optional
 	public void setName(String name) {
 		if(StringUtils.isNotEmpty(name)) {
 			this.name=name.toLowerCase();
