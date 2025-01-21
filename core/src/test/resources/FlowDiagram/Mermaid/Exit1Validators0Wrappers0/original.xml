@@ -15,7 +15,7 @@
 		<listener className="org.frankframework.receivers.JavaListener" serviceName="testtool-HelloLines-2"/>
 	</receiver>
 	<pipeline firstPipe="Remove namespaces">
-		<exit path="READY" state="SUCCESS"/>
+		<exit name="READY" state="SUCCESS"/>
 		<pipe name="Remove namespaces" removeNamespaces="true" xpathExpression="/" outputType="XML" className="org.frankframework.pipes.XsltPipe">
 			<forward name="success" path="Only one line?"/>
 		</pipe>

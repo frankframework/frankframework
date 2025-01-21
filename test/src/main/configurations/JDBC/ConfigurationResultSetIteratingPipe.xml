@@ -12,7 +12,7 @@
 
 		<pipeline firstPipe="Get records to be processed from database and iterate">
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 
 			<pipe name="Get records to be processed from database and iterate"
@@ -35,7 +35,7 @@
 
 		<pipeline firstPipe="Echo message" transactionAttribute="Required" >
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 
 			<pipe name="Echo message"

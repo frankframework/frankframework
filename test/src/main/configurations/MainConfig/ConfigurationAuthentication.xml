@@ -7,7 +7,7 @@
 		<errorMessageFormatter/>
 		<pipeline firstPipe="selectSenderBasedOnRootNode">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 
 			<pipe name="selectSenderBasedOnRootNode" className="org.frankframework.pipes.XmlSwitch" />

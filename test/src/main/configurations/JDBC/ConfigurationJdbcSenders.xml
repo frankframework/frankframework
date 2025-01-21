@@ -8,7 +8,7 @@
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="ExctractQuery" className="org.frankframework.pipes.XsltPipe"
 				xpathExpression="/request/@query" storeResultInSessionKey="query"

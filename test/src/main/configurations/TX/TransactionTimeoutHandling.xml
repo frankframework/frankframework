@@ -22,7 +22,7 @@
 
 		<pipeline firstPipe="set start index">
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 
 			<pipe name="set start index"
@@ -87,7 +87,7 @@
 
 		<pipeline firstPipe="set start index">
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 
 			<pipe name="set start index"

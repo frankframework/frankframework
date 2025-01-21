@@ -14,7 +14,7 @@
       </receiver>
 		    <pipeline firstPipe="SendTibcoMessage">
 			      <exits>
-				        <exit path="EXIT" state="success"/>
+				        <exit name="EXIT" state="success"/>
 			      </exits>
 			      <pipe name="sendTibcoMessage"
                className="org.frankframework.pipes.SenderPipe">

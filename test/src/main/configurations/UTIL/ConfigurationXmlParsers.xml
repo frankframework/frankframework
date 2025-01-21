@@ -4,7 +4,7 @@
 	</receiver>
 	<pipeline firstPipe="XmlParsersPipe">
 		<exits>
-			<exit state="success" path="EXIT" />
+			<exit state="success" name="EXIT" />
 		</exits>
 
 		<pipe name="XmlParsersPipe" className="org.frankframework.pipes.XmlParsersPipe">

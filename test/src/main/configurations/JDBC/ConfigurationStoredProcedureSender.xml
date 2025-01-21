@@ -6,8 +6,8 @@
 		</Receiver>
 		<Pipeline>
 			<exits>
-				<exit path="ERROR" state="error"/>
-				<exit path="SUCCESS" state="success"/>
+				<exit name="ERROR" state="error"/>
+				<exit name="SUCCESS" state="success"/>
 			</exits>
 			<SenderPipe name="Count nr of existing records">
 				<!-- Negative count so we can use it as increment and expect 1 as result -->

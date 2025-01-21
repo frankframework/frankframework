@@ -71,8 +71,8 @@
 
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
-				<exit path="ERROR" state="error"/>
+				<exit name="READY" state="success"/>
+				<exit name="ERROR" state="error"/>
 			</exits>
 
 			<pipe name="extract slot" >
@@ -126,8 +126,8 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success" />
-				<exit path="ERROR" state="error"/> <!-- managed exception, not caught in the sender, as it does not have this forward specified! -->
+				<exit name="READY" state="success" />
+				<exit name="ERROR" state="error"/> <!-- managed exception, not caught in the sender, as it does not have this forward specified! -->
 			</exits>
 
 			<pipe name="switch" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="*/@child-forward" >

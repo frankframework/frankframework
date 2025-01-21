@@ -8,7 +8,7 @@
 		</receiver>
 		<pipeline firstPipe="echoPipe">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="echoPipe" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
@@ -21,7 +21,7 @@
 		</receiver>
 		<pipeline firstPipe="switchAction">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch" xpathExpression="request/@action"/>
 			<pipe name="store" className="org.frankframework.pipes.SenderPipe"> <!-- this message will be picked up by MessageStoreListener, and then turned into an 'A' record -->

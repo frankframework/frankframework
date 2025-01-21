@@ -8,7 +8,7 @@
 		</receiver>
 		<pipeline firstPipe="EchoPipe">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="EchoPipe" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
@@ -23,7 +23,7 @@
 		</receiver>
 		<pipeline firstPipe="ExceptionPipe">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="ExceptionPipe" className="org.frankframework.pipes.ExceptionPipe">
 				<forward name="success" path="EXIT" />
@@ -38,7 +38,7 @@
 		</receiver>
 		<pipeline firstPipe="DelayPipe">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="DelayPipe" className="org.frankframework.pipes.DelayPipe"
 				delayTime="2000">
@@ -56,7 +56,7 @@
 		</receiver>
 		<pipeline firstPipe="Send2WS">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="Send2WS">
@@ -78,7 +78,7 @@
 		</receiver>
 		<pipeline firstPipe="Send2WS">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="Send2WS">
@@ -101,7 +101,7 @@
 		</receiver>
 		<pipeline firstPipe="SwitchAction">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<global-forwards>
 				<forward name="exception" path="error_exception2" />
@@ -155,7 +155,7 @@
 		</receiver>
 		<pipeline firstPipe="SwitchAction">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch"
 				xpathExpression="request/@action"></pipe>

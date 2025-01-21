@@ -6,7 +6,7 @@
 		</receiver>
 		<pipeline firstPipe="ResolveString">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="ResolveString" className="org.frankframework.pipes.FixedResultPipe" filename="CorrelationMessageId/result.xml">
 				<forward name="success" path="EXIT" />
@@ -24,7 +24,7 @@
 		</receiver>
 		<pipeline firstPipe="ResolveString">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="ResolveString" className="org.frankframework.pipes.FixedResultPipe" filename="CorrelationMessageId/result.xml">
 				<forward name="success" path="EXIT" />

@@ -6,7 +6,7 @@
 		</receiver>
 		<pipeline firstPipe="echo">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="echo" className="org.frankframework.pipes.XsltPipe"
 				xpathExpression="concat($sk, '_', $sk2, '_', $sk3, '_', $sk4, '_', $sk5)"
@@ -31,7 +31,7 @@
 		</receiver>
 		<pipeline firstPipe="put">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="put" className="org.frankframework.pipes.PutInSession"
 				sessionKey="sessionkey" value="hallo">

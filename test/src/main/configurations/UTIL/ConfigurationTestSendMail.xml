@@ -39,7 +39,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 		</pipeline>
 	</adapter>

@@ -6,7 +6,7 @@
 		</receiver>
 		<pipeline firstPipe="EchoPipe">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<inputValidator
 				className="org.frankframework.extensions.fxf.FxfXmlValidator"
@@ -24,7 +24,7 @@
 		</receiver>
 		<pipeline firstPipe="EchoSender">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="EchoSender"
 				className="org.frankframework.pipes.SenderPipe">
@@ -45,7 +45,7 @@
 		</receiver>
 		<pipeline firstPipe="EchoSender">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="EchoSender"
 				className="org.frankframework.pipes.SenderPipe">

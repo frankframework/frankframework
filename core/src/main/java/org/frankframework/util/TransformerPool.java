@@ -535,16 +535,18 @@ public class TransformerPool {
 		return new TransformerFilter(getTransformerHandler(), new ThreadConnectingFilter(threadConnector, handler), removeNamespacesFromInput, handleLexicalEvents);
 	}
 
-	@Nonnull
-	public Map<String, String> getConfigMap() throws TransformerException, IOException {
-		if (configMap == null) {
-			configMap = XmlUtils.getXsltConfig(configSource);
+
+	public @Nonnull Map<String, String> getConfigMap() throws TransformerException, IOException {
+		// Due to lazy-loading of the config-map this can happen in multiple threads simultaneously. Hence we synchronize here, the config-source seems a logical choice that doesn't lock too much.
+		synchronized (configSource) {
+			if (configMap == null) {
+				configMap = XmlUtils.getXsltConfig(configSource);
+			}
 		}
 		return configMap;
 	}
 
-	@Nullable
-	public Boolean getOmitXmlDeclaration() throws TransformerException, IOException {
+	public @Nullable Boolean getOmitXmlDeclaration() throws TransformerException, IOException {
 		String setting = getConfigMap().get("output-omit-xml-declaration");
 		if (setting == null) {
 			return null;
@@ -552,8 +554,7 @@ public class TransformerPool {
 		return "yes".equals(setting);
 	}
 
-	@Nullable
-	public Boolean getIndent() throws TransformerException, IOException {
+	public @Nullable Boolean getIndent() throws TransformerException, IOException {
 		String setting = getConfigMap().get("output-indent");
 		if (setting == null) {
 			return null;
@@ -561,13 +562,11 @@ public class TransformerPool {
 		return "yes".equals(setting);
 	}
 
-	@Nullable
-	public String getOutputMethod() throws TransformerException, IOException {
+	public @Nullable String getOutputMethod() throws TransformerException, IOException {
 		return getConfigMap().get("output-method");
 	}
 
-	@Nullable
-	public Boolean getDisableOutputEscaping() throws TransformerException, IOException {
+	public @Nullable Boolean getDisableOutputEscaping() throws TransformerException, IOException {
 		String setting = getConfigMap().get("disable-output-escaping");
 		if (setting == null) {
 			return null;

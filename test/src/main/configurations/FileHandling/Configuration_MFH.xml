@@ -22,7 +22,7 @@
 			/>
 		</Receiver>
 		<Pipeline>
-			<Exit path="EXIT" state="success" />
+			<Exit name="EXIT" state="success" />
 
 			<XsltPipe
 				name="wrapInput"
@@ -82,7 +82,7 @@
 			<JavaListener name="processMessage" serviceName="ibis4test-processMessage"/>
 		</Receiver>
 		<Pipeline>
-			<Exit state="success" path="EXIT"/>
+			<Exit state="success" name="EXIT"/>
 
 <!-- The parameters can be extended with more information-->
 			<PutInSessionPipe name="paramsInSession">

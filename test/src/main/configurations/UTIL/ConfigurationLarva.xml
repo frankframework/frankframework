@@ -89,7 +89,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 		</pipeline>
 	</adapter>
@@ -101,7 +101,7 @@
 			/>
 		</Receiver>
 		<Pipeline>
-			<Exit path="EXIT" state="success" />
+			<Exit name="EXIT" state="success" />
 			<DelayPipe name="delay" delayTime="30000"/>
 			<SenderPipe
 				name="callLarva">

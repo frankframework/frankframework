@@ -67,7 +67,7 @@ export type HttpRequestMethodType =
   | 'PATCH';
 
 export type LinkName =
-  | 'changeProcessState'
+  | 'changeMessagesProcessState'
   | 'getMonitors'
   | 'createLogDefinition'
   | 'getAdapterStatistics'
