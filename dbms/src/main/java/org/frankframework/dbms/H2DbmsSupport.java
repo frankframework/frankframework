@@ -1,5 +1,5 @@
 /*
-   Copyright 2015, 2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2015, 2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+
+import org.frankframework.util.StringUtil;
+
 
 /**
  * Support for H2.
@@ -31,9 +36,59 @@ import java.util.stream.Collectors;
  */
 public class H2DbmsSupport extends GenericDbmsSupport {
 
+	private final boolean dbmsHasSkipLockedFunctionality;
+
+	public H2DbmsSupport() {
+		throw new IllegalStateException("H2DbmsSupport should be instantiated with product-version to determine supported featureset. Calling this constructor is a code-bug.");
+	}
+
+	public H2DbmsSupport(String productVersion) {
+		dbmsHasSkipLockedFunctionality = determineSkipLockedCapability(productVersion);
+	}
+
+	// Example output `2.3.232 (2024-08-11)`
+	private boolean determineSkipLockedCapability(String productVersion) {
+		if (StringUtils.isEmpty(productVersion)) {
+			log.debug("unable to automatically determine H2 product version none provided");
+			return false;
+		}
+
+		List<String> parts = StringUtil.split(productVersion, "(");
+		if (parts.size() == 2 && parts.get(1).contains(")")) {
+			String version = parts.get(0).trim();
+			DefaultArtifactVersion thisVersion = new DefaultArtifactVersion(version);
+			DefaultArtifactVersion targetVersion = new DefaultArtifactVersion("2.2.220");
+			boolean result = thisVersion.compareTo(targetVersion) >= 0;
+			log.debug("based on H2 productversion [{}] dbms hasSkipLockedFunctionality [{}]", version, result);
+			return result;
+		}
+
+		log.debug("unable to automatically determine H2 product version from [{}]", productVersion);
+		return false;
+	}
+
 	@Override
 	public Dbms getDbms() {
 		return Dbms.H2;
+	}
+
+	@Override
+	public boolean hasSkipLockedFunctionality() {
+		return dbmsHasSkipLockedFunctionality;
+	}
+
+	// See OracleDbmsSupport
+	@Override
+	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws DbmsException {
+		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
+			throw new DbmsException("query [" + selectQuery + "] must start with keyword [" + KEYWORD_SELECT + "]");
+		}
+
+		if (wait < 0) {
+			return selectQuery + " FOR UPDATE SKIP LOCKED";
+		} else {
+			return selectQuery + " FOR UPDATE WAIT " + wait;
+		}
 	}
 
 	@Override
@@ -63,20 +118,6 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 	public Object getBlobHandle(ResultSet rs, int column) throws SQLException, DbmsException {
 		return rs.getStatement().getConnection().createBlob();
 	}
-
-	//	@Override
-//	// 2020-07-13 GvB: Did not get "SET SESSION CHARACTERISTICS" to work
-//	public JdbcSession prepareSessionForDirtyRead(Connection conn) throws DbmsException {
-//		JdbcUtil.executeStatement(conn, "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
-//		return new AutoCloseable() {
-//
-//			@Override
-//			public void close() throws Exception {
-//				JdbcUtil.executeStatement(conn, "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED");
-//			}
-//
-//		}
-//	}
 
 	@Override
 	public ResultSet getTableColumns(Connection conn, String schemaName, String tableName, String columnNamePattern) throws DbmsException {

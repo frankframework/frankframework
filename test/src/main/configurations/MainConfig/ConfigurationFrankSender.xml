@@ -11,7 +11,7 @@
 			<XmlSwitchPipe name="select sender to test"/>
 
 			<SenderPipe name="CallAdapter1">
-				<FrankSender scope="ADAPTER" target="SubAdapter1" returnedSessionKeys="resultKey"/>
+				<FrankSender target="SubAdapter1" returnedSessionKeys="resultKey"/>
 				<Forward name="success" path="Get Result From Session"/>
 			</SenderPipe>
 			<SenderPipe name="CallAdapter2">
@@ -22,7 +22,7 @@
 				<Forward name="success" path="Get Result From Session"/>
 			</SenderPipe>
 			<SenderPipe name="CallAdapterWithParam">
-				<FrankSender scope="ADAPTER" target="MainConfig/SubAdapter3" returnedSessionKeys="resultKey">
+				<FrankSender target="MainConfig/SubAdapter3" returnedSessionKeys="resultKey">
 					<Param name="input1" value="fromInput"/>
 				</FrankSender>
 				<Forward name="success" path="Get Result From Session"/>
