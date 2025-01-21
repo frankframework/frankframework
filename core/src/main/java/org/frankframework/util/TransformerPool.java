@@ -508,7 +508,7 @@ public class TransformerPool {
 		return null;
 	}
 
-	public TransformerHandler getTransformerHandler() throws TransformerConfigurationException {
+	private TransformerHandler getTransformerHandler() throws TransformerConfigurationException {
 		TransformerHandler handler = ((SAXTransformerFactory)tFactory).newTransformerHandler(templates);
 		Transformer transformer = handler.getTransformer();
 		transformer.setErrorListener(new TransformerErrorListener());
@@ -528,13 +528,8 @@ public class TransformerPool {
 	}
 
 	public TransformerFilter getTransformerFilter(@Nonnull ThreadConnector<?> threadConnector, @Nonnull ContentHandler handler) throws TransformerConfigurationException {
-		return getTransformerFilter(threadConnector, handler, false, false);
+		return new TransformerFilter(getTransformerHandler(), new ThreadConnectingFilter(threadConnector, handler), false, false);
 	}
-
-	public TransformerFilter getTransformerFilter(@Nonnull ThreadConnector<?> threadConnector, @Nonnull ContentHandler handler, boolean removeNamespacesFromInput, boolean handleLexicalEvents) throws TransformerConfigurationException {
-		return new TransformerFilter(getTransformerHandler(), new ThreadConnectingFilter(threadConnector, handler), removeNamespacesFromInput, handleLexicalEvents);
-	}
-
 
 	public @Nonnull Map<String, String> getConfigMap() throws TransformerException, IOException {
 		// Due to lazy-loading of the config-map this can happen in multiple threads simultaneously. Hence we synchronize here, the config-source seems a logical choice that doesn't lock too much.
