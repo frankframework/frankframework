@@ -44,20 +44,18 @@ public class TriggerTest implements EventThrowing {
 	private @Getter String eventSourceName = "TriggerTestClass";
 	private @Getter Adapter adapter;
 
-	private ConfigurableApplicationContext applContext;
 	private IMonitorDestination destination;
 	private MonitorManager manager;
 	private Monitor monitor;
 
 	@BeforeEach
 	public void setup() {
-		applContext = mock(ConfigurableApplicationContext.class);
 		destination = mock(IMonitorDestination.class);
 		when(destination.getName()).thenReturn("dummy destination");
 
 		manager = spy(MonitorManager.class);
 		monitor = spy(Monitor.class);
-		monitor.setApplicationContext(applContext);
+		monitor.setApplicationContext(manager);
 
 		monitor.setName("monitorName");
 		manager.addMonitor(monitor);
@@ -239,7 +237,7 @@ public class TriggerTest implements EventThrowing {
 		assertEquals(0, monitor.getAdditionalHitCount());
 
 		// Act
-		monitor.changeState(false, Severity.WARNING, new ConsoleMonitorEvent("dummyUser")); //WARNING, cleared by MONITOR
+		monitor.changeState(false, Severity.WARNING, new ConsoleMonitorEvent("dummyUser")); // WARNING, cleared by MONITOR
 
 		// Assert
 		assertEquals(EventType.CLEARING, eventTypeCaptor.getValue());
@@ -260,7 +258,7 @@ public class TriggerTest implements EventThrowing {
 		// Arrange
 		Trigger trigger = spy(Alarm.class);
 		Monitor monitor = spy(Monitor.class);
-		monitor.setApplicationContext(applContext);
+		monitor.setApplicationContext(manager);
 		MonitorManager manager = spy(MonitorManager.class);
 		IMonitorDestination destination = mock(IMonitorDestination.class);
 		when(destination.getName()).thenReturn("dummy destination");

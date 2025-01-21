@@ -106,7 +106,7 @@ public class Monitoring extends BusEndpointBase {
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	public Message<String> addMonitorOrTrigger(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
-		String name = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY, null); //when present update Trigger
+		String name = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY, null); // When present update Trigger
 
 		MonitorManager mm = getMonitorManager(configurationName);
 
@@ -114,12 +114,12 @@ public class Monitoring extends BusEndpointBase {
 		ITrigger trigger;
 		if(name != null) {
 			monitor = getMonitor(mm, name);
-			trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
+			trigger = SpringUtils.createBean(mm, Trigger.class);
 			updateTrigger(trigger, message);
 			monitor.addTrigger(trigger);
 		} else {
 			trigger = null;
-			monitor = SpringUtils.createBean(getApplicationContext(), Monitor.class);
+			monitor = SpringUtils.createBean(mm, Monitor.class);
 			updateMonitor(monitor, message, true);
 			mm.addMonitor(monitor);
 		}
@@ -165,7 +165,7 @@ public class Monitoring extends BusEndpointBase {
 	public Message<String> updateMonitorOrTrigger(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		String monitorName = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY);
-		Integer triggerId = BusMessageUtils.getIntHeader(message, TRIGGER_NAME_KEY, null); //when present update Trigger
+		Integer triggerId = BusMessageUtils.getIntHeader(message, TRIGGER_NAME_KEY, null); // When present update Trigger
 
 		MonitorManager mm = getMonitorManager(configurationName);
 		Monitor monitor = getMonitor(mm, monitorName);
@@ -327,9 +327,7 @@ public class Monitoring extends BusEndpointBase {
 		}
 
 		List<Map<String, Object>> monitors = new ArrayList<>();
-		for(int i = 0; i < mm.getMonitors().size(); i++) {
-			Monitor monitor = mm.getMonitor(i);
-
+		for (Monitor monitor : mm.getMonitors().values()) {
 			monitors.add(mapMonitor(monitor));
 		}
 

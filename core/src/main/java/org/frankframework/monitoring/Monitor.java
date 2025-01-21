@@ -33,10 +33,10 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.FrankElement;
-import org.frankframework.core.IConfigurable;
 import org.frankframework.core.NameAware;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlBuilder;
@@ -62,9 +62,10 @@ import org.frankframework.util.XmlBuilder;
  */
 @FrankDocGroup(FrankDocGroupValue.MONITORING)
 @Log4j2
-public class Monitor implements IConfigurable, NameAware, DisposableBean, FrankElement {
+public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean, FrankElement {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
+	private boolean started = false;
 	private @Getter String name;
 	private @Getter @Setter EventType type = EventType.TECHNICAL;
 	private boolean raised = false;
@@ -82,7 +83,17 @@ public class Monitor implements IConfigurable, NameAware, DisposableBean, FrankE
 
 	private final List<ITrigger> triggers = new ArrayList<>();
 	private final Set<String> destinations = new HashSet<>();
-	private @Getter @Setter ApplicationContext applicationContext;
+	private @Getter ApplicationContext applicationContext;
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) {
+		this.applicationContext = applicationContext;
+		if (applicationContext instanceof MonitorManager manager) {
+			this.manager = manager;
+		} else {
+			throw new IllegalStateException("ApplicationContext is not a MonitorManager");
+		}
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -96,7 +107,7 @@ public class Monitor implements IConfigurable, NameAware, DisposableBean, FrankE
 		for (ITrigger trigger : triggers) {
 			if (!trigger.isConfigured()) {
 				trigger.configure();
-				((ConfigurableApplicationContext) applicationContext).addApplicationListener(trigger);
+				((ConfigurableApplicationContext) manager).addApplicationListener(trigger);
 			}
 		}
 	}
@@ -235,9 +246,6 @@ public class Monitor implements IConfigurable, NameAware, DisposableBean, FrankE
 		return "Monitor ["+getName()+"] ";
 	}
 
-	public void setManager(MonitorManager manager) {
-		this.manager = manager;
-	}
 	private MonitorManager getManager() {
 		return manager;
 	}
@@ -289,4 +297,18 @@ public class Monitor implements IConfigurable, NameAware, DisposableBean, FrankE
 		}
 	}
 
+	@Override
+	public void start() {
+		started = true;
+	}
+
+	@Override
+	public void stop() {
+		started = false;
+	}
+
+	@Override
+	public boolean isRunning() {
+		return started;
+	}
 }

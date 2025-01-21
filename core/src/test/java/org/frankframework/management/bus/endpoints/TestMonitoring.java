@@ -69,11 +69,11 @@ public class TestMonitoring extends BusTestBase {
 
 	public void createMonitor() throws Exception {
 		MonitorManager manager = getMonitorManager();
-		Monitor monitor = SpringUtils.createBean(getConfiguration(), Monitor.class);
+		Monitor monitor = SpringUtils.createBean(manager, Monitor.class);
 		monitor.setName(TEST_MONITOR_NAME);
 		monitor.setType(EventType.FUNCTIONAL);
-		Trigger trigger = new Trigger();
-		AdapterFilter filter = new AdapterFilter();
+		Trigger trigger = SpringUtils.createBean(manager, Trigger.class);
+		AdapterFilter filter = SpringUtils.createBean(manager, AdapterFilter.class);
 		filter.setAdapter("dummyAdapterName");
 		filter.addSubObjectText("dummySubObjectName");
 		trigger.setPeriod(42);
@@ -90,17 +90,32 @@ public class TestMonitoring extends BusTestBase {
 
 			@Override
 			public void configure() throws ConfigurationException {
-				//Nothing to configure, dummy class
+				// Nothing to configure, dummy class
 			}
 
 			@Override
 			public void fireEvent(String monitor, EventType eventType, Severity severity, String eventCode, MonitorEvent message) {
-				//Nothing to do, dummy class
+				// Nothing to do, dummy class
 			}
 
 			@Override
 			public XmlBuilder toXml() {
 				return new XmlBuilder("destination");
+			}
+
+			@Override
+			public void start() {
+				// Nothing to do, dummy class
+			}
+
+			@Override
+			public void stop() {
+				// Nothing to do, dummy class
+			}
+
+			@Override
+			public boolean isRunning() {
+				return false;
 			}
 		};
 		manager.addDestination(ima);
@@ -167,12 +182,12 @@ public class TestMonitoring extends BusTestBase {
 		// Assert
 		assertAll(
 				() -> assertEquals(2, getMonitorManager().getMonitors().size()),
-				() -> assertFalse(getMonitorManager().getMonitor(1).isRaised()),
-				() -> assertEquals("newName", getMonitorManager().getMonitor(1).getName()),
-				() -> assertEquals(EventType.TECHNICAL, getMonitorManager().getMonitor(1).getType()),
+				() -> assertFalse(getMonitorManager().getMonitor("newName").isRaised()),
+				() -> assertEquals("newName", getMonitorManager().getMonitor("newName").getName()),
+				() -> assertEquals(EventType.TECHNICAL, getMonitorManager().getMonitor("newName").getType()),
 				() -> assertEquals(201, BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload()),
-				() -> assertEquals("mockDestination", getMonitorManager().getMonitor(1).getDestinationsAsString())
+				() -> assertEquals("mockDestination", getMonitorManager().getMonitor("newName").getDestinationsAsString())
 			);
 	}
 
@@ -191,7 +206,7 @@ public class TestMonitoring extends BusTestBase {
 		// Assert
 		assertAll(
 				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
-				() -> assertEquals("raise".equals(state), getMonitorManager().getMonitor(0).isRaised()),
+				() -> assertEquals("raise".equals(state), getMonitorManager().getMonitor(TEST_MONITOR_NAME).isRaised()),
 				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload())
 			);
@@ -213,11 +228,11 @@ public class TestMonitoring extends BusTestBase {
 		// Assert
 		assertAll(
 				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
-				() -> assertEquals("newName", getMonitorManager().getMonitor(0).getName()),
-				() -> assertEquals(EventType.TECHNICAL, getMonitorManager().getMonitor(0).getType()),
+				() -> assertEquals("newName", getMonitorManager().getMonitor(TEST_MONITOR_NAME).getName()),
+				() -> assertEquals(EventType.TECHNICAL, getMonitorManager().getMonitor(TEST_MONITOR_NAME).getType()),
 				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload()),
-				() -> assertEquals("mockDestination", getMonitorManager().getMonitor(0).getDestinationsAsString())
+				() -> assertEquals("mockDestination", getMonitorManager().getMonitor(TEST_MONITOR_NAME).getDestinationsAsString())
 			);
 	}
 
@@ -229,7 +244,7 @@ public class TestMonitoring extends BusTestBase {
 		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
 		request.setHeader("monitor", TEST_MONITOR_NAME);
 
-		getMonitorManager().getMonitor(0).setDestinations("mockDestination");
+		getMonitorManager().getMonitor(TEST_MONITOR_NAME).setDestinations("mockDestination");
 
 		// Act
 		MessageHandlingException mhe = assertThrows(MessageHandlingException.class, ()-> callSyncGateway(request));
@@ -243,9 +258,9 @@ public class TestMonitoring extends BusTestBase {
 				() -> assertEquals(400, be.getStatusCode()),
 				() -> assertThat(be.getMessage(), containsString("destination [badDestination] does not exist")),
 				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
-				() -> assertEquals(TEST_MONITOR_NAME, getMonitorManager().getMonitor(0).getName()),
-				() -> assertEquals(EventType.FUNCTIONAL, getMonitorManager().getMonitor(0).getType()),
-				() -> assertEquals("mockDestination", getMonitorManager().getMonitor(0).getDestinationsAsString())
+				() -> assertEquals(TEST_MONITOR_NAME, getMonitorManager().getMonitor(TEST_MONITOR_NAME).getName()),
+				() -> assertEquals(EventType.FUNCTIONAL, getMonitorManager().getMonitor(TEST_MONITOR_NAME).getType()),
+				() -> assertEquals("mockDestination", getMonitorManager().getMonitor(TEST_MONITOR_NAME).getDestinationsAsString())
 			);
 	}
 
@@ -315,13 +330,13 @@ public class TestMonitoring extends BusTestBase {
 		// Assert Response
 		assertAll(
 				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
-				() -> assertEquals(2, getMonitorManager().getMonitor(0).getTriggers().size()),
+				() -> assertEquals(2, getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().size()),
 				() -> assertEquals(201, BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload())
 			);
 
 		// Assert Trigger
-		ITrigger trigger = getMonitorManager().getMonitor(0).getTriggers().get(1);
+		ITrigger trigger = getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().get(1);
 		assertAll(
 				() -> assertEquals(Severity.HARMLESS, trigger.getSeverity()),
 				() -> assertEquals(2, trigger.getPeriod()),
@@ -343,7 +358,7 @@ public class TestMonitoring extends BusTestBase {
 		// Before the test make sure the state is as we expect
 		assertAll(
 				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
-				() -> assertEquals(1, getMonitorManager().getMonitor(0).getTriggers().size())
+				() -> assertEquals(1, getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().size())
 		);
 
 
@@ -356,7 +371,7 @@ public class TestMonitoring extends BusTestBase {
 		assertAll(
 				() -> assertEquals(400, be.getStatusCode()),
 				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
-				() -> assertEquals(1, getMonitorManager().getMonitor(0).getTriggers().size())
+				() -> assertEquals(1, getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().size())
 			);
 	}
 
@@ -376,13 +391,13 @@ public class TestMonitoring extends BusTestBase {
 		// Assert Response
 		assertAll(
 				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
-				() -> assertEquals(1, getMonitorManager().getMonitor(0).getTriggers().size()),
+				() -> assertEquals(1, getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().size()),
 				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload())
 			);
 
 		// Assert Trigger
-		ITrigger trigger = getMonitorManager().getMonitor(0).getTriggers().get(0);
+		ITrigger trigger = getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().get(0);
 		assertAll(
 				() -> assertEquals(Severity.HARMLESS, trigger.getSeverity()),
 				() -> assertEquals(42, trigger.getPeriod()),
@@ -416,11 +431,11 @@ public class TestMonitoring extends BusTestBase {
 				() -> assertEquals(400, be.getStatusCode()),
 				() -> assertThat(be.getMessage(), containsString("you must define a period when using threshold > 0")),
 				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
-				() -> assertEquals(1, getMonitorManager().getMonitor(0).getTriggers().size())
+				() -> assertEquals(1, getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().size())
 			);
 
 		// Assert Trigger
-		ITrigger trigger = getMonitorManager().getMonitor(0).getTriggers().get(0);
+		ITrigger trigger = getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().get(0);
 		assertAll(
 				() -> assertEquals(Severity.HARMLESS, trigger.getSeverity()),
 				() -> assertEquals(42, trigger.getPeriod()),
@@ -446,13 +461,13 @@ public class TestMonitoring extends BusTestBase {
 		// Assert Response
 		assertAll(
 				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
-				() -> assertEquals(1, getMonitorManager().getMonitor(0).getTriggers().size()),
+				() -> assertEquals(1, getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().size()),
 				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload())
 			);
 
 		// Assert Trigger
-		ITrigger trigger = getMonitorManager().getMonitor(0).getTriggers().get(0);
+		ITrigger trigger = getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().get(0);
 		assertAll(
 				() -> assertEquals(Severity.CRITICAL, trigger.getSeverity()),
 				() -> assertEquals(3600, trigger.getPeriod()),
@@ -482,13 +497,13 @@ public class TestMonitoring extends BusTestBase {
 		// Assert Response
 		assertAll(
 				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
-				() -> assertEquals(1, getMonitorManager().getMonitor(0).getTriggers().size()),
+				() -> assertEquals(1, getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().size()),
 				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload())
 			);
 
 		// Assert Trigger
-		ITrigger trigger = getMonitorManager().getMonitor(0).getTriggers().get(0);
+		ITrigger trigger = getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().get(0);
 		assertAll(
 				() -> assertEquals(Severity.CRITICAL, trigger.getSeverity()),
 				() -> assertEquals(3600, trigger.getPeriod()),
@@ -533,7 +548,7 @@ public class TestMonitoring extends BusTestBase {
 		// Assert
 		assertAll(
 				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
-				() -> assertEquals(0, getMonitorManager().getMonitor(0).getTriggers().size()),
+				() -> assertEquals(0, getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().size()),
 				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload())
 			);

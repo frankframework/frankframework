@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2024 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,30 +15,35 @@
 */
 package org.frankframework.monitoring;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.LifecycleProcessor;
+import org.springframework.context.support.GenericApplicationContext;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
-import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
+import org.frankframework.lifecycle.ConfigurableLifecycle;
+import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.monitoring.events.Event;
 import org.frankframework.monitoring.events.RegisterMonitorEvent;
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlBuilder;
 
 /**
@@ -47,15 +52,35 @@ import org.frankframework.util.XmlBuilder;
  * Configure/start/stop lifecycles are managed by Spring.
  *
  * @author Niels Meijer
- * @version 2.0
+ * @version 2.1
  */
+@Log4j2
 @FrankDocGroup(FrankDocGroupValue.MONITORING)
-public class MonitorManager extends AbstractConfigurableLifecyle implements ApplicationContextAware, ApplicationListener<RegisterMonitorEvent> {
+public class MonitorManager extends GenericApplicationContext implements ConfigurableLifecycle, ApplicationContextAware, ApplicationListener<RegisterMonitorEvent>, InitializingBean {
 
-	private @Getter @Setter ApplicationContext applicationContext;
-	private final List<Monitor> monitors = new ArrayList<>();                            // All monitors managed by this MonitorManager
 	private final Map<String, Event> events = new ConcurrentHashMap<>();                 // All events that can be thrown
-	private final Map<String, IMonitorDestination> destinations = new LinkedHashMap<>(); // All destinations (that can receive status messages) managed by this MonitorManager
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) {
+		setParent(applicationContext);
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		if (isActive()) {
+			throw new LifecycleException("unable to refresh, MonitorManager is already active");
+		}
+
+		refresh();
+	}
+
+	@Override
+	protected void initLifecycleProcessor() {
+		ConfiguringLifecycleProcessor defaultProcessor = new ConfiguringLifecycleProcessor();
+		defaultProcessor.setBeanFactory(getBeanFactory());
+		getBeanFactory().registerSingleton(LIFECYCLE_PROCESSOR_BEAN_NAME, defaultProcessor);
+		super.initLifecycleProcessor();
+	}
 
 	/**
 	 * (re)configure all destinations and all monitors.
@@ -63,17 +88,17 @@ public class MonitorManager extends AbstractConfigurableLifecyle implements Appl
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		if (log.isDebugEnabled()) log.debug("{}configuring destinations", getLogPrefix());
-		for(String name : destinations.keySet()) {
-			IMonitorDestination destination = getDestination(name);
-			destination.configure();
+		if (!isActive()) {
+			throw new LifecycleException("MonitorManager is not active");
 		}
+		log.debug("configuring MonitorManager [{}]", this::getName);
 
-		// Only configure Monitors if all destinations were able to configure successfully
-		if (log.isDebugEnabled()) log.debug("{}configuring monitors", getLogPrefix());
-		for(Monitor monitor : monitors) {
-			monitor.configure();
+		// Trigger a configure on all (Configurable) Lifecycle beans
+		LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
+		if (!(lifecycle instanceof ConfigurableLifecycle configurableLifecycle)) {
+			throw new ConfigurationException("wrong lifecycle processor found, unable to configure beans");
 		}
+		configurableLifecycle.configure();
 	}
 
 	@Override
@@ -81,18 +106,18 @@ public class MonitorManager extends AbstractConfigurableLifecyle implements Appl
 		return 300;
 	}
 
-	private String getLogPrefix() {
+	private String getName() {
 		return "Manager@"+this.hashCode();
 	}
 
-	public void addDestination(IMonitorDestination monitorAdapter) {
-		destinations.put(monitorAdapter.getName(), monitorAdapter);
-	}
-	public IMonitorDestination getDestination(String name) {
-		return destinations.get(name);
-	}
-	public Map<String, IMonitorDestination> getDestinations() {
-		return destinations;
+	public void addDestination(IMonitorDestination monitorDestination) {
+		log.debug("registering destination [{}] with MonitorManager [{}]", monitorDestination::toString, this::getName);
+		if(monitorDestination.getName() == null) {
+			throw new IllegalStateException("destination has no name");
+		}
+
+		SpringUtils.registerSingleton(this, monitorDestination.getName(), monitorDestination);
+		log.debug("Configuration [{}] registered adapter [{}]", this::getName, monitorDestination::toString);
 	}
 
 	@Override
@@ -101,7 +126,7 @@ public class MonitorManager extends AbstractConfigurableLifecyle implements Appl
 		String eventCode = event.getEventCode();
 
 		if (log.isDebugEnabled()) {
-			log.debug("{} registerEvent [{}] for adapter [{}] object [{}]", getLogPrefix(), eventCode, thrower.getAdapter() == null ? null : thrower.getAdapter()
+			log.debug("{} registerEvent [{}] for adapter [{}] object [{}]", getName(), eventCode, thrower.getAdapter() == null ? null : thrower.getAdapter()
 					.getName(), thrower.getEventSourceName());
 		}
 
@@ -109,36 +134,36 @@ public class MonitorManager extends AbstractConfigurableLifecyle implements Appl
 	}
 
 	public void addMonitor(Monitor monitor) {
-		monitor.setManager(this);
-		monitors.add(monitor);
+		log.debug("registering monitor [{}] with MonitorManager [{}]", monitor::toString, this::getName);
+		if(monitor.getName() == null) {
+			throw new IllegalStateException("destination has no name");
+		}
+
+		SpringUtils.registerSingleton(this, monitor.getName(), monitor);
+		log.debug("Configuration [{}] registered adapter [{}]", this::getName, monitor::toString);
 	}
 
 	public void removeMonitor(Monitor monitor) {
-		int index = monitors.indexOf(monitor);
-		if(index > -1) {
-			String name = monitor.getName();
-			AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
-			factory.destroyBean(monitor);
-			monitors.remove(index);
-			log.debug("removing monitor [{}] from MonitorManager [{}]", name, this);
-		}
+		DefaultListableBeanFactory cbf = (DefaultListableBeanFactory) getAutowireCapableBeanFactory();
+		String name = monitor.getName();
+		getMonitors()
+				.keySet()
+				.stream()
+				.filter(name::equals)
+				.forEach(cbf::destroySingleton);
+		log.debug("removing monitor [{}] from MonitorManager [{}]", monitor::getName, this::getName);
 	}
 
-	public Monitor getMonitor(int index) {
-		return monitors.get(index);
-	}
+//	public Monitor getMonitor(int index) {
+//		return getMonitors().get(index);
+//	}
+
 	public Optional<Monitor> findMonitor(String name) {
 		if (name == null) {
 			return Optional.empty();
 		}
-		return monitors.stream()
-				.filter(monitor -> name.equals(monitor.getName()))
-				.findFirst();
-	}
 
-	public List<Monitor> getMonitors() {
-		// Monitors may not be added nor removed directly
-		return Collections.unmodifiableList(monitors);
+		return Optional.of(getMonitors().get(name));
 	}
 
 	private void registerEvent(EventThrowing eventThrowing, String eventCode) {
@@ -158,31 +183,44 @@ public class MonitorManager extends AbstractConfigurableLifecyle implements Appl
 	}
 
 	public XmlBuilder toXml() {
-		XmlBuilder configXml=new XmlBuilder("monitoring");
-		for(String name : destinations.keySet()) {
-			IMonitorDestination ma=getDestination(name);
+		XmlBuilder configXml = new XmlBuilder("monitoring");
+		for (String name : getDestinations().keySet()) {
+			IMonitorDestination ma = getDestination(name);
 
-			XmlBuilder destinationXml=new XmlBuilder("destination");
+			XmlBuilder destinationXml = new XmlBuilder("destination");
 			destinationXml.addAttribute("name", ma.getName());
-			destinationXml.addAttribute("className",ma.getClass().getName());
+			destinationXml.addAttribute("className", ma.getClass().getName());
 
 			configXml.addSubElement(ma.toXml());
 		}
-		for (int i=0; i<monitors.size(); i++) {
-			Monitor monitor=getMonitor(i);
+
+		for (String name : getMonitors().keySet()) {
+			Monitor monitor = getMonitor(name);
 			configXml.addSubElement(monitor.toXml());
 		}
 
 		return configXml;
 	}
 
-	@Override
-	public void start() {
-		// Nothing to start?
+	@Nullable
+	public Monitor getMonitor(String name) {
+		return getMonitors().get(name);
+	}
+	@Nonnull
+	// Monitors may not be added nor removed directly
+	public final Map<String, Monitor> getMonitors() {
+		Map<String, Monitor> adapters = getBeansOfType(Monitor.class);
+		return Collections.unmodifiableMap(adapters);
 	}
 
-	@Override
-	public void stop() {
-		// Nothing to stop?
+	@Nullable
+	public IMonitorDestination getDestination(String name) {
+		return getDestinations().get(name);
 	}
+	@Nonnull
+	public final Map<String, IMonitorDestination> getDestinations() {
+		Map<String, IMonitorDestination> adapters = getBeansOfType(IMonitorDestination.class);
+		return Collections.unmodifiableMap(adapters);
+	}
+
 }
