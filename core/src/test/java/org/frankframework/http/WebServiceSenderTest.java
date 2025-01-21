@@ -84,7 +84,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.setMethodType(HttpMethod.POST);
-			sender.setParamsInUrl(false);
+			sender.setPostType(HttpEntityType.URLENCODED);
 			sender.setFirstBodyPartName("request");
 
 			String xmlMultipart = """
@@ -116,7 +116,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.setMethodType(HttpMethod.POST);
-			sender.setParamsInUrl(false);
+			sender.setPostType(HttpEntityType.URLENCODED);
 			sender.setFirstBodyPartName("request");
 
 			String xmlMultipart = """
