@@ -67,6 +67,7 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 		return object;
 	}
 
+	// TODO: #8275 - Use ObjectFactory#map to create shared resources from a DTO
 	/**
 	 * Allows the originally created object to be mutated to another object. Useful to generate an object from a filled DTO.
 	 */
