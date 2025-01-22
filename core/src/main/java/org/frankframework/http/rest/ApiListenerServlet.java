@@ -548,9 +548,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 					String lastModified = (String) result.getContext().get(MessageContext.METADATA_MODIFICATIONTIME);
 					if(StringUtils.isNotEmpty(lastModified)) {
 						Instant date = DateFormatUtils.parseToInstant(lastModified, DateFormatUtils.FULL_GENERIC_FORMATTER);
-						if(date != null) {
-							lastModDate = date.toEpochMilli();
-						}
+						lastModDate = date.toEpochMilli();
 					}
 				}
 				response.setDateHeader("Last-Modified", lastModDate);
@@ -670,10 +668,10 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 
 	private static @Nonnull MimeType determineContentType(PipeLineSession messageContext, ApiListener listener, Message result) throws IOException {
 		if(listener.getProduces() == MediaTypes.ANY) {
-			Message parsedContentType = messageContext.getMessage("contentType");
-			if(!Message.isEmpty(parsedContentType)) {
+			String parsedContentType = messageContext.getString("contentType");
+			if(StringUtils.isNotEmpty(parsedContentType)) {
 				try {
-					return MimeType.valueOf(parsedContentType.asString());
+					return MimeType.valueOf(parsedContentType);
 				} catch (InvalidMimeTypeException imte) {
 					LOG.warn("unable to parse mimetype from SessionKey [contentType] value [{}]", parsedContentType, imte);
 				}
