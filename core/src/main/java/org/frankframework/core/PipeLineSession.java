@@ -143,9 +143,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		} else if (keysToCopy == null || "*".equals(keysToCopy)) { // if keys are not set explicitly ...
 			to.putAll(this);                                      // ... all keys will be copied
 		}
-		Set<AutoCloseable> closeablesInDestination = to.entrySet().stream()
-				.filter(entry -> shouldCloseSessionResource(entry.getKey(), entry.getValue()))
-				.map(Entry::getValue)
+		Set<AutoCloseable> closeablesInDestination = to.values().stream()
+				.filter(AutoCloseable.class::isInstance)
 				.map(AutoCloseable.class::cast)
 				.collect(Collectors.toSet());
 		if (to instanceof PipeLineSession toSession) {
@@ -169,8 +168,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	private static boolean shouldCloseSessionResource(final String key, final Object value) {
-		return value instanceof AutoCloseable &&
-			!key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX);
+		return (value instanceof AutoCloseable && !key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX)) &&
+				!(value instanceof Message message && message.isRequestOfType(String.class));
 	}
 
 	@Override
