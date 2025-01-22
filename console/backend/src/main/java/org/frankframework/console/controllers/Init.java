@@ -23,8 +23,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.frankframework.console.Description;
-import org.frankframework.console.Relation;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,9 +39,8 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.util.pattern.PathPattern;
 
-import jakarta.annotation.security.PermitAll;
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.servlet.http.HttpServletRequest;
+import org.frankframework.console.Description;
+import org.frankframework.console.Relation;
 
 @RestController
 public class Init {
@@ -118,7 +119,7 @@ public class Init {
 					if (relation != null) {
 						if (HALresources.containsKey(relation)) {
 							Object prevRelation = HALresources.get(relation);
-							List<Object> tmpList = null;
+							List<Object> tmpList;
 							if (prevRelation instanceof List)
 								tmpList = (List) prevRelation;
 							else {

@@ -300,12 +300,10 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			aligner.setFailOnWildcards(isFailOnWildcards());
 			aligner.setIgnoreUndeclaredElements(isIgnoreUndeclaredElements());
 			ParameterList parameterList = getParameterList();
-			if (parameterList!=null) {
-				Map<String, Object> parameterValues = parameterList.getValues(new Message(messageToValidate), session).getValueMap();
-				// remove parameters with null values, to support optional request parameters
-				parameterValues.values().removeIf(Objects::isNull);
-				aligner.setOverrideValues(parameterValues);
-			}
+			Map<String, Object> parameterValues = parameterList.getValues(new Message(messageToValidate), session).getValueMap();
+			// remove parameters with null values, to support optional request parameters
+			parameterValues.values().removeIf(Objects::isNull);
+			aligner.setOverrideValues(parameterValues);
 			JsonStructure jsonStructure = Json.createReader(new StringReader(messageToValidate)).read();
 
 			// cannot build filter chain as usual backwardly, because it ends differently.

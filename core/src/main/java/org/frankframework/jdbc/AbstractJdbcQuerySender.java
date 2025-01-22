@@ -167,9 +167,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	@Override
 	public void configure() throws ConfigurationException {
 		if (!BooleanUtils.isFalse(getUseNamedParams())) { // only allow duplicate parameter names if useNamedParams is set explicitly to false.
-			if (getParameterList()!=null) {
-				getParameterList().setNamesMustBeUnique(true);
-			}
+			getParameterList().setNamesMustBeUnique(true);
 		}
 		super.configure();
 		if (StringUtils.isNotEmpty(getColumnsReturned())) {
@@ -258,7 +256,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	}
 
 	public QueryExecutionContext getQueryExecutionContext(Connection connection, Message message) throws SenderException, SQLException, JdbcException {
-		ParameterList newParameterList = paramList != null ? (ParameterList) paramList.clone() : new ParameterList();
+		ParameterList newParameterList = (ParameterList) paramList.clone();
 		String query = getQuery(message);
 		if (BooleanUtils.isTrue(getUseNamedParams()) || (getUseNamedParams() == null && query.contains(UNP_START))) {
 			query = adjustQueryAndParameterListForNamedParameters(newParameterList, query);
@@ -717,7 +715,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		return executeOtherQuery(connection, statement, query, queryExecutionContext.getResultQuery(), resStmt, message, session, parameterList);
 	}
 
-	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, String resultQuery, PreparedStatement resStmt, Message message, PipeLineSession session, ParameterList parameterList) throws SenderException {
+	protected Message executeOtherQuery(@Nonnull Connection connection, @Nonnull PreparedStatement statement, @Nonnull String query, @Nullable String resultQuery, @Nullable PreparedStatement resStmt, @Nullable Message message, @Nullable PipeLineSession session, @Nullable ParameterList parameterList) throws SenderException {
 		try {
 			int numRowsAffected = 0;
 			if (StringUtils.isNotEmpty(getRowIdSessionKey())) {

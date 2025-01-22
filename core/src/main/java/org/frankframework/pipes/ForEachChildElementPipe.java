@@ -129,10 +129,8 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 	protected String makeEncapsulatingXslt(String rootElementname, String xpathExpression, int xsltVersion, String namespaceDefs) {
 		StringBuilder paramsString = new StringBuilder();
-		if (getParameterList() != null) {
-			for (IParameter param: getParameterList()) {
-				paramsString.append("<xsl:param name=\"").append(param.getName()).append("\"/>");
-			}
+		for (IParameter param : getParameterList()) {
+			paramsString.append("<xsl:param name=\"").append(param.getName()).append("\"/>");
 		}
 		String namespaceClause = XmlUtils.getNamespaceClause(namespaceDefs);
 		return
@@ -308,12 +306,10 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		if (getExtractElementsTp()!=null) {
 			log.debug("transforming input to obtain list of elements using xpath [{}]", getElementXPathExpression());
 			TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(threadConnector, result.inputHandler);
-			if (getParameterList()!=null) {
-				try {
-					XmlUtils.setTransformerParameters(transformerFilter.getTransformer(), getParameterList().getValues(input, session).getValueMap());
-				} catch (ParameterException | IOException e) {
-					throw new TransformerConfigurationException("Cannot apply parameters", e);
-				}
+			try {
+				XmlUtils.setTransformerParameters(transformerFilter.getTransformer(), getParameterList().getValues(input, session).getValueMap());
+			} catch (ParameterException | IOException e) {
+				throw new TransformerConfigurationException("Cannot apply parameters", e);
 			}
 			result.inputHandler=transformerFilter;
 			result.transformerErrorListener=(TransformerErrorListener)transformerFilter.getErrorListener();
@@ -368,7 +364,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		}
 
 		HandlerRecord handlerRecord = new HandlerRecord();
-		try (ThreadConnector<?> threadConnector = streamingXslt ? new ThreadConnector<>(this, "iterateOverInput", threadLifeCycleEventListener, txManager, session) : null) {
+		try (ThreadConnector<?> threadConnector = StringUtils.isNotEmpty(getElementXPathExpression()) && XmlUtils.isXsltStreamingByDefault() ? new ThreadConnector<>(this, "iterateOverInput", threadLifeCycleEventListener, txManager, session) : null) {
 			try {
 				createHandler(handlerRecord, threadConnector, input, session, callback);
 			} catch (TransformerException e) {

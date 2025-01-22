@@ -126,12 +126,10 @@ public class XsltSender extends AbstractSenderWithParameters implements IThreadC
 
 		if (getXsltVersion()>=2) {
 			ParameterList parameterList = getParameterList();
-			if (parameterList!=null) {
-				for (int i=0; i<parameterList.size(); i++) {
-					IParameter parameter = parameterList.getParameter(i);
-					if (parameter.getType()==ParameterType.NODE) {
-						throw new ConfigurationException("type '"+ParameterType.NODE+" is not permitted in combination with XSLT 2.0, use type '"+ParameterType.DOMDOC+"'");
-					}
+			for (int i = 0; i < parameterList.size(); i++) {
+				IParameter parameter = parameterList.getParameter(i);
+				if (parameter.getType() == ParameterType.NODE) {
+					throw new ConfigurationException("type '" + ParameterType.NODE + " is not permitted in combination with XSLT 2.0, use type '" + ParameterType.DOMDOC + "'");
 				}
 			}
 		}
@@ -203,11 +201,9 @@ public class XsltSender extends AbstractSenderWithParameters implements IThreadC
 	}
 
 	protected ContentHandler createHandler(Message input, ThreadConnector<Object> threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws TransformerException {
-		ParameterValueList pvl = null;
+		ParameterValueList pvl;
 		try {
-			if (paramList!=null) {
-				pvl = paramList.getValues(input, session);
-			}
+			pvl = paramList.getValues(input, session);
 		} catch (ParameterException e) {
 			throw new TransformerException("unable to resolve input parameters for transformerHandler", e);
 		}
@@ -271,9 +267,7 @@ public class XsltSender extends AbstractSenderWithParameters implements IThreadC
 			}
 
 			TransformerFilter mainFilter = poolToUse.getTransformerFilter(threadConnector, handler, isRemoveNamespaces(), isHandleLexicalEvents());
-			if (pvl!=null) {
-				XmlUtils.setTransformerParameters(mainFilter.getTransformer(), pvl.getValueMap());
-			}
+			XmlUtils.setTransformerParameters(mainFilter.getTransformer(), pvl.getValueMap());
 			handler=filterInput(mainFilter, session);
 
 			return handler;

@@ -74,7 +74,7 @@ import org.frankframework.util.StringUtil;
 public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> implements ISenderWithParameters {
 	public static final String PARAM_MESSAGEID = "messageId";
 
-	private ParameterList paramList = null;
+	private @Nonnull ParameterList paramList = new ParameterList();
 	private @Getter String sessionKeys = null;
 
 	{
@@ -83,9 +83,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> i
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (paramList != null) {
-			paramList.configure();
-		}
+		paramList.configure();
 		setType(StorageType.MESSAGESTORAGE.getCode());
 		if (StringUtils.isBlank(getSlotId())) {
 			throw new ConfigurationException("[slotId] has to be configured");
@@ -100,14 +98,11 @@ public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> i
 
 	@Override
 	public void addParameter(IParameter p) {
-		if (paramList == null) {
-			paramList = new ParameterList();
-		}
 		paramList.add(p);
 	}
 
 	@Override
-	public ParameterList getParameterList() {
+	public @Nonnull ParameterList getParameterList() {
 		return paramList;
 	}
 
@@ -117,7 +112,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> i
 		String messageId = session.getMessageId();
 		String correlationID = session.getCorrelationId();
 
-		if (paramList != null && paramList.hasParameter(PARAM_MESSAGEID)) {
+		if (paramList.hasParameter(PARAM_MESSAGEID)) {
 			try {
 				// the messageId to be inserted can also be specified via the parameter messageId
 				messageId = paramList.getValues(message, session).get(PARAM_MESSAGEID).asStringValue();

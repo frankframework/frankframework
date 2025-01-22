@@ -78,7 +78,7 @@ public class WebServiceSender extends HttpSender {
 		}
 		soapWrapper = SoapWrapper.getInstance();
 
-		if (paramList!=null && StringUtils.isNotEmpty(getSoapActionParam())) {
+		if (StringUtils.isNotEmpty(getSoapActionParam())) {
 			soapActionParameter=paramList.findParameter(getSoapActionParam());
 			if(soapActionParameter != null) {
 				requestOrBodyParamsSet.remove(soapActionParameter.getName());

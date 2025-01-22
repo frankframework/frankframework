@@ -137,15 +137,12 @@ public class ForPipe extends AbstractPipe {
 	}
 
 	private Optional<ParameterValueList> getParameterValueList(Message message, PipeLineSession session) throws PipeRunException {
-		if (getParameterList() != null) {
-			try {
-				return Optional.of(getParameterList().getValues(message, session));
-			} catch (ParameterException e) {
-				throw new PipeRunException(this, "exception extracting parameters", e);
-			}
+		try {
+			return Optional.of(getParameterList().getValues(message, session));
+		} catch (ParameterException e) {
+			throw new PipeRunException(this, "exception extracting parameters", e);
 		}
 
-		return Optional.empty();
 	}
 
 	/**

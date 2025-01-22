@@ -101,11 +101,9 @@ public abstract class AbstractFileSystemPipe<F, FS extends IBasicFileSystem<F>> 
 	@Nullable
 	public PipeRunResult doPipe(@Nonnull Message message, @Nonnull PipeLineSession session) throws PipeRunException {
 		ParameterList paramList = getParameterList();
-		ParameterValueList pvl=null;
+		ParameterValueList pvl;
 		try {
-			if (paramList != null) {
-				pvl = paramList.getValues(message, session);
-			}
+			pvl = paramList.getValues(message, session);
 		} catch (ParameterException e) {
 			throw new PipeRunException(this,"Pipe caught exception evaluating parameters", e);
 		}

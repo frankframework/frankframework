@@ -17,7 +17,6 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -156,9 +155,6 @@ public class DataSonnetPipe extends FixedForwardPipe {
 	private Map<String, Document<?>> getParameters(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			ParameterList parameterList = getParameterList();
-			if(parameterList == null) {
-				return Collections.emptyMap();
-			}
 			ParameterValueList pvl = parameterList.getValues(message, session);
 
 			return StreamSupport.stream(pvl.spliterator(), false)

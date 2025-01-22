@@ -132,7 +132,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 	private TransformerPool transformerPool = null;
 	private TransformerPool tpDynamicSessionKey = null;
-	protected ParameterList paramList = null;
+	protected @Nonnull ParameterList paramList = new ParameterList();
 	private boolean configured = false;
 	private CredentialFactory cf;
 
@@ -155,14 +155,11 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 	@Override
 	public void addParameter(IParameter p) {
-		if (paramList==null) {
-			paramList=new ParameterList();
-		}
 		paramList.add(p);
 	}
 
 	@Override
-	public ParameterList getParameterList() {
+	public @Nonnull ParameterList getParameterList() {
 		return paramList;
 	}
 
@@ -171,9 +168,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		if (StringUtils.isNotEmpty(getSessionKey()) && StringUtils.isNotEmpty(getSessionKeyXPath())) {
 			throw new ConfigurationException("Parameter ["+getName()+"] cannot have both sessionKey and sessionKeyXPath specified");
 		}
-		if (paramList!=null) {
-			paramList.configure();
-		}
+		paramList.configure();
 		if (StringUtils.isNotEmpty(getXpathExpression()) || StringUtils.isNotEmpty(styleSheetName)) {
 			OutputType outputType = getType() == ParameterType.XML
 					|| getType() == ParameterType.NODE
@@ -183,7 +178,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 			transformerPool = TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), outputType, includeXmlDeclaration, paramList, getXsltVersion());
 		} else {
-			if (paramList != null && StringUtils.isEmpty(getPattern())) {
+			if (StringUtils.isEmpty(getPattern())) {
 				throw new ConfigurationException("Parameter [" + getName() + "] can only have parameters itself if a styleSheetName, xpathExpression or pattern is specified");
 			}
 		}
@@ -235,10 +230,8 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	@Override
 	public boolean consumesSessionVariable(String sessionKey) {
 		return StringUtils.isEmpty(getContextKey()) && (
-					sessionKey.equals(getSessionKey())
-					|| getPattern()!=null && getPattern().contains("{"+sessionKey+"}")
-					|| getParameterList()!=null && getParameterList().consumesSessionVariable(sessionKey)
-				);
+				sessionKey.equals(getSessionKey()) || getPattern() != null && getPattern().contains("{" + sessionKey + "}") || getParameterList().consumesSessionVariable(sessionKey)
+		);
 	}
 
 	/**
@@ -337,7 +330,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 						String rnResult = XmlUtils.removeNamespaces(XmlUtils.source2String(source));
 						source = XmlUtils.stringToSource(rnResult);
 					}
-					ParameterValueList pvl = paramList == null ? null : paramList.getValues(message, session, namespaceAware);
+					ParameterValueList pvl = paramList.getValues(message, session, namespaceAware);
 					switch (getType()) {
 						case NODE:
 							return transformToDocument(source, pvl).getFirstChild();

@@ -87,18 +87,14 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		String uriPatternSessionKey = null;
 		ParameterValueList pvl = null;
 		ParameterList parameterList = getParameterList();
-		if (parameterList != null) {
-			try {
-				pvl = parameterList.getValues(message, session);
-				if (pvl != null) {
-					ParameterValue pv = pvl.get("uriPattern");
-					if (pv != null) {
-						uriPatternSessionKey = pv.asStringValue();
-					}
-				}
-			} catch (ParameterException e) {
-				throw new PipeRunException(this, "exception extracting parameters", e);
+		try {
+			pvl = parameterList.getValues(message, session);
+			ParameterValue pv = pvl.get("uriPattern");
+			if (pv != null) {
+				uriPatternSessionKey = pv.asStringValue();
 			}
+		} catch (ParameterException e) {
+			throw new PipeRunException(this, "exception extracting parameters", e);
 		}
 
 		//hash over data genereren, uit cache lezen en teruggeven, in cache updaten, verwijderen uit cache, cache naar disk wegschrijven, cache legen

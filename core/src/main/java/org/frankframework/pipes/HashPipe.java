@@ -113,16 +113,15 @@ public class HashPipe extends FixedForwardPipe {
 
 		try {
 			ParameterList parameterList = getParameterList();
-			ParameterValueList pvl = parameterList == null ? null : parameterList.getValues(message, session);
-			if (pvl != null) { // at this location, it would never be useful that the parameterValue defaults to inputMessage
-				ParameterValue authAliasParamValue = pvl.get("authAlias");
-				if (authAliasParamValue != null) {
-					authAlias = authAliasParamValue.asStringValue();
-				}
-				ParameterValue secretParamValue = pvl.get("secret");
-				if (secretParamValue != null) {
-					secret = secretParamValue.asStringValue();
-				}
+			ParameterValueList pvl = parameterList.getValues(message, session);
+			// at this location, it would never be useful that the parameterValue defaults to inputMessage
+			ParameterValue authAliasParamValue = pvl.get("authAlias");
+			if (authAliasParamValue != null) {
+				authAlias = authAliasParamValue.asStringValue();
+			}
+			ParameterValue secretParamValue = pvl.get("secret");
+			if (secretParamValue != null) {
+				secret = secretParamValue.asStringValue();
 			}
 		} catch (ParameterException e) {
 			throw new PipeRunException(this, "exception extracting authAlias", e);

@@ -149,7 +149,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade, FrankElem
 				if (tableParameterList != null) {
 					parameterLists.add(tableParameterList);
 				}
-				if (parameterLists.size() > 0) {
+				if (!parameterLists.isEmpty()) {
 					Handler handler = Handler.getHandler(parameterLists, log);
 					try {
 						XmlUtils.parseXml(message, handler);

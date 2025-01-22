@@ -121,11 +121,7 @@ public abstract class AbstractMailSender extends AbstractSenderWithParameters {
 	 */
 	public MailSessionBase extract(Message input, PipeLineSession session) throws SenderException, DomBuilderException {
 		MailSessionBase mailSession;
-		if (paramList == null) {
-			mailSession = parseXML(input, session);
-		} else {
-			mailSession = readParameters(input, session);
-		}
+		mailSession = readParameters(input, session);
 		return mailSession;
 	}
 
