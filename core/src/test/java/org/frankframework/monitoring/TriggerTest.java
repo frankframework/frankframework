@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
-import org.springframework.context.ConfigurableApplicationContext;
 
 import lombok.Getter;
 
@@ -37,6 +36,7 @@ import org.frankframework.monitoring.events.FireMonitorEvent;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlBuilder;
 
 public class TriggerTest implements EventThrowing {
@@ -52,9 +52,11 @@ public class TriggerTest implements EventThrowing {
 	public void setup() {
 		destination = mock(IMonitorDestination.class);
 		when(destination.getName()).thenReturn("dummy destination");
+		when(destination.toXml()).thenReturn(new XmlBuilder("destination"));
 
 		manager = spy(MonitorManager.class);
-		monitor = spy(Monitor.class);
+		manager.refresh();
+		monitor = spy(SpringUtils.createBean(manager, Monitor.class));
 		monitor.setApplicationContext(manager);
 
 		monitor.setName("monitorName");
@@ -257,20 +259,10 @@ public class TriggerTest implements EventThrowing {
 	public void testMonitoringXML() throws Exception {
 		// Arrange
 		Trigger trigger = spy(Alarm.class);
-		Monitor monitor = spy(Monitor.class);
-		monitor.setApplicationContext(manager);
-		MonitorManager manager = spy(MonitorManager.class);
-		IMonitorDestination destination = mock(IMonitorDestination.class);
-		when(destination.getName()).thenReturn("dummy destination");
-		when(destination.toXml()).thenReturn(new XmlBuilder("destination"));
-
 		trigger.addEventCodeText(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
 
-		manager.addMonitor(monitor);
 		monitor.addTrigger(trigger);
-		manager.addDestination(destination);
-		monitor.setDestinations(destination.getName());
 		monitor.setAlarmSeverity(Severity.WARNING);
 
 		// Act

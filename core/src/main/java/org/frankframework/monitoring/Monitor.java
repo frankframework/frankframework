@@ -25,7 +25,6 @@ import java.util.Set;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -36,6 +35,7 @@ import org.frankframework.core.FrankElement;
 import org.frankframework.core.NameAware;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.doc.Mandatory;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.util.StringUtil;
@@ -97,17 +97,17 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 
 	@Override
 	public void configure() throws ConfigurationException {
-		for(String destination : destinations) {
+		for(String destination : destinations) { // Monitor should fail is destination does not exist.
 			if(getManager().getDestination(destination) == null) {
 				throw new ConfigurationException("destination ["+destination+"] does not exist");
 			}
 		}
 
-		if (log.isDebugEnabled()) log.debug("monitor [{}] configuring triggers", getName());
+		log.debug("monitor [{}] configuring triggers", getName());
 		for (ITrigger trigger : triggers) {
 			if (!trigger.isConfigured()) {
 				trigger.configure();
-				((ConfigurableApplicationContext) manager).addApplicationListener(trigger);
+				manager.addApplicationListener(trigger);
 			}
 		}
 	}
@@ -198,7 +198,7 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 		return String.join(",", destinations);
 	}
 
-	//Digester setter
+	// Digester setter
 	public void setDestinations(String newDestinations) {
 		destinations.clear();
 		destinations.addAll(StringUtil.split(newDestinations));
@@ -219,7 +219,7 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 				}
 			}
 
-			//Only proceed if all destinations exist
+			// Only proceed if all destinations exist
 			destinations.clear();
 			for(String destination : newDestinations) {
 				if (log.isDebugEnabled()) log.debug("{}adding destination [{}]", getLogPrefix(), destination);
@@ -257,6 +257,7 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 		return triggers.get(index);
 	}
 
+	@Mandatory
 	@Override
 	public void setName(String string) {
 		name = string;
