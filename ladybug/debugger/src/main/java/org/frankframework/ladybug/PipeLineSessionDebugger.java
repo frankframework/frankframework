@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 
@@ -72,7 +73,7 @@ public class PipeLineSessionDebugger implements MethodHandler {
 		if (newValue != originalValue && newValue instanceof Message message) {
 			// If a session key is stubbed with a stream and this session key is not used (stream is not read) it will
 			// keep the report in progress (waiting for the stream to be read, captured and closed).
-			message.closeOnCloseOf(pipeLineSession, this.getClass().getTypeName());
+			message.closeOnCloseOf(pipeLineSession);
 		}
 		return pipeLineSession.put(name, newValue);
 	}

@@ -211,7 +211,7 @@ public class HttpSender extends AbstractHttpSender {
 
 		Message responseMessage = responseHandler.getResponseMessage();
 		if (!Message.isEmpty(responseMessage)) {
-			responseMessage.closeOnCloseOf(session, this);
+			responseMessage.closeOnCloseOf(session);
 		}
 
 		if (responseHandler.isMultipart()) {

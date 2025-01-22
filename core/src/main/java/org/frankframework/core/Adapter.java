@@ -646,7 +646,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			if (Message.isEmpty(message) && isReplaceNullMessage()) {
 				log.debug("Adapter [{}] replaces null message with messageId [{}] by empty message", name, messageId);
 				message = new Message("");
-				message.closeOnCloseOf(pipeLineSession, "Empty Message from Adapter");
+				message.closeOnCloseOf(pipeLineSession);
 			}
 			result = pipeline.process(messageId, message, pipeLineSession);
 			return result;

@@ -115,7 +115,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 			ReplacingVariablesInputStream inputStream = wrapWithSubstituteVarsInputStreamIfNeeded(replaceParametersStream);
 
 			Message result = new Message(inputStream);
-			result.closeOnCloseOf(session, this);
+			result.closeOnCloseOf(session);
 
 			return new PipeRunResult(getSuccessForward(), result);
 		} catch (IOException e) {

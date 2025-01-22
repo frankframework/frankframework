@@ -360,7 +360,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 		} finally {
 			if (cmisSession != null && runtimeSession) {
 				log.debug("Closing CMIS runtime session");
-				session.scheduleCloseOnSessionExit(cmisSession, getLogPrefix());
+				session.scheduleCloseOnSessionExit(cmisSession);
 				cmisSession = null;
 			}
 		}
@@ -398,7 +398,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 			if (getDocumentContent) {
 				Message content = getMessageFromContentStream(document.getContentStream());
 
-				content.closeOnCloseOf(session, this);
+				content.closeOnCloseOf(session);
 				session.put(getFileSessionKey(), content);
 			}
 
@@ -413,7 +413,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 		}
 
 		Message content = getMessageFromContentStream(document.getContentStream());
-		content.closeOnCloseOf(session, this);
+		content.closeOnCloseOf(session);
 
 		if (StringUtils.isNotEmpty(getFileSessionKey())) {
 			session.put(getFileSessionKey(), content);

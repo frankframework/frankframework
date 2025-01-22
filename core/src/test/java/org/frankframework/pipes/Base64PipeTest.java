@@ -281,7 +281,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 	private PipeRunResult doBase64PipeWithInputStream(final InputStream stream) throws PipeRunException {
 
 		Message input = new Message(new ThrowingAfterCloseInputStream(stream));
-		input.closeOnCloseOf(session, pipe);
+		input.closeOnCloseOf(session);
 
 		assertTrue(input.isScheduledForCloseOnExitOf(session), "Before Base64Pipe, streaming input message should be scheduled for close on close of session");
 

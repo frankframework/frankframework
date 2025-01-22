@@ -76,7 +76,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		try (CloseableThreadContext.Instance ignored = CloseableThreadContext.put("pipe", pipe.getName())) {
 			if (StringUtils.isNotEmpty(pipe.getGetInputFromSessionKey())) {
 				log.debug("Pipeline of adapter [{}] replacing input for pipe [{}] with contents of sessionKey [{}]", owner::getName, pipe::getName, pipe::getGetInputFromSessionKey);
-				message.closeOnCloseOf(pipeLineSession, owner);
+				if (!Message.isNull(message)) message.closeOnCloseOf(pipeLineSession);
 				if (!pipeLineSession.containsKey(pipe.getGetInputFromSessionKey()) && StringUtils.isEmpty(pipe.getEmptyInputReplacement())) {
 					boolean throwOnMissingSessionKey;
 					if (pipe instanceof FixedForwardPipe ffp) {
@@ -94,7 +94,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 			}
 			if (StringUtils.isNotEmpty(pipe.getGetInputFromFixedValue())) {
 				log.debug("Pipeline of adapter [{}] replacing input for pipe [{}] with fixed value [{}]", owner::getName, pipe::getName, pipe::getGetInputFromFixedValue);
-				message.closeOnCloseOf(pipeLineSession, owner);
+				if (!Message.isNull(message)) message.closeOnCloseOf(pipeLineSession);
 				message = new Message(pipe.getGetInputFromFixedValue());
 			}
 
@@ -115,7 +115,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 				pipeRunResult = chain.apply(message);
 			}
 			if (pipeRunResult == null) {
-				throw new PipeRunException(pipe, "Pipeline of [" + pipeLine.getOwner().getName() + "] received null result from pipe [" + pipe.getName() + "]d");
+				throw new PipeRunException(pipe, "Pipeline of [" + owner.getName() + "] received null result from pipe [" + pipe.getName() + "]d");
 			}
 
 			if (pipe.isRestoreMovedElements()) {
@@ -135,12 +135,12 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 					try {
 						result.preserve();
 					} catch (IOException e) {
-						throw new PipeRunException(pipe, "Pipeline of [" + pipeLine.getOwner().getName() + "] could not preserve output", e);
+						throw new PipeRunException(pipe, "Pipeline of [" + owner.getName() + "] could not preserve output", e);
 					}
 				}
 			}
 			if (pipe.isPreserveInput()) {
-				pipeRunResult.getResult().closeOnCloseOf(pipeLineSession, owner);
+				pipeRunResult.getResult().closeOnCloseOf(pipeLineSession);
 				pipeRunResult.setResult(preservedObject);
 			}
 
@@ -179,7 +179,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 			handler.setRemoveCompactMsgNamespaces(pipe.isRemoveCompactMsgNamespaces());
 			handler.setContext(pipeLineSession);
 			XmlUtils.parseXml(inputSource, handler);
-			result.closeOnCloseOf(pipeLineSession, owner); // Directly closing the result fails, because the message can also exist and used in the session
+			result.closeOnCloseOf(pipeLineSession); // Directly closing the result fails, because the message can also exist and used in the session
 			pipeRunResult.setResult(messageBuilder.build());
 		} catch (IOException | SAXException e) {
 			log.warn("Pipeline of adapter [{}] could not compact received message", owner.getName(), e);
@@ -193,7 +193,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 			return;
 		}
 
-		result.closeOnCloseOf(pipeLineSession, owner);
+		result.closeOnCloseOf(pipeLineSession);
 		InputSource inputSource = getInputSourceFromResult(result, pipe, owner);
 
 		try {
@@ -206,7 +206,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 			XmlUtils.parseXml(inputSource, handler);
 
 			Message restoredResult = messageBuilder.build();
-			restoredResult.closeOnCloseOf(pipeLineSession, owner);
+			restoredResult.closeOnCloseOf(pipeLineSession);
 			pipeRunResult.setResult(restoredResult);
 		} catch (SAXException | IOException e) {
 			throw new PipeRunException(pipe, "could not restore moved elements", e);

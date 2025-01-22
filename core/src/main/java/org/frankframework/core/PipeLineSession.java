@@ -17,13 +17,14 @@ package org.frankframework.core;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
@@ -38,7 +39,6 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 
 import org.frankframework.stream.Message;
-import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DateFormatUtils;
@@ -79,7 +79,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	// closeables.keySet is a List of wrapped resources. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
 	// Values are labels to help debugging
-	private final @Getter Map<AutoCloseable, String> closeables = new ConcurrentHashMap<>(); // needs to be concurrent, closes may happen from other threads
+	private final @Getter Set<AutoCloseable> closeables = Collections.synchronizedSet(new HashSet<>()); // needs to be concurrent, closes may happen from other threads
+	
 	public PipeLineSession() {
 		super();
 		createCloseAction();
@@ -148,9 +149,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 				.map(AutoCloseable.class::cast)
 				.collect(Collectors.toSet());
 		if (to instanceof PipeLineSession toSession) {
-			closeablesInDestination.addAll(toSession.closeables.keySet());
+			closeablesInDestination.addAll(toSession.closeables);
 		}
-		closeables.keySet().removeAll(closeablesInDestination);
+		closeables.removeAll(closeablesInDestination);
 	}
 
 	private void copyIfExists(String key, Map<String, Object> to) {
@@ -162,7 +163,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	@Override
 	public Object put(String key, Object value) {
 		if (shouldCloseSessionResource(key, value)) {
-			closeables.put((AutoCloseable) value, "Session key [" + key + "]");
+			closeables.add((AutoCloseable) value);
 		}
 		return super.put(key, value);
 	}
@@ -213,7 +214,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		}
 		if(obj != null) {
 			Message message = Message.asMessage(obj);
-			message.closeOnCloseOf(this, "Message for key [" + key + "]");
+			message.closeOnCloseOf(this);
 			return message;
 		}
 		return Message.nullMessage();
@@ -437,12 +438,12 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		return Double.parseDouble(Objects.requireNonNull(this.getString(key)));
 	}
 
-	public void scheduleCloseOnSessionExit(AutoCloseable resource, String requester) {
-		closeables.put(resource, ClassUtils.nameOf(resource) +" of "+requester);
+	public void scheduleCloseOnSessionExit(AutoCloseable resource) {
+		closeables.add(resource);
 	}
 
 	public boolean isScheduledForCloseOnExit(AutoCloseable message) {
-		return closeables.containsKey(message);
+		return closeables.contains(message);
 	}
 
 	public void unscheduleCloseOnSessionExit(AutoCloseable message) {
@@ -456,16 +457,16 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	private static class PipeLineSessionCloseAction implements Runnable {
-		private final Map<AutoCloseable, String> closeables;
+		private final Set<AutoCloseable> closeables;
 
-		private PipeLineSessionCloseAction(Map<AutoCloseable, String> closeables) {
+		private PipeLineSessionCloseAction(Set<AutoCloseable> closeables) {
 			this.closeables = closeables;
 		}
 
 		@Override
 		public void run() {
 			// Create a copy to safeguard against side-effects
-			Set<AutoCloseable> closeableItems = new LinkedHashSet<>(closeables.keySet());
+			Set<AutoCloseable> closeableItems = new LinkedHashSet<>(closeables);
 			closeables.clear();
 			CloseUtils.closeSilently(closeableItems);
 		}

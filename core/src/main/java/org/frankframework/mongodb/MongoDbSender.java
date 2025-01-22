@@ -174,7 +174,7 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 
 	@Override
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
-		message.closeOnCloseOf(session, this);
+		message.closeOnCloseOf(session);
 		MongoAction mongoAction = getAction();
 		try {
 			MessageBuilder messageBuilder = new MessageBuilder();

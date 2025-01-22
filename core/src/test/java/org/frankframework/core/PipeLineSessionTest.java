@@ -83,7 +83,7 @@ public class PipeLineSessionTest {
 		session.put("x", closeable);
 
 		// Assert
-		assertTrue(session.getCloseables().containsKey(closeable));
+		assertTrue(session.getCloseables().contains(closeable));
 	}
 
 	@Test
@@ -99,7 +99,7 @@ public class PipeLineSessionTest {
 		session.putAll(values);
 
 		// Assert
-		assertTrue(session.getCloseables().containsKey(closeable));
+		assertTrue(session.getCloseables().contains(closeable));
 	}
 
 	@Test
@@ -320,8 +320,8 @@ public class PipeLineSessionTest {
 				sub.put("b", bMessage);
 				sub.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, bMessage);
 
-				sub.scheduleCloseOnSessionExit(closeable, "requester field is useless");
-				sub.scheduleCloseOnSessionExit(closeable, "requester field is useless"); // Just for good measure, add it twice..
+				sub.scheduleCloseOnSessionExit(closeable);
+				sub.scheduleCloseOnSessionExit(closeable); // Just for good measure, add it twice..
 				sub.put("c", closeable); //Store under `c` which we merge later on
 
 				for(int j = 1; j <= 10; j++) {
@@ -337,7 +337,7 @@ public class PipeLineSessionTest {
 						child.put("a", valueAsMessage); // Should be a string-value Message
 						child.put("b", Message.asMessage(sub.getMessage("b").asString()));
 
-						child.scheduleCloseOnSessionExit(streamMessage, "requester field is useless");
+						child.scheduleCloseOnSessionExit(streamMessage);
 						child.put("d", streamMessage);
 
 						// Overwrite values
@@ -388,7 +388,7 @@ public class PipeLineSessionTest {
 		from.put("__e", closeable2);
 		from.put("f", messageOfCloseable);
 
-		from.scheduleCloseOnSessionExit(message, "test-c");
+		from.scheduleCloseOnSessionExit(message);
 
 		// Act
 		from.mergeToParentSession(keysToCopy, to);
@@ -398,10 +398,10 @@ public class PipeLineSessionTest {
 		// Assert
 		assertEquals(from,to);
 
-		assertFalse(to.getCloseables().containsKey(message));
-		assertTrue(to.getCloseables().containsKey(messageOfCloseable));
-		assertTrue(to.getCloseables().containsKey(closeable1));
-		assertFalse(to.getCloseables().containsKey(closeable2));
+		assertFalse(to.getCloseables().contains(message));
+		assertTrue(to.getCloseables().contains(messageOfCloseable));
+		assertTrue(to.getCloseables().contains(closeable1));
+		assertFalse(to.getCloseables().contains(closeable2));
 		assertFalse(((Message) to.get("c")).isNull());
 		assertEquals("a message", ((Message) to.get("c")).asString());
 		assertEquals("a closeable", ((BufferedReader) to.get("d")).readLine());
@@ -436,7 +436,7 @@ public class PipeLineSessionTest {
 		from.put("e", message2);
 		to.put("d", message2);
 
-		from.scheduleCloseOnSessionExit(message1, "test-d");
+		from.scheduleCloseOnSessionExit(message1);
 
 		// Act
 		from.mergeToParentSession(keys, to);

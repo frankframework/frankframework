@@ -373,7 +373,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 
 			// Detach the result message from the child session, and attach to the parent session
 			resultMessage.unscheduleFromCloseOnExitOf(childSession);
-			resultMessage.closeOnCloseOf(parentSession, this);
+			resultMessage.closeOnCloseOf(parentSession);
 
 			return createSenderResult(resultMessage, childSession);
 		}

@@ -150,7 +150,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	public Message processRequest(Message message, @Nonnull PipeLineSession session) throws ListenerException {
 		MessageWrapper<M> messageWrapper = new MessageWrapper<>(message, session.getMessageId(), session.getCorrelationId());
 		Message response = processRequest(messageWrapper, session);
-		response.closeOnCloseOf(session, this);
+		response.closeOnCloseOf(session);
 		return  response;
 	}
 

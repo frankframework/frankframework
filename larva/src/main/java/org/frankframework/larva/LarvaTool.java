@@ -1267,7 +1267,7 @@ public class LarvaTool {
 			try (PipeLineSession session = new PipeLineSession()) {
 				session.put(PipeLineSession.CORRELATION_ID_KEY, providedCorrelationId);
 				Message requestMessage = new Message(fileContent);
-				requestMessage.closeOnCloseOf(session, "Larva");
+				requestMessage.closeOnCloseOf(session);
 				try (Message ignored = jmsSender.sendMessageOrThrow(requestMessage, session)) {
 					debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent);
 					result = RESULT_OK;

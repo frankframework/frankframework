@@ -270,7 +270,7 @@ public class SerializableFileReferenceTest {
 
 		// Act
 		try (PipeLineSession session = new PipeLineSession()) {
-			message.closeOnCloseOf(session, "test closing");
+			message.closeOnCloseOf(session);
 		}
 
 		// Assert

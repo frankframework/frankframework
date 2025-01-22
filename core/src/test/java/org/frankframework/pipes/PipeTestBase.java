@@ -94,7 +94,7 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 				} catch (IOException e) {
 					throw new PipeRunException(pipe, "Error getting inputStream of input message", e);
 				}
-				wrappedInput.closeOnCloseOf(session, pipe);
+				wrappedInput.closeOnCloseOf(session);
 				session.putIfAbsent(PipeLineSession.ORIGINAL_MESSAGE_KEY, wrappedInput);
 				PipeRunResult result = pipe.doPipe(wrappedInput, session);
 				session.unscheduleCloseOnSessionExit(result.getResult());

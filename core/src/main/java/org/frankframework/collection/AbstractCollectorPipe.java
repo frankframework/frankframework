@@ -31,7 +31,6 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
-import org.frankframework.util.ClassUtils;
 
 /**
  * Base class for pipes that can collect items, such as multipart messages and zip archives.
@@ -114,7 +113,7 @@ public abstract class AbstractCollectorPipe<C extends ICollector<P>, P> extends 
 					}
 					collection = new Collection<>(createCollector(input, session));
 					collection.setName(getCollectionName());
-					session.scheduleCloseOnSessionExit(collection, ClassUtils.nameOf(this));
+					session.scheduleCloseOnSessionExit(collection);
 					session.put(getCollectionName(), collection);
 					break;
 				}

@@ -58,7 +58,7 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 	 * to be handled by the caller of this object.
 	 * Implementations must either consume the message, or pass it on to the next Pipe in the PipeRunResult.
 	 * If the result of the Pipe does not depend on the input, like for the {@link FixedResultPipe}, the Pipe
-	 * can schedule the input to be closed at session exit, by calling {@link Message#closeOnCloseOf(PipeLineSession, String)}
+	 * can schedule the input to be closed at session exit, by calling {@link #closeOnCloseOf(PipeLineSession)}
 	 * This allows the previous Pipe to release any resources (e.g. connections) that it might have kept open
 	 * until the message was consumed. Doing so avoids connections leaking from pools, while it enables
 	 * efficient streaming processing of data while it is being read from a stream.
