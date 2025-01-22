@@ -5,7 +5,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<SenderPipe name="retrieveData" storeResultInSessionKey="dataSessionKey"> <!-- Should not stream to XsltPipe, because of storeResultInSessionKey -->
 				<FixedQuerySender
@@ -26,7 +26,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 			<PutInSessionPipe name="createData" value="data" sessionKey="ref_FileContent" />
 			<pipe

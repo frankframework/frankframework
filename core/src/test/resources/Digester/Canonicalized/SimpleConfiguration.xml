@@ -4,7 +4,7 @@
 			<listener name="HelloWorld" className="org.frankframework.testdummies.TestDummyListener"/>
 		</receiver>
 		<pipeline firstPipe="HelloWorld">
-			<exit path="EXIT" state="success"/>
+			<exit name="EXIT" state="success"/>
 			<pipe name="HelloWorld" className="org.frankframework.testdummies.TestDummyPipe" returnString="Hello World">
 				<forward name="success" path="EXIT"/>
 			</pipe>
@@ -17,7 +17,7 @@
 			<errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="${instance.name}/HelloUniverse_In"/>
 		</receiver>
 		<pipeline firstPipe="HelloUniverse">
-			<exit path="EXIT" state="success"/>
+			<exit name="EXIT" state="success"/>
 			<pipe name="HelloUniverse" className="org.frankframework.pipes.SenderPipe">
 				<sender className="org.frankframework.senders.FixedResultSender" returnString="Hello, Universe! ${digester.property} [${secret}] &lt;@quot;&gt;"/>
 				<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="${instance.name}/HelloUniverse_Out"/>

@@ -7,7 +7,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 
 <!--			<pipe name="Load ZIP File"-->
@@ -61,7 +61,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="echo" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />

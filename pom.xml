@@ -22,7 +22,7 @@
 
 		<jackson.version>2.18.2</jackson.version>
 		<cxf.version>4.1.0</cxf.version>
-		<spring.version>6.2.1</spring.version>
+		<spring.version>6.2.2</spring.version>
 		<spring-security.version>6.4.2</spring-security.version>
 		<spring-integration.version>6.4.1</spring-integration.version>
 		<spring.boot.version>3.4.1</spring.boot.version>
@@ -56,7 +56,7 @@
 		<rabbitmq.driver.version>5.23.0</rabbitmq.driver.version>
 		<rabbitmq.jms.version>3.4.0</rabbitmq.jms.version>
 
-		<aws.java.sdk.version>2.29.1</aws.java.sdk.version>
+		<aws.java.sdk.version>2.29.52</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.15.2</mockito.version>
@@ -1186,8 +1186,16 @@
 										<message>Dont use com.sun but glassfish instead</message>
 									</bannedDependencies>
 								</rules>
+							</configuration>
+						</execution>
+						<execution>
+							<id>enforce-jdk-version</id>
+							<goals>
+								<goal>enforce</goal>
+							</goals>
+							<configuration>
 								<rules>
-									<requireJavaVersion>
+										<requireJavaVersion>
 										<version>[17,24)</version>
 									</requireJavaVersion>
 								</rules>

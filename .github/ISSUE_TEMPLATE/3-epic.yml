@@ -1,6 +1,7 @@
 name: Epic
 description: Define a body of work that can be broken down into specific tasks.
-labels: ['Epic', 'Needs Triage']
+labels: ['Needs Triage']
+type: Epic
 projects: ['frankframework/2']
 body:
   - type: markdown

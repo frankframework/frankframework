@@ -9,7 +9,7 @@
 
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 			<pipe
 				name="PutParametersInSession"

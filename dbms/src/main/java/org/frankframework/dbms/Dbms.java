@@ -55,11 +55,14 @@ public enum Dbms {
 				log.debug("Setting databasetype to MARIADB (using MariaDB driver)");
 			}
 			return new MariaDbDbmsSupport(productVersion);
+		} else if (product.equals("H2")) {
+			return new H2DbmsSupport(productVersion);
 		}
 		if (product.startsWith("DB2/")) {
 			log.debug("Setting databasetype to DB2 for product [{}]", product);
 			return new Db2DbmsSupport();
 		}
+
 		for (Dbms dbms : values()) {
 			if (dbms.getProductName().equals(product)) {
 				log.debug("Setting databasetype to [{}]", dbms);

@@ -14,7 +14,7 @@
       </receiver>
 		    <pipeline firstPipe="IsUserInRolePipe">
 			      <exits>
-				        <exit path="EXIT" state="success"/>
+				        <exit name="EXIT" state="success"/>
 			      </exits>
 			      <pipe name="IsUserInRolePipe"
                className="org.frankframework.pipes.EchoPipe">

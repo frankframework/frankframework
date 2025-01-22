@@ -12,7 +12,7 @@
 
 	<properties>
 		<j2v8.version>4.6.0</j2v8.version>
-		<graalvm.version>24.1.1</graalvm.version>
+		<graalvm.version>24.1.2</graalvm.version>
 		<saxon.version>10.9</saxon.version><!--From version 11, duplicate imported resources cause an exception. -->
 	</properties>
 
@@ -753,7 +753,7 @@
 		<dependency>
 			<groupId>com.github.dasniko</groupId>
 			<artifactId>testcontainers-keycloak</artifactId>
-			<version>3.5.1</version>
+			<version>3.6.0</version>
 			<scope>test</scope>
 		</dependency>
 

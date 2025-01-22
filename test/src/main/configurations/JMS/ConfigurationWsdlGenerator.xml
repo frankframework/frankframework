@@ -1,7 +1,7 @@
 <module>
 	<adapter name="WsdlGenerator" active="${active.jms}">
 		<errorMessageFormatter
-			className="org.frankframework.errormessageformatters.SoapErrorMessage" />
+			className="org.frankframework.errormessageformatters.SoapErrorMessageFormatter" />
 		<receiver
 			numThreads="4">
 			<listener className="org.frankframework.extensions.esb.EsbJmsListener"
@@ -14,7 +14,7 @@
 		</receiver>
 		<pipeline firstPipe="FixedReply">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 
 			<inputValidator
@@ -54,7 +54,7 @@
 	</adapter>
 	<adapter name="WsdlGenerator2" active="${active.jms}">
 		<errorMessageFormatter
-			className="org.frankframework.errormessageformatters.SoapErrorMessage" />
+			className="org.frankframework.errormessageformatters.SoapErrorMessageFormatter" />
 		<receiver
 			numThreads="4">
 			<listener className="org.frankframework.extensions.esb.EsbJmsListener"
@@ -63,7 +63,7 @@
 		</receiver>
 		<pipeline firstPipe="FixedReply">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 
 			<inputWrapper
@@ -99,7 +99,7 @@
 	</adapter>
 	<adapter name="WsdlGenerator3" active="${active.jms}">
 		<errorMessageFormatter
-			className="org.frankframework.errormessageformatters.SoapErrorMessage" />
+			className="org.frankframework.errormessageformatters.SoapErrorMessageFormatter" />
 		<receiver
 			numThreads="4">
 			<listener className="org.frankframework.extensions.esb.EsbJmsListener"
@@ -112,7 +112,7 @@
 		</receiver>
 		<pipeline firstPipe="FixedReply">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 
 			<inputValidator
@@ -145,7 +145,7 @@
 	</adapter>
 	<adapter name="WsdlGenerator4" active="${active.jms}">
 		<errorMessageFormatter
-			className="org.frankframework.errormessageformatters.SoapErrorMessage" />
+			className="org.frankframework.errormessageformatters.SoapErrorMessageFormatter" />
 		<receiver
 			numThreads="4">
 			<listener className="org.frankframework.extensions.esb.EsbJmsListener"
@@ -158,7 +158,7 @@
 		</receiver>
 		<pipeline firstPipe="FixedReply">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 
 			<inputValidator

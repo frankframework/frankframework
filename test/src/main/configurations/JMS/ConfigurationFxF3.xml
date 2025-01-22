@@ -6,7 +6,7 @@
 		</receiver>
 		<pipeline firstPipe="Send2Jms" transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="Send2Jms"
 				className="org.frankframework.pipes.SenderPipe">
@@ -34,7 +34,7 @@
 		</receiver>
 		<pipeline firstPipe="EchoPipe" transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<inputValidator
 				className="org.frankframework.extensions.fxf.FxfXmlValidator"

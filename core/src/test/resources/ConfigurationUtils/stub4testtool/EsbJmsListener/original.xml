@@ -17,7 +17,7 @@
 			transactionAttribute="Required">
 
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 
 			<inputValidator

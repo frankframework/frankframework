@@ -690,12 +690,13 @@ public class DbmsSupportTest {
 		}
 	}
 
+	/**
+	 * We expect this test to run against a MariaDB version 10.6 or later and so it should support "skip locked" when running these tests.
+	 * Also, this is a very strange test. We should run some queries and verify the functionality instead of relying on this silly boolean.
+	 */
 	@DatabaseTest
 	public void testSkipLockedSupportPresent() {
-		// We expect this test to run against a MariaDB version 10.6 or later and so it should support "skip locked" when running these tests
-		boolean expectSkipLockedSupport = dbmsSupport.getDbms() != Dbms.H2;
-
-		assertEquals(expectSkipLockedSupport, dbmsSupport.hasSkipLockedFunctionality());
+		assertTrue(dbmsSupport.hasSkipLockedFunctionality());
 	}
 
 	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType) throws JdbcException, SQLException {

@@ -1,6 +1,6 @@
 <!DOCTYPE configuration [
 ]>
-<configuration name="Ibis4Test">
+<configuration>
 	<jmsRealms>
 		<jmsRealm realmName="jdbc" datasourceName="${jdbc.datasource.default}"/>
 		<jmsRealm realmName="qcf" queueConnectionFactoryName="${jms.connectionfactory.qcf}" active="${active.jms}"/>

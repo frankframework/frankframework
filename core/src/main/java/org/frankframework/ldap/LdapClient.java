@@ -141,7 +141,8 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 
     protected void configure() throws ConfigurationException {
 		if (attributeCache!=null) {
-			attributeCache.configure("ldapAttributeCache");
+			attributeCache.setName("ldapAttributeCache_cache");
+			attributeCache.configure();
 		}
     }
 

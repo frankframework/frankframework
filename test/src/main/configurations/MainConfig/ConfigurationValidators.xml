@@ -14,11 +14,11 @@
 		</receiver>
 		<pipeline firstPipe="CopyItem">
 			<exits>
-				<exit path="EXIT" state="success" code="200"/>
-				<exit path="SpecialExit" state="success" code="201" responseRoot="SpecialResponse" />
-				<exit path="NotModified" state="success" code="304" empty="true" />
-				<exit path="BadRequest" state="error" code="400" responseRoot="InputValidationFailure" />
-				<exit path="ServerError" state="error" code="500" />
+				<exit name="EXIT" state="success" code="200"/>
+				<exit name="SpecialExit" state="success" code="201" responseRoot="SpecialResponse" />
+				<exit name="NotModified" state="success" code="304" empty="true" />
+				<exit name="BadRequest" state="error" code="400" responseRoot="InputValidationFailure" />
+				<exit name="ServerError" state="error" code="500" />
 			</exits>
 
 			<inputValidator className="org.frankframework.soap.SoapValidator" schemaLocation="urn:items /Validators/xsd/Items%20v1.xsd" soapBody="Item_Request" outputSoapBody="Item_Response,SpecialResponse,InputValidationFailure,OutputValidationFailure" allowPlainXml="true"
@@ -74,11 +74,11 @@
 		</receiver>
 		<pipeline firstPipe="CopyItem">
 			<exits>
-				<exit path="EXIT" state="success" code="200"/>
-				<exit path="SpecialExit" state="success" code="201" responseRoot="SpecialResponse" />
-				<exit path="NotModified" state="success" code="304" empty="true" />
-				<exit path="BadRequest" state="error" code="400" responseRoot="InputValidationFailure" />
-				<exit path="ServerError" state="error" code="500" />
+				<exit name="EXIT" state="success" code="200"/>
+				<exit name="SpecialExit" state="success" code="201" responseRoot="SpecialResponse" />
+				<exit name="NotModified" state="success" code="304" empty="true" />
+				<exit name="BadRequest" state="error" code="400" responseRoot="InputValidationFailure" />
+				<exit name="ServerError" state="error" code="500" />
 			</exits>
 
 			<inputValidator className="org.frankframework.pipes.Json2XmlValidator" schemaLocation="urn:items /Validators/xsd/Items.xsd" root="Item_Request" responseRoot="Item_Response,SpecialResponse,InputValidationFailure,OutputValidationFailure">
@@ -125,13 +125,13 @@
 		</receiver>
 		<pipeline firstPipe="CopyItem">
 			<exits>
-				<exit path="EXIT" state="success" code="200"/>
-				<exit path="SpecialExit" state="success" code="201"/>
-				<exit path="NotModified" state="success" code="304" empty="true" />
-				<exit path="BadRequest" state="error" code="400" empty="true" />
-				<exit path="NotAuthorized" state="error" code="401" empty="true" />
-				<exit path="NotAllowed" state="error" code="403" empty="true" />
-				<exit path="ServerError" state="error" code="500" />
+				<exit name="EXIT" state="success" code="200"/>
+				<exit name="SpecialExit" state="success" code="201"/>
+				<exit name="NotModified" state="success" code="304" empty="true" />
+				<exit name="BadRequest" state="error" code="400" empty="true" />
+				<exit name="NotAuthorized" state="error" code="401" empty="true" />
+				<exit name="NotAllowed" state="error" code="403" empty="true" />
+				<exit name="ServerError" state="error" code="500" />
 			</exits>
 
 			<inputValidator className="org.frankframework.pipes.Json2XmlValidator" schemaLocation="urn:items /Validators/xsd/Items.xsd" root="Item_Request" responseRoot="Item_Response">
@@ -158,11 +158,11 @@
 		</receiver>
 		<pipeline firstPipe="Convert2XML">
 			<exits>
-				<exit path="EXIT" state="success" code="200"/>
-				<exit path="SpecialExit" state="success" code="201" responseRoot="SpecialResponse" />
-				<exit path="NotModified" state="success" code="304" empty="true" />
-				<exit path="BadRequest" state="error" code="400" responseRoot="InputValidationFailure" />
-				<exit path="ServerError" state="error" code="500" />
+				<exit name="EXIT" state="success" code="200"/>
+				<exit name="SpecialExit" state="success" code="201" responseRoot="SpecialResponse" />
+				<exit name="NotModified" state="success" code="304" empty="true" />
+				<exit name="BadRequest" state="error" code="400" responseRoot="InputValidationFailure" />
+				<exit name="ServerError" state="error" code="500" />
 			</exits>
 
 			<JsonInputValidator schema="/Validators/jsd/Items.jsd"

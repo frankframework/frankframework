@@ -5,7 +5,7 @@
 		</receiver>
 		<pipeline firstPipe="FillSessionKey2">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe className="org.frankframework.pipes.PutInSession" name="FillSessionKey2"
 				value="&lt;test&gt;&lt;a&gt;1&lt;/a&gt;&lt;b&gt;2&lt;/b&gt;&lt;c&gt;3&lt;/c&gt;&lt;/test&gt;" sessionKey="sessionKey2">

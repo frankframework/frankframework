@@ -54,13 +54,13 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success" code="200"/>
-				<exit path="Empty" state="success" code="204" empty="true" />
-				<exit path="NotModified" state="success" code="304" empty="true" />
-				<exit path="BadRequest" state="error" code="400"/>
-				<exit path="NotAuthorized" state="error" code="401" empty="true" />
-				<exit path="NotAllowed" state="error" code="403" empty="true" />
-				<exit path="ServerError" state="error" code="500" />
+				<exit name="EXIT" state="success" code="200"/>
+				<exit name="Empty" state="success" code="204" empty="true" />
+				<exit name="NotModified" state="success" code="304" empty="true" />
+				<exit name="BadRequest" state="error" code="400"/>
+				<exit name="NotAuthorized" state="error" code="401" empty="true" />
+				<exit name="NotAllowed" state="error" code="403" empty="true" />
+				<exit name="ServerError" state="error" code="500" />
 			</exits>
 
 			<pipe name="XmlSwitch2" className="org.frankframework.pipes.XmlSwitch" xpathExpression="*/@path" >

@@ -214,7 +214,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	public void configure() throws ConfigurationException {
 		ConfigurationException configurationException = null;
 		if (cache != null) {
-			cache.configure(getName());
+			cache.configure();
 		}
 		if (pipeLineExits.isEmpty()) {
 			// if no Exits are configured, then insert a default one, named 'READY', with state 'SUCCESS'
