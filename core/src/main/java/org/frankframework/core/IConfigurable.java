@@ -26,7 +26,7 @@ public interface IConfigurable {
 	/**
 	 * Configure this component.
 	 * <p>
-	 * <code>configure()</code> is called once at startup of the framework in the configure method of the owner of this sender.
+	 * <code>configure()</code> is called once at startup of the framework in the configure method of the owner of this {@link IConfigurable}.
 	 * Purpose of this method is to check whether the static configuration of the object is correct.
 	 * As much as possible class-instantiating should take place in the <code>configure()</code>, to improve performance.
 	 * </p>
