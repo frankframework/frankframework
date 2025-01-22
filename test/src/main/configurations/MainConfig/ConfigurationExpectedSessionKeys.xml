@@ -1,4 +1,4 @@
-<module>
+<Module>
 	<Adapter name="Test Expects Session Keys">
 		<Pipeline>
 			<Exits>
@@ -10,7 +10,7 @@
 				<forward name="Sender with Missing Keys" path="Sender With Expected Keys Missing"/>
 			</XmlSwitchPipe>
 			<SenderPipe name="Sender With All Expected Keys">
-				<FrankSender scope="ADAPTER" target="Pipeline with Expected Session Keys">
+				<FrankSender target="Pipeline with Expected Session Keys">
 					<Param name="k1" value="1"/>
 					<Param name="k2" value="2"/>
 				</FrankSender>
@@ -18,7 +18,7 @@
 				<Forward name="success" path="SUCCESS"/>
 			</SenderPipe>
 			<SenderPipe name="Sender With Expected Keys Missing">
-				<FrankSender scope="ADAPTER" target="Pipeline with Expected Session Keys" />
+				<FrankSender target="Pipeline with Expected Session Keys" />
 				<Forward name="exception" path="SUCCESS"/>
 			</SenderPipe>
 		</Pipeline>
@@ -29,4 +29,4 @@
 			<EchoPipe name="echo"/>
 		</Pipeline>
 	</Adapter>
-</module>
+</Module>

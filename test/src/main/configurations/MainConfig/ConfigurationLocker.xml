@@ -7,7 +7,7 @@
 		<pipeline firstPipe="Delay">
 			<locker objectId="PipeLineLocker" />
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="Delay" className="org.frankframework.pipes.DelayPipe"
 				delayTime="3000">
@@ -22,7 +22,7 @@
 		</receiver>
 		<pipeline firstPipe="Delay">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="Delay" className="org.frankframework.pipes.DelayPipe"
 				delayTime="4000">

@@ -5,8 +5,8 @@
 		</receiver>
 		<pipeline firstPipe="setFilename">
 			<exits>
-				<exit path="EXIT" state="success" />
-				<exit path="EXCEPTION" state="error" />
+				<exit name="EXIT" state="success" />
+				<exit name="EXCEPTION" state="error" />
 			</exits>
 
 			<!-- Set FileName -->

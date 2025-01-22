@@ -23,7 +23,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/console/frontend/src/main/frontend"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     labels:
       - "Dependencies"
       - "JavaScript"

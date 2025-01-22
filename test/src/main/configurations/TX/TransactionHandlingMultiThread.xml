@@ -13,7 +13,7 @@
 
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success"/>
+				<exit name="EXIT" state="success"/>
 			</exits>
 
 			<pipe name="prepare">
@@ -50,11 +50,11 @@
 				throwException="false"
 			/>
 		</receiver>
-		<errorMessageFormatter className="org.frankframework.errormessageformatters.XslErrorMessageFormatter" xpathExpression="/errorMessage/@message" />
+		<XslErrorMessageFormatter xpathExpression="/errorMessage/@message" />
 
 		<pipeline transactionAttribute="RequiresNew" transactionTimeout="10">
 			<exits>
-				<exit path="EXIT" state="success"/>
+				<exit name="EXIT" state="success"/>
 			</exits>
 			<pipe name="firstUpdate" >
 				<sender className="org.frankframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='b' WHERE TKEY=999" />
@@ -127,11 +127,11 @@
 				throwException="false"
 			/>
 		</receiver>
-		<errorMessageFormatter className="org.frankframework.errormessageformatters.XslErrorMessageFormatter" xpathExpression="/errorMessage/@message" />
+		<XslErrorMessageFormatter xpathExpression="/errorMessage/@message" />
 
 		<pipeline transactionAttribute="Required" transactionTimeout="10">
 			<exits>
-				<exit path="EXIT" state="success"/>
+				<exit name="EXIT" state="success"/>
 			</exits>
 			<pipe name="rollbackInSub">
 				<sender className="org.frankframework.senders.XsltSender" styleSheetNameSessionKey="nonExistent" />
@@ -148,11 +148,11 @@
 				throwException="false"
 			/>
 		</receiver>
-		<errorMessageFormatter className="org.frankframework.errormessageformatters.XslErrorMessageFormatter" xpathExpression="/errorMessage/@message" />
+		<XslErrorMessageFormatter xpathExpression="/errorMessage/@message" />
 
 		<pipeline transactionAttribute="Required" transactionTimeout="10">
 			<exits>
-				<exit path="EXIT" state="success"/>
+				<exit name="EXIT" state="success"/>
 			</exits>
 			<pipe name="deleteFromIbisTemp" >
 				<sender className="org.frankframework.jdbc.FixedQuerySender" query="DELETE FROM IBISTEMP WHERE TKEY=999" />

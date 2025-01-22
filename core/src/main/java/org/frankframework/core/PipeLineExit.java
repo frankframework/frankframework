@@ -17,7 +17,6 @@ package org.frankframework.core;
 
 import lombok.Getter;
 
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.FrankDocGroup;
@@ -59,12 +58,6 @@ public class PipeLineExit implements IForwardTarget {
 	 */
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	@Deprecated(forRemoval = true, since = "7.8.0")
-	@ConfigurationWarning("The attribute 'path' has been renamed to: 'name'")
-	public void setPath(String path) {
-		setName(path);
 	}
 
 	/**

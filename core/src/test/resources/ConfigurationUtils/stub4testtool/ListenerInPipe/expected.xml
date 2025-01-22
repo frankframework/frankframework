@@ -11,7 +11,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 			<pipe name="Call Sender" className="org.frankframework.pipes.SenderPipe" timeoutOnResult="[timeout]" exceptionOnResult="[error]">
 				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="TEST"/>

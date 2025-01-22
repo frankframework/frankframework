@@ -6,13 +6,16 @@ Frank!Framework Release Notes
 
 Upcoming (9.1)
 --------------
+[Commits](https://github.com/frankframework/frankframework/compare/9.0-release...HEAD)
+
 - Removed deprecated pipes with 'since' 7.8 or older. This means that the following pipes are now removed:
   -  FileLineIteratorPipe, FilenameSwitch, PostboxRetrieverPipe, PutParametersInSession, Stream2StringPipe, XmlBuilderPipe, XmlFileElementIteratorPipe
 - MqttSender and MqttListener now require a resource to be registered in resources.yml. This allows multiple senders/listeners to use the same connection at the same time.
 
-Upcoming (9.0)
+
+9.0.0 - Jan 06, 2025
 --------------
-[Commits](https://github.com/frankframework/frankframework/compare/8.3-release...HEAD)
+[Commits](https://github.com/frankframework/frankframework/compare/v8.3.0...v9.0.0)
 
 - The SenderPipe no longer accepts a `Listener`, when using asynchronous messaging (sender/listener combination) please use the `AsyncSenderWithListenerPipe` instead. No other attributes need to be modified!
 - The default `ldap-role-mapping.properties` file and `ldap.auth.<role name>` properties have been removed as it was not always possible to overwrite this file. An example can be found at `security/src/test/resources/oauth-role-mapping.properties`. Users are encouraged to map roles to 'scopes' in their preferred oauth environment, the example file only verifies logging in.
