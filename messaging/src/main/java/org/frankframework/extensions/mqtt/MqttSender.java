@@ -63,9 +63,11 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 		super.configure();
 	}
 
+	/** Managed with SharedResources. */
 	@Override
 	public void start() {}
 
+	/** Managed with SharedResources. */
 	@Override
 	public void stop() {}
 

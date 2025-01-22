@@ -102,6 +102,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 		}
 	}
 
+	/** Managed with SharedResources. */
 	@Override
 	public void stop() {}
 
