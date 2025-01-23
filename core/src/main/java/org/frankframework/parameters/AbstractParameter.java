@@ -178,7 +178,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 			transformerPool = TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), outputType, includeXmlDeclaration, paramList, getXsltVersion());
 		} else {
-			if (StringUtils.isEmpty(getPattern())) {
+			if (StringUtils.isEmpty(getPattern()) && !paramList.isEmpty()) {
 				throw new ConfigurationException("Parameter [" + getName() + "] can only have parameters itself if a styleSheetName, xpathExpression or pattern is specified");
 			}
 		}

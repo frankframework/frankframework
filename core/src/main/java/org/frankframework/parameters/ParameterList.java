@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.annotation.Nonnull;
 
@@ -40,13 +39,11 @@ import org.frankframework.stream.Message;
  * @author Gerrit van Brakel
  */
 public class ParameterList extends ArrayList<IParameter> {
-	private AtomicInteger index = new AtomicInteger();
 	private boolean inputValueRequiredForResolution;
 	private @Getter @Setter boolean namesMustBeUnique;
 
 	@Override
 	public void clear() {
-		index = new AtomicInteger();
 		super.clear();
 	}
 
@@ -54,7 +51,6 @@ public class ParameterList extends ArrayList<IParameter> {
 		for(IParameter param : this) {
 			param.configure();
 		}
-		index = null; //Once configured there is no need to keep this in memory
 		inputValueRequiredForResolution = parameterEvaluationRequiresInputValue();
 		if (isNamesMustBeUnique()) {
 			Set<String> names = new LinkedHashSet<>();
@@ -72,10 +68,9 @@ public class ParameterList extends ArrayList<IParameter> {
 	}
 
 	@Override
-	public boolean add(IParameter param) {
-		int i = index.getAndIncrement();
+	public synchronized boolean add(IParameter param) {
 		if (StringUtils.isEmpty(param.getName())) {
-			param.setName("parameter" + i);
+			param.setName("parameter" + size());
 		}
 
 		return super.add(param);
