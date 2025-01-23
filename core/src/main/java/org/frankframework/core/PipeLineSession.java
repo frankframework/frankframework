@@ -170,28 +170,28 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	private static boolean shouldCloseSessionResource(final String key, final Object value) {
-		return value instanceof AutoCloseable &&
+		return value instanceof AutoCloseable autoCloseable &&
 				isNotSystemManagedResource(key) &&
-				!isSimpleMessage(value);
+				isValueToBeClosed(autoCloseable);
+
 	}
 
 	/**
-	 * Check that object is of type {@link Message}, and if it is, that it contains a scalar value
-	 * where scalar is defined as either {@link String}, {@link Number}, a {@link Date}, {@link Temporal} or {@link Boolean}
-	 * or any array type.
+	 * Check that the AutoCloseable value is of type {@link Message}, and if it is, that it does not contain a scalar or array value.
+	 * Scalar is defined as either {@link String}, {@link Number}, a {@link Date}, {@link Temporal} or {@link Boolean}.
 	 *
-	 * @param value Object to check
-	 * @return {@code true} if {@code value} is of type {@link Message} with a {@link Message#request} that is a scalar type, {@code false} otherwise.
+	 * @param value AutoCloseable to check
+	 * @return {@code true} if {@code value} is not a {@link Message}, or if it is a Message with a request that is not a scalar or array type. Returns {@code false} otherwise.
 	 */
-	private static boolean isSimpleMessage(Object value) {
-		if (!(value instanceof Message message)) return false;
-		if (message.isNull()) return true;
-		return message.isRequestOfType(String.class) ||
+	private static boolean isValueToBeClosed(AutoCloseable value) {
+		if (!(value instanceof Message message)) return true; // Should be closed, but is not a message
+		if (message.isNull()) return false; // Null message doesn't have to be closed
+		return !(message.isRequestOfType(String.class) ||
 				message.isRequestOfType(Number.class) ||
 				message.isRequestOfType(Date.class) ||
 				message.isRequestOfType(Temporal.class) ||
 				message.isRequestOfType(Boolean.class) ||
-				message.asObject().getClass().isArray();
+				message.asObject().getClass().isArray()); // Arrays we have are mostly byte[] but I think all arrays should count, for simplicity.
 	}
 
 	/**
@@ -469,10 +469,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	public void scheduleCloseOnSessionExit(AutoCloseable resource, String requester) {
-		if (isSimpleMessage(resource)) {
-			return;
+		if (isValueToBeClosed(resource)) {
+			closeables.put(resource, ClassUtils.nameOf(resource) +" of "+requester);
 		}
-		closeables.put(resource, ClassUtils.nameOf(resource) +" of "+requester);
 	}
 
 	public boolean isScheduledForCloseOnExit(AutoCloseable message) {
