@@ -665,7 +665,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		return headersXml.asXmlString();
 	}
 
-	private static @Nonnull MimeType determineContentType(PipeLineSession messageContext, ApiListener listener, Message result) throws IOException {
+	private static @Nonnull MimeType determineContentType(PipeLineSession messageContext, ApiListener listener, Message result) {
 		if(listener.getProduces() == MediaTypes.ANY) {
 			String contentType = messageContext.getString("contentType");
 			if(StringUtils.isNotEmpty(contentType)) {
