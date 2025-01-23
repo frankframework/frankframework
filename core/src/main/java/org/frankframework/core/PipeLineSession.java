@@ -17,6 +17,8 @@ package org.frankframework.core;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.time.temporal.Temporal;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -168,8 +170,37 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	private static boolean shouldCloseSessionResource(final String key, final Object value) {
-		return (value instanceof AutoCloseable && !key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX)) &&
-				!(value instanceof Message message && message.isRequestOfType(String.class));
+		return value instanceof AutoCloseable &&
+				isNotSystemManagedResource(key) &&
+				!isSimpleMessage(value);
+	}
+
+	/**
+	 * Check that object is of type {@link Message}, and if it is, that it contains a scalar value
+	 * where scalar is defined as either {@link String}, {@link Number}, a {@link Date}, {@link Temporal} or {@link Boolean}
+	 * or any array type.
+	 *
+	 * @param value Object to check
+	 * @return {@code true} if {@code value} is of type {@link Message} with a {@link Message#request} that is a scalar type, {@code false} otherwise.
+	 */
+	private static boolean isSimpleMessage(Object value) {
+		if (!(value instanceof Message message)) return false;
+		if (message.isNull()) return true;
+		return message.isRequestOfType(String.class) ||
+				message.isRequestOfType(Number.class) ||
+				message.isRequestOfType(Date.class) ||
+				message.isRequestOfType(Temporal.class) ||
+				message.isRequestOfType(Boolean.class) ||
+				message.asObject().getClass().isArray();
+	}
+
+	/**
+	 * Check that key does not indicate the resource for this key should be managed by the system.
+	 * @param key Key to check
+	 * @return {@code true} if the key does not indicate this is not a system managed resource.
+	 */
+	private static boolean isNotSystemManagedResource(String key) {
+		return !key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX);
 	}
 
 	@Override
@@ -438,6 +469,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	public void scheduleCloseOnSessionExit(AutoCloseable resource, String requester) {
+		if (isSimpleMessage(resource)) {
+			return;
+		}
 		closeables.put(resource, ClassUtils.nameOf(resource) +" of "+requester);
 	}
 

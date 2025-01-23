@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -262,6 +263,40 @@ public class PipeLineSessionTest {
 		assertEquals(correlationId, session.getCorrelationId());
 	}
 
+	@Test
+	public void testMessageClosing() {
+		// Arrange
+		Message m1 = new Message("123");
+		session.put("key1", m1);
+		Message m2 = Message.asMessage(123);
+		session.put("key2", m2);
+		Message m3 = Message.asMessage(true);
+		session.put("key3", m3);
+		Message m4 = Message.asMessage(new Date());
+		session.put("key4", m4);
+		Message m5 = Message.asMessage(Instant.now());
+		session.put("key5", m5);
+		Message m6 = Message.asMessage(ZonedDateTime.now());
+		session.put("key6", m6);
+		Message m7 = Message.asMessage("123".getBytes());
+		session.put("key7", m7);
+		Message m8 = Message.asMessage(new StringReader("123"));
+		session.put("key8", m8);
+
+		// Act
+		session.close();
+
+		// Assert
+		assertFalse(m1.isClosed());
+		assertFalse(m2.isClosed());
+		assertFalse(m3.isClosed());
+		assertFalse(m4.isClosed());
+		assertFalse(m5.isClosed());
+		assertFalse(m6.isClosed());
+		assertFalse(m7.isClosed());
+		assertTrue(m8.isClosed());
+	}
+
 	/**
 	 * Method: mergeToParentSession(String keys, Map<String,Object> from, Map<String,Object>
 	 * to)
@@ -421,8 +456,8 @@ public class PipeLineSessionTest {
 		PipeLineSession from = new PipeLineSession();
 		PipeLineSession to = new PipeLineSession();
 
-		Message message1 = new Message("m1");
-		Message message2 = new Message("m2");
+		Message message1 = new Message(new StringReader("m1")); // Message should contain a closeable not a string, in order to be eligible for closing
+		Message message2 = new Message(new StringReader("m2"));
 
 		String keys = "a,c";
 		from.put("a", 15);
@@ -452,7 +487,9 @@ public class PipeLineSessionTest {
 		assertEquals(15, to.get("a"));
 		assertNull(to.get("c"));
 
+		assertTrue(message1.isClosed());
 		assertTrue(message1.isNull());
+		assertFalse(message2.isClosed());
 		assertEquals("m2", message2.asString());
 	}
 
