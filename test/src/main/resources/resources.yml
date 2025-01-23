@@ -106,3 +106,12 @@ jdbc:
 #    type: "org.apache.activemq.artemis.jms.client.ActiveMQXAConnectionFactory"
 #    url: "tcp://${jms.hostname:-localhost}:61615"
 
+jms:
+  - name: "qcf-rabbitmq"
+    type: "com.rabbitmq.jms.admin.RMQConnectionFactory"
+    url: "amqp://rabbitmq:5672/"
+    properties:
+      virtualHost: "/"
+      host: "rabbitmq"
+      username: "guest"
+      password: "guest"

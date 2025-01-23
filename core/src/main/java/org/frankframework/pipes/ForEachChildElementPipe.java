@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.threading.IThreadCreator;
 import org.frankframework.threading.ThreadConnector;
 import org.frankframework.threading.ThreadLifeCycleEventListener;
-import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerErrorListener;
 import org.frankframework.util.TransformerPool;
@@ -75,30 +74,37 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 	private @Getter String containerElement;
 	private @Getter String targetElement;
-	private @Getter String elementXPathExpression=null;
-	private @Getter int xsltVersion=DEFAULT_XSLT_VERSION;
-	private @Getter boolean removeNamespaces=true;
-	private boolean streamingXslt;
+	private @Getter String elementXPathExpression = null;
+	private @Getter int xsltVersion = DEFAULT_XSLT_VERSION;
+	private @Getter boolean removeNamespaces = true;
 
-	private TransformerPool extractElementsTp=null;
+	private TransformerPool extractElementsTp = null;
 	private @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 	private @Setter IThreadConnectableTransactionManager<?,?> txManager;
 	private @Getter @Setter IXmlDebugger xmlDebugger;
+
+	private boolean createThreadConnectorForXsltStreaming;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		try {
 			if (StringUtils.isNotEmpty(getElementXPathExpression())) {
-				streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, false);
-				if (getXsltVersion()==0) {
+				if (getXsltVersion() == 0) {
 					setXsltVersion(DEFAULT_XSLT_VERSION);
 				}
-				if (streamingXslt && getXsltVersion() != DEFAULT_XSLT_VERSION) {
-					ConfigurationWarnings.add(this, log, "XsltProcessor xsltVersion ["+getXsltVersion()+"] currently does not support streaming XSLT, might lead to memory problems for large messages", SuppressKeys.XSLT_STREAMING_SUPRESS_KEY);
+				extractElementsTp = TransformerPool.getInstance(makeEncapsulatingXslt("root", getElementXPathExpression(), getXsltVersion(), getNamespaceDefs()), getXsltVersion(), this);
+
+				if (XmlUtils.isXsltStreamingByDefault() && getXsltVersion() != DEFAULT_XSLT_VERSION) {
+					ConfigurationWarnings.add(this, log, "XsltProcessor xsltVersion [" + getXsltVersion() + "] currently does not support streaming XSLT, might lead to memory problems for large messages", SuppressKeys.XSLT_STREAMING_SUPRESS_KEY);
 				}
-				extractElementsTp=TransformerPool.getInstance(makeEncapsulatingXslt("root",getElementXPathExpression(), getXsltVersion(), getNamespaceDefs()), getXsltVersion(), this);
 			}
+
+			// ThreadConnector should only be created when there is an XPath expression to iterate over elements, and XSLT Streaming is enabled.
+			// Otherwise there can be a transaction-deadlock as creating the ThreadConnector suspends the current transaction, and the ForEachChildElementPipe
+			// might be delegating work to a sender that does database-work.
+			// Cache the value here, so that we don't have to repeat the check on every invocation.
+			createThreadConnectorForXsltStreaming = StringUtils.isNotEmpty(getElementXPathExpression()) && XmlUtils.isXsltStreamingByDefault();
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("elementXPathExpression ["+getElementXPathExpression()+"]",e);
 		}
@@ -112,7 +118,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 	@Override
 	public void start() {
-		if (extractElementsTp!=null) {
+		if (extractElementsTp != null) {
 			extractElementsTp.open();
 		}
 
@@ -121,29 +127,31 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 	@Override
 	public void stop()   {
-		if (extractElementsTp!=null) {
+		if (extractElementsTp != null) {
 			extractElementsTp.close();
 		}
 		super.stop();
 	}
 
-	protected String makeEncapsulatingXslt(String rootElementname, String xpathExpression, int xsltVersion, String namespaceDefs) {
+	protected String makeEncapsulatingXslt(String rootElementName, String xpathExpression, int xsltVersion, String namespaceDefs) {
 		StringBuilder paramsString = new StringBuilder();
 		for (IParameter param : getParameterList()) {
 			paramsString.append("<xsl:param name=\"").append(param.getName()).append("\"/>");
 		}
 		String namespaceClause = XmlUtils.getNamespaceClause(namespaceDefs);
 		return
-		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+xsltVersion+".0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
-		"<xsl:output method=\"xml\" omit-xml-declaration=\"yes\"/>" +
-		"<xsl:strip-space elements=\"*\"/>" +
-		paramsString +
-		"<xsl:template match=\"/\">" +
-		"<xsl:element "+namespaceClause+" name=\"" + rootElementname + "\">" +
-		"<xsl:copy-of select=\"" + XmlEncodingUtils.encodeChars(xpathExpression) + "\"/>" +
-		"</xsl:element>" +
-		"</xsl:template>" +
-		"</xsl:stylesheet>";
+				"""
+						<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="%d.0" xmlns:xalan="http://xml.apache.org/xslt">
+							<xsl:output method="xml" omit-xml-declaration="yes"/>
+							<xsl:strip-space elements="*"/>
+							%s
+							<xsl:template match="/">
+								<xsl:element %s name="%s">
+									<xsl:copy-of select="%s"/>
+								</xsl:element>
+							</xsl:template>
+						</xsl:stylesheet>
+						""".formatted(xsltVersion, paramsString, namespaceClause, rootElementName, XmlEncodingUtils.encodeChars(xpathExpression));
 	}
 
 	private static class ItemCallbackCallingHandler extends NodeSetFilter {
@@ -196,10 +204,9 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			xmlWriter.endDocument();
 			try {
 				stopReason = callback.handleItem(xmlWriter.toString());
+			} catch (TimeoutException e) {
+				throw new SaxTimeoutException(e);
 			} catch (Exception e) {
-				if (e instanceof TimeoutException) {
-					throw new SaxTimeoutException(e);
-				}
 				throw new SaxException(e);
 			}
 			checkInterrupt();
@@ -238,7 +245,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		}
 
 		@Override
-		public void startDTD(String arg0, String arg1, String arg2) throws SAXException {
+		public void startDTD(String arg0, String arg1, String arg2) {
 //			System.out.println("startDTD");
 		}
 
@@ -249,11 +256,11 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 
 		@Override
-		public void startEntity(String arg0) throws SAXException {
+		public void startEntity(String arg0) {
 //			System.out.println("startEntity ["+arg0+"]");
 		}
 		@Override
-		public void endEntity(String arg0) throws SAXException {
+		public void endEntity(String arg0) {
 //			System.out.println("endEntity ["+arg0+"]");
 		}
 
@@ -287,7 +294,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		private TransformerErrorListener transformerErrorListener=null;
 	}
 
-	protected void createHandler(HandlerRecord result, ThreadConnector<?> threadConnector, Message input, PipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
+	private void createHandler(HandlerRecord result, ThreadConnector<?> threadConnector, Message input, PipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
 		result.itemHandler = new ItemCallbackCallingHandler(callback);
 		result.inputHandler=result.itemHandler;
 
@@ -305,11 +312,13 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 		if (getExtractElementsTp()!=null) {
 			log.debug("transforming input to obtain list of elements using xpath [{}]", getElementXPathExpression());
-			TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(threadConnector, result.inputHandler);
-			try {
-				XmlUtils.setTransformerParameters(transformerFilter.getTransformer(), getParameterList().getValues(input, session).getValueMap());
-			} catch (ParameterException | IOException e) {
-				throw new TransformerConfigurationException("Cannot apply parameters", e);
+			TransformerFilter transformerFilter = getTransformerFilter(result, threadConnector);
+			if (!getParameterList().isEmpty()) {
+				try {
+					XmlUtils.setTransformerParameters(transformerFilter.getTransformer(), getParameterList().getValues(input, session).getValueMap());
+				} catch (ParameterException | IOException e) {
+					throw new TransformerConfigurationException("Cannot apply parameters", e);
+				}
 			}
 			result.inputHandler=transformerFilter;
 			result.transformerErrorListener=(TransformerErrorListener)transformerFilter.getErrorListener();
@@ -353,6 +362,14 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		};
 	}
 
+	private TransformerFilter getTransformerFilter(HandlerRecord result, ThreadConnector<?> threadConnector) throws TransformerConfigurationException {
+		if (threadConnector != null) {
+			return getExtractElementsTp().getTransformerFilter(threadConnector, result.inputHandler);
+		} else {
+			return getExtractElementsTp().getTransformerFilter(result.inputHandler);
+		}
+	}
+
 	@Override
 	protected StopReason iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeoutException {
 		InputSource src;
@@ -364,7 +381,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		}
 
 		HandlerRecord handlerRecord = new HandlerRecord();
-		try (ThreadConnector<?> threadConnector = StringUtils.isNotEmpty(getElementXPathExpression()) && XmlUtils.isXsltStreamingByDefault() ? new ThreadConnector<>(this, "iterateOverInput", threadLifeCycleEventListener, txManager, session) : null) {
+		try (ThreadConnector<?> threadConnector = createThreadConnectorForXsltStreaming ? new ThreadConnector<>(this, "iterateOverInput", threadLifeCycleEventListener, txManager, session) : null) {
 			try {
 				createHandler(handlerRecord, threadConnector, input, session, callback);
 			} catch (TransformerException e) {
@@ -372,12 +389,12 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			}
 
 			try {
-				XmlUtils.parseXml(src,handlerRecord.inputHandler);
+				XmlUtils.parseXml(src, handlerRecord.inputHandler);
 			} catch (Exception e) {
 				try {
 					if (e instanceof SaxTimeoutException) {
-						if (e.getCause()!=null && e.getCause() instanceof TimeoutException) {
-							throw (TimeoutException)e.getCause();
+						if (e.getCause() instanceof TimeoutException timeoutException) {
+							throw timeoutException;
 						}
 						throw new TimeoutException(e);
 					}
@@ -388,7 +405,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 					try {
 						handlerRecord.inputHandler.endDocument();
 					} catch (Exception e2) {
-						log.warn("Exception in endDocument()",e2);
+						log.warn("Exception in endDocument()", e2);
 					}
 				}
 			}

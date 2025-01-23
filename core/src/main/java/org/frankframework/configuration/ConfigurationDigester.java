@@ -275,7 +275,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			Resource xslt = Resource.getResource(scope, stubFile);
 			TransformerPool tp = TransformerPool.getInstance(xslt);
 
-			TransformerFilter filter = tp.getTransformerFilter(null, handler);
+			TransformerFilter filter = tp.getTransformerFilter(handler);
 
 			Map<String,Object> parameters = new HashMap<>();
 			parameters.put(ConfigurationUtils.STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_VALIDATORS_DISABLED_KEY,"false")));

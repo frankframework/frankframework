@@ -38,7 +38,7 @@ For example, if you want to run WildFly with MariaDB and Artemis, run this comma
 docker compose -f wildfly.yml -f mariadb.yml -f artemis.yml up
 ```
 
-FF!Test will be available at http://localhost/iaf-test
+FF!Test will be available at http://localhost:8080/iaf-test
 
 ## Debugging inside a Docker image
 
