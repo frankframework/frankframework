@@ -19,7 +19,6 @@ import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
@@ -33,14 +32,6 @@ import org.frankframework.stream.Message;
 @FrankDocGroup(FrankDocGroupValue.SENDER)
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ENDPOINT)
 public interface ISender extends IConfigurable, FrankElement, NameAware {
-
-	/**
-	 * <code>configure()</code> is called once at startup of the framework in the configure method of the owner of this sender.
-	 * Purpose of this method is to check whether the static configuration of the sender is correct.
-	 * As much as possible class-instantiating should take place in the <code>configure()</code> or <code>open()</code> method, to improve performance.
-	 */
-	@Override
-	void configure() throws ConfigurationException;
 
 	/**
 	 * This method will be called to start the sender. After this method is called the sendMessage method may be called.

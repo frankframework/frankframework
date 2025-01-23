@@ -42,18 +42,6 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 	String MESSAGE_SIZE_MONITORING_EVENT = "Pipe Message Size Exceeding";
 
 	/**
-	 * <code>configure()</code> is called once after the {@link PipeLine} is registered
-	 * at the {@link Adapter}. Purpose of this method is to reduce
-	 * creating connections to databases etc. in the {@link #doPipe(Message, PipeLineSession) doPipe()} method.
-	 * As much as possible class-instantiating should take place in the
-	 * <code>configure()</code> method, to improve performance.
-	 * 
-	 * {@inheritDoc}
-	 */
-	@Override
-	void configure() throws ConfigurationException;
-
-	/**
 	 * This is where the action takes place. Pipes may only throw a PipeRunException,
 	 * to be handled by the caller of this object.
 	 * Implementations must either consume the message, or pass it on to the next Pipe in the PipeRunResult.
