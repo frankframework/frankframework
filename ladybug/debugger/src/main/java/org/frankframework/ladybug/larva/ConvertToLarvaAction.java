@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.core.Resource;
 import org.frankframework.util.AppConstants;
@@ -108,37 +109,37 @@ public class ConvertToLarvaAction implements CustomReportAction {
 	private static class Scenario {
 
 		private static final HashSet<String> allowedPipesWithSenders = new HashSet<>(Arrays.asList(
-				"org.frankframework.pipes.SenderPipe",
-				"org.frankframework.pipes.ForEachChildElementPipe",
-				"org.frankframework.jdbc.ResultSetIteratingPipe",
-				"org.frankframework.pipes.StreamLineIteratorPipe",
-				"org.frankframework.compression.ZipIteratorPipe",
-				"org.frankframework.filesystem.ForEachAttachmentPipe",
-				"org.frankframework.jdbc.ClobLineIteratingPipe",
-				"org.frankframework.jdbc.BlobLineIteratingPipe",
-				"org.frankframework.pipes.AsyncSenderWithListenerPipe"
+				"SenderPipe",
+				"ForEachChildElementPipe",
+				"ResultSetIteratingPipe",
+				"StreamLineIteratorPipe",
+				"ZipIteratorPipe",
+				"ForEachAttachmentPipe",
+				"ClobLineIteratingPipe",
+				"BlobLineIteratingPipe",
+				"AsyncSenderWithListenerPipe"
 		));
 
 		private static final HashSet<String> allowedSenders = new HashSet<>(Arrays.asList(
-				"org.frankframework.jdbc.ResultSet2FileSender",
-				"org.frankframework.jdbc.DirectQuerySender",
-				"org.frankframework.jdbc.FixedQuerySender",
-				"org.frankframework.jdbc.XmlQuerySender",
-				"org.frankframework.senders.DelaySender",
-				"org.frankframework.senders.EchoSender",
-				"org.frankframework.senders.IbisLocalSender",
-				"org.frankframework.senders.LogSender",
-				"org.frankframework.senders.ParallelSenders",
-				"org.frankframework.senders.SenderSeries",
-				"org.frankframework.senders.SenderWrapper",
-				"org.frankframework.senders.XsltSender",
-				"org.frankframework.senders.CommandSender",
-				"org.frankframework.senders.FixedResultSender",
-				"org.frankframework.senders.JavascriptSender",
-				"org.frankframework.jdbc.MessageStoreSender",
-				"org.frankframework.senders.ReloadSender",
-				"org.frankframework.compression.ZipWriterSender",
-				"org.frankframework.senders.LocalFileSystemSender"
+				"ResultSet2FileSender",
+				"DirectQuerySender",
+				"FixedQuerySender",
+				"XmlQuerySender",
+				"DelaySender",
+				"EchoSender",
+				"IbisLocalSender",
+				"LogSender",
+				"ParallelSenders",
+				"SenderSeries",
+				"SenderWrapper",
+				"XsltSender",
+				"CommandSender",
+				"FixedResultSender",
+				"JavascriptSender",
+				"MessageStoreSender",
+				"ReloadSender",
+				"ZipWriterSender",
+				"LocalFileSystemSender"
 		));
 
 		private static final HashSet<String> ignoredSessionKeys = new HashSet<>(Arrays.asList(
@@ -314,10 +315,11 @@ public class ConvertToLarvaAction implements CustomReportAction {
 							return;
 						}
 						skipUntilEndOfSender = false;
-						senderPipeStack.peek().senderIndex++;
+						incrementSenderPipeIndex(senderPipeStack);
 					}
 				} else if (checkpoint.getType() == CheckpointType.STARTPOINT.toInt() && checkpoint.getName().startsWith("Sender ")) {
-					if (!allowedSenders.contains(checkpoint.getSourceClassName())) {
+					String senderSimpleClassName = extractSimpleClassName(checkpoint.getSourceClassName());
+					if (!allowedSenders.contains(senderSimpleClassName)) {
 						// If sender should be stubbed:
 						String serviceName = null;
 						SenderPipeCheckPoint sp = senderPipeStack.peek();
@@ -348,7 +350,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 						skipUntilEndOfSenderName = checkpoint.getName();
 						skipUntilEndOfSenderLevel = checkpoint.getLevel() + 1;
 					}
-				} else if(checkpoint.getType() == CheckpointType.INFOPOINT.toInt() && allowedPipesWithSenders.contains(checkpoint.getSourceClassName())) {
+				} else if(checkpoint.getType() == CheckpointType.INFOPOINT.toInt() && allowedPipesWithSenders.contains(extractSimpleClassName(checkpoint.getSourceClassName()))) {
 					String stubbedPipe = null;
 					try {
 						Resource xslt = Resource.getResource(ConfigurationUtils.STUB4TESTTOOL_XSLT_DEFAULT);
@@ -378,6 +380,23 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			
 		}
 
+		private void incrementSenderPipeIndex(Deque<SenderPipeCheckPoint> senderPipeStack) {
+			if(senderPipeStack.peek() != null) {
+				senderPipeStack.peek().senderIndex++;
+			}
+		}
+
+		private String extractSimpleClassName(String fullyQualifiedName) {
+			if (StringUtils.isEmpty(fullyQualifiedName)) {
+				return "";
+			}
+			int lastDotIndex = fullyQualifiedName.lastIndexOf('.');
+			if (lastDotIndex == -1) {
+				return fullyQualifiedName;
+			}
+			return fullyQualifiedName.substring(lastDotIndex + 1);
+		}
+
 		private String getAdapterName(String pipelineName) {
 			String[] pipelineNameParts = pipelineName.split("/");
 			return pipelineNameParts.length > 1 ?  pipelineNameParts[1] : pipelineNameParts[0];
@@ -392,7 +411,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 					.filter(cp -> cp.getLevel() < checkpoint.getLevel() && !cp.getName().equals("Thread"))
 					.findFirst();
 
-			if(parentCheckPoint.isPresent() && allowedPipesWithSenders.contains(parentCheckPoint.get().getSourceClassName())) {
+			if(parentCheckPoint.isPresent() && allowedPipesWithSenders.contains(extractSimpleClassName(parentCheckPoint.get().getSourceClassName()))) {
 				sb.append(parentCheckPoint.get().getName().substring("Pipe ".length()));
 			} else if(!checkpoint.getName().equals("Sender IbisJavaSender")) {
 				sb.append(checkpoint.getName().substring("Sender ".length()));
