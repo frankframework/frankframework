@@ -51,6 +51,7 @@ import org.frankframework.monitoring.MonitorManager;
 import org.frankframework.monitoring.Severity;
 import org.frankframework.monitoring.SourceFiltering;
 import org.frankframework.monitoring.Trigger;
+import org.frankframework.monitoring.ITrigger.TriggerType;
 import org.frankframework.monitoring.events.ConsoleMonitorEvent;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.JacksonUtils;
@@ -130,7 +131,7 @@ public class Monitoring extends BusEndpointBase {
 			if (trigger != null) {
 				monitor.removeTrigger(trigger);
 			}
-			// Rethrowing this as Warning / Bad Request
+			// Re-throwing this as Warning / Bad Request
 			log.info("Trigger failed validation", e);
 			throw new BusException("trigger not added, validation failed: " + e.getMessage());
 		}
@@ -291,9 +292,10 @@ public class Monitoring extends BusEndpointBase {
 
 	private void changeMonitorState(Monitor monitor, boolean raiseMonitor) {
 		try {
+			TriggerType type = raiseMonitor ? TriggerType.ALARM : TriggerType.CLEARING;
 			log.info("{} monitor [{}]", ()->(raiseMonitor?"raising":"clearing"), monitor::getName);
 			String userPrincipalName = BusMessageUtils.getUserPrincipalName();
-			monitor.changeState(raiseMonitor, Severity.WARNING, new ConsoleMonitorEvent(userPrincipalName));
+			monitor.changeState(type, Severity.WARNING, new ConsoleMonitorEvent(userPrincipalName));
 		} catch (MonitorException e) {
 			throw new BusException("Failed to change monitor state", e);
 		}

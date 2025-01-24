@@ -31,6 +31,7 @@ import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
+import org.frankframework.monitoring.ITrigger.TriggerType;
 import org.frankframework.monitoring.events.ConsoleMonitorEvent;
 import org.frankframework.monitoring.events.FireMonitorEvent;
 import org.frankframework.monitoring.events.MonitorEvent;
@@ -89,7 +90,7 @@ public class TriggerTest implements EventThrowing {
 
 		// Assert
 		verify(trigger, times(1)).configure();
-		assertTrue(trigger.isAlarm());
+		assertEquals(TriggerType.ALARM, trigger.getTriggerType());
 		assertEquals(EventType.TECHNICAL, eventTypeCaptor.getValue());
 		assertEquals(Severity.CRITICAL, severityCaptor.getValue());
 		MonitorEvent capturedEvent = monitorEventCaptor.getValue();
@@ -224,11 +225,12 @@ public class TriggerTest implements EventThrowing {
 
 		// Act
 		MonitorEvent event = eventCausedByMonitor ? new ConsoleMonitorEvent("dummyUser") : new FireMonitorEvent(this, EVENT_CODE);
-		monitor.changeState(true, Severity.CRITICAL, event);
+
+		monitor.changeState(TriggerType.ALARM, Severity.CRITICAL, event);
 
 		// Assert
 		verify(trigger, times(1)).configure();
-		assertTrue(trigger.isAlarm());
+		assertEquals(TriggerType.ALARM, trigger.getTriggerType());
 		assertEquals(EventType.TECHNICAL, eventTypeCaptor.getValue());
 		assertEquals(Severity.CRITICAL, severityCaptor.getValue());
 		MonitorEvent capturedEvent = monitorEventCaptor.getValue();
@@ -239,7 +241,7 @@ public class TriggerTest implements EventThrowing {
 		assertEquals(0, monitor.getAdditionalHitCount());
 
 		// Act
-		monitor.changeState(false, Severity.WARNING, new ConsoleMonitorEvent("dummyUser")); // WARNING, cleared by MONITOR
+		monitor.changeState(TriggerType.CLEARING, Severity.WARNING, new ConsoleMonitorEvent("dummyUser")); // WARNING, cleared by MONITOR
 
 		// Assert
 		assertEquals(EventType.CLEARING, eventTypeCaptor.getValue());

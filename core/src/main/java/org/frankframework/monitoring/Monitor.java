@@ -37,6 +37,7 @@ import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
+import org.frankframework.monitoring.ITrigger.TriggerType;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlBuilder;
@@ -66,6 +67,8 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private boolean started = false;
+	private boolean isConfigured = false;
+
 	private @Getter String name;
 	private @Getter @Setter EventType type = EventType.TECHNICAL;
 	private boolean raised = false;
@@ -107,12 +110,17 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 		for (ITrigger trigger : triggers) {
 			if (!trigger.isConfigured()) {
 				trigger.configure();
+
+				// Add the EventListener to the MonitorManager
 				manager.addApplicationListener(trigger);
 			}
 		}
+
+		isConfigured = true;
 	}
 
-	public void changeState(boolean alarm, Severity severity, MonitorEvent event) throws MonitorException {
+	public void changeState(TriggerType type, Severity severity, MonitorEvent event) throws MonitorException {
+		boolean alarm = type == TriggerType.ALARM;
 		boolean up=alarm && (!raised || getAlarmSeverity()==null || getAlarmSeverity().compareTo(severity)<0);
 		boolean clear=raised && (!alarm || (up && getAlarmSeverity()!=null && getAlarmSeverity()!=severity));
 		if (clear) {
@@ -137,7 +145,7 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 			}
 		}
 		raised=alarm;
-		clearEvents(alarm);
+		clearEvents(type);
 	}
 
 	private boolean isHit(Severity severity) {
@@ -164,9 +172,9 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 		}
 	}
 
-	protected void clearEvents(boolean alarm) {
+	protected void clearEvents(TriggerType alarm) {
 		for (ITrigger trigger : triggers) {
-			if (trigger.isAlarm() != alarm) {
+			if (trigger.getTriggerType() != alarm) {
 				trigger.clearEvents();
 			}
 		}
@@ -236,6 +244,7 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 	public void removeTrigger(ITrigger trigger) {
 		int index = triggers.indexOf(trigger);
 		if(index > -1) {
+			// Remove the EventListener from the MonitorManager
 			AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
 			factory.destroyBean(trigger);
 			triggers.remove(trigger);
@@ -292,10 +301,17 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 	public void destroy() {
 		log.info("removing monitor [{}]", this);
 
+		// Remove the EventListener from the MonitorManager
 		AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
 		for (ITrigger trigger : triggers) {
 			factory.destroyBean(trigger);
 		}
+	}
+
+	@Override
+	public boolean isAutoStartup() {
+		if (!isConfigured) return false; // Don't startup until configured
+		return true;
 	}
 
 	@Override

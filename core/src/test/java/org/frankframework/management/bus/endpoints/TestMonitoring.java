@@ -67,7 +67,7 @@ public class TestMonitoring extends BusTestBase {
 		createMonitor();
 	}
 
-	public void createMonitor() throws Exception {
+	private void createMonitor() throws Exception {
 		MonitorManager manager = getMonitorManager();
 		Monitor monitor = SpringUtils.createBean(manager, Monitor.class);
 		monitor.setName(TEST_MONITOR_NAME);

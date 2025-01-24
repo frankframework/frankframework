@@ -26,6 +26,9 @@ import java.util.Queue;
 
 import jakarta.annotation.Nonnull;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -44,7 +47,7 @@ import org.frankframework.util.XmlBuilder;
  *
  */
 @Log4j2
-public class Trigger implements ITrigger {
+public class Trigger implements ITrigger, ApplicationContextAware {
 	// The element names, which can be used as a Trigger.
 	private static final String ALARM_NAME = "AlarmTrigger";
 	private static final String CLEARING_NAME = "ClearingTrigger";
@@ -53,6 +56,7 @@ public class Trigger implements ITrigger {
 	private @Getter @Setter Severity severity;
 	private @Getter @Setter SourceFiltering sourceFiltering = SourceFiltering.NONE;
 	private @Getter @Setter TriggerType triggerType = TriggerType.ALARM;
+	private @Setter ApplicationContext applicationContext;
 
 	private final List<String> eventCodes = new ArrayList<>();
 	private final Map<String, AdapterFilter> adapterFilters = new LinkedHashMap<>();
@@ -123,17 +127,16 @@ public class Trigger implements ITrigger {
 	}
 
 	protected void changeState(FireMonitorEvent event) throws MonitorException {
-		boolean alarm = isAlarm();
 		log.debug("evaluating MonitorEvent [{}]", event::getEventSourceName);
 
 		if (getThreshold()>0) {
 			cleanUpEvents(event.getEventTime());
 			eventDates.add(event.getEventTime());
 			if (eventDates.size() >= getThreshold()) {
-				getMonitor().changeState(alarm, getSeverity(), event);
+				getMonitor().changeState(triggerType, getSeverity(), event);
 			}
 		} else {
-			getMonitor().changeState(alarm, getSeverity(), event);
+			getMonitor().changeState(triggerType, getSeverity(), event);
 		}
 	}
 
@@ -158,7 +161,7 @@ public class Trigger implements ITrigger {
 
 	@Override
 	public void toXml(XmlBuilder monitor) {
-		XmlBuilder trigger=new XmlBuilder(isAlarm() ? ALARM_NAME : CLEARING_NAME);
+		XmlBuilder trigger=new XmlBuilder(triggerType == TriggerType.ALARM ? ALARM_NAME : CLEARING_NAME);
 		monitor.addSubElement(trigger);
 		if (getSeverity()!=null) {
 			trigger.addAttribute("severity", getSeverity().name());
@@ -197,11 +200,6 @@ public class Trigger implements ITrigger {
 	@Override
 	public void setMonitor(Monitor monitor) {
 		this.monitor = monitor;
-	}
-
-	@Override
-	public boolean isAlarm() {
-		return triggerType == TriggerType.ALARM;
 	}
 
 	private void clearEventCodes() {

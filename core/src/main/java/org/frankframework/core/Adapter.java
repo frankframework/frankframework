@@ -999,7 +999,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	}
 	@Override
 	public String getName() {
-		return name;
+		return getId();
 	}
 
 	/** some functional description of the <code>Adapter</code> */
