@@ -159,7 +159,7 @@ public class InputOutputPipeProcessorTest {
 		// Act & Assert that closing the session closes the input message
 		session.close();
 		assertTrue(input.isNull(), "Input Message should be closed");
-		assertTrue(prr1.getResult().isNull(), "Input Message of pipe2 should be closed");
+		assertFalse(prr1.getResult().isNull(), "Input Message of pipe2 should not be closed, because it is a byte[]");
 	}
 
 	private void testRestoreMovedElement(Object sessionVarContents) throws Exception {

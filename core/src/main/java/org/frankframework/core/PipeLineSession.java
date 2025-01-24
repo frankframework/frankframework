@@ -17,6 +17,8 @@ package org.frankframework.core;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.time.temporal.Temporal;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -143,9 +145,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		} else if (keysToCopy == null || "*".equals(keysToCopy)) { // if keys are not set explicitly ...
 			to.putAll(this);                                      // ... all keys will be copied
 		}
-		Set<AutoCloseable> closeablesInDestination = to.entrySet().stream()
-				.filter(entry -> shouldCloseSessionResource(entry.getKey(), entry.getValue()))
-				.map(Entry::getValue)
+		Set<AutoCloseable> closeablesInDestination = to.values().stream()
+				.filter(AutoCloseable.class::isInstance)
 				.map(AutoCloseable.class::cast)
 				.collect(Collectors.toSet());
 		if (to instanceof PipeLineSession toSession) {
@@ -169,8 +170,37 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	private static boolean shouldCloseSessionResource(final String key, final Object value) {
-		return value instanceof AutoCloseable &&
-			!key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX);
+		return value instanceof AutoCloseable autoCloseable &&
+				isNotSystemManagedResource(key) &&
+				isValueToBeClosed(autoCloseable);
+
+	}
+
+	/**
+	 * Check that the AutoCloseable value is of type {@link Message}, and if it is, that it does not contain a scalar or array value.
+	 * Scalar is defined as either {@link String}, {@link Number}, a {@link Date}, {@link Temporal} or {@link Boolean}.
+	 *
+	 * @param value AutoCloseable to check
+	 * @return {@code true} if {@code value} is not a {@link Message}, or if it is a Message with a request that is not a scalar or array type. Returns {@code false} otherwise.
+	 */
+	private static boolean isValueToBeClosed(AutoCloseable value) {
+		if (!(value instanceof Message message)) return true; // Should be closed, but is not a message
+		if (message.isNull()) return false; // Null message doesn't have to be closed
+		return !(message.isRequestOfType(String.class) ||
+				message.isRequestOfType(Number.class) ||
+				message.isRequestOfType(Date.class) ||
+				message.isRequestOfType(Temporal.class) ||
+				message.isRequestOfType(Boolean.class) ||
+				message.asObject().getClass().isArray()); // Arrays we have are mostly byte[] but I think all arrays should count, for simplicity.
+	}
+
+	/**
+	 * Check that key does not indicate the resource for this key should be managed by the system.
+	 * @param key Key to check
+	 * @return {@code true} if the key does not indicate this is not a system managed resource.
+	 */
+	private static boolean isNotSystemManagedResource(String key) {
+		return !key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX);
 	}
 
 	@Override
@@ -439,7 +469,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	public void scheduleCloseOnSessionExit(AutoCloseable resource, String requester) {
-		closeables.put(resource, ClassUtils.nameOf(resource) +" of "+requester);
+		if (isValueToBeClosed(resource)) {
+			closeables.put(resource, ClassUtils.nameOf(resource) +" of "+requester);
+		}
 	}
 
 	public boolean isScheduledForCloseOnExit(AutoCloseable message) {
