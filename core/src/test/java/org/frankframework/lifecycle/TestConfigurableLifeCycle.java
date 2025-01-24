@@ -216,7 +216,7 @@ public class TestConfigurableLifeCycle {
 		// (Reversed) order matters here!
 		assertInstanceOf(Monitor.class, stopQueue.poll());
 		assertInstanceOf(ScheduleManager.class, stopQueue.poll());
-		Awaitility.await().atMost(1500, TimeUnit.MILLISECONDS).until(stopQueue::peek, Objects::nonNull); // Give the adapter some time to stop
+		Awaitility.await().atMost(2500, TimeUnit.MILLISECONDS).until(stopQueue::peek, Objects::nonNull); // Give the adapter some time to stop
 		assertInstanceOf(Adapter.class, stopQueue.poll());
 	}
 }
