@@ -45,9 +45,9 @@ public abstract class ConfiguredTestBase {
 	public void tearDown() {
 		getConfigurationWarnings().destroy();
 		getConfigurationWarnings().afterPropertiesSet();
+		CloseUtils.closeSilently(adapter, session);
 		pipeline = null;
 		adapter = null;
-		CloseUtils.closeSilently(session);
 		session = null;
 	}
 
