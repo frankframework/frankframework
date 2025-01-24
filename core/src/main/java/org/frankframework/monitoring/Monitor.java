@@ -309,12 +309,6 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 	}
 
 	@Override
-	public boolean isAutoStartup() {
-		if (!isConfigured) return false; // Don't startup until configured
-		return true;
-	}
-
-	@Override
 	public void start() {
 		started = true;
 	}

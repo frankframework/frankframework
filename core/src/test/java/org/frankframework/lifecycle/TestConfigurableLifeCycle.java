@@ -42,6 +42,8 @@ import org.frankframework.monitoring.Trigger;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.testutil.JunitTestClassLoaderWrapper;
+import org.frankframework.testutil.mock.WaitUtils;
+import org.frankframework.util.RunState;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlBuilder;
 
@@ -204,6 +206,9 @@ public class TestConfigurableLifeCycle {
 		assertInstanceOf(Adapter.class, startQueue.poll());
 		assertInstanceOf(ScheduleManager.class, startQueue.poll());
 		assertInstanceOf(Monitor.class, startQueue.poll());
+
+		// Sometimes it takes a while before the adapter is fully started, wait here before calling stop. We're testing the happy-flow.
+		WaitUtils.waitForState(adapter, RunState.STARTED);
 
 		// Act
 		configuration.stop();
