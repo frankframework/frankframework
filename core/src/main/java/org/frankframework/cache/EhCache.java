@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -78,8 +78,9 @@ public class EhCache<V> extends AbstractCacheAdapter<V> {
 	}
 
 	@Override
-	public void configure(String ownerName) throws ConfigurationException {
-		super.configure(ownerName);
+	public void configure() throws ConfigurationException {
+		super.configure();
+
 		if (isDiskPersistent() && !isOverflowToDisk()) {
 			log.info("setting overflowToDisk true, to support diskPersistent=true");
 			setOverflowToDisk(true);

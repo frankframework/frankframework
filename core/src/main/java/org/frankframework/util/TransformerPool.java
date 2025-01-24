@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.threading.ThreadConnector;
 import org.frankframework.xml.ClassLoaderURIResolver;
 import org.frankframework.xml.NonResolvingURIResolver;
+import org.frankframework.xml.ThreadConnectingFilter;
 import org.frankframework.xml.TransformerFilter;
 
 /**
@@ -507,7 +508,7 @@ public class TransformerPool {
 		return null;
 	}
 
-	public TransformerHandler getTransformerHandler() throws TransformerConfigurationException {
+	private TransformerHandler getTransformerHandler() throws TransformerConfigurationException {
 		TransformerHandler handler = ((SAXTransformerFactory)tFactory).newTransformerHandler(templates);
 		Transformer transformer = handler.getTransformer();
 		transformer.setErrorListener(new TransformerErrorListener());
@@ -518,24 +519,29 @@ public class TransformerPool {
 		return handler;
 	}
 
-	public TransformerFilter getTransformerFilter(ThreadConnector<?> threadConnector, ContentHandler handler) throws TransformerConfigurationException {
-		return getTransformerFilter(threadConnector, handler, false, false);
+	public TransformerFilter getTransformerFilter(@Nonnull ContentHandler handler) throws TransformerConfigurationException {
+		return getTransformerFilter(handler, false, false);
 	}
 
-	public TransformerFilter getTransformerFilter(ThreadConnector<?> threadConnector, ContentHandler handler, boolean removeNamespacesFromInput, boolean handleLexicalEvents) throws TransformerConfigurationException {
-		return new TransformerFilter(threadConnector, getTransformerHandler(), handler, removeNamespacesFromInput, handleLexicalEvents);
+	public TransformerFilter getTransformerFilter(@Nonnull ContentHandler handler, boolean removeNamespacesFromInput, boolean handleLexicalEvents) throws TransformerConfigurationException {
+		return new TransformerFilter(getTransformerHandler(), handler, removeNamespacesFromInput, handleLexicalEvents);
 	}
 
-	@Nonnull
-	public Map<String, String> getConfigMap() throws TransformerException, IOException {
-		if (configMap == null) {
-			configMap = XmlUtils.getXsltConfig(configSource);
+	public TransformerFilter getTransformerFilter(@Nonnull ThreadConnector<?> threadConnector, @Nonnull ContentHandler handler) throws TransformerConfigurationException {
+		return new TransformerFilter(getTransformerHandler(), new ThreadConnectingFilter(threadConnector, handler), false, false);
+	}
+
+	public @Nonnull Map<String, String> getConfigMap() throws TransformerException, IOException {
+		// Due to lazy-loading of the config-map this can happen in multiple threads simultaneously. Hence we synchronize here, the config-source seems a logical choice that doesn't lock too much.
+		synchronized (configSource) {
+			if (configMap == null) {
+				configMap = XmlUtils.getXsltConfig(configSource);
+			}
 		}
 		return configMap;
 	}
 
-	@Nullable
-	public Boolean getOmitXmlDeclaration() throws TransformerException, IOException {
+	public @Nullable Boolean getOmitXmlDeclaration() throws TransformerException, IOException {
 		String setting = getConfigMap().get("output-omit-xml-declaration");
 		if (setting == null) {
 			return null;
@@ -543,8 +549,7 @@ public class TransformerPool {
 		return "yes".equals(setting);
 	}
 
-	@Nullable
-	public Boolean getIndent() throws TransformerException, IOException {
+	public @Nullable Boolean getIndent() throws TransformerException, IOException {
 		String setting = getConfigMap().get("output-indent");
 		if (setting == null) {
 			return null;
@@ -552,13 +557,11 @@ public class TransformerPool {
 		return "yes".equals(setting);
 	}
 
-	@Nullable
-	public String getOutputMethod() throws TransformerException, IOException {
+	public @Nullable String getOutputMethod() throws TransformerException, IOException {
 		return getConfigMap().get("output-method");
 	}
 
-	@Nullable
-	public Boolean getDisableOutputEscaping() throws TransformerException, IOException {
+	public @Nullable Boolean getDisableOutputEscaping() throws TransformerException, IOException {
 		String setting = getConfigMap().get("disable-output-escaping");
 		if (setting == null) {
 			return null;

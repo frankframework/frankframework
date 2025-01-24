@@ -14,7 +14,7 @@
       </receiver>
 		    <pipeline firstPipe="LdapFindMemberPipe">
 			      <exits>
-				        <exit path="EXIT" state="success"/>
+				        <exit name="EXIT" state="success"/>
 			      </exits>
 			      <pipe name="LdapFindMemberPipe"
                className="org.frankframework.pipes.SenderPipe">

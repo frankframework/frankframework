@@ -21,7 +21,7 @@
 
 		<pipeline firstPipe="delay">
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 			<pipe name="delay" className="org.frankframework.pipes.DelayPipe" delayTime="3000">
 					<forward name="success" path="READY" />

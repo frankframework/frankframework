@@ -7,7 +7,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<XmlSwitchPipe name="select branch" xpathExpression="*/@branch" />
 
@@ -187,7 +187,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 
 			<CompareStringPipe name="compareIdAndCid" >
@@ -227,7 +227,7 @@
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="send2Jms"
 				className="org.frankframework.pipes.SenderPipe">
@@ -257,7 +257,7 @@
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="send2Jms"
 				className="org.frankframework.pipes.SenderPipe">
@@ -302,7 +302,7 @@
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="send2Jms"
 				className="org.frankframework.pipes.SenderPipe">
@@ -327,7 +327,7 @@
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="send2Jms">
 				<sender className="org.frankframework.jms.JmsSender"
@@ -358,7 +358,7 @@
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="put something in log context" export="true" className="org.frankframework.pipes.LogContextPipe">
 				<param name="testMdc" value="testMdc" />
@@ -413,7 +413,7 @@
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch"
 				xpathExpression="request/@action" />
@@ -440,7 +440,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch"
 				xpathExpression="*/@delay='true'">

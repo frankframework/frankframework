@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2016, 2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,7 +49,8 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		if (StringUtils.isEmpty(cacheName)) {
 			throw new ConfigurationException("cacheName should be specified");
 		}
-		keyTransformer.configure(getName());
+		keyTransformer.setName(cacheName);
+		keyTransformer.configure();
 		ibisCacheManager = IbisCacheManager.getInstance();
 	}
 

@@ -8,7 +8,7 @@
 		</receiver>
 		<pipeline firstPipe="GenerateException">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="GenerateException" className="org.frankframework.pipes.ExceptionPipe" getInputFromFixedValue="Some generic Exception">
 				<forward name="success" path="EXIT" />

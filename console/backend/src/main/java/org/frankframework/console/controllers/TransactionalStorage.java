@@ -204,9 +204,9 @@ public class TransactionalStorage {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("pipeline")
 	@PostMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/{processState}/move/{targetState}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> changeProcessState(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapter,
-												@PathVariable("receiverName") String receiver, @PathVariable("processState") String processState,
-												@PathVariable("targetState") String targetState, @RequestPart("messageIds") String messageIdsPart) {
+	public ResponseEntity<?> changeMessagesProcessState(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapter,
+														@PathVariable("receiverName") String receiver, @PathVariable("processState") String processState,
+														@PathVariable("targetState") String targetState, @RequestPart("messageIds") String messageIdsPart) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.MANAGE);
 
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);

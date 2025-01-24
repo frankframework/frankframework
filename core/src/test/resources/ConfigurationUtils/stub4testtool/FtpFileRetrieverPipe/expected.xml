@@ -14,7 +14,7 @@
       </receiver>
 		    <pipeline firstPipe="FtpFileRetrieverPipe">
 			      <exits>
-				        <exit path="EXIT" state="success"/>
+				        <exit name="EXIT" state="success"/>
 			      </exits>
 			      <pipe name="FtpFileRetrieverPipe"
                className="org.frankframework.pipes.SenderPipe">

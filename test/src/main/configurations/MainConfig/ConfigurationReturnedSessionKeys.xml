@@ -5,7 +5,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="SetLocalValue" className="org.frankframework.pipes.PutInSession" value="LocalValueParent" sessionKey="localValue" preserveInput="true" />
 			<pipe name="SwitchCallerType" className="org.frankframework.pipes.XmlSwitch" preserveInput="true" xpathExpression="request/@callerType" />
@@ -94,9 +94,9 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success" />
-				<exit path="FAIL"  state="error" code="400" />
-				<exit path="EXCEPTION"  state="error" />
+				<exit name="READY" state="success" />
+				<exit name="FAIL"  state="error" code="400" />
+				<exit name="EXCEPTION"  state="error" />
 			</exits>
 			<pipe name="SetReturnCode" className="org.frankframework.pipes.PutInSession" value="NOT_OK" sessionKey="returnCode" />
 			<pipe name="SetReasonCode" className="org.frankframework.pipes.PutInSession" value="INTERNAL_ERROR" sessionKey="reasonCode" />

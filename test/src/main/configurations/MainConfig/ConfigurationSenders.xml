@@ -13,7 +13,7 @@
 
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 
 			<pipe
@@ -57,7 +57,7 @@
 
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 
 			<pipe
@@ -100,7 +100,7 @@
 
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 
 			<pipe
@@ -210,7 +210,7 @@
 
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 
 			<pipe
@@ -262,8 +262,8 @@
 
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
-				<exit path="InternalError" state="error"/>
+				<exit name="READY" state="success"/>
+				<exit name="InternalError" state="error"/>
 			</exits>
 
 			<pipe

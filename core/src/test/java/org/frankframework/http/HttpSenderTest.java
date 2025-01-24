@@ -525,11 +525,10 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		PipeLineSession pls = new PipeLineSession(session);
 
 		sender.addParameter(new Parameter("key", "value"));
-
 		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
 		sender.setMethodType(HttpMethod.POST);
-		sender.setParamsInUrl(false);
+		sender.setPostType(HttpEntityType.URLENCODED);
 		sender.setFirstBodyPartName("nameOfTheFirstContentId");
 
 		sender.configure();
@@ -661,7 +660,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		PipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType(HttpMethod.POST);
-		sender.setParamsInUrl(false);
+		sender.setPostType(HttpEntityType.URLENCODED);
 		sender.setFirstBodyPartName("request");
 
 		String xmlMultipart = """
@@ -691,7 +690,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		PipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType(HttpMethod.POST);
-		sender.setParamsInUrl(false);
+		sender.setPostType(HttpEntityType.URLENCODED);
 		sender.setFirstBodyPartName("request");
 
 		String xmlMultipart = """
@@ -775,7 +774,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		PipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType(HttpMethod.POST);
-		sender.setParamsInUrl(false);
+		sender.setPostType(HttpEntityType.URLENCODED);
 
 		String xmlMultipart = """
 				<parts><part type="file" name="document.pdf" \
@@ -786,7 +785,6 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
 		sender.setMultipartXmlSessionKey("multipartXml");
-
 		sender.configure();
 		sender.start();
 
@@ -827,7 +825,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		Message input = new Message("<xml>input</xml>");
 
 		sender.setMethodType(HttpMethod.POST);
-		sender.setParamsInUrl(false);
+		sender.setPostType(HttpEntityType.URLENCODED);
 		sender.setFirstBodyPartName("request");
 		sender.setMtomContentTransferEncoding("binary");
 
@@ -897,7 +895,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		Message input = new Message("<xml>input</xml>");
 
 		sender.setMethodType(HttpMethod.POST);
-		sender.setParamsInUrl(false);
+		sender.setPostType(HttpEntityType.URLENCODED);
 		sender.setFirstBodyPartName("request");
 		sender.setMtomContentTransferEncoding("binary");
 
@@ -1063,7 +1061,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		Message input = new Message("<xml>input</xml>");
 
 		sender.setMethodType(HttpMethod.POST);
-		sender.setParamsInUrl(false);
+		sender.setPostType(HttpEntityType.URLENCODED);
 		sender.setFirstBodyPartName("request");
 		sender.setParametersToSkipWhenEmpty("empty-param");
 

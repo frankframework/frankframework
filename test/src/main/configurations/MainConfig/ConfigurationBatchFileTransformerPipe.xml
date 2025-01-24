@@ -5,7 +5,7 @@
 		</receiver>
 		<pipeline firstPipe="processFile" transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="processFile" className="org.frankframework.batch.BatchFileTransformerPipe" storeOriginalBlock="true" delete="true">
 				<manager name="rhmBody" className="org.frankframework.batch.FieldPositionRecordHandlerManager" separator="+" fieldNr="1" initial="true">
@@ -41,7 +41,7 @@
 		</receiver>
 		<pipeline firstPipe="InsertData1" transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<!--
 				INPUT (in de vorm van sessionKeys):
@@ -78,7 +78,7 @@
 		</receiver>
 		<pipeline firstPipe="processFile">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="processFile" className="org.frankframework.batch.BatchFileTransformerPipe" delete="true">
 				<manager className="org.frankframework.batch.FieldPositionRecordHandlerManager" fieldNr="1" initial="true" name="allRecords" separator=";">
@@ -99,7 +99,7 @@
 		</receiver>
 		<pipeline firstPipe="echo" transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="echo" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />

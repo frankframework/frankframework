@@ -8,7 +8,7 @@
 			<JavaListener name="HelloBeautifulWorld" />
 		</Receiver>
 		<Pipeline firstPipe="HelloBeautifulWorld">
-			<Exit path="EXIT" state="success"/>
+			<Exit name="EXIT" state="success"/>
 			<EchoPipe name="HelloBeautifulWorld" getInputFromFixedValue="Hello Beautiful World" >
 				<Forward name="success" path="EXIT"/>
 			</EchoPipe>

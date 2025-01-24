@@ -6,7 +6,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 			<pipe name="first"
 				className="org.frankframework.pipes.XsltPipe"

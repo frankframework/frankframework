@@ -19,12 +19,12 @@
 				<forward name="parserError" path="Create_Response_Busy" />
 			</outputValidator>
 			<exits>
-				<exit path="READY" state="success" code="200"/>
-				<exit path="NotModified" state="success" code="304" empty="true" />
-				<exit path="BadRequest" state="error" code="400" empty="true" />
-				<exit path="NotAuthorized" state="error" code="401" empty="true" />
-				<exit path="NotAllowed" state="error" code="403" empty="true" />
-				<exit path="ServerError" state="error" code="500" />
+				<exit name="READY" state="success" code="200"/>
+				<exit name="NotModified" state="success" code="304" empty="true" />
+				<exit name="BadRequest" state="error" code="400" empty="true" />
+				<exit name="NotAuthorized" state="error" code="401" empty="true" />
+				<exit name="NotAllowed" state="error" code="403" empty="true" />
+				<exit name="ServerError" state="error" code="500" />
 			</exits>
 
 			<pipe name="Select_Document" className="org.frankframework.pipes.SenderPipe" storeResultInSessionKey="documentInformation">
@@ -198,7 +198,7 @@
 
 		<pipeline firstPipe="Select_Attachments">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 
 			<pipe name="Select_Attachments" className="org.frankframework.pipes.SenderPipe" storeResultInSessionKey="documentInformation">

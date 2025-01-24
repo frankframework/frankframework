@@ -21,8 +21,7 @@ import { LaddaModule } from 'angular2-ladda';
 export class StorageViewComponent implements OnInit {
   protected message: PartialMessage = {
     id: '0', //this.$state.params["messageId"],
-    resending: false,
-    deleting: false,
+    processing: false,
   };
   protected metadata?: Message = {
     id: '',

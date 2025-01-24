@@ -5,7 +5,7 @@
 		</receiver>
 		<pipeline firstPipe="ForEachChildElementPipe_Record">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe className="org.frankframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe_Record" elementXPathExpression="requests/request">
 				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ForEachChildElementPipe_Record" />

@@ -17,7 +17,7 @@
 	<pipeline firstPipe="Remove namespaces">
 		<inputWrapper onlyIfSessionKey="receivedRootElement" onlyIfValue="Envelope" direction="UNWRAP" className="org.frankframework.soap.SoapWrapperPipe"/>
 		<outputWrapper onlyIfSessionKey="receivedRootElement" onlyIfValue="Envelope" className="org.frankframework.soap.SoapWrapperPipe"/>
-		<exit path="READY" state="SUCCESS"/>
+		<exit name="READY" state="SUCCESS"/>
 		<pipe name="Remove namespaces" removeNamespaces="true" xpathExpression="/" outputType="XML" className="org.frankframework.pipes.XsltPipe">
 			<forward name="success" path="Only one line?"/>
 		</pipe>

@@ -9,7 +9,7 @@
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 
 			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch" xpathExpression="reply/@action" />
@@ -30,7 +30,7 @@
 		</receiver>
 		<pipeline firstPipe="Send2EsbJms" transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 
 			<pipe name="Send2EsbJms" className="org.frankframework.pipes.SenderPipe">

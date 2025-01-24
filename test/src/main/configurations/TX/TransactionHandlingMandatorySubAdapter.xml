@@ -19,7 +19,7 @@
 
 		<pipeline firstPipe="Send transacted message to mandatory subadapter" transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success"/>
+				<exit name="EXIT" state="success"/>
 			</exits>
 
 			<!-- This should create (or reuse) it's transaction when calling this subadapter -->
@@ -51,7 +51,7 @@
 
 		<pipeline firstPipe="Continue if this call was transacted" transactionAttribute="Mandatory">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 
 			<pipe name="Continue if this call was transacted" className="org.frankframework.pipes.EchoPipe"
