@@ -352,6 +352,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.addParameter(ParameterBuilder.create().withName("b").withSessionKey("b_key"));
 		pipe.addParameter(ParameterBuilder.create().withName("c").withSessionKey("c_key"));
 		pipe.addParameter(ParameterBuilder.create().withName("d").withSessionKey("d_key"));
+		pipe.addParameter(ParameterBuilder.create().withName("e").withSessionKey("e_key"));
 		pipe.configure();
 		pipe.start();
 
@@ -361,6 +362,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		session.put("b_key", Arrays.asList("b_value1", "b_value2"));
 		// session variable "c_key is not present, so there should be no 'c' element in the result
 		session.put("d_key","");
+		session.put("e_key", Arrays.asList("e_value1", "e_value2"));
 
 		PipeRunResult prr = doPipe(pipe, input,session);
 
