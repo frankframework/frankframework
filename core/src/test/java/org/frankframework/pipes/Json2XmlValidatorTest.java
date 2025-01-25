@@ -367,7 +367,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String input="";
 		String expected = TestFileUtils.getTestFile("/Validation/Parameters/out.xml");
 
-		session.put("b_key","b_value");
+		session.put("b_key", Arrays.asList("b_value1", "b_value2"));
 		// session variable "c_key is not present, so there should be no 'c' element in the result
 		session.put("d_key","");
 
