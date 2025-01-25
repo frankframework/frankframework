@@ -10,10 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.springframework.http.MediaType;
-
 import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -24,6 +20,10 @@ import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.springframework.http.MediaType;
 
 public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
@@ -358,7 +358,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String input="";
 		String expected = TestFileUtils.getTestFile("/Validation/Parameters/out.xml");
 
-		session.put("b_key","b_value");
+		session.put("b_key", Arrays.asList("b_value1", "b_value2"));
 		// session variable "c_key is not present, so there should be no 'c' element in the result
 		session.put("d_key","");
 
