@@ -67,7 +67,6 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private boolean started = false;
-	private boolean isConfigured = false;
 
 	private @Getter String name;
 	private @Getter @Setter EventType type = EventType.TECHNICAL;
@@ -115,8 +114,6 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 				manager.addApplicationListener(trigger);
 			}
 		}
-
-		isConfigured = true;
 	}
 
 	public void changeState(TriggerType type, Severity severity, MonitorEvent event) throws MonitorException {
