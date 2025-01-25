@@ -80,8 +80,7 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 	private String eventCode = null;
 	private @Getter EventThrowing raisedBy = null;
 
-
-	private MonitorManager manager = null;
+	private MonitorManager monitorManager = null;
 
 	private final List<ITrigger> triggers = new ArrayList<>();
 	private final Set<String> destinations = new HashSet<>();
@@ -91,7 +90,7 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 	public void setApplicationContext(ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 		if (applicationContext instanceof MonitorManager manager) {
-			this.manager = manager;
+			this.monitorManager = manager;
 		} else {
 			throw new IllegalStateException("ApplicationContext is not a MonitorManager");
 		}
@@ -111,7 +110,7 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 				trigger.configure();
 
 				// Add the EventListener to the MonitorManager
-				manager.addApplicationListener(trigger);
+				monitorManager.addApplicationListener(trigger);
 			}
 		}
 	}
@@ -253,7 +252,7 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 	}
 
 	private MonitorManager getManager() {
-		return manager;
+		return monitorManager;
 	}
 
 	public List<ITrigger> getTriggers() {

@@ -96,24 +96,27 @@ public class TestConfigurableLifeCycle {
 	}
 
 	private Adapter createAdapter() throws Exception {
-		Adapter adapter = spy(SpringUtils.createBean(configuration, Adapter.class));
-		adapter.setName("adapterName");
-		IPipe pipe = SpringUtils.createBean(adapter, EchoPipe.class);
+		Adapter createdAdapter = spy(SpringUtils.createBean(configuration, Adapter.class));
+		createdAdapter.setName("adapterName");
+		IPipe pipe = SpringUtils.createBean(createdAdapter, EchoPipe.class);
 		pipe.setName("test-pipe");
-		PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
+		PipeLine pipeline = SpringUtils.createBean(createdAdapter, PipeLine.class);
 		pipeline.addPipe(pipe);
-		adapter.setPipeLine(pipeline);
-		configuration.addAdapter(adapter);
+		createdAdapter.setPipeLine(pipeline);
 
+		// Register the Adapter
+		configuration.addAdapter(createdAdapter);
+
+		// Fetch the first Adapter (and confirm it's been registered successfully).
 		List<Adapter> adapters = configuration.getRegisteredAdapters();
 		assertEquals(1, adapters.size());
 		return adapters.get(0);
 	}
 
-	private Monitor createMonitor() throws Exception {
-		Monitor monitor = spy(SpringUtils.createBean(monitorManager, Monitor.class));
-		monitor.setName(TEST_MONITOR_NAME);
-		monitor.setType(EventType.FUNCTIONAL);
+	private Monitor createMonitor() {
+		Monitor createdMonitor = spy(SpringUtils.createBean(monitorManager, Monitor.class));
+		createdMonitor.setName(TEST_MONITOR_NAME);
+		createdMonitor.setType(EventType.FUNCTIONAL);
 		Trigger trigger = SpringUtils.createBean(monitorManager, Trigger.class);
 		AdapterFilter filter = SpringUtils.createBean(monitorManager, AdapterFilter.class);
 		filter.setAdapter("dummyAdapterName");
@@ -125,8 +128,8 @@ public class TestConfigurableLifeCycle {
 		trigger.addAdapterFilter(filter);
 		trigger.setSourceFiltering(SourceFiltering.ADAPTER);
 		trigger.addEventCodeText(TEST_TRIGGER_EVENT_NAME);
-		monitor.addTrigger(trigger);
-		monitorManager.addMonitor(monitor);
+		createdMonitor.addTrigger(trigger);
+		monitorManager.addMonitor(createdMonitor);
 		IMonitorDestination ima = new IMonitorDestination() {
 			private @Getter @Setter String name = "mockDestination";
 
@@ -161,7 +164,7 @@ public class TestConfigurableLifeCycle {
 			}
 		};
 		monitorManager.addDestination(ima);
-		return monitor;
+		return createdMonitor;
 	}
 
 	/**
