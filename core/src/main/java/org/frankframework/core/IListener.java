@@ -19,7 +19,6 @@ import java.util.Map;
 
 import jakarta.annotation.Nonnull;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.doc.FrankDocGroup;
@@ -39,17 +38,8 @@ import org.frankframework.stream.Message;
 public interface IListener<M> extends IConfigurable, FrankElement, NameAware {
 
 	/**
-	 * <code>configure()</code> is called once at startup of the framework in the <code>configure()</code> method
-	 * of the owner of this listener.
-	 * Purpose of this method is to reduce creating connections to databases etc. in the {@link IPullingListener#getRawMessage(Map)} method.
-	 * As much as possible class-instantiating should take place in the <code>configure()</code> or {@link #start()} method, to improve performance.
-	 */
-	@Override
-	void configure() throws ConfigurationException;
-
-	/**
 	 * Prepares the listener for receiving messages.
-	 * <code>open()</code> is called once each time the listener is started.
+	 * <code>start()</code> is called once each time the listener is started.
 	 */
 	void start();
 

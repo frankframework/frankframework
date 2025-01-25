@@ -25,7 +25,7 @@
 		<spring.version>6.2.2</spring.version>
 		<spring-security.version>6.4.2</spring-security.version>
 		<spring-integration.version>6.4.1</spring-integration.version>
-		<spring.boot.version>3.4.1</spring.boot.version>
+		<spring.boot.version>3.4.2</spring.boot.version>
 		<tomcat.version>10.1.34</tomcat.version>
 		<bouncycastle.version>1.80</bouncycastle.version>
 
@@ -47,11 +47,14 @@
 		<!-- Should upgrade to new MariaDB driver 3.1.4, 3.2.0 or newer for JDK17 support but currently not working with XA transaction managers in the framework. -->
 		<mariadb.driver.version>3.5.1</mariadb.driver.version>
 		<postgresql.driver.version>42.7.5</postgresql.driver.version>
-		<mongodb.driver.version>5.3.0</mongodb.driver.version>
+		<mongodb.driver.version>5.3.1</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>6.1.5</activemq.driver.version>
 		<artemis.driver.version>2.39.0</artemis.driver.version>
+
+		<rabbitmq.driver.version>5.24.0</rabbitmq.driver.version>
+		<rabbitmq.jms.version>3.4.0</rabbitmq.jms.version>
 
 		<aws.java.sdk.version>2.29.52</aws.java.sdk.version>
 
