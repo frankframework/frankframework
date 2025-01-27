@@ -15,6 +15,7 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonStructure;
 
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
@@ -194,15 +195,22 @@ public class TestJson2Xml extends AlignTestBase {
 		assertEquals("Cannot determine XML root element, too many names [MetaData,intLabel,location] in JSON", e.getMessage());
 	}
 
-//	@Test
+	@Test
+	@Disabled("I cannot seem to get a multidimensional result...")
 	public void testMultidementionalArray() throws Exception {
 		URL schemaUrl = TestFileUtils.getTestFileURL("/Align/MultidimentionalArray/schema.xsd");
 		String jsonIn = TestFileUtils.getTestFile("/Align/MultidimentionalArray/input.json");
 		XmlWriter xmlWriter = new XmlWriter();
 
 		JsonStructure jsonStructure = Json.createReader(new StringReader(jsonIn)).read();
-		Json2Xml j2x = Json2Xml.create(schemaUrl, false, "arrays", false, false, "urn:test", null);
+		Json2Xml j2x = Json2Xml.create(schemaUrl, false, "arrays", false, true, "urn:test", null);
 		j2x.translate(jsonStructure, xmlWriter);
-		assertEquals("", xmlWriter.toString());
+		assertEquals("""
+				<ns1:arrays xmlns:ns1="urn:test">
+					<array><field>one</field><field>two</field></array>
+					<array><field>two</field><field>three</field></array>
+					<array><field>one</field><field>three</field></array>
+				</ns1:arrays>
+				""", xmlWriter.toString());
 	}
 }
