@@ -28,11 +28,11 @@ import jakarta.jms.Session;
 import jakarta.jms.TextMessage;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.Resource;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.Category;
 import org.frankframework.jms.JmsTransactionalStorage;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
@@ -67,7 +67,7 @@ import org.frankframework.util.UUIDUtil;
  *
  * @author Peter Leeuwenburgh
  */
-@Category("NN-Special")
+@Category(Category.Type.NN_SPECIAL)
 public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTransactionalStorage<S> {
 	private TransformerPool exceptionLogTp = null;
 	private TransformerPool auditLogTp = null;
@@ -102,24 +102,21 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 	}
 
 	@Override
-	public void start() throws ListenerException {
-		try {
-			super.start();
-		} catch (Exception e) {
-			throw new ListenerException(e);
-		}
+	public void start() {
+		super.start();
+
 		if (exceptionLogTp != null) {
 			try {
 				exceptionLogTp.open();
 			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix() + "cannot start TransformerPool for exceptionLog", e);
+				throw new LifecycleException(getLogPrefix() + "cannot start TransformerPool for exceptionLog", e);
 			}
 		}
 		if (auditLogTp != null) {
 			try {
 				auditLogTp.open();
 			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix() + "cannot start TransformerPool for auditLog", e);
+				throw new LifecycleException(getLogPrefix() + "cannot start TransformerPool for auditLog", e);
 			}
 		}
 	}

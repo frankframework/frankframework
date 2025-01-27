@@ -19,7 +19,7 @@ import org.springframework.context.Phased;
 
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 
-public interface SharedResource<T> extends IConfigurable, ConfigurableLifecycle, Phased {
+public interface SharedResource<T> extends ConfigurableLifecycle, HasName, Phased {
 	String SHARED_RESOURCE_PREFIX = "shared$$";
 
 	/** Retrieve the shared resource so {@link CanUseSharedResource} holders can use it */

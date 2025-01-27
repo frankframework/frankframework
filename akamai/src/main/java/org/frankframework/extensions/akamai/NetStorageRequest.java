@@ -34,8 +34,8 @@ import lombok.Setter;
 
 import org.frankframework.core.SenderException;
 import org.frankframework.extensions.akamai.NetStorageSender.Action;
+import org.frankframework.http.AbstractHttpSender.HttpMethod;
 import org.frankframework.http.HttpMessageEntity;
-import org.frankframework.http.HttpSenderBase.HttpMethod;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.EnumUtils;

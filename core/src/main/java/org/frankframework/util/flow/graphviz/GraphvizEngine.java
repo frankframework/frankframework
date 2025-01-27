@@ -16,11 +16,13 @@
 package org.frankframework.util.flow.graphviz;
 
 import java.io.IOException;
-import java.lang.ref.Cleaner;
 import java.net.URL;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.javascript.JavascriptEngine;
 import org.frankframework.javascript.JavascriptException;
 import org.frankframework.util.AppConstants;
@@ -32,8 +34,6 @@ import org.frankframework.util.flow.FlowGenerationException;
 import org.frankframework.util.flow.GraphvizJsFlowGenerator;
 import org.frankframework.util.flow.ResultHandler;
 
-import lombok.extern.log4j.Log4j2;
-
 //TODO: consider moving this to a separate module
 /**
  * JavaScript engine wrapper for VizJs flow diagrams
@@ -44,13 +44,11 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class GraphvizEngine {
 	private static final String FILE_FORMAT = AppConstants.getInstance().getProperty("graphviz.js.format", "SVG").toUpperCase();
-	private static final Cleaner cleaner = CleanerProvider.getCleaner(); // Get the Cleaner thread, to close the Javascript Engine when this GraphvizEngine becomes phantom reachable
 
 	// Available JS Engines. Lower index has priority.
 	private static final String[] engines = AppConstants.getInstance().getString("flow.javascript.engines", "org.frankframework.javascript.J2V8").split(",");
 
-	private final Cleaner.Cleanable cleanable;
-
+	private final int cleaningActionId;
 	private Engine engine;
 	private String graphvizVersion = AppConstants.getInstance().getProperty("graphviz.js.version", "2.0.0");
 
@@ -86,7 +84,7 @@ public class GraphvizEngine {
 		getEngine();
 
 		CleanupEngineAction cleanupEngineAction = new CleanupEngineAction(engine);
-		cleanable = cleaner.register(this, cleanupEngineAction);
+		cleaningActionId = CleanerProvider.register(this, cleanupEngineAction);
 	}
 
 	private static class CleanupEngineAction implements Runnable {
@@ -178,7 +176,7 @@ public class GraphvizEngine {
 	 * {@link GraphvizEngine GraphvisEngines}. This method ensures that the used Javascript engine is destroyed properly.
 	 */
 	public void close() {
-		cleanable.clean();
+		CleanerProvider.clean(cleaningActionId);
 	}
 
 	private String getVisJsWrapper() {

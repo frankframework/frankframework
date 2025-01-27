@@ -12,7 +12,7 @@
 
 	<properties>
 		<j2v8.version>4.6.0</j2v8.version>
-		<graalvm.version>24.1.1</graalvm.version>
+		<graalvm.version>24.1.2</graalvm.version>
 		<saxon.version>10.9</saxon.version><!--From version 11, duplicate imported resources cause an exception. -->
 	</properties>
 
@@ -179,7 +179,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
-			<version>1.12.0</version>
+			<version>1.13.0</version>
 		</dependency>
 
 		<dependency>
@@ -282,7 +282,7 @@
 		<dependency>
 			<groupId>org.apache.wss4j</groupId>
 			<artifactId>wss4j-ws-security-dom</artifactId>
-			<version>3.0.3</version>
+			<version>3.0.4</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.opensaml</groupId>
@@ -312,7 +312,7 @@
 		<dependency>
 			<groupId>org.quartz-scheduler</groupId>
 			<artifactId>quartz</artifactId>
-			<version>2.3.2</version>
+			<version>2.5.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.zaxxer</groupId>
@@ -372,13 +372,7 @@
 		<dependency>
 			<groupId>org.apache.xmlbeans</groupId>
 			<artifactId>xmlbeans</artifactId>
-			<version>5.2.1</version>
-			<exclusions>
-				<exclusion><!-- Java 8 scoped profile -->
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-				</exclusion>
-			</exclusions>
+			<version>5.3.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sendgrid</groupId>
@@ -417,6 +411,12 @@
 			<groupId>com.nimbusds</groupId>
 			<artifactId>oauth2-oidc-sdk</artifactId>
 			<version>9.43.4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.santuario</groupId>
+			<artifactId>xmlsec</artifactId>
+			<version>3.0.5</version>
 		</dependency>
 
 		<!-- TransactionManagers: NARAYANA -->
@@ -612,7 +612,7 @@
 		<dependency>
 			<groupId>com.datasonnet</groupId>
 			<artifactId>datasonnet-mapper</artifactId>
-			<version>3.0.0-RC3</version>
+			<version>3.0.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>ch.qos.logback</groupId>
@@ -719,7 +719,7 @@
 		<dependency>
 			<groupId>com.icegreen</groupId>
 			<artifactId>greenmail-junit5</artifactId>
-			<version>2.1.0</version>
+			<version>2.1.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -753,7 +753,7 @@
 		<dependency>
 			<groupId>com.github.dasniko</groupId>
 			<artifactId>testcontainers-keycloak</artifactId>
-			<version>3.5.1</version>
+			<version>3.6.0</version>
 			<scope>test</scope>
 		</dependency>
 

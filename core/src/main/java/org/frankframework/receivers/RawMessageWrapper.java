@@ -18,10 +18,11 @@ package org.frankframework.receivers;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import lombok.Getter;
-
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
+import lombok.Getter;
+
 import org.frankframework.core.PipeLineSession;
 
 public class RawMessageWrapper<M> {
@@ -83,5 +84,10 @@ public class RawMessageWrapper<M> {
 		} else {
 			this.context.remove(key);
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "id[%s] cid[%s] context[%s] message[%s]".formatted(id, correlationId, context, rawMessage);
 	}
 }

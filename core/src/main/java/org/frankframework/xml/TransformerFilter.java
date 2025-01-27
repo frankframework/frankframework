@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!
+   Copyright 2019-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,98 +21,103 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 
-import lombok.Getter;
-import org.frankframework.threading.ThreadConnector;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ext.LexicalHandler;
+
+import lombok.Getter;
+
+import org.frankframework.util.XmlUtils;
 
 public class TransformerFilter extends FullXmlFilter {
 
 	private final TransformerHandler transformerHandler;
 	private final @Getter ErrorListener errorListener;
-	private ThreadConnectingFilter threadConnectingFilter;
 
-	public TransformerFilter(ThreadConnector threadConnector, TransformerHandler transformerHandler, ContentHandler handler, boolean removeNamespacesFromInput, boolean handleLexicalEvents) {
+	public TransformerFilter(TransformerHandler transformerHandler, ContentHandler handler, boolean removeNamespacesFromInput, boolean handleLexicalEvents) {
 		super();
-		if (threadConnector != null) {
-			handler = threadConnectingFilter = new ThreadConnectingFilter(threadConnector, handler);
-		}
 		SAXResult transformedStream = new SAXResult();
 		transformedStream.setHandler(handler);
 		if (handler instanceof LexicalHandler lexicalHandler) {
 			transformedStream.setLexicalHandler(lexicalHandler);
 		}
-		this.transformerHandler=transformerHandler;
+		this.transformerHandler = transformerHandler;
 		transformerHandler.setResult(transformedStream);
 		errorListener = transformerHandler.getTransformer().getErrorListener();
-		ContentHandler inputHandler = transformerHandler;
-		if (threadConnectingFilter != null) {
-			/*
-			 * If XSLT processing is done in another thread than the SAX events are provided, which is the
-			 * case if streaming XSLT is used, then exceptions in the processing part do not travel up
-			 * through the transformerHandler automatically.
-			 * Here we set up a ExceptionInsertingFilter and ErrorListener that provide this.
-			 */
-			ExceptionInsertingFilter exceptionInsertingFilter = new ExceptionInsertingFilter(inputHandler);
-			inputHandler = exceptionInsertingFilter;
-			transformerHandler.getTransformer().setErrorListener(new ErrorListener() {
-
-				@Override
-				public void error(TransformerException paramTransformerException) throws TransformerException {
-					try {
-						if (errorListener!=null) {
-							errorListener.error(paramTransformerException);
-						}
-					} catch (TransformerException e) {
-						exceptionInsertingFilter.insertException(new SaxException(e));
-						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
-						// If absent, Xslt tests fail.
-						throw e;
-					}
-				}
-
-				@Override
-				public void fatalError(TransformerException paramTransformerException) throws TransformerException {
-					try {
-						if (errorListener!=null) {
-							errorListener.fatalError(paramTransformerException);
-						}
-					} catch (TransformerException e) {
-						exceptionInsertingFilter.insertException(new SaxException(e));
-						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
-						// If absent, Xslt tests fail.
-						throw e;
-					}
-
-				}
-
-				@Override
-				public void warning(TransformerException paramTransformerException) throws TransformerException {
-					try {
-						if (errorListener!=null) {
-							errorListener.warning(paramTransformerException);
-						}
-					} catch (TransformerException e) {
-						exceptionInsertingFilter.insertException(new SaxException(e));
-						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
-						// If absent, Xslt tests fail.
-						throw e;
-					}
-
-				}
-			});
+		ExceptionInsertingFilter exceptionInsertingFilter = new ExceptionInsertingFilter(transformerHandler);
+		if (XmlUtils.isXsltStreamingByDefault()) {
+			transformerHandler.getTransformer().setErrorListener(new TransformerFilterErrorListener(exceptionInsertingFilter));
 		}
-		if (removeNamespacesFromInput) {
-			inputHandler = new NamespaceRemovingFilter(inputHandler);
-		}
-		setContentHandler(inputHandler);
+
+		setContentHandler(createContentHandler(removeNamespacesFromInput, exceptionInsertingFilter));
 		if (!handleLexicalEvents) {
 			setLexicalHandler(null);
 		}
 	}
 
+	private static ContentHandler createContentHandler(boolean removeNamespacesFromInput, ExceptionInsertingFilter exceptionInsertingFilter) {
+		ContentHandler inputHandler;
+		if (removeNamespacesFromInput) {
+			inputHandler = new NamespaceRemovingFilter(exceptionInsertingFilter);
+		} else {
+			inputHandler = exceptionInsertingFilter;
+		}
+		return inputHandler;
+	}
 
 	public Transformer getTransformer() {
 		return transformerHandler.getTransformer();
+	}
+
+	private class TransformerFilterErrorListener implements ErrorListener {
+
+		private final ExceptionInsertingFilter exceptionInsertingFilter;
+
+		public TransformerFilterErrorListener(ExceptionInsertingFilter exceptionInsertingFilter) {
+			this.exceptionInsertingFilter = exceptionInsertingFilter;
+		}
+
+		@Override
+		public void error(TransformerException paramTransformerException) throws TransformerException {
+			try {
+				if (errorListener!=null) {
+					errorListener.error(paramTransformerException);
+				}
+			} catch (TransformerException e) {
+				exceptionInsertingFilter.insertException(new SaxException(e));
+				// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
+				// If absent, Xslt tests fail.
+				throw e;
+			}
+		}
+
+		@Override
+		public void fatalError(TransformerException paramTransformerException) throws TransformerException {
+			try {
+				if (errorListener!=null) {
+					errorListener.fatalError(paramTransformerException);
+				}
+			} catch (TransformerException e) {
+				exceptionInsertingFilter.insertException(new SaxException(e));
+				// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
+				// If absent, Xslt tests fail.
+				throw e;
+			}
+
+		}
+
+		@Override
+		public void warning(TransformerException paramTransformerException) throws TransformerException {
+			try {
+				if (errorListener!=null) {
+					errorListener.warning(paramTransformerException);
+				}
+			} catch (TransformerException e) {
+				exceptionInsertingFilter.insertException(new SaxException(e));
+				// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
+				// If absent, Xslt tests fail.
+				throw e;
+			}
+
+		}
 	}
 }

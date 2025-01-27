@@ -29,7 +29,7 @@ import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
-import org.frankframework.scheduler.JobDef;
+import org.frankframework.scheduler.AbstractJobDef;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.SpringUtils;
@@ -39,7 +39,7 @@ import org.frankframework.util.SpringUtils;
  * 
  * @ff.info This is a default job that can be controlled with the property {@literal checkReload.active} and {@literal checkReload.interval}.
  */
-public class CheckReloadJob extends JobDef {
+public class CheckReloadJob extends AbstractJobDef {
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.database.autoLoad", false);
 	private static final String DATABASE_CLASSLOADER = "DatabaseClassLoader";
 	private boolean atLeastOneConfigurationHasDBClassLoader = CONFIG_AUTO_DB_CLASSLOADER;

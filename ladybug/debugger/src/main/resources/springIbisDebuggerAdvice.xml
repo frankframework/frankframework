@@ -10,6 +10,7 @@
 		"
 	>
 
+	<bean name="debuggerActive" class="org.frankframework.ladybug.DebuggerActive" />
 	<bean name="ibisDebugger" class="org.frankframework.ladybug.LadybugDebugger" autowire="byName"/>
 
 	<bean
@@ -145,7 +146,7 @@
 					execution(
 						*
 						org.frankframework.processors.CacheSenderWrapperProcessor.sendMessage(
-							org.frankframework.senders.SenderWrapperBase,
+							org.frankframework.senders.AbstractSenderWrapper,
 							org.frankframework.stream.Message,
 							org.frankframework.core.PipeLineSession
 						)

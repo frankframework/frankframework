@@ -1,5 +1,5 @@
 /*
-Copyright 2021 WeAreFrank!
+Copyright 2021-2025 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,23 +17,30 @@ package org.frankframework.configuration;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.core.Adapter;
-import org.frankframework.core.IConfigurationAware;
 import org.springframework.context.ApplicationContext;
 
-public class ConfigurationWarnings extends ApplicationWarningsBase {
+import org.frankframework.core.Adapter;
+import org.frankframework.core.HasApplicationContext;
+import org.frankframework.core.NameAware;
+import org.frankframework.util.ClassUtils;
+
+/**
+ * If the source implements {@link NameAware} it uses that as prefix, else it will use the ClassName.
+ * See {@link ClassUtils#nameOf(Object)}.
+ */
+public class ConfigurationWarnings extends AbstractApplicationWarnings {
 
 	/**
-	 * Add a ConfigurationWarning with INamedObject prefix
+	 * Add a ConfigurationWarning. 
 	 */
-	public static void add(IConfigurationAware source, Logger log, String message) {
+	public static void add(HasApplicationContext source, Logger log, String message) {
 		add(source, log, message, (Throwable) null);
 	}
 
 	/**
-	 * Add a ConfigurationWarning with INamedObject prefix and log the exception stack
+	 * Add a ConfigurationWarning (optionally with NameAware prefix) and log the exception stack
 	 */
-	public static void add(IConfigurationAware source, Logger log, String message, Throwable t) {
+	public static void add(HasApplicationContext source, Logger log, String message, Throwable t) {
 		ConfigurationWarnings instance = getInstance(source);
 		if(instance != null) {
 			instance.doAdd(source, log, message, t);
@@ -43,17 +50,17 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 	}
 
 	/**
-	 * Add a (globally-)suppressible ConfigurationWarning with INamedObject prefix
+	 * Add a (globally-)suppressible ConfigurationWarning (optionally with NameAware prefix).
 	 */
-	public static void add(IConfigurationAware source, Logger log, String message, SuppressKeys suppressionKey) {
+	public static void add(HasApplicationContext source, Logger log, String message, SuppressKeys suppressionKey) {
 		add(source, log, message, suppressionKey, null);
 	}
 
 	/**
-	 * Add a suppressible ConfigurationWarning with INamedObject prefix
+	 * Add a suppressible ConfigurationWarning (optionally with NameAware prefix).
 	 */
-	public static void add(IConfigurationAware source, Logger log, String message, SuppressKeys suppressionKey, Adapter adapter) {
-		ConfigurationWarnings instance = getInstance(source); //We could call two statics, this prevents a double getInstance(..) lookup.
+	public static void add(HasApplicationContext source, Logger log, String message, SuppressKeys suppressionKey, Adapter adapter) {
+		ConfigurationWarnings instance = getInstance(source); // We could call two statics, this prevents a double getInstance(..) lookup.
 		if(instance != null) {
 			instance.add((Object) source, log, message, suppressionKey, adapter);
 		} else {
@@ -61,8 +68,8 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 		}
 	}
 
-	//Helper method to retrieve ConfigurationWarnings from the Configuration Context
-	private static ConfigurationWarnings getInstance(IConfigurationAware source) {
+	// Helper method to retrieve ConfigurationWarnings from the Configuration Context
+	private static ConfigurationWarnings getInstance(HasApplicationContext source) {
 		if(source == null) {
 			IllegalArgumentException e = new IllegalArgumentException("no source provided");
 			LogManager.getLogger(ConfigurationWarnings.class).warn("Unable to log notification in it's proper context", e);

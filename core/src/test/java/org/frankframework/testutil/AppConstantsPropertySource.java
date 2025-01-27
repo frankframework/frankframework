@@ -4,10 +4,10 @@ import java.util.Properties;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
 
-import org.frankframework.lifecycle.CustomPropertySourcePostProcessor;
+import org.frankframework.lifecycle.AbstractPropertySourcePostProcessor;
 import org.frankframework.util.AppConstants;
 
-public class AppConstantsPropertySource extends CustomPropertySourcePostProcessor implements BeanClassLoaderAware {
+public class AppConstantsPropertySource extends AbstractPropertySourcePostProcessor implements BeanClassLoaderAware {
 	private ClassLoader classLoader;
 
 	@Override

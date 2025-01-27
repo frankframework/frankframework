@@ -21,20 +21,7 @@ import java.util.List;
 
 import jakarta.annotation.security.RolesAllowed;
 
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusException;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.MessageDispatcher;
-import org.frankframework.management.bus.endpoints.FileViewer;
-import org.frankframework.management.bus.message.JsonMessage;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.FileUtils;
-import org.frankframework.util.JsonDirectoryInfo;
-import org.frankframework.util.SpringUtils;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -49,6 +36,20 @@ import org.springframework.integration.selector.MessageSelectorChain;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
+
+import lombok.Setter;
+
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusException;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.MessageDispatcher;
+import org.frankframework.management.bus.endpoints.FileViewer;
+import org.frankframework.management.bus.message.JsonMessage;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.FileUtils;
+import org.frankframework.util.JsonDirectoryInfo;
+import org.frankframework.util.SpringUtils;
 
 /**
  * Logging should work even when the application failed to start which is why it's not wired through the {@link MessageDispatcher}.

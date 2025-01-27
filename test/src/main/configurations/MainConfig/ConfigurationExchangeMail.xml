@@ -44,7 +44,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 			<pipe className="org.frankframework.pipes.EchoPipe" name="Echo">
 				<forward name="success" path="READY" />

@@ -18,10 +18,13 @@ package org.frankframework.senders;
 import java.io.IOException;
 
 import jakarta.annotation.Nonnull;
-import lombok.Getter;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -39,8 +42,8 @@ import org.frankframework.util.LogUtil;
  * @author Gerrit van Brakel
  * @since  4.9
  */
-@Category("Advanced")
-public class LogSender extends SenderWithParametersBase {
+@Category(Category.Type.ADVANCED)
+public class LogSender extends AbstractSenderWithParameters {
 	private @Getter String logLevel = "info";
 	private Level defaultLogLevel = Level.DEBUG;
 	private String logCategory = null;

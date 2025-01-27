@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,12 +22,18 @@ import java.util.Objects;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import lombok.Getter;
-import lombok.Setter;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.frankframework.configuration.AdapterManager;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import nl.nn.adapterframework.dispatcher.DispatcherManager;
+
 import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationAware;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
@@ -50,9 +56,6 @@ import org.frankframework.receivers.ServiceClient;
 import org.frankframework.stream.Message;
 import org.frankframework.threading.IThreadCreator;
 import org.frankframework.threading.ThreadLifeCycleEventListener;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import nl.nn.adapterframework.dispatcher.DispatcherManager;
 
 /**
  * Sender to send a message to another Frank! Adapter, or an external program running in the same JVM as the Frank!Framework.
@@ -85,8 +88,8 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  * </ul>
  * In the Adapter to be called:
  * <ul>
- *   <li>The adapter does not need to have a receiver configured to be called from a FrankSender,</li>
- *   <li>The adapter will run in the same transaction as the calling adapter,</li>
+ *   <li>The adapter does not need to have a dedicated receiver configured to be called from a FrankSender.</li>
+ *   <li>The adapter will run in the same transaction as the calling adapter.</li>
  *   <li>If the called adapter does not to run in its own transaction, set the transaction attributes on the {@link PipeLine} attribute of this adapter
  *   or on the {@link SenderPipe} that contains this {@code FrankSender}.</li>
  * </ul>
@@ -269,8 +272,8 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  * @ff.parameters All parameters except {@code scope} and {@code target} are copied to the {@link PipeLineSession} of the adapter called.
  */
 @Forward(name = "*", description = "Exit code")
-@Category("Basic")
-public class FrankSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator {
+@Category(Category.Type.BASIC)
+public class FrankSender extends AbstractSenderWithParameters implements HasPhysicalDestination, IThreadCreator, ConfigurationAware {
 
 	public static final String TARGET_PARAM_NAME = "target";
 	public static final String SCOPE_PARAM_NAME = "scope";
@@ -300,8 +303,8 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 	private @Getter boolean synchronous=true;
 
 	private @Autowired @Setter IsolatedServiceCaller isolatedServiceCaller;
-	private @Autowired @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
-	private @Autowired @Setter AdapterManager adapterManager;
+	private @Autowired(required = false) @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	private @Setter Configuration configuration;
 	private @Autowired @Setter IbisManager ibisManager;
 
 	@Override
@@ -487,15 +490,15 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 		};
 	}
 
-	ServiceClient getFrankListener(String target) throws SenderException {
+	protected ServiceClient getFrankListener(String target) throws SenderException {
 		String fullFrankListenerName;
 		int configNameSeparator = target.indexOf('/');
 		if (configNameSeparator > 0) {
 			fullFrankListenerName = target;
 		} else if (configNameSeparator == 0) {
-			fullFrankListenerName = getConfiguration().getName() + target;
+			fullFrankListenerName = configuration.getName() + target;
 		} else {
-			fullFrankListenerName = getConfiguration().getName() + "/" + target;
+			fullFrankListenerName = configuration.getName() + "/" + target;
 		}
 		ServiceClient result = FrankListener.getListener(fullFrankListenerName);
 		if (result == null) {
@@ -505,26 +508,25 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 	}
 
 	@Nonnull
-	Adapter findAdapter(String target) throws SenderException {
-		AdapterManager actualAdapterManager;
+	protected Adapter findAdapter(String target) throws SenderException {
+		Configuration actualConfiguration;
 		String adapterName;
 		int configNameSeparator = target.indexOf('/');
 		if (configNameSeparator > 0) {
 			adapterName = target.substring(configNameSeparator + 1);
 			String configurationName = target.substring(0, configNameSeparator);
-			Configuration configuration = ibisManager.getConfiguration(configurationName);
-			if (configuration == null) {
+			actualConfiguration = ibisManager.getConfiguration(configurationName);
+			if (actualConfiguration == null) {
 				throw new SenderException("Configuration [" + configurationName + "] not found");
 			}
-			actualAdapterManager = configuration.getAdapterManager();
 		} else if (configNameSeparator == 0) {
 			adapterName = target.substring(1);
-			actualAdapterManager = adapterManager;
+			actualConfiguration = configuration;
 		} else {
 			adapterName = target;
-			actualAdapterManager = adapterManager;
+			actualConfiguration = configuration;
 		}
-		Adapter adapter = actualAdapterManager.getAdapter(adapterName);
+		Adapter adapter = actualConfiguration.getRegisteredAdapter(adapterName);
 		if (adapter == null) {
 			throw new SenderException("Cannot find adapter specified by [" + target + "]");
 		}
@@ -547,10 +549,6 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 		return getTarget();
 	}
 
-	private Configuration getConfiguration() {
-		return (Configuration) getApplicationContext();
-	}
-
 	/**
 	 * Synchronous or Asynchronous execution of the call to other adapter or system.
 	 * <br/>
@@ -569,8 +567,6 @@ public class FrankSender extends SenderWithParametersBase implements HasPhysical
 	 * <br/>
 	 * It is possible to set this via a parameter. If the parameter is defined but the value at runtime
 	 * is empty, then the value set via this attribute will be used as default.
-	 *
-	 * @param scope Either {@code ADAPTER}, {@code  JVM} or {@code DLL}.
 	 *
 	 * @ff.default ADAPTER
 	 */

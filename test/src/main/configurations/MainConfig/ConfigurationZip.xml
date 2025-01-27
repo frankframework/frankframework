@@ -10,11 +10,10 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 			<pipe
 				name="selectSenderBasedOnRootElement"
-				getInputFromSessionKey="originalMessage"
 				className="org.frankframework.pipes.XmlSwitch"  >
 			</pipe>
 
@@ -57,7 +56,6 @@
 				name="Iterate over a zip file and add the content to a new zip archive"
 				getInputFromSessionKey="stream"
 				className="org.frankframework.compression.ZipIteratorPipe"
-
 				>
 				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ibis4test-RecreateZip" >
 					<param name="zipdata" sessionKey="zipdata" />
@@ -189,7 +187,7 @@
 
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 
 			<pipe
@@ -224,7 +222,7 @@
 		</receiver>
 		<pipeline firstPipe="make entry">
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 
 			<pipe
@@ -285,7 +283,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 
 			<pipe
@@ -407,7 +405,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 
 			<pipe name="Extract File Contents From Message Into Session"
@@ -440,7 +438,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 
 			<pipe

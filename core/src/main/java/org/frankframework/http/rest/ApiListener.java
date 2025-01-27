@@ -22,25 +22,30 @@ import java.util.stream.Collectors;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import com.nimbusds.jose.proc.SecurityContext;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.MimeType;
+
+import com.nimbusds.jose.proc.SecurityContext;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.HasPhysicalDestination;
-import org.frankframework.core.ListenerException;
 import org.frankframework.doc.Default;
-import org.frankframework.http.HttpSenderBase;
+import org.frankframework.http.AbstractHttpSender;
+import org.frankframework.http.HttpEntityType;
 import org.frankframework.http.PushingListenerAdapter;
+import org.frankframework.http.mime.HttpEntityFactory;
 import org.frankframework.jwt.JwtValidator;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.lifecycle.ServletManager;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ReceiverAware;
+import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
 
@@ -75,7 +80,7 @@ import org.frankframework.util.StringUtil;
  *
  * @author Niels Meijer
  */
-public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, ReceiverAware<String> {
+public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, ReceiverAware<Message> {
 
 	private static final Pattern VALID_URI_PATTERN_RE = Pattern.compile("([^/]\\*|\\*[^/\\n])");
 
@@ -98,10 +103,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter MimeType contentType;
 	private String multipartBodyName = null;
 
-	private @Getter @Setter Receiver<String> receiver;
+	private @Getter @Setter Receiver<Message> receiver;
 
-	private @Getter String messageIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.messageIdHeader", HttpSenderBase.MESSAGE_ID_HEADER);
-	private @Getter String correlationIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.correlationIdHeader", HttpSenderBase.CORRELATION_ID_HEADER);
+	private @Getter String messageIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.messageIdHeader", AbstractHttpSender.MESSAGE_ID_HEADER);
+	private @Getter String correlationIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.correlationIdHeader", AbstractHttpSender.CORRELATION_ID_HEADER);
 	private @Getter String headerParams = null;
 	private @Getter String contentDispositionHeaderSessionKey;
 	private @Getter String charset = null;
@@ -120,6 +125,13 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private @Getter JwtValidator<SecurityContext> jwtValidator;
 	private @Setter ServletManager servletManager;
+
+	private @Getter HttpEntityType responseType;
+	private @Getter String responseMultipartXmlSessionKey;
+	private @Getter String responseFirstBodyPartName;
+	private @Getter String responseMtomContentTransferEncoding;
+
+	private @Getter HttpEntityFactory responseEntityBuilder;
 
 	public enum AuthenticationMethods {
 		NONE, COOKIE, HEADER, AUTHROLE, JWT;
@@ -164,6 +176,28 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		contentType = produces.getMimeType(charset);
 
 		buildPhysicalDestinationName();
+
+		if (responseType == null) {
+			responseType = HttpEntityType.BINARY;
+		}
+		responseEntityBuilder = HttpEntityFactory.Builder.create()
+				.entityType(responseType)
+				.multipartXmlSessionKey(responseMultipartXmlSessionKey)
+				.firstBodyPartName(responseFirstBodyPartName)
+				.mtomContentTransferEncoding(responseMtomContentTransferEncoding)
+				.build();
+
+		if (responseType != HttpEntityType.MTOM && responseType != HttpEntityType.FORMDATA) {
+			if (StringUtils.isNotBlank(responseMultipartXmlSessionKey)) {
+				ConfigurationWarnings.add(this, log, "[responseMultipartXmlSessionKey] should only be set when [responseType] is [MTOM] or [FORMDATA]");
+			}
+			if (StringUtils.isNotBlank(responseFirstBodyPartName)) {
+				ConfigurationWarnings.add(this, log, "[responseResultBodyPartName] should only be set when [responseType] is [MTOM] or [FORMDATA]");
+			}
+		}
+		if (responseType != HttpEntityType.MTOM && StringUtils.isNotBlank(responseMtomContentTransferEncoding)) {
+			ConfigurationWarnings.add(this, log, "[responseMtomContentTransferEncoding] should only be set when [responseType] is [MTOM]");
+		}
 	}
 
 	private void validateClaimAttribute(String claimAttributeToValidate, String claimAttributeName) throws ConfigurationException {
@@ -179,16 +213,15 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		}
 	}
 
-
 	@Override
-	public void start() throws ListenerException {
+	public void start() {
 		ApiServiceDispatcher.getInstance().registerServiceClient(this);
 		if (getAuthenticationMethod() == AuthenticationMethods.JWT) {
 			try {
 				jwtValidator = new JwtValidator<>();
 				jwtValidator.init(getJwksUrl(), getRequiredIssuer());
 			} catch (Exception e) {
-				throw new ListenerException("unable to initialize jwtSecurityHandler", e);
+				throw new LifecycleException("unable to initialize jwtSecurityHandler", e);
 			}
 		}
 		super.start();
@@ -383,7 +416,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	/**
 	 * Name of the header which contains the Message-Id.
 	 */
-	@Default(HttpSenderBase.MESSAGE_ID_HEADER)
+	@Default(AbstractHttpSender.MESSAGE_ID_HEADER)
 	public void setMessageIdHeader(String messageIdHeader) {
 		this.messageIdHeader = messageIdHeader;
 	}
@@ -391,7 +424,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	/**
 	 * Name of the header which contains the Correlation-Id.
 	 */
-	@Default(HttpSenderBase.CORRELATION_ID_HEADER)
+	@Default(AbstractHttpSender.CORRELATION_ID_HEADER)
 	public void setCorrelationIdHeader(String correlationIdHeader) {
 		this.correlationIdHeader = correlationIdHeader;
 	}
@@ -457,6 +490,42 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	/** Claim name which specifies the principal name (maps to <code>GetPrincipalPipe</code>) */
 	public void setPrincipalNameClaim(String principalNameClaim) {
 		this.principalNameClaim = principalNameClaim;
+	}
+
+	/**
+	 * Optional configuration setting to have more control over how to send the response.
+	 * Set this to return data as Multipart formdata or MTOM.
+	 * See {@link HttpEntityType} for all supported values and how to use them.
+	 *
+	 * @ff.note NB: For the ApiListener, there is no difference between {@link HttpEntityType#BINARY} and {@link HttpEntityType#RAW} because parameters are not supported.
+	 *
+	 * @ff.default {@link HttpEntityType#BINARY}.
+	 */
+	public void setResponseType(HttpEntityType responseType) {
+		this.responseType = responseType;
+	}
+
+	/**
+	 * If response is sent as Multipart ({@link HttpEntityType#FORMDATA} or {@link HttpEntityType#MTOM}) an optional session key can describe the Multipart contents in XML. See {@link org.frankframework.http.HttpSender#setMultipartXmlSessionKey(String)}
+	 * for details on the XML format specification.
+	 */
+	public void setResponseMultipartXmlSessionKey(String responseMultipartXmlSessionKey) {
+		this.responseMultipartXmlSessionKey = responseMultipartXmlSessionKey;
+	}
+
+	/**
+	 * If response is sent as Multipart ({@link HttpEntityType#FORMDATA} or {@link HttpEntityType#MTOM}), when this option is set the pipeline result message will be prepended as first Multipart Bodypart with
+	 * this name.
+	 */
+	public void setResponseFirstBodyPartName(String responseFirstBodyPartName) {
+		this.responseFirstBodyPartName = responseFirstBodyPartName;
+	}
+
+	/**
+	 * If the response is sent as {@link HttpEntityType#MTOM}, optionally specify the transfer-encoding of the first part.
+	 */
+	public void setResponseMtomContentTransferEncoding(String responseMtomContentTransferEncoding) {
+		this.responseMtomContentTransferEncoding = responseMtomContentTransferEncoding;
 	}
 
 	@Override

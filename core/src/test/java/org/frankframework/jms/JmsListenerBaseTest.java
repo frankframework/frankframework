@@ -14,7 +14,7 @@ import org.frankframework.testutil.mock.ConnectionFactoryFactoryMock;
 
 class JmsListenerBaseTest {
 
-	private static class JmsListenerBaseImpl extends JmsListenerBase {
+	private static class JmsListenerBaseImpl extends AbstractJmsListener {
 	}
 
 	private JmsListenerBaseImpl jmsListener;

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { AppService, Pipe } from 'src/app/app.service';
 import {
   AuthEntry,
@@ -11,9 +11,11 @@ import {
   SecurityRole,
   supportedConnectionOptions,
 } from './security-items.service';
+import { KeyValuePipe, NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-security-items',
+  imports: [NgClass, KeyValuePipe],
   templateUrl: './security-items.component.html',
   styleUrls: ['./security-items.component.scss'],
 })
@@ -21,7 +23,7 @@ export class SecurityItemsComponent implements OnInit {
   protected sapSystems: SapSystem[] = [];
   protected authEntries: AuthEntry[] = [];
   protected jmsRealms: JmsRealm[] = [];
-  protected securityRoles: Record<string, SecurityRole> = {};
+  protected securityRoles: SecurityRole[] = [];
   protected certificates: CertificateList[] = [];
   protected xmlComponents: Record<string, string> = {};
   protected datasources: Datasource[] = [];
@@ -31,10 +33,8 @@ export class SecurityItemsComponent implements OnInit {
   };
   protected links: Link[] = [];
 
-  constructor(
-    private appService: AppService,
-    private securityItemsService: SecurityItemsService,
-  ) {}
+  private readonly appService: AppService = inject(AppService);
+  private readonly securityItemsService: SecurityItemsService = inject(SecurityItemsService);
 
   ngOnInit(): void {
     for (const adapter of Object.values(this.appService.adapters)) {

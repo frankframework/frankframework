@@ -20,6 +20,10 @@ import java.io.IOException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.SAXException;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -28,7 +32,6 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.doc.Default;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.FixedForwardPipe;
@@ -36,9 +39,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
 
 /**
  * Pipe to wrap or unwrap a message from/into a SOAP Envelope.
@@ -140,42 +140,27 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	}
 
 	@Override
-	public void start() throws PipeStartException {
+	public void start() {
 		super.start();
+
 		if (soapHeaderTp != null) {
-			try {
-				soapHeaderTp.open();
-			} catch (Exception e) {
-				throw new PipeStartException("cannot start SOAP Header TransformerPool", e);
-			}
+			soapHeaderTp.open();
 		}
+
 		if (soapBodyTp != null) {
-			try {
-				soapBodyTp.open();
-			} catch (Exception e) {
-				throw new PipeStartException("cannot start SOAP Body TransformerPool", e);
-			}
+			soapBodyTp.open();
 		}
+
 		if (removeUnusedOutputNamespacesTp != null) {
-			try {
-				removeUnusedOutputNamespacesTp.open();
-			} catch (Exception e) {
-				throw new PipeStartException("cannot start Remove Unused Output Namespaces TransformerPool", e);
-			}
+			removeUnusedOutputNamespacesTp.open();
 		}
+
 		if (outputNamespaceTp != null) {
-			try {
-				outputNamespaceTp.open();
-			} catch (Exception e) {
-				throw new PipeStartException("cannot start Output Namespace TransformerPool", e);
-			}
+			outputNamespaceTp.open();
 		}
+
 		if (rootTp != null) {
-			try {
-				rootTp.open();
-			} catch (Exception e) {
-				throw new PipeStartException("cannot start Root TransformerPool", e);
-			}
+			rootTp.open();
 		}
 	}
 

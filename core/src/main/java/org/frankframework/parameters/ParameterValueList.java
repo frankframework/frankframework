@@ -25,7 +25,9 @@ import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;

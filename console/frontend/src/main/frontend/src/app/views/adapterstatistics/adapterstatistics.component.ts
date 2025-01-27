@@ -1,16 +1,20 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import type { ChartData, ChartDataset, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService } from 'src/app/app.service';
 import { DebugService } from 'src/app/services/debug.service';
-import { MiscService } from 'src/app/services/misc.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { AdapterstatisticsService, Statistics } from './adapterstatistics.service';
+import { LaddaModule } from 'angular2-ladda';
+
+import { FormatStatKeysPipe } from './format-stat-keys.pipe';
+import { FormatStatisticsPipe } from './format-statistics.pipe';
 
 @Component({
   selector: 'app-adapterstatistics',
+  imports: [LaddaModule, RouterLink, BaseChartDirective, FormatStatKeysPipe, FormatStatisticsPipe],
   templateUrl: './adapterstatistics.component.html',
   styleUrls: ['./adapterstatistics.component.scss'],
 })
@@ -92,7 +96,6 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     private statisticsService: AdapterstatisticsService,
     private SweetAlert: SweetalertService,
     private Debug: DebugService,
-    private Misc: MiscService,
   ) {
     this.appConstants = this.appService.APP_CONSTANTS;
     const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
@@ -131,20 +134,11 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     this.refreshing = true;
     this.statisticsService.getStatistics(this.configuration!, this.adapterName!).subscribe((data) => {
       this.stats = data;
-
       const labels: string[] = [];
       const chartData: number[] = [];
-      for (const index in data['hourly']) {
-        let hour = data['hourly'][index];
-        labels.push(hour['time']);
-        if (this.appConstants['timezoneOffset'] != 0) {
-          const offsetInHours = (this.appConstants['timezoneOffset'] as number) / 60;
-          const offsetIndex = +index + offsetInHours;
-          const wrapCutoff = 24;
-          const wrappedOffsetIndex = (wrapCutoff + (offsetIndex % wrapCutoff)) % wrapCutoff;
-          hour = data['hourly'][wrappedOffsetIndex];
-        }
-        chartData.push(hour['count']);
+      for (const hour of data['hourly']) {
+        labels.push(hour.time);
+        chartData.push(hour.count);
       }
       this.hourlyStatistics.labels = labels;
       this.hourlyStatistics.datasets = [

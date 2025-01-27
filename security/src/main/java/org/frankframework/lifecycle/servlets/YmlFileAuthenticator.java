@@ -49,7 +49,7 @@ import org.frankframework.util.StreamUtil;
  *       - IbisObserver
  * }</pre>
  */
-public class YmlFileAuthenticator extends ServletAuthenticatorBase {
+public class YmlFileAuthenticator extends AbstractServletAuthenticator {
 
 	private @Setter String file = "localUsers.yml";
 	private URL ymlFileURL = null;

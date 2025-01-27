@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2022, 2023 WeAreFrank!
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,15 +38,17 @@ import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XSGrammar;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSModel;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.configuration.SuppressKeys;
-import org.frankframework.core.IConfigurationAware;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.SuppressKeys;
+import org.frankframework.core.HasApplicationContext;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunException;
+import org.frankframework.lifecycle.LifecycleException;
 
 /**
  * Straightforward XML-validation based on javax.validation. This is work in programs.
@@ -63,7 +65,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	private final Map<String, Schema> javaxSchemas = new LinkedHashMap<>();
 
 	@Override
-	public void configure(IConfigurationAware owner) throws ConfigurationException {
+	public void configure(HasApplicationContext owner) throws ConfigurationException {
 		if (!isXmlSchema1_0()) {
 			throw new ConfigurationException("class ("+this.getClass().getName()+") only supports XmlSchema version 1.0, no ["+getXmlSchemaVersion()+"]");
 		}
@@ -71,12 +73,16 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public void start() throws ConfigurationException {
+	public void start()  {
 		super.start();
-		String schemasId;
-		schemasId = schemasProvider.getSchemasId();
-		if (schemasId != null) {
-			getSchemaObject(schemasId, schemasProvider.getSchemas());
+
+		try {
+			String schemasId = schemasProvider.getSchemasId();
+			if (schemasId != null) {
+				getSchemaObject(schemasId, schemasProvider.getSchemas());
+			}
+		} catch (ConfigurationException e) {
+			throw new LifecycleException(e);
 		}
 	}
 
@@ -122,7 +128,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public ValidatorHandler getValidatorHandler(PipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException {
+	public ValidatorHandler getValidatorHandler(PipeLineSession session, AbstractValidationContext context) throws ConfigurationException, PipeRunException {
 		Schema schema=getSchemaObject(context.getSchemasId(), schemasProvider.getSchemas(session));
 		return schema.newValidatorHandler();
 	}
@@ -200,7 +206,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	}
 }
 
-class JavaxValidationContext extends ValidationContext {
+class JavaxValidationContext extends AbstractValidationContext {
 
 	String schemasId;
 	Schema schema;

@@ -1,5 +1,5 @@
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { AppService } from '../app.service';
 import { Router } from '@angular/router';
@@ -9,11 +9,9 @@ import { ToastService } from '../services/toast.service';
 export class ConnectionInterceptor implements HttpInterceptor {
   private errorCount = 0;
 
-  constructor(
-    private router: Router,
-    private appService: AppService,
-    private toastsService: ToastService,
-  ) {}
+  private router: Router = inject(Router);
+  private appService: AppService = inject(AppService);
+  private toastsService: ToastService = inject(ToastService);
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     return next.handle(request).pipe(

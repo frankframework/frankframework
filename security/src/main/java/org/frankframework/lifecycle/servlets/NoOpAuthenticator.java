@@ -27,7 +27,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 
-public class NoOpAuthenticator extends ServletAuthenticatorBase {
+public class NoOpAuthenticator extends AbstractServletAuthenticator {
 	private static final String ROLE_PREFIX = "ROLE_"; // See AuthorityAuthorizationManager#ROLE_PREFIX
 
 	@Override

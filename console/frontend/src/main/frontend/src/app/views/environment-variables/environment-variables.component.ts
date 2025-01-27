@@ -2,21 +2,28 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService, Configuration } from 'src/app/app.service';
 import { KeyValue } from '@angular/common';
+import { TabListComponent } from '../../components/tab-list/tab-list.component';
+import { FormsModule } from '@angular/forms';
+import { VariablesFilterPipe } from '../../pipes/variables-filter.pipe';
+import { OrderByPipe } from '../../pipes/orderby.pipe';
 
 type keyValueProperty = KeyValue<string, string>;
 
 @Component({
   selector: 'app-environment-variables',
+  imports: [TabListComponent, FormsModule, VariablesFilterPipe, OrderByPipe],
   templateUrl: './environment-variables.component.html',
   styleUrls: ['./environment-variables.component.scss'],
 })
 export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
+  protected readonly GLOBAL_TAB_NAME = 'Global';
   protected searchFilter: string = '';
   protected selectedConfiguration: string = '';
   protected configProperties: keyValueProperty[] = [];
   protected environmentProperties: keyValueProperty[] = [];
   protected systemProperties: keyValueProperty[] = [];
   protected configurations: Configuration[] = [];
+  protected configurationNames: string[] = [];
 
   private _subscriptions = new Subscription();
   private appConstants: AppConstants = this.appService.APP_CONSTANTS;
@@ -30,8 +37,10 @@ export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
     this._subscriptions.add(appConstantsSubscription);
 
     this.configurations = this.appService.configurations;
+    this.configurationNames = this.configurations.map((configuration) => configuration.name);
     const configurationsSubscription = this.appService.configurations$.subscribe(() => {
       this.configurations = this.appService.configurations;
+      this.configurationNames = this.configurations.map((configuration) => configuration.name);
     });
     this._subscriptions.add(configurationsSubscription);
 
@@ -43,7 +52,7 @@ export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
           instanceName = data['Application Constants'][configName]['instance.name'];
         }
       }
-      this.changeConfiguration('All');
+      this.changeConfiguration(this.GLOBAL_TAB_NAME);
       this.environmentProperties = this.convertPropertiesToArray(data['Environment Variables']);
       this.systemProperties = this.convertPropertiesToArray(data['System Properties']);
     });

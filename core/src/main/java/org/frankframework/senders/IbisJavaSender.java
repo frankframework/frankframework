@@ -19,8 +19,13 @@ import java.lang.reflect.Method;
 import java.util.Objects;
 
 import jakarta.annotation.Nonnull;
-import lombok.Getter;
+
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+
+import nl.nn.adapterframework.dispatcher.DispatcherManager;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ParameterException;
@@ -33,8 +38,6 @@ import org.frankframework.doc.Category;
 import org.frankframework.doc.Forward;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.stream.Message;
-
-import nl.nn.adapterframework.dispatcher.DispatcherManager;
 
 /**
  * Posts a message to another Frank!Framework-adapter or an application in the same JVM using IbisServiceDispatcher.
@@ -65,8 +68,8 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  * @since   4.4.5
  */
 @Forward(name = "*", description = "Exit code")
-@Category("Advanced")
-public class IbisJavaSender extends SenderWithParametersBase implements HasPhysicalDestination {
+@Category(Category.Type.ADVANCED)
+public class IbisJavaSender extends AbstractSenderWithParameters implements HasPhysicalDestination {
 
 	private final @Getter String domain = "JVM";
 

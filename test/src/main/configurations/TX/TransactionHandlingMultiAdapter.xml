@@ -19,8 +19,8 @@
 
 		<pipeline firstPipe="Send transacted message to not supported subadapter with exception" transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success"/>
-				<exit path="ERROR" state="error"/>
+				<exit name="EXIT" state="success"/>
+				<exit name="ERROR" state="error"/>
 			</exits>
 
 			<!-- This subadapter throws an exception -->
@@ -85,8 +85,8 @@
 
 		<pipeline firstPipe="Return Exception" transactionAttribute="NotSupported">
 			<exits>
-				<exit path="EXIT" state="success" />
-				<exit path="EXCEPTION" state="error" />
+				<exit name="EXIT" state="success" />
+				<exit name="EXCEPTION" state="error" />
 			</exits>
 
 			<pipe name="Return Exception" className="org.frankframework.pipes.ExceptionPipe"
@@ -113,8 +113,8 @@
 
 		<pipeline firstPipe="Return Exception" transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
-				<exit path="EXCEPTION" state="error" />
+				<exit name="EXIT" state="success" />
+				<exit name="EXCEPTION" state="error" />
 			</exits>
 
 			<pipe name="Return Exception" className="org.frankframework.pipes.ExceptionPipe"

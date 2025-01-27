@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,20 +22,23 @@ import java.util.List;
 
 import jakarta.json.stream.JsonParser;
 import jakarta.json.stream.JsonParsingException;
-import lombok.Getter;
+
 import org.apache.commons.lang3.StringUtils;
+import org.leadpony.justify.api.JsonSchema;
+import org.leadpony.justify.api.JsonValidationService;
+import org.leadpony.justify.api.ProblemHandler;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.core.Resource;
 import org.frankframework.doc.Category;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
-import org.leadpony.justify.api.JsonSchema;
-import org.leadpony.justify.api.JsonValidationService;
-import org.leadpony.justify.api.ProblemHandler;
 
 
 /**
@@ -43,8 +46,8 @@ import org.leadpony.justify.api.ProblemHandler;
  *
  * @author Gerrit van Brakel
  */
-@Category("Basic")
-public class JsonValidator extends ValidatorBase {
+@Category(Category.Type.BASIC)
+public class JsonValidator extends AbstractValidator {
 
 	private @Getter String schema;
 	//private @Getter String jsonSchemaVersion=null;
@@ -63,12 +66,12 @@ public class JsonValidator extends ValidatorBase {
 	}
 
 	@Override
-	public void start() throws PipeStartException {
+	public void start() {
 		try {
 			super.start();
 			jsonSchema = getJsonSchema();
 		} catch (IOException e) {
-			throw new PipeStartException("unable to start validator", e);
+			throw new LifecycleException("unable to start validator", e);
 		}
 	}
 

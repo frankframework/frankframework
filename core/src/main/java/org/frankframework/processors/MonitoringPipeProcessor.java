@@ -15,11 +15,14 @@
 */
 package org.frankframework.processors;
 
-import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+
+import io.micrometer.core.instrument.DistributionSummary;
+
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
@@ -33,7 +36,7 @@ import org.frankframework.util.LogUtil;
 /**
  * @author Jaco de Groot
  */
-public class MonitoringPipeProcessor extends PipeProcessorBase {
+public class MonitoringPipeProcessor extends AbstractPipeProcessor {
 	private final Logger durationLog = LogUtil.getLogger("LongDurationMessages");
 
 	@Override

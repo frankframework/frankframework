@@ -27,17 +27,14 @@ import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IDataIterator;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.doc.ReferTo;
-import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.pipes.StringIteratorPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.SpringUtils;
-
 
 /**
  * Base class for JDBC iterating pipes.
@@ -87,13 +84,8 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	}
 
 	@Override
-	public void start() throws PipeStartException {
-		try {
-			querySender.start();
-		} catch (LifecycleException e) {
-			throw new PipeStartException(e);
-		}
-
+	public void start() {
+		querySender.start();
 		super.start();
 	}
 
@@ -194,19 +186,19 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		querySender.setAvoidLocking(avoidLocking);
 	}
 
-	@ReferTo(JdbcQuerySenderBase.class)
+	@ReferTo(AbstractJdbcQuerySender.class)
 	@Deprecated(forRemoval = true, since = "7.9.0")
 	//BLOBs are binary, they should not contain character data!
 	public void setBlobCharset(String charset) {
 		querySender.setBlobCharset(charset);
 	}
 
-	@ReferTo(JdbcQuerySenderBase.class)
+	@ReferTo(AbstractJdbcQuerySender.class)
 	public void setBlobSmartGet(boolean isSmartBlob) {
 		querySender.setBlobSmartGet(isSmartBlob);
 	}
 
-	@ReferTo(JdbcQuerySenderBase.class)
+	@ReferTo(AbstractJdbcQuerySender.class)
 	public void setBlobsCompressed(boolean compressed) {
 		querySender.setBlobsCompressed(compressed);
 	}

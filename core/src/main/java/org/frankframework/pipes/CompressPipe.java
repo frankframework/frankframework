@@ -29,6 +29,9 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
@@ -40,11 +43,10 @@ import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
-
-import lombok.Getter;
 
 /**
  * Pipe to zip or unzip a message or file.
@@ -93,9 +95,8 @@ public class CompressPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		InputStream in = null;
 		try {
-			Object result;
-			InputStream in = null;
 			boolean zipMultipleFiles = false;
 			String filename = null;
 
@@ -125,7 +126,7 @@ public class CompressPipe extends FixedForwardPipe {
 			}
 
 			File outFile = new File(outputDirectory, outFilename);
-			result = outFile.getAbsolutePath();
+			String result = outFile.getAbsolutePath();
 			try (OutputStream stream = Files.newOutputStream(outFile.toPath())) {
 				processStream(stream, in, zipMultipleFiles, filename, session);
 			}
@@ -138,6 +139,10 @@ public class CompressPipe extends FixedForwardPipe {
 				return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(null, e, this, message, session.getMessageId(), 0));
 			}
 			throw new PipeRunException(this, "Unexpected exception during compression", e);
+		} finally {
+			if(in != null) {
+				CloseUtils.closeSilently(in);
+			}
 		}
 	}
 

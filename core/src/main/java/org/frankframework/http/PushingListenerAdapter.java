@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017, 2019 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,12 +19,13 @@ import java.util.Map;
 
 import jakarta.annotation.Nonnull;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageHandler;
@@ -43,11 +44,11 @@ import org.frankframework.util.LogUtil;
 /**
  * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link Receiver}
  * to receive messages from Servlets.
- * </table>
+ *
  * @author  Gerrit van Brakel
  * @since   4.12
  */
-public abstract class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient {
+public class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter String name;
@@ -58,6 +59,7 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
+
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
@@ -69,7 +71,7 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 	}
 
 	@Override
-	public void start() throws ListenerException {
+	public void start() {
 		setRunning(true);
 	}
 

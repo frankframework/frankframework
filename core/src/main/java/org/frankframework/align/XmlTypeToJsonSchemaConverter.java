@@ -25,7 +25,7 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonStructure;
-import lombok.Getter;
+
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
@@ -45,6 +45,9 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
+
+import lombok.Getter;
+
 import org.frankframework.util.LogUtil;
 
 public class XmlTypeToJsonSchemaConverter  {
@@ -485,21 +488,14 @@ public class XmlTypeToJsonSchemaConverter  {
 	// Currently commented out because builder param isnt used
 	// private void buildWildcard(JsonObjectBuilder builder, XSTerm term){
 	private void handleWildcard(XSWildcard wildcard){
-		String processContents;
-		switch (wildcard.getProcessContents()) {
-		case XSWildcard.PC_LAX: processContents="LAX"; break;
-		case XSWildcard.PC_SKIP: processContents="SKIP"; break;
-		case XSWildcard.PC_STRICT: processContents="STRICT"; break;
-		default:
-				throw new IllegalStateException("handleWildcard wildcard.processContents is not PC_LAX, PC_SKIP or PC_STRICT, but ["+wildcard.getProcessContents()+"]");
+		short processContents = wildcard.getProcessContents();
+		if (processContents != XSWildcard.PC_LAX && processContents != XSWildcard.PC_SKIP && processContents != XSWildcard.PC_STRICT) {
+			throw new IllegalStateException("handleWildcard wildcard.processContents is not PC_LAX, PC_SKIP or PC_STRICT, but [" + wildcard.getProcessContents() + "]");
 		}
-		String namespaceConstraint;
-		switch (wildcard.getConstraintType()) {
-		case XSWildcard.NSCONSTRAINT_ANY : namespaceConstraint="ANY"; break;
-		case XSWildcard.NSCONSTRAINT_LIST : namespaceConstraint="SKIP "+wildcard.getNsConstraintList(); break;
-		case XSWildcard.NSCONSTRAINT_NOT : namespaceConstraint="NOT "+wildcard.getNsConstraintList(); break;
-		default:
-				throw new IllegalStateException("handleWildcard wildcard.namespaceConstraint is not ANY, LIST or NOT, but ["+wildcard.getConstraintType()+"]");
+
+		short constraintType = wildcard.getConstraintType();
+		if (constraintType != XSWildcard.NSCONSTRAINT_ANY && constraintType != XSWildcard.NSCONSTRAINT_LIST && constraintType != XSWildcard.NSCONSTRAINT_NOT) {
+			throw new IllegalStateException("handleWildcard wildcard.namespaceConstraint is not ANY, LIST or NOT, but [" + wildcard.getConstraintType() + "]");
 		}
 	}
 

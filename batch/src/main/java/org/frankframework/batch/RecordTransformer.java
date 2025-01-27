@@ -275,11 +275,11 @@ public class RecordTransformer extends AbstractRecordHandler {
 	 * digester-rules
 	 */
 	@Deprecated
-	public void registerChild(OutputfieldsPart part) throws ConfigurationException {
-		registerOutputFields(part);
+	public void addChild(OutputfieldsPart part) throws ConfigurationException {
+		addOutputFields(part);
 	}
 
-	public void registerOutputFields(OutputfieldsPart part) throws ConfigurationException {
+	public void addOutputFields(OutputfieldsPart part) throws ConfigurationException {
 		setOutputFields(part.getValue());
 	}
 

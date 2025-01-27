@@ -23,9 +23,11 @@ import java.util.List;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import javanet.staxutils.IndentingXMLStreamWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.util.XMLChar;
+
+import javanet.staxutils.IndentingXMLStreamWriter;
+
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IValidator;
@@ -39,10 +41,10 @@ import org.frankframework.util.XmlUtils;
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
-public abstract class WsdlGeneratorUtils {
+public class WsdlGeneratorUtils {
 
 	private WsdlGeneratorUtils() {
-		// this class has no instances
+		throw new IllegalStateException("Don't construct utility class");
 	}
 
 	public static Collection<IListener<?>> getListeners(Adapter adapter) {

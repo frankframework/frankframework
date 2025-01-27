@@ -4,12 +4,24 @@ Frank!Framework Release Notes
 [Tags](https://github.com/frankframework/frankframework/releases)
 [JavaDocs](https://javadoc.frankframework.org/)
 
-Upcoming (9.0)
+Upcoming (9.1)
 --------------
-[Commits](https://github.com/frankframework/frankframework/compare/8.3-release...HEAD)
+[Commits](https://github.com/frankframework/frankframework/compare/9.0-release...HEAD)
 
-- The SenderPipe no longer accepts a `Listener`, when using asychronous messaging (sender/listener combination) please use the `AsyncSenderWithListenerPipe` instead. No other attributes need to be modified!
-- The default `ldap-role-mapping.properties` file and `ldap.auth.<role name>` properties have been removed.
+- Removed deprecated pipes with 'since' 7.8 or older. This means that the following pipes are now removed:
+  -  FileLineIteratorPipe, FilenameSwitch, PostboxRetrieverPipe, PutParametersInSession, Stream2StringPipe, XmlBuilderPipe, XmlFileElementIteratorPipe
+
+
+9.0.0 - Jan 06, 2025
+--------------
+[Commits](https://github.com/frankframework/frankframework/compare/v8.3.0...v9.0.0)
+
+- The SenderPipe no longer accepts a `Listener`, when using asynchronous messaging (sender/listener combination) please use the `AsyncSenderWithListenerPipe` instead. No other attributes need to be modified!
+- The default `ldap-role-mapping.properties` file and `ldap.auth.<role name>` properties have been removed as it was not always possible to overwrite this file. An example can be found at `security/src/test/resources/oauth-role-mapping.properties`. Users are encouraged to map roles to 'scopes' in their preferred oauth environment, the example file only verifies logging in.
+- Receiver configuration property `maxDeliveries` has been deprecated. Instead, configure `maxRetries`. For backwards compatibility, if you have configured `maxDeliveries` this will set `maxRetries` to the same value. See the Frank!Doc for these properties in the Receiver for more information.
+- Fix the exponential delay after errors in message processing. This feature has not worked for an unknown time. There might be potential problems with transactions having an unexpected timeout due to this increased delay, which could result in an unrecoverable error situation. For this reason the delay is maximum half of the configured transaction timeout duration. However, this might not always be sufficient for each process and the transaction timeout can not always be determined so please watch out for transaction timeout errors that might happen after a number of retries and see the next bullet point for remediation.
+- To avoid the above unexpected transaction timeouts, the maximum delay after errors has been made configurable. This can be configured for the whole configuration with the property `receiver.defaultMaxBackoffDelay`, or per receiver with the attribute `maxBackoffDelay`. The value is in seconds. The default is 100 seconds.
+
 
 8.3.0 - Oct 10th, 2024
 --------------

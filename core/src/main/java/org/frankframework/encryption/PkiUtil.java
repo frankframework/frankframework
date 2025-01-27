@@ -45,6 +45,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
@@ -230,6 +231,10 @@ public class PkiUtil {
 	}
 
 	public static PublicKey getPublicKey(HasTruststore truststoreOwner, String purpose) throws EncryptionException {
+		return getCertificate(truststoreOwner, purpose).getPublicKey();
+	}
+
+	public static Certificate getCertificate(HasTruststore truststoreOwner, String purpose) throws EncryptionException {
 		Certificate certificate;
 		URL truststoreUrl = ClassLoaderUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
 		try {
@@ -252,7 +257,7 @@ public class PkiUtil {
 		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
 			throw new EncryptionException("cannot get Public Key for verification in keystore ["+truststoreUrl+"] for "+purpose, e);
 		}
-		return certificate.getPublicKey();
+		return certificate;
 	}
 
 	private static byte[] loadPEM(URL resource) throws IOException {

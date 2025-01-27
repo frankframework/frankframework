@@ -16,6 +16,7 @@
 package org.frankframework.mongodb;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,17 @@ import jakarta.annotation.Nonnull;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+
+import org.apache.commons.lang3.StringUtils;
+import org.bson.BsonValue;
+import org.bson.Document;
+import org.bson.codecs.DocumentCodec;
+import org.bson.codecs.Encoder;
+import org.bson.codecs.EncoderContext;
+import org.bson.json.JsonMode;
+import org.bson.json.JsonWriterSettings;
+import org.xml.sax.SAXException;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
@@ -38,18 +50,10 @@ import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.client.result.InsertOneResult;
 import com.mongodb.client.result.UpdateResult;
 import com.mongodb.connection.ServerDescription;
+
 import lombok.Getter;
 import lombok.Lombok;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
-import org.bson.BsonValue;
-import org.bson.Document;
-import org.bson.codecs.DocumentCodec;
-import org.bson.codecs.Encoder;
-import org.bson.codecs.EncoderContext;
-import org.bson.json.JsonMode;
-import org.bson.json.JsonWriterSettings;
-import org.xml.sax.SAXException;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
@@ -63,10 +67,10 @@ import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.documentbuilder.IDocumentBuilder;
 import org.frankframework.documentbuilder.INodeBuilder;
 import org.frankframework.documentbuilder.ObjectBuilder;
-import org.frankframework.jdbc.JdbcQuerySenderBase;
+import org.frankframework.jdbc.AbstractJdbcQuerySender;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.senders.SenderWithParametersBase;
+import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.AppConstants;
@@ -83,7 +87,7 @@ import org.frankframework.util.StringResolver;
  * @author Gerrit van Brakel
  *
  */
-public class MongoDbSender extends SenderWithParametersBase implements HasPhysicalDestination {
+public class MongoDbSender extends AbstractSenderWithParameters implements HasPhysicalDestination {
 
 	private final @Getter String domain = "Mongo";
 	public static final String PARAM_DATABASE="database";
@@ -91,8 +95,8 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 	public static final String PARAM_FILTER="filter";
 	public static final String PARAM_LIMIT="limit";
 
-	public static final String NAMED_PARAM_START=JdbcQuerySenderBase.UNP_START;
-	public static final String NAMED_PARAM_END=JdbcQuerySenderBase.UNP_END;
+	public static final String NAMED_PARAM_START= AbstractJdbcQuerySender.UNP_START;
+	public static final String NAMED_PARAM_END= AbstractJdbcQuerySender.UNP_END;
 
 
 	private @Getter String datasourceName;
@@ -317,12 +321,16 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 	}
 
 	protected List<Document> getDocuments(Message message) throws IOException {
-		JsonArray array = Json.createReader(message.asReader()).readArray();
-		List<Document> documents = new ArrayList<>();
-		for (JsonObject object:array.getValuesAs(JsonObject.class)) {
-			documents.add(getDocument(object.toString()));
+		try (Reader reader = message.asReader(); JsonReader jsonReader = Json.createReader(reader)) {
+			JsonArray array = jsonReader.readArray();
+
+			List<Document> documents = new ArrayList<>();
+			for (JsonObject object: array.getValuesAs(JsonObject.class)) {
+				documents.add(getDocument(object.toString()));
+			}
+
+			return documents;
 		}
-		return documents;
 	}
 
 	protected MongoDatabase getDatabase(ParameterValueList pvl) throws SenderException {

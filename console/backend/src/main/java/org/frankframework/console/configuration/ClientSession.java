@@ -18,10 +18,8 @@ package org.frankframework.console.configuration;
 import java.util.List;
 import java.util.UUID;
 
-import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
-import org.frankframework.management.bus.OutboundGateway;
-import org.frankframework.management.bus.OutboundGateway.ClusterMember;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,6 +27,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.SessionScope;
 
 import lombok.Getter;
+
+import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.bus.OutboundGateway.ClusterMember;
 
 @Component
 @SessionScope
@@ -38,7 +39,10 @@ public class ClientSession implements InitializingBean {
 	@Qualifier("outboundGateway")
 	private OutboundGateway outboundGateway;
 
-	@Nonnull
+	/**
+	 * Get target or `NULL` when no target has been specified or `afterPropertiesSet` has not been called yet.
+	 */
+	@Nullable
 	private @Getter UUID memberTarget;
 
 	public void setMemberTarget(UUID id) {

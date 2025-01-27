@@ -21,7 +21,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.core.annotation.AnnotationUtils;
+
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.HasSpecialDefaultValues;
 import org.frankframework.configuration.SuppressKeys;
@@ -30,18 +35,14 @@ import org.frankframework.doc.Unsafe;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StringResolver;
-import org.springframework.beans.BeanUtils;
-import org.springframework.core.annotation.AnnotationUtils;
-
-import jakarta.annotation.Nullable;
 
 /**
  * @author Niels Meijer
  */
-public class ValidateAttributeRule extends DigesterRuleBase {
+public class ValidateAttributeRule extends AbstractDigesterRule {
 
 	/**
-	 * @see DigesterRuleBase#handleBean()
+	 * @see AbstractDigesterRule#handleBean()
 	 */
 	@Override
 	protected void handleBean() {
@@ -49,7 +50,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 	}
 
 	/**
-	 * @see DigesterRuleBase#handleAttribute(String, String, Map)
+	 * @see AbstractDigesterRule#handleAttribute(String, String, Map)
 	 *
 	 * @param name Name of attribute
 	 * @param value Attribute Value
@@ -62,7 +63,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		if (pd != null) {
 			m = pd.getWriteMethod();
 		}
-		if (m == null) { //validate if the attribute exists
+		if (m == null) { // Validate if the attribute exists
 			addLocalWarning("does not have an attribute ["+name+"] to set to value ["+value+"]");
 			return;
 		}
@@ -72,15 +73,24 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 			return;
 		}
 
-		checkDeprecationAndConfigurationWarning(name, value, m); //check if the setter or enum value is deprecated
-		checkIfMethodIsMarkedAsUnsafe(m, name);
+		checkDeprecationAndConfigurationWarning(name, value, m); // Check if the setter or enum value is deprecated
 
-		if (value.contains(StringResolver.DELIM_START) && value.contains(StringResolver.DELIM_STOP)) { //If value contains a property, resolve it
+		if (value.contains(StringResolver.DELIM_START) && value.contains(StringResolver.DELIM_STOP)) { // If value contains a property, resolve it
 			value = resolveValue(value);
-		} else { //Only check for default values for non-property values
+		} else { // Only check for default values for non-property values
 			Method readMethod = pd.getReadMethod();
-			if(readMethod != null) { //And if a read method (getter) exists
-				checkTypeCompatibility(readMethod, name, value, attributes);
+			if(readMethod != null) { // And if a read method (getter) exists
+				Object defaultValue = getDefaultValue(readMethod, name, value, attributes);
+
+				if (equals(defaultValue, value)) {
+					addSuppressibleWarning("attribute ["+name+"] already has a default value ["+value+"]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY);
+				} else {
+					// Contains read method, value does not equal the default, check if method is unsafe.
+					checkIfMethodIsMarkedAsUnsafe(m, name);
+				}
+			} else {
+				// No read method, thus no default value, always check if method is unsafe.
+				checkIfMethodIsMarkedAsUnsafe(m, name);
 			}
 		}
 
@@ -107,21 +117,21 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 	 * - Does not equal the default value (parsed by invoking the getter, if present).
 	 * If no Getter is present, tries to match the type to the Setters first argument.
 	 */
-	private void checkTypeCompatibility(Method readMethod, String name, String value, Map<String, String> attrs) {
+	@Nullable
+	private Object getDefaultValue(Method readMethod, String name, String value, Map<String, String> attrs) {
 		try {
 			Object bean = getBean();
 			Object defaultValue = readMethod.invoke(bean);
 			if (bean instanceof HasSpecialDefaultValues values) {
 				defaultValue = values.getSpecialDefaultValue(name, defaultValue, attrs);
 			}
-			if (equals(defaultValue, value)) {
-				addSuppressibleWarning("attribute ["+name+"] already has a default value ["+value+"]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY);
-			}
+			return defaultValue;
 			// if the default value is null, then it can mean that the real default value is determined in configure(),
 			// so we cannot assume setting it to "" has no effect
 		} catch (Exception e) {
 			addLocalWarning("is unable to parse attribute ["+name+"] value ["+value+"] to method ["+readMethod.getName()+"] with type ["+readMethod.getReturnType()+"]");
 			log.warn("Error on getting default for object [{}] with method [{}] attribute [{}] value [{}]", getObjectName(), readMethod.getName(), name, value, e);
+			return null;
 		}
 	}
 
@@ -161,7 +171,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 			return;
 		}
 
-		String warning = "[" + attributeName + "] is unsafe and should not be used in a production environment.";
+		String warning = "[" + attributeName + "] is unsafe and should not be used in a production environment";
 		addSuppressibleWarning(warning, SuppressKeys.UNSAFE_ATTRIBUTE_SUPPRESS_KEY);
 	}
 

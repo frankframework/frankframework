@@ -18,7 +18,6 @@ package org.frankframework.filesystem.smb;
 import static com.hierynomus.msfscc.FileAttributes.FILE_ATTRIBUTE_DIRECTORY;
 
 import java.io.FilterInputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,7 +27,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.filesystem.FileSystemException;
+import org.frankframework.filesystem.FolderNotFoundException;
+import org.frankframework.filesystem.IFileSystemTestHelper;
+import org.frankframework.util.CloseUtils;
+import org.frankframework.util.LogUtil;
 
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;
@@ -49,12 +54,6 @@ import com.hierynomus.smbj.connection.Connection;
 import com.hierynomus.smbj.session.Session;
 import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
-
-import org.frankframework.filesystem.FileSystemException;
-import org.frankframework.filesystem.FolderNotFoundException;
-import org.frankframework.filesystem.IFileSystemTestHelper;
-import org.frankframework.util.CloseUtils;
-import org.frankframework.util.LogUtil;
 
 /**
  *
@@ -152,27 +151,22 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public OutputStream _createFile(String folder, String filename) throws Exception {
+	public String createFile(String folder, String filename, String contents) throws Exception {
 		Set<AccessMask> accessMask = new HashSet<>(EnumSet.of(AccessMask.FILE_ADD_FILE));
 		Set<SMB2CreateOptions> createOptions = new HashSet<>(EnumSet.of(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE, SMB2CreateOptions.FILE_WRITE_THROUGH));
 
 		String path = folder != null ? folder + "/" + filename : filename;
 		final File file = diskShare.openFile(path, accessMask, null, SMB2ShareAccess.ALL,
 				SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
-		OutputStream out = file.getOutputStream();
-		FilterOutputStream fos = new FilterOutputStream(out) {
 
-			boolean isOpen = true;
-			@Override
-			public void close() throws IOException {
-				if(isOpen) {
-					super.close();
-					isOpen=false;
-				}
-				file.close();
+		try (OutputStream out = file.getOutputStream()) {
+			if(StringUtils.isNotEmpty(contents)) {
+				out.write(contents.getBytes());
 			}
-		};
-		return fos;
+		}
+
+		file.close();
+		return filename;
 	}
 
 	@Override

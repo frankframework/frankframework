@@ -19,13 +19,6 @@ import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
 
-import org.frankframework.console.AllowAllIbisUserRoles;
-import org.frankframework.console.Relation;
-import org.frankframework.console.util.RequestMessageBuilder;
-import org.frankframework.console.util.RequestUtils;
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.BusTopic;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -36,14 +29,28 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.frankframework.console.AllowAllIbisUserRoles;
+import org.frankframework.console.Relation;
+import org.frankframework.console.util.RequestMessageBuilder;
+import org.frankframework.console.util.RequestUtils;
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.BusTopic;
+
 @RestController
-public class Scheduler extends FrankApiBase {
+public class Scheduler {
+
+	private final FrankApiService frankApiService;
+
+	public Scheduler(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@Relation("schedules")
 	@GetMapping(value = "/schedules", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getSchedules() {
-		return callSyncGateway(RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.GET));
+		return frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.GET));
 	}
 
 	@AllowAllIbisUserRoles
@@ -53,7 +60,7 @@ public class Scheduler extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.FIND);
 		builder.addHeader("job", jobName);
 		builder.addHeader("group", groupName);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -62,7 +69,7 @@ public class Scheduler extends FrankApiBase {
 	public ResponseEntity<?> updateScheduler(@RequestBody Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.MANAGE);
 		builder.addHeader("operation", RequestUtils.getValue(json, "action"));
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -73,7 +80,7 @@ public class Scheduler extends FrankApiBase {
 		builder.addHeader("operation", RequestUtils.getValue(json, "action"));
 		builder.addHeader("job", jobName);
 		builder.addHeader("group", groupName);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	// Database jobs
@@ -129,7 +136,7 @@ public class Scheduler extends FrankApiBase {
 			builder.addHeader("overwrite", overwrite);
 		}
 
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -139,7 +146,7 @@ public class Scheduler extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.DELETE);
 		builder.addHeader("job", jobName);
 		builder.addHeader("group", groupName);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	public record ScheduleMultipartBody(

@@ -1,4 +1,4 @@
-import { Component, Inject, LOCALE_ID, OnDestroy, OnInit, Renderer2 } from '@angular/core';
+import { Component, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { Idle } from '@ng-idle/core';
 import { filter, first, Subscription } from 'rxjs';
 import {
@@ -20,11 +20,10 @@ import {
   NavigationStart,
   ParamMap,
   Router,
+  RouterLink,
+  RouterOutlet,
 } from '@angular/router';
-import { formatDate } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-// @ts-expect-error pace-js does not have types
-import * as Pace from 'pace-js';
 import { NotificationService } from './services/notification.service';
 import { MiscService } from './services/misc.service';
 import { DebugService } from './services/debug.service';
@@ -38,9 +37,27 @@ import { ToastService } from './services/toast.service';
 import { ServerInfo, ServerInfoService } from './services/server-info.service';
 import { ClusterMemberEvent, ClusterMemberEventType, WebsocketService } from './services/websocket.service';
 import { deepMerge } from './utils';
+import { ServerTimeService } from './services/server-time.service';
+
+import { ToastsContainerComponent } from './components/toasts-container/toasts-container.component';
+import { PagesNavigationComponent } from './components/pages/pages-navigation/pages-navigation.component';
+import { PagesTopnavbarComponent } from './components/pages/pages-topnavbar/pages-topnavbar.component';
+import { PagesTopinfobarComponent } from './components/pages/pages-topinfobar/pages-topinfobar.component';
+import { PagesFooterComponent } from './components/pages/pages-footer/pages-footer.component';
+// @ts-expect-error pace-js does not have types
+import Pace from 'pace-js';
 
 @Component({
   selector: 'app-root',
+  imports: [
+    ToastsContainerComponent,
+    PagesNavigationComponent,
+    PagesTopnavbarComponent,
+    PagesTopinfobarComponent,
+    RouterOutlet,
+    PagesFooterComponent,
+    RouterLink,
+  ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
@@ -48,7 +65,6 @@ export class AppComponent implements OnInit, OnDestroy {
   protected loading = true;
   protected dtapStage = '';
   protected dtapSide = '';
-  protected serverTime = '';
   protected startupError: string | null = null;
   protected userName?: string;
   protected routeData: Data = {};
@@ -87,7 +103,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private modalService: NgbModal,
     private serverInfoService: ServerInfoService,
     private websocketService: WebsocketService,
-    @Inject(LOCALE_ID) private locale: string,
+    private serverTimeService: ServerTimeService,
   ) {
     this.appConstants = this.appService.APP_CONSTANTS;
     this.consoleState = this.appService.CONSOLE_STATE;
@@ -227,12 +243,13 @@ export class AppComponent implements OnInit, OnDestroy {
       next: (data) => {
         this.serverInfo = data;
 
-        this.appService.dtapStage = data['dtap.stage'];
         this.dtapStage = data['dtap.stage'];
+        this.appService.updateDtapStage(data['dtap.stage']);
         this.dtapSide = data['dtap.side'];
-        // appService.userName = data["userName"];
         this.userName = data['userName'];
+        this.appService.updateInstanceName(data.instance.name);
         this.authService.setLoggedIn(this.userName);
+        this.appService.updateTitle(this.title.getTitle().split(' | ')[1]);
 
         this.consoleState.init = appInitState.POST_INIT;
         if (!this.router.url.includes('login')) {
@@ -240,34 +257,11 @@ export class AppComponent implements OnInit, OnDestroy {
           this.renderer.removeClass(document.body, 'gray-bg');
         }
 
-        this.appService.dtapStage = data['dtap.stage'];
-        this.dtapStage = data['dtap.stage'];
-        this.dtapSide = data['dtap.side'];
-        // appService.userName = data["userName"];
-        this.userName = data['userName'];
-
-        const serverTime = Date.parse(new Date(data.serverTime).toUTCString());
-        const localTime = Date.parse(new Date().toUTCString());
-        this.consoleState.timeOffset = serverTime - localTime;
-        // TODO this doesnt work as serverTime gets converted to local time before getTimezoneOffset is called
-        this.appConstants['timezoneOffset'] = 0;
-        //this.appConstants['timezoneOffset'] = new Date(data.serverTime).getTimezoneOffset();
-
-        const updateTime = (): void => {
-          const serverDate = new Date();
-          serverDate.setTime(serverDate.getTime() - this.consoleState.timeOffset);
-          this.serverTime = formatDate(serverDate, this.appConstants['console.dateFormat'] as string, this.locale);
-        };
-        window.setInterval(updateTime, 1000);
-        updateTime();
-
-        this.appService.updateInstanceName(data.instance.name);
+        this.serverTimeService.setServerTime(data['serverTime'], data['serverTimezone']);
 
         const iafInfoElement = document.querySelector<HTMLElement>('.iaf-info');
         if (iafInfoElement)
           iafInfoElement.textContent = `${data.framework.name} ${data.framework.version}: ${data.instance.name} ${data.instance.version}`;
-
-        this.appService.updateTitle(this.title.getTitle().split(' | ')[1]);
 
         if (this.appService.dtapStage == 'LOC') {
           this.debugService.setLevel(3);
@@ -285,18 +279,36 @@ export class AppComponent implements OnInit, OnDestroy {
         this.initializeWarnings();
         this.checkIafVersions();
       },
+    });
+    this.serverInfoService.refresh().subscribe({
       error: (error: HttpErrorResponse) => {
         // HTTP 5xx error
         if (error.status.toString().startsWith('5')) {
           this.router.navigate(['error']);
+        } else if (error.status === 400) {
+          this.appService.getClusterMembers().subscribe({
+            next: (data) => {
+              this.clusterMembers = data;
+              if (data.length > 0) {
+                this.selectedClusterMember = data.find((member) => member.selectedMember) ?? null;
+              }
+              if (this.selectedClusterMember != null) {
+                this.appService.triggerReload();
+              }
+            },
+            error: () => {
+              this.sweetAlertService
+                .Error("Couldn't initialize Frank!Console", 'Please make sure the Frank!Framework is setup correctly!')
+                .then(() => this.appService.triggerReload());
+            },
+          });
         }
       },
     });
-    this.serverInfoService.refresh();
 
     this.appService.getEnvironmentVariables().subscribe((data) => {
       if (data['Application Constants']) {
-        this.appConstants = Object.assign(this.appConstants, data['Application Constants']['All']); //make FF!Application Constants default
+        this.appConstants = Object.assign(this.appConstants, data['Application Constants']['Global']); //make FF!Application Constants default
 
         const idleTime =
           Number.parseInt(this.appConstants['console.idle.time'] as string) > 0
@@ -329,8 +341,14 @@ export class AppComponent implements OnInit, OnDestroy {
 
       const newVersion = release.tag_name.slice(0, 1) == 'v' ? release.tag_name.slice(1) : release.tag_name;
       const currentVersion = this.appConstants['application.version'] as string;
-      const version = this.miscService.compare_version(newVersion, currentVersion) || 0;
-      console.log(`Comparing version: '${currentVersion}' with latest release: '${newVersion}'.`);
+      const version = this.miscService.compare_version(newVersion, currentVersion) ?? 0;
+      if (!currentVersion || currentVersion === '') {
+        this.debugService.warn(`Latest version is '${newVersion}' but can't retrieve current version.`);
+        this.sessionService.set('IAF-Release', newVersion);
+        return;
+      }
+
+      this.debugService.log(`Comparing version: '${currentVersion}' with latest release: '${newVersion}'.`);
       this.sessionService.remove('IAF-Release');
 
       if (+version > 0) {
@@ -598,9 +616,30 @@ export class AppComponent implements OnInit, OnDestroy {
     const memberExists = this.clusterMembers.some((m) => m.id === member.id);
     if (action === 'ADD_MEMBER' && !memberExists) {
       this.clusterMembers = [...this.clusterMembers, member];
-      console.log('ADDED');
     } else if (action === 'REMOVE_MEMBER' && memberExists) {
       this.clusterMembers = this.clusterMembers.filter((m) => m.id !== member.id);
+
+      if (this.selectedClusterMember?.id === member.id) {
+        this.sweetAlertService
+          .Warning({
+            title: 'Current cluster member has been removed',
+            text: 'Reload to a different member or stay in current unstable instance?',
+            showCancelButton: true,
+            cancelButtonText: 'Stay',
+            confirmButtonText: 'Reload',
+          })
+          .then((result) => {
+            if (result.isConfirmed) {
+              if (this.clusterMembers.length > 0) {
+                this.appService.updateSelectedClusterMember(this.clusterMembers[0].id).subscribe(() => {
+                  this.appService.triggerReload();
+                });
+                return;
+              }
+              this.appService.triggerReload();
+            }
+          });
+      }
     }
   }
 }

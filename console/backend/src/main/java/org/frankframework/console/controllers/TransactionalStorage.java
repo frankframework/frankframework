@@ -18,21 +18,13 @@ package org.frankframework.console.controllers;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import jakarta.annotation.security.RolesAllowed;
 
-import org.frankframework.console.ApiException;
-import org.frankframework.console.Relation;
-import org.frankframework.console.util.RequestMessageBuilder;
-import org.frankframework.console.util.RequestUtils;
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.message.MessageBase;
-import org.frankframework.util.HttpUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -48,16 +40,36 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import org.frankframework.console.ApiException;
+import org.frankframework.console.Relation;
+import org.frankframework.console.util.RequestMessageBuilder;
+import org.frankframework.console.util.RequestUtils;
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.message.MessageBase;
+
 @RestController
-public class TransactionalStorage extends FrankApiBase {
+public class TransactionalStorage {
+
+	private final FrankApiService frankApiService;
+
+	public TransactionalStorage(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
+
+	public static String decodeBase64(String input) {
+		byte[] decoded = Base64.getDecoder().decode(input);
+		return new String(decoded, StandardCharsets.UTF_8);
+	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> browseMessage(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapterName,
 										   @PathVariable("storageSource") StorageSource storageSource, @PathVariable("storageSourceName") String storageSourceName,
 										   @PathVariable("processState") String processState, @PathVariable("messageId") String messageId) {
-		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-		return getMessageResponseEntity(configuration, adapterName, storageSource, storageSourceName, processState, HttpUtils.urlDecode(messageId),
+		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
+		return getMessageResponseEntity(configuration, adapterName, storageSource, storageSourceName, processState, decodeBase64(messageId),
 				RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.GET)
 		);
 	}
@@ -68,8 +80,8 @@ public class TransactionalStorage extends FrankApiBase {
 	public ResponseEntity<?> downloadMessage(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapterName,
 											 @PathVariable("storageSource") StorageSource storageSource, @PathVariable("storageSourceName") String storageSourceName,
 											 @PathVariable("processState") String processState, @PathVariable("messageId") String messageId) {
-		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-		return getMessageResponseEntity(configuration, adapterName, storageSource, storageSourceName, processState, HttpUtils.urlDecode(messageId),
+		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
+		return getMessageResponseEntity(configuration, adapterName, storageSource, storageSourceName, processState, decodeBase64(messageId),
 				RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD)
 		);
 	}
@@ -87,11 +99,11 @@ public class TransactionalStorage extends FrankApiBase {
 		StreamingResponseBody stream = out -> {
 			try (ZipOutputStream zos = new ZipOutputStream(out)) {
 				for (String messageId : messageIdArray) {
-					// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-					String decodedMessageId = HttpUtils.urlDecode(messageId);
+					// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
+					String decodedMessageId = decodeBase64(messageId);
 
 					builder.addHeader("messageId", decodedMessageId);
-					Message<?> message = sendSyncMessage(builder);
+					Message<?> message = frankApiService.sendSyncMessage(builder);
 					String mimeType = BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY);
 
 					String filenameExtension = ".txt";
@@ -156,7 +168,7 @@ public class TransactionalStorage extends FrankApiBase {
 		builder.addHeader("sort", sort);
 		builder.addHeader("skip", skipMessages);
 		builder.addHeader("max", maxMessages);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -170,9 +182,9 @@ public class TransactionalStorage extends FrankApiBase {
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
 		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
 
-		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-		builder.addHeader("messageId", HttpUtils.urlDecode(messageId));
-		return callAsyncGateway(builder);
+		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
+		builder.addHeader("messageId", decodeBase64(messageId));
+		return frankApiService.callAsyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -192,9 +204,9 @@ public class TransactionalStorage extends FrankApiBase {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("pipeline")
 	@PostMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/{processState}/move/{targetState}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> changeProcessState(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapter,
-												@PathVariable("receiverName") String receiver, @PathVariable("processState") String processState,
-												@PathVariable("targetState") String targetState, @RequestPart("messageIds") String messageIdsPart) {
+	public ResponseEntity<?> changeMessagesProcessState(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapter,
+														@PathVariable("receiverName") String receiver, @PathVariable("processState") String processState,
+														@PathVariable("targetState") String targetState, @RequestPart("messageIds") String messageIdsPart) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.MANAGE);
 
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
@@ -218,11 +230,11 @@ public class TransactionalStorage extends FrankApiBase {
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
 		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
 
-		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-		messageId = HttpUtils.urlDecode(messageId);
+		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
+		messageId = decodeBase64(messageId);
 
 		builder.addHeader("messageId", messageId);
-		return callAsyncGateway(builder);
+		return frankApiService.callAsyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -246,7 +258,7 @@ public class TransactionalStorage extends FrankApiBase {
 		for (String messageId : messageIds) {
 			try {
 				builder.addHeader("messageId", messageId);
-				callAsyncGateway(builder);
+				frankApiService.callAsyncGateway(builder);
 			} catch (ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
 				errorMessages.add(e.getCause().getMessage());
 			} catch (Exception e) {
@@ -272,7 +284,7 @@ public class TransactionalStorage extends FrankApiBase {
 		addHeaders(configuration, adapterName, storageSource, storageSourceName, processState, builder);
 		builder.addHeader("messageId", messageId);
 
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 
 	private void addHeaders(String configuration, String adapterName, StorageSource storageSource, String storageSourceName, String processState, RequestMessageBuilder builder) {

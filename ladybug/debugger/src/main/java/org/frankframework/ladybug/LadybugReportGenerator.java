@@ -18,15 +18,16 @@ package org.frankframework.ladybug;
 import java.io.IOException;
 import java.util.Iterator;
 
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
-import nl.nn.testtool.TestTool;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+import nl.nn.testtool.TestTool;
+
+import org.frankframework.core.HasName;
 import org.frankframework.core.IListener;
-import org.frankframework.core.INamedObject;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLine;
@@ -215,7 +216,7 @@ public class LadybugReportGenerator implements InitializingBean {
 		return testTool.outputpoint(correlationId, null, "PreserveInput", input);
 	}
 
-	private static String getCheckpointNameForINamedObject(String checkpointNamePrefix, INamedObject object) {
+	private static String getCheckpointNameForINamedObject(String checkpointNamePrefix, HasName object) {
 		String name = object.getName();
 		if (name == null) {
 			name = object.getClass().getName();

@@ -2,153 +2,173 @@
   <div class="row">
     <div class="col-lg-12">
       <div class="m-b-md float-e-margins">
-        <div class="col-md-5 m-t-md table-responsive" *ngIf="securityRoles">
-          <div class="ibox-title">
-            <h4>Security Roles</h4>
-          </div>
-          <div class="ibox-content">
-            <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th>Role</th>
-                  <th>Access</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let rolesKV of securityRoles | keyvalue">
-                  <td>{{ rolesKV.value.name }}</td>
-                  <td>
-                    <i [ngClass]="rolesKV.value.allowed ? 'fa fa-check-square' : 'fa fa-times-circle'"></i>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="col-md-5 m-t-md table-responsive" *ngIf="authEntries.length > 0">
-          <div class="ibox-title">
-            <h4>Used Authentication Entries</h4>
-          </div>
-          <div class="ibox-content">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Alias</th>
-                  <th>Username</th>
-                  <th>Password</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let alias of authEntries">
-                  <td>{{ alias.alias }}</td>
-                  <td>{{ alias.username }}</td>
-                  <td>{{ alias.password }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="col-md-4 m-t-md table-responsive" *ngIf="sapSystems.length > 0">
-          <div class="ibox-title">
-            <h4>Used Sap Systems</h4>
-          </div>
-          <div class="ibox-content">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Info</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let sap of sapSystems">
-                  <td>{{ sap.name }}</td>
-                  <td>{{ sap.info }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="col-md-4 m-t-md table-responsive" *ngIf="certificates.length > 0">
-          <div class="ibox-title">
-            <h4>Used Certificates</h4>
-          </div>
-          <div class="ibox-content">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Adapter</th>
-                  <th>Pipe</th>
-                  <th>Certificate</th>
-                  <th>Info</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let cert of certificates">
-                  <td>{{ cert.adapter }}</td>
-                  <td>{{ cert.pipe }}</td>
-                  <td>{{ cert.certificate.name }}</td>
-                  <td>{{ cert.certificate }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="col-md-12 m-t-md table-responsive" *ngIf="jmsRealms.length > 0">
-          <div class="ibox-title">
-            <h4>Used JmsRealms</h4>
-          </div>
-          <div class="ibox-content">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Datasource</th>
-                  <th>QueueConnectionFactory</th>
-                  <th>TopicConnectionFactory</th>
-                  <th>Info</th>
-                </tr>
-              </thead>
-              <tbody>
-                <ng-container *ngFor="let realm of jmsRealms">
+        @if (securityRoles) {
+          <div class="col-md-5 m-t-md table-responsive">
+            <div class="ibox-title">
+              <h4>Security Roles</h4>
+            </div>
+            <div class="ibox-content">
+              <table class="table table-striped">
+                <thead>
                   <tr>
-                    <td>{{ realm.name }}</td>
-                    <td>{{ realm.datasourceName }}</td>
-                    <td>{{ realm.queueConnectionFactoryName }}</td>
-                    <td>{{ realm.topicConnectionFactoryName }}</td>
-                    <td>{{ realm.info }}</td>
+                    <th>Role</th>
+                    <th>Access</th>
                   </tr>
-                </ng-container>
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  @for (roles of securityRoles; track roles.name) {
+                    <tr>
+                      <td>{{ roles.name }}</td>
+                      <td>
+                        <i [ngClass]="roles.allowed ? 'fa fa-check-square' : 'fa fa-times-circle'"></i>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-        <div class="col-md-12 m-t-md table-responsive" *ngIf="datasources.length > 0">
-          <div class="ibox-title">
-            <h4>Used DataSources</h4>
-          </div>
-          <div class="ibox-content">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Datasource</th>
-                  <th>Info</th>
-                </tr>
-              </thead>
-              <tbody>
-                <ng-container *ngFor="let datasource of datasources">
+        }
+        @if (authEntries.length > 0) {
+          <div class="col-md-5 m-t-md table-responsive">
+            <div class="ibox-title">
+              <h4>Used Authentication Entries</h4>
+            </div>
+            <div class="ibox-content">
+              <table class="table">
+                <thead>
                   <tr>
-                    <td rowspan="2">{{ datasource.datasourceName }}</td>
-                    <td>{{ datasource.info }}</td>
+                    <th>Alias</th>
+                    <th>Username</th>
+                    <th>Password</th>
                   </tr>
-                  <tr>
-                    <td>{{ datasource.connectionPoolProperties }}</td>
-                  </tr>
-                </ng-container>
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  @for (alias of authEntries; track alias) {
+                    <tr>
+                      <td>{{ alias.alias }}</td>
+                      <td>{{ alias.username }}</td>
+                      <td>{{ alias.password }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        }
+        @if (sapSystems.length > 0) {
+          <div class="col-md-4 m-t-md table-responsive">
+            <div class="ibox-title">
+              <h4>Used Sap Systems</h4>
+            </div>
+            <div class="ibox-content">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Info</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (sap of sapSystems; track sap.name) {
+                    <tr>
+                      <td>{{ sap.name }}</td>
+                      <td>{{ sap.info }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+        @if (certificates.length > 0) {
+          <div class="col-md-4 m-t-md table-responsive">
+            <div class="ibox-title">
+              <h4>Used Certificates</h4>
+            </div>
+            <div class="ibox-content">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Adapter</th>
+                    <th>Pipe</th>
+                    <th>Certificate</th>
+                    <th>Info</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (cert of certificates; track cert) {
+                    <tr>
+                      <td>{{ cert.adapter }}</td>
+                      <td>{{ cert.pipe }}</td>
+                      <td>{{ cert.certificate.name }}</td>
+                      <td>{{ cert.certificate }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+        @if (jmsRealms.length > 0) {
+          <div class="col-md-12 m-t-md table-responsive">
+            <div class="ibox-title">
+              <h4>Used JmsRealms</h4>
+            </div>
+            <div class="ibox-content">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Datasource</th>
+                    <th>QueueConnectionFactory</th>
+                    <th>TopicConnectionFactory</th>
+                    <th>Info</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (realm of jmsRealms; track realm.name) {
+                    <tr>
+                      <td>{{ realm.name }}</td>
+                      <td>{{ realm.datasourceName }}</td>
+                      <td>{{ realm.queueConnectionFactoryName }}</td>
+                      <td>{{ realm.topicConnectionFactoryName }}</td>
+                      <td>{{ realm.info }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+        @if (datasources.length > 0) {
+          <div class="col-md-12 m-t-md table-responsive">
+            <div class="ibox-title">
+              <h4>Used DataSources</h4>
+            </div>
+            <div class="ibox-content">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Datasource</th>
+                    <th>Info</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (datasource of datasources; track datasource.datasourceName) {
+                    <tr>
+                      <td rowspan="2">{{ datasource.datasourceName }}</td>
+                      <td>{{ datasource.info }}</td>
+                    </tr>
+                    <tr>
+                      <td>{{ datasource.connectionPoolProperties }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
         <div class="col-md-12 m-t-md table-responsive">
           <div class="ibox-title">
             <h4>Security Roles Overview</h4>
@@ -159,58 +179,74 @@
                 <tr>
                   <th>Action</th>
                   <th>Description</th>
-                  <th *ngFor="let rolesKV of securityRoles | keyvalue">
-                    {{ rolesKV.value.name }}
-                  </th>
+                  @for (roles of securityRoles; track roles.name) {
+                    <th>
+                      {{ roles.name }}
+                    </th>
+                  }
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let link of links">
-                  <td>{{ link.name }}</td>
-                  <td>{{ link.description }}</td>
-                  <td *ngFor="let rolesKV of securityRoles | keyvalue">
-                    <i *ngIf="!link.roles || link.roles?.includes(rolesKV.value.name)" class="fa fa-check"></i>
-                  </td>
-                </tr>
+                @for (link of links; track link.name) {
+                  <tr>
+                    <td>{{ link.name }}</td>
+                    <td>{{ link.description }}</td>
+                    @for (roles of securityRoles; track roles.name) {
+                      <td>
+                        @if (!link.roles || link.roles.includes(roles.name)) {
+                          <i class="fa fa-check"></i>
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
               </tbody>
             </table>
           </div>
         </div>
-        <div class="col-md-12 col-lg-6 m-t-md table-responsive" *ngIf="xmlComponents">
-          <div class="ibox-title">
-            <h4>XML Components</h4>
+        @if (xmlComponents) {
+          <div class="col-md-12 col-lg-6 m-t-md table-responsive">
+            <div class="ibox-title">
+              <h4>XML Components</h4>
+            </div>
+            <div class="ibox-content">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Component</th>
+                    <th>Version</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of xmlComponents | keyvalue; track item.key) {
+                    <tr>
+                      <td>{{ item.key }}</td>
+                      <td>{{ item.value }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div class="ibox-content">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Component</th>
-                  <th>Version</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of xmlComponents | keyvalue">
-                  <td>{{ item.key }}</td>
-                  <td>{{ item.value }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        }
         <div class="col-md-12 col-lg-6 m-t-md table-responsive">
           <div class="ibox-title">
             <h4>Available protocols & Cyphers</h4>
           </div>
           <div class="ibox-content lists-container">
             <ul class="protocols-list">
-              <li *ngFor="let cypher of supportedConnectionOptions.cyphers">
-                {{ cypher }}
-              </li>
+              @for (cypher of supportedConnectionOptions.cyphers; track cypher) {
+                <li>
+                  {{ cypher }}
+                </li>
+              }
             </ul>
             <ul class="cyphers-list">
-              <li *ngFor="let protocol of supportedConnectionOptions.protocols">
-                {{ protocol }}
-              </li>
+              @for (protocol of supportedConnectionOptions.protocols; track protocol) {
+                <li>
+                  {{ protocol }}
+                </li>
+              }
             </ul>
           </div>
         </div>

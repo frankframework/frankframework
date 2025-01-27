@@ -20,9 +20,9 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.kairos.KairosConfig;
 import io.micrometer.kairos.KairosMeterRegistry;
 
-public class KairosDbRegistryConfigurator extends MetricsRegistryConfiguratorBase<KairosConfig> {
+public class KairosDbRegistryConfigurator extends AbstractMetricsRegistryConfigurator<KairosConfig> {
 
-	private class Config extends MeterRegistryConfigBase implements KairosConfig {}
+	private class Config extends AbstractMeterRegistryConfig implements KairosConfig {}
 
 	@Override
 	protected KairosConfig createConfig() {

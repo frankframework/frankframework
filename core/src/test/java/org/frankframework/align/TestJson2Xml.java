@@ -18,10 +18,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.xml.XmlWriter;
 
+@Log4j2
 public class TestJson2Xml extends AlignTestBase {
 
 	public void testJsonNoRoundTrip(String jsonIn, URL schemaUrl, String targetNamespace, String rootElement, boolean compactConversion, boolean strictSyntax, String expectedFailureReason, String description) throws Exception {
@@ -34,7 +37,7 @@ public class TestJson2Xml extends AlignTestBase {
 			Json2Xml j2x = Json2Xml.create(schemaUrl, compactConversion, rootElement, strictSyntax, deepSearch, targetNamespace, properties);
 			j2x.translate(jsonStructure, xmlWriter);
 			String xmlAct = xmlWriter.toString();
-			LOG.debug("xml out={}", xmlAct);
+			log.debug("xml out={}", xmlAct);
 			if (expectedFailureReason!=null) {
 				fail("Expected to fail: "+description);
 			}
@@ -48,33 +51,33 @@ public class TestJson2Xml extends AlignTestBase {
 			}
 		} catch (Exception e) {
 			if (expectedFailureReason==null) {
-				LOG.error("expected conversion to succeed", e);
+				log.error("expected conversion to succeed", e);
 				fail("Expected conversion to succeed: "+description);
 			}
 			String msg=e.getMessage();
 			if (msg==null) {
-				LOG.error("msg == null", e);
+				log.error("msg == null", e);
 				fail("msg == null ("+e.getClass().getSimpleName()+")");
 			}
 			if (!msg.contains(expectedFailureReason)) {
-				LOG.error("expected reason [{}] in msg [{}]", expectedFailureReason, msg, e);
+				log.error("expected reason [{}] in msg [{}]", expectedFailureReason, msg, e);
 				fail("expected reason ["+expectedFailureReason+"] in msg ["+msg+"]");
 			}
 		}
 	}
 
 	public void testStrings(String xmlIn, String jsonIn, URL schemaUrl, String targetNamespace, String rootElement, boolean compactInput, boolean potentialCompactionProblems, boolean checkRoundTrip, String expectedFailureReason) throws Exception {
-		LOG.debug("schemaUrl [{}]", schemaUrl);
+		log.debug("schemaUrl [{}]", schemaUrl);
 		if (StringUtils.isNotEmpty(xmlIn)) assertTrue(Utils.validate(schemaUrl, xmlIn), "Expected XML is not valid to XSD");
 
 		JsonStructure json = Utils.string2Json(jsonIn);
-		LOG.debug("jsonIn [{}]", json);
+		log.debug("jsonIn [{}]", json);
 		Map<String,Object> overrideMap = new HashMap<>();
 		overrideMap.put("Key not expected", "value of unexpected key");
 		if (json instanceof JsonObject jo) {
 			for (String key:jo.keySet()) {
 				if (overrideMap.containsKey(key)) {
-					LOG.debug("multiple occurrences in object for element [{}]", key);
+					log.debug("multiple occurrences in object for element [{}]", key);
 				}
 				overrideMap.put(key, null);
 			}
@@ -134,7 +137,7 @@ public class TestJson2Xml extends AlignTestBase {
 		String resultJsonString=getTestFile(resultFile+".json");
 
 		JsonStructure jsonIn = Utils.string2Json(jsonString);
-		LOG.debug("jsonIn [{}]", jsonIn);
+		log.debug("jsonIn [{}]", jsonIn);
 		Map<String,Object> map = MatchUtils.stringToMap(propertiesString);
 
 		testJson(jsonString, map, true, schemaUrl, namespace, rootElement, true, false, resultJsonString, expectedFailureReason, null);

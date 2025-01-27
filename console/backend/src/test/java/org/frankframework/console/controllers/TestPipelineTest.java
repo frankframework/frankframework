@@ -6,8 +6,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URL;
 
-import org.frankframework.management.bus.message.BinaryMessage;
-import org.frankframework.management.bus.message.StringMessage;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
@@ -19,6 +17,9 @@ import org.springframework.mock.web.MockPart;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import org.frankframework.management.bus.message.BinaryMessage;
+import org.frankframework.management.bus.message.StringMessage;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, TestPipeline.class})
 public class TestPipelineTest extends FrankApiTestBase {

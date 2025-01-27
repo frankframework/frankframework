@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,11 +20,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.springframework.context.Lifecycle;
 import org.springframework.context.support.DefaultLifecycleProcessor;
 
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.configuration.ConfigurationDigester;
+import org.frankframework.configuration.ConfigurationException;
 
 @Log4j2
 public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor implements ConfigurableLifecycle {
@@ -35,6 +37,7 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
+		log.trace("configuring all LifeCycle beans");
 		Map<String, Lifecycle> lifecycleBeans = getLifecycleBeans();
 		Map<Integer, LifecycleGroup> phases = new TreeMap<>();
 
@@ -51,10 +54,23 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 					lifecycleGroup.configure();
 				}
 			} catch (ConfigurationException e) {
-				stop(); //Stop all lifecycles
+				stop(); // Stop all lifecycles
 				throw e;
 			}
 		}
+	}
+
+	// This triggers an internal startBeans method, and does not call #start().
+	@Override
+	public void onRefresh() {
+		log.trace("refresh, starting all LifeCycle beans");
+		super.onRefresh();
+	}
+
+	@Override
+	public void start() {
+		log.trace("starting all LifeCycle beans");
+		super.start();
 	}
 
 	/**

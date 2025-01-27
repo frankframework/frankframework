@@ -18,7 +18,7 @@
 
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 			<pipe name="Call Sender"
 				className="org.frankframework.pipes.SenderPipe"

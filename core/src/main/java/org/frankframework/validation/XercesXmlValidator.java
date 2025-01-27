@@ -28,8 +28,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.xml.validation.ValidatorHandler;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
@@ -47,17 +45,22 @@ import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.grammars.XSGrammar;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xs.XSModel;
-import org.frankframework.cache.EhCache;
-import org.frankframework.configuration.ApplicationWarnings;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IConfigurationAware;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
-import org.frankframework.util.AppConstants;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import org.frankframework.cache.EhCache;
+import org.frankframework.configuration.ApplicationWarnings;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.HasApplicationContext;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunException;
+import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.util.AppConstants;
 
 
 /**
@@ -115,7 +118,8 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			cache.setMaxElementsInMemory(maxInitialised);
 			cache.setEternal(true);
 			try {
-				cache.configure("XercesXmlValidator");
+				cache.setName("XercesXmlValidator");
+				cache.configure();
 				cache.open();
 			} catch (ConfigurationException e) {
 				cache = null;
@@ -129,7 +133,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public void configure(IConfigurationAware owner) throws ConfigurationException {
+	public void configure(HasApplicationContext owner) throws ConfigurationException {
 		if (StringUtils.isEmpty(getXmlSchemaVersion())) {
 			setXmlSchemaVersion(AppConstants.getInstance(getConfigurationClassLoader()).getString("xml.schema.version", DEFAULT_XML_SCHEMA_VERSION));
 			if (!isXmlSchema1_0() && !"1.1".equals(getXmlSchemaVersion())) {
@@ -140,18 +144,28 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public void start() throws ConfigurationException {
+	public void start() {
 		super.start();
-		if (schemasProvider == null) throw new IllegalStateException("No schema provider");
-		String schemasId = schemasProvider.getSchemasId();
-		if (schemasId != null) {
-			PreparseResult preparseResult = preparse();
-			if (cache == null || isIgnoreCaching()) {
-				this.preparseResult = preparseResult;
-			} else {
-				cache.put(preparseResultId, preparseResult);
-			}
+
+		if (schemasProvider == null) {
+			throw new IllegalStateException("No schema provider");
 		}
+
+		try {
+			String schemasId = schemasProvider.getSchemasId();
+			if (schemasId != null) {
+				PreparseResult preparseResult = preparse();
+
+				if (cache == null || isIgnoreCaching()) {
+					this.preparseResult = preparseResult;
+				} else {
+					cache.put(preparseResultId, preparseResult);
+				}
+			}
+		} catch (ConfigurationException e) {
+			throw new LifecycleException(e);
+		}
+
 	}
 
 	private static class SymbolTableSingletonHelper {
@@ -270,7 +284,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public ValidatorHandler getValidatorHandler(PipeLineSession session, ValidationContext context) throws ConfigurationException {
+	public ValidatorHandler getValidatorHandler(PipeLineSession session, AbstractValidationContext context) throws ConfigurationException {
 		ValidatorHandler validatorHandler;
 
 		try {
@@ -308,7 +322,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		}
 		return validatorHandler;
 	}
-	public XMLReader createValidatingParser(PipeLineSession session, ValidationContext context) throws XmlValidatorException {
+	public XMLReader createValidatingParser(PipeLineSession session, AbstractValidationContext context) throws XmlValidatorException {
 		SymbolTable symbolTable = ((XercesValidationContext)context).getSymbolTable();
 		XMLGrammarPool grammarPool = ((XercesValidationContext)context).getGrammarPool();
 
@@ -354,7 +368,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 }
 
 
-class XercesValidationContext extends ValidationContext {
+class XercesValidationContext extends AbstractValidationContext {
 
 	private final PreparseResult preparseResult;
 

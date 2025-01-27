@@ -43,9 +43,9 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.jdbc.AbstractJdbcQuerySender;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
-import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.jdbc.transformer.QueryOutputToListOfMaps;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.management.bus.ActionSelector;
@@ -201,7 +201,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 			qs.setName("BrowseTable QuerySender");
 			qs.setDatasourceName(datasource);
 
-			qs.setQueryType(JdbcQuerySenderBase.QueryType.SELECT);
+			qs.setQueryType(AbstractJdbcQuerySender.QueryType.SELECT);
 			qs.setSqlDialect("Oracle");
 			qs.setBlobSmartGet(true);
 			qs.setIncludeFieldDefinition(true);

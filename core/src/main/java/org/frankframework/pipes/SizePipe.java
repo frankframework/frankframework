@@ -15,12 +15,12 @@
 */
 package org.frankframework.pipes;
 
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.IPipe;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.stream.Message;
 
 /**
@@ -29,7 +29,7 @@ import org.frankframework.stream.Message;
  * @author Jaco de Groot (***@dynasol.nl)
  *
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(Type.TRANSLATOR)
 public class SizePipe extends FixedForwardPipe {
 
 	/**

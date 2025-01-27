@@ -20,7 +20,7 @@ import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.http.HttpSession;
 
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class SharedResources {
 
 	public void addSharedResource(SharedResource<?> resource) {

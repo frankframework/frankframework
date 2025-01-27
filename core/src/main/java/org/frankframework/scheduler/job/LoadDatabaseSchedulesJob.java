@@ -34,9 +34,9 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
+import org.frankframework.scheduler.AbstractJobDef;
 import org.frankframework.scheduler.IbisJobDetail;
 import org.frankframework.scheduler.IbisJobDetail.JobType;
-import org.frankframework.scheduler.JobDef;
 import org.frankframework.scheduler.SchedulerHelper;
 import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
@@ -57,7 +57,7 @@ import org.frankframework.util.SpringUtils;
  *
  * @author Niels Meijer
  */
-public class LoadDatabaseSchedulesJob extends JobDef {
+public class LoadDatabaseSchedulesJob extends AbstractJobDef {
 
 	@Override
 	public void execute() {

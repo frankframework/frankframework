@@ -9,6 +9,8 @@
 
 	<bean name="flowDiagramManager" class="org.frankframework.util.flow.FlowDiagramManager" autowire="no" scope="singleton" lazy-init="true" />
 
+	<bean name="ibisManager" class="org.frankframework.testutil.mock.MockIbisManager" />
+
 	<bean id="MessageEventListener" class="org.frankframework.lifecycle.MessageEventListener" scope="singleton" />
 	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory" />
 
@@ -20,6 +22,8 @@
 
 	<bean name="applicationWarnings" class="org.frankframework.configuration.ApplicationWarnings" />
 	<bean name="listenerContainer" class="org.frankframework.receivers.PullingListenerContainer" scope="prototype" />
+
+	<bean name="isolatedServiceCaller" class="org.frankframework.senders.IsolatedServiceCaller" autowire="byName" />
 	<bean name="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor" scope="singleton">
 		<property name="queueCapacity" value="0"/>
 		<property name="phase" value="-2147483648"/>

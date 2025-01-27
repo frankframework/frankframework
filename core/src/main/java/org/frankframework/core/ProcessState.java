@@ -22,6 +22,7 @@ import java.util.Set;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.util.EnumUtils;
 
 public enum ProcessState {
@@ -53,6 +54,9 @@ public enum ProcessState {
 		if (knownProcessStates.contains(ERROR)) {
 			if (knownProcessStates.contains(AVAILABLE)) {
 				targetProcessStates.get(ERROR).add(AVAILABLE);
+			}
+			if(knownProcessStates.contains(INPROCESS)) {
+				targetProcessStates.get(INPROCESS).add(ERROR);
 			}
 			if (knownProcessStates.contains(HOLD)) {
 				targetProcessStates.get(ERROR).add(HOLD);

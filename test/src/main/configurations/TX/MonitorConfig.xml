@@ -1,50 +1,50 @@
-<monitoring active="${monitoring.enabled}">
-	<destination name="MONITOR_LOG" className="org.frankframework.monitoring.SenderMonitorAdapter">
-		<sender className="org.frankframework.senders.LogSender" logCategory="monitoring"/>
-	</destination>
-	<monitor name="Internal adapter exception" destinations="MONITOR_LOG">
-		<trigger className="org.frankframework.monitoring.Alarm" eventCode="Pipe Exception" severity="CRITICAL" threshold="1" period="3600">
-			<adapterfilter adapter="TransactionTimeoutHandlingNonTransacted" />
-			<adapterfilter adapter="TransactionTimeoutHandlingTransacted" />
-		</trigger>
-	</monitor>
-	<monitor name="Sender timeout" destinations="MONITOR_LOG">
-		<trigger className="org.frankframework.monitoring.Alarm" eventCode="Sender Timeout" severity="CRITICAL" threshold="10" period="3600">
-			<adapterfilter adapter="TransactionHandlingMandatory">
-				<source>Pipe [Send transacted message to mandatory subadapter]</source>
-			</adapterfilter>
-			<adapterfilter adapter="TransactionHandlingMandatorySubAdapter">
-				<source>Pipe [Continue if this call was transacted]</source>
-			</adapterfilter>
-		</trigger>
-	</monitor>
-	<monitor name="Sender exception" destinations="MONITOR_LOG">
-		<trigger className="org.frankframework.monitoring.Alarm" eventCode="Sender Exception Caught" severity="CRITICAL" threshold="10" period="3600"/>
-	</monitor>
-	<monitor name="Invalid XML Message" type="FUNCTIONAL">
-		<trigger className="org.frankframework.monitoring.Alarm" eventCode="Invalid XML: does not comply to XSD" severity="WARNING"/>
-		<trigger className="org.frankframework.monitoring.Alarm" eventCode="Invalid XML: parser error" severity="WARNING"/>
-	</monitor>
-	<monitor name="Configuration error" destinations="MONITOR_LOG">
-		<trigger className="org.frankframework.monitoring.Alarm" eventCode="Exception Configuring Receiver" severity="CRITICAL"/>
-	</monitor>
-	<monitor name="Message size exceeding">
-		<trigger className="org.frankframework.monitoring.Alarm" eventCode="Pipe Message Size Exceeding" severity="WARNING"/>
-	</monitor>
-	<monitor name="Message in Error" type="FUNCTIONAL" destinations="MONITOR_LOG">
-		<trigger className="org.frankframework.monitoring.Alarm" severity="WARNING">
-			<event>Receiver Moved Message to ErrorStorage</event>
-		</trigger>
-		<trigger className="org.frankframework.monitoring.Clearing" severity="WARNING">
-			<event>Receiver Moved Message to ErrorStorage</event>
-		</trigger>
-	</monitor>
-	<monitor name="Receiver Shutdown" destinations="MONITOR_LOG">
-		<trigger className="org.frankframework.monitoring.Alarm" severity="WARNING">
-			<event>Receiver Shutdown</event>
-		</trigger>
-		<trigger className="org.frankframework.monitoring.Clearing" severity="WARNING">
-			<event>Receiver Shutdown</event>
-		</trigger>
-	</monitor>
-</monitoring>
+<Monitoring active="${monitoring.enabled}">
+	<Destination name="MONITOR_LOG">
+		<LogSender logCategory="monitoring" />
+	</Destination>
+	<Monitor name="Internal adapter exception" destinations="MONITOR_LOG">
+		<AlarmTrigger eventCode="Pipe Exception" severity="CRITICAL" threshold="1" period="3600">
+			<Adapterfilter adapter="TransactionTimeoutHandlingNonTransacted" />
+			<Adapterfilter adapter="TransactionTimeoutHandlingTransacted" />
+		</AlarmTrigger>
+	</Monitor>
+	<Monitor name="Sender timeout" destinations="MONITOR_LOG">
+		<AlarmTrigger eventCode="Sender Timeout" severity="CRITICAL" threshold="10" period="3600">
+			<Adapterfilter adapter="TransactionHandlingMandatory">
+				<Source>Pipe [Send transacted message to mandatory subadapter]</Source>
+			</Adapterfilter>
+			<Adapterfilter adapter="TransactionHandlingMandatorySubAdapter">
+				<Source>Pipe [Continue if this call was transacted]</Source>
+			</Adapterfilter>
+		</AlarmTrigger>
+	</Monitor>
+	<Monitor name="Sender exception" destinations="MONITOR_LOG">
+		<AlarmTrigger eventCode="Sender Exception Caught" severity="CRITICAL" threshold="10" period="3600" />
+	</Monitor>
+	<Monitor name="Invalid XML Message" type="FUNCTIONAL">
+		<AlarmTrigger eventCode="Invalid XML: does not comply to XSD" severity="WARNING" />
+		<AlarmTrigger eventCode="Invalid XML: parser error" severity="WARNING" />
+	</Monitor>
+	<Monitor name="Configuration error" destinations="MONITOR_LOG">
+		<AlarmTrigger eventCode="Exception Configuring Receiver" severity="CRITICAL" />
+	</Monitor>
+	<Monitor name="Message size exceeding">
+		<AlarmTrigger eventCode="Pipe Message Size Exceeding" severity="WARNING" />
+	</Monitor>
+	<Monitor name="Message in Error" type="FUNCTIONAL" destinations="MONITOR_LOG">
+		<AlarmTrigger severity="WARNING">
+			<Event>Receiver Moved Message to ErrorStorage</Event>
+		</AlarmTrigger>
+		<ClearingTrigger severity="WARNING">
+			<Event>Receiver Moved Message to ErrorStorage</Event>
+		</ClearingTrigger>
+	</Monitor>
+	<Monitor name="Receiver Shutdown" destinations="MONITOR_LOG">
+		<AlarmTrigger severity="WARNING">
+			<Event>Receiver Shutdown</Event>
+		</AlarmTrigger>
+		<ClearingTrigger severity="WARNING">
+			<Event>Receiver Shutdown</Event>
+		</ClearingTrigger>
+	</Monitor>
+</Monitoring>

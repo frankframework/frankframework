@@ -21,14 +21,15 @@ import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.core.AbstractRequestReplyExecutor;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.RequestReplyExecutor;
 import org.frankframework.receivers.ResourceLimiter;
 import org.frankframework.stream.Message;
 
 @Log4j2
-public class ParallelSenderExecutor extends RequestReplyExecutor {
+public class ParallelSenderExecutor extends AbstractRequestReplyExecutor {
 	private final ISender sender;
 	@Getter private final PipeLineSession session;
 	@Setter private ResourceLimiter threadLimiter; // support limiting the number of threads processing in parallel

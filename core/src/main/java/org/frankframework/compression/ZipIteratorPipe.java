@@ -16,19 +16,17 @@
 package org.frankframework.compression;
 
 import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IDataIterator;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -67,30 +65,19 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 		}
 	}
 
-	protected ZipInputStream getZipInputStream(Message input, PipeLineSession session, Map<String, Object> threadContext) throws SenderException {
+	protected ZipInputStream getZipInputStream(Message input) throws SenderException {
 		if (input == null) {
 			throw new SenderException("input is null. Must supply String (Filename, with processFile=true), File or InputStream as input");
 		}
+
 		InputStream source;
-		if (isProcessFile()) {
-			try {
-				String filename = null;
-				try {
-					filename = input.asString();
-				} catch (IOException e) {
-					throw new SenderException("cannot find filename [" + filename + "]", e);
-				}
-				source = new FileInputStream(filename);
-			} catch (FileNotFoundException e) {
-				throw new SenderException("could not find file [" + input + "]", e);
-			}
-		} else {
-			try {
-				source = input.asInputStream();
-			} catch (IOException e) {
-				throw new SenderException("cannot open stream", e);
-			}
+
+		try {
+			source = input.asInputStream();
+		} catch (IOException e) {
+			throw new SenderException("cannot open stream", e);
 		}
+
 		if (!(source instanceof BufferedInputStream)) {
 			source = new BufferedInputStream(source);
 		}
@@ -100,7 +87,7 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 
 	@Override
 	protected IDataIterator<String> getIterator(Message input, PipeLineSession session, Map<String, Object> threadContext) throws SenderException {
-		ZipInputStream source = getZipInputStream(input, session, threadContext);
+		ZipInputStream source = getZipInputStream(input);
 
 		if (source == null) {
 			throw new SenderException("no ZipInputStream found");
@@ -143,17 +130,6 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 	 */
 	public void setCharset(String string) {
 		charset = string;
-	}
-
-	/**
-	 * If set <code>true</code>, each entry is assumed to be the name of a file to be compressed. Otherwise, the input itself is compressed.
-	 *
-	 * @ff.default false
-	 */
-	@Deprecated(forRemoval = true, since = "7.8.0")
-	@ConfigurationWarning("Please add a LocalFileSystemPipe with action=read in front of this pipe instead")
-	public void setProcessFile(boolean b) {
-		processFile = b;
 	}
 
 	private class ZipStreamIterator implements IDataIterator<String> {

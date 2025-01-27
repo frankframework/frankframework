@@ -15,6 +15,8 @@
 */
 package org.frankframework.receivers;
 
+import org.frankframework.core.IListener;
+
 /**
  * When a listener implements this interface it will get a reference to it's
  * parent receiver.
@@ -22,7 +24,7 @@ package org.frankframework.receivers;
  * @author Jaco de Groot
  *
  */
-public interface ReceiverAware<M> {
+public interface ReceiverAware<M> extends IListener<M> {
 
 	void setReceiver(Receiver<M> receiver);
 	Receiver<M> getReceiver();

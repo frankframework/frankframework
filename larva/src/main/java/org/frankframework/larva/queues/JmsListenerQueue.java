@@ -15,7 +15,6 @@
 */
 package org.frankframework.larva.queues;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -23,9 +22,6 @@ import java.util.Properties;
 import org.apache.commons.lang3.NotImplementedException;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.ListenerException;
-import org.frankframework.core.SenderException;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.jms.PullingJmsListener;
 
 public class JmsListenerQueue extends HashMap<String, Object> implements Queue {
@@ -44,21 +40,17 @@ public class JmsListenerQueue extends HashMap<String, Object> implements Queue {
 	}
 
 	@Override
-	public void open() throws ConfigurationException {
-		try {
-			jmsListener.start();
-		} catch (ListenerException e) {
-			throw new ConfigurationException(e);
-		}
+	public void open() {
+		jmsListener.start();
 	}
 
 	@Override
-	public int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> xsltParameters) throws TimeoutException, SenderException {
+	public int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> xsltParameters) {
 		throw new NotImplementedException("executeWrite");
 	}
 
 	@Override
-	public String executeRead(String step, String stepDisplayName, Properties properties, String fileName, String fileContent) throws SenderException, IOException, TimeoutException {
+	public String executeRead(String step, String stepDisplayName, Properties properties, String fileName, String fileContent) {
 		throw new NotImplementedException("executeRead");
 	}
 

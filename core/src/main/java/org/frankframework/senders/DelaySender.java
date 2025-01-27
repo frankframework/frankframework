@@ -16,6 +16,7 @@
 package org.frankframework.senders;
 
 import jakarta.annotation.Nonnull;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -30,8 +31,8 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-@Category("Advanced")
-public class DelaySender extends SenderBase {
+@Category(Category.Type.ADVANCED)
+public class DelaySender extends AbstractSender {
 
 	private long delayTime=5000;
 

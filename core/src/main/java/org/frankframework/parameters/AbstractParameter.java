@@ -35,14 +35,14 @@ import javax.xml.transform.dom.DOMResult;
 
 import jakarta.annotation.Nonnull;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
@@ -57,7 +57,6 @@ import org.frankframework.pipes.PutSystemDateInSession;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.StringUtil;
@@ -65,7 +64,6 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlBuilder;
-import org.frankframework.util.XmlException;
 import org.frankframework.util.XmlUtils;
 
 /**
@@ -106,11 +104,6 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	private static final Logger LOG = LogManager.getLogger(Parameter.class);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
-
-	public static final String TYPE_DATE_PATTERN="yyyy-MM-dd";
-	public static final String TYPE_TIME_PATTERN="HH:mm:ss";
-	public static final String TYPE_DATETIME_PATTERN="yyyy-MM-dd HH:mm:ss";
-	public static final String TYPE_TIMESTAMP_PATTERN= DateFormatUtils.FORMAT_FULL_GENERIC;
 
 	public static final String FIXEDUID ="0a1b234c--56de7fa8_9012345678b_-9cd0";
 	public static final String FIXEDHOSTNAME ="MYHOST000012345";
@@ -182,7 +175,10 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			paramList.configure();
 		}
 		if (StringUtils.isNotEmpty(getXpathExpression()) || StringUtils.isNotEmpty(styleSheetName)) {
-			OutputType outputType = getType() == ParameterType.XML || getType() == ParameterType.NODE || getType() == ParameterType.DOMDOC ? OutputType.XML : OutputType.TEXT;
+			OutputType outputType = getType() == ParameterType.XML
+					|| getType() == ParameterType.NODE
+					|| getType() == ParameterType.DOMDOC ? OutputType.XML : OutputType.TEXT;
+
 			boolean includeXmlDeclaration = false;
 
 			transformerPool = TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), outputType, includeXmlDeclaration, paramList, getXsltVersion());
@@ -500,49 +496,10 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 	/** Converts raw data to configured parameter type */
 	protected Object getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException, IOException {
-		Object result;
-		switch(getType()) {
-			case NODE:
-				try {
-					if(request.asObject() instanceof Document document) {
-						return document.getDocumentElement();
-					}
-					if(request.asObject() instanceof Node node) {
-						return node;
-					}
-					Message requestToUse;
-					if (isRemoveNamespaces()) {
-						requestToUse = XmlUtils.removeNamespaces(request);
-					} else {
-						requestToUse = request;
-					}
-					result = XmlUtils.buildDomDocument(requestToUse.asInputSource(), namespaceAware).getDocumentElement();
-				} catch (DomBuilderException | IOException | XmlException e) {
-					throw new ParameterException(getName(), "Parameter ["+getName()+"] could not parse result ["+request+"] to XML nodeset",e);
-				}
-				break;
-			case DOMDOC:
-				try {
-					if(request.asObject() instanceof Document document) {
-						return document;
-					}
-					Message requestToUse;
-					if (isRemoveNamespaces()) {
-						requestToUse = XmlUtils.removeNamespaces(request);
-					} else {
-						requestToUse = request;
-					}
-					result = XmlUtils.buildDomDocument(requestToUse.asInputSource(), namespaceAware);
-				} catch (DomBuilderException | IOException | XmlException e) {
-					throw new ParameterException(getName(), "Parameter ["+getName()+"] could not parse result ["+request+"] to XML document",e);
-				}
-				break;
-			default:
-				result = request.asObject();
-				break;
-		}
+		Object result = request.asObject();
 
 		LOG.debug("final result [{}][{}]", ()->result != null ? result.getClass().getName() : null, ()-> result);
+
 		return result;
 	}
 

@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.micrometer.core.instrument.DistributionSummary;
+
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineResult;
@@ -31,7 +32,7 @@ import org.frankframework.stream.Message;
  * Processor that limits the number of parallel pipeline threads.
  * @author Gerrit van Brakel
  */
-public class LimitingParallelExecutionPipeLineProcessor extends PipeLineProcessorBase {
+public class LimitingParallelExecutionPipeLineProcessor extends AbstractPipeLineProcessor {
 
 	private final Map<PipeLine, ResourceLimiter> pipeLineThreadCounts = new ConcurrentHashMap<>();
 

@@ -22,15 +22,15 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.validation.AbstractXSD;
 import org.frankframework.validation.IXSD;
-import org.frankframework.validation.XSD;
 
 /**
  * XSD based on a reference to a resource on the classPath.
  *
  * @author Gerrit van Brakel
  */
-public class ResourceXsd extends XSD {
+public class ResourceXsd extends AbstractXSD {
 
 	private String resourceRef;
 	private Resource resource;

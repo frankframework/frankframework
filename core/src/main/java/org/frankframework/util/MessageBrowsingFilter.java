@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ import java.io.IOException;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import lombok.Getter;
+
 import org.frankframework.core.IListener;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowser.SortOrder;
@@ -200,11 +200,6 @@ public class MessageBrowsingFilter {
 
 	@Override
 	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-//		return (new ReflectionToStringBuilder(this) {
-//			protected boolean accept(Field f) {
-//				return super.accept(f) && !f.getName().equals("passwd");
-//			}
-//		}).toString();
+		return StringUtil.reflectionToString(this);
 	}
 }

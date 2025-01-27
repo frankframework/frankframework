@@ -83,6 +83,18 @@
 			<version>${activemq.driver.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>com.rabbitmq</groupId>
+			<artifactId>amqp-client</artifactId>
+			<version>${rabbitmq.driver.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.rabbitmq.jms</groupId>
+			<artifactId>rabbitmq-jms</artifactId>
+			<version>${rabbitmq.jms.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j2-impl</artifactId>
 		</dependency>

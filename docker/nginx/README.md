@@ -33,5 +33,5 @@ To test with certificates it is needed to generate a self-signed certificate.
 You can use the following command to generate a self-signed certificate:
 
 ```bash
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout certs/nginx.key -out certs/nginx.crt
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout certs/nginx.key -out certs/nginx.crt -addext "subjectAltName=DNS:dummy.dev,DNS:*.dummy.dev,IP:127.0.0.1"
 ```

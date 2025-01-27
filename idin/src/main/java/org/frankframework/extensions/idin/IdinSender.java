@@ -57,7 +57,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.doc.Mandatory;
-import org.frankframework.senders.SenderWithParametersBase;
+import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
@@ -72,7 +72,7 @@ import org.frankframework.util.XmlUtils;
  *
  * @author Niels Meijer
  */
-public class IdinSender extends SenderWithParametersBase implements HasPhysicalDestination {
+public class IdinSender extends AbstractSenderWithParameters implements HasPhysicalDestination {
 	private @Getter final String domain = "iDin";
 
 	private @Getter String merchantID = null;

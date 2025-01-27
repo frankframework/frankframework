@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2024 WeAreFrank!
+   Copyright 2019-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,20 +17,21 @@ package org.frankframework.senders;
 
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.XMLReader;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.documentbuilder.xml.JsonXslt3XmlReader;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
-import org.frankframework.threading.ThreadConnector;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlJsonWriter;
 import org.frankframework.xml.IXmlDebugger;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.XMLReader;
 
 /**
  * Perform an XSLT transformation with a specified stylesheet on a JSON input, yielding JSON, yielding JSON, XML or text.
@@ -55,13 +56,13 @@ public class JsonXsltSender extends XsltSender {
 	}
 
 	@Override
-	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws TransformerException {
+	protected ContentHandler createHandler(Message input, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws TransformerException {
 		if (!isJsonResult()) {
-			return super.createHandler(input, threadConnector, session, poolToUse, handler, messageBuilder);
+			return super.createHandler(input, session, poolToUse, handler, messageBuilder);
 		}
 
 		XmlJsonWriter xjw = new XmlJsonWriter(messageBuilder.asWriter());
-		handler = super.createHandler(input, threadConnector, session, poolToUse, xjw, messageBuilder);
+		handler = super.createHandler(input, session, poolToUse, xjw, messageBuilder);
 		if (getXmlDebugger() != null) {
 			handler = getXmlDebugger().inspectXml(session, "output XML to be converted to JSON", handler);
 		}

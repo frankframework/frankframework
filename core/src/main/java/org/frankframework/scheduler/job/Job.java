@@ -15,11 +15,12 @@
 */
 package org.frankframework.scheduler.job;
 
-import lombok.Getter;
 import org.apache.commons.lang3.NotImplementedException;
 
+import lombok.Getter;
+
 import org.frankframework.doc.Mandatory;
-import org.frankframework.scheduler.JobDef;
+import org.frankframework.scheduler.AbstractJobDef;
 import org.frankframework.scheduler.JobDefFunctions;
 
 /**
@@ -36,7 +37,7 @@ import org.frankframework.scheduler.JobDefFunctions;
  */
 // Should never be instantiated directly. See {@link JobFactory} and {@link JobDefFunctions} for more information.
 @Deprecated(since = "7.7.0")
-public class Job extends JobDef {
+public class Job extends AbstractJobDef {
 
 	private @Getter JobDefFunctions function;
 

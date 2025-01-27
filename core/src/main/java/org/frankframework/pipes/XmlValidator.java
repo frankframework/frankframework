@@ -28,11 +28,12 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.ValidatorHandler;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
 import org.springframework.beans.factory.InitializingBean;
 import org.xml.sax.helpers.XMLFilterImpl;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -44,7 +45,6 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.ReferTo;
 import org.frankframework.soap.SoapValidator;
@@ -56,6 +56,8 @@ import org.frankframework.util.SpringUtils;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlUtils;
+import org.frankframework.validation.AbstractValidationContext;
+import org.frankframework.validation.AbstractXSD;
 import org.frankframework.validation.AbstractXmlValidator;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 import org.frankframework.validation.IXSD;
@@ -64,8 +66,6 @@ import org.frankframework.validation.RootValidations;
 import org.frankframework.validation.Schema;
 import org.frankframework.validation.SchemaUtils;
 import org.frankframework.validation.SchemasProvider;
-import org.frankframework.validation.ValidationContext;
-import org.frankframework.validation.XSD;
 import org.frankframework.validation.XercesXmlValidator;
 import org.frankframework.validation.XmlValidatorException;
 import org.frankframework.validation.xsd.ResourceXsd;
@@ -78,8 +78,8 @@ import org.frankframework.xml.RootElementToSessionKeyFilter;
  * @author Johan Verrips IOS
  * @author Jaco de Groot
  */
-@Category("Basic")
-public class XmlValidator extends ValidatorBase implements SchemasProvider, HasSpecialDefaultValues, IXmlValidator, InitializingBean {
+@Category(Category.Type.BASIC)
+public class XmlValidator extends AbstractValidator implements SchemasProvider, HasSpecialDefaultValues, IXmlValidator, InitializingBean {
 
 	private @Getter String schemaLocation;
 	private @Getter String noNamespaceSchemaLocation;
@@ -176,13 +176,9 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	}
 
 	@Override
-	public void start() throws PipeStartException {
-		try {
-			validator.start();
-			super.start();
-		} catch (ConfigurationException e) {
-			throw new PipeStartException("unable to start validator", e);
-		}
+	public void start() {
+		validator.start();
+		super.start();
 	}
 
 	@Override
@@ -231,7 +227,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 
 	@Override
 	protected PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws XmlValidatorException, PipeRunException, ConfigurationException {
-		ValidationContext context;
+		AbstractValidationContext context;
 		if(StringUtils.isNotEmpty(messageRoot)) {
 			context = validator.createValidationContext(session, createRootValidation(messageRoot), getInvalidRootNamespaces());
 		} else {
@@ -383,13 +379,13 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 			// mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes, in case of
 			// noNamespaceSchemaLocation the WSDL generator doesn't use
 			// XmlValidator.getXsds(). See comment in Wsdl.getXsds() too.
-			Set<IXSD> tempXsds = XSD.getXsdsRecursive(xsds, true);
+			Set<IXSD> tempXsds = AbstractXSD.getXsdsRecursive(xsds, true);
 			if (checkRootValidations) {
 				checkInputRootValidations(tempXsds);
 				checkOutputRootValidations(tempXsds);
 			}
 		} else {
-			xsds = XSD.getXsdsRecursive(xsds);
+			xsds = AbstractXSD.getXsdsRecursive(xsds);
 			if (checkRootValidations) {
 				checkInputRootValidations(xsds);
 				checkOutputRootValidations(xsds);

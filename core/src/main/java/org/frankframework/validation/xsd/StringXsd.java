@@ -21,14 +21,14 @@ import java.io.StringReader;
 
 import jakarta.annotation.Nonnull;
 
-import org.frankframework.validation.XSD;
+import org.frankframework.validation.AbstractXSD;
 
 /**
  * XSD implementation of an internally created schema, used as result of SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes().
  *
  * @author Gerrit van Brakel
  */
-public class StringXsd extends XSD {
+public class StringXsd extends AbstractXSD {
 
 	private final String contents;
 

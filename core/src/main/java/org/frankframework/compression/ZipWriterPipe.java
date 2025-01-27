@@ -19,11 +19,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
+
+import org.frankframework.collection.AbstractCollectorPipe;
 import org.frankframework.collection.CollectionException;
-import org.frankframework.collection.CollectorPipeBase;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
@@ -48,7 +49,7 @@ import org.frankframework.util.TemporaryDirectoryUtils;
  * @author Niels Meijer
  * @since  7.9
  */
-public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry> {
+public class ZipWriterPipe extends AbstractCollectorPipe<ZipWriter, MessageZipEntry> {
 
 	private @Getter boolean includeFileHeaders = false;
 

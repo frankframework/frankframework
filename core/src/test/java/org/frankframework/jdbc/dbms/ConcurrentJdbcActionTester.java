@@ -7,7 +7,7 @@ import org.frankframework.dbms.DbmsException;
 import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.testutil.ConcurrentActionTester;
 
-public abstract class ConcurrentJdbcActionTester extends ConcurrentActionTester {
+public class ConcurrentJdbcActionTester extends ConcurrentActionTester {
 
 	private final ThrowingSupplier<Connection, SQLException> connectionSupplier;
 
@@ -49,5 +49,4 @@ public abstract class ConcurrentJdbcActionTester extends ConcurrentActionTester 
 
 	public void finalizeAction(Connection conn) throws SQLException {
 	}
-
 }

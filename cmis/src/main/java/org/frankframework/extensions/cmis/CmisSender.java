@@ -74,10 +74,10 @@ import org.frankframework.encryption.KeystoreType;
 import org.frankframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import org.frankframework.extensions.cmis.server.CmisEvent;
 import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
-import org.frankframework.http.HttpSessionBase;
+import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.senders.SenderWithParametersBase;
+import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.AppConstants;
@@ -198,7 +198,7 @@ import org.frankframework.util.XmlUtils;
  * @author	Niels Meijer
  */
 @Forward(name = "notFound", description = "if the requested object could not be found for actions GET, UPDATE and DELETE")
-public class CmisSender extends SenderWithParametersBase implements HasKeystore, HasTruststore {
+public class CmisSender extends AbstractSenderWithParameters implements HasKeystore, HasTruststore {
 
 	private static final String NOT_FOUND_FORWARD_NAME="notFound";
 
@@ -921,7 +921,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 	/**
 	 * READ_TIMEOUT timeout in MS.
-	 * Defaults to 10000, inherited from {@link HttpSessionBase#setTimeout(int) HttpSender#setTimeout}.
+	 * Defaults to 10000, inherited from {@link AbstractHttpSession#setTimeout(int) HttpSender#setTimeout}.
 	 * @ff.default 10000
 	 */
 	public void setTimeout(int i) {

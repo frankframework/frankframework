@@ -19,6 +19,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLine.ExitState;
@@ -32,7 +33,7 @@ import org.frankframework.util.ClassUtils;
 /**
  * @author Jaco de Groot
  */
-public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase {
+public class TransactionAttributePipeLineProcessor extends AbstractPipeLineProcessor {
 
 	private @Getter @Setter PlatformTransactionManager txManager;
 

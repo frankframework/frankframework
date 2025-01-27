@@ -1,9 +1,17 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AppService, JobMessage } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
 import { SchedulerService, Trigger } from './scheduler.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
+import { KeyValuePipe, NgClass } from '@angular/common';
+import { HasAccessToLinkDirective } from '../../components/has-access-to-link.directive';
+import { LaddaModule } from 'angular2-ladda';
+import { ToDateDirective } from '../../components/to-date.directive';
+import { TabListComponent } from '../../components/tab-list/tab-list.component';
+import { FormsModule } from '@angular/forms';
+import { SearchFilterPipe } from '../../pipes/search-filter.pipe';
+import { OrderByPipe } from '../../pipes/orderby.pipe';
 
 type Scheduler = {
   name: string;
@@ -36,11 +44,24 @@ export type Job = {
 
 @Component({
   selector: 'app-scheduler',
+  imports: [
+    HasAccessToLinkDirective,
+    LaddaModule,
+    ToDateDirective,
+    TabListComponent,
+    FormsModule,
+    KeyValuePipe,
+    SearchFilterPipe,
+    OrderByPipe,
+    RouterLink,
+    NgClass,
+  ],
   templateUrl: './scheduler.component.html',
   styleUrls: ['./scheduler.component.scss'],
 })
 export class SchedulerComponent implements OnInit, OnDestroy {
   protected jobGroups: Record<string, Job[]> = {};
+  protected jobGroupNames: string[] = [];
   protected scheduler: Scheduler = {
     name: '',
     version: '',
@@ -59,6 +80,7 @@ export class SchedulerComponent implements OnInit, OnDestroy {
   protected refreshing: boolean = false;
   protected databaseSchedulesEnabled: boolean = this.appService.databaseSchedulesEnabled;
   protected jobShowContent: Record<keyof typeof this.jobGroups, boolean> = {};
+  protected selectedJobGroup: string = 'All';
 
   private initialized = false;
 
@@ -80,6 +102,7 @@ export class SchedulerComponent implements OnInit, OnDestroy {
         };
         this.scheduler = result.scheduler;
         this.jobGroups = result.jobs;
+        this.jobGroupNames = Object.keys(this.jobGroups);
 
         this.refreshing = false;
         if (!this.initialized) {

@@ -1,8 +1,9 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { inject, Injectable } from '@angular/core';
+import { Observable, Subject } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
+import { Base64Service } from '../../services/base64.service';
 
 export type MessageStore = {
   totalMessages: number;
@@ -29,8 +30,7 @@ export type Message = {
 
 export type PartialMessage = {
   id: string;
-  resending: boolean;
-  deleting: boolean;
+  processing: boolean;
 };
 
 export type StorageParams = {
@@ -51,9 +51,8 @@ export type Note = {
   providedIn: 'root',
 })
 export class StorageService {
-  baseUrl = '';
-  notes: Note[] = [];
-  storageParams: StorageParams = {
+  public notes: Note[] = [];
+  public storageParams: StorageParams = {
     adapterName: '',
     configuration: '',
     processState: '',
@@ -61,13 +60,16 @@ export class StorageService {
     storageSourceName: '',
     messageId: null,
   };
-  selectedMessages: Record<string, boolean> = {};
+  public selectedMessages: Record<string, boolean> = {};
 
-  constructor(
-    private http: HttpClient,
-    private appService: AppService,
-    private Misc: MiscService,
-  ) {}
+  private readonly base64Service: Base64Service = inject(Base64Service);
+  private readonly http: HttpClient = inject(HttpClient);
+  private readonly appService: AppService = inject(AppService);
+  private readonly Misc: MiscService = inject(MiscService);
+
+  private baseUrl = '';
+  private tableUpdateTriggerSubject: Subject<void> = new Subject();
+  public tableUpdateTrigger$: Observable<void> = this.tableUpdateTriggerSubject.asObservable();
 
   updateStorageParams(parameters: Partial<StorageParams>): void {
     this.storageParams = Object.assign(this.storageParams, parameters); // dont make this a new object
@@ -95,16 +97,16 @@ export class StorageService {
   }
 
   deleteMessage(message: PartialMessage, callback?: (messageId: string) => void): void {
-    message.deleting = true;
+    message.processing = true;
     const messageId = message.id;
-    this.http.delete(`${this.baseUrl}/messages/${encodeURIComponent(encodeURIComponent(messageId))}`).subscribe({
+    this.http.delete(`${this.baseUrl}/messages/${this.base64Service.encode(messageId)}`).subscribe({
       next: () => {
         if (callback != undefined && typeof callback == 'function') callback(messageId);
         this.addNote('success', `Successfully deleted message with ID: ${messageId}`);
         this.updateTable();
       },
       error: () => {
-        message.deleting = false;
+        message.processing = false;
         this.addNote('danger', `Unable to delete messages with ID: ${messageId}`);
         this.updateTable();
       },
@@ -112,22 +114,44 @@ export class StorageService {
   }
 
   downloadMessage(messageId: string): void {
-    window.open(`${this.baseUrl}/messages/${encodeURIComponent(encodeURIComponent(messageId))}/download`);
+    window.open(`${this.baseUrl}/messages/${this.base64Service.encode(messageId)}/download`);
   }
 
   resendMessage(message: PartialMessage, callback?: (messageId: string) => void): void {
-    message.resending = true;
+    message.processing = true;
     const messageId = message.id;
-    this.http.put(`${this.baseUrl}/messages/${encodeURIComponent(encodeURIComponent(messageId))}`, false).subscribe({
+    this.http.put(`${this.baseUrl}/messages/${this.base64Service.encode(messageId)}`, false).subscribe({
       next: () => {
         if (callback != undefined) callback(message.id);
+        message.processing = false;
         this.addNote('success', `Message with ID: ${messageId} will be reprocessed`);
         this.updateTable();
       },
       error: (data: HttpErrorResponse) => {
-        message.resending = false;
+        message.processing = false;
         data = data.error?.error ?? data.error;
         this.addNote('danger', `Unable to resend message [${messageId}]. ${data}`);
+        this.updateTable();
+      },
+    }); // TODO no intercept
+  }
+
+  moveMessage(message: PartialMessage, callback?: (messageId: string) => void): void {
+    message.processing = true;
+    const messageId = message.id;
+    const data = new FormData();
+    data.set('messageIds', messageId);
+    this.http.post(`${this.baseUrl}/move/Error`, data).subscribe({
+      next: () => {
+        if (callback != undefined) callback(message.id);
+        message.processing = false;
+        this.addNote('success', `Message with ID: ${messageId} will be moved to Error state`);
+        this.updateTable();
+      },
+      error: (data: HttpErrorResponse) => {
+        message.processing = false;
+        data = data.error?.error ?? data.error;
+        this.addNote('danger', `Unable to move message [${messageId}]. ${data}`);
         this.updateTable();
       },
     }); // TODO no intercept
@@ -137,6 +161,7 @@ export class StorageService {
     for (const index in this.selectedMessages) {
       this.selectedMessages[index] = false;
     }
+    this.tableUpdateTriggerSubject.next();
   }
 
   getStorageList(queryParameters: string): Observable<MessageStore> {
@@ -149,6 +174,10 @@ export class StorageService {
 
   postResendMessages(data: FormData): Observable<object> {
     return this.http.post(this.baseUrl, data);
+  }
+
+  postMoveMessages(data: FormData): Observable<object> {
+    return this.http.post(`${this.baseUrl}/move/Error`, data);
   }
 
   postDownloadMessages(data: FormData): Observable<Blob> {

@@ -33,7 +33,7 @@ import lombok.Setter;
 
 import org.frankframework.util.ClassUtils;
 
-public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase {
+public class ActiveDirectoryAuthenticator extends AbstractServletAuthenticator {
 
 	private @Setter String domainName = null;
 

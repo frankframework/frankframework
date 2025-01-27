@@ -1,5 +1,4 @@
-import { CommonModule } from '@angular/common';
-import { Component, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { NotificationService } from 'src/app/services/notification.service';
 import { HamburgerComponent } from './hamburger.component';
@@ -9,34 +8,31 @@ import { RouterModule } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 import { AppService, ClusterMember } from 'src/app/app.service';
 import { FormsModule } from '@angular/forms';
+import { ServerTimeService } from '../../../services/server-time.service';
 
 @Component({
   selector: 'app-pages-topnavbar',
   templateUrl: './pages-topnavbar.component.html',
   styleUrls: ['./pages-topnavbar.component.scss'],
-  standalone: true,
-  imports: [CommonModule, FormsModule, HamburgerComponent, RouterModule, TimeSinceDirective, NgbDropdownModule],
+  imports: [FormsModule, HamburgerComponent, RouterModule, TimeSinceDirective, NgbDropdownModule],
 })
 export class PagesTopnavbarComponent implements OnInit, OnChanges, OnDestroy {
-  notificationCount: number = this.Notification.getCount();
-  notificationList: NotificationService['list'] = [];
-
   @Input() dtapSide: string = '';
   @Input() dtapStage: string = '';
-  @Input() serverTime: string = '';
   @Input() clusterMembers: ClusterMember[] = [];
   @Input() selectedClusterMember: ClusterMember | null = null;
   @Input() userName?: string;
 
-  loggedIn: boolean = false;
+  private Notification: NotificationService = inject(NotificationService);
 
+  protected serverTimeService: ServerTimeService = inject(ServerTimeService);
+  protected notificationCount: number = this.Notification.getCount();
+  protected notificationList: NotificationService['list'] = [];
+  protected loggedIn: boolean = false;
+
+  private appService: AppService = inject(AppService);
+  private authService: AuthService = inject(AuthService);
   private _subscriptions = new Subscription();
-
-  constructor(
-    private appService: AppService,
-    private Notification: NotificationService,
-    private authService: AuthService,
-  ) {}
 
   ngOnInit(): void {
     const notifCountSub = this.Notification.onCountUpdate$.subscribe(() => {

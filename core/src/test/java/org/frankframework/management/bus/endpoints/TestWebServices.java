@@ -68,16 +68,16 @@ public class TestWebServices extends BusTestBase {
 	private ApiListener registerDummyApiListener(Configuration configuration) throws Exception {
 		Adapter adapter = SpringUtils.createBean(configuration, Adapter.class);
 		adapter.setName("ApiTestAdapter");
-		ApiListener listener = new ApiListener();
+		ApiListener listener = SpringUtils.createBean(adapter, ApiListener.class);
 		listener.setMethod(HttpMethod.POST);
 		listener.setUriPattern(API_LISTENER_ENDPOINT);
-		Receiver receiver = new Receiver();
+		Receiver receiver = SpringUtils.createBean(adapter, Receiver.class);
 		receiver.setName("ReceiverName2");
 		listener.setReceiver(receiver);
 		receiver.setAdapter(adapter);
 		adapter.addReceiver(receiver);
-		PipeLine pipeline = new PipeLine();
-		EchoPipe pipe = SpringUtils.createBean(configuration, EchoPipe.class);
+		PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
+		EchoPipe pipe = SpringUtils.createBean(adapter, EchoPipe.class);
 		pipe.setName("EchoPipe");
 		pipeline.addPipe(pipe);
 		adapter.setPipeLine(pipeline);
@@ -89,17 +89,17 @@ public class TestWebServices extends BusTestBase {
 		Adapter adapter = SpringUtils.createBean(configuration, Adapter.class);
 		adapter.setName("TestAdapter");
 
-		RestListener listener = new RestListener();
+		RestListener listener = SpringUtils.createBean(adapter, RestListener.class);
 		listener.setName("TestRestListener");
 		listener.setMethod("GET");
 		listener.setUriPattern("rest-uri-pattern");
-		Receiver receiver = new Receiver<>();
+		Receiver receiver = SpringUtils.createBean(adapter, Receiver.class);
 		receiver.setName("ReceiverName1");
 		receiver.setListener(listener);
 		adapter.addReceiver(receiver);
 		receiver.setAdapter(adapter);
-		PipeLine pipeline = new PipeLine();
-		EchoPipe pipe = SpringUtils.createBean(configuration, EchoPipe.class);
+		PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
+		EchoPipe pipe = SpringUtils.createBean(adapter, EchoPipe.class);
 		pipe.setName("EchoPipe");
 		pipeline.addPipe(pipe);
 		adapter.setPipeLine(pipeline);
@@ -112,19 +112,19 @@ public class TestWebServices extends BusTestBase {
 		Adapter adapter = SpringUtils.createBean(configuration, Adapter.class);
 		adapter.setName("wsl-adapter");
 
-		WebServiceListener listener = new WebServiceListener();
+		WebServiceListener listener = SpringUtils.createBean(adapter, WebServiceListener.class);
 		listener.setName("TestWebServiceListener");
 		listener.setServiceNamespaceURI("urn:test");
-		Receiver receiver = new Receiver<>();
+		Receiver receiver = SpringUtils.createBean(adapter, Receiver.class);
 		receiver.setName("ReceiverName3");
 		receiver.setListener(listener);
 		adapter.addReceiver(receiver);
 		receiver.setAdapter(adapter);
-		PipeLine pipeline = new PipeLine();
-		XmlValidator validator = new XmlValidator();
+		PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
+		XmlValidator validator = SpringUtils.createBean(adapter, XmlValidator.class);
 		validator.setSchema("Validation/Basic/xsd/A_correct.xsd");
 		pipeline.setInputValidator(validator);
-		EchoPipe pipe = SpringUtils.createBean(configuration, EchoPipe.class);
+		EchoPipe pipe = SpringUtils.createBean(adapter, EchoPipe.class);
 		pipe.setName("EchoPipe");
 		pipeline.addPipe(pipe);
 		adapter.setPipeLine(pipeline);
@@ -136,12 +136,6 @@ public class TestWebServices extends BusTestBase {
 	@AfterEach
 	@Override
 	public void tearDown() {
-		if(adapterWithRestListener != null) {
-			getConfiguration().getAdapterManager().removeAdapter(adapterWithRestListener);
-		}
-		if(adapterWithWebServiceListener != null) {
-			getConfiguration().getAdapterManager().removeAdapter(adapterWithWebServiceListener);
-		}
 		if(apiListener != null) {
 			ApiServiceDispatcher.getInstance().unregisterServiceClient(apiListener);
 		}

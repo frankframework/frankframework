@@ -26,6 +26,7 @@ import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.stream.Message;
 import org.frankframework.xml.FullXmlFilter;
 import org.frankframework.xml.NamespaceRemovingAttributesWrapper;
@@ -139,6 +140,7 @@ public class CompactSaxHandler extends FullXmlFilter {
 			try {
 				message.preserve();
 			} catch (IOException e) {
+				message.close();
 				throw new SAXException(e);
 			}
 

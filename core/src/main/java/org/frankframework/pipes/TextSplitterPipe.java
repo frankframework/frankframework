@@ -19,8 +19,7 @@ package org.frankframework.pipes;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.xml.SaxDocumentBuilder;
@@ -29,7 +28,7 @@ import org.frankframework.xml.SaxDocumentBuilder;
  * Breaks up the text input in blocks of a maximum length.
  * By default, the maximum block length is 160 characters, to enable them to be sent as SMS messages.
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class TextSplitterPipe extends FixedForwardPipe {
 
 	private int maxBlockLength=160;

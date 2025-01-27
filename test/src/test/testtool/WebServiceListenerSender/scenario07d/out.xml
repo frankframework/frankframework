@@ -3,8 +3,8 @@
   <errorMessage timestamp="Fri Jan 03 14:42:26 CET 2020" originator="IAF_ss9 7.5-SNAPSHOT" message="SenderPipe [send2ws_with_forwards] msgId [Test Tool correlation id]: (SocketTimeoutException) Read timed out">
     <location class="org.frankframework.pipes.SenderPipe" name="send2ws_with_forwards"/>
     <details>org.frankframework.core.TimeoutException: (SocketTimeoutException) Read timed out
-        at org.frankframework.http.HttpSenderBase.sendMessage(HttpSenderBase.java:678)
-        at org.frankframework.http.HttpSenderBase$$FastClassBySpringCGLIB$$f73d91f3.invoke(&lt;generated&gt;)
+        at org.frankframework.http.AbstractHttpSender.sendMessage(HttpSenderBase.java:678)
+        at org.frankframework.http.AbstractHttpSender$$FastClassBySpringCGLIB$$f73d91f3.invoke(&lt;generated&gt;)
         at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:204)
         at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:700)
         at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:150)
@@ -134,7 +134,7 @@
         at org.apache.http.impl.execchain.RedirectExec.execute(RedirectExec.java:111)
         at org.apache.http.impl.client.InternalHttpClient.doExecute(InternalHttpClient.java:185)
         at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:72)
-        at org.frankframework.http.HttpSenderBase.sendMessage(HttpSenderBase.java:641)
+        at org.frankframework.http.AbstractHttpSender.sendMessage(HttpSenderBase.java:641)
         ... 94 more</details>
     <originalMessage messageId="Test Tool correlation id">&lt;request action="send2ws_with_forwards" /&gt;</originalMessage>
   </errorMessage>

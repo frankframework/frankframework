@@ -16,8 +16,6 @@
 package org.frankframework.http.rest;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
 import java.time.Instant;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -38,18 +36,19 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import com.nimbusds.jose.util.JSONObjectUtils;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.http.HttpEntity;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.springframework.util.InvalidMimeTypeException;
 import org.springframework.util.MimeType;
 
+import com.nimbusds.jose.util.JSONObjectUtils;
+
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.http.AbstractHttpServlet;
 import org.frankframework.http.HttpSecurityHandler;
-import org.frankframework.http.HttpServletBase;
 import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.http.mime.MultipartUtils.MultipartMessages;
 import org.frankframework.jwt.AuthorizationException;
@@ -76,7 +75,7 @@ import org.frankframework.util.XmlBuilder;
  *
  */
 @IbisInitializer
-public class ApiListenerServlet extends HttpServletBase {
+public class ApiListenerServlet extends AbstractHttpServlet {
 	private static final Logger LOG = LogUtil.getLogger(ApiListenerServlet.class);
 	private static final long serialVersionUID = 1L;
 
@@ -572,9 +571,10 @@ public class ApiListenerServlet extends HttpServletBase {
 
 				if (!Message.isEmpty(result) || method == ApiListener.HttpMethod.HEAD) {
 					MimeType contentType = determineContentType(pipelineSession, listener, result);
+					result.getContext().withMimeType(contentType);
 					response.setContentType(contentType.toString());
 					if (result.size() != Message.MESSAGE_SIZE_UNKNOWN) {
-						response.setContentLength(Math.toIntExact(result.size()));
+						response.setContentLengthLong(result.size());
 					}
 				}
 
@@ -598,7 +598,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					/*
 					 * Finalize the pipeline and write the result to the response
 					 */
-					final boolean outputWritten = writeToResponseStream(response, result);
+					final boolean outputWritten = writeToResponseStream(listener, response, result, pipelineSession);
 					if (!outputWritten) {
 						LOG.debug("No output written, set content-type header to null");
 						response.resetBuffer();
@@ -606,8 +606,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 				LOG.trace("ApiListenerServlet finished with statusCode [{}] result [{}]", statusCode, result);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				LOG.warn("ApiListenerServlet caught exception, will rethrow as ServletException", e);
 				try {
 					response.reset();
@@ -634,7 +633,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				if (LOG.isTraceEnabled()) {
 					List<String> logValueList = valueList.stream()
 							.map(StringEscapeUtils::escapeJava)
-							.collect(Collectors.toList());
+							.toList();
 					LOG.trace("setting queryParameter [{}] to {}", StringEscapeUtils.escapeJava(paramName), logValueList);
 				}
 				params.put(paramName, valueList);
@@ -707,18 +706,27 @@ public class ApiListenerServlet extends HttpServletBase {
 	 * @return {@code true} if data was written, {@code false} if not.
 	 * @throws IOException Thrown if reading or writing to / from any of the streams throws  an IOException.
 	 */
-	private static boolean writeToResponseStream(HttpServletResponse response, Message result) throws IOException {
-		if (!Message.hasDataAvailable(result)) {
+	private static boolean writeToResponseStream(ApiListener listener, HttpServletResponse response, Message result, PipeLineSession session) throws IOException {
+		response.resetBuffer();
+		HttpEntity entity = listener.getResponseEntityBuilder().create(result, null, session);
+
+		long contentLength = entity.getContentLength();
+		if (contentLength == 0L) {
 			return false;
 		}
-		if (result.isBinary()) {
-			try (InputStream in = result.asInputStream()) {
-				StreamUtil.copyStream(in, response.getOutputStream(), 4096);
-			}
-		} else {
-			try (Reader reader = result.asReader()) {
-				StreamUtil.copyReaderToWriter(reader, response.getWriter(), 4096);
-			}
+		if (contentLength != Message.MESSAGE_SIZE_UNKNOWN) {
+			response.setContentLengthLong(contentLength);
+		}
+
+		// Content-type might not be same as set before if we have a form. However it might also not be set.
+		if (entity.getContentType() != null) {
+			response.setContentType(entity.getContentType().getValue());
+		}
+		entity.writeTo(response.getOutputStream());
+
+		// After reading the entire entity, we may have a more accurate value for content-length before flushing the output.
+		if (entity.getContentLength() != contentLength) {
+			response.setContentLengthLong(entity.getContentLength());
 		}
 		return true;
 	}

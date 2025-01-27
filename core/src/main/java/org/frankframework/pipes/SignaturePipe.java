@@ -25,24 +25,25 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 
-import lombok.Getter;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
 import org.frankframework.encryption.AuthSSLContextFactory;
 import org.frankframework.encryption.EncryptionException;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.encryption.PkiUtil;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 
@@ -51,7 +52,7 @@ import org.frankframework.stream.Message;
  * @ff.parameter signature the signature to verify
  */
 @Forward(name = "failure", description = "verification has failed")
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 
 	public static final String PARAMETER_SIGNATURE="signature";
@@ -107,25 +108,25 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 	}
 
 	@Override
-	public void start() throws PipeStartException {
+	public void start() {
 		super.start();
 		switch (getAction()) {
-		case SIGN:
-			try {
-				privateKey = PkiUtil.getPrivateKey(this, "Keys for action ["+getAction()+"]");
-			} catch (EncryptionException e) {
-				throw new PipeStartException(e);
-			}
-			break;
-		case VERIFY:
-			try {
-				publicKey = PkiUtil.getPublicKey(PkiUtil.keyStoreAsTrustStore(this), "Keys for action ["+getAction()+"]");
-			} catch (EncryptionException e) {
-				throw new PipeStartException(e);
-			}
-			break;
-		default:
-			throw new IllegalStateException("Unknown action ["+getAction()+"]");
+			case SIGN:
+				try {
+					privateKey = PkiUtil.getPrivateKey(this, "Keys for action [" + getAction() + "]");
+				} catch (EncryptionException e) {
+					throw new LifecycleException(e);
+				}
+				break;
+			case VERIFY:
+				try {
+					publicKey = PkiUtil.getPublicKey(PkiUtil.keyStoreAsTrustStore(this), "Keys for action [" + getAction() + "]");
+				} catch (EncryptionException e) {
+					throw new LifecycleException(e);
+				}
+				break;
+			default:
+				throw new IllegalStateException("Unknown action [" + getAction() + "]");
 		}
 	}
 

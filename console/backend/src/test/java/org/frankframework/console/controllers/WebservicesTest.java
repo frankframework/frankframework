@@ -8,7 +8,6 @@ import java.nio.charset.Charset;
 import java.util.function.Supplier;
 
 import org.apache.commons.io.FileUtils;
-import org.frankframework.management.bus.message.StringMessage;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
@@ -16,6 +15,8 @@ import org.springframework.messaging.Message;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import org.frankframework.management.bus.message.StringMessage;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, Webservices.class})
 public class WebservicesTest extends FrankApiTestBase {

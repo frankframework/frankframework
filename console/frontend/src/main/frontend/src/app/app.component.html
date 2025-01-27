@@ -1,37 +1,37 @@
 <app-toasts-container></app-toasts-container>
 <!-- Wrapper-->
-<div id="wrapper" *ngIf="!isLoginView; else loginWrapper">
-  <!-- Navigation -->
-  <app-pages-navigation (shouldOpenInfo)="openInfoModel()" [queryParams]="routeQueryParams"></app-pages-navigation>
-
-  <!-- Page wraper -->
-  <div id="page-wrapper" class="gray-bg">
-    <!-- Page wrapper -->
-    <app-pages-topnavbar
-      class="topnavbar"
-      [serverTime]="serverTime"
-      [dtapSide]="dtapSide"
-      [dtapStage]="dtapStage"
-      [clusterMembers]="clusterMembers"
-      [selectedClusterMember]="selectedClusterMember"
-      [userName]="userName"
-    ></app-pages-topnavbar>
-    <app-pages-topinfobar class="topinfobar"></app-pages-topinfobar>
-
-    <div *ngIf="startupError" class="m-sm alert alert-danger pointer" role="alert" type="danger" routerLink="/error">
-      <h4>Startup error:</h4>
-      <span [innerHtml]="startupError"></span>
+@if (!isLoginView) {
+  <div id="wrapper">
+    <!-- Navigation -->
+    <app-pages-navigation (shouldOpenInfo)="openInfoModel()" [queryParams]="routeQueryParams"></app-pages-navigation>
+    <!-- Page wraper -->
+    <div id="page-wrapper" class="gray-bg">
+      <!-- Page wrapper -->
+      <app-pages-topnavbar
+        class="topnavbar"
+        [dtapSide]="dtapSide"
+        [dtapStage]="dtapStage"
+        [clusterMembers]="clusterMembers"
+        [selectedClusterMember]="selectedClusterMember"
+        [userName]="userName"
+      ></app-pages-topnavbar>
+      <app-pages-topinfobar class="topinfobar"></app-pages-topinfobar>
+      @if (startupError) {
+        <div class="m-sm alert alert-danger pointer" role="alert" type="danger" routerLink="/error">
+          <h4>Startup error:</h4>
+          <span [innerHtml]="startupError"></span>
+        </div>
+      }
+      <!-- Main view  -->
+      <router-outlet></router-outlet>
+      <!-- Footer -->
+      @if (!routeData['iframe']) {
+        <app-pages-footer></app-pages-footer>
+      }
     </div>
-
-    <!-- Main view  -->
-    <router-outlet></router-outlet>
-
-    <!-- Footer -->
-    <app-pages-footer *ngIf="!routeData['iframe']"></app-pages-footer>
+    <!-- End page wrapper-->
   </div>
-  <!-- End page wrapper-->
-</div>
-<!-- End wrapper-->
-<ng-template #loginWrapper>
+} @else {
   <router-outlet></router-outlet>
-</ng-template>
+}
+<!-- End wrapper-->

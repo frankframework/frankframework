@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,8 +16,23 @@
 package org.frankframework.core;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.lifecycle.ConfigurableLifecycle;
 
-public interface IConfigurable extends INamedObject, IConfigurationAware {
+/**
+ * To be replaced with {@link ConfigurableLifecycle}.
+ */
+public interface IConfigurable {
 
+	/**
+	 * Configure this component.
+	 * <p>
+	 * <code>configure()</code> is called once at startup of the framework in the configure method of the owner of this {@link IConfigurable}.
+	 * Purpose of this method is to check whether the static configuration of the object is correct.
+	 * As much as possible class-instantiating should take place in the <code>configure()</code>, to improve performance.
+	 * </p>
+	 * <p>In the case of a container, this will propagate the configure signal to all
+	 * components that apply.</p>
+	 * @throws ConfigurationException in case it was not able to configure the component.
+	 */
 	void configure() throws ConfigurationException;
 }

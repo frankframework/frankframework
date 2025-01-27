@@ -17,14 +17,12 @@ package org.frankframework.configuration.classloaders;
 
 import java.net.URL;
 
-
 /**
  * Default IBIS Configuration ClassLoader.
  *
  * @author Niels Meijer
  */
-
-public class WebAppClassLoader extends ClassLoaderBase {
+public class WebAppClassLoader extends AbstractClassLoader {
 
 	public WebAppClassLoader(ClassLoader parent) {
 		super(parent);

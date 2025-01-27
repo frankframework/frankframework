@@ -90,7 +90,7 @@ public class StoredProcedureQuerySenderTest {
 		// Arrange
 		String value = UUID.randomUUID().toString();
 		sender.setQuery("CALL INSERT_MESSAGE('" + value + "', 'P')");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 
 		sender.configure();
 		sender.start();
@@ -117,7 +117,7 @@ public class StoredProcedureQuerySenderTest {
 		// Arrange
 		String value = UUID.randomUUID().toString();
 		sender.setQuery("CALL INSERT_MESSAGE('" + value + "', 'P')");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 		sender.setResultQuery("SELECT COUNT(*) FROM SP_TESTDATA WHERE TMESSAGE = '" + value + "'");
 		sender.setScalar(true);
 
@@ -140,7 +140,7 @@ public class StoredProcedureQuerySenderTest {
 		// Arrange
 		String value = UUID.randomUUID().toString();
 		sender.setQuery("CALL INSERT_MESSAGE(?, 'P')");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 		sender.setResultQuery("SELECT COUNT(*) FROM SP_TESTDATA WHERE TMESSAGE = '" + value + "'");
 		sender.setScalar(true);
 
@@ -169,7 +169,7 @@ public class StoredProcedureQuerySenderTest {
 		String value = UUID.randomUUID().toString();
 		long id = insertRowWithMessageValue(value, databaseTestEnvironment);
 		sender.setQuery("CALL SET_BLOB(?, ?)");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 		sender.setScalar(true);
 
 		NumberParameter p1 = NumberParameterBuilder.create("id", id);
@@ -202,7 +202,7 @@ public class StoredProcedureQuerySenderTest {
 		String value = UUID.randomUUID().toString();
 		long id = insertRowWithMessageValue(value, databaseTestEnvironment);
 		sender.setQuery("CALL SET_CLOB(?, ?)");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 		sender.setScalar(true);
 
 		NumberParameter p1 = NumberParameterBuilder.create("id", id);
@@ -235,7 +235,7 @@ public class StoredProcedureQuerySenderTest {
 		String value = UUID.randomUUID().toString();
 		long id = insertRowWithMessageValue(value, databaseTestEnvironment);
 		sender.setQuery("CALL SET_CLOB(?, ?)");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 		sender.setScalar(true);
 
 		NumberParameter p1 = NumberParameterBuilder.create("id", id);
@@ -272,7 +272,7 @@ public class StoredProcedureQuerySenderTest {
 		long id = insertRowWithMessageValue(value, databaseTestEnvironment);
 
 		sender.setQuery("CALL GET_MESSAGE_BY_ID(?, ?)");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 		sender.setScalar(true);
 
 		Parameter inParam = new Parameter("id", String.valueOf(id));
@@ -305,7 +305,7 @@ public class StoredProcedureQuerySenderTest {
 		long id = insertRowWithMessageValue(null, databaseTestEnvironment);
 
 		sender.setQuery("CALL GET_MESSAGE_BY_ID(?, ?)");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 		sender.setScalar(true);
 
 		Parameter inParam = new Parameter("id", String.valueOf(id));
@@ -359,7 +359,7 @@ public class StoredProcedureQuerySenderTest {
 		long id = insertRowWithBlobValue(value, compressed, databaseTestEnvironment);
 
 		sender.setQuery("CALL GET_BLOB(?, ?)");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 		sender.setScalar(true);
 		sender.setBlobSmartGet(blobSmartGet);
 		sender.setBlobCharset(charSet);
@@ -395,7 +395,7 @@ public class StoredProcedureQuerySenderTest {
 		long id = insertRowWithClobValue(value, databaseTestEnvironment);
 
 		sender.setQuery("CALL GET_CLOB(?, ?)");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 		sender.setScalar(true);
 
 		Parameter inParam = new Parameter("id", String.valueOf(id));
@@ -429,7 +429,7 @@ public class StoredProcedureQuerySenderTest {
 		long id = insertRowWithMessageValue(value, databaseTestEnvironment);
 
 		sender.setQuery("CALL GET_BLOB(?, ?)");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 		sender.setScalar(true);
 
 		Parameter inParam = new Parameter("id", String.valueOf(id));
@@ -467,7 +467,7 @@ public class StoredProcedureQuerySenderTest {
 		long id = insertRowWithMessageValue(value, databaseTestEnvironment);
 
 		sender.setQuery("CALL GET_CLOB(?, ?)");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 		sender.setScalar(true);
 
 		Parameter inParam = new Parameter("id", String.valueOf(id));
@@ -501,7 +501,7 @@ public class StoredProcedureQuerySenderTest {
 		long id = insertRowWithMessageValue(value, databaseTestEnvironment);
 
 		sender.setQuery("CALL GET_MESSAGE_AND_TYPE_BY_ID(?, ?, ?)");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 
 		Parameter inParam = new Parameter("id", String.valueOf(id));
 		sender.addParameter(inParam);
@@ -543,7 +543,7 @@ public class StoredProcedureQuerySenderTest {
 		insertRowWithMessageValue(value, databaseTestEnvironment);
 
 		sender.setQuery("CALL COUNT_MESSAGES_BY_CONTENT(?, ?, ?, ?)");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 
 		Parameter inParam = new Parameter("message", value);
 		inParam.setMode(Parameter.ParameterMode.INOUT);
@@ -593,7 +593,7 @@ public class StoredProcedureQuerySenderTest {
 		}
 
 		sender.setQuery("CALL GET_MESSAGES_BY_CONTENT(?)");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.SELECT);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.SELECT);
 
 		Parameter parameter = new Parameter("content", value);
 		sender.addParameter(parameter);
@@ -627,7 +627,7 @@ public class StoredProcedureQuerySenderTest {
 		}
 
 		sender.setQuery("CALL GET_MESSAGES_BY_CONTENT(?)");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 
 		Parameter parameter = new Parameter("content", value);
 		sender.addParameter(parameter);
@@ -661,7 +661,7 @@ public class StoredProcedureQuerySenderTest {
 		}
 
 		sender.setQuery("CALL GET_MESSAGES_AND_COUNT(?, ?)");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 
 		Parameter parameter = new Parameter("content", value);
 		sender.addParameter(parameter);
@@ -703,7 +703,7 @@ public class StoredProcedureQuerySenderTest {
 		}
 
 		sender.setQuery("CALL GET_ALL_MESSAGES_CURSOR(?)");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 
 		Parameter cursorParam = new Parameter();
 		cursorParam.setName("cursor1");
@@ -740,7 +740,7 @@ public class StoredProcedureQuerySenderTest {
 		}
 
 		sender.setQuery("CALL GET_MESSAGES_CURSOR(?,?,?)");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 
 		Parameter parameter = new Parameter("content", value);
 		sender.addParameter(parameter);
@@ -778,7 +778,7 @@ public class StoredProcedureQuerySenderTest {
 		// Arrange
 		String value = UUID.randomUUID().toString();
 		sender.setQuery("CALL GET_MESSAGES_CURSOR(?,?,?)");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 
 		Parameter parameter = new Parameter("content", value);
 		sender.addParameter(parameter);
@@ -809,7 +809,7 @@ public class StoredProcedureQuerySenderTest {
 
 		// Arrange
 		sender.setQuery("{ ? = call add_numbers(?, ?) }");
-		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		sender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 		sender.setScalar(true);
 
 		// NB: All these parameters were originally INTEGER. Perhaps need new type IntegerParameter?

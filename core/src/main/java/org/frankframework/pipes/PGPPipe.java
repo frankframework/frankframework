@@ -24,11 +24,10 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.pgp.AbstractPGPAction;
 import org.frankframework.pgp.Decrypt;
 import org.frankframework.pgp.Encrypt;
-import org.frankframework.pgp.PGPAction;
 import org.frankframework.pgp.Sign;
 import org.frankframework.pgp.Verify;
 import org.frankframework.stream.Message;
@@ -48,7 +47,7 @@ import org.frankframework.stream.MessageBuilder;
  * you can seperate multiple values with ";" (semicolon).
  * </p>
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class PGPPipe extends FixedForwardPipe {
 
 	public enum Action {
@@ -88,9 +87,9 @@ public class PGPPipe extends FixedForwardPipe {
 	private String[] publicKeys;
 
 	/**
-	 * This is the {@link PGPAction} object that executes the desired action.
+	 * This is the {@link AbstractPGPAction} object that executes the desired action.
 	 */
-	private PGPAction pgpAction;
+	private AbstractPGPAction pgpAction;
 
 	@Override
 	public void configure() throws ConfigurationException {

@@ -1,20 +1,27 @@
-import { Component, OnInit } from '@angular/core';
-import { Message, StorageService, PartialMessage, Note } from '../storage.service';
+import { Component, inject, OnInit } from '@angular/core';
+import { Message, Note, PartialMessage, StorageService } from '../storage.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService } from 'src/app/app.service';
+import { Base64Service } from '../../../services/base64.service';
+import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+
+import { OrderByPipe } from '../../../pipes/orderby.pipe';
+import { ToDateDirective } from '../../../components/to-date.directive';
+import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
+import { LaddaModule } from 'angular2-ladda';
 
 @Component({
   selector: 'app-storage-view',
   templateUrl: './storage-view.component.html',
   styleUrls: ['./storage-view.component.scss'],
+  imports: [NgbAlert, OrderByPipe, ToDateDirective, HasAccessToLinkDirective, LaddaModule],
 })
 export class StorageViewComponent implements OnInit {
   protected message: PartialMessage = {
     id: '0', //this.$state.params["messageId"],
-    resending: false,
-    deleting: false,
+    processing: false,
   };
   protected metadata?: Message = {
     id: '',
@@ -27,6 +34,8 @@ export class StorageViewComponent implements OnInit {
     message: 'Loading...',
   };
 
+  private readonly storageService: StorageService = inject(StorageService);
+
   // service bindings
   protected storageParams = this.storageService.storageParams;
   closeNote = (index: number): void => {
@@ -36,13 +45,11 @@ export class StorageViewComponent implements OnInit {
     this.storageService.downloadMessage(messageId);
   };
 
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private SweetAlert: SweetalertService,
-    private storageService: StorageService,
-    private appService: AppService,
-  ) {}
+  private readonly base64Service: Base64Service = inject(Base64Service);
+  private readonly router: Router = inject(Router);
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly SweetAlert: SweetalertService = inject(SweetalertService);
+  private readonly appService: AppService = inject(AppService);
 
   ngOnInit(): void {
     this.storageService.closeNotes();
@@ -52,7 +59,6 @@ export class StorageViewComponent implements OnInit {
         this.storageParams['storageSource'] == 'pipes' ? `Pipes > ${this.storageParams['storageSourceName']} > ` : ''
       }${this.storageParams['processState']} List > View Message ${this.storageParams['messageId']}`,
     );
-    // this.$state.current.data.breadcrumbs = "Adapter > " + (this.$state.params["storageSource"] == 'pipes' ? "Pipes > " + this.$state.params["storageSourceName"] + " > " : "") + this.$state.params["processState"] + " List > View Message " + this.$state.params["messageId"];
 
     if (!this.storageParams.messageId) {
       this.SweetAlert.Warning('Invalid URL', 'No message id provided!');
@@ -61,7 +67,7 @@ export class StorageViewComponent implements OnInit {
 
     this.message.id = this.storageParams.messageId;
 
-    this.storageService.getMessage(encodeURIComponent(encodeURIComponent(this.storageParams.messageId))).subscribe({
+    this.storageService.getMessage(this.base64Service.encode(this.storageParams.messageId)).subscribe({
       next: (data) => {
         this.metadata = data;
       },

@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,21 +18,24 @@ package org.frankframework.core;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.context.ApplicationContext;
+
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.pipes.ValidatorBase;
+import org.frankframework.pipes.AbstractValidator;
 import org.frankframework.stream.Message;
 import org.frankframework.util.Locker;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Wrapper for the response validator. It has its own name and forwards, but delegates the actual work to the original validator.
  * It overrides the stop and start method to prevent the original validator from being started and stopped.
  */
-public abstract class AbstractResponseValidatorWrapper<V extends ValidatorBase> implements IValidator {
+public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidator> implements IValidator {
 
 	private @Getter @Setter String name;
+	private boolean started = false;
 
 	private final Map<String, PipeForward> forwards = new HashMap<>();
 
@@ -75,13 +78,18 @@ public abstract class AbstractResponseValidatorWrapper<V extends ValidatorBase> 
 	}
 
 	@Override
-	public void start() throws PipeStartException {
-		// Should not do anything
+	public void start() {
+		started = true;
 	}
 
 	@Override
 	public void stop() {
-		// Should not do anything
+		started = false;
+	}
+
+	@Override
+	public boolean isRunning() {
+		return started;
 	}
 
 	@Override

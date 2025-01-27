@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,5 +27,5 @@ public interface IbisExceptionListener {
 	/**
 	 * Inform the implementing class that the exception <code>t</code> occurred in <code>object</code>.
 	 */
-	void exceptionThrown(INamedObject object, Throwable t);
+	void exceptionThrown(HasName object, Throwable t);
 }

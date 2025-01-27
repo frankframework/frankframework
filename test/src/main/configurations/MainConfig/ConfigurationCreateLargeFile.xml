@@ -19,7 +19,7 @@
 		</receiver>
 		<pipeline firstPipe="ReadFile">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 			<pipe name="ReadFile"
 				className="org.frankframework.pipes.FixedResultPipe"
@@ -101,7 +101,7 @@
 		</receiver>
 		<pipeline firstPipe="DeleteFile">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 			<pipe name="DeleteFile" action="delete"
 				className="org.frankframework.pipes.LocalFileSystemPipe"

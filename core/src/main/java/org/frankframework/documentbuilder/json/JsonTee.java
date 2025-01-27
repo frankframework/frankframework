@@ -15,8 +15,9 @@
 */
 package org.frankframework.documentbuilder.json;
 
-import org.frankframework.documentbuilder.JsonEventHandler;
 import org.xml.sax.SAXException;
+
+import org.frankframework.documentbuilder.JsonEventHandler;
 
 public class JsonTee implements JsonEventHandler {
 

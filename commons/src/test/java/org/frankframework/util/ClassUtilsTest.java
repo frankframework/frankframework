@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.NameAware;
 
 class ClassUtilsTest {
 
@@ -33,7 +33,7 @@ class ClassUtilsTest {
 
 				() -> assertThrows(IllegalArgumentException.class, () -> ClassUtils.convertToType(Object.class, "dummy")),
 				() -> assertThrows(IllegalArgumentException.class, () -> ClassUtils.convertToType(Long.class, "dummy")),
-				() -> assertThrows(IllegalArgumentException.class, () -> ClassUtils.convertToType(int.class, "")) //Empty string
+				() -> assertThrows(IllegalArgumentException.class, () -> ClassUtils.convertToType(int.class, "")) // Empty string
 		);
 	}
 
@@ -43,6 +43,22 @@ class ClassUtilsTest {
 		Method method = clazz.getClass().getDeclaredMethod("setField", String.class);
 		ClassUtils.invokeSetter(clazz, method, "value");
 		assertEquals("value", clazz.getField());
+	}
+
+	@Test
+	void testInvokeTestClassSetter() throws Exception {
+		DummyClassWithSetter clazz = new DummyClassWithSetter();
+		TestClass objectToSet = new TestClass();
+		ClassUtils.invokeSetter(clazz, "setTestClass", objectToSet);
+		assertEquals(objectToSet, clazz.getTestClass());
+	}
+
+	@Test
+	void testInvokeSuperTestClassSetter() throws Exception {
+		DummyClassWithSetter clazz = new DummyClassWithSetter();
+		TestClass objectToSet = new SuperTestClass();
+		ClassUtils.invokeSetter(clazz, "setTestClass", objectToSet);
+		assertEquals(objectToSet, clazz.getTestClass());
 	}
 
 	@Test
@@ -78,7 +94,7 @@ class ClassUtilsTest {
 		assertEquals("String", ClassUtils.nameOf("test"));
 		assertEquals("ClassUtilsTest", ClassUtils.nameOf(this));
 		assertEquals("ClassUtilsTest", ClassUtils.nameOf(this.getClass()));
-		assertEquals("org.frankframework.util.ClassUtilsTest$1", ClassUtils.nameOf(new INamedObject() {
+		assertEquals("org.frankframework.util.ClassUtilsTest$1", ClassUtils.nameOf(new NameAware() {
 			private @Getter @Setter String name;
 		}));
 	}
@@ -114,18 +130,22 @@ class ClassUtilsTest {
 	@SuppressWarnings("unused")
 	private static class TestClass {
 		private String field;
-
 	}
 
-	private class DummyClassWithSetter {
+	private static class SuperTestClass extends TestClass {}
+
+	private static class DummyClassWithSetter {
 		private @Getter @Setter String field;
 		private @Getter TestEnum[] testEnums;
 		private @Getter String[] testStrings;
+		private @Getter @Setter TestClass testClass;
 
+		@SuppressWarnings("unused") // not unused, but used with reflection!
 		public void setEnumVarArgs(TestEnum... testEnum) {
 			this.testEnums = testEnum;
 		}
 
+		@SuppressWarnings("unused") // not unused, but used with reflection!
 		public void setTestStrings(String... testStrings) {
 			this.testStrings = testStrings;
 		}

@@ -24,13 +24,20 @@ import java.util.List;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.core.IScopeProvider;
 
-public abstract class ClassLoaderUtils {
+public class ClassLoaderUtils {
+
+	private ClassLoaderUtils() {
+		throw new IllegalStateException("Don't construct utility class");
+	}
+
 	private static final Logger log = LogUtil.getLogger(ClassLoaderUtils.class);
 	private static final String DEFAULT_ALLOWED_PROTOCOLS = AppConstants.getInstance().getString("classloader.allowed.protocols", null);
 

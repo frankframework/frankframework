@@ -1,64 +1,70 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   <div class="row">
-    <div class="col-lg-12" *ngIf="result">
-      <div class="ibox float-e-margins">
-        <div class="ibox-title">
-          <h4>InlineStore Overview</h4>
-        </div>
-        <div class="ibox-content">
-          <div class="col-md-12 table-responsive">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>ProcessState</th>
-                  <th title="total number of messages for this ProcessState">#</th>
-                  <th>Adapter</th>
-                  <th>Receiver</th>
-                  <th title="number of messages">#</th>
-                </tr>
-              </thead>
-              <tbody>
-                <ng-container *ngFor="let item of result | keyvalue">
-                  <ng-container *ngIf="item.value.items.length > 0">
-                    <tr *ngFor="let stateItem of item.value.items; let innerIndex = index">
-                      <ng-container *ngIf="innerIndex === 0">
-                        <td rowspan="0">{{ item.key }}</td>
-                        <td rowspan="0">{{ stateItem.messageCount }}</td>
-                      </ng-container>
-                      <td>{{ stateItem.adapterName }}</td>
-                      <td>{{ stateItem.receiverName }}</td>
-                      <td>
-                        <span
-                          class="text-{{ getProcessStateIconColorFn(item.key) }}"
-                          title="Browse messages with ProcessState: {{ item.key }}"
-                        >
-                          <button
-                            [routerLink]="[
-                              '',
-                              stateItem.configurationName,
-                              'adapters',
-                              stateItem.adapterName,
-                              'receivers',
-                              stateItem.receiverName,
-                              'stores',
-                              item.key
-                            ]"
-                            class="btn btn-xs btn-default m-l-xs"
-                            type="button"
-                          >
-                            <i class="fa {{ getProcessStateIconFn(item.key) }}"></i>
-                            ({{ stateItem.messageCount }})
-                          </button>
-                        </span>
-                      </td>
-                    </tr>
-                  </ng-container>
-                </ng-container>
-              </tbody>
-            </table>
+    @if (result) {
+      <div class="col-lg-12">
+        <div class="ibox float-e-margins">
+          <div class="ibox-title">
+            <h4>InlineStore Overview</h4>
+          </div>
+          <div class="ibox-content">
+            <div class="col-md-12 table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>ProcessState</th>
+                    <th title="total number of messages for this ProcessState">#</th>
+                    <th>Configuration</th>
+                    <th>Adapter</th>
+                    <th>Receiver</th>
+                    <th title="number of messages">#</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of result | keyvalue; track item.key) {
+                    @if (item.value.items.length > 0) {
+                      @for (stateItem of item.value.items; track stateItem; let innerIndex = $index) {
+                        <tr>
+                          @if (innerIndex === 0) {
+                            <td>{{ item.key }}</td>
+                            <td>{{ stateItem.messageCount }}</td>
+                          }
+                          <td>{{ stateItem.configurationName }}</td>
+                          <td>{{ stateItem.adapterName }}</td>
+                          <td>{{ stateItem.receiverName }}</td>
+                          <td>
+                            <span
+                              class="text-{{ getProcessStateIconColorFn(item.key) }}"
+                              title="Browse messages with ProcessState: {{ item.key }}"
+                            >
+                              <button
+                                [routerLink]="[
+                                  '',
+                                  stateItem.configurationName,
+                                  'adapters',
+                                  stateItem.adapterName,
+                                  'receivers',
+                                  stateItem.receiverName,
+                                  'stores',
+                                  item.key,
+                                ]"
+                                class="btn btn-xs btn-default m-l-xs"
+                                type="button"
+                              >
+                                <i class="fa {{ getProcessStateIconFn(item.key) }}"></i>
+                                ({{ stateItem.messageCount }})
+                              </button>
+                            </span>
+                          </td>
+                        </tr>
+                      }
+                    }
+                  }
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    }
   </div>
 </div>

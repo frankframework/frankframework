@@ -19,8 +19,9 @@ import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.HasSpecialDefaultValues;
@@ -58,7 +59,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	private @Getter String contentTypeSessionKey;
 	private @Getter String restPath = "/rest";
 	private final @Getter Boolean view = null;
-	private @Getter String authRoles="IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService";
+	private @Getter String authRoles="IbisWebService,IbisObserver,IbisDataAdmin,IbisAdmin,IbisTester";
 	private @Getter boolean writeToSecLog = false;
 	private @Getter boolean writeSecLogMessage = false;
 	private @Getter boolean retrieveMultipart = true;
@@ -75,7 +76,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	}
 
 	@Override
-	public void start() throws ListenerException {
+	public void start() {
 		super.start();
 		RestServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), getMethod(), getEtagSessionKey(), getContentTypeSessionKey(), isValidateEtag());
 	}
@@ -215,7 +216,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 
 	/**
 	 * Comma separated list of authorization roles which are granted for this rest service
-	 * @ff.default IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService
+	 * @ff.default IbisWebService,IbisObserver,IbisDataAdmin,IbisAdmin,IbisTester
 	 */
 	public void setAuthRoles(String string) {
 		authRoles = string;

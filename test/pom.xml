@@ -33,6 +33,69 @@
 			<type>war</type>
 		</dependency>
 
+		<dependency>
+			<groupId>com.rabbitmq</groupId>
+			<artifactId>amqp-client</artifactId>
+			<version>${rabbitmq.driver.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.rabbitmq.jms</groupId>
+			<artifactId>rabbitmq-jms</artifactId>
+			<version>${rabbitmq.jms.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- these runtime dependencies are required for the Spring Boot runner, so they are on the local classpath -->
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-filesystem</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-larva</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-ladybug-debugger</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-console-frontend</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-console-backend</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-akamai</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-cmis</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-aws</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-messaging</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-batch</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
 		<!-- provided scoped dependencies -->
 		<dependency>
 			<groupId>org.frankframework</groupId>
@@ -246,64 +309,6 @@
 
 	<profiles>
 		<profile>
-			<id>spring-boot</id>
-			<activation>
-				<!-- since this totally optional profile only forces all maven modules to be on the classpath it may alway be enabled -->
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<dependencies>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-filesystem</artifactId>
-					<scope>runtime</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-larva</artifactId>
-					<scope>runtime</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-ladybug-debugger</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-console-frontend</artifactId>
-					<scope>runtime</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-console-backend</artifactId>
-					<scope>runtime</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-akamai</artifactId>
-					<scope>runtime</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-cmis</artifactId>
-					<scope>runtime</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-aws</artifactId>
-					<scope>runtime</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-messaging</artifactId>
-					<scope>runtime</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-batch</artifactId>
-					<scope>runtime</scope>
-				</dependency>
-			</dependencies>
-		</profile>
-		<profile>
 			<id>database-drivers</id>
 			<activation>
 				<property>
@@ -372,6 +377,18 @@
 					<groupId>org.apache.activemq</groupId>
 					<artifactId>activemq-client</artifactId>
 					<version>${activemq.driver.version}</version>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>com.rabbitmq</groupId>
+					<artifactId>amqp-client</artifactId>
+					<version>${rabbitmq.driver.version}</version>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>com.rabbitmq.jms</groupId>
+					<artifactId>rabbitmq-jms</artifactId>
+					<version>${rabbitmq.jms.version}</version>
 					<scope>runtime</scope>
 				</dependency>
 			</dependencies>

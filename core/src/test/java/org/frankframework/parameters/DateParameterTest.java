@@ -1,6 +1,6 @@
 package org.frankframework.parameters;
 
-import static org.frankframework.parameters.AbstractParameter.TYPE_DATE_PATTERN;
+import static org.frankframework.parameters.DateParameter.TYPE_DATE_PATTERN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;

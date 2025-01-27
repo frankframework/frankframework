@@ -27,8 +27,8 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.doc.Forward;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
@@ -56,12 +56,12 @@ import org.frankframework.stream.Message;
  */
 @Forward(name = "stop", description = "exit for loop")
 @Forward(name = "continue", description = "continue in for loop")
-@ElementType(ElementTypes.ITERATOR)
+@EnterpriseIntegrationPattern(Type.ITERATOR)
 public class ForPipe extends AbstractPipe {
 
 	static final String STOP_FORWARD_NAME = "stop";
 	static final String CONTINUE_FORWARD_NAME = "continue";
-	static final String STOP_AT_PARAMETER_VALUE = "stopAt";
+	static final String STOP_AT_PARAMETER_NAME = "stopAt";
 	private static final String INCREMENT_SESSION_KEY_SUFFIX = "iteration";
 	private @Getter int startAt = 0;
 	private @Getter Integer stopAt = null;
@@ -71,12 +71,12 @@ public class ForPipe extends AbstractPipe {
 		super.configure();
 
 		// Mandatory stopAt attribute / parameter
-		if (stopAt == null && !getParameterList().hasParameter(STOP_AT_PARAMETER_VALUE)) {
-			throw new ConfigurationException("Value for 'stopAt' is mandatory to break out of the for loop pipe");
+		if (stopAt == null && !getParameterList().hasParameter(STOP_AT_PARAMETER_NAME)) {
+			throw new ConfigurationException("value for 'stopAt' is mandatory to break out of the for loop pipe");
 		}
 
-		if (stopAt != null && getParameterList().hasParameter(STOP_AT_PARAMETER_VALUE)) {
-			ConfigurationWarnings.add(this, log, "Value for 'stopAt' is set both as attribute and Parameter, please use one of the two options");
+		if (stopAt != null && getParameterList().hasParameter(STOP_AT_PARAMETER_NAME)) {
+			ConfigurationWarnings.add(this, log, "value for 'stopAt' is set both as attribute and Parameter, please use one of the two options");
 		}
 
 		// Mandatory forwards
@@ -122,15 +122,15 @@ public class ForPipe extends AbstractPipe {
 		return getParameterValueList(message, session)
 				.map(this::getIntegerValue)
 				.or(() -> Optional.ofNullable(stopAt))
-				.orElseThrow(() -> new PipeRunException(this, "Can't determine 'stopAt' value"));
+				.orElseThrow(() -> new PipeRunException(this, "can't determine 'stopAt' value"));
 
 	}
 
 	private Integer getIntegerValue(ParameterValueList list) {
 		int defaultValue = (stopAt != null) ? stopAt : 0;
 
-		if (list.contains(STOP_AT_PARAMETER_VALUE) && !list.get(STOP_AT_PARAMETER_VALUE).asStringValue().isBlank()) {
-			return list.get(STOP_AT_PARAMETER_VALUE).asIntegerValue(defaultValue);
+		if (list.contains(STOP_AT_PARAMETER_NAME) && !list.get(STOP_AT_PARAMETER_NAME).asStringValue().isBlank()) {
+			return list.get(STOP_AT_PARAMETER_NAME).asIntegerValue(defaultValue);
 		}
 
 		return null;
@@ -158,9 +158,7 @@ public class ForPipe extends AbstractPipe {
 	}
 
 	/**
-	 * Break from the loop when incrementSessionKey equals this value
-	 *
-	 * @ff.mandatory
+	 * Break from the loop when incrementSessionKey equals this value.
 	 */
 	public void setStopAt(Integer stopAt) {
 		this.stopAt = stopAt;

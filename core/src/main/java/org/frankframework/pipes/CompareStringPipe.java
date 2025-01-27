@@ -16,22 +16,22 @@
 package org.frankframework.pipes;
 
 import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * Pipe that lexicographically compares two strings, that must NOT be empty.
@@ -60,8 +60,8 @@ import org.w3c.dom.NodeList;
 @Forward(name = "lessthan", description = "operand1 &lt; operand2")
 @Forward(name = "greaterthan", description = "operand1 &gt; operand2")
 @Forward(name = "equals", description = "operand1 = operand2")
-@Category("Basic")
-@ElementType(ElementTypes.ROUTER)
+@Category(Category.Type.BASIC)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ROUTER)
 public class CompareStringPipe extends AbstractPipe {
 
 	private static final String LESSTHANFORWARD = "lessthan";

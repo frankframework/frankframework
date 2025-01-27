@@ -21,7 +21,6 @@ import java.sql.ResultSet;
 
 import org.frankframework.core.IDataIterator;
 import org.frankframework.core.SenderException;
-
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.ReaderLineIterator;

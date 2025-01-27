@@ -28,7 +28,6 @@ import java.util.Stack;
 import org.apache.commons.io.output.XmlStreamWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.util.LogUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
@@ -37,6 +36,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
 

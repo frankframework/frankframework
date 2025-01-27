@@ -37,7 +37,7 @@ import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TemporaryDirectoryUtils;
 
-@NotThreadSafe //should be picked up by surefire
+@NotThreadSafe // should be picked up by surefire
 public class InputOutputPipeProcessorTest {
 
 	public static final String INPUT_MESSAGE_TEXT = "input message";
@@ -67,7 +67,7 @@ public class InputOutputPipeProcessorTest {
 		pipeLine = new PipeLine();
 		Adapter owner = new Adapter();
 		owner.setName("PipeLine owner");
-		pipeLine.setOwner(owner);
+		pipeLine.setApplicationContext(owner);
 
 		pipe = new EchoPipe();
 
@@ -159,7 +159,7 @@ public class InputOutputPipeProcessorTest {
 		// Act & Assert that closing the session closes the input message
 		session.close();
 		assertTrue(input.isNull(), "Input Message should be closed");
-		assertTrue(prr1.getResult().isNull(), "Input Message of pipe2 should be closed");
+		assertFalse(prr1.getResult().isNull(), "Input Message of pipe2 should not be closed, because it is a byte[]");
 	}
 
 	private void testRestoreMovedElement(Object sessionVarContents) throws Exception {

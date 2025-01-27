@@ -20,7 +20,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
-import org.frankframework.configuration.classloaders.ClassLoaderBase;
+import org.frankframework.configuration.classloaders.AbstractClassLoader;
 import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jms.JmsRealm;
@@ -158,7 +158,7 @@ public class ClassLoaderManagerTest extends Mockito {
 
 	private ClassLoader getClassLoader(String testConfiguration) throws Exception {
 		ClassLoader config = manager.get(testConfiguration);
-		if(config instanceof ClassLoaderBase base) {
+		if(config instanceof AbstractClassLoader base) {
 			base.setBasePath(".");
 		}
 		return config;

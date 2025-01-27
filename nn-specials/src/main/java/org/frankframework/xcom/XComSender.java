@@ -33,7 +33,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Mandatory;
-import org.frankframework.senders.SenderWithParametersBase;
+import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.FileUtils;
@@ -45,7 +45,7 @@ import org.frankframework.util.StringUtil;
  *
  * @author John Dekker
  */
-public class XComSender extends SenderWithParametersBase {
+public class XComSender extends AbstractSenderWithParameters {
 
 	private File workingDir;
 	private @Getter FileOptionType fileOption = null;

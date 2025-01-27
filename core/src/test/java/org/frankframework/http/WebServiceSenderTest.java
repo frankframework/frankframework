@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
-import org.frankframework.http.HttpSenderBase.HttpMethod;
+import org.frankframework.http.AbstractHttpSender.HttpMethod;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 
@@ -84,7 +84,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.setMethodType(HttpMethod.POST);
-			sender.setParamsInUrl(false);
+			sender.setPostType(HttpEntityType.URLENCODED);
 			sender.setFirstBodyPartName("request");
 
 			String xmlMultipart = """
@@ -116,7 +116,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.setMethodType(HttpMethod.POST);
-			sender.setParamsInUrl(false);
+			sender.setPostType(HttpEntityType.URLENCODED);
 			sender.setFirstBodyPartName("request");
 
 			String xmlMultipart = """
@@ -160,7 +160,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			pls.put("multipartXml", xmlMultipart);
 			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
-			sender.setPostType(HttpSender.PostType.MTOM);
+			sender.setPostType(HttpEntityType.MTOM);
 			sender.setMultipartXmlSessionKey("multipartXml");
 
 			sender.configure();
@@ -182,10 +182,10 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.setFirstBodyPartName("file");
-			sender.setPostType(HttpSender.PostType.FORMDATA);
+			sender.setPostType(HttpEntityType.FORMDATA);
 			sender.setAllowSelfSignedCertificates(true);
 			sender.setVerifyHostname(false);
-			sender.setPostType(HttpSender.PostType.MTOM);
+			sender.setPostType(HttpEntityType.MTOM);
 
 			sender.addParameter(new Parameter("file", "<xml>I just sent some text! :)</xml>"));
 

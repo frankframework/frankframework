@@ -33,7 +33,10 @@ import java.util.TreeMap;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.messaging.Message;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.HasPhysicalDestination;
@@ -50,9 +53,9 @@ import org.frankframework.core.ProcessState;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.RestListener;
-import org.frankframework.jdbc.JdbcSenderBase;
+import org.frankframework.jdbc.AbstractJdbcSender;
+import org.frankframework.jms.AbstractJmsListener;
 import org.frankframework.jms.JmsBrowser;
-import org.frankframework.jms.JmsListenerBase;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -61,8 +64,8 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.dto.ProcessStateDTO;
 import org.frankframework.management.bus.message.JsonMessage;
-import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.pipes.AsyncSenderWithListenerPipe;
+import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
@@ -70,7 +73,6 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.MessageKeeperMessage;
 import org.frankframework.util.RunState;
-import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.ADAPTER)
@@ -195,7 +197,7 @@ public class AdapterStatus extends BusEndpointBase {
 
 	@Nullable
 	private ArrayList<Object> mapAdapterPipes(@Nonnull Adapter adapter) {
-		if(!adapter.configurationSucceeded())
+		if(!adapter.isConfigured())
 			return null;
 		PipeLine pipeline = adapter.getPipeLine();
 		int totalPipes = pipeline.getPipes().size();
@@ -231,7 +233,7 @@ public class AdapterStatus extends BusEndpointBase {
 				if (sender instanceof HasPhysicalDestination destination) {
 					pipesInfo.put("destination",destination.getPhysicalDestinationName());
 				}
-				if (sender instanceof JdbcSenderBase) {
+				if (sender instanceof AbstractJdbcSender) {
 					pipesInfo.put("isJdbcSender", true);
 				}
 				if (pipe instanceof AsyncSenderWithListenerPipe slp) {
@@ -329,7 +331,7 @@ public class AdapterStatus extends BusEndpointBase {
 				Map<String, Object> listenerInfo = new HashMap<>();
 				listenerInfo.put("name", listener.getName());
 				listenerInfo.put("class", ClassUtils.nameOf(listener));
-				if (listener instanceof HasPhysicalDestination && receiver.configurationSucceeded()) {
+				if (listener instanceof HasPhysicalDestination && receiver.isConfigured()) {
 					String pd = ((HasPhysicalDestination)receiver.getListener()).getPhysicalDestinationName();
 					listenerInfo.put("destination", pd);
 				}
@@ -347,7 +349,7 @@ public class AdapterStatus extends BusEndpointBase {
 				receiverInfo.put("listener", listenerInfo);
 			}
 
-			if ((listener instanceof JmsListenerBase jlb) && showPendingMsgCount) {
+			if ((listener instanceof AbstractJmsListener jlb) && showPendingMsgCount) {
 				JmsBrowser<jakarta.jms.Message> jmsBrowser;
 				if (StringUtils.isEmpty(jlb.getMessageSelector())) {
 					jmsBrowser = new JmsBrowser<>();
@@ -368,12 +370,12 @@ public class AdapterStatus extends BusEndpointBase {
 			if (sender != null) {
 				receiverInfo.put("senderName", sender.getName());
 				receiverInfo.put("senderClass", ClassUtils.nameOf(sender));
-				if (sender instanceof HasPhysicalDestination destination && receiver.configurationSucceeded()) {
+				if (sender instanceof HasPhysicalDestination destination && receiver.isConfigured()) {
 					String pd = destination.getPhysicalDestinationName();
 					receiverInfo.put("senderDestination", pd);
 				}
 			}
-			if (receiver.isThreadCountReadable() && receiver.configurationSucceeded()) {
+			if (receiver.isThreadCountReadable() && receiver.isConfigured()) {
 				receiverInfo.put("threadCount", receiver.getCurrentThreadCount());
 				receiverInfo.put("maxThreadCount", receiver.getMaxThreadCount());
 
@@ -415,7 +417,7 @@ public class AdapterStatus extends BusEndpointBase {
 		String state = adapterRunState.toString().toLowerCase().replace("*", "");
 		adapterInfo.put("state", state);
 
-		adapterInfo.put("configured", adapter.configurationSucceeded());
+		adapterInfo.put("configured", adapter.isConfigured());
 		adapterInfo.put("upSince", adapter.getStatsUpSinceDate().getTime());
 		Date lastMessage = adapter.getLastMessageDateDate();
 		if(lastMessage != null) {

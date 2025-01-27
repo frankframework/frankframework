@@ -27,10 +27,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.ReferTo;
-import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
@@ -57,12 +55,8 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	}
 
 	@Override
-	public void start() throws PipeStartException {
-		try {
-			querySender.start();
-		} catch (LifecycleException e) {
-			throw new PipeStartException(e);
-		}
+	public void start() {
+		querySender.start();
 		super.start();
 	}
 

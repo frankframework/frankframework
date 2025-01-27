@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,16 +32,17 @@ import jakarta.jms.MessageConsumer;
 import jakarta.jms.MessageProducer;
 import jakarta.jms.Session;
 
-import io.micrometer.core.instrument.DistributionSummary;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.xml.sax.SAXException;
 
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
-import org.frankframework.core.AdapterAware;
+import org.frankframework.core.ICorrelatedSender;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -57,7 +58,6 @@ import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.statistics.FrankMeterType;
-import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
@@ -72,8 +72,7 @@ import org.frankframework.util.XmlException;
  *
  * @author Gerrit van Brakel
  */
-
-public class JmsSender extends JMSFacade implements ISenderWithParameters, HasStatistics, AdapterAware {
+public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorrelatedSender {
 	private @Getter String replyToName = null;
 	private @Getter DeliveryMode deliveryMode = DeliveryMode.NOT_SET;
 	private @Getter String messageType = null;

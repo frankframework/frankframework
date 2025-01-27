@@ -17,13 +17,15 @@ package org.frankframework.jdbc;
 
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.IMessageBrowser;
@@ -49,7 +51,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	private @Getter String selectCondition;
 	private @Getter int maxCommentLength=ITransactionalStorage.MAXCOMMENTLEN;
 
-	private final Map<ProcessState, String> statusValues = new HashMap<>();
+	private final Map<ProcessState, String> statusValues = new EnumMap<>(ProcessState.class);
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -71,6 +73,9 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		if (StringUtils.isEmpty(getStatusValue(ProcessState.DONE))) {
 			throw new ConfigurationException("must specify statusValueProcessed");
 		}
+		if (StringUtils.isNotEmpty(selectCondition)) {
+			verifySelectCondition();
+		}
 		setSelectQuery("SELECT " + getKeyField() +
 								(StringUtils.isNotEmpty(getMessageIdField()) ? "," + getMessageIdField() : "") + (StringUtils.isNotEmpty(getCorrelationIdField()) ? "," + getCorrelationIdField() : "") +
 								(StringUtils.isNotEmpty(getMessageField()) ? "," + getMessageField() : "") +
@@ -86,6 +91,21 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		statusValues.forEach((state, value) -> setUpdateStatusQuery(state, createUpdateStatusQuery(value, null))); // set proper updateStatusQueries using createUpdateStatusQuery() after configure has been called();
 		if (StringUtils.isEmpty(getStatusValue(ProcessState.INPROCESS)) && !getDbmsSupport().hasSkipLockedFunctionality()) {
 			ConfigurationWarnings.add(this, log, "Database [" + getDbmsSupport().getDbmsName() + "] needs statusValueInProcess to run in multiple threads");
+		}
+	}
+
+	private void verifySelectCondition() {
+		verifyFieldNotInQuery(getCommentField(), selectCondition);
+		verifyFieldNotInQuery(getTimestampField(), selectCondition);
+	}
+
+	protected void verifyFieldNotInQuery(String fieldName, String query) {
+		if (StringUtils.isEmpty(fieldName)) return;
+
+		String findFieldRE = "(^|\\W)(" + fieldName + ")(\\W|$)";
+		Pattern pattern = Pattern.compile(findFieldRE);
+		if (pattern.matcher(query).find()) {
+			ConfigurationWarnings.add(this, log, "The query [" + query + "] may not reference the timestampField or commentField. Found: [" + fieldName + "].");
 		}
 	}
 
@@ -111,7 +131,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 			}
 		}
 		parameters.add(key);
-		return execute(connection, query, parameters.toArray(new String[parameters.size()])) ? rawMessage : null;
+		return execute(connection, query, parameters) ? rawMessage : null;
 	}
 
 	@Override

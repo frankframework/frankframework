@@ -33,6 +33,9 @@ import jakarta.xml.soap.AttachmentPart;
 import jakarta.xml.soap.SOAPException;
 
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.http.InputStreamDataSource;
 import org.frankframework.http.PartMessage;
 import org.frankframework.stream.Message;
@@ -40,10 +43,12 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.XmlBuilder;
 
-import lombok.extern.log4j.Log4j2;
-
 @Log4j2
-public abstract class MultipartUtils {
+public class MultipartUtils {
+
+	private MultipartUtils() {
+		throw new IllegalStateException("Don't construct utility class");
+	}
 
 	public static final String FORM_DATA = "form-data";
 	public static final String MULTIPART = "multipart/";

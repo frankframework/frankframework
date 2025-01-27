@@ -39,9 +39,9 @@ import org.springframework.stereotype.Component;
  */
 public interface DynamicRegistration {
 
-	String[] ALL_IBIS_ROLES = {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"};
-	String[] ALL_IBIS_USER_ROLES = {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester"};
-	String[] IBIS_FULL_SERVICE_ACCESS_ROLES = {"IbisTester", "IbisWebService"};
+	String[] ALL_IBIS_ROLES = {"IbisWebService", "IbisObserver", "IbisDataAdmin", "IbisAdmin","IbisTester"};
+	String[] ALL_IBIS_USER_ROLES = {"IbisObserver", "IbisDataAdmin","IbisAdmin", "IbisTester"};
+	String[] IBIS_FULL_SERVICE_ACCESS_ROLES = {"IbisWebService", "IbisTester"};
 
 	/**
 	 * Name of the to-be implemented class

@@ -2,11 +2,14 @@ import { Component, Input } from '@angular/core';
 import { ServerInfo } from '../../../services/server-info.service';
 import { Alert, MessageLog } from '../../../app.service';
 import { Router } from '@angular/router';
+import { NgClass } from '@angular/common';
+import { HumanFileSizePipe } from '../../../pipes/human-file-size.pipe';
 
 @Component({
   selector: 'app-server-warnings',
   templateUrl: './server-warnings.component.html',
   styleUrl: './server-warnings.component.scss',
+  imports: [NgClass, HumanFileSizePipe],
 })
 export class ServerWarningsComponent {
   @Input({ required: true }) alerts: Alert[] = [];

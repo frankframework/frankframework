@@ -36,7 +36,7 @@ import org.frankframework.util.LogUtil;
  * @author Johan Verrips IOS
  * @see JmsRealm
  */
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class JmsRealmFactory {
 	private final Logger log = LogUtil.getLogger(this);
 

@@ -18,13 +18,14 @@ package org.frankframework.pipes;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
@@ -38,7 +39,7 @@ import org.frankframework.stream.Message;
  *
  * @author Richard Punt / Gerrit van Brakel
  */
-@ElementType(ElementTypes.SESSION)
+@EnterpriseIntegrationPattern(Type.SESSION)
 public class IncreaseIntegerPipe extends FixedForwardPipe {
 
 	private static final String PARAMETER_INCREMENT = "increment";

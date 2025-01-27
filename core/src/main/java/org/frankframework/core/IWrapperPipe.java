@@ -15,8 +15,7 @@
 */
 package org.frankframework.core;
 
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Optional;
@@ -27,7 +26,7 @@ import org.frankframework.doc.Optional;
  */
 @FrankDocGroup(FrankDocGroupValue.PIPE)
 @FrankDocGroup(FrankDocGroupValue.WRAPPER)
-@ElementType(ElementTypes.WRAPPER)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.WRAPPER)
 public interface IWrapperPipe extends IPipe {
 
 	enum Direction {WRAP, UNWRAP}

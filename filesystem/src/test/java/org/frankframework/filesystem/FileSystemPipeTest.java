@@ -23,8 +23,8 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
@@ -32,7 +32,7 @@ import org.frankframework.testutil.TestAssertions;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
 
-public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
+public abstract class FileSystemPipeTest<FSP extends AbstractFileSystemPipe<F, FS>, F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
 
 	protected FSP fileSystemPipe;
 	protected PipeRunResult prr;
@@ -46,11 +46,11 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 		fileSystemPipe = createFileSystemPipe();
 		fileSystemPipe.setName(getClass().getSimpleName());
-		PipeLine pipeLine = new PipeLine();
+		PipeLine pipeLine = createBeanInAdapter(PipeLine.class);
 		fileSystemPipe.setPipeLine(pipeLine);
 		pipeLine.addPipe(fileSystemPipe);
 
-		autowireByName(fileSystemPipe);
+		autowireBeanByNameInAdapter(fileSystemPipe);
 		fileSystemPipe.addForward(new PipeForward("success",null));
 	}
 
@@ -762,7 +762,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.setName("FSP");
 		fileSystemPipe.configure();
 
-		PipeStartException e = assertThrows(PipeStartException.class, fileSystemPipe::start);
+		LifecycleException e = assertThrows(LifecycleException.class, fileSystemPipe::start);
 		assertThat(e.getMessage(), startsWith("Pipe [FSP]: Cannot open fileSystem"));
 	}
 

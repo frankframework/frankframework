@@ -1,8 +1,9 @@
 /// <reference types="@angular/localize" />
 
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import { AppModule } from './app/app.module';
-import type * as SockJS from 'sockjs-client';
+import { bootstrapApplication } from '@angular/platform-browser';
+import type SockJS from 'sockjs-client';
+import { AppComponent } from './app/app.component';
+import { appConfig } from './app/app.config';
 import { whenElementExists } from './app/utils';
 
 declare global {
@@ -12,24 +13,8 @@ declare global {
   }
 }
 
-let scroll2TopAnimation: Animation | null = null;
-
 function main(): void {
-  platformBrowserDynamic()
-    .bootstrapModule(AppModule)
-    .catch((error) => console.error(error));
-
-  /* TODO: when all components are standalone, bootstrap using this
-  bootstrapApplication(AppCompponent, {
-    providers: [
-      provideRouter(...),
-      importProvidersFrom(
-        //  LibraryModule.forRoot()
-      ),
-      // other providers
-    ],
-  });
-  */
+  bootstrapApplication(AppComponent, appConfig).catch((error) => console.error(error));
 }
 
 if (location.hostname != 'localhost') {
@@ -74,11 +59,11 @@ function onReady(): void {
   bodyElement.addEventListener('scroll', function (this: HTMLElement) {
     const scroll2top = this.querySelector<HTMLElement>('.scroll-to-top');
     if (!scroll2top) return;
-    if (scroll2TopAnimation) scroll2TopAnimation.cancel();
-    scroll2TopAnimation =
-      this.scrollTop > 100 && Number.parseInt(scroll2top.style.opacity ?? '0') === 0
-        ? scroll2top.animate({ opacity: 1, 'z-index': 10_000 }, 50)
-        : scroll2top.animate({ opacity: 0, 'z-index': -1 }, 50);
+    if (scroll2top.classList.contains('hidden-scroll') && this.scrollTop > 100) {
+      scroll2top.classList.remove('hidden-scroll');
+    } else if (!scroll2top.classList.contains('hidden-scroll') && this.scrollTop <= 100) {
+      scroll2top.classList.add('hidden-scroll');
+    }
   });
 }
 

@@ -15,9 +15,9 @@
 */
 package org.frankframework.senders;
 
+import org.frankframework.filesystem.AbstractFileSystemSender;
 import org.frankframework.filesystem.AmazonS3FileSystem;
 import org.frankframework.filesystem.AmazonS3FileSystemDelegator;
-import org.frankframework.filesystem.FileSystemSender;
 import org.frankframework.filesystem.S3FileRef;
 
 /**
@@ -32,7 +32,7 @@ import org.frankframework.filesystem.S3FileRef;
  *     The string value of these parameters will be used as value of the custom metadata attribute.
  * </p>
  */
-public class AmazonS3Sender extends FileSystemSender<S3FileRef, AmazonS3FileSystem> implements AmazonS3FileSystemDelegator {
+public class AmazonS3Sender extends AbstractFileSystemSender<S3FileRef, AmazonS3FileSystem> implements AmazonS3FileSystemDelegator {
 
 	public AmazonS3Sender() {
 		setFileSystem(new AmazonS3FileSystem());

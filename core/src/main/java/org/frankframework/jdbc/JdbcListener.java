@@ -24,14 +24,16 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import jakarta.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IHasProcessState;
@@ -42,6 +44,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
@@ -111,18 +114,18 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 	@Override
-	public void start() throws ListenerException {
+	public void start() {
 		if (!isConnectionsArePooled()) {
 			try {
 				connection = getConnection();
 			} catch (JdbcException e) {
-				throw new ListenerException(e);
+				throw new LifecycleException(e);
 			}
 		} else {
 			try (Connection c = getConnection()) {
 				//do nothing, eat a connection from the pool to validate connectivity
-			} catch (JdbcException|SQLException e) {
-				throw new ListenerException(e);
+			} catch (JdbcException | SQLException e) {
+				throw new LifecycleException(e);
 			}
 		}
 	}
@@ -252,7 +255,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	 * Otherwise the message is loaded from the {@code rs} parameter and returned wrapped in a {@link MessageWrapper}.
 	 * @throws JdbcException If loading the message resulted in a database exception.
 	 */
-	protected MessageWrapper<M> extractRawMessage(ResultSet rs) throws JdbcException {
+	protected RawMessageWrapper<M> extractRawMessage(ResultSet rs) throws JdbcException {
 		// TODO: This needs to be reviewed, if all complications are needed. Some branches are never touched in tests.
 		try {
 			String key = rs.getString(getKeyField());
@@ -361,16 +364,16 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	protected RawMessageWrapper<M> changeProcessState(Connection connection, RawMessageWrapper<M> rawMessage, ProcessState toState, String reason) throws ListenerException {
 		String query = getUpdateStatusQuery(toState);
 		String key=getKeyFromRawMessage(rawMessage);
-		return execute(connection, query, key) ? rawMessage : null;
+		return execute(connection, query, List.of(key)) ? rawMessage : null;
 	}
 
-	protected boolean execute(Connection conn, String query, String... parameters) throws ListenerException {
+	protected boolean execute(Connection conn, String query, List<String> parameters) throws ListenerException {
 		if (StringUtils.isNotEmpty(query)) {
 			if (trace && log.isDebugEnabled()) log.debug("executing statement [{}]", query);
 			try (PreparedStatement stmt=conn.prepareStatement(query)) {
 				stmt.clearParameters();
-				int i=1;
-				for(String parameter:parameters) {
+				int i = 1;
+				for (String parameter : parameters) {
 					log.debug("setting parameter {} to [{}]", i, parameter);
 					JdbcUtil.setParameter(stmt, i++, parameter, getDbmsSupport().isParameterTypeMatchRequired());
 				}

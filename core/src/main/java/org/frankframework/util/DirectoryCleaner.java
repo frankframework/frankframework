@@ -29,7 +29,7 @@ import org.frankframework.doc.FrankDocGroupValue;
  *
  * @author Peter Leeuwenburgh
  */
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class DirectoryCleaner {
 	protected Logger log = LogUtil.getLogger(this);
 

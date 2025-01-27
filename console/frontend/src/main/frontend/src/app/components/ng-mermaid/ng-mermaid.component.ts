@@ -1,4 +1,5 @@
-import { CommonModule } from '@angular/common';
+// /// <reference path="../../../../node_modules/mermaid/dist/mermaid.d.ts" /> doesnt work
+
 import {
   Component,
   ElementRef,
@@ -10,8 +11,14 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import mermaid from 'mermaid';
 import { v4 as uuidv4 } from 'uuid';
+// @ts-expect-error mermaid does not have types
+import mermaidImport, { RenderResult } from 'mermaid/dist/mermaid.esm.mjs';
+const mermaid = mermaidImport;
+
+// Uncomment developing for type support, comment again when compiling as it causes errors
+// import type { Mermaid } from 'mermaid';
+// const mermaid: Mermaid = mermaidImport;
 
 @Component({
   selector: 'ng-mermaid',
@@ -24,8 +31,7 @@ import { v4 as uuidv4 } from 'uuid';
       }
     `,
   ],
-  standalone: true,
-  imports: [CommonModule],
+  imports: [],
 })
 export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
   @Input() nmModel?: string;
@@ -81,7 +87,7 @@ export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
 
             mermaid
               .render(uid, this.nmModel!, mermaidContainer)
-              .then(({ svg, bindFunctions }) => {
+              .then(({ svg, bindFunctions }: RenderResult) => {
                 mermaidContainer.innerHTML = svg;
                 const svgElement = mermaidContainer.firstChild as SVGSVGElement;
                 this.mermaidSvgElement = svgElement;
@@ -89,7 +95,7 @@ export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
                 svgElement.setAttribute('style', 'max-width: 100%;');
                 if (bindFunctions) bindFunctions(svgElement);
               })
-              .catch((error) => {
+              .catch((error: Error) => {
                 this.handleError(error);
               })
               .finally(() => {

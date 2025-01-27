@@ -22,16 +22,14 @@ import java.sql.SQLException;
 import java.util.StringTokenizer;
 
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
@@ -52,7 +50,7 @@ import org.frankframework.util.JdbcUtil;
  * @author  Peter Leeuwenburgh
  * @since   4.9
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(Type.TRANSLATOR)
 public class DomainTransformerPipe extends FixedForwardPipe {
 
 	private static final String DT_START = "%![DT{";
@@ -68,7 +66,6 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 
 	private FixedQuerySender qs;
 	private @Getter String query;
-	private @Getter String jmsRealm;
 	private @Getter String datasourceName;
 
 	@Override
@@ -76,12 +73,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		super.configure();
 
 		qs = createBean(FixedQuerySender.class);
-
-		if(StringUtils.isNotEmpty(getDatasourceName())) {
-			qs.setDatasourceName(getDatasourceName());
-		} else {
-			qs.setJmsRealm(getJmsRealm());
-		}
+		qs.setDatasourceName(getDatasourceName());
 
 		//dummy query required
 		qs.setQuery("SELECT count(*) FROM ALL_TABLES");
@@ -193,24 +185,13 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public void start() throws PipeStartException {
-		try {
-			qs.start();
-		} catch (Throwable t) {
-			PipeStartException pse = new PipeStartException("could not start", t);
-			pse.setPipeNameInError(getName());
-			throw pse;
-		}
+	public void start() {
+		qs.start();
 	}
 
 	@Override
 	public void stop() {
 		qs.stop();
-	}
-
-	@Deprecated(forRemoval = true, since = "7.8.0")
-	public void setJmsRealm(String jmsRealm) {
-		this.jmsRealm = jmsRealm;
 	}
 
 	public void setDatasourceName(String datasourceName) {

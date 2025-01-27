@@ -25,25 +25,25 @@ import java.util.zip.ZipOutputStream;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.BinaryMessage;
-import org.frankframework.management.bus.message.StringMessage;
 import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.core.BytesResource;
 import org.frankframework.core.Resource;
-
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.jdbc.migration.DatabaseMigratorBase;
+import org.frankframework.jdbc.migration.AbstractDatabaseMigrator;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.BinaryMessage;
+import org.frankframework.management.bus.message.StringMessage;
 import org.frankframework.util.StreamUtil;
 
 @BusAware("frank-management-bus")
@@ -100,7 +100,7 @@ public class DatabaseMigrator extends BusEndpointBase {
 			return null;
 		}
 
-		DatabaseMigratorBase databaseMigrator = configuration.getBean("jdbcMigrator", DatabaseMigratorBase.class);
+		AbstractDatabaseMigrator databaseMigrator = configuration.getBean("jdbcMigrator", AbstractDatabaseMigrator.class);
 		if(databaseMigrator.hasMigrationScript()) {
 			return databaseMigrator.getChangeLog();
 		}
@@ -118,7 +118,7 @@ public class DatabaseMigrator extends BusEndpointBase {
 			throw new BusException("payload is not instance of String");
 		}
 
-		DatabaseMigratorBase databaseMigrator = configuration.getBean("jdbcMigrator", DatabaseMigratorBase.class);
+		AbstractDatabaseMigrator databaseMigrator = configuration.getBean("jdbcMigrator", AbstractDatabaseMigrator.class);
 		if(!databaseMigrator.hasMigrationScript()) {
 			throw new BusException("unable to generate migration script, database migrations are not enabled for this configuration");
 		}

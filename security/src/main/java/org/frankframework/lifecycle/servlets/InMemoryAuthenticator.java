@@ -23,7 +23,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Setter;
 
-public class InMemoryAuthenticator extends ServletAuthenticatorBase {
+public class InMemoryAuthenticator extends AbstractServletAuthenticator {
 	private @Setter String username = null;
 	private @Setter String password = null;
 

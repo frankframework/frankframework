@@ -24,14 +24,16 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import org.springframework.util.MimeType;
+
 import com.datasonnet.Mapper;
 import com.datasonnet.MapperBuilder;
 import com.datasonnet.document.DefaultDocument;
 import com.datasonnet.document.Document;
 import com.datasonnet.document.MediaType;
 import com.datasonnet.document.MediaTypes;
+
 import lombok.extern.log4j.Log4j2;
-import org.springframework.util.MimeType;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
@@ -39,8 +41,8 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.Resource;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.parameters.DateParameter;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
@@ -91,7 +93,7 @@ import org.frankframework.util.StreamUtil;
  * @see <a href="https://datasonnet.github.io/datasonnet-mapper/datasonnet/latest/cookbook.html">DataSonnet cookbook</a>.
  */
 @Log4j2
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(Type.TRANSLATOR)
 public class DataSonnetPipe extends FixedForwardPipe {
 	private String styleSheetName;
 	private Mapper mapper;
@@ -173,12 +175,12 @@ public class DataSonnetPipe extends FixedForwardPipe {
 	 */
 	private Document<?> toDocument(ParameterValue pv) {
 		if(pv.getDefinition() instanceof DateParameter) {
-			return new DefaultDocument<String>(pv.asStringValue());
+			return new DefaultDocument<>(pv.asStringValue());
 		} else if(pv.getDefinition() instanceof Parameter || pv.getValue() instanceof Message) {
 			return new FrankMessageDocument(pv.asMessage(), computeMimeType);
 		}
 
-		return new DefaultDocument<Object>(pv.getValue(), MediaTypes.APPLICATION_JAVA);
+		return new DefaultDocument<>(pv.getValue(), MediaTypes.APPLICATION_JAVA);
 	}
 
 	/** Location of stylesheet to apply to the input message */

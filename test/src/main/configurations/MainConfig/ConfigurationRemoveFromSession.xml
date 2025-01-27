@@ -5,7 +5,7 @@
 		</receiver>
 		<pipeline firstPipe="SwitchAction">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch" xpathExpression="request/@action" />
 			<!-- putAndRemoveOneKey -->

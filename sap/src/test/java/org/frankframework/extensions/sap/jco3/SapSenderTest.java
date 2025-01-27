@@ -28,7 +28,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.extensions.sap.SapException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
-import org.frankframework.util.GlobalListItem;
+import org.frankframework.util.SapSystemListItem;
 
 public class SapSenderTest {
 
@@ -41,7 +41,7 @@ public class SapSenderTest {
 
 	@BeforeEach
 	public void setUp() throws SapException, JCoException, SenderException {
-		GlobalListItem.clear();
+		SapSystemListItem.clear();
 
 		sapSystemDataProviderMockedStatic = mockStatic(SapSystemDataProvider.class);
 		sapSystemDataProviderMockedStatic.when(SapSystemDataProvider::getInstance).thenReturn(mock(SapSystemDataProvider.class));
@@ -57,7 +57,7 @@ public class SapSenderTest {
 		doNothing().when(sapSystem).openSystem();
 
 		sapSystem.setName(sapSystemName);
-		sapSystem.registerItem(sender);
+		SapSystemListItem.registerItem(sapSystem);
 	}
 
 	@AfterEach

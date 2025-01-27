@@ -25,7 +25,7 @@ import org.frankframework.util.UUIDUtil;
 /**
  * @author Jaco de Groot
  */
-public class InputOutputPipeLineProcessor extends PipeLineProcessorBase {
+public class InputOutputPipeLineProcessor extends AbstractPipeLineProcessor {
 
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {

@@ -21,7 +21,7 @@ import org.apache.commons.io.input.ReaderInputStream;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.jdbc.JdbcQuerySenderBase.QueryType;
+import org.frankframework.jdbc.AbstractJdbcQuerySender.QueryType;
 import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;

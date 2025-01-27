@@ -41,13 +41,16 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
+		super.setUp();
 		fileSystem = createFileSystem();
+		autowireBeanByNameInAdapter(fileSystem);
 	}
 
 	@AfterEach
 	@Override
 	public void tearDown() {
 		CloseUtils.closeSilently(fileSystem);
+		super.tearDown();
 	}
 
 	@Test
@@ -68,11 +71,11 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.configure();
 		fileSystem.open();
 
-		createFile(null, filename, "tja");
+		String id = createFile(null, filename, "tja");
 		waitForActionToFinish();
 
 		// test
-		F f = fileSystem.toFile(filename);
+		F f = fileSystem.toFile(id);
 		assertTrue(fileSystem.exists(f), "Expected file[" + filename + "] to be present");
 	}
 
@@ -105,16 +108,16 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.configure();
 		fileSystem.open();
 
-		createFile(null, filename, "maakt niet uit");
+		String id = createFile(null, filename, "maakt niet uit");
 		waitForActionToFinish();
-		existsCheck(filename);
+		existsCheck(id);
 
 		// test
-		F file = fileSystem.toFile(filename);
+		F file = fileSystem.toFile(id);
 		fileSystem.deleteFile(file);
 		waitForActionToFinish();
 
-		assertFalse(_fileExists(filename), "Expected file [" + filename + "] not to be present");
+		assertFalse(_fileExists(id), "Expected file [" + filename + "] not to be present");
 	}
 
 	public void testReadFile(F file, String expectedContents, String charset) throws IOException, FileSystemException {
@@ -132,12 +135,12 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.configure();
 		fileSystem.open();
 
-		createFile(null, filename, contents);
+		String fullname = createFile(null, filename, contents);
 		waitForActionToFinish();
 		// test
-		existsCheck(filename);
+		existsCheck(fullname);
 
-		F file = fileSystem.toFile(filename);
+		F file = fileSystem.toFile(fullname);
 		// test
 		testReadFile(file, contents, null);
 	}
@@ -150,12 +153,12 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.configure();
 		fileSystem.open();
 
-		createFile(null, filename, contents);
+		String id = createFile(null, filename, contents);
 		waitForActionToFinish();
 		// test
-		existsCheck(filename);
+		existsCheck(id);
 
-		F file = fileSystem.toFile(filename);
+		F file = fileSystem.toFile(id);
 		// test
 		Message in = fileSystem.readFile(file, null);
 
@@ -178,12 +181,12 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.configure();
 		fileSystem.open();
 
-		createFile(null, filename, contents);
+		String id = createFile(null, filename, contents);
 		waitForActionToFinish();
 		// test
-		existsCheck(filename);
+		existsCheck(id);
 
-		F file = fileSystem.toFile(filename);
+		F file = fileSystem.toFile(id);
 		// test
 		testReadFile(file, contents, "UTF-8");
 	}
@@ -196,12 +199,12 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.configure();
 		fileSystem.open();
 
-		createFile(null, filename, contents);
+		String id = createFile(null, filename, contents);
 		waitForActionToFinish();
 		// test
-		existsCheck(filename);
+		existsCheck(id);
 
-		F file = fileSystem.toFile(filename);
+		F file = fileSystem.toFile(id);
 		// test
 		testReadFile(file, expected, "ISO-8859-1");
 	}
@@ -214,12 +217,12 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.configure();
 		fileSystem.open();
 
-		createFile(null, filename, contents);
+		String id = createFile(null, filename, contents);
 		waitForActionToFinish();
 
-		F file = fileSystem.toFile(filename);
+		F file = fileSystem.toFile(id);
 		// test
-		assertEquals(filename, fileSystem.getName(file));
+		assertEquals(id, fileSystem.getName(file));
 	}
 
 	@Test
@@ -246,10 +249,10 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.configure();
 		fileSystem.open();
 
-		createFile(null, filename, contents);
+		String id = createFile(null, filename, contents);
 		waitForActionToFinish();
 
-		F file = fileSystem.toFile(filename);
+		F file = fileSystem.toFile(id);
 		Date actual1 = fileSystem.getModificationTime(file);
 		Date actual2 = fileSystem.getModificationTime(file);
 		assertEquals(actual1, actual2);
@@ -274,29 +277,31 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.open();
 
 		_createFolder(srcFolder);
-		createFile(srcFolder,filename, contents);
+		String id = createFile(srcFolder,filename, contents);
 		waitForActionToFinish();
 
-		assertFileExistsWithContents(srcFolder, filename, contents);
+		assertFileExistsWithContents(srcFolder, id, contents);
 
 		_createFolder(dstFolder);
 		waitForActionToFinish();
 
 		assertTrue(_folderExists(dstFolder));
-		assertFileDoesNotExist(dstFolder, filename);
+		assertFileDoesNotExist(dstFolder, filename); // does not work with file's with an `id`. already returns false so tests pass regardless.
 
-		F f = fileSystem.toFile(srcFolder, filename);
-		F f2 = fileSystem.toFile(srcFolder, filename);
-		F movedFile =fileSystem.moveFile(f, dstFolder, false);
+		F f = fileSystem.toFile(srcFolder, id);
+		F f2 = fileSystem.toFile(srcFolder, id);
+		F movedFile = fileSystem.moveFile(f, dstFolder, false);
 		waitForActionToFinish();
 
-		assertEquals(filename,fileSystem.getName(movedFile));
+		if (filename.equals(id)) { // If each file has a different 'name' because it's not unique in a folder, this test wont work.
+			assertEquals(filename, fileSystem.getName(movedFile));
+		}
 
 		assertTrue(_folderExists(dstFolder), "Destination folder must exist");
 		assertFileExistsWithContents(dstFolder, fileSystem.getName(movedFile), contents);
 		//TODO: test that contents of file has remained the same
 		//TODO: test that file timestamp has not changed
-		assertFileDoesNotExist(srcFolder, filename);
+		assertFileDoesNotExist(srcFolder, id);
 
 		assertFalse(fileSystem.exists(f2), "original file should not exist anymore after move");
 
@@ -321,17 +326,24 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.open();
 
 		_createFolder(srcFolder);
-		createFile(srcFolder,filename, srcContents);
+		String id1 = createFile(srcFolder, filename, srcContents);
 		_createFolder(dstFolder);
-		createFile(dstFolder,filename, dstContents);
+		String id2 = createFile(dstFolder, filename, dstContents);
 		waitForActionToFinish();
 
-		assertFileExistsWithContents(srcFolder, filename, srcContents);
-		assertFileExistsWithContents(dstFolder, filename, dstContents);
+		assertFileExistsWithContents(srcFolder, id1, srcContents);
+		assertFileExistsWithContents(dstFolder, id2, dstContents);
 
-		F f = fileSystem.toFile(srcFolder, filename);
+		F f = fileSystem.toFile(srcFolder, id1);
 
-		assertThrows(FileSystemException.class, ()-> fileSystem.moveFile(f, dstFolder, false) );
+		if (id1.equals(id2)) { // if both filenames are the same, this test should fail
+			assertThrows(FileSystemException.class, ()-> fileSystem.moveFile(f, dstFolder, false) );
+		} else {
+			F movedFile = fileSystem.moveFile(f, dstFolder, false);
+			assertFileExistsWithContents(srcFolder, fileSystem.getName(movedFile), srcContents);
+			assertFalse(fileSystem.exists(f));
+			assertEquals(2, fileSystem.getNumberOfFilesInFolder(dstFolder));
+		}
 	}
 
 	@Test
@@ -345,10 +357,10 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.open();
 
 		_createFolder(srcFolder);
-		createFile(srcFolder,filename, contents);
+		String id = createFile(srcFolder,filename, contents);
 		waitForActionToFinish();
 
-		assertFileExistsWithContents(srcFolder, filename, contents);
+		assertFileExistsWithContents(srcFolder, id, contents);
 
 		_createFolder(dstFolder);
 		waitForActionToFinish();
@@ -356,17 +368,19 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		assertTrue(_folderExists(dstFolder));
 		assertFileDoesNotExist(dstFolder, filename);
 
-		F f = fileSystem.toFile(srcFolder, filename);
+		F f = fileSystem.toFile(srcFolder, id);
 		F copiedFile = fileSystem.copyFile(f, dstFolder, false);
 		waitForActionToFinish();
 
-		assertEquals(filename, fileSystem.getName(copiedFile));
+		if (filename.equals(id)) { //If each file has a different 'name' because it's not unique in a folder, this test wont work.
+			assertEquals(filename, fileSystem.getName(copiedFile));
+		}
 
 		assertTrue(_folderExists(dstFolder), "Destination folder must exist");
-		assertFileExistsWithContents(dstFolder, fileSystem.getName(copiedFile), contents);
+		assertFileExistsWithContents(dstFolder, fileSystem.getName(copiedFile), contents); //Assert new file is present
 		//TODO: test that contents of file has remained the same
 		//TODO: test that file timestamp has not changed
-		assertFileExistsWithContents(srcFolder, filename, contents);
+		assertFileExistsWithContents(srcFolder, id, contents); //Assert old file is (still) present
 	}
 
 	@Test
@@ -376,9 +390,9 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.configure();
 		fileSystem.open();
 
-		createFile(null, fileName, "");
+		String id = createFile(null, fileName, "");
 		waitForActionToFinish();
-		F f = fileSystem.toFile(fileName);
+		F f = fileSystem.toFile(id);
 
 		assertTrue(fileSystem.exists(f));
 	}
@@ -390,8 +404,10 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		long beforeFilesCreated=System.currentTimeMillis();
 
 		String contents = "does not matter";
+		List<String> fileIds = new ArrayList<>();
 		for (int i=0; i<numOfFilesInFolder; i++) {
-			createFile(folder, "file_"+i+".txt", contents+i);
+			String id = createFile(folder, "file_"+i+".txt", contents+i);
+			fileIds.add(id);
 		}
 		waitForActionToFinish();
 		long afterFilesCreated=System.currentTimeMillis();
@@ -411,10 +427,10 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		if (numOfFilesInFolder == 0) {
 			return;
 		}
-		deleteFile(folder, "file_0.txt");
+		deleteFile(folder, fileIds.get(0));
 		int numDeleted = 1;
 		waitForActionToFinish();
-		assertFalse(_fileExists(folder, "file_0.txt"), "file should not exist anymore physically after deletion");
+		assertFalse(_fileExists(folder, fileIds.get(0)), "file should not exist anymore physically after deletion");
 
 		folderContent = getFolderContents(folder, TypeFilter.FILES_ONLY);
 		assertEquals(numOfFilesInFolder - numDeleted, folderContent.objects.size(), "Size of set of files after deletion");
@@ -432,7 +448,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 			}
 		});
 
-		deleteFile(folder, "file_1.txt");
+		deleteFile(folder, fileIds.get(1));
 		numDeleted++;
 		folderContent = getFolderContents(folder, TypeFilter.FILES_ONLY);
 		assertEquals(numOfFilesInFolder - numDeleted, folderContent.objects.size(), "Size of set of files after deletion");
@@ -553,7 +569,6 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.configure();
 		fileSystem.open();
 
-
 		// act
 		int fileCount = fileSystem.getNumberOfFilesInFolder(folderName);
 
@@ -580,9 +595,9 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.open();
 
 		_createFolder(folderName);
-		createFile(folderName, FILE1, "text");
+		String id = createFile(folderName, FILE1, "text");
 
-		F f = fileSystem.toFile(folderName, FILE1);
+		F f = fileSystem.toFile(folderName, id);
 
 		fileSystem.deleteFile(f);
 

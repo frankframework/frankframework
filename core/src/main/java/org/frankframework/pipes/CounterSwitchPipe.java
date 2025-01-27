@@ -15,18 +15,18 @@
  */
 package org.frankframework.pipes;
 
+import io.micrometer.core.instrument.DistributionSummary;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Default;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.doc.Forward;
 import org.frankframework.stream.Message;
-
-import io.micrometer.core.instrument.DistributionSummary;
 
 /**
  * Selects an exitState, based on the number of received messages by this pipe.
@@ -40,7 +40,7 @@ import io.micrometer.core.instrument.DistributionSummary;
  */
 
 @Forward(name = "*", description = "the exitState, based on the number of received messages")
-@ElementType(ElementTypes.ROUTER)
+@EnterpriseIntegrationPattern(Type.ROUTER)
 public class CounterSwitchPipe extends FixedForwardPipe {
 	private int divisor = 2;
 

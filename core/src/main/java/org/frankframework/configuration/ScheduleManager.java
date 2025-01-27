@@ -21,6 +21,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.quartz.SchedulerException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
@@ -28,12 +35,6 @@ import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
 import org.frankframework.scheduler.SchedulerHelper;
 import org.frankframework.scheduler.job.IJob;
 import org.frankframework.util.RunState;
-import org.quartz.SchedulerException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Container for jobs that are scheduled for periodic execution.
@@ -44,7 +45,7 @@ import lombok.Setter;
  * @author Niels Meijer
  *
  */
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class ScheduleManager extends AbstractConfigurableLifecyle implements ApplicationContextAware, AutoCloseable {
 
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -149,7 +150,7 @@ public class ScheduleManager extends AbstractConfigurableLifecyle implements App
 	 * Job that is executed periodically. The time of execution can be configured within the job
 	 * or from outside the configuration through the Frank!Console.
 	 */
-	public void registerScheduledJob(IJob job) {
+	public void addScheduledJob(IJob job) {
 		if(!inState(RunState.STOPPED)) {
 			log.warn("cannot add JobDefinition, manager in state [{}]", this::getState);
 		}

@@ -18,7 +18,7 @@ package org.frankframework.receivers;
 import java.nio.file.Path;
 
 import org.frankframework.doc.Category;
-import org.frankframework.filesystem.FileSystemListener;
+import org.frankframework.filesystem.AbstractFileSystemListener;
 import org.frankframework.filesystem.LocalFileSystem;
 
 /**
@@ -41,9 +41,11 @@ import org.frankframework.filesystem.LocalFileSystem;
  * </code></pre>
  *
  * </p>
+ *
+ * {@inheritDoc}
  */
-@Category("Basic")
-public class DirectoryListener extends FileSystemListener<Path, LocalFileSystem>{
+@Category(Category.Type.BASIC)
+public class DirectoryListener extends AbstractFileSystemListener<Path, LocalFileSystem> {
 
 	@Override
 	protected LocalFileSystem createFileSystem() {

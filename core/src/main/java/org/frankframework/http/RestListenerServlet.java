@@ -22,13 +22,16 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.google.common.net.HttpHeaders;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.log4j.Log4j2;
+
 import org.apache.commons.lang3.StringUtils;
+
+import com.google.common.net.HttpHeaders;
+
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -45,7 +48,7 @@ import org.frankframework.util.StreamUtil;
  */
 @Log4j2
 @IbisInitializer
-public class RestListenerServlet extends HttpServletBase {
+public class RestListenerServlet extends AbstractHttpServlet {
 	private final String corsAllowOrigin = AppConstants.getInstance().getString("rest.cors.allowOrigin", "*"); //Defaults to everything
 	private final String corsExposeHeaders = AppConstants.getInstance().getString("rest.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 

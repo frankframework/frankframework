@@ -20,14 +20,15 @@ import org.apache.commons.lang3.StringUtils;
 import com.sap.conn.jco.JCoException;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IPipeLineExitHandler;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.extensions.sap.SapException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 
@@ -97,12 +98,12 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	}
 
 	@Override
-	public void start() throws PipeStartException  {
+	public void start() {
 		try {
 			sapSystem.openSystem();
 		} catch (SapException e) {
 			stop();
-			throw new PipeStartException("exception starting SapSender", e);
+			throw new LifecycleException("exception starting SapSender", e);
 		}
 	}
 
@@ -110,7 +111,6 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	public void stop() {
 		sapSystem.closeSystem();
 	}
-
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {

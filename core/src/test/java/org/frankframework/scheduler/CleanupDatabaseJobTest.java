@@ -59,7 +59,7 @@ public class CleanupDatabaseJobTest {
 			when(mockJob.getLocker()).thenReturn(mockLocker);
 			when(mockJob.getName()).thenReturn("MockJob");
 
-			configuration.getScheduleManager().registerScheduledJob(mockJob);
+			configuration.getScheduleManager().addScheduledJob(mockJob);
 		}
 
 		if (configuration.getRegisteredAdapter("MockAdapter") == null) {
@@ -86,8 +86,7 @@ public class CleanupDatabaseJobTest {
 		// Ensure we have an IbisManager via side effects of method
 		//noinspection ResultOfMethodCallIgnored
 		configuration.getIbisManager();
-		jobDef = new CleanupDatabaseJob();
-		configuration.autowireByName(jobDef);
+		jobDef = configuration.createBean(CleanupDatabaseJob.class);
 	}
 
 	@DatabaseTest

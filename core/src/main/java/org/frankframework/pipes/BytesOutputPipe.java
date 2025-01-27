@@ -26,8 +26,8 @@ import org.xml.sax.helpers.DefaultHandler;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlUtils;
 
@@ -112,7 +112,7 @@ import org.frankframework.util.XmlUtils;
  * @author  Jaco de Groot (***@dynasol.nl)
  * @since   4.9
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(Type.TRANSLATOR)
 public class BytesOutputPipe extends FixedForwardPipe {
 
 	@Override

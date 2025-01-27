@@ -1,6 +1,9 @@
 import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppService } from 'src/app/app.service';
+import { NgIf } from '@angular/common';
+
+export const baseImports = [NgIf];
 
 @Component({
   template: '',

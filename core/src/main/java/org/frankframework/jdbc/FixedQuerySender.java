@@ -18,8 +18,9 @@ package org.frankframework.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
@@ -40,7 +41,7 @@ import org.frankframework.util.DB2XMLWriter;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext> {
+public class FixedQuerySender extends AbstractJdbcQuerySender<QueryExecutionContext> {
 
 	private @Getter String query=null;
 	private @Getter int batchSize;

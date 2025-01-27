@@ -32,7 +32,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.pipes.Base64Pipe.Direction;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
@@ -50,7 +49,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 	}
 
 	@Test
-	void wrongInputEncoding() throws ConfigurationException, PipeStartException {
+	void wrongInputEncoding() throws ConfigurationException {
 		// Arrange
 		pipe.setCharset("test123");
 		pipe.configure();
@@ -61,7 +60,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 	}
 
 	@Test
-	void wrongOutputEncoding() throws ConfigurationException, PipeStartException, PipeRunException {
+	void wrongOutputEncoding() throws ConfigurationException, PipeRunException {
 		// Arrange
 		pipe.setCharset("test123");
 		pipe.setDirection(Direction.DECODE);
@@ -76,7 +75,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 	}
 
 	@Test
-	void wrongCharsetEncoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	void wrongCharsetEncoding() throws ConfigurationException, IOException, PipeRunException {
 		// Arrange
 		pipe.configure();
 		pipe.start();
@@ -91,7 +90,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 	}
 
 	@Test
-	void wrongCharsetShouldNotBeUsed() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	void wrongCharsetShouldNotBeUsed() throws ConfigurationException, IOException, PipeRunException {
 		// Arrange
 		pipe.setCharset("ISO-8859-1"); //Should be ignored
 		pipe.configure();
@@ -115,7 +114,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 	}
 
 	@Test
-	void wrongCharsetDecoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	void wrongCharsetDecoding() throws ConfigurationException, IOException, PipeRunException {
 		// Arrange
 		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
@@ -132,7 +131,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 	}
 
 	@Test
-	void correctEncoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	void correctEncoding() throws ConfigurationException, IOException, PipeRunException {
 		// Arrange
 		pipe.configure();
 		pipe.start();
@@ -147,7 +146,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 	}
 
 	@Test
-	void correctDecoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	void correctDecoding() throws ConfigurationException, IOException, PipeRunException {
 		// Arrange
 		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
@@ -166,7 +165,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 	}
 
 	@Test
-	void encodeConvertStringInput() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	void encodeConvertStringInput() throws ConfigurationException, IOException, PipeRunException {
 		// Arrange
 		pipe.configure();
 		pipe.start();
@@ -181,7 +180,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 	}
 
 	@Test
-	void encodeConvertBytesInput() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	void encodeConvertBytesInput() throws ConfigurationException, IOException, PipeRunException {
 		// Arrange
 		pipe.configure();
 		pipe.start();
@@ -196,7 +195,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 	}
 
 	@Test
-	void decodeConvert2StringFalse() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	void decodeConvert2StringFalse() throws ConfigurationException, IOException, PipeRunException {
 		// Arrange
 		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
@@ -213,7 +212,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 
 	//String input encode
 	@Test
-	void inputStringOutputString() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	void inputStringOutputString() throws ConfigurationException, IOException, PipeRunException {
 		// Arrange
 		pipe.configure();
 		pipe.start();
@@ -229,7 +228,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 
 	//String stream encode
 	@Test
-	void inputStreamOutputString() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	void inputStreamOutputString() throws ConfigurationException, IOException, PipeRunException {
 		// Arrange
 		pipe.configure();
 		pipe.start();
@@ -246,7 +245,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 	}
 
 	@Test
-	void inputStringOutputBytesDecode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	void inputStringOutputBytesDecode() throws ConfigurationException, IOException, PipeRunException {
 		// Arrange
 		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
@@ -263,7 +262,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 
 	//String stream decode
 	@Test
-	void inputStreamOutputStringDecode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	void inputStreamOutputStringDecode() throws ConfigurationException, IOException, PipeRunException {
 		// Arrange
 		pipe.setDirection(Direction.DECODE);
 		pipe.configure();

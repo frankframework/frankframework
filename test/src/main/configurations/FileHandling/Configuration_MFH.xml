@@ -22,7 +22,7 @@
 			/>
 		</Receiver>
 		<Pipeline>
-			<Exit path="EXIT" state="success" />
+			<Exit name="EXIT" state="success" />
 
 			<XsltPipe
 				name="wrapInput"
@@ -82,19 +82,18 @@
 			<JavaListener name="processMessage" serviceName="ibis4test-processMessage"/>
 		</Receiver>
 		<Pipeline>
-			<Exit state="success" path="EXIT"/>
+			<Exit state="success" name="EXIT"/>
 
 <!-- The parameters can be extended with more information-->
-			<PutParametersInSessionPipe name="paramsInSession">
+			<PutInSessionPipe name="paramsInSession">
 				<Param name="canonicalName" sessionKey="originalMessage" xpathExpression="/Message/CanonicalName"/>
 				<Param name="filename" sessionKey="originalMessage" xpathExpression="/Message/Filename"/>
 				<Param name="MFHFlowId" sessionKey="originalMessage" xpathExpression="/Message/MFHFlowId"/>
 				<Param name="serverFileName" sessionKey="originalMessage" xpathExpression="/Message/CanonicalName"/>
 				<Param name="LegacyFlowId" sessionKey="originalMessage" xpathExpression="/Message/LegacyMessage/OnCompletedTransferNotify_Action/TransferFlowId"/>
 				<Param name="clientFilename" sessionKey="originalMessage" xpathExpression="/Message/LegacyMessage/OnCompletedTransferNotify_Action/ClientFilename"/>
-			</PutParametersInSessionPipe>
+			</PutInSessionPipe>
 <!-- Some processing may be in place (XmlSwitchPipe switch between flows)-->
-
 
 			<LocalFileSystemPipe name="Move to processed folder" action="move" createFolder="true">
 				<Param name="filename" sessionKey="clientFilename"/>

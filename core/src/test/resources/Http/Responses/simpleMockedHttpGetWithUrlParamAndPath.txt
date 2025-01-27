@@ -1,5 +1,5 @@
 HOST 127.0.0.1
-GET /value%20value?path=tralala&illegalCharacters=o%40t%26h%3De%2Br%24V%2Ca%2Flue&normalCharacters=helloWorld HTTP/1.1
+GET /value%20value?path=tr%40lala&illegalCharacters=o%40t%26h%3De%2Br%24V%2Ca%2Flue&normalCharacters=helloWorld HTTP/1.1
 Message-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb1
 Correlation-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb2
 custom-header: value

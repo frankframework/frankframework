@@ -18,7 +18,7 @@ package org.frankframework.pipes;
 import java.nio.file.Path;
 
 import org.frankframework.doc.ReferTo;
-import org.frankframework.filesystem.FileSystemPipe;
+import org.frankframework.filesystem.AbstractFileSystemPipe;
 import org.frankframework.filesystem.LocalFileSystem;
 
 /**
@@ -36,7 +36,7 @@ import org.frankframework.filesystem.LocalFileSystem;
  *     If extended attributes actually can be written depends on the underlying OS / filesystem.
  * </p>
  */
-public class LocalFileSystemPipe extends FileSystemPipe<Path, LocalFileSystem>{
+public class LocalFileSystemPipe extends AbstractFileSystemPipe<Path, LocalFileSystem> {
 
 	public LocalFileSystemPipe() {
 		setFileSystem(new LocalFileSystem());

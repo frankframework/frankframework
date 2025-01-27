@@ -19,27 +19,27 @@ import org.frankframework.pipes.XmlValidator;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.SpringUtils;
 
 public class WsdlGeneratorTest {
 
 	private final TestConfiguration configuration = new TestConfiguration();
 
 	private PipeLine createPipeline() throws Exception {
-		EchoPipe pipe = new EchoPipe();
+		Adapter adapter = configuration.createBean(Adapter.class);
+		EchoPipe pipe = SpringUtils.createBean(adapter, EchoPipe.class);
 		pipe.addForward(new PipeForward("success",null));
 		pipe.setName(pipe.getClass().getSimpleName().concat("4WsdlGeneratorTest"));
-		PipeLine pipeline = configuration.createBean(PipeLine.class);
+		PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
 		pipeline.addPipe(pipe);
 
-		PipeLineExit exit = new PipeLineExit();
+		PipeLineExit exit = SpringUtils.createBean(adapter, PipeLineExit.class);
 		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.addPipeLineExit(exit);
 
-		Adapter adapter = configuration.createBean(Adapter.class);
 		adapter.setName(pipe.getClass().getSimpleName().concat("4WsdlGeneratorTest"));
 		adapter.setPipeLine(pipeline);
-		pipeline.setAdapter(adapter);
 
 		return pipeline;
 	}

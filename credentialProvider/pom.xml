@@ -11,10 +11,6 @@
 	<name>CredentialProvider</name>
 	<description>Framework to provide credentials from various secret stores</description>
 
-	<properties>
-		<apache-directory-server.version>2.0.0.AM26</apache-directory-server.version>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>
@@ -23,6 +19,14 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
@@ -106,6 +110,13 @@
 		<dependency>
 			<groupId>jakarta.servlet</groupId>
 			<artifactId>jakarta.servlet-api</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Needed for the Jackson ObjectMapper in the test -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

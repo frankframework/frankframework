@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -16,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,6 +31,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.MessageTestUtils;
+import org.frankframework.testutil.MessageTestUtils.MessageType;
 
 /**
  * Lots of bugs tests, focus on getMessage(String)
@@ -259,6 +263,40 @@ public class PipeLineSessionTest {
 		assertEquals(correlationId, session.getCorrelationId());
 	}
 
+	@Test
+	public void testMessageClosing() {
+		// Arrange
+		Message m1 = new Message("123");
+		session.put("key1", m1);
+		Message m2 = Message.asMessage(123);
+		session.put("key2", m2);
+		Message m3 = Message.asMessage(true);
+		session.put("key3", m3);
+		Message m4 = Message.asMessage(new Date());
+		session.put("key4", m4);
+		Message m5 = Message.asMessage(Instant.now());
+		session.put("key5", m5);
+		Message m6 = Message.asMessage(ZonedDateTime.now());
+		session.put("key6", m6);
+		Message m7 = Message.asMessage("123".getBytes());
+		session.put("key7", m7);
+		Message m8 = Message.asMessage(new StringReader("123"));
+		session.put("key8", m8);
+
+		// Act
+		session.close();
+
+		// Assert
+		assertFalse(m1.isClosed());
+		assertFalse(m2.isClosed());
+		assertFalse(m3.isClosed());
+		assertFalse(m4.isClosed());
+		assertFalse(m5.isClosed());
+		assertFalse(m6.isClosed());
+		assertFalse(m7.isClosed());
+		assertTrue(m8.isClosed());
+	}
+
 	/**
 	 * Method: mergeToParentSession(String keys, Map<String,Object> from, Map<String,Object>
 	 * to)
@@ -299,6 +337,75 @@ public class PipeLineSessionTest {
 		assertEquals(from,to);
 	}
 
+	@Test
+	public void testMergeToParentContextMap2() throws Exception {
+		// Arrange
+		PipeLineSession parent = new PipeLineSession();
+		Message originalA = new Message("0");
+		parent.put("a", originalA);
+		Message originalB = new Message("2");
+		parent.put("b", originalB);
+
+		// Act
+		for(int i = 1; i <= 10; i++) {
+			AutoCloseable closeable = mock(AutoCloseable.class);
+			try (PipeLineSession sub = new PipeLineSession()) {
+				sub.put("a", Message.asMessage(parent.getMessage("a").asString()));
+				Message bMessage = Message.asMessage(parent.getMessage("b").asString());
+				sub.put("b", bMessage);
+				sub.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, bMessage);
+
+				sub.scheduleCloseOnSessionExit(closeable, "requester field is useless");
+				sub.scheduleCloseOnSessionExit(closeable, "requester field is useless"); // Just for good measure, add it twice..
+				sub.put("c", closeable); //Store under `c` which we merge later on
+
+				for(int j = 1; j <= 10; j++) {
+
+					AutoCloseable streamMessage = spy(MessageTestUtils.getMessage(MessageType.BINARY));
+					AutoCloseable closeMe = spy(Message.asMessage(""+j));
+					sub.put("d", closeMe);
+					try (PipeLineSession child = new PipeLineSession(sub)) {
+						assertEquals(j, sub.getInteger("d"));
+
+						int valueA = child.getInteger("a") + 1;
+						Message valueAsMessage = Message.asMessage(""+valueA);
+						child.put("a", valueAsMessage); // Should be a string-value Message
+						child.put("b", Message.asMessage(sub.getMessage("b").asString()));
+
+						child.scheduleCloseOnSessionExit(streamMessage, "requester field is useless");
+						child.put("d", streamMessage);
+
+						// Overwrite values
+						child.put("c", i);
+						child.put("d", j);
+
+						child.mergeToParentSession("a,b,c,d", sub);
+					}
+
+					assertEquals(1, sub.getCloseables().size()); // <<< Keeps growing without the change!
+					verify(streamMessage, times(1)).close();
+					assertEquals(j, sub.getInteger("d")); // Only 1 `d`, with the correct value.
+				}
+
+				assertEquals(10, sub.getInteger("a"));
+				assertEquals(10, sub.getInteger("d"));
+
+				sub.mergeToParentSession("b,c", parent);
+			}
+			verify(closeable, times(1)).close();
+
+			assertEquals(i, parent.get("c"));
+		}
+
+
+		// Assert
+		assertEquals(0, parent.getCloseables().size());
+		assertEquals(originalA, parent.get("a"));
+		assertEquals("2", parent.getMessage("b").asString());
+		assertEquals(10, parent.get("c"));
+		assertNull(parent.get("d"));
+	}
+
 	@ParameterizedTest
 	@CsvSource(value = {"*", ","})
 	public void testMergeToParentSessionCopyAllKeys(String keysToCopy) throws Exception {
@@ -306,13 +413,15 @@ public class PipeLineSessionTest {
 		PipeLineSession from = new PipeLineSession();
 		PipeLineSession to = new PipeLineSession();
 		Message message = new Message("a message");
+		Message messageOfCloseable = new Message(new StringReader("a message is closeable"));
 		BufferedReader closeable1 = new BufferedReader(new StringReader("a closeable"));
-		Message closeable2 = new Message("a message is closeable");
+		Message closeable2 = new Message(new StringReader("a message is closeable"));
 		from.put("a", 15);
 		from.put("b", 16);
 		from.put("c", message);
 		from.put("d", closeable1);
 		from.put("__e", closeable2);
+		from.put("f", messageOfCloseable);
 
 		from.scheduleCloseOnSessionExit(message, "test-c");
 
@@ -324,7 +433,8 @@ public class PipeLineSessionTest {
 		// Assert
 		assertEquals(from,to);
 
-		assertTrue(to.getCloseables().containsKey(message));
+		assertFalse(to.getCloseables().containsKey(message));
+		assertTrue(to.getCloseables().containsKey(messageOfCloseable));
 		assertTrue(to.getCloseables().containsKey(closeable1));
 		assertFalse(to.getCloseables().containsKey(closeable2));
 		assertFalse(((Message) to.get("c")).isNull());
@@ -335,8 +445,9 @@ public class PipeLineSessionTest {
 		to.close();
 
 		// Assert
-		assertTrue(((Message) to.get("c")).isNull());
+		assertFalse(((Message) to.get("c")).isNull()); // String message are no longer closed
 		assertFalse(((Message) to.get("__e")).isNull());
+		assertTrue(((Message) to.get("f")).isNull());
 	}
 
 	@Test
@@ -345,8 +456,8 @@ public class PipeLineSessionTest {
 		PipeLineSession from = new PipeLineSession();
 		PipeLineSession to = new PipeLineSession();
 
-		Message message1 = new Message("m1");
-		Message message2 = new Message("m2");
+		Message message1 = new Message(new StringReader("m1")); // Message should contain a closeable not a string, in order to be eligible for closing
+		Message message2 = new Message(new StringReader("m2"));
 
 		String keys = "a,c";
 		from.put("a", 15);
@@ -376,7 +487,9 @@ public class PipeLineSessionTest {
 		assertEquals(15, to.get("a"));
 		assertNull(to.get("c"));
 
+		assertTrue(message1.isClosed());
 		assertTrue(message1.isNull());
+		assertFalse(message2.isClosed());
 		assertEquals("m2", message2.asString());
 	}
 

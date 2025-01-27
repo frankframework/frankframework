@@ -2,12 +2,12 @@ import { AfterViewInit, Component, EventEmitter, Input, OnChanges, OnInit, Outpu
 import { convertToParamMap, Router, RouterModule } from '@angular/router';
 import { MinimalizaSidebarComponent } from './minimaliza-sidebar.component';
 import { ScrollToTopComponent } from './scroll-to-top.component';
-import { CommonModule } from '@angular/common';
 import { CustomViewsComponent } from '../../custom-views/custom-views.component';
-import { InformationModalComponent } from '../information-modal/information-modal.component';
 import { ServerInfoService } from '../../../services/server-info.service';
 import { CdkAccordionItem, CdkAccordionModule } from '@angular/cdk/accordion';
 import { SidebarDirective } from './sidebar.directive';
+import { HasAccessToLinkDirective } from '../../has-access-to-link.directive';
+import { NgClass } from '@angular/common';
 
 type ExpandedItem = {
   element: HTMLElement;
@@ -18,16 +18,15 @@ type ExpandedItem = {
   selector: 'app-pages-navigation',
   templateUrl: './pages-navigation.component.html',
   styleUrls: ['./pages-navigation.component.scss'],
-  standalone: true,
   imports: [
-    CommonModule,
     RouterModule,
     CdkAccordionModule,
     CustomViewsComponent,
     MinimalizaSidebarComponent,
     ScrollToTopComponent,
-    InformationModalComponent,
     SidebarDirective,
+    HasAccessToLinkDirective,
+    NgClass,
   ],
 })
 export class PagesNavigationComponent implements OnChanges, OnInit, AfterViewInit {
@@ -50,8 +49,9 @@ export class PagesNavigationComponent implements OnChanges, OnInit, AfterViewIni
   ) {}
 
   ngOnInit(): void {
+    this.updateServerInfo();
     this.serverInfoService.serverInfo$.subscribe(() => {
-      this.encodedServerInfo = encodeURIComponent(this.serverInfoService.getMarkdownFormatedServerInfo());
+      this.updateServerInfo();
     });
   }
 
@@ -130,5 +130,9 @@ export class PagesNavigationComponent implements OnChanges, OnInit, AfterViewIni
       this.collapseItem(this.expandedItem.element, this.expandedItem.accordionItem);
       this.expandedItem = null;
     }
+  }
+
+  private updateServerInfo(): void {
+    this.encodedServerInfo = encodeURIComponent(this.serverInfoService.getMarkdownFormatedServerInfo());
   }
 }

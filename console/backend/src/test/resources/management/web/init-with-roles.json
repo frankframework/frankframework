@@ -1,0 +1,86 @@
+{
+	"links": [
+		{
+			"name": "updateAdapters",
+			"rel": "adapter",
+			"description": "start/stop multiple adapters",
+			"href": "http://localhost/adapters",
+			"type": "PUT",
+			"roles": [
+				"IbisDataAdmin",
+				"IbisAdmin",
+				"IbisTester"
+			]
+		},
+		{
+			"name": "getAdapterFlow",
+			"rel": "adapter",
+			"description": "view an adapter flow",
+			"href": "http://localhost/configurations/{configuration}/adapters/{adapter}/flow",
+			"type": "GET",
+			"roles": [
+				"IbisObserver",
+				"IbisDataAdmin",
+				"IbisAdmin",
+				"IbisTester"
+			]
+		},
+		{
+			"name": "getAdapterHealth",
+			"rel": "adapter",
+			"description": "view an adapter health",
+			"href": "http://localhost/configurations/{configuration}/adapters/{name}/health",
+			"type": "GET"
+		},
+		{
+			"name": "updateAdapter",
+			"rel": "adapter",
+			"description": "start/stop an adapter",
+			"href": "http://localhost/configurations/{configuration}/adapters/{adapter}",
+			"type": "PUT",
+			"roles": [
+				"IbisDataAdmin",
+				"IbisAdmin",
+				"IbisTester"
+			]
+		},
+		{
+			"name": "updateReceiver",
+			"rel": "adapter",
+			"description": "start/stop an adapter receivers",
+			"href": "http://localhost/configurations/{configuration}/adapters/{adapter}/receivers/{receiver}",
+			"type": "PUT",
+			"roles": [
+				"IbisDataAdmin",
+				"IbisAdmin",
+				"IbisTester"
+			]
+		},
+		{
+			"name": "getAdapter",
+			"rel": "adapter",
+			"description": "view an adapter receivers/pipes/messages",
+			"href": "http://localhost/configurations/{configuration}/adapters/{name}",
+			"type": "GET",
+			"roles": [
+				"IbisObserver",
+				"IbisDataAdmin",
+				"IbisAdmin",
+				"IbisTester"
+			]
+		},
+		{
+			"name": "getAdapters",
+			"rel": "adapter",
+			"description": "view a list of all adapters, prefixed with the configuration name",
+			"href": "http://localhost/adapters",
+			"type": "GET",
+			"roles": [
+				"IbisObserver",
+				"IbisDataAdmin",
+				"IbisAdmin",
+				"IbisTester"
+			]
+		}
+	]
+}

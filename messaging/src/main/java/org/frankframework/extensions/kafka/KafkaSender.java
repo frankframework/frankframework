@@ -48,7 +48,7 @@ import org.frankframework.stream.Message;
 @Deprecated(forRemoval = false)
 @ConfigurationWarning("Experimental and under development. Do not use unless you wish to participate in this development.")
 @Log4j2
-public class KafkaSender extends KafkaFacade implements ISender {
+public class KafkaSender extends AbstractKafkaFacade implements ISender {
 
 	//setter is for testing purposes only.
 	private @Setter(AccessLevel.PACKAGE) Producer<String, byte[]> producer;

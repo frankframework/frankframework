@@ -30,14 +30,14 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.MailSender;
-import org.frankframework.senders.MailSenderBase;
-import org.frankframework.senders.MailSenderBase.EMail;
-import org.frankframework.senders.MailSenderBase.MailSessionBase;
+import org.frankframework.senders.AbstractMailSender;
+import org.frankframework.senders.AbstractMailSender.EMail;
+import org.frankframework.senders.AbstractMailSender.MailSessionBase;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAssertions;
 
-public abstract class MailSenderTestBase<S extends MailSenderBase> extends SenderTestBase<S> {
+public abstract class MailSenderTestBase<S extends AbstractMailSender> extends SenderTestBase<S> {
 
 	@Test
 	public void noRecipient() throws Exception {

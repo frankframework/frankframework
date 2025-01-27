@@ -47,20 +47,21 @@ import javax.xml.stream.events.XMLEvent;
 
 import jakarta.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.google.common.collect.Streams;
 
 import javanet.staxutils.XMLStreamEventWriter;
 import javanet.staxutils.XMLStreamUtils;
 import javanet.staxutils.events.AttributeEvent;
 import javanet.staxutils.events.StartElementEvent;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
-import org.frankframework.core.IConfigurationAware;
+import org.frankframework.core.HasApplicationContext;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.validation.xsd.StringXsd;
@@ -109,7 +110,7 @@ public class SchemaUtils {
 	}
 
 	/**
-	 * Group a set of XSDs by namespace. To recursively load all XSDs that are referenced from a starting set of XSDs, first call {@link XSD#getXsdsRecursive(Set)}.
+	 * Group a set of XSDs by namespace. To recursively load all XSDs that are referenced from a starting set of XSDs, first call {@link AbstractXSD#getXsdsRecursive(Set)}.
 	 *
 	 * @param xsds Set of XSDs to group.
 	 * @param sort Should the resulting map and set per namespace be sorted by namespace / resource XSD, or returned in order of input.
@@ -146,7 +147,7 @@ public class SchemaUtils {
 
 	/**
 	 * Write merged XSDs to xmlStreamWriter from a map of XSDs grouped by namespace. This map can be created from {@link #groupXsdsByNamespace(Set, boolean)}.
-	 * XSD {@code <xsd:include/>} tags will be skipped. To get a complete XSD in the output, call {@link XSD#getXsdsRecursive(Set)} on a set of input-XSDs before
+	 * XSD {@code <xsd:include/>} tags will be skipped. To get a complete XSD in the output, call {@link AbstractXSD#getXsdsRecursive(Set)} on a set of input-XSDs before
 	 * grouping them by namespace in a map.
 	 *
 	 */
@@ -163,7 +164,7 @@ public class SchemaUtils {
 
 	/**
 	 * Returns merged XSDs from a map of XSDs grouped by namespace. This map can be created from {@link #groupXsdsByNamespace(Set, boolean)}.
-	 * XSD {@code <xsd:include/>} tags will be skipped. To get a complete XSD in the output, call {@link XSD#getXsdsRecursive(Set)} on a set of input-XSDs before
+	 * XSD {@code <xsd:include/>} tags will be skipped. To get a complete XSD in the output, call {@link AbstractXSD#getXsdsRecursive(Set)} on a set of input-XSDs before
 	 * grouping them by namespace in a map.
 	 *
 	 * @return merged XSDs
@@ -196,7 +197,7 @@ public class SchemaUtils {
 
 	/**
 	 * Internal method to merge a set of XSDs into a single XSD Schema. All the XSDs should be in the same namespace. {@code <xsd:include/>} elements will
-	 * be skipped. To make sure the output XSD is complete, before calling this method the {@link XSD#getXsdsRecursive(Set)} should have been called.
+	 * be skipped. To make sure the output XSD is complete, before calling this method the {@link AbstractXSD#getXsdsRecursive(Set)} should have been called.
 	 *
 	 * @param scopeProvider {@link IScopeProvider} for error-reporting
 	 * @param xsds {@link Set<IXSD>} with the XSDs to be merged
@@ -272,7 +273,7 @@ public class SchemaUtils {
 		LOG.info(message);
 
 		// And check for duplicate XSDs included multiple times from multiple locations
-		if (scopeProvider instanceof IConfigurationAware aware) {
+		if (scopeProvider instanceof HasApplicationContext aware) {
 			IXSD[] xsdList = xsds.toArray(new IXSD[0]);
 			for (int i = 0; i < xsdList.length - 1; i++) {
 				IXSD xsd1 = xsdList[i];

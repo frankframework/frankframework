@@ -15,6 +15,7 @@
 */
 package org.frankframework.management.gateway;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,30 +26,32 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.core.GenericMessagingTemplate;
-import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.hazelcast.cluster.Member;
 import com.hazelcast.cluster.MembershipEvent;
 import com.hazelcast.cluster.MembershipListener;
 import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.map.IMap;
 import com.hazelcast.topic.ITopic;
 
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.gateway.HazelcastConfig.InstanceType;
 import org.frankframework.management.gateway.events.ClusterMemberEvent;
 import org.frankframework.management.gateway.events.ClusterMemberEvent.EventType;
+import org.frankframework.management.security.JwtKeyGenerator;
 import org.frankframework.util.SpringUtils;
 
 @Log4j2
@@ -56,13 +59,17 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	private HazelcastInstance hzInstance;
 	private ApplicationContext applicationContext;
 
+	private static final RandomStringUtils NUMBER_GENERATOR = RandomStringUtils.insecure();
 	private final String requestTopicName = HazelcastConfig.REQUEST_TOPIC_NAME;
 	private ITopic<Message<?>> requestTopic;
+
+	@Autowired
+	private JwtKeyGenerator jwtGenerator;
 
 	@Override
 	@Nonnull
 	public <I, O> Message<O> sendSyncMessage(Message<I> in) {
-		String tempReplyChannelName = "__tmp."+ RandomStringUtils.randomAlphanumeric(32);
+		String tempReplyChannelName = "__tmp."+ NUMBER_GENERATOR.nextAlphanumeric(32);
 		long receiveTimeout = receiveTimeout(in);
 		log.debug("sending synchronous request to topic [{}] message [{}] reply-queue [{}] receiveTimeout [{}]", requestTopicName, in, tempReplyChannelName, receiveTimeout);
 
@@ -76,11 +83,20 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		requestTopic.publish(requestMessage);
 
 		Message<O> replyMessage = doReceive(responseQueue, receiveTimeout);
+		silentlyRemoveQueue(responseQueue);
 		if (replyMessage != null) {
 			return replyMessage;
 		}
 
 		throw new BusException("no reponse found on temporary reply-queue ["+tempReplyChannelName+"] within receiveTimeout ["+receiveTimeout+"]");
+	}
+
+	private void silentlyRemoveQueue(IQueue<?> responseQueue) {
+		try {
+			responseQueue.destroy();
+		} catch (Exception e) {
+			log.info("error closing response queue", e);
+		}
 	}
 
 	@Nullable
@@ -94,8 +110,6 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 			}
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
-		} finally {
-			responseQueue.destroy();
 		}
 
 		log.trace("did not receive response within timeout of [{}] ms", receiveTimeout);
@@ -113,18 +127,21 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		cm.setAddress(member.getSocketAddress().getHostName() + ":" + member.getSocketAddress().getPort());
 		cm.setId(member.getUuid());
 		Map<String, String> attrs = new HashMap<>(member.getAttributes());
-		cm.setType(attrs.remove(HazelcastConfig.ATTRIBUTE_TYPE_KEY));
+		String type = attrs.remove(HazelcastConfig.ATTRIBUTE_TYPE_KEY);
+		if (StringUtils.isNotBlank(type)) {
+			if (InstanceType.WORKER.name().equals(type)) {
+				cm.setType("worker");
+			} else {
+				cm.setType("console");
+			}
+		}
 		cm.setAttributes(attrs);
 		cm.setLocalMember(member.localMember());
 		return cm;
 	}
 
-	private @Nonnull Authentication getAuthentication() {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if(authentication == null) {
-			throw new AuthenticationServiceException("no Authentication object found in SecurityContext"); //This should technically not be possible but...
-		}
-		return authentication;
+	private @Nonnull String getAuthentication() {
+		return jwtGenerator.create();
 	}
 
 	private long receiveTimeout(Message<?> requestMessage) {
@@ -159,8 +176,11 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		hzInstance = HazelcastConfig.newHazelcastInstance("console");
+		hzInstance = HazelcastConfig.newHazelcastInstance(InstanceType.CONTROLLER, Collections.emptyMap());
 		SpringUtils.registerSingleton(applicationContext, "hazelcastOutboundInstance", hzInstance);
+
+		IMap<String, String> config = hzInstance.getMap(HazelcastConfig.FRANK_APPLICATION_CONFIG);
+		config.set(HazelcastConfig.FRANK_APPLICATION_KEYSET, jwtGenerator.getPublicJwkSet());
 
 		requestTopic = hzInstance.getTopic(requestTopicName);
 

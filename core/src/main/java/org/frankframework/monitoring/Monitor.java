@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2024 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -30,26 +29,29 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.FrankElement;
 import org.frankframework.core.IConfigurable;
+import org.frankframework.core.NameAware;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.monitoring.events.MonitorEvent;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlBuilder;
 
 /**
  * <p>Example configuration:</p>
  * <pre>{@code
- * <monitor name="Receiver Shutdown" destinations="MONITOR_LOG">
- *    <trigger className="org.frankframework.monitoring.Alarm" severity="WARNING">
- *        <event>Receiver Shutdown</event>
- *    </trigger>
- *    <trigger className="org.frankframework.monitoring.Clearing" severity="WARNING">
- *        <event>Receiver Shutdown</event>
- *    </trigger>
- * </monitor>
+ * <Monitor name="Receiver Shutdown" destinations="MONITOR_LOG">
+ *    <AlarmTrigger severity="WARNING">
+ *        <Event>Receiver Shutdown</Event>
+ *    </AlarmTrigger>
+ *    <ClearingTrigger severity="WARNING">
+ *        <Event>Receiver Shutdown</Event>
+ *    </ClearingTrigger>
+ * </Monitor>
  * }</pre>
  *
  * @author  Gerrit van Brakel
@@ -59,8 +61,8 @@ import org.frankframework.util.XmlBuilder;
  * @author Niels Meijer
  */
 @FrankDocGroup(FrankDocGroupValue.MONITORING)
-public class Monitor implements IConfigurable, DisposableBean {
-	protected Logger log = LogUtil.getLogger(this);
+@Log4j2
+public class Monitor implements IConfigurable, NameAware, DisposableBean, FrankElement {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private @Getter String name;
@@ -181,15 +183,8 @@ public class Monitor implements IConfigurable, DisposableBean {
 	}
 
 	public String getDestinationsAsString() {
-		String result=null;
-		for(String destination : getDestinationSet()) {
-			if (result==null) {
-				result=destination;
-			} else {
-				result+=","+destination;
-			}
-		}
-		return result;
+		if (destinations.isEmpty()) return null;
+		return String.join(",", destinations);
 	}
 
 	//Digester setter

@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../../../../node_modules/monaco-editor/monaco.d.ts" />
 import {
   AfterViewInit,
@@ -25,7 +24,6 @@ interface AMDRequire {
 
 @Component({
   selector: 'app-monaco-editor',
-  standalone: true,
   imports: [],
   templateUrl: './monaco-editor.component.html',
   styleUrls: ['./monaco-editor.component.scss'],

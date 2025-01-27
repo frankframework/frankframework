@@ -20,8 +20,9 @@ import java.util.concurrent.CountDownLatch;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
+
+import org.frankframework.core.AbstractRequestReplyExecutor;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.RequestReplyExecutor;
 import org.frankframework.core.SenderResult;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.stream.Message;
@@ -30,7 +31,7 @@ import org.frankframework.threading.ThreadLifeCycleEventListener;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.LogUtil;
 
-public class IsolatedServiceExecutor extends RequestReplyExecutor {
+public class IsolatedServiceExecutor extends AbstractRequestReplyExecutor {
 	private final Logger log = LogUtil.getLogger(this);
 	private final ServiceClient service;
 	private final PipeLineSession session;

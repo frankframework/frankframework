@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,16 +20,17 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
@@ -40,22 +41,23 @@ import org.frankframework.util.XmlEncodingUtils;
 /**
  * This Pipe is used to replace values in a few ways. The following steps are performed:
  * <ol>
- * <li>If <code>find</code> is provided, it will be replaced by <code>replace</code></li>
+ * <li>If the attribute <code>find</code> is provided, the pipe will attempt to replace the provided value with the content of the attribute <code>replace</code>.</li>
  * <li>The resulting string is substituted based on the parameters of this pipe. It will replace values in the input enclosed
- * with ?{}, for instance: ?{parameterOne}, with parameters of this pipe. If a parameter for the given value is not found, it
- * will not be replaced and the '?{parameterOne}' value will remain in the output.
+ * with <code>?{...}</code>, for instance text like: <code>?{parameterOne}</code> in combination with a parameter <code>parameterOne</code> will use the value of this {@link Parameter}. 
+ * If a parameter for the given value is not found, it will not be replaced and the <code>?{parameterOne}</code> value will remain in the output.</li>
  * <p>
- * See {@link Parameter} to see how parameter values are determined.</li>
  * <p>
  * <li>If attribute <code>substituteVars</code> is <code>true</code>, then expressions <code>${...}</code> are substituted using
  * system properties, session variables and application properties. Please note that no <code>${...}</code> patterns are left in the input. </li>
  * </ol>
+ * 
+ * @ff.tip See {@link Parameter} to see how parameter values are determined.
  *
  * @author Gerrit van Brakel
  * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>?{xyz}</code> is substituted by the parameter's value.
  * @since 4.2
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class ReplacerPipe extends FixedForwardPipe {
 
 	private boolean allowUnicodeSupplementaryCharacters = false;
@@ -81,7 +83,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 			if (getReplace() == null) {
 				throw new ConfigurationException("cannot have a null replace-attribute");
 			}
-			log.info("finds [{}] replaces with [{}]", getFind(), getReplace());
+			log.debug("finds [{}] replaces with [{}]", getFind(), getReplace());
 			if (!StringUtils.isEmpty(getLineSeparatorSymbol())) {
 				find = find != null ? find.replace(lineSeparatorSymbol, System.lineSeparator()) : null;
 				replace = replace != null ? replace.replace(lineSeparatorSymbol, System.lineSeparator()) : null;

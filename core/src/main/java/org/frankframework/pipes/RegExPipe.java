@@ -16,26 +16,26 @@
 
 package org.frankframework.pipes;
 
-import lombok.Getter;
+import java.io.IOException;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlBuilder;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 /**
  * Tries to match the input against the provided regex.
@@ -67,7 +67,7 @@ import java.util.regex.PatternSyntaxException;
  */
 @Forward(name = RegExPipe.THEN_FORWARD, description = "When a match is found.")
 @Forward(name = RegExPipe.ELSE_FORWARD, description = "When no match is found.")
-@ElementType(ElementType.ElementTypes.ROUTER)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ROUTER)
 public class RegExPipe extends AbstractPipe {
 
 	protected final static String THEN_FORWARD = "then";

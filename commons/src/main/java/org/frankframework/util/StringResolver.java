@@ -170,8 +170,9 @@ public class StringResolver {
 	}
 
 	private static String extractNextExpression(String val, SubstitutionContext ctx) {
-		if (val.contains(VALUE_SEPARATOR)) {
-			ctx.tail = val.indexOf(VALUE_SEPARATOR);
+		int nextSeparatorPos = val.indexOf(VALUE_SEPARATOR, ctx.pointer);
+		if (nextSeparatorPos >= 0) {
+			ctx.tail = nextSeparatorPos;
 			ctx.providedDefaultValue = val.substring(ctx.tail + VALUE_SEPARATOR.length(), indexOfDelimStop(val, ctx.pointer, ctx.delimStart, ctx.delimStop));
 			ctx.containsDefault = true;
 		} else {
@@ -246,18 +247,15 @@ public class StringResolver {
 		return Environment.getSystemProperty(key, null)
 				.or(() -> findInAdditionalResolvers(key, props1, props2, ctx))
 				.or(() -> getReplacementFromProps(key, props1))
-				.or(() -> getReplacementFromProps(key, props2))
-				;
+				.or(() -> getReplacementFromProps(key, props2));
 	}
 
 	private static Optional<String> findInAdditionalResolvers(String key, Map<?, ?> props1, Map<?, ?> props2, SubstitutionContext ctx) {
-		Optional<String> replacement;
-		replacement = getAdditionalStringResolvers().stream()
+		return getAdditionalStringResolvers().stream()
 				.map(resolver -> resolver.resolve(key, props1, props2, ctx.propsToHide, ctx.delimStart, ctx.delimStop, ctx.resolveWithPropertyName))
 				.filter(Optional::isPresent)
 				.findFirst()
 				.orElse(Optional.empty());
-		return replacement;
 	}
 
 	private static Optional<String> getReplacementFromProps(String key, Map<?, ?> props) {

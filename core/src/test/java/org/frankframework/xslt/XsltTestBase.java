@@ -19,8 +19,8 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.pipes.PipeTestBase;
-import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.testutil.XmlParameterBuilder;
 import org.frankframework.util.TransformerPool.OutputType;
 
 public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestBase<P> {
@@ -259,7 +259,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	void xPathFromParameter() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 
-		pipe.addParameter(ParameterBuilder.create("source", input).withType(ParameterType.DOMDOC));
+		pipe.addParameter(XmlParameterBuilder.create("source", input).withType(ParameterType.DOMDOC));
 		setXpathExpression("$source/request/b");
 
 		pipe.configure();

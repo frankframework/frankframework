@@ -23,19 +23,26 @@ import java.util.Date;
 
 import jakarta.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
 import org.frankframework.stream.Message;
+import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.XmlUtils;
 
 @Log4j2
 public class DateParameter extends AbstractParameter {
+	public static final String TYPE_DATE_PATTERN="yyyy-MM-dd";
+	public static final String TYPE_TIME_PATTERN="HH:mm:ss";
+	public static final String TYPE_DATETIME_PATTERN="yyyy-MM-dd HH:mm:ss";
+	public static final String TYPE_TIMESTAMP_PATTERN= DateFormatUtils.FORMAT_FULL_GENERIC;
+
 	private @Getter String formatString = null;
 	private DateFormatType formatType;
 

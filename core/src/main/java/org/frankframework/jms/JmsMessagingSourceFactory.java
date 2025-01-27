@@ -26,9 +26,11 @@ import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.ConnectionMetaData;
 import jakarta.jms.JMSException;
+
+import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IbisException;
-import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
 
 
 /**
@@ -40,7 +42,7 @@ import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy
  * @author  Gerrit van Brakel
  * @since   4.4
  */
-public class JmsMessagingSourceFactory extends MessagingSourceFactory {
+public class JmsMessagingSourceFactory extends AbstractMessagingSourceFactory {
 
 	/**
 	 * Global JVM-wide cache for JMS Messaging Sources, which hold reference to ConnectionFactories.

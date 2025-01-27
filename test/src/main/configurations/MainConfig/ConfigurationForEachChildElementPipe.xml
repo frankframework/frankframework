@@ -5,7 +5,7 @@
 		</receiver>
 		<pipeline firstPipe="ForEachChildElementPipe_Record">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe className="org.frankframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe_Record" elementXPathExpression="requests/request">
 				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ForEachChildElementPipe_Record" />
@@ -19,8 +19,8 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success" />
-				<exit path="ERROR" state="error" />
+				<exit name="EXIT" state="success" />
+				<exit name="ERROR" state="error" />
 			</exits>
 			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" xpathExpression="request" />
 			<pipe name="hello" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="&lt;reply&gt;goodbye&lt;/reply&gt;">

@@ -35,6 +35,7 @@ import org.w3c.dom.Node;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLine.ExitState;
@@ -53,6 +54,7 @@ import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlUtils;
 
 public class ParameterTest {
@@ -787,46 +789,6 @@ public class ParameterTest {
 	}
 
 	@Test
-	public void testParameterFromURLToDomdocTypeNoNameSpace() throws Exception {
-		testParameterFromURLToDomTypeHelper(ParameterType.DOMDOC, false, Document.class);
-	}
-
-	@Test
-	public void testParameterFromURLToDomdocTypeRemoveNameSpace() throws Exception {
-		testParameterFromURLToDomTypeHelper(ParameterType.DOMDOC, true, Document.class);
-	}
-
-	@Test
-	public void testParameterFromURLToNodeTypeNoNameSpace() throws Exception {
-		testParameterFromURLToDomTypeHelper(ParameterType.NODE, false, Node.class);
-	}
-
-	@Test
-	public void testParameterFromURLToNodeTypeRemoveNameSpace() throws Exception {
-		testParameterFromURLToDomTypeHelper(ParameterType.NODE, true, Node.class);
-	}
-
-	public <T> void testParameterFromURLToDomTypeHelper(ParameterType type, boolean removeNamespaces, Class<T> c) throws Exception {
-		URL originalMessage = TestFileUtils.getTestFileURL("/Xslt/MultiNamespace/in.xml");
-
-		PipeLineSession session = new PipeLineSession();
-		session.put("originalMessage", new UrlMessage(originalMessage));
-
-		Parameter inputMessage = new Parameter();
-		inputMessage.setName("InputMessage");
-		inputMessage.setSessionKey("originalMessage");
-		inputMessage.setType(type);
-		inputMessage.setRemoveNamespaces(removeNamespaces);
-		inputMessage.configure();
-
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
-		Message message = new Message("fakeMessage");
-
-		Object result = inputMessage.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
-	}
-
-	@Test
 	public void testParameterFromURLToDomdocWithXpath() throws Exception {
 		URL originalMessage = TestFileUtils.getTestFileURL("/Xslt/MultiNamespace/in.xml");
 		String expectedResultContents = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><block><XDOC><REF_ID>0</REF_ID><XX>0</XX></XDOC><XDOC><REF_ID>1</REF_ID></XDOC><XDOC><REF_ID>2</REF_ID></XDOC></block>";
@@ -878,51 +840,6 @@ public class ParameterTest {
 	}
 
 	@Test
-	public void testParameterFromBytesToDomdoc() throws Exception {
-		PipeLineSession session = new PipeLineSession();
-		session.put("originalMessage", "<someValue/>".getBytes());
-		String expectedResultContents = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><someValue/>";
-
-		Parameter parameter = new Parameter();
-		parameter.setName("InputMessage");
-		parameter.setSessionKey("originalMessage");
-		parameter.setType(ParameterType.DOMDOC);
-		parameter.configure();
-
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
-		Message message = new Message("fakeMessage");
-
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		assertThat(result, instanceOf(Document.class));
-
-		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Document) result));
-		assertEquals(expectedResultContents, contents);
-	}
-
-	@Test
-	public void testParameterFromBytesToNode() throws Exception {
-		PipeLineSession session = new PipeLineSession();
-		session.put("originalMessage", "<someValue/>".getBytes());
-		String expectedResultContents = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><someValue/>";
-
-		Parameter parameter = new Parameter();
-		parameter.setName("InputMessage");
-		parameter.setSessionKey("originalMessage");
-		parameter.setType(ParameterType.NODE);
-		parameter.configure();
-
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
-		Message message = new Message("fakeMessage");
-
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		assertThat(result, instanceOf(Node.class));
-		assertThat(result, not(instanceOf(Document.class)));
-
-		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Node) result));
-		assertEquals(expectedResultContents, contents);
-	}
-
-	@Test
 	public void testParameterFromDomToDomdoc() throws Exception {
 		Document domdoc = XmlUtils.buildDomDocument("<someValue/>");
 		String expectedResultContents = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><someValue/>";
@@ -946,55 +863,6 @@ public class ParameterTest {
 		assertEquals(expectedResultContents, contents);
 
 		assertFalse(parameter.requiresInputValueForResolution());
-	}
-
-	@Test
-	public void testParameterFromDomToNode() throws Exception {
-		Document domdoc = XmlUtils.buildDomDocument("<someValue/>");
-		String expectedResultContents = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><someValue/>";
-
-		PipeLineSession session = new PipeLineSession();
-		session.put("originalMessage", domdoc);
-
-		Parameter parameter = new Parameter();
-		parameter.setName("InputMessage");
-		parameter.setSessionKey("originalMessage");
-		parameter.setType(ParameterType.NODE);
-		parameter.configure();
-
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
-		Message message = new Message("fakeMessage");
-
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		assertThat(result, instanceOf(Node.class));
-		assertThat(result, not(instanceOf(Document.class)));
-
-		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Node) result));
-		assertEquals(expectedResultContents, contents);
-	}
-
-	@Test
-	public void testParameterFromNodeToDomdoc() throws Exception {
-		Node node = XmlUtils.buildDomDocument("<someValue/>").getFirstChild();
-		String expectedResultContents = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><someValue/>";
-
-		PipeLineSession session = new PipeLineSession();
-		session.put("originalMessage", node);
-
-		Parameter parameter = new Parameter();
-		parameter.setName("InputMessage");
-		parameter.setSessionKey("originalMessage");
-		parameter.setType(ParameterType.DOMDOC);
-		parameter.configure();
-
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
-		Message message = new Message("fakeMessage");
-
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		assertInstanceOf(Document.class, result);
-
-		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Document) result));
-		assertEquals(expectedResultContents, contents);
 	}
 
 	@Test
@@ -1027,11 +895,13 @@ public class ParameterTest {
 	}
 
 	@Test
-	// Test for #2256 PutParametersInSession with xpathExpression with type=domdoc
+	// Test for #2256 PutInSession with xpathExpression with type=domdoc
 	// results in "Content is not allowed in prolog"
 	public void testPutInSessionPipeWithDomdocParamsUsedMoreThanOnce() throws Exception {
 		try(TestConfiguration configuration = new TestConfiguration()) {
-			PipeLine pipeline = configuration.createBean(PipeLine.class);
+			Adapter adapter = configuration.createBean(Adapter.class);
+			adapter.setName("testAdapter"); // Required for Metrics
+			PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
 			String firstPipe = "PutInSession under test";
 			String secondPipe = "PutInSession next pipe";
 
@@ -1075,7 +945,6 @@ public class ParameterTest {
 			CorePipeProcessor pipeProcessor = configuration.createBean(CorePipeProcessor.class);
 			cpp.setPipeProcessor(pipeProcessor);
 			PipeLineSession session = configuration.createBean(PipeLineSession.class);
-			pipeline.setOwner(pipe);
 			PipeLineResult pipeRunResult = cpp.processPipeLine(pipeline, "messageId", new Message(testMessage), session, firstPipe);
 
 			assertEquals(ExitState.SUCCESS, pipeRunResult.getState());

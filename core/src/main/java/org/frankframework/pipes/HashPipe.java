@@ -26,13 +26,11 @@ import javax.crypto.spec.SecretKeySpec;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
@@ -53,7 +51,7 @@ import org.frankframework.util.StreamUtil;
  * @see Algorithm
  * @author Niels Meijer
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class HashPipe extends FixedForwardPipe {
 
 	private @Getter String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
@@ -145,12 +143,6 @@ public class HashPipe extends FixedForwardPipe {
 		this.algorithm = algorithm;
 	}
 
-	@Deprecated(forRemoval = true, since = "7.6.0")
-	@ConfigurationWarning("attribute encoding has been replaced with attribute charset, default has changed from ISO8859_1 to UTF-8")
-	public void setEncoding(String encoding) {
-		setCharset(encoding);
-	}
-
 	/**
 	 * Character set to use for converting the secret from String to bytes
 	 *
@@ -167,12 +159,6 @@ public class HashPipe extends FixedForwardPipe {
 	 */
 	public void setHashEncoding(HashEncoding hashEncoding) {
 		this.hashEncoding = hashEncoding;
-	}
-
-	@Deprecated(forRemoval = true, since = "7.7.0")
-	@ConfigurationWarning("use attribute hashEncoding instead")
-	public void setBinaryToTextEncoding(HashEncoding hashEncoding) {
-		setHashEncoding(hashEncoding);
 	}
 
 	/** The secret to hash with. Only used if no parameter secret is configured. The secret is only used when there is no authAlias specified, by attribute or parameter */

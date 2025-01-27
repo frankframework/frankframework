@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import lombok.Getter;
+
 import org.frankframework.core.ProcessState;
 
 public class ProcessStateDTO {

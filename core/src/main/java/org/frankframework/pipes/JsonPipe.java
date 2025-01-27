@@ -27,16 +27,18 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
 
-import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.xml.sax.SAXException;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.Default;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.documentbuilder.ArrayBuilder;
 import org.frankframework.documentbuilder.DocumentBuilderFactory;
 import org.frankframework.documentbuilder.DocumentFormat;
@@ -54,10 +56,14 @@ import org.frankframework.util.TransformerPool;
  * @author Martijn Onstwedder
  * @author Tom van der Heijden
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class JsonPipe extends FixedForwardPipe {
+
+	private static final String DEFAULT_ROOT_ELEMENT_NAME = "root";
+
 	private @Getter Direction direction = Direction.JSON2XML;
 	private Boolean addXmlRootElement = null;
+	private @Getter String rootElementName;
 	private @Getter boolean prettyPrint = false;
 
 	private TransformerPool tpXml2Json;
@@ -70,6 +76,15 @@ public class JsonPipe extends FixedForwardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+
+		// rootElementName has been modified from its default value
+		if (getDirection() == Direction.XML2JSON && StringUtils.isNotEmpty(rootElementName)) {
+			throw new ConfigurationException("rootElementName can not be used when direction is XML2JSON");
+		}
+
+		if (StringUtils.isEmpty(rootElementName)) {
+			rootElementName = DEFAULT_ROOT_ELEMENT_NAME;
+		}
 
 		Direction dir = getDirection();
 		if (dir == null) {
@@ -97,7 +112,7 @@ public class JsonPipe extends FixedForwardPipe {
 					return convertJsonToXml(jr.read());
 				} catch (JsonException e) {
 					log.debug("cannot parse input as JsonStructure", e);
-					Message result = new Message("<root>"+message.asString()+"</root>");
+					Message result = new Message(String.format("<%s>%s</%s>", rootElementName, message.asString(), rootElementName));
 					result.getContext().withMimeType(MediaType.APPLICATION_XML);
 					return new PipeRunResult(getSuccessForward(), result);
 				}
@@ -119,7 +134,7 @@ public class JsonPipe extends FixedForwardPipe {
 	private PipeRunResult convertJsonToXml(JsonValue jValue) throws SAXException, IOException, PipeRunException {
 		MessageBuilder builder = new MessageBuilder();
 		if (jValue instanceof JsonObject jObj) { // {"d":{"convert":{"__metadata":{"type":"ZCD_API_FCC_SRV.convertcurrencys"},"amount":"0.000000000","currency":"EUR"}}}
-			String root = "root";
+			String root = rootElementName;
 			if (!addXmlRootElement) {
 				if (jObj.size()>1) {
 					throw new PipeRunException(this, "Cannot extract root element name from object with ["+jObj.size()+"] names");
@@ -132,7 +147,7 @@ public class JsonPipe extends FixedForwardPipe {
 				DocumentUtils.jsonValue2Document(jValue, documentBuilder);
 			}
 		} else {
-			String root = addXmlRootElement ? "root" : null;
+			String root = addXmlRootElement ? rootElementName : null;
 			try (IDocumentBuilder documentBuilder = DocumentBuilderFactory.startDocument(DocumentFormat.XML, root, builder, isPrettyPrint())) {
 				try (ArrayBuilder arrayBuilder = documentBuilder.asArrayBuilder("item")) {
 					DocumentUtils.jsonArray2Builder((JsonArray) jValue, arrayBuilder);
@@ -152,23 +167,25 @@ public class JsonPipe extends FixedForwardPipe {
 		direction = value;
 	}
 
-	@Deprecated(forRemoval = true, since = "7.8.0")
-	public void setVersion(String version) {
-		if("1".equals(version)) {
-			setAddXmlRootElement(true);
-		}
-	}
-
 	/**
 	 * When direction is JSON2XML, it wraps a root element around the converted message.
-	 * When direction is XML2JSON, it includes the name of the root element as a key in the converted message.
+	 * When direction is XML2JSON, it includes the name of the root element as a key in the converted message, thus preserving the structure of the original input message.
 	 * @ff.default TRUE when JSON2XML and FALSE when XML2JSON
 	 */
 	public void setAddXmlRootElement(boolean addXmlRootElement) {
 		this.addXmlRootElement = addXmlRootElement;
 	}
 
-	/** Format the output in easy legible way (currently only for XML) */
+	/**
+	 * When direction is JSON2XML, specifies the name of the root element when {@literal addXmlRootElement} is {@code true}.
+	 * When direction is XML2JSON, can not be used.
+	 */
+	@Default(DEFAULT_ROOT_ELEMENT_NAME)
+	public void setRootElementName(String rootElementName) {
+		this.rootElementName = rootElementName;
+	}
+
+	/** Format the output in easy legible way (currently only for JSON2XML) */
 	public void setPrettyPrint(boolean prettyPrint) {
 		this.prettyPrint = prettyPrint;
 	}

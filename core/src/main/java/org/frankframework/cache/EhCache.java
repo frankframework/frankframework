@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
@@ -35,8 +36,8 @@ import org.frankframework.util.AppConstants;
  * @author  Gerrit van Brakel
  * @since   4.11
  */
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
-public class EhCache<V> extends CacheAdapterBase<V> {
+@FrankDocGroup(FrankDocGroupValue.OTHER)
+public class EhCache<V> extends AbstractCacheAdapter<V> {
 
 	private static final String KEY_PREFIX = "cache.default.";
 	private static final String KEY_MAX_ELEMENTS_IN_MEMORY = KEY_PREFIX + "maxElementsInMemory";
@@ -77,8 +78,9 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 	}
 
 	@Override
-	public void configure(String ownerName) throws ConfigurationException {
-		super.configure(ownerName);
+	public void configure() throws ConfigurationException {
+		super.configure();
+
 		if (isDiskPersistent() && !isOverflowToDisk()) {
 			log.info("setting overflowToDisk true, to support diskPersistent=true");
 			setOverflowToDisk(true);

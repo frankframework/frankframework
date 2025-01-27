@@ -16,11 +16,11 @@
 package org.frankframework.pipes;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.stream.Message;
 
 /**
@@ -29,7 +29,7 @@ import org.frankframework.stream.Message;
  * @author Jaco de Groot (***@dynasol.nl)
  *
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class SkipPipe extends FixedForwardPipe {
 
 	private int skip = 0;

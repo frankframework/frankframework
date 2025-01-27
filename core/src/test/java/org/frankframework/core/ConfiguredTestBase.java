@@ -1,5 +1,7 @@
 package org.frankframework.core;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,6 +11,7 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.SpringUtils;
 
 public abstract class ConfiguredTestBase {
 	protected Logger log = LogUtil.getLogger(this);
@@ -31,8 +34,8 @@ public abstract class ConfiguredTestBase {
 
 	@BeforeEach
 	public void setUp() throws Exception {
-		pipeline = getConfiguration().createBean(PipeLine.class);
 		adapter = getConfiguration().createBean(Adapter.class);
+		pipeline = SpringUtils.createBean(adapter, PipeLine.class);
 		adapter.setName("TestAdapter of "+getClass().getSimpleName());
 		adapter.setPipeLine(pipeline);
 		session = new PipeLineSession();
@@ -52,8 +55,12 @@ public abstract class ConfiguredTestBase {
 		getConfiguration().autowireByType(bean);
 	}
 
-	protected void autowireByName(Object bean) {
-		getConfiguration().autowireByName(bean);
+	/**
+	 * Performs full initialization of the bean, including all applicable BeanPostProcessors. This is effectively a superset of what autowire provides, adding initializeBean behavior.
+	 */
+	public <T> T createBeanInAdapter(Class<T> beanClass) {
+		assertNotNull(adapter, "Adapter does not exist");
+		return SpringUtils.createBean(adapter, beanClass);
 	}
 
 	protected ConfigurationWarnings getConfigurationWarnings() {

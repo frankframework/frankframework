@@ -26,22 +26,20 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
-
-import org.frankframework.doc.FrankDocGroup;
-import org.frankframework.doc.FrankDocGroupValue;
-
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasTransactionAttribute;
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.TransactionAttribute;
 import org.frankframework.core.TransactionAttributes;
-
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.jdbc.JdbcFacade;
 import org.frankframework.task.TimeoutGuard;
@@ -76,7 +74,7 @@ import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
  *
  * @author  Peter Leeuwenburgh
  */
-@FrankDocGroup(value = FrankDocGroupValue.OTHER)
+@FrankDocGroup(FrankDocGroupValue.OTHER)
 public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	private static final String LOCK_IGNORED="%null%";
 	private static final String LOCK_OBJECT_QUERY = "INSERT INTO IBISLOCK (objectId, type, host, creationDate, expiryDate) VALUES (?, ?, ?, ?, ?)";

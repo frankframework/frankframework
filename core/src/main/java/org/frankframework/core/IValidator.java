@@ -15,8 +15,7 @@
 */
 package org.frankframework.core;
 
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Optional;
@@ -29,7 +28,7 @@ import org.frankframework.stream.Message;
  */
 @FrankDocGroup(FrankDocGroupValue.PIPE)
 @FrankDocGroup(FrankDocGroupValue.VALIDATOR)
-@ElementType(ElementTypes.VALIDATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.VALIDATOR)
 public interface IValidator extends IPipe {
 
 	PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException;

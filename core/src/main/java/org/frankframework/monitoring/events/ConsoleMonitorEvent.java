@@ -16,6 +16,7 @@
 package org.frankframework.monitoring.events;
 
 import lombok.Getter;
+
 import org.frankframework.core.Adapter;
 import org.frankframework.monitoring.EventThrowing;
 

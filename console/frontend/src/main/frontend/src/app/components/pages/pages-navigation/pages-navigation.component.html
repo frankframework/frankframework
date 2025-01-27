@@ -13,7 +13,7 @@
 
         <app-custom-views></app-custom-views>
 
-        <li routerLinkActive="active">
+        <li appHasAccessToLink="getAdapters" routerLinkActive="active">
           <a data-cy-nav="adapterStatus" routerLink="/status" (click)="closeExpandedItem()"
             ><i class="fa fa-dashboard"></i> <span class="nav-label">Adapter Status</span></a
           >
@@ -25,6 +25,7 @@
           #accordionItemConfiguration="cdkAccordionItem"
           class="nav-group"
           tabindex="0"
+          [appHasAccessToLink]="['getConfigurationXML', 'manageConfiguration']"
           [attr.aria-expanded]="accordionItemConfiguration.expanded"
           [expanded]="
             getExpandedByRoute('configuration', { element: configuration, accordionItem: accordionItemConfiguration })
@@ -37,12 +38,14 @@
             <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemConfiguration.expanded }">
-            <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-              <a routerLink="/configurations" [queryParams]="{ name: getConfigurationsQueryParam() }"
-                >Show Configurations</a
-              >
+            <li
+              appHasAccessToLink="getConfigurationXML"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
+            >
+              <a routerLink="/configurations">Show Configurations</a>
             </li>
-            <li routerLinkActive="active">
+            <li appHasAccessToLink="getAllConfigurations" routerLinkActive="active">
               <a routerLink="/configurations/manage">Manage Configurations</a>
             </li>
           </ul>
@@ -53,6 +56,7 @@
           #accordionItemLogging="cdkAccordionItem"
           class="nav-group"
           tabindex="0"
+          [appHasAccessToLink]="['getLogDirectory', 'getLogConfiguration', 'getLogDefinitions']"
           [attr.aria-expanded]="accordionItemLogging.expanded"
           [expanded]="getExpandedByRoute('logging', { element: logging, accordionItem: accordionItemLogging })"
           [ngClass]="getClassByRoute('active', 'logging', accordionItemLogging.expanded)"
@@ -62,17 +66,18 @@
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemLogging.expanded }">
             <li
+              appHasAccessToLink="getLogDirectory"
               routerLinkActive="active"
               [routerLinkActiveOptions]="{
                 paths: 'exact',
                 queryParams: 'ignored',
                 matrixParams: 'exact',
-                fragment: 'ignored'
+                fragment: 'ignored',
               }"
             >
               <a routerLink="/logging">Log Files</a>
             </li>
-            <li routerLinkActive="active">
+            <li [appHasAccessToLink]="['getLogConfiguration', 'getLogDefinitions']" routerLinkActive="active">
               <a routerLink="/logging/settings">Log Settings</a>
             </li>
           </ul>
@@ -102,10 +107,14 @@
             <li data-cy-nav="testingLadybug" routerLinkActive="active">
               <a routerLink="/testing/ladybug">Ladybug</a>
             </li>
-            <li data-cy-nav="testingRunPipeline" routerLinkActive="active">
+            <li data-cy-nav="testingRunPipeline" appHasAccessToLink="testPipeLine" routerLinkActive="active">
               <a routerLink="/test-pipeline">Test a Pipeline</a>
             </li>
-            <li data-cy-nav="testingRunServiceListener" routerLinkActive="active">
+            <li
+              data-cy-nav="testingRunServiceListener"
+              appHasAccessToLink="postServiceListener"
+              routerLinkActive="active"
+            >
               <a routerLink="/test-service-listener">Test a ServiceListener</a>
             </li>
           </ul>
@@ -116,6 +125,7 @@
           #accordionItemJdbc="cdkAccordionItem"
           class="nav-group"
           tabindex="0"
+          [appHasAccessToLink]="['executeJdbcQuery', 'browseJdbcTable', 'generateSQL']"
           [attr.aria-expanded]="accordionItemJdbc.expanded"
           [expanded]="getExpandedByRoute(['jdbc', 'liquibase'], { element: jdbc, accordionItem: accordionItemJdbc })"
           [ngClass]="getClassByRoute('active', ['jdbc', 'liquibase'], accordionItemJdbc.expanded)"
@@ -124,13 +134,13 @@
             ><i class="fa fa-cubes"></i> <span class="nav-label">JDBC</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemJdbc.expanded }">
-            <li routerLinkActive="active">
+            <li appHasAccessToLink="executeJdbcQuery" routerLinkActive="active">
               <a routerLink="/jdbc/execute-query">Execute Query</a>
             </li>
-            <li routerLinkActive="active">
+            <li appHasAccessToLink="browseJdbcTable" routerLinkActive="active">
               <a routerLink="/jdbc/browse-tables">Browse Tables</a>
             </li>
-            <li routerLinkActive="active">
+            <li appHasAccessToLink="generateSQL" routerLinkActive="active">
               <a routerLink="/liquibase">Liquibase Script</a>
             </li>
           </ul>
@@ -141,6 +151,7 @@
           #accordionItemJms="cdkAccordionItem"
           class="nav-group"
           tabindex="0"
+          [appHasAccessToLink]="['browseQueue', 'putJmsMessage']"
           [attr.aria-expanded]="accordionItemJms.expanded"
           [expanded]="getExpandedByRoute('jms', { element: jms, accordionItem: accordionItemJms })"
           [ngClass]="getClassByRoute('active', 'jms', accordionItemJms.expanded)"
@@ -149,30 +160,30 @@
             ><i class="fa fa-th-large"></i> <span class="nav-label">JMS</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemJms.expanded }">
-            <li routerLinkActive="active">
+            <li appHasAccessToLink="browseQueue" routerLinkActive="active">
               <a routerLink="/jms/browse-queue">Browse Queue</a>
             </li>
-            <li routerLinkActive="active">
+            <li appHasAccessToLink="putJmsMessage" routerLinkActive="active">
               <a routerLink="/jms/send-message">Send Message</a>
             </li>
           </ul>
         </li>
-        <li routerLinkActive="active">
+        <li appHasAccessToLink="getWebServices" routerLinkActive="active">
           <a routerLink="/webservices" (click)="closeExpandedItem()"
             ><i class="fa fa-paper-plane-o"></i> <span class="nav-label">Webservices</span></a
           >
         </li>
-        <li routerLinkActive="active">
+        <li appHasAccessToLink="getSchedule" routerLinkActive="active">
           <a routerLink="/scheduler" (click)="closeExpandedItem()"
             ><i class="fa fa-calendar"></i> <span class="nav-label">Scheduler</span></a
           >
         </li>
-        <li routerLinkActive="active">
+        <li appHasAccessToLink="getMonitors" routerLinkActive="active">
           <a routerLink="/monitors" (click)="closeExpandedItem()"
             ><i class="fa fa-clone"></i> <span class="nav-label">Monitors</span></a
           >
         </li>
-        <li routerLinkActive="active">
+        <li appHasAccessToLink="getEnvironmentVariables" routerLinkActive="active">
           <a routerLink="/environment-variables" (click)="closeExpandedItem()"
             ><i class="fa fa-language"></i> <span class="nav-label">Environment Variables</span></a
           >
@@ -183,38 +194,39 @@
           #accordionItemOverview="cdkAccordionItem"
           class="nav-group"
           tabindex="0"
+          [appHasAccessToLink]="['getConnections', 'getIbisStoreSummary', 'getMessageBrowsers']"
           [attr.aria-expanded]="accordionItemOverview.expanded"
           [expanded]="
-            getExpandedByRoute(['connection-', 'ibisstore-', 'inlinestores'], {
+            getExpandedByRoute(['connections', 'ibisstore-', 'inlinestores'], {
               element: overview,
-              accordionItem: accordionItemOverview
+              accordionItem: accordionItemOverview,
             })
           "
           [ngClass]="
-            getClassByRoute('active', ['connection-', 'ibisstore-', 'inlinestores'], accordionItemOverview.expanded)
+            getClassByRoute('active', ['connections', 'ibisstore-', 'inlinestores'], accordionItemOverview.expanded)
           "
         >
           <a (click)="expandCollapse(accordionItemOverview, $event)"
             ><i class="fa fa-sitemap"></i> <span class="nav-label">Overview</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemOverview.expanded }">
-            <li routerLinkActive="active">
+            <li appHasAccessToLink="getConnections" routerLinkActive="active">
               <a routerLink="/connections">Connection Overview</a>
             </li>
-            <li routerLinkActive="active">
+            <li appHasAccessToLink="getIbisStoreSummary" routerLinkActive="active">
               <a routerLink="/ibisstore-summary">Ibisstore Summary</a>
             </li>
-            <li routerLinkActive="active">
+            <li appHasAccessToLink="getMessageBrowsers" routerLinkActive="active">
               <a routerLink="/inlinestores/overview">InlineStore Overview</a>
             </li>
           </ul>
         </li>
-        <li routerLinkActive="active">
+        <li appHasAccessToLink="getSecurityItems" routerLinkActive="active">
           <a routerLink="/security-items" (click)="closeExpandedItem()"
             ><i class="fa fa-lock"></i> <span class="nav-label">Security Items</span></a
           >
         </li>
-        <li>
+        <li appHasAccessToLink="getServerInformation">
           <a (click)="openInfo()" class="pointer"
             ><i class="fa fa-info-circle"></i> <span class="nav-label">Information</span></a
           >

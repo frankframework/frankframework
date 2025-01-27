@@ -38,11 +38,11 @@ import org.frankframework.configuration.classloaders.IConfigurationClassLoader.R
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.UUIDUtil;
 
-public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase> extends Mockito {
+public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLoader> extends Mockito {
 
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 
-	private ClassLoaderBase classLoader = null;
+	private AbstractClassLoader classLoader = null;
 	protected IbisContext ibisContext = spy(new IbisContext());
 	protected String scheme = "file";
 	protected AppConstants appConstants;

@@ -28,7 +28,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.extensions.esb.EsbSoapWrapperPipe;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
@@ -150,21 +149,15 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	}
 
 	@Override
-	public void start() throws PipeStartException {
+	public void start() {
 		super.start();
+
 		if (transferFlowIdTp != null) {
-			try {
-				transferFlowIdTp.open();
-			} catch (Exception e) {
-				throw new PipeStartException("cannot start transfer flow id TransformerPool", e);
-			}
+			transferFlowIdTp.open();
 		}
+
 		if (clientFilenameTp != null) {
-			try {
-				clientFilenameTp.open();
-			} catch (Exception e) {
-				throw new PipeStartException("cannot start client filename TransformerPool", e);
-			}
+			clientFilenameTp.open();
 		}
 	}
 

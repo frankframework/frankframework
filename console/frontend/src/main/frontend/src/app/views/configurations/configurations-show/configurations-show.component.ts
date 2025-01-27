@@ -5,15 +5,12 @@ import { ConfigurationsService } from '../configurations.service';
 import { copyToClipboard } from 'src/app/utils';
 import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
 import { Subscription } from 'rxjs';
-
-type TransitionObject = {
-  name?: string;
-  loaded?: boolean;
-  adapter?: string;
-};
+import { ConfigurationTabListComponent } from '../../../components/tab-list/configuration-tab-list.component';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-configurations-show',
+  imports: [ConfigurationTabListComponent, NgClass, MonacoEditorComponent],
   templateUrl: './configurations-show.component.html',
   styleUrls: ['./configurations-show.component.scss'],
 })
@@ -28,6 +25,7 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
   private fragment?: string;
   private selectedAdapter?: string;
   private skipParamsUpdate: boolean = false;
+  private initialized: boolean = false;
   private configsSubscription: Subscription | null = null;
 
   constructor(
@@ -53,11 +51,8 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
         this.skipParamsUpdate = false;
         return;
       }
-      this.selectedConfiguration = parameters.get('name') || 'All';
-      this.loadedConfiguration = parameters.get('loaded') !== 'false';
       this.selectedAdapter = parameters.get('adapter') ?? undefined;
-
-      this.getConfiguration();
+      this.loadedConfiguration = parameters.get('loaded') !== 'false';
     });
   }
 
@@ -68,25 +63,29 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
   update(loaded: boolean): void {
     this.loadedConfiguration = loaded;
     this.fragment = undefined;
+
+    this.getConfiguration();
     this.updateQueryParams();
   }
 
   changeConfiguration(name: string): void {
     this.selectedConfiguration = name;
-    this.selectedAdapter = undefined;
-    this.fragment = undefined; //unset hash anchor
+    if (this.initialized) {
+      this.selectedAdapter = undefined;
+      this.fragment = undefined; //unset hash anchor
+    }
+    this.getConfiguration();
     this.updateQueryParams();
   }
 
   updateQueryParams(): void {
-    const transitionObject: TransitionObject = {};
-    if (this.selectedConfiguration !== 'All') transitionObject.name = this.selectedConfiguration;
-    if (!this.loadedConfiguration) transitionObject.loaded = this.loadedConfiguration;
-    transitionObject.adapter ??= this.selectedAdapter;
-
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: transitionObject,
+      queryParams: {
+        loaded: this.loadedConfiguration ? null : 'false',
+        adapter: this.selectedAdapter,
+      },
+      queryParamsHandling: 'merge',
       fragment: this.fragment,
     });
   }
@@ -103,6 +102,7 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
       .subscribe((data) => {
         this.configuration = data;
         this.editor.setValue(data).then(() => {
+          this.initialized = true;
           this.highlightAdapter();
         });
       });

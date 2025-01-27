@@ -24,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.frankframework.core.IDataIterator;
 import org.frankframework.core.SenderException;
-
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.util.DB2XMLWriter;
 import org.frankframework.util.JdbcUtil;

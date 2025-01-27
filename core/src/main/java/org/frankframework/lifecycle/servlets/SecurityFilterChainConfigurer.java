@@ -15,11 +15,11 @@
 */
 package org.frankframework.lifecycle.servlets;
 
+import jakarta.servlet.ServletContext;
+
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
-
-import jakarta.servlet.ServletContext;
 
 /**
  * Add the SpringSecurity filter to enable authentication.

@@ -5,7 +5,7 @@
                    serviceName="testtool-EsbSoapWrapperPipe (mode='reg')"
                    throwException="false"/>
       </receiver>
-		    <errorMessageFormatter className="org.frankframework.errormessageformatters.SoapErrorMessage"/>
+		    <errorMessageFormatter className="org.frankframework.errormessageformatters.SoapErrorMessageFormatter"/>
 		    <receiver>
 			      <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="ibis4test-EsbSoapWrapperPipe2"
@@ -18,7 +18,7 @@
       </receiver>
 		    <pipeline firstPipe="switch">
 			      <exits>
-				        <exit path="EXIT" state="success"/>
+				        <exit name="EXIT" state="success"/>
 			      </exits>
 			      <inputWrapper className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
                        useFixedValues="true">

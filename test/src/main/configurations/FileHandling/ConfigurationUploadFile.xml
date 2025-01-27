@@ -15,8 +15,8 @@
 
 		<pipeline>
 			<exits>
-				<exit state="success" path="EXIT" code="200"/>
-				<exit state="error" path="ERROR" code="500"/>
+				<exit state="success" name="EXIT" code="200"/>
+				<exit state="error" name="ERROR" code="500"/>
 			</exits>
 
 			<pipe name="uploadFiles"
@@ -42,7 +42,7 @@
 
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success"/>
+				<exit name="EXIT" state="success"/>
 			</exits>
 
 			<pipe name="isZipfile"

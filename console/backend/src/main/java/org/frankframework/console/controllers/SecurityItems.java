@@ -15,23 +15,30 @@
 */
 package org.frankframework.console.controllers;
 
-import org.frankframework.console.AllowAllIbisUserRoles;
-import org.frankframework.console.Relation;
-import org.frankframework.console.util.RequestMessageBuilder;
-import org.frankframework.management.bus.BusTopic;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.frankframework.console.AllowAllIbisUserRoles;
+import org.frankframework.console.Relation;
+import org.frankframework.console.util.RequestMessageBuilder;
+import org.frankframework.management.bus.BusTopic;
+
 @RestController
-public class SecurityItems extends FrankApiBase {
+public class SecurityItems {
+
+	private final FrankApiService frankApiService;
+
+	public SecurityItems(FrankApiService frankApiService) {
+		this.frankApiService = frankApiService;
+	}
 
 	@AllowAllIbisUserRoles
 	@GetMapping(value = "/securityitems", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("securityitems")
 	public ResponseEntity<?> getSecurityItems() {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SECURITY_ITEMS);
-		return callSyncGateway(builder);
+		return frankApiService.callSyncGateway(builder);
 	}
 }

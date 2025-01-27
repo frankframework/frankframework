@@ -26,7 +26,7 @@ import jakarta.servlet.ServletResponse;
 
 import org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet;
 
-import org.frankframework.http.HttpServletBase;
+import org.frankframework.http.AbstractHttpServlet;
 import org.frankframework.lifecycle.DynamicRegistration;
 
 /**
@@ -35,7 +35,7 @@ import org.frankframework.lifecycle.DynamicRegistration;
  *
  * @author Niels Meijer
  */
-public abstract class WebServicesServletBase extends HttpServletBase implements DynamicRegistration.ServletWithParameters {
+public abstract class WebServicesServletBase extends AbstractHttpServlet implements DynamicRegistration.ServletWithParameters {
 
 	private static final long serialVersionUID = 2L;
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,68 +15,40 @@
 */
 package org.frankframework.configuration.digester;
 
-import java.io.IOException;
+import java.util.HashMap;
 
-import org.apache.commons.digester3.Digester;
-import org.apache.commons.digester3.binder.RulesBinder;
-import org.apache.commons.digester3.binder.RulesModule;
-import org.frankframework.core.Resource;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.SAXException;
 
-import lombok.Setter;
-
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.SpringUtils;
-import org.frankframework.util.XmlUtils;
+import lombok.Getter;
 
 /**
  * Custom implementation that replaces the old digester-rules.xml file.
  * Where previously you had to specify a 'create', 'set-properties' and a 'set-next-rule'
  * In this implementation you only have to call 'createRule(rulesBinder, PATTERN, NEXT-RULE')
+ * 
+ * Since the removal of the Apache Digester this class now only compiles a list of available 'rules'.
  *
  * @author Niels Meijer
  */
-public class FrankDigesterRules implements RulesModule, ApplicationContextAware {
+public class FrankDigesterRules extends AbstractDigesterRulesHandler {
 	public static final String DIGESTER_RULES_FILE = "digester-rules.xml";
-	private @Setter ApplicationContext applicationContext;
 
-	private Digester digester;
-	private Resource digesterRules = null;
-
-	/**
-	 * We need to parse the Digester in case a factory create rule is used
-	 */
-	public FrankDigesterRules(Digester digester) {
-		this(digester, null);
-	}
-
-	public FrankDigesterRules(Digester digester, Resource digesterRules) {
-		this.digester = digester;
-		this.digesterRules = digesterRules;
-	}
+	@Getter
+	private final HashMap<String, DigesterRule> parsedPatterns = new HashMap<>();
 
 	@Override
-	public void configure(RulesBinder rulesBinder) {
-		if(applicationContext == null) {
-			throw new IllegalStateException("ApplicationContext not set, unable to initialize ["+ClassUtils.nameOf(this)+"]");
-		}
-		if(digester == null) {
-			throw new IllegalStateException("Digester not set, unable to initialize ["+ClassUtils.nameOf(this)+"]");
-		}
-		if(digesterRules == null) {
-			digesterRules = Resource.getResource(DIGESTER_RULES_FILE);
+	protected void handle(DigesterRule rule) throws SAXException {
+		log.trace("adding digesterRule {}", rule::toString);
+
+		String pattern = rule.getPattern();
+
+		if (parsedPatterns.containsKey(pattern)) {
+			// Duplicate patterns are used to tell FrankDoc parser about changed multiplicity.
+			// Original method will still be available to be used by digester, so second instance of rule can be ignored here.
+			log.info("pattern [{}] already parsed", pattern);
+			return;
 		}
 
-		DigesterRulesHandler handler = new DigesterRulesParser(digester, rulesBinder);
-		SpringUtils.autowireByType(applicationContext, handler);
-		try {
-			XmlUtils.parseXml(digesterRules.asInputSource(), handler);
-		} catch (IOException e) {
-			throw new IllegalStateException("unable to open digesterRules file", e);
-		} catch (SAXException e) {
-			throw new IllegalStateException("unable to parse digesterRules file", e);
-		}
+		parsedPatterns.put(pattern, rule);
 	}
 }

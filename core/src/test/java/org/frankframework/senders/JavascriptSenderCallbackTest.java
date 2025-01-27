@@ -3,11 +3,15 @@ package org.frankframework.senders;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.IOException;
 
 import jakarta.annotation.Nonnull;
 
+import org.frankframework.testutil.TestAssertions;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
@@ -23,6 +27,12 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.NumberParameterBuilder;
 
 class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
+
+	@BeforeAll
+	public static void setup() {
+		// Since it's not possible to conditionally check the EnumSource here, just disable all for now...
+		assumeFalse(TestAssertions.isTestRunningOnARM(), "uses J2V8 which does not work on ARM");
+	}
 
 	@Override
 	public JavascriptSender createSender() {
@@ -91,7 +101,7 @@ class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 		assertEquals("success", promiseResult.asString());
 	}
 
-	private static class PromiseResultSender extends SenderWithParametersBase {
+	private static class PromiseResultSender extends AbstractSenderWithParameters {
 		private @Getter Message promiseResult = null;
 
 		@Override

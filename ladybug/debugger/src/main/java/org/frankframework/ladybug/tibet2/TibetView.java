@@ -67,16 +67,17 @@ public class TibetView extends View {
 			return "Not allowed. Could not find adapter " + AUTHORISATION_CHECK_ADAPTER_NAME;
 		}
 
-		PipeLineSession pipeLineSession = new PipeLineSession();
-		if(app.getUserPrincipal() != null) {
-			pipeLineSession.put("principal", app.getUserPrincipal().getName());
+		try (PipeLineSession pipeLineSession = new PipeLineSession()) {
+			if (app.getUserPrincipal() != null) {
+				pipeLineSession.put("principal", app.getUserPrincipal().getName());
+			}
+			pipeLineSession.put("StorageId", storageId);
+			pipeLineSession.put("View", getName());
+			PipeLineResult processResult = adapter.processMessageDirect(null, new Message("<dummy/>"), pipeLineSession);
+			if (processResult.isSuccessful()) {
+				return ReportsComponent.OPEN_REPORT_ALLOWED;
+			}
+			return "Not allowed. Result of adapter " + AUTHORISATION_CHECK_ADAPTER_NAME + ": " + processResult.getResult();
 		}
-		pipeLineSession.put("StorageId", storageId);
-		pipeLineSession.put("View", getName());
-		PipeLineResult processResult = adapter.processMessageDirect(null, new Message("<dummy/>"), pipeLineSession);
-		if (processResult.isSuccessful()) {
-			return ReportsComponent.OPEN_REPORT_ALLOWED;
-		}
-		return "Not allowed. Result of adapter " + AUTHORISATION_CHECK_ADAPTER_NAME + ": " + processResult.getResult();
 	}
 }

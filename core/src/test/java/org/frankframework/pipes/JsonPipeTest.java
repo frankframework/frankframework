@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.JsonPipe.Direction;
@@ -147,22 +148,6 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 	}
 
 	@Test
-	public void testXmlArray2JsonWithVersion() throws Exception {
-		pipe.setVersion("1");
-		pipe.setDirection(Direction.XML2JSON);
-		pipe.configure();
-		pipe.start();
-
-		String input = "<root><values><value>a</value><value>a</value><value>a</value></values></root>";
-		String expected = "{\"root\":{\"values\":{\"value\":[\"a\",\"a\",\"a\"]}}}";
-
-		PipeRunResult prr = doPipe(pipe, input, session);
-
-		String result = prr.getResult().asString();
-		assertEquals(expected, result);
-	}
-
-	@Test
 	public void testJson2XmlArray() throws Exception {
 		pipe.setAddXmlRootElement(false);
 		pipe.configure();
@@ -205,4 +190,47 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		String result = prr.getResult().asString();
 		MatchUtils.assertXmlEquals(expected, result);
 	}
+
+	@Test
+	public void testJson2XmlWithPrettyPrint() throws Exception {
+		pipe.setPrettyPrint(true);
+
+		pipe.configure();
+		pipe.start();
+
+		String input ="{ \"name\": \"Jantje\" }";
+		String expected = "<root>\n\t<name>Jantje</name>\n</root>";
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+
+		String result = prr.getResult().asString();
+		MatchUtils.assertXmlEquals(expected, result);
+		assertEquals(expected, result);
+	}
+
+	@Test
+	public void testJson2XmlWithCustomRoot() throws Exception {
+		pipe.setRootElementName("myroot");
+		pipe.setDirection(Direction.JSON2XML);
+
+		pipe.configure();
+		pipe.start();
+
+		String input = "{ \"name\": \"Jantje\" }";
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+
+		String result = prr.getResult().asString();
+		MatchUtils.assertXmlEquals("<myroot><name>Jantje</name></myroot>", result);
+	}
+
+	@Test
+	public void testXml2JsonWithCustomRoot() {
+		pipe.setRootElementName("myroot");
+		pipe.setDirection(Direction.XML2JSON);
+
+		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> pipe.configure());
+		assertEquals("rootElementName can not be used when direction is XML2JSON", exception.getMessage());
+	}
+
 }

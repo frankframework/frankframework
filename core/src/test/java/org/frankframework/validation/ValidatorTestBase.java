@@ -1,6 +1,5 @@
 package org.frankframework.validation;
 
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -185,7 +184,7 @@ public abstract class ValidatorTestBase {
 				String[] split =  schemaLocation.trim().split("\\s+");
 				if (split.length % 2 != 0) throw new ConfigurationException("The schema must exist from an even number of strings, but it is " + schemaLocation);
 				for (int i = 0; i < split.length; i += 2) {
-					XSD xsd = new ResourceXsd();
+					AbstractXSD xsd = new ResourceXsd();
 					xsd.setAddNamespaceToSchema(addNamespaceToSchema);
 					xsd.initNamespace(split[i], testScopeProvider, split[i + 1]);
 					xsds.add(xsd);
@@ -196,7 +195,7 @@ public abstract class ValidatorTestBase {
 			@Override
 			public List<Schema> getSchemas() throws ConfigurationException {
 				Set<IXSD> xsds = getXsds();
-				xsds = XSD.getXsdsRecursive(xsds);
+				xsds = AbstractXSD.getXsdsRecursive(xsds);
 				//checkRootValidations(xsds);
 				try {
 					Map<String, Set<IXSD>> xsdsGroupedByNamespace = SchemaUtils.groupXsdsByNamespace(xsds, false);

@@ -1,9 +1,9 @@
 package org.frankframework.parameters;
 
-import static org.frankframework.parameters.AbstractParameter.TYPE_DATETIME_PATTERN;
-import static org.frankframework.parameters.AbstractParameter.TYPE_DATE_PATTERN;
-import static org.frankframework.parameters.AbstractParameter.TYPE_TIMESTAMP_PATTERN;
-import static org.frankframework.parameters.AbstractParameter.TYPE_TIME_PATTERN;
+import static org.frankframework.parameters.DateParameter.TYPE_DATETIME_PATTERN;
+import static org.frankframework.parameters.DateParameter.TYPE_DATE_PATTERN;
+import static org.frankframework.parameters.DateParameter.TYPE_TIMESTAMP_PATTERN;
+import static org.frankframework.parameters.DateParameter.TYPE_TIME_PATTERN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;

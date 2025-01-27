@@ -12,20 +12,9 @@
 	<context:property-placeholder />
 
 	<context:component-scan base-package="org.frankframework.console">
-		<!-- make sure only load the Spring MVC controllers ;) -->
+		<!-- disable package scanning in this package as it attempts to load this XML file, again. -->
+		<context:exclude-filter type="regex" expression="org\.frankframework\.console\.runner\..*"/>
 	</context:component-scan>
-
-	<!-- disables the spring boot auto-configure 'wire all filters automatically' magic -->
-	<bean class="org.springframework.boot.web.servlet.FilterRegistrationBean">
-		<property name="filter" ref="springSecurityFilterChain" />
-		<property name="enabled" value="false" />
-	</bean>
-
-	<bean id="httpFirewall" class="org.springframework.security.web.firewall.StrictHttpFirewall">
-		<property name="allowSemicolon" value="true"/>
-		<property name="allowUrlEncodedPercent" value="true"/>
-		<property name="allowUrlEncodedSlash" value="true"/>
-	</bean>
 
 	<bean id="JwtKeyGenerator" class="org.frankframework.management.security.JwtKeyGenerator"/>
 	<bean id="messageBuilderFactory" class="org.springframework.integration.support.DefaultMessageBuilderFactory" />

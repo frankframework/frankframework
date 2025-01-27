@@ -2,6 +2,7 @@ import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Alert, AlertService } from 'src/app/services/alert.service';
 import { AuthService } from 'src/app/services/auth.service';
+import { FormsModule } from '@angular/forms';
 
 type Credentials = {
   username: string;
@@ -10,6 +11,7 @@ type Credentials = {
 
 @Component({
   selector: 'app-login',
+  imports: [FormsModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })

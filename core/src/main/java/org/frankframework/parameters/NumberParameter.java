@@ -24,9 +24,10 @@ import java.text.ParseException;
 
 import jakarta.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
@@ -46,7 +47,7 @@ public class NumberParameter extends AbstractParameter {
 	private @Getter DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
 
 	public NumberParameter() {
-		setType(ParameterType.INTEGER); //Defaults to integer
+		setType(ParameterType.INTEGER); // Defaults to integer
 	}
 
 	@Override

@@ -27,12 +27,16 @@ import java.util.concurrent.Phaser;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import io.micrometer.core.instrument.DistributionSummary;
 import jakarta.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.task.TaskExecutor;
+import org.xml.sax.SAXException;
+
+import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IBlockEnabledSender;
 import org.frankframework.core.IDataIterator;
@@ -43,8 +47,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.receivers.ResourceLimiter;
@@ -56,13 +59,10 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
-import org.springframework.core.task.TaskExecutor;
-import org.xml.sax.SAXException;
 
 /**
- * Abstract base class to send a message to a Sender for each item returned by a configurable iterator.
- *
- * <br/>
+ * Base class to send a message to a Sender for each item returned by a configurable iterator.
+* <br/>
  * The output of each of the processing of each of the elements is returned in XML as follows:
  * <pre>
  *  &lt;results count="num_of_elements"&gt;
@@ -71,7 +71,6 @@ import org.xml.sax.SAXException;
  *       ...
  *  &lt;/results&gt;
  * </pre>
- *
  *
  * For more configuration options, see {@link MessageSendingPipe}.
  * <br/>
@@ -86,7 +85,7 @@ import org.xml.sax.SAXException;
  */
 @Forward(name = "maxItemsReached", description = "the iteration stopped when the configured maximum number of items was processed")
 @Forward(name = "stopConditionMet", description = "the iteration stopped when the configured condition expression became true")
-@ElementType(ElementTypes.ITERATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ITERATOR)
 public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 	protected static final String MAX_ITEMS_REACHED_FORWARD = "maxItemsReached";
@@ -300,11 +299,10 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				try {
 					DistributionSummary senderStatistics = getStatisticsKeeper(sender.getName());
 					if (isParallel()) {
-						if (isCollectResults()) {
-							if (guard != null) {
-								guard.register();
-							}
+						if (isCollectResults() && guard != null) {
+							guard.register();
 						}
+
 						ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, senderStatistics);
 						pse.setThreadLimiter(childLimiter);
 						pse.setGuard(guard);
@@ -443,7 +441,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			}
 			if(!isIgnoreExceptions() && !exceptions.isEmpty()) {
 				SenderException se = new SenderException("an error occurred during parallel execution");
-				exceptions.stream().forEach(se::addSuppressed);
+				exceptions.forEach(se::addSuppressed);
 				throw se;
 			}
 		}

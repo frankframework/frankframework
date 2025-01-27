@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 
@@ -94,12 +95,12 @@ public class ServiceDispatcher  {
 		return registeredListeners.get(name) != null;
 	}
 
-	public synchronized void registerServiceClient(String name, ServiceClient listener) throws ListenerException {
+	public synchronized void registerServiceClient(String name, ServiceClient listener) {
 		if(StringUtils.isEmpty(name)) {
-			throw new ListenerException("Cannot register a ServiceClient without name");
+			throw new LifecycleException("Cannot register a ServiceClient without name");
 		}
 		if (isRegisteredServiceListener(name)) {
-			throw new ListenerException("Dispatcher already has a ServiceClient registered under name ["+name+"]");
+			throw new LifecycleException("Dispatcher already has a ServiceClient registered under name ["+name+"]");
 		}
 
 		registeredListeners.put(name, listener);

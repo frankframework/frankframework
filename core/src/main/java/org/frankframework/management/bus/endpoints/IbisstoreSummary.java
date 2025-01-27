@@ -17,7 +17,9 @@ package org.frankframework.management.bus.endpoints;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
@@ -31,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
+import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ISender;
@@ -38,9 +41,9 @@ import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.jdbc.AbstractJdbcQuerySender;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
-import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
@@ -71,7 +74,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 			try(PipeLineSession session = new PipeLineSession()) {
 				qs.setName("QuerySender");
 				qs.setDatasourceName(datasource);
-				qs.setQueryType(JdbcQuerySenderBase.QueryType.SELECT);
+				qs.setQueryType(AbstractJdbcQuerySender.QueryType.SELECT);
 				qs.setBlobSmartGet(true);
 				qs.setAvoidLocking(true);
 				qs.configure(true);
@@ -92,10 +95,20 @@ public class IbisstoreSummary extends BusEndpointBase {
 		return new StringMessage(resultObject, MediaType.APPLICATION_JSON);
 	}
 
+	private List<Adapter> getAdapters() {
+		List<Adapter> registeredAdapters = new ArrayList<>();
+		for (Configuration configuration : getIbisManager().getConfigurations()) {
+			if(configuration.isActive()) {
+				registeredAdapters.addAll(configuration.getRegisteredAdapters());
+			}
+		}
+		return registeredAdapters;
+	}
+
 	private Map<String, SlotIdRecord> getSlotmap() {
 		Map<String, SlotIdRecord> slotmap = new HashMap<>();
 
-		for(Adapter adapter: getIbisManager().getRegisteredAdapters()) {
+		for(Adapter adapter: getAdapters()) {
 			for (Receiver receiver: adapter.getReceivers()) {
 				ITransactionalStorage errorStorage=receiver.getErrorStorage();
 				if (errorStorage!=null) {

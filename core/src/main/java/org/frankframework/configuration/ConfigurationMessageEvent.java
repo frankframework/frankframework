@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,34 +17,27 @@ package org.frankframework.configuration;
 
 import java.time.Instant;
 
+import org.springframework.context.ApplicationContext;
+
 import lombok.Getter;
-import org.frankframework.core.IConfigurationAware;
+
 import org.frankframework.lifecycle.ApplicationMessageEvent;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.MessageKeeperMessage;
-import org.springframework.context.ApplicationContext;
 
 public class ConfigurationMessageEvent extends ApplicationMessageEvent {
 	private final @Getter MessageKeeperMessage messageKeeperMessage;
 
-	public ConfigurationMessageEvent(IConfigurationAware source, String message) {
+	public ConfigurationMessageEvent(Configuration source, String message) {
 		this(source, message, MessageKeeperLevel.INFO);
 	}
 
-	public ConfigurationMessageEvent(IConfigurationAware source, String message, MessageKeeperLevel level) {
-		this(getSource(source), message, level, null);
+	public ConfigurationMessageEvent(Configuration source, String message, MessageKeeperLevel level) {
+		this(source, message, level, null);
 	}
 
-	public ConfigurationMessageEvent(IConfigurationAware source, String message, Exception e) {
-		this(getSource(source), message, MessageKeeperLevel.ERROR, e);
-	}
-
-	private static ApplicationContext getSource(IConfigurationAware source) {
-		ApplicationContext ac = source.getApplicationContext();
-		if(ac instanceof Configuration) {
-			return ac;
-		}
-		throw new IllegalStateException("unable to publish message from this context");
+	public ConfigurationMessageEvent(Configuration source, String message, Exception e) {
+		this(source, message, MessageKeeperLevel.ERROR, e);
 	}
 
 	@Override
@@ -66,7 +59,7 @@ public class ConfigurationMessageEvent extends ApplicationMessageEvent {
 
 		m.append(message);
 
-		//We must use .toString() here else the StringBuilder will be passed on which add the stacktrace Message to the log
+		// We must use .toString() here else the StringBuilder will be passed on which add the stacktrace Message to the log
 		if (MessageKeeperLevel.ERROR == level) {
 			log.error(m.toString(), e);
 		} else if (MessageKeeperLevel.WARN == level) {

@@ -57,7 +57,6 @@ public class TestDirectWrapperPipePipeLine {
 		exit.setState(ExitState.SUCCESS);
 		pipeline.addPipeLineExit(exit);
 
-		pipeline.setOwner(pipe);
 		pipeline.configure();
 
 		CorePipeProcessor cpp = configuration.createBean(CorePipeProcessor.class);

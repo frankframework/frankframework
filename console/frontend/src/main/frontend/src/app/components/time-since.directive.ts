@@ -1,22 +1,16 @@
-import { Directive, ElementRef, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
-import { AppService, ConsoleState } from '../app.service';
+import { Directive, ElementRef, inject, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
+import { ServerTimeService } from '../services/server-time.service';
 
 @Directive({
   selector: '[appTimeSince]',
-  standalone: true,
 })
 export class TimeSinceDirective implements OnInit, OnChanges, OnDestroy {
   @Input() time!: number;
 
+  private element: ElementRef<HTMLElement> = inject(ElementRef);
+  private serverTimeService: ServerTimeService = inject(ServerTimeService);
   private interval?: number;
-  private consoleState: ConsoleState;
 
-  constructor(
-    private element: ElementRef<HTMLElement>,
-    private appService: AppService,
-  ) {
-    this.consoleState = this.appService.CONSOLE_STATE;
-  }
   ngOnInit(): void {
     this.interval = window.setInterval(() => this.updateTime(), 300_000);
   }
@@ -31,7 +25,7 @@ export class TimeSinceDirective implements OnInit, OnChanges, OnDestroy {
 
   updateTime(): string {
     if (!this.time) return '';
-    let seconds = Math.round((Date.now() - this.time + this.consoleState.timeOffset) / 1000);
+    let seconds = Math.round((this.serverTimeService.getCurrentTime() - this.time) / 1000);
 
     let minutes = seconds / 60;
     seconds = Math.floor(seconds % 60);

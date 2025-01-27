@@ -46,9 +46,9 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.validation.AbstractXSD;
 import org.frankframework.validation.IXSD;
 import org.frankframework.validation.SchemaUtils;
-import org.frankframework.validation.XSD;
 import org.frankframework.validation.xsd.ResourceXsd;
 
 /**
@@ -254,12 +254,12 @@ public class WsdlGenerator {
 		rootXsds = new HashSet<>();
 		Set<IXSD> inputRootXsds = new HashSet<>(getXsds(inputValidator));
 		rootXsds.addAll(inputRootXsds);
-		Set<IXSD> inputXsds = new HashSet<>(XSD.getXsdsRecursive(inputRootXsds));
+		Set<IXSD> inputXsds = new HashSet<>(AbstractXSD.getXsdsRecursive(inputRootXsds));
 		xsds.addAll(inputXsds);
 		if (outputValidator != null) {
 			Set<IXSD> outputRootXsds = new HashSet<>(getXsds(outputValidator));
 			rootXsds.addAll(outputRootXsds);
-			outputXsds.addAll(XSD.getXsdsRecursive(outputRootXsds));
+			outputXsds.addAll(AbstractXSD.getXsdsRecursive(outputRootXsds));
 			xsds.addAll(outputXsds);
 		}
 		prefixByXsd = new LinkedHashMap<>();

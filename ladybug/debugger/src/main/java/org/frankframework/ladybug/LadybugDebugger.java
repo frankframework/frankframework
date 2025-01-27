@@ -22,27 +22,32 @@ import java.util.Set;
 
 import jakarta.annotation.Nonnull;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.Debugger;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.SecurityContext;
-import nl.nn.testtool.TestTool;
-import nl.nn.testtool.run.ReportRunner;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.ApplicationListener;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.CheckpointType;
+import nl.nn.testtool.Debugger;
+import nl.nn.testtool.Report;
+import nl.nn.testtool.SecurityContext;
+import nl.nn.testtool.StubType;
+import nl.nn.testtool.TestTool;
+import nl.nn.testtool.run.ReportRunner;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.HasName;
 import org.frankframework.core.IListener;
-import org.frankframework.core.INamedObject;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
@@ -57,7 +62,7 @@ import org.frankframework.util.UUIDUtil;
  * @author Jaco de Groot
  */
 @Log4j2
-public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerStatusChangedEvent>, InitializingBean, ApplicationContextAware {
+public class LadybugDebugger implements ApplicationContextAware, ApplicationListener<DebuggerStatusChangedEvent>, ApplicationEventPublisherAware, Debugger, InitializingBean {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 	private static final String REPORT_ROOT_PREFIX = "Pipeline ";
 	private static final String LADYBUG_TESTTOOL_NAME = "testTool";
@@ -68,6 +73,7 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 	protected @Setter @Getter IbisManager ibisManager;
 	private @Setter @Autowired List<String> testerRoles;
 	private @Setter ApplicationContext applicationContext;
+	private @Setter ApplicationEventPublisher applicationEventPublisher;
 
 	protected Set<String> inRerun = new HashSet<>();
 
@@ -210,7 +216,7 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 	// Called by TestTool
 	@Override
 	public boolean stub(Checkpoint checkpoint, String strategy) {
-		return stub(checkpoint.getName(), checkpoint.getType() == Checkpoint.TYPE_ENDPOINT, strategy);
+		return stub(checkpoint.getName(), checkpoint.getType() == CheckpointType.ENDPOINT.toInt(), strategy);
 	}
 
 	/**
@@ -229,7 +235,7 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 		return stubINamedObject("Listener ", listener, correlationId);
 	}
 
-	private boolean stubINamedObject(String checkpointNamePrefix, INamedObject namedObject, String correlationId) {
+	private boolean stubINamedObject(String checkpointNamePrefix, HasName namedObject, String correlationId) {
 		boolean rerun;
 		synchronized(inRerun) {
 			rerun = inRerun.contains(correlationId);
@@ -240,13 +246,13 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 				// stub = stub(getCheckpointNameForINamedObject(checkpointNamePrefix, namedObject), true, getDefaultStubStrategy());
 				// TODO zou ook gewoon het orginele report kunnen gebruiken (via opslaan in iets als inRerun) of inRerun ook via testtool doen?
 				Report reportInProgress = testtool.getReportInProgress(correlationId);
-				return stub(getCheckpointNameForINamedObject(checkpointNamePrefix, namedObject), true, (reportInProgress==null?null:reportInProgress.getStubStrategy()));
+				return stub(getCheckpointNameForNamedObject(checkpointNamePrefix, namedObject), true, (reportInProgress==null?null:reportInProgress.getStubStrategy()));
 			} else {
-				if (originalEndpoint.getStub() == Checkpoint.STUB_FOLLOW_REPORT_STRATEGY) {
+				if (originalEndpoint.getStub() == StubType.FOLLOW_REPORT_STRATEGY.toInt()) {
 					return stub(originalEndpoint, originalEndpoint.getReport().getStubStrategy());
-				} else if (originalEndpoint.getStub() == Checkpoint.STUB_NO) {
+				} else if (originalEndpoint.getStub() == StubType.NO.toInt()) {
 					return false;
-				} else if (originalEndpoint.getStub() == Checkpoint.STUB_YES) {
+				} else if (originalEndpoint.getStub() == StubType.YES.toInt()) {
 					return true;
 				}
 			}
@@ -274,7 +280,7 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 		return false;
 	}
 
-	private static String getCheckpointNameForINamedObject(String checkpointNamePrefix, INamedObject object) {
+	private static String getCheckpointNameForNamedObject(String checkpointNamePrefix, HasName object) {
 		String name = object.getName();
 		if (name == null) {
 			name = object.getClass().getName();
@@ -290,10 +296,10 @@ public class LadybugDebugger implements Debugger, ApplicationListener<DebuggerSt
 
 	@Override
 	public void updateReportGeneratorStatus(boolean enabled) {
-		if (ibisManager != null && ibisManager.getApplicationEventPublisher() != null) {
+		if (applicationEventPublisher != null) {
 			DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enabled);
 			log.debug("sending DebuggerStatusChangedEvent [{}]", event);
-			ibisManager.getApplicationEventPublisher().publishEvent(event);
+			applicationEventPublisher.publishEvent(event);
 		}
 	}
 

@@ -18,13 +18,14 @@ package org.frankframework.pipes;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.SneakyThrows;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.stream.Message;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
@@ -36,7 +37,7 @@ import org.frankframework.util.StringUtil;
  * @author Peter Leeuwenburgh
  * @see PipeLineSession
  */
-@ElementType(ElementTypes.SESSION)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.SESSION)
 public class RemoveFromSession extends FixedForwardPipe {
 	private String sessionKey;
 

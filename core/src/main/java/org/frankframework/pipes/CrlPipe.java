@@ -30,8 +30,7 @@ import lombok.Getter;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.XmlBuilder;
@@ -72,7 +71,7 @@ import org.frankframework.util.XmlBuilder;
  * @author Jaco de Groot
  * @author Tom van der Heijden
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class CrlPipe extends FixedForwardPipe {
 	private @Getter String issuerSessionKey;
 

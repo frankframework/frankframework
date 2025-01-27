@@ -15,12 +15,13 @@
 */
 package org.frankframework.scheduler;
 
-import org.frankframework.configuration.Configuration;
-import org.frankframework.core.Adapter;
-import org.frankframework.scheduler.job.IJob;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+
+import org.frankframework.configuration.Configuration;
+import org.frankframework.core.Adapter;
+import org.frankframework.scheduler.job.IJob;
 
 
 /**
@@ -43,7 +44,7 @@ import org.quartz.JobExecutionException;
  * @see Adapter
  * @see Configuration
   */
-public class ConfiguredJob extends BaseJob {
+public class ConfiguredJob extends AbstractJob {
 
 	public static final String JOBDEF_KEY = "jobdef";
 

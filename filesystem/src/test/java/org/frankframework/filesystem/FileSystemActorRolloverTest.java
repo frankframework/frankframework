@@ -48,7 +48,7 @@ public abstract class FileSystemActorRolloverTest<F,S extends IWritableFileSyste
 
 		actor.setAction(FileSystemAction.APPEND);
 		actor.setRotateDays(numOfBackups);
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, adapter);
 		actor.open();
 
 		Message message = new Message(filename);

@@ -35,7 +35,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -93,13 +92,13 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		DummyListenerWithMessageBrowsers listener = new DummyListenerWithMessageBrowsers();
 		listener.setName("ListenerName");
-		Receiver<String> receiver = spy(SpringUtils.createBean(configuration, Receiver.class));
+		Receiver<String> receiver = spy(SpringUtils.createBean(adapter, Receiver.class));
 		receiver.setName("ReceiverName");
 		receiver.setListener(listener);
 		doAnswer(p -> { throw new ListenerException("testing message ->"+p.getArgument(0)); }).when(receiver).retryMessage(anyString()); //does not actually test the retry mechanism
 		adapter.addReceiver(receiver);
-		PipeLine pipeline = SpringUtils.createBean(configuration, PipeLine.class);
-		SenderPipe pipe = SpringUtils.createBean(configuration, SenderPipe.class);
+		PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
+		SenderPipe pipe = SpringUtils.createBean(adapter, SenderPipe.class);
 		pipe.setMessageLog(getTransactionalStorage());
 		pipe.setSender(new EchoSender());
 		pipe.setName("PipeName");
@@ -107,18 +106,9 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		adapter.setPipeLine(pipeline);
 
 		adapter.configure();
-		getConfiguration().getAdapterManager().addAdapter(adapter);
+		getConfiguration().addAdapter(adapter);
 
 		return adapter;
-	}
-
-	@AfterEach
-	@Override
-	public void tearDown() {
-		if(adapter != null) {
-			getConfiguration().getAdapterManager().removeAdapter(adapter);
-		}
-		super.tearDown();
 	}
 
 	@Test

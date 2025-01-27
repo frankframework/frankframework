@@ -23,7 +23,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
@@ -83,7 +82,6 @@ public class JavaListenerTest {
 	}
 
 	<M> Adapter setupAdapter(Receiver<M> receiver) throws Exception {
-
 		Adapter adapter = spy(configuration.createBean(Adapter.class));
 		adapter.setName("ReceiverTestAdapterName");
 
@@ -117,8 +115,7 @@ public class JavaListenerTest {
 		return adapter;
 	}
 
-	void startAdapter() throws ConfigurationException {
-		configuration.configure();
+	void startAdapter() {
 		configuration.start();
 
 		waitForState(adapter, RunState.STARTED);
@@ -138,7 +135,7 @@ public class JavaListenerTest {
 		String result = listener.processRequest("correlation-id", rawTestMessage, null);
 
 		// Assert
-		assertEquals("TEST", result);
+		assertEquals(rawTestMessage, result);
 	}
 
 	@Test
@@ -157,7 +154,7 @@ public class JavaListenerTest {
 		// Assert
 		assertTrue(result.requiresStream(), "Result message should be a stream");
 		assertTrue(result.isRequestOfType(Reader.class), "Result message should be of type Reader");
-		assertEquals("TEST", result.asString());
+		assertEquals(rawTestMessage, result.asString());
 		testMessage.close();
 	}
 
@@ -180,7 +177,7 @@ public class JavaListenerTest {
 		// Assert
 		assertTrue(result.requiresStream(), "Result message should be a stream");
 		assertTrue(result.isRequestOfType(Reader.class), "Result message should be of type Reader");
-		assertEquals("TEST", result.asString());
+		assertEquals(rawTestMessage, result.asString());
 		result.close();
 	}
 
@@ -198,12 +195,12 @@ public class JavaListenerTest {
 
 		// Act / Assert 1 - OnError.CONTINUE
 		assertThrows(ListenerException.class, () -> listener.processRequest(testMessage, session));
-    	assertSame(RunState.STARTED, receiver.getRunState(), "Receiver should still be in state STARTED");
+		assertSame(RunState.STARTED, receiver.getRunState(), "Receiver should still be in state STARTED");
 
 		// Arrange 2
 		receiver.setOnError(Receiver.OnError.CLOSE); // Put receiver in state STOPPED after an error occurs
 
-		// Act / Assert	2 - OnError.CLOSE
+		// Act / Assert 2 - OnError.CLOSE
 		assertThrows(ListenerException.class, () -> listener.processRequest(testMessage, session));
 		assertSame(RunState.STOPPED, receiver.getRunState(), "Receiver should be in state STOPPED");
 		testMessage.close();
@@ -236,8 +233,7 @@ public class JavaListenerTest {
 	@Test
 	public void testProcessRequestWithReturnSessionKeys() throws Exception {
 		// Arrange
-		String rawTestMessage = "TEST";
-		Message testMessage = new Message(new StringReader(rawTestMessage));
+		Message testMessage = new Message(new StringReader("TEST"));
 		session.put("copy-this", "original-value");
 
 		// start adapter
@@ -259,8 +255,7 @@ public class JavaListenerTest {
 	@Test
 	public void testProcessRequestWithReturnSessionKeysWhenNoneConfigured() throws Exception {
 		// Arrange
-		String rawTestMessage = "TEST";
-		Message testMessage = new Message(new StringReader(rawTestMessage));
+		Message testMessage = new Message(new StringReader("TEST"));
 		listener.setReturnedSessionKeys(null);
 		session.put("copy-this", "original-value");
 

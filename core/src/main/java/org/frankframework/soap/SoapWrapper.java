@@ -18,14 +18,15 @@ package org.frankframework.soap;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.stream.StreamSource;
+
 import jakarta.xml.soap.MessageFactory;
 import jakarta.xml.soap.SOAPConstants;
 import jakarta.xml.soap.SOAPEnvelope;
 import jakarta.xml.soap.SOAPMessage;
 import jakarta.xml.soap.SOAPPart;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -39,6 +40,13 @@ import org.apache.wss4j.dom.message.WSSecSignature;
 import org.apache.wss4j.dom.message.WSSecTimestamp;
 import org.apache.wss4j.dom.message.WSSecUsernameToken;
 import org.apache.xml.security.algorithms.JCEMapper;
+import org.springframework.http.MediaType;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
+import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -48,11 +56,6 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
-
-import lombok.Setter;
 
 /**
  * Utility class that wraps and unwraps messages from (and into) a SOAP Envelope.
@@ -293,10 +296,15 @@ public class SoapWrapper {
 				"<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" + encodingStyle + targetObjectNamespaceClause
 				+ namespaceClause + ">" + soapHeader + "<soapenv:Body>" + XmlUtils.skipXmlDeclaration(messageContent)
 				+ "</soapenv:Body>" + "</soapenv:Envelope>");
-		if (wsscf != null) {
-			result = signMessage(result, wsscf.getUsername(), wsscf.getPassword(), passwordDigest);
+		result.getContext().withMimeType(MediaType.TEXT_XML); // soap mimetype is text/xml
+
+		if (wsscf == null) {
+			return result;
 		}
-		return result;
+
+		try (Message ignore = result) {
+			return signMessage(result, wsscf.getUsername(), wsscf.getPassword(), passwordDigest);
+		}
 	}
 
 	public Message createSoapFaultMessage(String faultcode, String faultstring) {

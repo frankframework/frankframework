@@ -17,7 +17,7 @@ package org.frankframework.senders;
 
 import jcifs.smb.SmbFile;
 
-import org.frankframework.filesystem.FileSystemSender;
+import org.frankframework.filesystem.AbstractFileSystemSender;
 import org.frankframework.filesystem.smb.Samba1FileSystem;
 import org.frankframework.filesystem.smb.Samba1FileSystemDelegator;
 
@@ -26,7 +26,7 @@ import org.frankframework.filesystem.smb.Samba1FileSystemDelegator;
  * <br/>
  * Only supports NTLM authentication.
  */
-public class Samba1Sender extends FileSystemSender<SmbFile, Samba1FileSystem> implements Samba1FileSystemDelegator {
+public class Samba1Sender extends AbstractFileSystemSender<SmbFile, Samba1FileSystem> implements Samba1FileSystemDelegator {
 
 	public Samba1Sender() {
 		setFileSystem(new Samba1FileSystem());

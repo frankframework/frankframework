@@ -21,9 +21,6 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.core.JndiContextPrefixFactory;
-import org.frankframework.jdbc.datasource.IObjectLocator;
-import org.frankframework.util.ClassUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -31,6 +28,10 @@ import org.springframework.jndi.JndiTemplate;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.core.JndiContextPrefixFactory;
+import org.frankframework.jdbc.datasource.IObjectLocator;
+import org.frankframework.util.ClassUtils;
 
 /**
  * Baseclass for JDNI lookups.

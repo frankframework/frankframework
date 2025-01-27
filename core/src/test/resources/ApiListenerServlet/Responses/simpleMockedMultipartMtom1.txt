@@ -1,0 +1,14 @@
+Allow: OPTIONS, GET
+Cache-Control: no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0
+Content-Length: IGNORE
+Content-Type: multipart/related; boundary="IGNORE"; charset=UTF-8; type="application/xop+xml"; start="<dummy>"; start-info="text/xml"
+Last-Modified: IGNORE
+Pragma: no-cache
+
+--IGNORE
+Content-Type: application/json; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Content-ID: <dummy>
+
+{json:true}
+--IGNORE--

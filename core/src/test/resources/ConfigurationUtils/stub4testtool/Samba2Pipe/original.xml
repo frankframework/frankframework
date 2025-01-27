@@ -5,7 +5,7 @@
 		</receiver>
 		<pipeline firstPipe="Samba2Pipe">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="Samba2Pipe" className="org.frankframework.pipes.Samba2Pipe"
 				action="write"

@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2017, 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,9 +26,17 @@ import javax.xml.validation.ValidatorHandler;
 
 import jakarta.json.Json;
 import jakarta.json.JsonStructure;
-import lombok.Getter;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.helpers.XMLFilterImpl;
+
+import lombok.Getter;
+
 import org.frankframework.align.Json2Xml;
 import org.frankframework.align.Xml2Json;
 import org.frankframework.align.XmlAligner;
@@ -49,18 +57,13 @@ import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlException;
 import org.frankframework.util.XmlUtils;
+import org.frankframework.validation.AbstractValidationContext;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 import org.frankframework.validation.RootValidations;
-import org.frankframework.validation.ValidationContext;
 import org.frankframework.validation.XmlValidatorException;
 import org.frankframework.xml.NamespaceRemovingFilter;
 import org.frankframework.xml.RootElementToSessionKeyFilter;
 import org.frankframework.xml.XmlWriter;
-import org.springframework.http.MediaType;
-import org.springframework.util.MimeType;
-import org.springframework.util.MimeTypeUtils;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.helpers.XMLFilterImpl;
 
 /**
  *<code>Pipe</code> that validates the XML or JSON input message against a XML Schema and returns either XML or JSON.
@@ -250,7 +253,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 
 	protected PipeRunResult alignXml2Json(String messageToValidate, PipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
 
-		ValidationContext context = validator.createValidationContext(session, getJsonRootValidations(responseMode), getInvalidRootNamespaces());
+		AbstractValidationContext context = validator.createValidationContext(session, getJsonRootValidations(responseMode), getInvalidRootNamespaces());
 		ValidatorHandler validatorHandler = validator.getValidatorHandler(session,context);
 
 		// Make sure to use Xerces' ValidatorHandlerImpl, otherwise casting below will fail.
@@ -277,7 +280,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	protected PipeRunResult alignJson(String messageToValidate, PipeLineSession session, boolean responseMode) throws PipeRunException, XmlValidatorException {
-		ValidationContext context;
+		AbstractValidationContext context;
 		ValidatorHandler validatorHandler;
 		try {
 			context = validator.createValidationContext(session, getJsonRootValidations(responseMode), getInvalidRootNamespaces());

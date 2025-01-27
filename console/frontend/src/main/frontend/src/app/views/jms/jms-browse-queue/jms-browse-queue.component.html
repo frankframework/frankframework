@@ -1,7 +1,9 @@
 <div class="wrapper wrapper-content animated fadeInRight">
-  <div class="alert alert-warning" role="alert" type="warning" *ngIf="error">
-    <span class="ng-binding ng-scope" [innerHTML]="error"></span>
-  </div>
+  @if (error) {
+    <div class="alert alert-warning" role="alert" type="warning">
+      <span class="ng-binding ng-scope" [innerHTML]="error"></span>
+    </div>
+  }
   <div class="row">
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
@@ -9,14 +11,16 @@
           <h4>Browse JMS Queue</h4>
         </div>
         <div class="ibox-content">
-          <form role="form">
+          <form role="form" (submit)="submit(form)" appQuickSubmitForm>
             <div class="row form-group">
               <label class="col-sm-5 col-md-3 control-label label-height-30">Select a Connection Factory</label>
               <div class="col-sm-7 col-md-9">
                 <select class="form-control" name="connectionFactory" [(ngModel)]="form.connectionFactory">
-                  <option *ngFor="let connectionFactory of connectionFactories">
-                    {{ connectionFactory }}
-                  </option>
+                  @for (connectionFactory of connectionFactories; track connectionFactory) {
+                    <option>
+                      {{ connectionFactory }}
+                    </option>
+                  }
                 </select>
               </div>
             </div>
@@ -30,9 +34,11 @@
               <label class="col-sm-5 col-md-3 control-label label-height-30">Destination Type</label>
               <div class="col-sm-7 col-md-9">
                 <select class="form-control" name="type" [(ngModel)]="form.type">
-                  <option *ngFor="let type of destinationTypes">
-                    {{ type }}
-                  </option>
+                  @for (type of destinationTypes; track type) {
+                    <option>
+                      {{ type }}
+                    </option>
+                  }
                 </select>
               </div>
             </div>
@@ -65,48 +71,51 @@
                 <button class="btn btn-info btn-w-m font-bold" type="button" (click)="reset()">Reset</button>
               </div>
               <div class="col-xs-5 col-md-3 m-t-md">
-                <button
-                  [ladda]="processing"
-                  class="btn btn-primary btn-w-m font-bold"
-                  type="submit"
-                  (click)="submit(form)"
-                >
-                  Send
-                </button>
+                <button [ladda]="processing" class="btn btn-primary btn-w-m font-bold" type="submit">Send</button>
               </div>
             </div>
           </form>
         </div>
       </div>
     </div>
-    <div class="col-lg-12" *ngIf="numberOfMessages > -1">
-      <div class="ibox float-e-margins">
-        <div class="ibox-title">
-          <h4>Queue '{{ form.destination }}' contains {{ numberOfMessages }} message(s)</h4>
-        </div>
-        <div class="ibox-content" *ngIf="numberOfMessages > 0 && messages.length > 0">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Date/Time</th>
-                <th>MessageId</th>
-                <th>CorrelationID</th>
-                <th *ngIf="messages[0].text">Payload</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let message of messages; let i = index">
-                <td>{{ i + 1 }}</td>
-                <td appToDate [time]="message.insertDate"></td>
-                <td>{{ message.id }}</td>
-                <td>{{ message.correlationId }}</td>
-                <td *ngIf="message.text">{{ message.text }}</td>
-              </tr>
-            </tbody>
-          </table>
+    @if (numberOfMessages > -1) {
+      <div class="col-lg-12">
+        <div class="ibox float-e-margins">
+          <div class="ibox-title">
+            <h4>Queue '{{ form.destination }}' contains {{ numberOfMessages }} message(s)</h4>
+          </div>
+          @if (numberOfMessages > 0 && messages.length > 0) {
+            <div class="ibox-content">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Date/Time</th>
+                    <th>MessageId</th>
+                    <th>CorrelationID</th>
+                    @if (messages[0].text) {
+                      <th>Payload</th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (message of messages; track i; let i = $index) {
+                    <tr>
+                      <td>{{ i + 1 }}</td>
+                      <td appToDate [time]="message.insertDate"></td>
+                      <td>{{ message.id }}</td>
+                      <td>{{ message.correlationId }}</td>
+                      @if (message.text) {
+                        <td>{{ message.text }}</td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
         </div>
       </div>
-    </div>
+    }
   </div>
 </div>

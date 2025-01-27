@@ -22,11 +22,11 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Mandatory;
+import org.frankframework.jdbc.AbstractJdbcQuerySender;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
-import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.lifecycle.LifecycleException;
-import org.frankframework.scheduler.JobDef;
+import org.frankframework.scheduler.AbstractJobDef;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
 
@@ -35,7 +35,7 @@ import org.frankframework.util.SpringUtils;
  * 
  * {@inheritDoc}
  */
-public class ExecuteQueryJob extends JobDef {
+public class ExecuteQueryJob extends AbstractJobDef {
 	private FixedQuerySender qs = null;
 	private @Getter String query;
 	private @Getter String datasourceName;
@@ -49,7 +49,7 @@ public class ExecuteQueryJob extends JobDef {
 		qs.setQuery(getQuery());
 		qs.setName("executeQueryJob");
 		qs.setDatasourceName(getDatasourceName());
-		qs.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+		qs.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 		qs.setTimeout(getQueryTimeout());
 		qs.configure();
 	}

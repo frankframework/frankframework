@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,8 +22,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisContext;
@@ -32,8 +36,8 @@ import org.frankframework.core.IConfigurable;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.jdbc.AbstractJdbcQuerySender;
 import org.frankframework.jdbc.FixedQuerySender;
-import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.jms.JMSFacade;
 import org.frankframework.jms.JMSFacade.DeliveryMode;
 import org.frankframework.jms.JMSFacade.DestinationType;
@@ -46,8 +50,10 @@ import org.frankframework.senders.FrankSender;
 import org.frankframework.stream.Message;
 import org.frankframework.util.EnumUtils;
 
+@Log4j2
 public class QueueCreator {
 
+	public static final String CLASS_NAME_PROPERTY_SUFFIX = ".className";
 	private final TestConfig config;
 	private final LarvaTool testTool;
 
@@ -64,8 +70,6 @@ public class QueueCreator {
 		List<String> jmsListeners = new ArrayList<>();
 		List<String> jdbcFixedQuerySenders = new ArrayList<>();
 
-		List<String> manuallyCreatedQueues = new ArrayList<>();
-
 		try {
 			// Use DirectoryClassLoader to make it possible to retrieve resources (such as styleSheetName) relative to the scenarioDirectory.
 			DirectoryClassLoader directoryClassLoader = new RelativePathDirectoryClassLoader();
@@ -73,49 +77,43 @@ public class QueueCreator {
 			directoryClassLoader.setBasePath(".");
 			directoryClassLoader.configure(null, "LarvaTool");
 
-			Iterator iterator = properties.keySet().iterator();
-			while (iterator.hasNext()) {
-				String key = (String)iterator.next();
-				int i = key.indexOf('.');
-				if (i != -1) {
-					int j = key.indexOf('.', i + 1);
-					if (j != -1) {
-						String queueName = key.substring(0, j);
-						if(manuallyCreatedQueues.contains(queueName)) continue;
-						manuallyCreatedQueues.add(queueName);
+			Set<String> queueNames = properties.keySet()
+					.stream()
+					.map(String.class::cast)
+					.filter(key -> key.endsWith(CLASS_NAME_PROPERTY_SUFFIX))
+					.map(key -> key.substring(0, key.lastIndexOf(".")))
+					.collect(Collectors.toSet());
 
-						debugMessage("queuename openqueue: " + queueName);
-						if ("org.frankframework.jms.JmsSender".equals(properties.get(queueName + ".className")) && !jmsSenders.contains(queueName)) {
-							debugMessage("Adding jmsSender queue: " + queueName);
-							jmsSenders.add(queueName);
-						} else if ("org.frankframework.jms.JmsListener".equals(properties.get(queueName + ".className")) && !jmsListeners.contains(queueName)) {
-							debugMessage("Adding jmsListener queue: " + queueName);
-							jmsListeners.add(queueName);
-						} else if ("org.frankframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className")) && !jdbcFixedQuerySenders.contains(queueName)) {
-							debugMessage("Adding jdbcFixedQuerySender queue: " + queueName);
-							jdbcFixedQuerySenders.add(queueName);
-						} else {
-							String className = properties.getProperty(queueName+".className");
-							if(StringUtils.isEmpty(className)) continue;
-							Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
+			for (String queueName : queueNames) {
+				debugMessage("queuename openqueue: " + queueName);
+				String className = properties.getProperty(queueName + CLASS_NAME_PROPERTY_SUFFIX);
+				if ("org.frankframework.jms.JmsSender".equals(className) && !jmsSenders.contains(queueName)) {
+					debugMessage("Adding jmsSender queue: " + queueName);
+					jmsSenders.add(queueName);
+				} else if ("org.frankframework.jms.JmsListener".equals(className) && !jmsListeners.contains(queueName)) {
+					debugMessage("Adding jmsListener queue: " + queueName);
+					jmsListeners.add(queueName);
+				} else if ("org.frankframework.jdbc.FixedQuerySender".equals(className) && !jdbcFixedQuerySenders.contains(queueName)) {
+					debugMessage("Adding jdbcFixedQuerySender queue: " + queueName);
+					jdbcFixedQuerySenders.add(queueName);
+				} else {
+					Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
 
-							//Deprecation warning
-							if(queueProperties.containsValue("requestTimeOut") || queueProperties.containsValue("responseTimeOut")) {
-								errorMessage("properties "+queueName+".requestTimeOut/"+queueName+".responseTimeOut have been replaced with "+queueName+".timeout");
-							}
-
-							IConfigurable configurable = QueueUtils.createInstance(directoryClassLoader, className);
-							if (configurable instanceof FrankSender frankSender) {
-								frankSender.setIbisManager(ibisContext.getIbisManager());
-							}
-							Queue queue = QueueWrapper.create(configurable, queueProperties, config.getTimeout(), correlationId);
-
-							queue.configure();
-							queue.open();
-							queues.put(queueName, queue);
-							debugMessage("Opened ["+className+"] '" + queueName + "'");
-						}
+					//Deprecation warning
+					if (queueProperties.containsValue("requestTimeOut") || queueProperties.containsValue("responseTimeOut")) {
+						errorMessage("properties " + queueName + ".requestTimeOut/" + queueName + ".responseTimeOut have been replaced with " + queueName + ".timeout");
 					}
+
+					IConfigurable configurable = QueueUtils.createInstance(directoryClassLoader, className);
+					if (configurable instanceof FrankSender frankSender) {
+						frankSender.setIbisManager(ibisContext.getIbisManager());
+					}
+					Queue queue = QueueWrapper.create(configurable, queueProperties, config.getTimeout(), correlationId);
+
+					queue.configure();
+					queue.open();
+					queues.put(queueName, queue);
+					debugMessage("Opened [" + className + "] '" + queueName + "'");
 				}
 			}
 
@@ -123,6 +121,7 @@ public class QueueCreator {
 			createJmsListeners(queues, jmsListeners, properties, ibisContext, correlationId, config.getTimeout());
 			createFixedQuerySenders(queues, jdbcFixedQuerySenders, properties, ibisContext, correlationId);
 		} catch (Exception e) {
+			log.warn("Error occurred while creating queues", e);
 			closeQueues(queues, properties, null);
 			queues = null;
 			errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e);
@@ -165,13 +164,8 @@ public class QueueCreator {
 					debugMessage("Set deliveryMode to " + deliveryMode);
 					jmsSender.setDeliveryMode(EnumUtils.parse(DeliveryMode.class, deliveryMode));
 				}
-				if ("true".equals(persistent)) {
-					debugMessage("Set persistent to true");
-					jmsSender.setPersistent(true);
-				} else {
-					debugMessage("Set persistent to false");
-					jmsSender.setPersistent(false);
-				}
+				jmsSender.setPersistent("true".equalsIgnoreCase(persistent));
+				debugMessage("Set persistent to " + jmsSender.isPersistent());
 				if (replyToName != null) {
 					debugMessage("Set replyToName to " + replyToName);
 					jmsSender.setReplyToName(replyToName);
@@ -271,7 +265,7 @@ public class QueueCreator {
 
 					try {
 						QueueUtils.invokeSetters(deleteQuerySender, queueProperties);
-						deleteQuerySender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+						deleteQuerySender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 						deleteQuerySender.setQuery("delete from " + preDelete);
 
 						deleteQuerySender.configure();
@@ -307,7 +301,7 @@ public class QueueCreator {
 					try {
 						QueueUtils.invokeSetters(prePostFixedQuerySender, queueProperties);
 						prePostFixedQuerySender.setQuery(prePostQuery);
-						prePostFixedQuerySender.setQueryType(JdbcQuerySenderBase.QueryType.SELECT);
+						prePostFixedQuerySender.setQueryType(AbstractJdbcQuerySender.QueryType.SELECT);
 						prePostFixedQuerySender.configure();
 					} catch(Exception e) {
 						closeQueues(queues, properties, correlationId);
@@ -326,11 +320,12 @@ public class QueueCreator {
 					if (queues != null) {
 						try (PipeLineSession session = new PipeLineSession()) {
 							session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-							Message message = prePostFixedQuerySender.sendMessageOrThrow(LarvaTool.getQueryFromSender(prePostFixedQuerySender), session);
-							String result = message.asString();
+							String result;
+							try (Message message = prePostFixedQuerySender.sendMessageOrThrow(LarvaTool.getQueryFromSender(prePostFixedQuerySender), session)) {
+								result = message.asString();
+							}
 							querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
 							querySendersInfo.put("prePostQueryResult", result);
-							message.close();
 						} catch(TimeoutException e) {
 							closeQueues(queues, properties, correlationId);
 							queues = null;
@@ -350,7 +345,7 @@ public class QueueCreator {
 					readQueryFixedQuerySender.setName("Test Tool query sender");
 
 					try {
-						readQueryFixedQuerySender.setQueryType(JdbcQuerySenderBase.QueryType.SELECT);
+						readQueryFixedQuerySender.setQueryType(AbstractJdbcQuerySender.QueryType.SELECT);
 						QueueUtils.invokeSetters(readQueryFixedQuerySender, queueProperties);
 						readQueryFixedQuerySender.setQuery(readQuery);
 						readQueryFixedQuerySender.configure();

@@ -19,8 +19,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.PipeLineSession;
@@ -30,7 +32,7 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
 
-public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
+public class JdbcTableMessageBrowser<M> extends AbstractJdbcMessageBrowser<M> {
 
 	private @Getter String tableName="IBISSTORE";
 	private @Getter String indexName="IX_IBISSTORE";

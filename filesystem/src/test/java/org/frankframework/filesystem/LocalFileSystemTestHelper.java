@@ -11,6 +11,7 @@ import java.nio.file.attribute.FileTime;
 import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class LocalFileSystemTestHelper implements IFileSystemTestHelperFullControl {
 
@@ -53,7 +54,7 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelperFullContr
 	}
 
 	@Override
-	public OutputStream _createFile(String folder, String filename) throws IOException {
+	public String createFile(String folder, String filename, String contents) throws Exception {
 		Path f = getFileHandle(folder, filename);
 		try {
 			if(folder != null && !Files.exists(f.getParent())) {
@@ -64,7 +65,12 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelperFullContr
 		} catch (IOException e) {
 			throw new IOException("Cannot create file ["+ f +"]",e);
 		}
-		return Files.newOutputStream(f);
+		try (OutputStream out = Files.newOutputStream(f)) {
+			if(StringUtils.isNotEmpty(contents)) {
+				out.write(contents.getBytes());
+			}
+		}
+		return filename;
 	}
 
 	@Override

@@ -19,10 +19,11 @@ import java.io.IOException;
 
 import javax.xml.transform.TransformerException;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
@@ -34,14 +35,14 @@ import org.frankframework.core.IWrapperPipe;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.doc.Reintroduce;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.processors.ListenerProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.util.TransformerPool;
@@ -52,8 +53,8 @@ import org.frankframework.util.TransformerPool.OutputType;
  * 
  * {@inheritDoc}
  */
-@Category("Basic")
-@ElementType(ElementTypes.ENDPOINT)
+@Category(Category.Type.BASIC)
+@EnterpriseIntegrationPattern(Type.ENDPOINT)
 public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 	private @Getter ICorrelatedPullingListener<M> listener = null;
 	private @Setter ListenerProcessor<M> listenerProcessor;
@@ -172,17 +173,11 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 	}
 
 	@Override
-	public void start() throws PipeStartException {
+	public void start() {
 		super.start();
 
 		if (StringUtils.isEmpty(getStubFilename())) {
-			try {
-				listener.start();
-			} catch (ListenerException t) {
-				PipeStartException pse = new PipeStartException("could not start", t);
-				pse.setPipeNameInError(getName());
-				throw pse;
-			}
+			listener.start();
 		}
 	}
 
@@ -192,7 +187,7 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 			try {
 				listener.stop();
 				log.info("closed listener");
-			} catch (ListenerException e) {
+			} catch (LifecycleException e) {
 				log.warn("Exception closing listener", e);
 			}
 		}

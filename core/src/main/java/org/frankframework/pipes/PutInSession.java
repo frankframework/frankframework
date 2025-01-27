@@ -17,15 +17,16 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
@@ -38,7 +39,7 @@ import org.frankframework.stream.Message;
  * @author Johan Verrips
  * @ff.parameters the result of each parameter defined will be we stored in the PipeLineSession, under the key specified by the parameter name
  */
-@ElementType(ElementTypes.SESSION)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.SESSION)
 public class PutInSession extends FixedForwardPipe {
 
 	private @Getter String sessionKey;

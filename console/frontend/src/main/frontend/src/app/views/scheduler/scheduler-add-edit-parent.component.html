@@ -1,5 +1,7 @@
 <div class="wrapper wrapper-content animated fadeInRight">
-  <ngb-alert *ngFor="let alert of state" [type]="alert.type" [dismissible]="false">{{ alert.message }}</ngb-alert>
+  @for (alert of state; track alert) {
+    <ngb-alert [type]="alert.type" [dismissible]="false">{{ alert.message }}</ngb-alert>
+  }
   <div class="row">
     <div class="col-lg-12 table-responsive">
       <div class="ibox float-e-margins">
@@ -12,7 +14,7 @@
           </div>
         </div>
         <div class="ibox-content">
-          <form role="form">
+          <form role="form" (submit)="submit()" appQuickSubmitForm>
             <div class="row form-group">
               <label class="col-sm-3 control-label">Schedule Name</label>
               <div class="col-sm-9">
@@ -30,9 +32,11 @@
               <label class="col-sm-3 control-label">Configuration</label>
               <div class="col-sm-9">
                 <select class="form-control" name="configuration" [(ngModel)]="selectedConfiguration">
-                  <option *ngFor="let config of configurations" [ngValue]="config.name">
-                    {{ config.name }}
-                  </option>
+                  @for (config of configurations; track config.name) {
+                    <option [ngValue]="config.name">
+                      {{ config.name }}
+                    </option>
+                  }
                 </select>
               </div>
             </div>
@@ -45,34 +49,39 @@
                   [(ngModel)]="form.adapter"
                   [disabled]="selectedConfiguration === ''"
                 >
-                  <option
-                    *ngFor="let adapter of adapters | configurationFilter: selectedConfiguration | withJavaListener"
-                    [ngValue]="adapter"
-                  >
-                    {{
-                      adapter.name + (adapter.description !== null ? ' - ' + adapter.description : '') | truncate: 150
-                    }}
-                  </option>
+                  @for (
+                    adapter of adapters | configurationFilter: selectedConfiguration | withJavaListener;
+                    track adapter.name
+                  ) {
+                    <option [ngValue]="adapter">
+                      {{
+                        adapter.name + (adapter.description !== null ? ' - ' + adapter.description : '') | truncate: 150
+                      }}
+                    </option>
+                  }
                 </select>
               </div>
             </div>
             <div class="row form-group">
               <label class="col-sm-3 control-label">Select a listener</label>
-              <div class="col-sm-9" *ngIf="!form.adapter">
-                <input class="form-control" value="Select an adapter first.." disabled />
-              </div>
-              <div class="col-sm-9" *ngIf="form.adapter">
-                <select class="form-control" name="receiver" [(ngModel)]="form.listener">
-                  <ng-template ngFor let-receiver [ngForOf]="form.adapter.receivers">
-                    <option
-                      *ngIf="receiver.listener.class.startsWith('JavaListener')"
-                      [ngValue]="receiver.listener.name"
-                    >
-                      {{ receiver.listener.name }}
-                    </option>
-                  </ng-template>
-                </select>
-              </div>
+              @if (!form.adapter) {
+                <div class="col-sm-9">
+                  <input class="form-control" value="Select an adapter first.." disabled />
+                </div>
+              }
+              @if (form.adapter) {
+                <div class="col-sm-9">
+                  <select class="form-control" name="receiver" [(ngModel)]="form.listener">
+                    @for (receiver of form.adapter.receivers; track receiver.name) {
+                      @if (receiver.listener.class.startsWith('JavaListener')) {
+                        <option [ngValue]="receiver.listener.name">
+                          {{ receiver.listener.name }}
+                        </option>
+                      }
+                    }
+                  </select>
+                </div>
+              }
             </div>
             <div class="row form-group" title="Quartz CRON Expression to specify execution times. Overrides Interval">
               <label class="col-sm-3 control-label">CRON Expression</label>
@@ -138,7 +147,7 @@
               <button class="btn btn-info btn-w-m font-bold" type="button" (click)="reset()">Reset</button>
             </div>
             <div class="col-lg-9 m-t-md">
-              <button class="btn btn-primary btn-w-m font-bold" type="submit" (click)="submit()">Save</button>
+              <button class="btn btn-primary btn-w-m font-bold" type="submit">Save</button>
             </div>
           </form>
         </div>

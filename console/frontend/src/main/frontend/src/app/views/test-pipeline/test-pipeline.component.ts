@@ -3,13 +3,21 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Adapter, AppService, Configuration } from 'src/app/app.service';
 import { InputFileUploadComponent } from 'src/app/components/input-file-upload/input-file-upload.component';
 import { Subscription } from 'rxjs';
+import { ComboboxComponent, Option } from '../../components/combobox/combobox.component';
+import { ConfigurationFilter } from '../../pipes/configuration-filter.pipe';
+import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+
+import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
+import { FormsModule } from '@angular/forms';
+import { MonacoEditorComponent } from '../../components/monaco-editor/monaco-editor.component';
+import { LaddaModule } from 'angular2-ladda';
 
 type FormSessionKey = {
   key: string;
   value: string;
 };
 
-type AlertState = {
+export type AlertState = {
   type: string;
   message: string;
 };
@@ -24,11 +32,22 @@ type PipelineResult = {
   selector: 'app-test-pipeline',
   templateUrl: './test-pipeline.component.html',
   styleUrls: ['./test-pipeline.component.scss'],
+  imports: [
+    NgbAlert,
+    QuickSubmitFormDirective,
+    ComboboxComponent,
+    FormsModule,
+    InputFileUploadComponent,
+    MonacoEditorComponent,
+    LaddaModule,
+  ],
 })
 export class TestPipelineComponent implements OnInit, OnDestroy {
   @ViewChild(InputFileUploadComponent) formFile!: InputFileUploadComponent;
   protected configurations: Configuration[] = [];
+  protected configurationOptions: Option[] = [];
   protected adapters: Record<string, Adapter> = {};
+  protected adapterOptions: Option[] = [];
   protected state: AlertState[] = [];
   protected selectedConfiguration = '';
   protected processingMessage = false;
@@ -59,21 +78,40 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.configurations = this.appService.configurations;
+    this.setConfigurations();
     const configurationsSubscription = this.appService.configurations$.subscribe(() => {
-      this.configurations = this.appService.configurations;
+      this.setConfigurations();
     });
     this.subscriptions.add(configurationsSubscription);
 
-    this.adapters = this.appService.adapters;
+    this.setAdapters();
     const adaptersSubscription = this.appService.adapters$.subscribe(() => {
-      this.adapters = this.appService.adapters;
+      this.setAdapters();
     });
     this.subscriptions.add(adaptersSubscription);
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+  }
+
+  private setConfigurations(): void {
+    this.configurations = this.appService.configurations;
+    this.configurationOptions = this.configurations.map((configuration) => ({
+      label: configuration.name,
+    }));
+  }
+
+  private setAdapters(): void {
+    this.adapters = this.appService.adapters;
+  }
+
+  private setAdapterOptions(selectedConfiguration: string): void {
+    const filteredAdapters = ConfigurationFilter(this.adapters, selectedConfiguration);
+    this.adapterOptions = Object.entries(filteredAdapters).map(([, adapter]) => ({
+      label: adapter.name,
+      description: adapter.description ?? '',
+    }));
   }
 
   addNote(type: string, message: string): void {
@@ -165,5 +203,10 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
         this.processingMessage = false;
       },
     });
+  }
+
+  protected setSelectedConfiguration(): void {
+    this.form.adapter = '';
+    this.setAdapterOptions(this.selectedConfiguration);
   }
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2023 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,8 +23,9 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+
 import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.core.IConfigurationAware;
+import org.frankframework.core.HasApplicationContext;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
 
@@ -37,7 +38,7 @@ public class RootValidation {
 		rootValidation = Arrays.asList(rootElement);
 	}
 
-	public void check(IConfigurationAware source, Set<IXSD> xsds) {
+	public void check(HasApplicationContext source, Set<IXSD> xsds) {
 		boolean found = false;
 		String validElements = rootValidation.get(rootValidation.size() - 1);
 		List<String> validElementsAsList = StringUtil.split(validElements);

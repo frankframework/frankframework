@@ -19,17 +19,17 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.frankframework.http.HttpServletBase;
-import org.frankframework.lifecycle.DynamicRegistration;
-import org.frankframework.lifecycle.IbisInitializer;
-
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 
+import org.frankframework.http.AbstractHttpServlet;
+import org.frankframework.lifecycle.DynamicRegistration;
+import org.frankframework.lifecycle.IbisInitializer;
+
 @IbisInitializer
-public class SoapProviderServlet extends HttpServletBase implements DynamicRegistration.ServletWithParameters {
+public class SoapProviderServlet extends AbstractHttpServlet implements DynamicRegistration.ServletWithParameters {
 	private transient FrankCXFServlet servlet;
 
 	@Override

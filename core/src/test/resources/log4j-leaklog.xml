@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<log4j2:Configuration status="warn" name="${ctx:instance.name}" strict="true" xmlns="http://logging.apache.org/log4j/2.0/config" xmlns:log4j2="log4j-config.xsd">
+	<!-- https://logging.apache.org/log4j/2.x/manual/customloglevels.html -->
+
+	<!-- Log summary of leaks to console when running unit-tests in IDE -->
+	<Appenders>
+		<Appender name="leak-log-appender" type="Console">
+			<Layout type="IbisPatternLayout">
+				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %c{2} - %m%n%xEx{short}</Pattern>
+			</Layout>
+		</Appender>
+	</Appenders>
+
+	<Loggers>
+		<Logger name="LEAK_LOG" additivity="false" level="INFO">
+			<AppenderRef ref="leak-log-appender"/>
+		</Logger>
+	</Loggers>
+</log4j2:Configuration>

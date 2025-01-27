@@ -40,7 +40,7 @@ import org.frankframework.stream.Message;
  *
  * @author Peter Leeuwenburgh
  */
-public class LdapFindMemberPipe extends LdapQueryPipeBase {
+public class LdapFindMemberPipe extends AbstractLdapQueryPipe {
 	private String dnSearchIn;
 	private String dnFind;
 	private boolean recursiveSearch = true;

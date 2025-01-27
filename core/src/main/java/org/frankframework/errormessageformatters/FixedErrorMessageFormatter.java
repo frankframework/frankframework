@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 
-import org.frankframework.core.INamedObject;
+import org.frankframework.core.HasName;
 import org.frankframework.core.Resource;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassLoaderUtils;
@@ -43,7 +43,7 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 	private @Getter String styleSheetName = null;
 
 	@Override
-	public Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
+	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, String messageId, long receivedTime) {
 
 		Message messageToReturn = new Message(getReturnString());
 		if (messageToReturn.isEmpty()) {

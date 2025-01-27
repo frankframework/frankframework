@@ -22,6 +22,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.CloseUtils;
@@ -99,7 +100,7 @@ class FrankListenerTest {
 	}
 
 	@Test
-	void startSuccess() throws ListenerException {
+	void startSuccess() {
 		// Arrange
 		listener.configure();
 
@@ -117,7 +118,7 @@ class FrankListenerTest {
 	}
 
 	@Test
-	void openAlreadyStart() throws ListenerException {
+	void openAlreadyStart() {
 		// Arrange
 		listener.configure();
 
@@ -146,14 +147,14 @@ class FrankListenerTest {
 		assertDoesNotThrow(listener::start);
 
 		// Act
-		assertThrows(ListenerException.class, otherListener::start);
+		assertThrows(LifecycleException.class, otherListener::start);
 
 		// Assert
 		assertFalse(otherListener.isOpen(), "Other Listener is not supposed to be open after the test");
 	}
 
 	@Test
-	void stop() throws ListenerException {
+	void stop() {
 		// Arrange
 		listener.configure();
 		listener.start();

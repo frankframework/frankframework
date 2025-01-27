@@ -35,6 +35,7 @@ import jakarta.mail.Message;
 import jakarta.mail.Message.RecipientType;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Multipart;
+import jakarta.mail.NoSuchProviderException;
 import jakarta.mail.Part;
 import jakarta.mail.Session;
 import jakarta.mail.Store;
@@ -61,7 +62,7 @@ import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StringUtil;
 import org.frankframework.xml.SaxElementBuilder;
 
-public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IMAPFolder> {
+public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart, IMAPFolder> {
 	private final @Getter String domain = "IMAP";
 
 	private @Getter String host;
@@ -76,12 +77,19 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 		}
 	}
 
+	/**
+	 * For test purposes only. Defaults to IMAPS, but tests use IMAP
+	 */
+	protected String getStoreName() throws NoSuchProviderException {
+		return "imaps";
+	}
+
 	@Override
 	protected IMAPFolder createConnection() throws FileSystemException {
 		try {
 			// emailSession.setDebug(true);
 			CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-			Store store = emailSession.getStore("imaps");
+			Store store = emailSession.getStore(getStoreName());
 			try {
 				store.connect(getHost(), getPort(), cf.getUsername(), cf.getPassword());
 			} catch (Exception e) {

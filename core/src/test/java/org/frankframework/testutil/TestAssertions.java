@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,13 +24,11 @@ import java.net.URL;
 import java.util.TimeZone;
 
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
 
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.LogUtil;
@@ -93,22 +91,23 @@ public class TestAssertions extends org.junit.jupiter.api.Assertions {
 		assertEquals(expected.trim().replace("\r",""), actual.trim().replace("\r",""), message);
 	}
 
-	public static void assertXpathValueEquals(String expected, String source, String xpathExpr) throws SAXException, TransformerException, IOException {
-		String xslt=XmlUtils.createXPathEvaluatorSource(xpathExpr);
+	public static void assertXpathValueEquals(String expected, String source, String xpathExpr) throws Exception {
+		String xslt = XmlUtils.createXPathEvaluatorSource(xpathExpr);
 		Transformer transformer = XmlUtils.createTransformer(xslt);
 
-		String result=XmlUtils.transformXml(transformer, source);
+		source = XmlUtils.removeNamespaces(source);
+		String result = XmlUtils.transformXml(transformer, source);
 		LOG.debug("xpath [{}] result [{}]", xpathExpr, result);
-		assertEquals(expected,result,xpathExpr);
+		assertEquals(expected, result, xpathExpr);
 	}
 
-	public static void assertXpathValueEquals(int expected, String source, String xpathExpr) throws SAXException, TransformerException, IOException {
-		String xslt=XmlUtils.createXPathEvaluatorSource(xpathExpr);
+	public static void assertXpathValueEquals(int expected, String source, String xpathExpr) throws Exception {
+		String xslt = XmlUtils.createXPathEvaluatorSource(xpathExpr);
 		Transformer transformer = XmlUtils.createTransformer(xslt);
 
-		String result=XmlUtils.transformXml(transformer, source);
+		String result = XmlUtils.transformXml(transformer, source);
 		LOG.debug("xpath [{}] result [{}]", xpathExpr, result);
-		assertEquals(expected+"",result,xpathExpr);
+		assertEquals(expected + "", result, xpathExpr);
 	}
 
 	@Test
@@ -152,6 +151,11 @@ public class TestAssertions extends org.junit.jupiter.api.Assertions {
 
 	public static boolean isTestRunningOnCI() {
 		return StringUtils.isNotEmpty(System.getProperty("CI")) || StringUtils.isNotEmpty(System.getenv("CI")) || isTestRunningOnGitHub();
+	}
+
+	public static boolean isTestRunningOnARM() {
+		String osArch = System.getProperty("os.arch").toLowerCase();
+		return osArch.contains("aarch64") || osArch.contains("arm");
 	}
 
 	/**

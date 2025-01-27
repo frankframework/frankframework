@@ -20,7 +20,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.testutil.NumberParameterBuilder;
 
@@ -38,7 +37,7 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 	}
 
 	@Test
-	void assertForwardsSet() throws ConfigurationException, PipeStartException {
+	void assertForwardsSet() throws ConfigurationException {
 		pipe.addForward(new PipeForward("continue", null));
 		pipe.addForward(new PipeForward("stop", null));
 		pipe.setStopAt(10);
@@ -48,8 +47,8 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 	}
 
 	@Test
-	void assertFailOnDoubleStopAt() throws ConfigurationException, PipeStartException {
-		pipe.addParameter(NumberParameterBuilder.create().withName(ForPipe.STOP_AT_PARAMETER_VALUE).withValue(10));
+	void assertFailOnDoubleStopAt() throws ConfigurationException {
+		pipe.addParameter(NumberParameterBuilder.create().withName(ForPipe.STOP_AT_PARAMETER_NAME).withValue(10));
 		pipe.setStopAt(10);
 
 		pipe.addForward(new PipeForward("continue", null));
@@ -65,7 +64,7 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 	}
 
 	@Test
-	void testStop() throws PipeRunException, IOException, ConfigurationException, PipeStartException {
+	void testStop() throws PipeRunException, IOException, ConfigurationException {
 		String dummyInput = "dummyInput";
 
 		pipe.setStartAt(10);
@@ -91,11 +90,11 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
-	void testIncrement(boolean useParameter) throws PipeRunException, IOException, ConfigurationException, PipeStartException {
+	void testIncrement(boolean useParameter) throws PipeRunException, IOException, ConfigurationException {
 		String dummyInput = "dummyInput";
 
 		if (useParameter) {
-			pipe.addParameter(NumberParameterBuilder.create().withName(ForPipe.STOP_AT_PARAMETER_VALUE).withValue(10));
+			pipe.addParameter(NumberParameterBuilder.create().withName(ForPipe.STOP_AT_PARAMETER_NAME).withValue(10));
 		} else {
 			pipe.setStopAt(10);
 		}
@@ -123,7 +122,7 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 	void testFailOnEmptyParameter() throws Exception {
 		String dummyInput = "dummyInput";
 
-		pipe.addParameter(new Parameter(ForPipe.STOP_AT_PARAMETER_VALUE, ""));
+		pipe.addParameter(new Parameter(ForPipe.STOP_AT_PARAMETER_NAME, ""));
 		pipe.addForward(new PipeForward("continue", null));
 		pipe.addForward(new PipeForward("stop", null));
 

@@ -29,21 +29,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.annotation.Nullable;
-import jakarta.annotation.PostConstruct;
-
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.SecurityContext;
-import nl.nn.testtool.TestTool;
-import nl.nn.testtool.storage.CrudStorage;
-import nl.nn.testtool.storage.LogStorage;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.SearchUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineResult;
@@ -56,6 +42,20 @@ import org.frankframework.ladybug.LadybugDebugger;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.StreamUtil;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import jakarta.annotation.Nullable;
+import jakarta.annotation.PostConstruct;
+import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.CheckpointType;
+import nl.nn.testtool.Report;
+import nl.nn.testtool.SecurityContext;
+import nl.nn.testtool.TestTool;
+import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.LogStorage;
+import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.util.SearchUtil;
 
 /**
  * @author Jaco de Groot
@@ -359,7 +359,7 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 										Thread.currentThread().getName(),
 										Tibet2DatabaseStorage.class.getName(),
 										"Column " + reportColumnNames.get(i),
-										Checkpoint.TYPE_INPUTPOINT, 0);
+										CheckpointType.INPUTPOINT.toInt(), 0);
 								checkpoint.setMessage(value);
 								checkpoints.add(checkpoint);
 							}
@@ -578,21 +578,22 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 			throw new StorageException("Adapter '" + DELETE_ADAPTER_NAME + "' not found");
 		}
 
-		PipeLineSession pipeLineSession = new PipeLineSession();
-		if(securityContext.getUserPrincipal() != null)
-			pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
-		PipeLineResult processResult = adapter.processMessageDirect(TestTool.getCorrelationId(), message, pipeLineSession);
-		if (!processResult.isSuccessful()) {
-			throw new StorageException("Delete failed (see logging for more details)");
-		}
-
-		try {
-			String result = processResult.getResult().asString();
-			if (!"<ok/>".equalsIgnoreCase(result)) {
-				throw new StorageException("Delete failed: " + result);
+		try (PipeLineSession pipeLineSession = new PipeLineSession()) {
+			if (securityContext.getUserPrincipal() != null)
+				pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
+			PipeLineResult processResult = adapter.processMessageDirect(TestTool.getCorrelationId(), message, pipeLineSession);
+			if (!processResult.isSuccessful()) {
+				throw new StorageException("Delete failed (see logging for more details)");
 			}
-		} catch (IOException e) {
-			throw new StorageException("Delete failed", e);
+
+			try {
+				String result = processResult.getResult().asString();
+				if (!"<ok/>".equalsIgnoreCase(result)) {
+					throw new StorageException("Delete failed: " + result);
+				}
+			} catch (IOException e) {
+				throw new StorageException("Delete failed", e);
+			}
 		}
 	}
 

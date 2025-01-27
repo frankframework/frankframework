@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { MessageStore, Note, StorageService } from '../storage.service';
 import { StorageListDtComponent } from './storage-list-dt/storage-list-dt.component';
 import { SessionService } from 'src/app/services/session.service';
@@ -6,7 +6,21 @@ import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { WebStorageService } from 'src/app/services/web-storage.service';
 import { getProcessStateIcon } from 'src/app/utils';
 import { AppService } from '../../../app.service';
-import { DataTableColumn, DataTableDataSource } from '../../../components/datatable/datatable.component';
+import {
+  DataTableColumn,
+  DatatableComponent,
+  DataTableDataSource,
+} from '../../../components/datatable/datatable.component';
+import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+import { KeyValuePipe, NgClass } from '@angular/common';
+import { OrderByPipe } from '../../../pipes/orderby.pipe';
+import { FormsModule } from '@angular/forms';
+import { LaddaModule } from 'angular2-ladda';
+import { RouterLink } from '@angular/router';
+import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
+import { DtContentDirective } from '../../../components/datatable/dt-content.directive';
+import { DropLastCharPipe } from '../../../pipes/drop-last-char.pipe';
+import { Subscription } from 'rxjs';
 
 type DisplayColumn = {
   actions: boolean;
@@ -26,8 +40,22 @@ type MessageData = MessageStore['messages'][number];
   selector: 'app-storage-list',
   templateUrl: './storage-list.component.html',
   styleUrls: ['./storage-list.component.scss'],
+  imports: [
+    NgbAlert,
+    OrderByPipe,
+    FormsModule,
+    LaddaModule,
+    RouterLink,
+    NgClass,
+    HasAccessToLinkDirective,
+    DatatableComponent,
+    StorageListDtComponent,
+    DtContentDirective,
+    DropLastCharPipe,
+    KeyValuePipe,
+  ],
 })
-export class StorageListComponent implements OnInit, AfterViewInit {
+export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('storageListDt') storageListDt!: TemplateRef<StorageListDtComponent>;
 
   protected targetStates: Record<string, { name: string }> = {};
@@ -36,9 +64,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   protected truncateButtonText = 'Truncate displayed data';
   protected filterBoxExpanded = false;
 
-  protected messagesResending = false;
-  protected messagesDeleting = false;
-
+  protected messagesProcessing = false;
   protected changingProcessState = false;
 
   protected search: Record<string, string> = {};
@@ -58,6 +84,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   };
 
   // service bindings
+  protected storageService: StorageService = inject(StorageService);
   protected storageParams = this.storageService.storageParams;
   closeNote = (index: number): void => {
     this.storageService.closeNote(index);
@@ -108,13 +135,12 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     { name: 'label', property: 'label', displayName: 'Label' },
   ];
 
-  constructor(
-    private webStorageService: WebStorageService,
-    private Session: SessionService,
-    private SweetAlert: SweetalertService,
-    protected storageService: StorageService,
-    private appService: AppService,
-  ) {}
+  private webStorageService: WebStorageService = inject(WebStorageService);
+  private Session: SessionService = inject(SessionService);
+  private SweetAlert: SweetalertService = inject(SweetalertService);
+  private appService: AppService = inject(AppService);
+
+  private subscriptions: Subscription = new Subscription();
 
   ngOnInit(): void {
     this.storageService.closeNotes();
@@ -173,7 +199,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     const filterCookie = this.webStorageService.get<DisplayColumn>(`${this.storageParams.processState}Filter`);
     if (filterCookie) {
       for (const column of this.displayedColumns) {
-        if (column.name && filterCookie[column.name as keyof DisplayColumn] === false) {
+        if (column.name && !filterCookie[column.name as keyof DisplayColumn]) {
           column.hidden = true;
         }
       }
@@ -191,6 +217,15 @@ export class StorageListComponent implements OnInit, AfterViewInit {
         label: true,
       };
     }
+
+    const tableTriggerSubscription = this.storageService.tableUpdateTrigger$.subscribe(() =>
+      this.datasource.updateTable(),
+    );
+    this.subscriptions.add(tableTriggerSubscription);
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   setupMessagesRequest(): void {
@@ -263,20 +298,20 @@ export class StorageListComponent implements OnInit, AfterViewInit {
 
   searchUpdated(): void {
     this.searching = true;
-    this.updateTable();
+    this.storageService.updateTable();
   }
 
   truncate(): void {
     this.truncated = !this.truncated;
     this.truncateButtonText = this.truncated ? 'Show original' : 'Truncate displayed data';
-    this.updateTable();
+    this.storageService.updateTable();
   }
 
   clearSearch(): void {
     this.clearSearchLadda = true;
     this.Session.remove('search');
     this.search = {};
-    this.updateTable();
+    this.storageService.updateTable();
   }
 
   updateFilter(column: string): void {
@@ -284,7 +319,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
 
     const tableColumn = this.displayedColumns.find((displayedColumn) => displayedColumn.name === column);
     if (tableColumn) {
-      tableColumn.hidden = this.displayColumn[column as keyof typeof this.displayColumn] === false;
+      tableColumn.hidden = !this.displayColumn[column as keyof typeof this.displayColumn];
     }
   }
 
@@ -300,25 +335,20 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     }
   }
 
-  updateTable(): void {
-    this.datasource.updateTable();
-    this.storageService.updateTable();
-  }
-
   resendMessages(): void {
     const fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
-      this.messagesResending = true;
+      this.messagesProcessing = true;
       this.storageService.postResendMessages(fd).subscribe({
         next: () => {
-          this.messagesResending = false;
+          this.messagesProcessing = false;
           this.storageService.addNote('success', 'Selected messages will be reprocessed');
-          this.updateTable();
+          this.storageService.updateTable();
         },
         error: () => {
-          this.messagesResending = false;
+          this.messagesProcessing = false;
           this.storageService.addNote('danger', 'Something went wrong, unable to resend all messages!');
-          this.updateTable();
+          this.storageService.updateTable();
         },
       });
     }
@@ -327,20 +357,49 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   deleteMessages(): void {
     const fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
-      this.messagesDeleting = true;
+      this.messagesProcessing = true;
       this.storageService.deleteMessages(fd).subscribe({
         next: () => {
-          this.messagesDeleting = false;
+          this.messagesProcessing = false;
           this.storageService.addNote('success', 'Successfully deleted messages');
-          this.updateTable();
+          this.storageService.updateTable();
         },
         error: () => {
-          this.messagesDeleting = false;
+          this.messagesProcessing = false;
           this.storageService.addNote('danger', 'Something went wrong, unable to delete all messages!');
-          this.updateTable();
+          this.storageService.updateTable();
         },
       });
     }
+  }
+
+  moveMessages(): void {
+    const fd = this.getFormData();
+    if (!this.isSelectedMessages(fd)) return;
+
+    this.SweetAlert.Warning({
+      title: 'Move state of messages',
+      text: 'The messages might still be processing in the background. Are you sure you want to move them to Error?',
+      confirmButtonText: 'Move to Error',
+      cancelButtonText: 'Cancel',
+      showCancelButton: true,
+    }).then((value) => {
+      if (!value.isConfirmed) return;
+
+      this.messagesProcessing = true;
+      this.storageService.postMoveMessages(fd).subscribe({
+        next: () => {
+          this.messagesProcessing = false;
+          this.storageService.addNote('success', 'Selected messages will be moved to Error state');
+          this.storageService.updateTable();
+        },
+        error: () => {
+          this.messagesProcessing = false;
+          this.storageService.addNote('danger', 'Something went wrong, unable to move all messages!');
+          this.storageService.updateTable();
+        },
+      });
+    });
   }
 
   downloadMessages(): void {
@@ -377,12 +436,12 @@ export class StorageListComponent implements OnInit, AfterViewInit {
         next: () => {
           this.changingProcessState = false;
           this.storageService.addNote('success', `Successfully changed the state of messages to ${targetState}`);
-          this.updateTable();
+          this.storageService.updateTable();
         },
         error: () => {
           this.changingProcessState = false;
           this.storageService.addNote('danger', 'Something went wrong, unable to move selected messages!');
-          this.updateTable();
+          this.storageService.updateTable();
         },
       });
     }

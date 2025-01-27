@@ -6,6 +6,7 @@ import { NgMermaidComponent } from 'src/app/components/ng-mermaid/ng-mermaid.com
   selector: 'app-flow-modal',
   templateUrl: './flow-modal.component.html',
   styleUrls: ['./flow-modal.component.scss'],
+  imports: [NgMermaidComponent],
 })
 export class FlowModalComponent {
   @Input() flowName = '';

@@ -18,8 +18,9 @@ package org.frankframework.compression;
 import java.io.IOException;
 
 import jakarta.annotation.Nonnull;
-import org.frankframework.collection.CollectorPipeBase.Action;
-import org.frankframework.collection.CollectorSenderBase;
+
+import org.frankframework.collection.AbstractCollectorPipe.Action;
+import org.frankframework.collection.AbstractCollectorSender;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
@@ -39,7 +40,7 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.9.10
  */
-public class ZipWriterSender extends CollectorSenderBase<ZipWriter, MessageZipEntry> {
+public class ZipWriterSender extends AbstractCollectorSender<ZipWriter, MessageZipEntry> {
 
 	private boolean backwardsCompatibility = false;
 

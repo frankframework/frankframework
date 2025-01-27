@@ -20,8 +20,12 @@ import java.io.IOException;
 import javax.xml.transform.TransformerException;
 
 import jakarta.annotation.Nonnull;
-import lombok.Getter;
+
 import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.SAXException;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -38,7 +42,6 @@ import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringResolver;
 import org.frankframework.util.TransformerPool;
-import org.xml.sax.SAXException;
 
 /**
  * FixedResultSender, same behaviour as {@link FixedResultPipe}, but now as a ISender.
@@ -48,8 +51,8 @@ import org.xml.sax.SAXException;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-@Category("Basic")
-public class FixedResultSender extends SenderWithParametersBase {
+@Category(Category.Type.BASIC)
+public class FixedResultSender extends AbstractSenderWithParameters {
 
 	private @Getter String filename;
 	private @Getter String returnString;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021, 2024 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.frankframework.core;
 import java.util.Collection;
 import java.util.Map;
 
+import org.springframework.context.Lifecycle;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
@@ -33,21 +35,11 @@ import org.frankframework.util.Locker;
  * @ff.defaultElement org.frankframework.pipes.SenderPipe
  */
 @FrankDocGroup(FrankDocGroupValue.PIPE)
-public interface IPipe extends IConfigurable, IForwardTarget {
+public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, NameAware, Lifecycle {
 
 	String LONG_DURATION_MONITORING_EVENT = "Pipe Long Processing Duration";
 	String PIPE_EXCEPTION_MONITORING_EVENT = "Pipe Exception";
 	String MESSAGE_SIZE_MONITORING_EVENT = "Pipe Message Size Exceeding";
-
-	/**
-	 * <code>configure()</code> is called once after the {@link PipeLine} is registered
-	 * at the {@link Adapter}. Purpose of this method is to reduce
-	 * creating connections to databases etc. in the {@link #doPipe(Message, PipeLineSession) doPipe()} method.
-	 * As much as possible class-instantiating should take place in the
-	 * <code>configure()</code> method, to improve performance.
-	 */
-	@Override
-	void configure() throws ConfigurationException;
 
 	/**
 	 * This is where the action takes place. Pipes may only throw a PipeRunException,
@@ -89,7 +81,7 @@ public interface IPipe extends IConfigurable, IForwardTarget {
 	 * after the {@link #configure()} method, for each start and stop command of the
 	 * adapter.
 	 */
-	void start() throws PipeStartException;
+	void start();
 
 	/**
 	 * Perform necessary actions to stop the <code>Pipe</code>.<br/>

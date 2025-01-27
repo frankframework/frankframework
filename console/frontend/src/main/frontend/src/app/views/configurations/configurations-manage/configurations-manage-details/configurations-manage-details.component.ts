@@ -1,13 +1,17 @@
 import { Component, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AppService, Configuration } from 'src/app/app.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { ConfigurationsService } from '../../configurations.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { SortEvent, ThSortableDirective, basicAnyValueTableSort } from 'src/app/components/th-sortable.directive';
+import { SearchFilterPipe } from '../../../../pipes/search-filter.pipe';
+
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-configurations-manage-details',
+  imports: [FormsModule, SearchFilterPipe, RouterLink, ThSortableDirective],
   templateUrl: './configurations-manage-details.component.html',
   styleUrls: ['./configurations-manage-details.component.scss'],
 })

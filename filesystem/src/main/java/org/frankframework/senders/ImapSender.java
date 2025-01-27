@@ -19,11 +19,11 @@ import jakarta.mail.Message;
 
 import org.frankframework.doc.Category;
 import org.frankframework.doc.ReferTo;
-import org.frankframework.filesystem.FileSystemSender;
+import org.frankframework.filesystem.AbstractFileSystemSender;
 import org.frankframework.filesystem.ImapFileSystem;
 
-@Category("Advanced")
-public class ImapSender extends FileSystemSender<Message, ImapFileSystem> {
+@Category(Category.Type.ADVANCED)
+public class ImapSender extends AbstractFileSystemSender<Message, ImapFileSystem> {
 
 	public ImapSender() {
 		setFileSystem(new ImapFileSystem());

@@ -7,7 +7,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="Read" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
 				action="read"/>

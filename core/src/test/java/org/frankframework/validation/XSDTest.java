@@ -33,14 +33,14 @@ public class XSDTest {
 
 	@Test
 	public void xsdName() throws Exception {
-		XSD xsd = new ResourceXsd();
+		AbstractXSD xsd = new ResourceXsd();
 		xsd.initNamespace("http://test", scopeProvider, "XSDTest/v1 test.xsd");
 		assertEquals("XSDTest/v1 test.xsd", xsd.getResourceTarget());
 	}
 
 	@Test
 	public void xsdNamespace() throws Exception {
-		XSD xsd = new ResourceXsd();
+		AbstractXSD xsd = new ResourceXsd();
 		xsd.initNamespace("http://test", scopeProvider, "XSDTest/v1 test.xsd");
 		assertEquals("http://test", xsd.getNamespace());
 		assertEquals("http://www.ing.com/pim", xsd.getTargetNamespace());
@@ -49,12 +49,12 @@ public class XSDTest {
 	@Test
 	public void xsdDuplicateNSPrefix() throws Exception {
 		// Arrange
-		XSD xsd = new ResourceXsd();
+		AbstractXSD xsd = new ResourceXsd();
 		xsd.initNamespace("http://www.frankframework.org/test", scopeProvider, "XSDTest/MultipleIncludesClashingPrefixes/root1.xsd");
 
 		assertEquals("http://www.frankframework.org/test", xsd.getNamespace());
 
-		Set<IXSD> xsds = XSD.getXsdsRecursive(Set.of(xsd));
+		Set<IXSD> xsds = AbstractXSD.getXsdsRecursive(Set.of(xsd));
 
 		// Act
 		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(scopeProvider, SchemaUtils.groupXsdsByNamespace(xsds, false)));
@@ -64,7 +64,7 @@ public class XSDTest {
 
 	@Test
 	public void xsdUrlEncoded() throws Exception {
-		XSD xsd = new ResourceXsd();
+		AbstractXSD xsd = new ResourceXsd();
 		xsd.initNamespace("http://test", scopeProvider, "XSDTest/v1%20test.xsd");
 		assertEquals("http://test", xsd.getNamespace());
 		assertEquals("http://www.ing.com/pim", xsd.getTargetNamespace());
@@ -72,7 +72,7 @@ public class XSDTest {
 
 	@Test
 	public void writeXSD() throws Exception {
-		XSD xsd = new ResourceXsd();
+		AbstractXSD xsd = new ResourceXsd();
 		xsd.initNamespace("http://test", scopeProvider, "XSDTest/test.xsd");
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -92,7 +92,7 @@ public class XSDTest {
 
 		String expectedSchema = TestFileUtils.getTestFile(expectedSchemaLocation.trim().split("\\s+")[1]);
 
-		XSD xsd = getXSD(schemaLocation);
+		AbstractXSD xsd = getXSD(schemaLocation);
 		xsd.setAddNamespaceToSchema(true);
 
 		StringWriter writer = new StringWriter();
@@ -106,8 +106,8 @@ public class XSDTest {
 	@Test
 	public void testMergeXsds() throws Exception {
 		// Arrange
-		XSD xsd1 = getXSD("http://www.frankframework.org/test XSDTest/XsdMergingTest/root_schema1.xsd");
-		XSD xsd2 = getXSD("http://www.frankframework.org/test XSDTest/XsdMergingTest/root_schema2.xsd");
+		AbstractXSD xsd1 = getXSD("http://www.frankframework.org/test XSDTest/XsdMergingTest/root_schema1.xsd");
+		AbstractXSD xsd2 = getXSD("http://www.frankframework.org/test XSDTest/XsdMergingTest/root_schema2.xsd");
 		xsd1.setAddNamespaceToSchema(true);
 
 		Set<IXSD> xsds = new LinkedHashSet<>();
@@ -126,9 +126,9 @@ public class XSDTest {
 	}
 
 
-	public XSD getXSD(String schemaLocation) throws ConfigurationException {
+	public AbstractXSD getXSD(String schemaLocation) throws ConfigurationException {
 		String[] split =  schemaLocation.trim().split("\\s+");
-		XSD xsd = new ResourceXsd();
+		AbstractXSD xsd = new ResourceXsd();
 		xsd.initNamespace(split[0], scopeProvider, split[1]);
 		return xsd;
 	}

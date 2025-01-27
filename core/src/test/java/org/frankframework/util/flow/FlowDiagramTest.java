@@ -1,9 +1,13 @@
 package org.frankframework.util.flow;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.ByteArrayOutputStream;
 
+import org.frankframework.testutil.TestAssertions;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.Resource;
@@ -12,6 +16,11 @@ import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool;
 
 public class FlowDiagramTest {
+
+	@BeforeAll
+	public static void setup() {
+		assumeFalse(TestAssertions.isTestRunningOnARM(), "uses J2V8 which does not work on ARM");
+	}
 
 	@Test
 	public void testDotGeneratorFlow() throws Exception {
@@ -23,7 +32,7 @@ public class FlowDiagramTest {
 		generator.generateFlow(adapter, out);
 
 		String dot = TestFileUtils.getTestFile("/FlowDiagram/dot.txt");
-		assertEquals(dot, new String(out.toByteArray()));
+		assertEquals(dot, out.toString());
 	}
 
 	@Test
@@ -36,7 +45,7 @@ public class FlowDiagramTest {
 		generator.generateFlow(adapter, out);
 
 		String dot = TestFileUtils.getTestFile("/FlowDiagram/pipelineWithoutFirstPipe.svg");
-		MatchUtils.assertXmlEquals(dot, new String(out.toByteArray()));
+		MatchUtils.assertXmlEquals(dot, out.toString());
 	}
 
 	@Test

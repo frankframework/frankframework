@@ -2,9 +2,15 @@
   <div class="ibox-title summary">
     <h4 class="col-md-9">
       Configuration Summary
-      <span *ngIf="isConfigStubbed[selectedConfiguration]" class="label label-warning">STUBBED</span>
-      <span *ngIf="isConfigAutoReloadable[selectedConfiguration]" class="label label-warning">AUTORELOADABLE</span>
-      <span *ngIf="isConfigReloading[selectedConfiguration]" class="label label-warning">RELOADING</span>
+      @if (isConfigStubbed[selectedConfiguration]) {
+        <span class="label label-warning">STUBBED</span>
+      }
+      @if (isConfigAutoReloadable[selectedConfiguration]) {
+        <span class="label label-warning">AUTORELOADABLE</span>
+      }
+      @if (isConfigReloading[selectedConfiguration]) {
+        <span class="label label-warning">RELOADING</span>
+      }
     </h4>
     <h4 class="hidden-sm col-md-3">Configuration Flow</h4>
   </div>
@@ -17,7 +23,7 @@
               <th><strong>State</strong></th>
               <th
                 [ngClass]="{
-                  'text-primary': adapterSummary.started > 0 || receiverSummary.started > 0
+                  'text-primary': adapterSummary.started > 0 || receiverSummary.started > 0,
                 }"
                 title="Started"
               >
@@ -25,7 +31,7 @@
               </th>
               <th
                 [ngClass]="{
-                  'text-primary': adapterSummary.starting > 0 || receiverSummary.starting > 0
+                  'text-primary': adapterSummary.starting > 0 || receiverSummary.starting > 0,
                 }"
                 title="Starting"
               >
@@ -33,7 +39,7 @@
               </th>
               <th
                 [ngClass]="{
-                  'text-danger': adapterSummary.stopped > 0 || receiverSummary.stopped > 0
+                  'text-danger': adapterSummary.stopped > 0 || receiverSummary.stopped > 0,
                 }"
                 title="Stopped"
               >
@@ -41,7 +47,7 @@
               </th>
               <th
                 [ngClass]="{
-                  'text-danger': adapterSummary.stopping > 0 || receiverSummary.stopping > 0
+                  'text-danger': adapterSummary.stopping > 0 || receiverSummary.stopping > 0,
                 }"
                 title="Stopping"
               >
@@ -55,7 +61,7 @@
                     adapterSummary.exception_starting > 0 ||
                     receiverSummary.exception_starting > 0 ||
                     adapterSummary.exception_stopping > 0 ||
-                    receiverSummary.exception_stopping > 0
+                    receiverSummary.exception_stopping > 0,
                 }"
                 title="Error"
               >
@@ -107,9 +113,11 @@
           </tbody>
         </table>
       </div>
-      <div *ngIf="configurationFlowDiagram && !reloading" class="col-md-3 configurationFlow">
-        <app-flow [configurationFlowDiagram]="configurationFlowDiagram" [height]="150" />
-      </div>
+      @if (configurationFlowDiagram && !reloading) {
+        <div class="col-md-3 configurationFlow">
+          <app-flow [configurationFlowDiagram]="configurationFlowDiagram" [height]="150" />
+        </div>
+      }
     </div>
   </div>
 </div>

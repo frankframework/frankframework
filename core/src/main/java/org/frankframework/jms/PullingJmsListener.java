@@ -19,19 +19,18 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.MessageConsumer;
 import jakarta.jms.Session;
 
-import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.core.HasSender;
 import org.frankframework.core.ICorrelatedPullingListener;
 import org.frankframework.core.IListenerConnector;
-import org.frankframework.core.IPostboxListener;
 import org.frankframework.core.IPullingListener;
 import org.frankframework.core.ISender;
 import org.frankframework.core.ListenerException;
@@ -86,7 +85,7 @@ import org.frankframework.util.RunStateEnquiring;
  * @author Gerrit van Brakel
  * @since 4.0.1
  */
-public class PullingJmsListener extends JmsListenerBase implements IPostboxListener<Message>, ICorrelatedPullingListener<Message>, HasSender, RunStateEnquiring {
+public class PullingJmsListener extends AbstractJmsListener implements IPullingListener<Message>, ICorrelatedPullingListener<Message>, HasSender, RunStateEnquiring {
 
 	private static final String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
 	private RunStateEnquirer runStateEnquirer=null;
@@ -156,7 +155,6 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 		}
 	}
 
-
 	@Override
 	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		try {
@@ -172,7 +170,6 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 		}
 	}
 
-
 	@Override
 	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<Message> rawMessageWrapper, PipeLineSession pipeLineSession) throws ListenerException {
 		super.afterMessageProcessed(plr, rawMessageWrapper, pipeLineSession);
@@ -183,7 +180,6 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 			}
 		}
 	}
-
 
 	@Override
 	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, PipeLineSession pipeLineSession, Map<String, Object> properties) throws SenderException, ListenerException, JMSException, IOException {
@@ -199,8 +195,6 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 			send(session, replyTo, replyCid, plr.getResult(), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
 		}
 	}
-
-
 
 	/**
      * Retrieves messages from queue or other channel, but does no processing on it.
@@ -222,12 +216,11 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 		return msg;
 	}
 
-
 	private boolean sessionNeedsToBeSavedForAfterProcessMessage(Object result) {
-		return isJmsTransacted() &&
-				!isTransacted() &&
-				isSessionsArePooled()&&
-				result != null;
+		return isJmsTransacted()
+				&& !isTransacted()
+				&& isSessionsArePooled()
+				&& result != null;
 	}
 
 	/**
@@ -236,7 +229,8 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	private RawMessageWrapper<Message> getRawMessageFromDestination(String correlationId, Map<String,Object> threadContext) throws ListenerException {
 		Session session=null;
 		Message msg = null;
-		String messageId = null;
+		String messageId;
+
 		checkTransactionManagerValidity();
 		try {
 			session = getSession(threadContext);
@@ -266,36 +260,6 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 		}
 	}
 
-	/**
-	 * @see IPostboxListener#retrieveRawMessage(String, Map)
-	 */
-	@Override
-	public RawMessageWrapper<Message> retrieveRawMessage(String messageSelector, Map<String,Object> threadContext) throws ListenerException {
-		Session session=null;
-		try {
-			session = getSession(threadContext);
-			MessageConsumer mc=null;
-			try {
-				mc = getMessageConsumer(session, getDestination(), messageSelector);
-				Message result = getTimeout()<0 ? mc.receiveNoWait() : mc.receive(getTimeout());
-				return new RawMessageWrapper<>(result, result.getJMSMessageID(), messageSelector);
-			} finally {
-				if (mc != null) {
-					try {
-						mc.close();
-					} catch(JMSException e) {
-						log.warn("{}exception closing messageConsumer", getLogPrefix(), e);
-					}
-				}
-			}
-		} catch (Exception e) {
-			throw new ListenerException(getLogPrefix()+"exception preparing to retrieve message", e);
-		} finally {
-			releaseSession(session);
-		}
-	}
-
-
 	protected boolean canGoOn() {
 		return runStateEnquirer!=null && runStateEnquirer.getRunState()==RunState.STARTED;
 	}
@@ -304,5 +268,4 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	public void SetRunStateEnquirer(RunStateEnquirer enquirer) {
 		runStateEnquirer=enquirer;
 	}
-
 }

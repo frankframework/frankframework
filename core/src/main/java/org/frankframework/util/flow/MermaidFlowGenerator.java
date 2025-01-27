@@ -27,19 +27,6 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
-import lombok.extern.log4j.Log4j2;
-import org.frankframework.core.IConfigurable;
-import org.frankframework.core.Resource;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.Protected;
-import org.frankframework.senders.IbisJavaSender;
-import org.frankframework.senders.IbisLocalSender;
-import org.frankframework.util.StringUtil;
-import org.frankframework.util.TransformerPool;
-import org.frankframework.util.XmlUtils;
-import org.frankframework.xml.SaxDocumentBuilder;
-import org.frankframework.xml.SaxElementBuilder;
-import org.frankframework.xml.XmlWriter;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -54,6 +41,21 @@ import org.springframework.util.Assert;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.core.IConfigurable;
+import org.frankframework.core.Resource;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.Protected;
+import org.frankframework.senders.IbisJavaSender;
+import org.frankframework.senders.IbisLocalSender;
+import org.frankframework.util.StringUtil;
+import org.frankframework.util.TransformerPool;
+import org.frankframework.util.XmlUtils;
+import org.frankframework.xml.SaxDocumentBuilder;
+import org.frankframework.xml.SaxElementBuilder;
+import org.frankframework.xml.XmlWriter;
 
 /**
  * Flow generator to create MERMAID files
@@ -105,13 +107,13 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 
 	private void addClassInfo(String className, SaxDocumentBuilder builder) throws SAXException {
 		Class<?> clazz;
-		ElementType type;
+		EnterpriseIntegrationPattern type;
 		Method[] methods;
 		int modifier;
 		// Try first to extract all information from the class before adding it to the XML, so we add all or nothing about it.
 		try {
 			clazz = Class.forName(className);
-			type = AnnotationUtils.findAnnotation(clazz, ElementType.class);
+			type = AnnotationUtils.findAnnotation(clazz, EnterpriseIntegrationPattern.class);
 			if (type == null) {
 				log.trace("Skipping class [{}]", clazz);
 				return;
@@ -179,7 +181,7 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 		scanner.setIncludeAnnotationConfig(false);
 		scanner.resetFilters(false);
 		scanner.addIncludeFilter(new AssignableTypeFilter(IConfigurable.class));
-		scanner.addIncludeFilter(new AnnotationTypeFilter(ElementType.class));
+		scanner.addIncludeFilter(new AnnotationTypeFilter(EnterpriseIntegrationPattern.class));
 		scanner.addExcludeFilter((i, e) -> i.getClassMetadata().getClassName().contains("$")); //Exclude inner classes
 		scanner.addExcludeFilter(new AnnotationTypeFilter(Protected.class)); //Exclude protected FrankElements
 

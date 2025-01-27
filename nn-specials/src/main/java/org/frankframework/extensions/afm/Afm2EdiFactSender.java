@@ -44,7 +44,7 @@ import org.frankframework.util.XmlUtils;
  *
  * @author Erik van de Wetering, fine tuned and wrapped for Ibis by Gerrit van Brakel
  */
-@Category("NN-Special")
+@Category(Category.Type.NN_SPECIAL)
 public class Afm2EdiFactSender implements ISender {
 	protected Logger logger = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();

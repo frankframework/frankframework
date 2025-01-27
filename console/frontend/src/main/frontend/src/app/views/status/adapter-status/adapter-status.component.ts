@@ -2,9 +2,25 @@ import { Component, Input } from '@angular/core';
 import { getProcessStateIcon, getProcessStateIconColor } from '../../../utils';
 import { Adapter, Receiver } from '../../../app.service';
 import { StatusService } from '../status.service';
+import { NgClass } from '@angular/common';
+import { ToDateDirective } from '../../../components/to-date.directive';
+import { TimeSinceDirective } from '../../../components/time-since.directive';
+import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
+import { RouterLink } from '@angular/router';
+import { TruncatePipe } from '../../../pipes/truncate.pipe';
+import { FlowComponent } from '../flow/flow.component';
 
 @Component({
   selector: 'app-adapter-status',
+  imports: [
+    NgClass,
+    ToDateDirective,
+    TimeSinceDirective,
+    HasAccessToLinkDirective,
+    RouterLink,
+    TruncatePipe,
+    FlowComponent,
+  ],
   templateUrl: './adapter-status.component.html',
   styleUrl: './adapter-status.component.scss',
 })

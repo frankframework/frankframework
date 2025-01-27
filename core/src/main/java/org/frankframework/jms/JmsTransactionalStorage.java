@@ -52,7 +52,7 @@ import org.frankframework.receivers.RawMessageWrapper;
  * @author  Gerrit van Brakel
  * @since   4.1
  */
-public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageBrowser<S, ObjectMessage> implements ITransactionalStorage<S> {
+public class JmsTransactionalStorage<S extends Serializable> extends AbstractJmsMessageBrowser<S, ObjectMessage> implements ITransactionalStorage<S> {
 
 	public static final String FIELD_TYPE="type";
 	public static final String FIELD_ORIGINAL_ID="originalId";

@@ -3,7 +3,6 @@ package org.frankframework.console.controllers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.frankframework.management.bus.message.StringMessage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -14,6 +13,8 @@ import org.springframework.messaging.MessageHeaders;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import org.frankframework.management.bus.message.StringMessage;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, BrowseQueue.class})
 public class BrowseQueueTest extends FrankApiTestBase {

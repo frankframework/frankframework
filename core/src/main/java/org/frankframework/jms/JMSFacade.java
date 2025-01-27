@@ -42,14 +42,16 @@ import jakarta.jms.Topic;
 import jakarta.jms.TopicPublisher;
 import jakarta.jms.TopicSession;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Supplier;
+import org.springframework.context.Lifecycle;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.xml.sax.SAXException;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -62,6 +64,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
 import org.frankframework.jndi.JndiBase;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
@@ -83,7 +86,7 @@ import org.frankframework.util.XmlException;
  *
  * @author 	Gerrit van Brakel
  */
-public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled {
+public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled, Lifecycle {
 
 	public static final String JMS_MESSAGECLASS_KEY = "jms.messageClass.default";
 
@@ -92,6 +95,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private final MessageClass messageClassDefault = AppConstants.getInstance().getOrDefault(JMS_MESSAGECLASS_KEY, MessageClass.AUTO);
 	private @Getter MessageClass messageClass = messageClassDefault;
 
+	private boolean started = false;
 	private @Getter boolean transacted = false;
 	private @Getter boolean jmsTransacted = false;
 	private @Getter SubscriberType subscriberType = SubscriberType.DURABLE;
@@ -254,7 +258,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	/*
 	 * Override this method in descender classes.
 	 */
-	protected MessagingSourceFactory getMessagingSourceFactory() {
+	protected AbstractMessagingSourceFactory getMessagingSourceFactory() {
 		return new JmsMessagingSourceFactory(this);
 	}
 
@@ -268,7 +272,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			synchronized (this) {
 				if (messagingSource == null) {
 					log.debug("instantiating MessagingSourceFactory");
-					MessagingSourceFactory messagingSourceFactory = getMessagingSourceFactory();
+					AbstractMessagingSourceFactory messagingSourceFactory = getMessagingSourceFactory();
 					try {
 						String connectionFactoryName = getConnectionFactoryName();
 						log.debug("creating MessagingSource");
@@ -309,7 +313,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	/**
 	 * Obtains a connection and a serviceQueue.
 	 */
-	public void start() throws Exception {
+	public void start() {
 		try {
 			getMessagingSource(); // obtain and cache connection, then start it.
 			if (StringUtils.isNotEmpty(getDestinationName())) {
@@ -317,8 +321,10 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			}
 		} catch (Exception e) {
 			stop();
-			throw e;
+			throw new LifecycleException(e);
 		}
+
+		started = true;
 	}
 
 	/**
@@ -342,7 +348,14 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			// make sure all objects are reset, to be able to restart after IFSA parameters have changed (e.g. at iterative installation time)
 			destinations.clear();
 			messagingSource = null;
+
+			started = false;
 		}
+	}
+
+	@Override
+	public boolean isRunning() {
+		return started;
 	}
 
 	@Nonnull

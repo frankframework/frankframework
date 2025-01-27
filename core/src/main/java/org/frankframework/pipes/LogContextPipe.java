@@ -20,20 +20,20 @@ import java.util.Map;
 
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.ThreadContext;
-import org.frankframework.core.ParameterException;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
-import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
-import org.frankframework.parameters.ParameterValue;
-import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.stream.Message;
-import org.frankframework.util.ClassUtils;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.core.ParameterException;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunException;
+import org.frankframework.core.PipeRunResult;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.parameters.ParameterValue;
+import org.frankframework.parameters.ParameterValueList;
+import org.frankframework.stream.Message;
+import org.frankframework.util.ClassUtils;
 
 /**
  * Pipe that stores all its parameter values in the ThreadContext, formerly known as Mapped Diagnostic Context (MDC), to be used in logging.
@@ -43,7 +43,7 @@ import lombok.extern.log4j.Log4j2;
  *
  * @author Gerrit van Brakel
  */
-@ElementType(ElementTypes.SESSION)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.SESSION)
 @Log4j2
 public class LogContextPipe extends FixedForwardPipe {
 

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.PipeForward;
@@ -26,13 +27,10 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StringUtil;
-
-import lombok.Getter;
 
 /**
  * Pipe that checks if the calling user has a specified role.
@@ -40,31 +38,30 @@ import lombok.Getter;
  * <p>
  * If the role is not specified by the role attribute, the input of
  * the pipe is used as role.
- *
+ * <p>
  * N.B. The role itself must be specified by hand in the deployment descriptors web.xml and application.xml.
  * </p>
  *
- * @author  Gerrit van Brakel
- * @since   4.4.3
+ * @author Gerrit van Brakel
+ * @since 4.4.3
  */
 @Forward(name = "notInRole", description = "user does not have the required role")
 @Forward(name = "*", description = "the first matched role which the user has")
-@Category("Advanced")
-@ElementType(ElementTypes.ROUTER)
+@Category(Category.Type.ADVANCED)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ROUTER)
 public class IsUserInRolePipe extends FixedForwardPipe {
 
-	private String role=null;
-	private @Getter String notInRoleForwardName="notInRole";
+	private static final String NOT_IN_ROLE_FORWARD = "notInRole";
 	protected PipeForward notInRoleForward;
+	private String role = null;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (StringUtils.isNotEmpty(getNotInRoleForwardName())) {
-			notInRoleForward = findForward(getNotInRoleForwardName());
-			if (notInRoleForward==null) {
-				throw new ConfigurationException("could not find forward for notInRoleForwardName ["+ getNotInRoleForwardName()+"]");
-			}
+
+		notInRoleForward = findForward(NOT_IN_ROLE_FORWARD);
+		if (notInRoleForward == null) {
+			throw new ConfigurationException("could not find forward for notInRoleForwardName [" + NOT_IN_ROLE_FORWARD + "]");
 		}
 	}
 
@@ -107,7 +104,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		} catch (SecurityException e) {
 			return new PipeRunResult(notInRoleForward, message);
 		}
-		return new PipeRunResult(getSuccessForward(),message);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 
 	public String getRole() {
@@ -118,14 +115,4 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 	public void setRole(String string) {
 		role = string;
 	}
-
-	/**
-	 * name of forward returned if user is not allowed to assume the specified role
-	 * @ff.default notInRole
-	 */
-	@Deprecated(forRemoval = true, since = "7.7.0")
-	public void setNotInRoleForwardName(String string) {
-		notInRoleForwardName = string;
-	}
-
 }

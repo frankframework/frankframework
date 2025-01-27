@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsUtils;
 
@@ -39,20 +40,20 @@ public class CorsFilter implements Filter {
 	private final Logger secLog = LogManager.getLogger("SEC");
 	private final Logger log = LogManager.getLogger(this);
 
-	@Value("${iaf-api.cors.allowOrigin:*}")
-	private String allowedCorsOrigins; //Defaults to ALL allowed
+	@Value("${cors.origin:*}")
+	private String allowedCorsOrigins; // Defaults to ALL allowed
 
-	@Value("${iaf-api.cors.exposeHeaders:Allow, ETag, Content-Disposition}")
+	@Value("${cors.exposeHeaders:Allow, ETag, Content-Disposition}")
 	private String exposedCorsHeaders;
 
-	//TODO: Maybe filter out the methods that are not present on the resource? Till then allow all methods
-	@Value("${iaf-api.cors.allowMethods:GET, POST, PUT, DELETE, OPTIONS, HEAD}")
+	@Value("${cors.allowMethods:GET, POST, PUT, DELETE, OPTIONS, HEAD}")
 	private String allowedCorsMethods;
 
-	@Value("${iaf-api.cors.enforced:false}")
+	@Value("${cors.enforced:false}")
 	private boolean enforceCORS;
 
 	private final CorsConfiguration config = new CorsConfiguration();
+	private static final String SEC_LOG_MESSAGE = "host [{}] tried to access uri [{}] with origin header [{}]. The request was {} due to CORS restrictions, allowed origins [{}]";
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
@@ -64,6 +65,15 @@ public class CorsFilter implements Filter {
 				config.addAllowedOriginPattern(domain);
 			}
 		}
+
+		StringUtil.split(allowedCorsMethods).stream().forEach(config::addAllowedMethod);
+		StringUtil.split(exposedCorsHeaders).stream().forEach(config::addExposedHeader);
+
+		config.applyPermitDefaultValues(); // Ensures the headers are set and valid.
+
+		exposedCorsHeaders = String.join(",", config.getExposedHeaders());
+		allowedCorsMethods = String.join(",", config.getAllowedMethods());
+
 		log.debug("whitelisted CORS origins: {} and patterns: {}", config::getAllowedOrigins, config::getAllowedOriginPatterns);
 	}
 
@@ -75,29 +85,22 @@ public class CorsFilter implements Filter {
 		/**
 		 * Handle Cross-Origin Resource Sharing
 		 */
-		if(enforceCORS && CorsUtils.isCorsRequest(request)) {
-			String originHeader = request.getHeader("Origin");
+		if (CorsUtils.isCorsRequest(request)) {
+			String originHeader = request.getHeader(HttpHeaders.ORIGIN);
 			String origin = config.checkOrigin(originHeader);
-			if (origin != null) {
-				response.setHeader("Access-Control-Allow-Origin", origin);
-
-				String requestHeaders = request.getHeader("Access-Control-Request-Headers");
-				if (requestHeaders != null)
-					response.setHeader("Access-Control-Allow-Headers", requestHeaders);
-
-				response.setHeader("Access-Control-Expose-Headers", exposedCorsHeaders);
-				response.setHeader("Access-Control-Allow-Methods", allowedCorsMethods);
-
-				// Allow caching cross-domain permission
-				response.setHeader("Access-Control-Max-Age", "3600");
-			} else {
-				//If origin has been set, but has not been whitelisted, report the request in security log.
-				secLog.info("host[{}] tried to access uri[{}] with origin[{}] but was blocked due to CORS restrictions", request.getRemoteHost(), request.getPathInfo(), originHeader);
-				log.warn("blocked request with origin [{}]", originHeader);
-				response.setStatus(400);
-				return; //actually block the request
+			if (enforceCORS) {
+				if (origin != null) { // Happy Flow
+					setResponseHeaders(request, response, origin);
+				} else { // If origin has been set, but has not been whitelisted, report the request in security log.
+					secLog.info(SEC_LOG_MESSAGE, request::getRemoteHost, request::getPathInfo, () -> originHeader, () -> "BLOCKED", () -> allowedCorsOrigins);
+					log.warn("blocked request with origin [{}]", originHeader);
+					response.setStatus(400);
+					return; // Actually block the request
+				}
+			} else if (origin == null) { // FLAG the request
+				secLog.info(SEC_LOG_MESSAGE, request::getRemoteHost, request::getPathInfo, () -> originHeader, () -> "FLAGGED", () -> allowedCorsOrigins);
+				log.warn("flagged request with origin [{}]", originHeader);
 			}
-			//If we pass one of the valid domains, it can be used to spoof the connection
 		}
 
 		/**
@@ -112,9 +115,25 @@ public class CorsFilter implements Filter {
 		}
 	}
 
+	/** Set the CORS headers on the HTTP response */
+	private void setResponseHeaders(HttpServletRequest request, HttpServletResponse response, String origin) {
+		// If we pass one of the valid domains, it can be used to spoof the connection
+		response.setHeader("Access-Control-Allow-Origin", origin);
+
+		String requestHeaders = request.getHeader("Access-Control-Request-Headers");
+		if (requestHeaders != null) {
+			response.setHeader("Access-Control-Allow-Headers", requestHeaders);
+		}
+
+		response.setHeader("Access-Control-Expose-Headers", exposedCorsHeaders);
+		response.setHeader("Access-Control-Allow-Methods", allowedCorsMethods);
+
+		// Allow caching cross-domain permission
+		response.setHeader("Access-Control-Max-Age", "3600");
+	}
+
 	@Override
 	public void destroy() {
 		// nothing to destroy
 	}
-
 }

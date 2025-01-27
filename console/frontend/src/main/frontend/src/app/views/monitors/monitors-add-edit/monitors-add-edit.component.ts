@@ -1,7 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Event, MonitorsService, Trigger } from '../monitors.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { combineLatestWith } from 'rxjs';
+import { AlertState } from '../../test-pipeline/test-pipeline.component';
+import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
+import { FormsModule } from '@angular/forms';
 
 type EventSource = {
   adapter: string;
@@ -10,6 +14,7 @@ type EventSource = {
 
 @Component({
   selector: 'app-monitors-add-edit',
+  imports: [NgbAlert, RouterLink, QuickSubmitFormDirective, FormsModule],
   templateUrl: './monitors-add-edit.component.html',
   styleUrls: ['./monitors-add-edit.component.scss'],
 })
@@ -21,44 +26,42 @@ export class MonitorsAddEditComponent implements OnInit {
   protected severities: string[] = [];
   protected trigger: Trigger = {
     name: '',
-    severity: '',
-    filter: '',
+    severity: 'HARMLESS',
+    filter: 'NONE',
     period: 0,
     sources: {},
     changedSources: [],
     threshold: 0,
     id: 0,
-    type: '',
+    type: 'ALARM',
     events: [],
     adapters: [],
   };
   protected disabled: boolean = false;
   protected pageTitle = '';
+  protected state: AlertState[] = [];
 
   private triggerId: number = -1;
   private events: Record<string, Event> = {};
   private eventSources: Record<string, EventSource[]> = {};
 
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private monitorsService: MonitorsService,
-  ) {}
+  private readonly router: Router = inject(Router);
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly monitorsService: MonitorsService = inject(MonitorsService);
 
   ngOnInit(): void {
-    this.route.title.subscribe((title) => {
-      this.pageTitle = title ?? '';
-    });
-
     this.route.paramMap.pipe(combineLatestWith(this.route.queryParamMap)).subscribe(([parameters, queryParameters]) => {
       if (queryParameters.has('configuration')) {
         this.selectedConfiguration = queryParameters.get('configuration')!;
         this.monitor = parameters.get('monitor')!;
         const triggerParameter = parameters.get('trigger')!;
-        this.triggerId = triggerParameter === 'new' ? -1 : +triggerParameter;
+        this.triggerId = triggerParameter === null ? -1 : +triggerParameter;
       } else {
         this.router.navigate(['/monitors']);
       }
+    });
+    this.route.title.subscribe((title) => {
+      this.pageTitle = title ?? '';
     });
 
     this.monitorsService.getTrigger(this.selectedConfiguration, this.monitor, this.triggerId).subscribe({
@@ -136,6 +139,17 @@ export class MonitorsAddEditComponent implements OnInit {
   }
 
   submit(trigger: Trigger): void {
+    this.state = [];
+    if (trigger.period < 0 || trigger.threshold < 0) {
+      this.addNote('warning', 'Negative values are not allowed');
+      return;
+    }
+
+    if ((trigger.period > 0 && trigger.threshold <= 0) || (trigger.period <= 0 && trigger.threshold > 0)) {
+      this.addNote('warning', 'Threshold and period should both be set');
+      return;
+    }
+
     if (trigger.filter == 'ADAPTER') {
       delete trigger.sources;
     } else if (trigger.filter == 'SOURCE') {
@@ -152,7 +166,7 @@ export class MonitorsAddEditComponent implements OnInit {
       }
     }
 
-    if (this.triggerId && this.triggerId > -1) {
+    if (this.triggerId > -1) {
       this.monitorsService
         .putTriggerUpdate(this.selectedConfiguration, this.monitor, this.triggerId, trigger)
         .subscribe(() => {
@@ -165,5 +179,9 @@ export class MonitorsAddEditComponent implements OnInit {
           this.navigateBack();
         });
     }
+  }
+
+  addNote(type: string, message: string): void {
+    this.state.push({ type: type, message: message });
   }
 }

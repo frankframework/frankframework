@@ -7,7 +7,7 @@
 
 		<pipeline firstPipe="RunTestReports">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="RunTestReports" className="org.frankframework.ibistesttool.LadybugPipe"
 				writeToLog="true" enableReportGenerator="true" exclude="${ladybug.adapter.excludeRegex}">

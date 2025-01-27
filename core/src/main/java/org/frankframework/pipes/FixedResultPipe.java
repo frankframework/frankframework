@@ -20,9 +20,10 @@ import java.net.URL;
 
 import javax.xml.transform.TransformerException;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -32,8 +33,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValue;
@@ -57,60 +57,49 @@ import org.frankframework.util.TransformerPool;
  * <h3>For using a 'resultString'</h3>
  * You can use the {@link EchoPipe} for a static value. This looked like this before:
  *
- * <pre>
- * {@code
+ * <pre>{@code
  * <pipe name="HelloWorld" className="org.frankframework.pipes.FixedResult" returnString="Hello World">
  *     <forward name="success" path="EXIT"/>
  * </pipe>
- * }
- * </pre>
+ * }</pre>
  * Becomes:
- * <pre>
- * {@code
+ * <pre>{@code
  * <pipe name="HelloWorld" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="Hello World">
  *     <forward name="success" path="EXIT"/>
  * </pipe>
- * }
- * </pre>
+ * }</pre>
  *
  * <h3>For replacing a value</h3>
  * You can use the {@link ReplacerPipe} to replace a value in multiple ways. First, when you need to replace a placeholder with a parameter.
  * This looked like:
- * <pre>
- * {@code
+ * <pre>{@code
  * <pipe name="make unique message" className="org.frankframework.pipes.FixedResultPipe"
  *     returnString="&lt;msg mid=&quot;MID&quot; action=&quot;ACTION&quot; /&gt;" replaceFixedParams="true">
  *     <param name="MID" sessionKey="mid" />
  *     <param name="ACTION" xpathExpression="request/@action" />
  * </pipe>
- * }
- * </pre>
+ * }</pre>
  *
  * And can now be written like this (note the ?{..} syntax):
- * <pre>
- * {@code
+ * <pre>{@code
  * <pipe name="make unique message" className="org.frankframework.pipes.ReplacerPipe"
  *     getInputFromFixedValue="&lt;msg mid=&quot;?{MID}&quot; action=&quot;?{ACTION}&quot; /&gt;">
  *     <param name="MID" sessionKey="mid" />
  *     <param name="ACTION" xpathExpression="request/@action" />
  * </pipe>
- * }
- * </pre>
+ * }</pre>
  *
  * When you need to replace a fixed value use the ReplacerPipe with find and replace. This looked like this:
- * <pre>
- * {@code
+ * <pre>{@code
  * <FixedResultPipe name="InputValidateError"
  *     filename="ManageFileSystem/xml/ErrorMessage.xml"
  *     replaceFrom="%reasonCode" replaceTo="NOT_WELL_FORMED_XML">
  *     <forward name="success" path="EXIT" />
  * </FixedResultPipe>
- * }
- * </pre>
+ * }</pre>
  *
  * And now should be solved like this:
- * <pre>
- * {@code
+ * <pre>{@code
  * <FixedResultPipe name="InputValidateError"
  *     filename="ManageFileSystem/xml/ErrorMessage.xml">
  *     <forward name="success" path="replaceReasonCode" />
@@ -120,15 +109,13 @@ import org.frankframework.util.TransformerPool;
  *     replace="NOT_WELL_FORMED_XML">
  *     <forward name="success" path="EXIT" />
  * </ReplacerPipe>
- * }
- * </pre>
+ * }</pre>
  * This is also an example of now using two pipes to achieve the same result. Each pipe has its own responsibility.
  *
  * <h2>More complex configurations</h2>
  * In some cases, a combination of the above is needed to achieve what worked before. In some cases, FixedResultPipe
  * was also used to store information in the session. For example, a port of configuration in the JMS listener sender configuration looked like this:
- * <pre>
- * {@code
+ * <pre>{@code
  * <CompareStringPipe name="compareIdAndCid" >
  *     <param name="operand1" sessionKey="id"/>
  *     <param name="operand2" sessionKey="cid"/>
@@ -151,12 +138,10 @@ import org.frankframework.util.TransformerPool;
  *     <param name="SAME" sessionKey="IdAndCidSame" />
  *     <forward name="success" path="EXIT" />
  * </pipe>
- * }
- * </pre>
+ * }</pre>
  *
  * Was rewritten to the following:
- * <pre>
- * {@code
+ * <pre>{@code
  * <CompareStringPipe name="compareIdAndCid" >
  *     <param name="operand1" sessionKey="id"/>
  *     <param name="operand2" sessionKey="cid"/>
@@ -182,8 +167,7 @@ import org.frankframework.util.TransformerPool;
  *     <param name="SAME" sessionKey="IdAndCidSame" />
  *     <forward name="success" path="EXIT" />
  * </pipe>
- * }
- * </pre>
+ * }</pre>
  * <p>
  *
  * <h2>The features/documentation of the deprecated features</h2>
@@ -215,17 +199,16 @@ import org.frankframework.util.TransformerPool;
  *
  * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>?{xyz}</code> or
  * <code>xyz</code> (if <code>replaceFixedParams</code> is true) is substituted by the parameter's value.
- *
- * @author Johan Verrips
  */
-@Category("Basic")
-@ElementType(ElementTypes.TRANSLATOR)
+@Category(Category.Type.BASIC)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 @Forward(name = "filenotfound", description = "the configured file was not found (when this forward isn't specified an exception will be thrown)")
 public class FixedResultPipe extends FixedForwardPipe {
 
 	private static final String FILE_NOT_FOUND_FORWARD = "filenotfound";
 
-	private static final String SUBSTITUTION_START_DELIMITER = "?{";
+	private boolean useOldSubstitutionStartDelimiter = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("FixedResultPipe.useOldSubstitutionStartDelimiter", false);
+	private @Getter String substitutionStartDelimiter = "?";
 
 	private AppConstants appConstants;
 
@@ -268,6 +251,13 @@ public class FixedResultPipe extends FixedForwardPipe {
 			if (resource == null) {
 				throw new ConfigurationException("cannot find resource [" + getFilename() + "]");
 			}
+		}
+
+		if(useOldSubstitutionStartDelimiter) {
+			if(StringUtils.isBlank(filename)) {
+				throw new ConfigurationException("attribute [useOldSubstitutionStartDelimiter] may only be used in combination with attribute [filename]");
+			}
+			substitutionStartDelimiter = "$";
 		}
 
 		if (StringUtils.isEmpty(getFilename()) && StringUtils.isEmpty(getFilenameSessionKey()) && returnString == null) { // allow an empty returnString to be specified
@@ -329,9 +319,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 				resultString = replaceParameters(resultString, message, session);
 			}
 
-			if (substituteVars) {
-				resultString = substituteVars(resultString, session);
-			}
+			resultString = substituteVars(resultString, session);
 
 			if (transformerPool != null) {
 				try {
@@ -384,7 +372,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	private String replaceSingle(String value, String replaceFromValue, String to) {
-		final String from = (isReplaceFixedParams()) ? replaceFromValue : SUBSTITUTION_START_DELIMITER + replaceFromValue + "}";
+		final String from = (isReplaceFixedParams()) ? replaceFromValue : substitutionStartDelimiter + "{" + replaceFromValue + "}";
 
 		return value.replace(from, to);
 	}
@@ -462,5 +450,11 @@ public class FixedResultPipe extends FixedForwardPipe {
 	@ConfigurationWarning("replaceFixedParams is scheduled for removal. Please use the ReplacerPipe")
 	public void setReplaceFixedParams(boolean b) {
 		replaceFixedParams = b;
+	}
+
+	@Deprecated(since = "8.1", forRemoval = true)
+	@ConfigurationWarning("please use ?{key} instead where possible so it's clear when to use properties and when to use session variables")
+	public void setUseOldSubstitutionStartDelimiter(boolean old) {
+		useOldSubstitutionStartDelimiter = old;
 	}
 }

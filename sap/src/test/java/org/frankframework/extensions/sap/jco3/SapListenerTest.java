@@ -22,6 +22,7 @@ import com.sap.conn.idoc.IDocDocumentList;
 import com.sap.conn.idoc.IDocXMLProcessor;
 import com.sap.conn.jco.JCoFunction;
 import com.sap.conn.jco.server.JCoServerContext;
+import org.frankframework.util.SapSystemListItem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -35,7 +36,6 @@ import org.frankframework.extensions.sap.SapException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.stream.Message;
-import org.frankframework.util.GlobalListItem;
 
 public class SapListenerTest {
 
@@ -47,7 +47,7 @@ public class SapListenerTest {
 
 	@BeforeEach
 	public void setUp() throws SapException {
-		GlobalListItem.clear();
+		SapSystemListItem.clear();
 
 		listener = spy(new SapListener());
 		listener.setName(listener.getClass().getSimpleName()+" under test");
@@ -59,7 +59,7 @@ public class SapListenerTest {
 		doNothing().when(sapSystem).openSystem();
 
 		sapSystem.setName(sapSystemName);
-		sapSystem.registerItem(listener);
+		SapSystemListItem.registerItem(sapSystem);
 	}
 
 	@Test

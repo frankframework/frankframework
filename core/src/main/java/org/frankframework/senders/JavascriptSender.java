@@ -21,8 +21,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jakarta.annotation.Nonnull;
-import lombok.Getter;
+
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.ParameterException;
@@ -62,7 +65,7 @@ import org.frankframework.util.StreamUtil;
  *
  * @since 7.4
  */
-@Category("Advanced")
+@Category(Category.Type.ADVANCED)
 public class JavascriptSender extends SenderSeries {
 
 	private @Getter String jsFileName;

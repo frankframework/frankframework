@@ -22,12 +22,12 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 
-import org.frankframework.http.HttpServletBase;
+import org.frankframework.http.AbstractHttpServlet;
 import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.util.AppConstants;
 
 @IbisInitializer
-public class RedirectIndexProxy extends HttpServletBase {
+public class RedirectIndexProxy extends AbstractHttpServlet {
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {

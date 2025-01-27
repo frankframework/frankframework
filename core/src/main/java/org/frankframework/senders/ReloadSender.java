@@ -16,7 +16,9 @@
 package org.frankframework.senders;
 
 import jakarta.annotation.Nonnull;
+
 import lombok.Setter;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.IbisManager;
@@ -37,7 +39,7 @@ import org.frankframework.util.XmlUtils;
  * @author	Lars Sinke
  * @author	Niels Meijer
  */
-public class ReloadSender extends SenderWithParametersBase {
+public class ReloadSender extends AbstractSenderWithParameters {
 
 	private boolean forceReload = false;
 	private @Setter IbisManager ibisManager;

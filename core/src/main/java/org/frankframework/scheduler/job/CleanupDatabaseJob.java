@@ -22,9 +22,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
@@ -36,14 +37,14 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.Dbms;
+import org.frankframework.jdbc.AbstractJdbcQuerySender;
 import org.frankframework.jdbc.FixedQuerySender;
-import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.jdbc.JdbcTransactionalStorage;
 import org.frankframework.parameters.DateParameter;
 import org.frankframework.parameters.DateParameter.DateFormatType;
 import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.Receiver;
-import org.frankframework.scheduler.JobDef;
+import org.frankframework.scheduler.AbstractJobDef;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
@@ -59,7 +60,7 @@ import org.frankframework.util.SpringUtils;
  * 
  * @ff.info This is a default job that can be controlled with the property {@literal cleanup.database.active} and {@literal cleanup.database.cron}.
  */
-public class CleanupDatabaseJob extends JobDef {
+public class CleanupDatabaseJob extends AbstractJobDef {
 	private @Getter int queryTimeout;
 
 	private static class MessageLogObject {
@@ -118,7 +119,7 @@ public class CleanupDatabaseJob extends JobDef {
 				qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
 				qs.setDatasourceName(datasourceName);
 				qs.setName("cleanupDatabase-IBISLOCK");
-				qs.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+				qs.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 				qs.setTimeout(getQueryTimeout());
 				qs.setScalar(true);
 				qs.setQuery("DELETE FROM IBISLOCK WHERE EXPIRYDATE < ?");
@@ -164,7 +165,7 @@ public class CleanupDatabaseJob extends JobDef {
 				qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
 				qs.setDatasourceName(mlo.getDatasourceName());
 				qs.setName("cleanupDatabase-" + mlo.getTableName());
-				qs.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+				qs.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
 				qs.setTimeout(getQueryTimeout());
 				qs.setScalar(true);
 

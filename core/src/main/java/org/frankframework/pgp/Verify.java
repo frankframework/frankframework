@@ -22,13 +22,14 @@ import org.bouncycastle.util.io.Streams;
 
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BouncyGPG;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BuildDecryptionInputStreamAPI;
+
 import org.frankframework.configuration.ConfigurationException;
 
-public class Verify extends PGPAction {
+public class Verify extends AbstractPGPAction {
 	private final String[] senders;
 
 	public Verify(String[] publicKey, String secretKey, String secretPassword, String[] senders) throws ConfigurationException {
-		super(publicKey, secretKey, secretPassword);
+		super(publicKey, secretKey, secretPassword, null);
 		if (publicKey == null || secretKey == null || secretPassword == null)
 			throw new ConfigurationException("For verification the fields [publicKey, secretKey, secretPassword] have to be set.");
 		this.senders = senders;

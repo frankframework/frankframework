@@ -5,7 +5,7 @@
 <hazelcast xmlns="http://www.hazelcast.com/schema/config"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://www.hazelcast.com/schema/config
-           http://www.hazelcast.com/schema/config/hazelcast-config-5.4.xsd">
+           http://www.hazelcast.com/schema/config/hazelcast-config-5.5.xsd">
 
     <!--
         The name of the cluster. All members of a single cluster must have the same cluster name
@@ -22,54 +22,47 @@
 	<!-- network can be configured in 'ff-hazelcast-network.xml' -->
 
     <partition-group enabled="false"/>
+
     <executor-service name="default">
         <!--Queue capacity. 0 means Integer.MAX_VALUE.-->
         <queue-capacity>0</queue-capacity>
-        <pool-size>16</pool-size>
-        <statistics-enabled>true</statistics-enabled>
+        <pool-size>8</pool-size>
+        <statistics-enabled>false</statistics-enabled>
     </executor-service>
+
     <durable-executor-service name="default">
         <capacity>100</capacity>
         <durability>1</durability>
-        <pool-size>16</pool-size>
-        <statistics-enabled>true</statistics-enabled>
+        <pool-size>8</pool-size>
+        <statistics-enabled>false</statistics-enabled>
     </durable-executor-service>
+
     <scheduled-executor-service name="default">
         <capacity>100</capacity>
         <durability>1</durability>
-        <pool-size>16</pool-size>
+        <pool-size>8</pool-size>
         <merge-policy batch-size="100">com.hazelcast.spi.merge.PutIfAbsentMergePolicy</merge-policy>
-        <statistics-enabled>true</statistics-enabled>
+        <statistics-enabled>false</statistics-enabled>
     </scheduled-executor-service>
+
     <security>
         <client-block-unmapped-actions>true</client-block-unmapped-actions>
     </security>
-    <queue name="default">
-        <!--
-            Maximum size of the queue. When a JVM's local queue size reaches the maximum,
-            all put/offer operations will get blocked until the queue size
-            of the JVM goes down below the maximum.
-            Any integer between 0 and Integer.MAX_VALUE. 0 means
-            Integer.MAX_VALUE. Default is 0.
-        -->
-        <max-size>0</max-size>
-        <!--
-            Number of backups. If 1 is set as the backup-count for example,
-            then all entries of the map will be copied to another JVM for
-            fail-safety. 0 means no backup.
-        -->
-        <backup-count>1</backup-count>
 
-        <!--
-            Number of async backups. 0 means no backup.
-        -->
+    <!-- queues are used as reply channels, they are short lived and do not need to be persistent -->
+    <queue name="__tmp.*">
+        <statistics-enabled>false</statistics-enabled>
+
+        <max-size>512</max-size>
+        <backup-count>0</backup-count>
         <async-backup-count>0</async-backup-count>
+
         <!--
             Used to purge unused or empty queues. If you define a value (time in seconds)
             for this element, then your queue will be destroyed if it stays empty or
             unused for that time.
         -->
-        <empty-queue-ttl>600</empty-queue-ttl>
+        <empty-queue-ttl>60</empty-queue-ttl>
 
         <merge-policy batch-size="100">com.hazelcast.spi.merge.PutIfAbsentMergePolicy</merge-policy>
     </queue>
@@ -79,7 +72,7 @@
     -->
     <local-device name="default-tiered-store-device">
         <base-dir>tiered-store</base-dir>
-        <capacity unit="GIGABYTES" value="256"/>
+        <capacity unit="GIGABYTES" value="1"/>
         <block-size>4096</block-size>
         <read-io-thread-count>4</read-io-thread-count>
         <write-io-thread-count>4</write-io-thread-count>
@@ -161,7 +154,7 @@
            Whether map level statistical information (total
            hits, memory-cost etc.) should be gathered and stored.
         -->
-        <statistics-enabled>true</statistics-enabled>
+        <statistics-enabled>false</statistics-enabled>
 
         <!--
             Whether statistical information (hits, creation
@@ -202,7 +195,7 @@
     <replicatedmap name="default">
         <in-memory-format>OBJECT</in-memory-format>
         <async-fillup>true</async-fillup>
-        <statistics-enabled>true</statistics-enabled>
+        <statistics-enabled>false</statistics-enabled>
         <merge-policy batch-size="100">com.hazelcast.spi.merge.PutIfAbsentMergePolicy</merge-policy>
     </replicatedmap>
 
@@ -216,15 +209,21 @@
         <merge-policy batch-size="100">com.hazelcast.spi.merge.PutIfAbsentMergePolicy</merge-policy>
     </set>
 
+    <topic name="default">
+        <multi-threading-enabled>false</multi-threading-enabled>
+        <global-ordering-enabled>false</global-ordering-enabled>
+        <statistics-enabled>false</statistics-enabled>
+    </topic>
+
     <reliable-topic name="default">
         <read-batch-size>10</read-batch-size>
         <topic-overload-policy>BLOCK</topic-overload-policy>
-        <statistics-enabled>true</statistics-enabled>
+        <statistics-enabled>false</statistics-enabled>
     </reliable-topic>
 
     <ringbuffer name="default">
         <capacity>10000</capacity>
-        <backup-count>1</backup-count>
+        <backup-count>0</backup-count>
         <async-backup-count>0</async-backup-count>
         <time-to-live-seconds>0</time-to-live-seconds>
         <in-memory-format>BINARY</in-memory-format>
@@ -272,7 +271,7 @@
         -->
         <allowed-future-millis>15000</allowed-future-millis>
         <!-- Enables/disables statistics gathering for the flake-id generator on this member. -->
-        <statistics-enabled>true</statistics-enabled>
+        <statistics-enabled>false</statistics-enabled>
     </flake-id-generator>
 
     <!--
@@ -281,6 +280,24 @@
     -->
     <serialization>
         <portable-version>0</portable-version>
+        <allow-override-default-serializers>false</allow-override-default-serializers>
+        <allow-unsafe>false</allow-unsafe>
+        <java-serialization-filter>
+            <blacklist>
+                <class>com.acme.app.BeanComparator</class>
+            </blacklist>
+            <whitelist>
+<!--                 <class>org.frankframework.management.gateway.SerializableInputStream</class> -->
+                <class>org.springframework.messaging.support.GenericMessage</class>
+                <class>org.springframework.messaging.MessageHeaders</class>
+                <package>org.frankframework.management.gateway</package>
+                <package>org.frankframework.management.bus.message</package>
+                <package>org.springframework.security.authentication</package>
+                <package>org.springframework.security.core.authority</package>
+                <package>org.springframework.security.web.authentication</package>
+                <package>org.springframework.security.core.userdetails</package>
+            </whitelist>
+        </java-serialization-filter>
     </serialization>
 
     <!-- Enables a Hazelcast member to be a lite member -->
@@ -334,54 +351,6 @@
         <catalog-persistence-enabled>false</catalog-persistence-enabled>
     </sql>
 
-    <jet enabled="false" resource-upload-enabled="false">
-        <!-- time spacing of flow-control (ack) packets -->
-        <flow-control-period>100</flow-control-period>
-        <!-- number of backup copies to configure for Hazelcast IMaps used internally in a Jet job -->
-        <backup-count>1</backup-count>
-        <!-- the delay after which auto-scaled jobs will restart if a new member is added to the
-             cluster. The default is 10 seconds. Has no effect on jobs with auto scaling disabled -->
-        <scale-up-delay-millis>10000</scale-up-delay-millis>
-        <!-- Sets whether Lossless Job Restart is enabled for the node. With
-             Lossless Restart, Jet persists job snapshots to disk automatically
-             and you can restart the whole cluster without losing the jobs and
-             their state.
-
-             This feature requires Hazelcast Enterprise and is implemented on top of the
-             Persistence feature. Therefore you should enable and configure Persistence,
-             especially the base directory where to store the recovery files.
-         -->
-        <lossless-restart-enabled>false</lossless-restart-enabled>
-        <!-- Sets the maximum number of records that can be accumulated by any single
-             Processor instance.
-             Operations like grouping, sorting or joining require certain amount of
-             records to be accumulated before they can proceed. You can set this option
-             to reduce the probability of OutOfMemoryError.
-
-             This option applies to each Processor instance separately, hence the
-             effective limit of records accumulated by each cluster member is influenced
-             by the vertex's localParallelism and the number of jobs in the cluster.
-
-             Currently, maxProcessorAccumulatedRecords limits:
-                - number of items sorted by the sort operation
-                - number of distinct keys accumulated by aggregation operations
-                - number of entries in the hash-join lookup tables
-                - number of entries in stateful transforms
-                - number of distinct items in distinct operation
-
-             Note: the limit does not apply to streaming aggregations.
-         -->
-        <max-processor-accumulated-records>9223372036854775807</max-processor-accumulated-records>
-        <edge-defaults>
-            <!-- capacity of the concurrent SPSC queue between each two processors -->
-            <queue-size>1024</queue-size>
-
-            <!-- network packet size limit in bytes, only applies to distributed edges -->
-            <packet-size-limit>16384</packet-size-limit>
-
-            <!-- receive window size multiplier, only applies to distributed edges -->
-            <receive-window-multiplier>3</receive-window-multiplier>
-        </edge-defaults>
-    </jet>
+    <jet enabled="false" resource-upload-enabled="false"/>
     <integrity-checker enabled="false"/>
 </hazelcast>

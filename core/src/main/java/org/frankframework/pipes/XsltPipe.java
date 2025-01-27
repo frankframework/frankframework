@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,28 +15,23 @@
 */
 package org.frankframework.pipes;
 
-import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.ReferTo;
-import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.senders.XsltSender;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.TransformerPool.OutputType;
-
 
 /**
  * Perform an XSLT transformation with a specified stylesheet.
@@ -45,15 +40,13 @@ import org.frankframework.util.TransformerPool.OutputType;
  *
  * @author Johan Verrips
  */
-@Category("Basic")
-@ElementType(ElementTypes.TRANSLATOR)
+@Category(Category.Type.BASIC)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class XsltPipe extends FixedForwardPipe implements InitializingBean {
-
-	private String sessionKey=null;
 
 	private final @Getter XsltSender sender = createXsltSender();
 
-	{
+	public XsltPipe() {
 		setSizeStatistics(true);
 	}
 
@@ -78,22 +71,14 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 	}
 
 	@Override
-	public void start() throws PipeStartException {
+	public void start() {
 		super.start();
-		try {
-			sender.start();
-		} catch (LifecycleException e) {
-			throw new PipeStartException(e);
-		}
+		sender.start();
 	}
 
 	@Override
 	public void stop() {
-		try {
-			sender.stop();
-		} catch (LifecycleException e) {
-			log.warn("exception closing XsltSender",e);
-		}
+		sender.stop();
 		super.stop();
 	}
 
@@ -102,27 +87,14 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 		if (Message.isEmpty(input)) {
 			throw new PipeRunException(this, "got null input");
 		}
+
 		try {
-			if (StringUtils.isNotEmpty(getSessionKey())) {
-				input.preserve();
-			}
 			Message result = sender.sendMessage(input, session).getResult();
-			if (StringUtils.isNotEmpty(getSessionKey())) {
-				session.put(getSessionKey(), result.asString());
-				return new PipeRunResult(getSuccessForward(), input);
-			}
+
 			return new PipeRunResult(getSuccessForward(), result);
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Exception on transforming input", e);
 		}
-	}
-
-	/**
-	 * If true, then this pipe will process the XSLT while streaming in a different thread. Can be used to switch streaming xslt off for debugging purposes
-	 * @ff.default set by appconstant xslt.streaming.default
-	 */
-	public void setStreamingXslt(boolean streamingActive) {
-		sender.setStreamingXslt(streamingActive);
 	}
 
 	@Override
@@ -206,21 +178,9 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 		sender.setXsltVersion(xsltVersion);
 	}
 
-	@Deprecated(forRemoval = true, since = "7.7.0")
-	@ConfigurationWarning("Please use 'storeResultInSessionKey' with preserveInput=true")
-	/** If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result */
-	public void setSessionKey(String newSessionKey) {
-		sessionKey = newSessionKey;
-	}
-
-	private String getSessionKey() {
-		return sessionKey;
-	}
-
 	@Override
 	public void setName(String name) {
 		super.setName(name);
 		sender.setName("Sender of Pipe ["+name+"]");
 	}
-
 }

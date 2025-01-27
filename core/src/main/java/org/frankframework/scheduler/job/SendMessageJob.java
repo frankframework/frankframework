@@ -15,9 +15,12 @@
 */
 package org.frankframework.scheduler.job;
 
+import java.io.IOException;
+
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
@@ -27,7 +30,7 @@ import org.frankframework.doc.Mandatory;
 import org.frankframework.doc.Optional;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.FrankListener;
-import org.frankframework.scheduler.JobDef;
+import org.frankframework.scheduler.AbstractJobDef;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
@@ -39,7 +42,7 @@ import org.frankframework.util.UUIDUtil;
  * 
  * {@inheritDoc}
  */
-public class SendMessageJob extends JobDef {
+public class SendMessageJob extends AbstractJobDef {
 	private @Setter IbisLocalSender localSender = null;
 	private @Getter String javaListener;
 	private @Getter String message = null;
@@ -70,8 +73,11 @@ public class SendMessageJob extends JobDef {
 			session.put(PipeLineSession.CORRELATION_ID_KEY, UUIDUtil.createSimpleUUID());
 
 			localSender.start();
-			localSender.sendMessageOrThrow(toSendMessage, session).close();
-		} catch (LifecycleException | SenderException e) {
+			try (Message result = localSender.sendMessageOrThrow(toSendMessage, session)) {
+				// The result needs to be read, to make sure the StreamCaptureUtils sees this stream as read and will display the return value in Ladybug.
+				result.asString();
+			}
+		} catch (LifecycleException | SenderException | IOException e) {
 			throw new JobExecutionException("unable to send message to javaListener [" + javaListener + "]", e);
 		} finally {
 			try {
@@ -99,7 +105,7 @@ public class SendMessageJob extends JobDef {
 	}
 
 	/**
-	 * The sole purpose of this calls is to prevent AOP wrapping around the sendMessage / sendMessageOrThrow methods.
+	 * The sole purpose of this call is to prevent AOP wrapping around the sendMessage / sendMessageOrThrow methods.
 	 * This pollutes the Ladybug with 'unwanted' reports about jobs being fired, without any useful information in the report.
 	 * See org.frankframework.ibistesttool.IbisDebuggerAdvice for the exclusion
 	 * 

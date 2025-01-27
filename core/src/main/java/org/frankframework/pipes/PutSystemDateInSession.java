@@ -27,8 +27,7 @@ import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DateFormatUtils;
@@ -40,7 +39,7 @@ import org.frankframework.util.DateFormatUtils;
  * @author  Jaco de Groot (***@dynasol.nl)
  * @since   4.2c
  */
-@ElementType(ElementTypes.SESSION)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.SESSION)
 public class PutSystemDateInSession extends FixedForwardPipe {
 	public static final Object OBJECT = new Object();
 	public static final String FIXEDDATETIME  ="2001-12-17 09:30:47";

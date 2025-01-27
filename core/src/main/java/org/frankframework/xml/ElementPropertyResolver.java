@@ -18,12 +18,12 @@ package org.frankframework.xml;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.frankframework.util.XmlUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import org.frankframework.util.StringResolver;
+import org.frankframework.util.XmlUtils;
 
 public class ElementPropertyResolver extends FullXmlFilter {
 	private final Properties properties;

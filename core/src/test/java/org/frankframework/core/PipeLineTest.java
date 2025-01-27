@@ -3,6 +3,7 @@ package org.frankframework.core;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -25,8 +26,9 @@ import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.RunState;
+import org.frankframework.util.SpringUtils;
 
-@SuppressWarnings("deprecation") //Part of the tests!
+@SuppressWarnings("deprecation") // Part of the tests!
 public class PipeLineTest {
 	private int pipeNr = 0;
 
@@ -43,11 +45,11 @@ public class PipeLineTest {
 	}
 
 	@Test
-	public void testDuplicateExits() throws ConfigurationException {
-		Adapter adapter = new Adapter();
-		PipeLine pipeline = new PipeLine();
-		pipeline.setApplicationContext(configuration);
-		PipeLineExit exit = new PipeLineExit();
+	public void testDuplicateExits() {
+		Adapter adapter = configuration.createBean(Adapter.class);
+		adapter.setName("testAdapter");
+		PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
+		PipeLineExit exit = SpringUtils.createBean(adapter, PipeLineExit.class);
 		exit.setName("success");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.addPipeLineExit(exit);
@@ -57,7 +59,7 @@ public class PipeLineTest {
 		List<String> warnings = configuration.getConfigurationWarnings().getWarnings();
 		assertEquals(1, warnings.size());
 		String lastWarning = warnings.get(warnings.size()-1);
-		assertThat(lastWarning,StringEndsWith.endsWith("PipeLine exit named [success] already exists"));
+		assertThat(lastWarning, StringEndsWith.endsWith("PipeLine exit named [success] already exists"));
 	}
 
 	@Test
@@ -273,7 +275,10 @@ public class PipeLineTest {
 		session.put("k3", "v3");
 
 		// Act // Assert
-		assertDoesNotThrow(() -> adapter.processMessageWithExceptions("m1", Message.nullMessage(), session));
+		try (Message message = Message.nullMessage()) {
+			assertDoesNotThrow(() -> adapter.processMessageWithExceptions("m1", message, session));
+			assertFalse(message.isClosed());
+		}
 	}
 
 	@Test
@@ -285,10 +290,13 @@ public class PipeLineTest {
 		session.put("k1", "v1");
 
 		// Act // Assert
-		ListenerException e = assertThrows(ListenerException.class, () -> adapter.processMessageWithExceptions("m1", Message.nullMessage(), session));
+		try (Message message = Message.nullMessage()) {
+			ListenerException e = assertThrows(ListenerException.class, () -> adapter.processMessageWithExceptions("m1", message, session));
 
-		// Assert
-		assertEquals("Adapter [Adapter] called without expected session keys [k2, k3]", e.getMessage());
+			// Assert
+			assertEquals("Adapter [Adapter] called without expected session keys [k2, k3]", e.getMessage());
+			assertFalse(message.isClosed());
+		}
 	}
 
 	private @Nonnull Adapter buildTestAdapter() throws ConfigurationException {
@@ -298,9 +306,9 @@ public class PipeLineTest {
 				return RunState.STARTED;
 			}
 		};
+		configuration.autowireByName(adapter);
 		adapter.setName("Adapter");
 		buildDummyPipeLine(adapter);
-		adapter.setConfiguration(configuration);
 		adapter.setApplicationContext(configuration);
 		adapter.setConfigurationMetrics(configuration.getBean(MetricsInitializer.class));
 		adapter.configure();
@@ -308,8 +316,7 @@ public class PipeLineTest {
 	}
 
 	private void buildDummyPipeLine(Adapter adapter) throws ConfigurationException {
-		PipeLine pipeLine = new PipeLine();
-		pipeLine.setApplicationContext(configuration);
+		PipeLine pipeLine = SpringUtils.createBean(adapter, PipeLine.class);
 		pipeLine.setConfigurationMetrics(configuration.getBean(MetricsInitializer.class));
 		CorePipeLineProcessor pipeLineProcessor = configuration.createBean(CorePipeLineProcessor.class);
 		pipeLineProcessor.setPipeProcessor(configuration.createBean(CorePipeProcessor.class));

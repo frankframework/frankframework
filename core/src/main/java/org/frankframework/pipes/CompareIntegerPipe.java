@@ -21,8 +21,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
@@ -42,8 +41,8 @@ import org.frankframework.stream.Message;
 @Forward(name = "lessthan", description = "operand1 &lt; operand2")
 @Forward(name = "greaterthan", description = "operand1 &gt; operand2")
 @Forward(name = "equals", description = "operand1 = operand2")
-@Category("Basic")
-@ElementType(ElementTypes.ROUTER)
+@Category(Category.Type.BASIC)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ROUTER)
 public class CompareIntegerPipe extends AbstractPipe {
 
 	private static final String LESSTHANFORWARD = "lessthan";

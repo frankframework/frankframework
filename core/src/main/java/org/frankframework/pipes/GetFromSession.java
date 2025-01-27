@@ -20,11 +20,12 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlBuilder;
@@ -37,7 +38,7 @@ import org.frankframework.util.XmlBuilder;
  *
  * @see PipeLineSession
  */
-@ElementType(ElementTypes.SESSION)
+@EnterpriseIntegrationPattern(Type.SESSION)
 public class GetFromSession  extends FixedForwardPipe {
 
 	private String sessionKey;

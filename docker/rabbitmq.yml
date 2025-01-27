@@ -1,0 +1,13 @@
+services:
+  ff-test:
+    environment:
+      jms.provider.default: rabbitmq
+      jms.destination.suffix: -rabbitmq
+      jms.hostname: rabbitmq
+      jms.lookupDestination: false
+      active.jms: true
+      transactionmanager.narayana.jms.connection.maxPoolSize: 1
+  rabbitmq:
+    image: private.docker.nexus.frankframework.org/ff-test/mq/rabbitmq:latest
+    ports:
+      - "5672:5672"

@@ -23,15 +23,17 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.apache.commons.io.output.XmlStreamWriter;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
+
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.io.output.XmlStreamWriter;
+
 import org.frankframework.documentbuilder.json.JsonWriter;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.TemporaryDirectoryUtils;
 import org.frankframework.xml.XmlWriter;
-import org.springframework.http.MediaType;
-import org.springframework.util.MimeType;
 
 @Log4j2
 public class MessageBuilder {

@@ -16,11 +16,11 @@
 package org.frankframework.pipes;
 
 import lombok.Getter;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.stream.Message;
 import org.frankframework.util.UUIDUtil;
 
@@ -31,7 +31,7 @@ import org.frankframework.util.UUIDUtil;
  *
  * @author Peter Leeuwenburgh
  */
-@ElementType(ElementTypes.TRANSLATOR)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class UUIDGeneratorPipe extends FixedForwardPipe {
 
 	private @Getter Type type = Type.ALPHANUMERIC;

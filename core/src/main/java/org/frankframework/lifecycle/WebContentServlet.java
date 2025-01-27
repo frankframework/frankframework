@@ -26,6 +26,7 @@ import java.util.WeakHashMap;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,17 +37,18 @@ import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.IbisManager;
-import org.frankframework.configuration.classloaders.ClassLoaderBase;
+import org.frankframework.configuration.classloaders.AbstractClassLoader;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
-import org.frankframework.http.HttpServletBase;
+import org.frankframework.http.AbstractHttpServlet;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.LogUtil;
-import org.springframework.http.MediaType;
-import org.springframework.util.MimeType;
 
 /**
  * This servlet allows the use of WebContent served from {@link Configuration Configurations}.
@@ -58,7 +60,7 @@ import org.springframework.util.MimeType;
  * @author Niels Meijer
  */
 @IbisInitializer
-public class WebContentServlet extends HttpServletBase {
+public class WebContentServlet extends AbstractHttpServlet {
 
 	private static final long serialVersionUID = 1L;
 	private final transient Logger log = LogUtil.getLogger(this);
@@ -209,7 +211,7 @@ public class WebContentServlet extends HttpServletBase {
 			resource = WELCOME_FILE;
 		}
 
-		ClassLoaderBase classLoader = (ClassLoaderBase) configuration.getClassLoader();
+		AbstractClassLoader classLoader = (AbstractClassLoader) configuration.getClassLoader();
 		if(classLoader == null) {
 			log.warn("configuration [{}] has no ClassLoader", configuration);
 			return null;
@@ -223,7 +225,7 @@ public class WebContentServlet extends HttpServletBase {
 
 	private void listDirectory(HttpServletResponse resp) throws IOException {
 		for(Configuration configuration : getIbisManager().getConfigurations()) {
-			ClassLoaderBase classLoader = (ClassLoaderBase) configuration.getClassLoader();
+			AbstractClassLoader classLoader = (AbstractClassLoader) configuration.getClassLoader();
 			boolean isWebContentFolderPresent = classLoader != null && classLoader.getLocalResource("WebContent") != null;
 			if(isWebContentFolderPresent) {
 				log.info("found configuration [{}] with [WebContent] folder", configuration);

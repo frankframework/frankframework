@@ -33,6 +33,7 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
@@ -42,7 +43,6 @@ import org.frankframework.stream.Message;
  *
  * @author  Peter Leeuwenburgh
  */
-
 public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<String> {
 	protected static final String KEYWORD_SELECT_COUNT = "select count(";
 
@@ -60,12 +60,12 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 	}
 
 	@Override
-	public void start() throws ListenerException {
+	public void start() {
 		if (!isConnectionsArePooled()) {
 			try {
 				connection = getConnection();
 			} catch (JdbcException e) {
-				throw new ListenerException(e);
+				throw new LifecycleException(e);
 			}
 		}
 	}

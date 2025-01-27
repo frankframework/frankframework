@@ -36,13 +36,13 @@ import org.frankframework.receivers.DummySender;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.senders.IbisLocalSender;
-import org.frankframework.senders.IsolatedServiceCaller;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.UUIDUtil;
 
 public class AdapterHideRegexTest {
@@ -73,7 +73,6 @@ public class AdapterHideRegexTest {
 	public JavaListener<String> setupJavaListener(String name) {
 		@SuppressWarnings("unchecked")
 		JavaListener<String> listener = configuration.createBean(JavaListener.class);
-		configuration.autowireByName(listener);
 		listener.setName(name);
 		return listener;
 	}
@@ -81,7 +80,6 @@ public class AdapterHideRegexTest {
 	private  <M> Receiver<M> setupReceiver(IListener<M> listener, String hideRegex) {
 		@SuppressWarnings("unchecked")
 		Receiver<M> receiver = configuration.createBean(Receiver.class);
-		configuration.autowireByName(receiver);
 		receiver.setListener(listener);
 		receiver.setName("receiver");
 		receiver.setStartTimeout(2);
@@ -92,19 +90,17 @@ public class AdapterHideRegexTest {
 		return receiver;
 	}
 
-	private  <M> Adapter setupAdapter(Receiver<M> receiver, PipeLine.ExitState exitState, String name, IPipe... pipes) throws ConfigurationException {
+	private <M> Adapter setupAdapter(Receiver<M> receiver, PipeLine.ExitState exitState, String name, IPipe... pipes) throws ConfigurationException {
 		assertNotNull(pipes);
 		assertTrue(pipes.length > 0, "Should add at least 1 pipe");
 
 		Adapter adapter = configuration.createBean(Adapter.class);
-		configuration.autowireByName(adapter);
 		adapter.setName(name);
 
 		CorePipeLineProcessor plp = configuration.createBean(CorePipeLineProcessor.class);
 		PipeProcessor pp = configuration.createBean(CorePipeProcessor.class);
 		plp.setPipeProcessor(pp);
-		PipeLine pl = configuration.createBean(PipeLine.class);
-		configuration.autowireByName(pl);
+		PipeLine pl = SpringUtils.createBean(adapter, PipeLine.class);
 		pl.setPipeLineProcessor(plp);
 		pl.setFirstPipe(pipes[0].getName());
 		for (IPipe pipe : pipes) {
@@ -150,20 +146,13 @@ public class AdapterHideRegexTest {
 
 	private IPipe createSubAdapterCallPipe(String subAdapterName, String hideRegex, boolean subAdapterInSeparateThread) {
 		IbisLocalSender localSender = configuration.createBean(IbisLocalSender.class);
-		configuration.autowireByName(localSender);
 		localSender.setName(subAdapterName);
 		localSender.setJavaListener(subAdapterName);
 		localSender.setCheckDependency(true);
 		localSender.setIsolated(subAdapterInSeparateThread);
 		localSender.setSynchronous(true);
 
-		if (subAdapterInSeparateThread) {
-			IsolatedServiceCaller serviceCaller = configuration.createBean(IsolatedServiceCaller.class);
-			localSender.setIsolatedServiceCaller(serviceCaller);
-		}
-
 		SenderPipe senderPipe = configuration.createBean(SenderPipe.class);
-		configuration.autowireByName(senderPipe);
 		senderPipe.setName(subAdapterName);
 		senderPipe.setHideRegex(hideRegex);
 		senderPipe.setSender(localSender);

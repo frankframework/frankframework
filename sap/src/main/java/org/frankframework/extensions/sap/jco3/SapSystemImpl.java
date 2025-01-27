@@ -34,9 +34,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.extensions.sap.ISapSystem;
 import org.frankframework.extensions.sap.SapException;
-import org.frankframework.extensions.sap.SapSystemFactory;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.GlobalListItem;
+import org.frankframework.util.SapSystemListItem;
 
 /**
  * A SapSystem is a provider of repository information and connections to a SAP-system.
@@ -46,7 +45,7 @@ import org.frankframework.util.GlobalListItem;
  * @author  Niels Meijer
  * @since   5.0
  */
-public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem {
+public abstract class SapSystemImpl extends SapSystemListItem implements ISapSystem {
 
 	private String host;
 	private String ashost;
@@ -145,12 +144,6 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 		}
 	}
 
-	@Override
-	public void registerItem(Object dummyParent) {
-		super.registerItem(dummyParent);
-		SapSystemFactory.getInstance().addSapSystem(this, getName());
-	}
-
 	public void clearCache() {
 		log.debug("start clearing cache of SapSystem [{}]", getName());
 		try {
@@ -165,6 +158,15 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 	public JCoDestination getDestination() throws JCoException {
 		JCoDestination destination = JCoDestinationManager.getDestination(getName());
 		return destination;
+	}
+
+	@Override
+	public String getDestinationAsString() {
+		try {
+			return getDestination().toString();
+		} catch (JCoException exception) {
+			return null;
+		}
 	}
 
 	public JCoRepository getJcoRepository() throws JCoException {

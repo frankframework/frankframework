@@ -73,7 +73,7 @@ import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 
-public class AmazonS3FileSystem extends FileSystemBase<S3FileRef> implements IWritableFileSystem<S3FileRef>, ISupportsCustomFileAttributes<S3FileRef> {
+public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements IWritableFileSystem<S3FileRef>, ISupportsCustomFileAttributes<S3FileRef> {
 	private final @Getter String domain = "Amazon";
 
 	private static final String FILE_DELIMITER = "/";
@@ -258,7 +258,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3FileRef> implements IWr
 			throw new FolderNotFoundException("folder [" + folder + "] does not exist");
 		}
 
-		// The inputStream content also be directly send to the s3Client.putObject(), when the File length is available.
+		// The inputStream content also be directly sent to the s3Client.putObject(), when the File length is available.
 		// When uploading of unknown size is needed, the S3AsyncClient or S3TransferManager can be used in the future.
 		MessageBuilder messageBuilder = new MessageBuilder();
 		try (OutputStream fos = messageBuilder.asOutputStream()) {

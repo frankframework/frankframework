@@ -16,6 +16,7 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
+import java.io.Reader;
 
 import jakarta.json.Json;
 import jakarta.json.JsonException;
@@ -26,8 +27,8 @@ import org.springframework.http.MediaType;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.doc.ElementType;
-import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.doc.Forward;
 import org.frankframework.stream.Message;
 
@@ -37,7 +38,7 @@ import org.frankframework.stream.Message;
  * @author  Tom van der Heijden
  */
 @Forward(name = "failure", description = "a validation error occurred, probably caused by non-well-formed JSON")
-@ElementType(ElementTypes.VALIDATOR)
+@EnterpriseIntegrationPattern(Type.VALIDATOR)
 public class JsonWellFormedChecker extends FixedForwardPipe {
 
 	@Override
@@ -46,7 +47,7 @@ public class JsonWellFormedChecker extends FixedForwardPipe {
 			return new PipeRunResult(findForward("failure"), message);
 		}
 
-		try(JsonReader jr = Json.createReader(message.asReader())) {
+		try(Reader reader = message.asReader(); JsonReader jr = Json.createReader(reader)) {
 			jr.read();
 			message.getContext().withMimeType(MediaType.APPLICATION_JSON);
 		} catch (JsonException e) {

@@ -17,6 +17,7 @@ package org.frankframework.processors;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
@@ -29,7 +30,7 @@ import org.frankframework.util.Locker;
 /**
  * @author Jaco de Groot
  */
-public class LockerPipeProcessor extends PipeProcessorBase {
+public class LockerPipeProcessor extends AbstractPipeProcessor {
 
 	@Override
 	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {

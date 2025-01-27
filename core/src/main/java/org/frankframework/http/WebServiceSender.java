@@ -18,12 +18,12 @@ package org.frankframework.http;
 import java.io.IOException;
 import java.net.URI;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
 
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.Protected;
@@ -125,7 +125,7 @@ public class WebServiceSender extends HttpSender {
 			throw new SenderException("error reading message", e);
 		}
 
-		if (wsscf!=null) {
+		if (wsscf != null) {
 			soapmsg = soapWrapper.signMessage(soapmsg, wsscf.getUsername(), wsscf.getPassword(), isWssPasswordDigest());
 		}
 		log.debug("SOAPMSG [{}]", soapmsg);
@@ -177,19 +177,6 @@ public class WebServiceSender extends HttpSender {
 		super.setMethodType(method);
 	}
 
-	@Deprecated(forRemoval = true, since = "7.6.0")
-	@ConfigurationWarning("the attribute 'soapActionURI' has been renamed to 'soapAction'")
-	public void setSoapActionURI(String soapAction) {
-		setSoapAction(soapAction);
-	}
-
-	@Deprecated(forRemoval = true, since = "7.6.0")
-	@ConfigurationWarning("the attribute 'soapActionURIParam' has been renamed to 'soapActionParam'")
-	public void setSoapActionURIParam(String soapActionParam) {
-		setSoapActionParam(soapActionParam);
-	}
-
-
 	/** the soapactionuri to be set in the requestheader */
 	public void setSoapAction(String soapAction) {
 		this.soapAction = soapAction;
@@ -198,12 +185,6 @@ public class WebServiceSender extends HttpSender {
 	/** parameter to obtain the soapactionuri */
 	public void setSoapActionParam(String soapActionParam) {
 		this.soapActionParam = soapActionParam;
-	}
-
-	@Deprecated(forRemoval = true, since = "7.6.0")
-	@ConfigurationWarning("the attribute 'encodingStyleURI' has been renamed to 'encodingStyle'")
-	public void setEncodingStyleURI(String encodingStyle) {
-		setEncodingStyle(encodingStyle);
 	}
 
 	/** the encodingstyle to be set in the messageheader */
@@ -219,21 +200,9 @@ public class WebServiceSender extends HttpSender {
 		throwApplicationFaults = b;
 	}
 
-	@Deprecated(forRemoval = true, since = "7.6.0")
-	@ConfigurationWarning("the attribute 'serviceNamespaceURI' has been renamed to 'serviceNamespace'")
-	public void setServiceNamespaceURI(String serviceNamespace) {
-		setServiceNamespace(serviceNamespace);
-	}
-
 	/** the namespace of the message sent. identifies the service to be called. may be overriden by an actual namespace setting in the message to be sent */
 	public void setServiceNamespace(String serviceNamespace) {
 		this.serviceNamespace = serviceNamespace;
-	}
-
-	@Deprecated(forRemoval = true, since = "7.6.0")
-	@ConfigurationWarning("the attribute 'serviceNamespaceURIParam' has been renamed to 'serviceNamespaceParam'")
-	public void setServiceNamespaceURIParam(String serviceNamespaceParam) {
-		setServiceNamespaceParam(serviceNamespaceParam);
 	}
 
 	/** parameter to obtain the servicenamespace */

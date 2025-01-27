@@ -32,7 +32,7 @@ import org.frankframework.util.EnumUtils;
  * @author  Gerrit van Brakel
  * @since   4.11
  */
-public class CachePipeLineProcessor extends PipeLineProcessorBase {
+public class CachePipeLineProcessor extends AbstractPipeLineProcessor {
 
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {

@@ -19,11 +19,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
 import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.Misc;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -41,6 +40,10 @@ import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.Misc;
+
 /**
  * Singleton bean that keeps track of a Spring Application's uptime.
  *
@@ -57,15 +60,15 @@ public class MetricsRegistryFactoryBean implements InitializingBean, DisposableB
 
 	private void createRegistry() {
 		CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
-		Properties metricProperties = AppConstants.getInstance().getAppConstants(MetricsRegistryConfiguratorBase.METRICS_EXPORT_PROPERTY_PREFIX);
+		Properties metricProperties = AppConstants.getInstance().getAppConstants(AbstractMetricsRegistryConfigurator.METRICS_EXPORT_PROPERTY_PREFIX);
 
 		for(Object keyObj:metricProperties.keySet()) {
 			String key = (String)keyObj;
 			if (key.endsWith(".enabled")) {
-				String tail = key.substring(MetricsRegistryConfiguratorBase.METRICS_EXPORT_PROPERTY_PREFIX.length());
+				String tail = key.substring(AbstractMetricsRegistryConfigurator.METRICS_EXPORT_PROPERTY_PREFIX.length());
 				String[] tailArr = tail.split("\\.");
 				if (tailArr.length==2 && APP_CONSTANTS.getBoolean(key, false)) {
-					MetricsRegistryConfiguratorBase<?> config = loadMeterRegistry(metricProperties, tailArr[0]);
+					AbstractMetricsRegistryConfigurator<?> config = loadMeterRegistry(metricProperties, tailArr[0]);
 					if(config != null) {
 						config.registerAt(compositeRegistry);
 					}
@@ -76,8 +79,8 @@ public class MetricsRegistryFactoryBean implements InitializingBean, DisposableB
 		this.registry = compositeRegistry;
 	}
 
-	private MetricsRegistryConfiguratorBase<?> loadMeterRegistry(Properties metricProperties, String product) {
-		final String configuratorClassNamePropertyKey = MetricsRegistryConfiguratorBase.METRICS_EXPORT_PROPERTY_PREFIX+product+CONFIGURATOR_CLASS_SUFFIX;
+	private AbstractMetricsRegistryConfigurator<?> loadMeterRegistry(Properties metricProperties, String product) {
+		final String configuratorClassNamePropertyKey = AbstractMetricsRegistryConfigurator.METRICS_EXPORT_PROPERTY_PREFIX+product+CONFIGURATOR_CLASS_SUFFIX;
 		final String configuratorClassName = metricProperties.getProperty(configuratorClassNamePropertyKey);
 		if (StringUtils.isEmpty(configuratorClassName)) {
 			log.warn("did not find value for property [{}] to enable configuration of enabled meter registy product [{}]", configuratorClassNamePropertyKey, product);
@@ -86,7 +89,7 @@ public class MetricsRegistryFactoryBean implements InitializingBean, DisposableB
 
 		log.debug("using class [{}] to configure MeterRegistry [{}]", configuratorClassName, product);
 		try {
-			return ClassUtils.newInstance(configuratorClassName, MetricsRegistryConfiguratorBase.class);
+			return ClassUtils.newInstance(configuratorClassName, AbstractMetricsRegistryConfigurator.class);
 		} catch (Exception e) {
 			log.warn("cannot configure MeterRegistry [{}]", product, e);
 		}

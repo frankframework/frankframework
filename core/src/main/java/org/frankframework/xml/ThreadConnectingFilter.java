@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019, 2020, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,17 +15,20 @@
 */
 package org.frankframework.xml;
 
-import org.frankframework.threading.ThreadConnector;
+import jakarta.annotation.Nonnull;
+
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-public class ThreadConnectingFilter extends ExceptionCatchingFilter {
+import org.frankframework.threading.ThreadConnector;
 
-	private final ThreadConnector threadConnector;
+public class ThreadConnectingFilter extends AbstractExceptionCatchingFilter {
 
-	public ThreadConnectingFilter(ThreadConnector threadConnector, ContentHandler handler) {
+	private final @Nonnull ThreadConnector<?> threadConnector;
+
+	public ThreadConnectingFilter(@Nonnull ThreadConnector<?> threadConnector, @Nonnull ContentHandler handler) {
 		super(handler);
-		this.threadConnector=threadConnector;
+		this.threadConnector = threadConnector;
 	}
 
 	@Override

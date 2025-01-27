@@ -24,13 +24,15 @@ import java.util.Set;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 
-import lombok.Getter;
-import lombok.Setter;
-import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
-import nl.nn.adapterframework.dispatcher.RequestProcessor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
+import nl.nn.adapterframework.dispatcher.RequestProcessor;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
@@ -44,6 +46,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.http.HttpSecurityHandler;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.senders.IbisJavaSender;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
@@ -62,7 +65,7 @@ import org.frankframework.util.LogUtil;
  *
  * @author  Gerrit van Brakel
  */
-@Category("Basic")
+@Category(Category.Type.BASIC)
 public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, HasPhysicalDestination, ServiceClient {
 
 	private final @Getter String domain = "JVM";
@@ -89,7 +92,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	}
 
 	@Override
-	public synchronized void start() throws ListenerException {
+	public synchronized void start() {
 		try {
 			// add myself to local list so that IbisLocalSenders can find me
 			registerListener();
@@ -99,25 +102,27 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 			if (StringUtils.isNotEmpty(getServiceName())) {
 				DispatcherManagerFactory.getDispatcherManager().register(getServiceName(), this);
 			}
-			open=true;
+
+			open = true;
 		} catch (Exception e) {
-			throw new ListenerException("error occurred while starting listener [" + getName() + "]", e);
+			throw new LifecycleException("error occurred while starting listener [" + getName() + "]", e);
 		}
 	}
 
 	@Override
-	public synchronized void stop() throws ListenerException {
-		open=false;
+	public synchronized void stop() {
+		open = false;
+
 		try {
 			// unregister from local list
 			unregisterListener();
+
 			// unregister from global list
 			if (StringUtils.isNotEmpty(getServiceName())) {
 				DispatcherManagerFactory.getDispatcherManager().unregister(getServiceName());
 			}
-		}
-		catch (Exception e) {
-			throw new ListenerException("error occurred while stopping listener [" + getName() + "]", e);
+		} catch (Exception e) {
+			throw new LifecycleException("error occurred while stopping listener [" + getName() + "]", e);
 		}
 	}
 

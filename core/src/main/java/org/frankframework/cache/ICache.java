@@ -1,5 +1,5 @@
 /*
-   Copyright 2013,2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013,2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,9 @@
 */
 package org.frankframework.cache;
 
-import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.FrankElement;
+import org.frankframework.core.IConfigurable;
+import org.frankframework.core.NameAware;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 
@@ -27,9 +29,8 @@ import org.frankframework.stream.Message;
  *
  * @ff.defaultElement org.frankframework.cache.EhCache
  */
-public interface ICache<K,V> {
+public interface ICache<K,V> extends IConfigurable, FrankElement, NameAware {
 
-	void configure(String ownerName) throws ConfigurationException;
 	void open();
 	void close();
 

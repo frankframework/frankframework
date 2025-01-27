@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.Vector;
 import java.util.random.RandomGenerator;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sshd.common.file.FileSystemFactory;
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.server.SshServer;
@@ -176,16 +177,19 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public OutputStream _createFile(String folder, String filename) throws Exception {
+	public String createFile(String folder, String filename, String contents) throws Exception {
 		if(folder != null && !_folderExists(folder)) {
 			_createFolder(folder);
 		}
 		String path = folder != null ? folder + "/" + filename : filename;
-		try {
-			return ftpClient.put(path);
+		try (OutputStream out = ftpClient.put(path)) {
+			if(StringUtils.isNotEmpty(contents)) {
+				out.write(contents.getBytes());
+			}
 		} catch (SftpException e) {
 			throw new FileSystemException(e);
 		}
+		return filename;
 	}
 
 	@Override

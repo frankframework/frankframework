@@ -17,7 +17,7 @@ package org.frankframework.configuration;
 
 import java.util.Properties;
 
-import org.frankframework.lifecycle.CustomPropertySourcePostProcessor;
+import org.frankframework.lifecycle.AbstractPropertySourcePostProcessor;
 import org.frankframework.util.AppConstants;
 
 /**
@@ -26,7 +26,7 @@ import org.frankframework.util.AppConstants;
  *
  * @author Jaco de Groot
  */
-public class LowerCasePropertySourcePostProcessor extends CustomPropertySourcePostProcessor {
+public class LowerCasePropertySourcePostProcessor extends AbstractPropertySourcePostProcessor {
 
 	@Override
 	protected void convertProperties(Properties props) {

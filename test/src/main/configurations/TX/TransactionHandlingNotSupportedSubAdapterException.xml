@@ -4,7 +4,7 @@
 		description="Adapter for testing transaction handling, multiple adapters are being called with different transaction attributes"
 	>
 		<receiver
-			transactionTimeout="2"
+			transactionTimeout="20"
 			transactionAttribute="Required"
 		>
 			<listener
@@ -19,7 +19,7 @@
 
 		<pipeline firstPipe="Send transacted message to not supported subadapter with exception" transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success"/>
+				<exit name="EXIT" state="success"/>
 			</exits>
 
 			<!-- This subadapter throws an exception -->
@@ -60,8 +60,8 @@
 
 		<pipeline firstPipe="Return Exception" transactionAttribute="NotSupported">
 			<exits>
-				<exit path="EXIT" state="success" />
-				<exit path="EXCEPTION" state="error" />
+				<exit name="EXIT" state="success" />
+				<exit name="EXCEPTION" state="error" />
 			</exits>
 
 			<pipe name="Return Exception" className="org.frankframework.pipes.ExceptionPipe"

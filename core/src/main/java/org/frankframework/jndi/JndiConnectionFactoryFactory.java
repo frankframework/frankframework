@@ -18,13 +18,14 @@ package org.frankframework.jndi;
 import java.util.List;
 import java.util.Properties;
 
-import jakarta.jms.ConnectionFactory;
 import javax.naming.NamingException;
 
-import org.frankframework.jdbc.datasource.ObjectFactoryBase;
+import jakarta.jms.ConnectionFactory;
+
+import org.frankframework.jdbc.datasource.ObjectFactory;
 import org.frankframework.jms.IConnectionFactoryFactory;
 
-public class JndiConnectionFactoryFactory extends ObjectFactoryBase<ConnectionFactory> implements IConnectionFactoryFactory {
+public class JndiConnectionFactoryFactory extends ObjectFactory<ConnectionFactory> implements IConnectionFactoryFactory {
 
 	public JndiConnectionFactoryFactory() {
 		super(ConnectionFactory.class);

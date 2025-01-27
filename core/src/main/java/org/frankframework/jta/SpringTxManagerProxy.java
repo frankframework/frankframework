@@ -15,12 +15,9 @@
 */
 package org.frankframework.jta;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import jakarta.annotation.Nonnull;
+
 import org.apache.logging.log4j.Logger;
-import org.frankframework.util.LogUtil;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -28,6 +25,11 @@ import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import org.frankframework.util.LogUtil;
 
 /**
  * proxy class for transaction manager.
