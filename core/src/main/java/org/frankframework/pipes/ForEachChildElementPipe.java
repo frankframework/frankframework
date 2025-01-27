@@ -17,6 +17,7 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -134,10 +135,10 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	}
 
 	protected String makeEncapsulatingXslt(String rootElementName, String xpathExpression, int xsltVersion, String namespaceDefs) {
-		StringBuilder paramsString = new StringBuilder();
-		for (IParameter param : getParameterList()) {
-			paramsString.append("<xsl:param name=\"").append(param.getName()).append("\"/>");
-		}
+		String paramsString = getParameterList().stream()
+				.map(IParameter::getName)
+				.map(paramName -> "<xsl:param name=\"" + paramName + "\"/>")
+				.collect(Collectors.joining());
 		String namespaceClause = XmlUtils.getNamespaceClause(namespaceDefs);
 		return
 				"""
