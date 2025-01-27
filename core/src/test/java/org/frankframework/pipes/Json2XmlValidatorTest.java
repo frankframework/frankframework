@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -348,7 +349,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		assertEquals(expected, actual);
 	}
 
-
 	@Test
 	public void testWithParameters() throws Exception {
 		pipe.setName("RestGet");
@@ -365,7 +365,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.start();
 
 		String input="";
-		String expected = TestFileUtils.getTestFile("/Validation/Parameters/out.xml");
+		String expected = TestFileUtils.getTestFile("/Validation/Parameters/simple.xml");
 
 		session.put("b_key","b_value");
 		// session variable "c_key is not present, so there should be no 'c' element in the result
@@ -374,6 +374,57 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		PipeRunResult prr = doPipe(pipe, input,session);
 
 		assertEquals(expected, prr.getResult().asString());
+	}
+
+	@Test
+	public void testWithOptionalMultiValueParameters() throws Exception {
+		pipe.setName("RestGet");
+		pipe.setRoot("Root");
+		pipe.setOutputFormat(DocumentFormat.XML);
+		pipe.setSchema("/Validation/Parameters/multi-value-parameters.xsd");
+		pipe.setThrowException(true);
+
+		pipe.addParameter(new Parameter("a", "param_a"));
+		pipe.addParameter(ParameterBuilder.create().withName("b").withSessionKey("b_key"));
+		pipe.addParameter(ParameterBuilder.create().withName("c").withSessionKey("c_key"));
+
+		pipe.configure();
+		pipe.start();
+
+		String input = "";
+		String expected = TestFileUtils.getTestFile("/Validation/Parameters/multi-value-parameters.xml");
+
+		session.put("b_key", Arrays.asList("b_value1", "b_value2"));
+		session.put("c_key", Message.nullMessage());
+
+		PipeRunResult prr = doPipe(pipe, input,session);
+
+		assertEquals(expected, prr.getResult().asString());
+	}
+
+	@Test
+	public void testWithMandatoryMultiValueParameters() throws Exception {
+		pipe.setName("RestGet");
+		pipe.setRoot("Root");
+		pipe.setOutputFormat(DocumentFormat.XML);
+		pipe.setSchema("/Validation/Parameters/multi-value-parameters2.xsd");
+		pipe.setThrowException(true);
+
+		pipe.addParameter(ParameterBuilder.create().withName("a").withSessionKey("a_key"));
+		pipe.addParameter(ParameterBuilder.create().withName("b").withSessionKey("b_key"));
+		pipe.addParameter(ParameterBuilder.create().withName("c").withSessionKey("c_key"));
+
+		pipe.configure();
+		pipe.start();
+
+		String input = "";
+
+		session.put("a_key", Arrays.asList("a_value1", "a_value2"));
+		session.put("b_key", Arrays.asList("b_value1", "b_value2"));
+		session.put("c_key", Arrays.asList("c_value1", "c_value2"));
+
+		PipeRunException ex = assertThrows(PipeRunException.class, () -> doPipe(pipe, input,session));
+		assertTrue(ex.getMessage().contains("expected element [a]"));
 	}
 
 	@Test
