@@ -203,10 +203,12 @@ public class Json2Xml extends XmlAligner {
 	}
 
 
-	private String getNodeText(JsonValue node) {
+	private String getNodeText(JsonValue node) throws SAXException {
 		String result;
 		if (node instanceof JsonString string) {
 			result=string.getString();
+		} else if (node instanceof JsonArray) {
+			throw new SAXException("Expected simple element, got instead an array-value: [" + node + "]");
 		} else if (node instanceof JsonStructure) { // this happens when override key is present without a value
 			result=null;
 		} else {
@@ -368,7 +370,7 @@ public class Json2Xml extends XmlAligner {
 		return objectBuilder.build().getJsonString(childName);
 	}
 
-	private String getOverride(JsonValue node) {
+	private String getOverride(JsonValue node) throws SAXException {
 		Object text = sp.getOverride(getContext());
 		if (text instanceof List) {
 			// if the override is a List, then it has already been substituted via getSubstitutedChild.
@@ -565,7 +567,7 @@ public class Json2Xml extends XmlAligner {
 		return children;
 	}
 
-	private String getText(XSElementDeclaration elementDeclaration, JsonValue node) {
+	private String getText(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
 		String nodeName=elementDeclaration.getName();
 		Object text;
 		if (log.isTraceEnabled()) log.trace("node [{}] currently parsed element [{}]", nodeName, getContext().getLocalName());
