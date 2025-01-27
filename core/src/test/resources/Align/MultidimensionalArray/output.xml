@@ -1,20 +1,14 @@
 <ns1:arrays xmlns:ns1="urn:test">
 	<array>
 		<field>one</field>
-	</array>
-	<array>
 		<field>two</field>
 	</array>
 	<array>
 		<field>two</field>
-	</array>
-	<array>
 		<field>three</field>
 	</array>
 	<array>
 		<field>one</field>
-	</array>
-	<array>
 		<field>three</field>
 	</array>
 </ns1:arrays>
