@@ -362,7 +362,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		session.put("b_key", Arrays.asList("b_value1", "b_value2"));
 		// session variable "c_key is not present, so there should be no 'c' element in the result
 		session.put("d_key","");
-		session.put("e_key", Arrays.asList("e_value1", "e_value2"));
+		session.put("e_key", new Message("e_value"));
 
 		PipeRunResult prr = doPipe(pipe, input,session);
 
