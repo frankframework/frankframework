@@ -8,6 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.StringReader;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IPipe;
@@ -23,8 +26,6 @@ import org.frankframework.pipes.FixedResultPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class InputOutputPipeProcessorTest {
 
@@ -129,6 +130,8 @@ public class InputOutputPipeProcessorTest {
 
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output.xml");
 		assertEquals(testOutputFile, prr2.getResult().asString());
+		assertFalse(input.isNull(), "Input Message should not be closed, because it can be used in the session");
+		assertFalse(prr1.getResult().isNull(), "Input Message of pipe2 should not be closed, because it can be used in the session");
 	}
 
 	public void testRestoreMovedElement(Object sessionVarContents) throws Exception {
