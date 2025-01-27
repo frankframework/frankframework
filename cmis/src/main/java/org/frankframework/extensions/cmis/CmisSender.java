@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank
+   Copyright 2016-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -360,7 +360,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 		} finally {
 			if (cmisSession != null && runtimeSession) {
 				log.debug("Closing CMIS runtime session");
-				session.scheduleCloseOnSessionExit(cmisSession, getLogPrefix());
+				session.scheduleCloseOnSessionExit(cmisSession);
 				cmisSession = null;
 			}
 		}
@@ -398,7 +398,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 			if (getDocumentContent) {
 				Message content = getMessageFromContentStream(document.getContentStream());
 
-				content.closeOnCloseOf(session, this);
+				content.closeOnCloseOf(session);
 				session.put(getFileSessionKey(), content);
 			}
 
@@ -413,7 +413,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 		}
 
 		Message content = getMessageFromContentStream(document.getContentStream());
-		content.closeOnCloseOf(session, this);
+		content.closeOnCloseOf(session);
 
 		if (StringUtils.isNotEmpty(getFileSessionKey())) {
 			session.put(getFileSessionKey(), content);
