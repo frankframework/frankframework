@@ -84,21 +84,24 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 
 	private final List<ITrigger> triggers = new ArrayList<>();
 	private final Set<String> destinations = new HashSet<>();
-	private @Getter ApplicationContext applicationContext;
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) {
-		if (!applicationContext instanceof MonitorManager manager) {
+		if (!(applicationContext instanceof MonitorManager manager)) {
 			throw new IllegalStateException("ApplicationContext is not a MonitorManager");
 		}
-		this.applicationContext = applicationContext;
-		this.manager = manager;
+		this.monitorManager = manager;
+	}
+
+	@Override
+	public ApplicationContext getApplicationContext() {
+		return monitorManager;
 	}
 
 	@Override
 	public void configure() throws ConfigurationException {
 		for(String destination : destinations) { // Monitor should fail if destination does not exist.
-			if(getManager().getDestination(destination) == null) {
+			if(monitorManager.getDestination(destination) == null) {
 				throw new ConfigurationException("destination ["+destination+"] does not exist");
 			}
 		}
@@ -158,7 +161,7 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 		setStateChanged(event.getEventTime());
 
 		for(String destination : destinations) {
-			IMonitorDestination monitorAdapter = getManager().getDestination(destination);
+			IMonitorDestination monitorAdapter = monitorManager.getDestination(destination);
 			if (log.isDebugEnabled()) log.debug("{}firing event on destination [{}]", getLogPrefix(), destination);
 
 			if (monitorAdapter != null) {
@@ -217,7 +220,7 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 		} else {
 			if (log.isDebugEnabled()) log.debug("{}setting destinations to [{}]", getLogPrefix(), newDestinations);
 			for(String destination : newDestinations) {
-				if(getManager().getDestination(destination) == null) {
+				if(monitorManager.getDestination(destination) == null) {
 					throw new IllegalArgumentException("destination ["+destination+"] does not exist");
 				}
 			}
@@ -240,7 +243,7 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 		int index = triggers.indexOf(trigger);
 		if(index > -1) {
 			// Remove the EventListener from the MonitorManager
-			AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
+			AutowireCapableBeanFactory factory = monitorManager.getAutowireCapableBeanFactory();
 			factory.destroyBean(trigger);
 			triggers.remove(trigger);
 		}
@@ -248,10 +251,6 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 
 	public String getLogPrefix() {
 		return "Monitor ["+getName()+"] ";
-	}
-
-	private MonitorManager getManager() {
-		return monitorManager;
 	}
 
 	public List<ITrigger> getTriggers() {
@@ -297,7 +296,7 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 		log.info("removing monitor [{}]", this);
 
 		// Remove the EventListener from the MonitorManager
-		AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
+		AutowireCapableBeanFactory factory = monitorManager.getAutowireCapableBeanFactory();
 		for (ITrigger trigger : triggers) {
 			factory.destroyBean(trigger);
 		}
