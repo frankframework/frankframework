@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2023, 2024 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
 */
 package org.frankframework.monitoring;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasName;
 import org.frankframework.core.NameAware;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.util.XmlBuilder;
 
@@ -30,9 +30,7 @@ import org.frankframework.util.XmlBuilder;
  * @since   4.7
  */
 @FrankDocGroup(FrankDocGroupValue.MONITORING)
-public interface IMonitorDestination extends NameAware, HasName {
-
-	void configure() throws ConfigurationException;
+public interface IMonitorDestination extends ConfigurableLifecycle, NameAware, HasName {
 
 	void fireEvent(String monitorName, EventType eventType, Severity severity, String eventCode, MonitorEvent message);
 

@@ -22,6 +22,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
+import org.frankframework.util.SpringUtils;
 
 public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 
@@ -34,7 +35,7 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 	public void setUp() throws Exception {
 		super.setUp();
 		pipe = createPipe();
-		autowireByType(pipe);
+		SpringUtils.autowireByType(adapter, pipe);
 		pipe.addForward(new PipeForward("success", "READY"));
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
 		pipeline.addPipe(pipe);

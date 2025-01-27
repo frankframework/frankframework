@@ -148,7 +148,7 @@ public class XmlBuilder {
 	private void handleElement(ContentHandler handler) throws SAXException, IOException {
 		handler.startElement("", root, root, attributes);
 		try {
-			//Write sub-element
+			// Write sub-element
 			if (subElements != null) {
 				for (XmlBuilder subElement : subElements) {
 					subElement.handleElement(handler);

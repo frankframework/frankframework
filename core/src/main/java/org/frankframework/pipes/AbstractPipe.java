@@ -338,8 +338,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 
 	@Override
 	public Adapter getAdapter() {
-		if (getPipeLine() != null) {
-			return getPipeLine().getAdapter();
+		if (applicationContext instanceof Adapter adapter) {
+			return adapter;
 		}
 		return null;
 	}
