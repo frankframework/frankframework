@@ -88,17 +88,16 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) {
-		this.applicationContext = applicationContext;
-		if (applicationContext instanceof MonitorManager manager) {
-			this.monitorManager = manager;
-		} else {
+		if (!applicationContext instanceof MonitorManager manager) {
 			throw new IllegalStateException("ApplicationContext is not a MonitorManager");
 		}
+		this.applicationContext = applicationContext;
+		this.manager = manager;
 	}
 
 	@Override
 	public void configure() throws ConfigurationException {
-		for(String destination : destinations) { // Monitor should fail is destination does not exist.
+		for(String destination : destinations) { // Monitor should fail if destination does not exist.
 			if(getManager().getDestination(destination) == null) {
 				throw new ConfigurationException("destination ["+destination+"] does not exist");
 			}
