@@ -362,16 +362,21 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.addParameter(ParameterBuilder.create().withName("b").withSessionKey("b_key"));
 		pipe.addParameter(ParameterBuilder.create().withName("c").withSessionKey("c_key"));
 		pipe.addParameter(ParameterBuilder.create().withName("d").withSessionKey("d_key"));
-		pipe.addParameter(new Parameter("e", "param_e"));
+		pipe.addParameter(ParameterBuilder.create().withName("e").withSessionKey("e_key"));
 		pipe.configure();
 		pipe.start();
 
 		String input="";
 		String expected = TestFileUtils.getTestFile("/Validation/Parameters/out.xml");
 
+		// Set up the session.
+		// session variable "b_key" has a List value, should be mapped to multiple elements in the output
 		session.put("b_key", Arrays.asList("b_value1", "b_value2"));
 		// session variable "c_key" is not present, so there should be no 'c' element in the result
-		session.put("d_key","");
+		// session variable "d" has empty value, should be empty in output.
+		session.put("d_key", "");
+		// session variable "e" is set with a Message
+		session.put("e_key", new Message("e_value"));
 
 		PipeRunResult prr = doPipe(pipe, input,session);
 

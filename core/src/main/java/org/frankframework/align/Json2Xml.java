@@ -74,6 +74,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.stream.Message;
 import org.frankframework.xml.XmlWriter;
 
 /**
@@ -372,15 +373,22 @@ public class Json2Xml extends XmlAligner {
 
 	private String getOverride(JsonValue node) throws SAXException {
 		Object text = sp.getOverride(getContext());
+		// When we drop Java17 support, we can turn this into a concise switch-expression, see https://docs.oracle.com/en/java/javase/21/language/pattern-matching-switch.html#GUID-E69EEA63-E204-41B4-AA7F-D58B26A3B232
 		if (text instanceof List) {
 			// if the override is a List, then it has already been substituted via getSubstitutedChild.
 			// Therefore now get the node text, which is here an individual element already.
 			return getNodeText(node);
-		}
-		if (text instanceof String string) {
+		} else if (text instanceof Message message) {
+			try {
+				return message.asString();
+			} catch (IOException e) {
+				throw new SAXException(e);
+			}
+		} else if (text instanceof String string) {
 			return string;
+		} else {
+			return text.toString();
 		}
-		return text.toString();
 	}
 
 	private void processChildElement(JsonValue node, String parentName, XSElementDeclaration childElementDeclaration, boolean mandatory, Set<String> processedChildren, Set<String> declaredSiblingElements) throws SAXException {
