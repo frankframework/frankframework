@@ -14,6 +14,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.monitoring.events.FireMonitorEvent;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.util.SpringUtils;
 
 /**
  * This test tests the Spring pub/sub (publishEvent and onApplicationEvent) methods.
@@ -38,10 +39,10 @@ public class MonitorTest {
 
 	@Test
 	public void testFireSpringEvent() throws Exception {
-		Monitor monitor = configuration.createBean(Monitor.class);
+		Monitor monitor = SpringUtils.createBean(manager, Monitor.class);
 		monitor.setName("monitorName");
 
-		Alarm trigger = configuration.createBean(Alarm.class);
+		Alarm trigger = SpringUtils.createBean(manager, Alarm.class);
 		trigger.addEventCodeText(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
 		monitor.addTrigger(trigger);
@@ -51,7 +52,7 @@ public class MonitorTest {
 		MonitorDestination destination = configuration.createBean(MonitorDestination.class);
 		destination.setName("myTestDestination");
 
-		MessageCapturingEchoSender sender = new  MessageCapturingEchoSender();
+		MessageCapturingEchoSender sender = new MessageCapturingEchoSender();
 		destination.setSender(sender);
 		manager.addDestination(destination);
 		monitor.setDestinations(destination.getName());

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2024 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,13 +17,16 @@ package org.frankframework.core;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.time.temporal.Temporal;
+import java.util.Date;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
@@ -38,7 +41,6 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 
 import org.frankframework.stream.Message;
-import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DateFormatUtils;
@@ -79,7 +81,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	// closeables.keySet is a List of wrapped resources. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
 	// Values are labels to help debugging
-	private final @Getter Map<AutoCloseable, String> closeables = new ConcurrentHashMap<>(); // needs to be concurrent, closes may happen from other threads
+	private final @Getter Set<AutoCloseable> closeables = Collections.synchronizedSet(new HashSet<>()); // needs to be concurrent, closes may happen from other threads
+
 	public PipeLineSession() {
 		super();
 		createCloseAction();
@@ -143,15 +146,14 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		} else if (keysToCopy == null || "*".equals(keysToCopy)) { // if keys are not set explicitly ...
 			to.putAll(this);                                      // ... all keys will be copied
 		}
-		Set<AutoCloseable> closeablesInDestination = to.entrySet().stream()
-				.filter(entry -> shouldCloseSessionResource(entry.getKey(), entry.getValue()))
-				.map(Entry::getValue)
+		Set<AutoCloseable> closeablesInDestination = to.values().stream()
+				.filter(AutoCloseable.class::isInstance)
 				.map(AutoCloseable.class::cast)
 				.collect(Collectors.toSet());
 		if (to instanceof PipeLineSession toSession) {
-			closeablesInDestination.addAll(toSession.closeables.keySet());
+			closeablesInDestination.addAll(toSession.closeables);
 		}
-		closeables.keySet().removeAll(closeablesInDestination);
+		closeables.removeAll(closeablesInDestination);
 	}
 
 	private void copyIfExists(String key, Map<String, Object> to) {
@@ -163,14 +165,43 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	@Override
 	public Object put(String key, Object value) {
 		if (shouldCloseSessionResource(key, value)) {
-			closeables.put((AutoCloseable) value, "Session key [" + key + "]");
+			closeables.add((AutoCloseable) value);
 		}
 		return super.put(key, value);
 	}
 
 	private static boolean shouldCloseSessionResource(final String key, final Object value) {
-		return value instanceof AutoCloseable &&
-			!key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX);
+		return value instanceof AutoCloseable autoCloseable &&
+				isNotSystemManagedResource(key) &&
+				isValueToBeClosed(autoCloseable);
+
+	}
+
+	/**
+	 * Check that the AutoCloseable value is of type {@link Message}, and if it is, that it does not contain a scalar or array value.
+	 * Scalar is defined as either {@link String}, {@link Number}, a {@link Date}, {@link Temporal} or {@link Boolean}.
+	 *
+	 * @param value AutoCloseable to check
+	 * @return {@code true} if {@code value} is not a {@link Message}, or if it is a Message with a request that is not a scalar or array type. Returns {@code false} otherwise.
+	 */
+	private static boolean isValueToBeClosed(AutoCloseable value) {
+		if (!(value instanceof Message message)) return true; // Should be closed, but is not a message
+		if (message.isNull()) return false; // Null message doesn't have to be closed
+		return !(message.isRequestOfType(String.class) ||
+				message.isRequestOfType(Number.class) ||
+				message.isRequestOfType(Date.class) ||
+				message.isRequestOfType(Temporal.class) ||
+				message.isRequestOfType(Boolean.class) ||
+				message.asObject().getClass().isArray()); // Arrays we have are mostly byte[] but I think all arrays should count, for simplicity.
+	}
+
+	/**
+	 * Check that key does not indicate the resource for this key should be managed by the system.
+	 * @param key Key to check
+	 * @return {@code true} if the key does not indicate this is not a system managed resource.
+	 */
+	private static boolean isNotSystemManagedResource(String key) {
+		return !key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX);
 	}
 
 	@Override
@@ -214,7 +245,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		}
 		if(obj != null) {
 			Message message = Message.asMessage(obj);
-			message.closeOnCloseOf(this, "Message for key [" + key + "]");
+			message.closeOnCloseOf(this);
 			return message;
 		}
 		return Message.nullMessage();
@@ -438,12 +469,14 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		return Double.parseDouble(Objects.requireNonNull(this.getString(key)));
 	}
 
-	public void scheduleCloseOnSessionExit(AutoCloseable resource, String requester) {
-		closeables.put(resource, ClassUtils.nameOf(resource) +" of "+requester);
+	public void scheduleCloseOnSessionExit(AutoCloseable resource) {
+		if (isValueToBeClosed(resource)) {
+			closeables.add(resource);
+		}
 	}
 
 	public boolean isScheduledForCloseOnExit(AutoCloseable message) {
-		return closeables.containsKey(message);
+		return closeables.contains(message);
 	}
 
 	public void unscheduleCloseOnSessionExit(AutoCloseable message) {
@@ -457,16 +490,16 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	private static class PipeLineSessionCloseAction implements Runnable {
-		private final Map<AutoCloseable, String> closeables;
+		private final Set<AutoCloseable> closeables;
 
-		private PipeLineSessionCloseAction(Map<AutoCloseable, String> closeables) {
+		private PipeLineSessionCloseAction(Set<AutoCloseable> closeables) {
 			this.closeables = closeables;
 		}
 
 		@Override
 		public void run() {
 			// Create a copy to safeguard against side-effects
-			Set<AutoCloseable> closeableItems = new LinkedHashSet<>(closeables.keySet());
+			Set<AutoCloseable> closeableItems = new LinkedHashSet<>(closeables);
 			closeables.clear();
 			CloseUtils.closeSilently(closeableItems);
 		}

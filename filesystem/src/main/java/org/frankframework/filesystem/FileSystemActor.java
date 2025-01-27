@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2024 WeAreFrank!
+   Copyright 2019-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -365,7 +365,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	public Message doAction(@Nonnull Message input, ParameterValueList pvl, @Nonnull PipeLineSession session) throws FileSystemException {
 		FileSystemAction action = null;
 		try {
-			input.closeOnCloseOf(session, getClass().getSimpleName() + " of a " + fileSystem.getClass().getSimpleName()); // don't know if the input will be used
+			input.closeOnCloseOf(session); // don't know if the input will be used
 
 			action = getAction(pvl);
 

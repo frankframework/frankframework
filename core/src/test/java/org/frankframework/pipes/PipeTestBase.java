@@ -22,6 +22,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
+import org.frankframework.util.SpringUtils;
 
 public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 
@@ -34,7 +35,7 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 	public void setUp() throws Exception {
 		super.setUp();
 		pipe = createPipe();
-		autowireByType(pipe);
+		SpringUtils.autowireByType(adapter, pipe);
 		pipe.addForward(new PipeForward("success", "READY"));
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
 		pipeline.addPipe(pipe);
@@ -94,7 +95,7 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 				} catch (IOException e) {
 					throw new PipeRunException(pipe, "Error getting inputStream of input message", e);
 				}
-				wrappedInput.closeOnCloseOf(session, pipe);
+				wrappedInput.closeOnCloseOf(session);
 				session.putIfAbsent(PipeLineSession.ORIGINAL_MESSAGE_KEY, wrappedInput);
 				PipeRunResult result = pipe.doPipe(wrappedInput, session);
 				session.unscheduleCloseOnSessionExit(result.getResult());

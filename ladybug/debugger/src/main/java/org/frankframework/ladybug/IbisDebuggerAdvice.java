@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2018-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -266,7 +266,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 
 		Message capturedResult = reportGenerator.senderOutput(sender, correlationId, senderResult.getResult());
 		senderResult.setResult(capturedResult);
-		session.scheduleCloseOnSessionExit(capturedResult, REQUESTER); // The Ladybug may change the result (when stubbed).
+		session.scheduleCloseOnSessionExit(capturedResult); // The Ladybug may change the result (when stubbed).
 		return senderResult;
 	}
 
@@ -305,7 +305,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		WriterPlaceHolder writerPlaceHolder = reportGenerator.showInputValue(correlationId, label, new WriterPlaceHolder());
 		if (writerPlaceHolder!=null && writerPlaceHolder.getWriter()!=null) {
 			Writer writer = writerPlaceHolder.getWriter();
-			session.scheduleCloseOnSessionExit(writer, REQUESTER);
+			session.scheduleCloseOnSessionExit(writer);
 			XmlWriter xmlWriter = new XmlWriter(StreamCaptureUtils.limitSize(writer, writerPlaceHolder.getSizeLimit()), true);
 			contentHandler = new XmlTee(contentHandler, new PrettyPrintFilter(xmlWriter));
 		}
@@ -461,7 +461,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			input = Message.asMessage(reportGenerator.getEmptyInputReplacement(correlationId, emptyInputReplacement));
 		}
 
-		pipeLineSession.scheduleCloseOnSessionExit(input, REQUESTER); // If we're pointcutting and manipulating the Message, we need to schedule it to be closed...
+		pipeLineSession.scheduleCloseOnSessionExit(input); // If we're pointcutting and manipulating the Message, we need to schedule it to be closed...
 		return input;
 	}
 
