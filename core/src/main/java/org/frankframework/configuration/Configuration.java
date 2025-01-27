@@ -16,7 +16,6 @@
 package org.frankframework.configuration;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +32,6 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.Lifecycle;
 import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.event.ContextClosedEvent;
@@ -53,7 +51,6 @@ import org.frankframework.doc.Protected;
 import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
-import org.frankframework.lifecycle.LazyLoadingEventListener;
 import org.frankframework.lifecycle.SpringContextScope;
 import org.frankframework.monitoring.MonitorManager;
 import org.frankframework.receivers.Receiver;
@@ -167,19 +164,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 		postProcessor.setBeanFactory(beanFactory);
 		beanFactory.addBeanPostProcessor(postProcessor);
 		beanFactory.addBeanPostProcessor(new ConfigurationAwareBeanPostProcessor(this));
-	}
-
-	// We do not want all listeners to be initialized upon context startup. Hence listeners implementing LazyLoadingEventListener will be excluded from the beanType[].
-	@Override
-	public String[] getBeanNamesForType(Class<?> type, boolean includeNonSingletons, boolean allowEagerInit) {
-		if(type.isAssignableFrom(ApplicationListener.class)) {
-			List<String> blacklist = Arrays.asList(super.getBeanNamesForType(LazyLoadingEventListener.class, includeNonSingletons, allowEagerInit));
-			List<String> beanNames = Arrays.asList(super.getBeanNamesForType(type, includeNonSingletons, allowEagerInit));
-			log.info("removing LazyLoadingEventListeners {} from Spring auto-magic event-based initialization", blacklist);
-
-			return beanNames.stream().filter(str -> !blacklist.contains(str)).toArray(String[]::new);
-		}
-		return super.getBeanNamesForType(type, includeNonSingletons, allowEagerInit);
 	}
 
 	/**
@@ -462,9 +446,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	 */
 	@Nullable
 	public String getClassLoaderType() {
-		if(!(getClassLoader() instanceof IConfigurationClassLoader)) { //Configuration has not been loaded yet
+		if(!(getClassLoader() instanceof IConfigurationClassLoader)) { // Configuration has not been loaded yet
 			String type = AppConstants.getInstance().getProperty("configurations."+getName()+".classLoaderType");
-			if(StringUtils.isNotEmpty(type)) { //We may not return an empty String
+			if(StringUtils.isNotEmpty(type)) { // We may not return an empty String
 				return type;
 			}
 			return null;

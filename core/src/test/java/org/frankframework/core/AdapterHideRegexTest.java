@@ -104,6 +104,7 @@ public class AdapterHideRegexTest {
 		pl.setPipeLineProcessor(plp);
 		pl.setFirstPipe(pipes[0].getName());
 		for (IPipe pipe : pipes) {
+			SpringUtils.autowireByName(adapter, pipe);
 			pl.addPipe(pipe);
 		}
 
@@ -113,6 +114,7 @@ public class AdapterHideRegexTest {
 		pl.addPipeLineExit(ple);
 		adapter.setPipeLine(pl);
 
+		SpringUtils.autowireByName(adapter, receiver);
 		adapter.addReceiver(receiver);
 		configuration.addAdapter(adapter);
 		return adapter;

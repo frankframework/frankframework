@@ -135,7 +135,7 @@ class IbisLocalSenderTest {
 
 		log.info("**>>> Calling Local Sender");
 		Message message = createVirtualInputStream(EXPECTED_BYTE_COUNT);
-		message.closeOnCloseOf(session, ibisLocalSender);
+		message.closeOnCloseOf(session);
 		SenderResult result = ibisLocalSender.sendMessage(message, session);
 
 		long localCounterResult = countStreamSize(result.getResult());
@@ -180,7 +180,7 @@ class IbisLocalSenderTest {
 
 		log.info("**>>> Calling Local Sender");
 		Message message = createVirtualInputStream(EXPECTED_BYTE_COUNT);
-		message.closeOnCloseOf(session, ibisLocalSender);
+		message.closeOnCloseOf(session);
 		ibisLocalSender.sendMessage(message, session);
 
 		session.close();
@@ -415,8 +415,8 @@ class IbisLocalSenderTest {
 			session.put("key-not-configured-for-copy", "dummy-value");
 			session.put("key-to-copy", "dummy-value");
 			session.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, message);
-			session.scheduleCloseOnSessionExit(Message.asMessage(session.get("my-parameter1")), "param1");
-			session.scheduleCloseOnSessionExit(Message.asMessage(session.get("my-parameter2")), "param2");
+			session.scheduleCloseOnSessionExit(Message.asMessage(session.get("my-parameter1")));
+			session.scheduleCloseOnSessionExit(Message.asMessage(session.get("my-parameter2")));
 			try {
 				return session.getMessage(message.asString());
 			} catch (IOException e) {

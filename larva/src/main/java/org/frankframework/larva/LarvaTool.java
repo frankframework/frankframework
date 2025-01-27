@@ -1,5 +1,5 @@
 /*
-   Copyright 2014-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2014-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -1267,7 +1267,7 @@ public class LarvaTool {
 			try (PipeLineSession session = new PipeLineSession()) {
 				session.put(PipeLineSession.CORRELATION_ID_KEY, providedCorrelationId);
 				Message requestMessage = new Message(fileContent);
-				requestMessage.closeOnCloseOf(session, "Larva");
+				requestMessage.closeOnCloseOf(session);
 				try (Message ignored = jmsSender.sendMessageOrThrow(requestMessage, session)) {
 					debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent);
 					result = RESULT_OK;

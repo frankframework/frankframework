@@ -1,6 +1,6 @@
 <monitoring>
 	<destination/>
-	<Monitor type="TECHNICAL" destinations="dummy destination">
+	<Monitor name="monitorName" type="TECHNICAL" destinations="dummy destination">
 		<AlarmTrigger severity="CRITICAL">
 			<Event>dummy code</Event>
 		</AlarmTrigger>
