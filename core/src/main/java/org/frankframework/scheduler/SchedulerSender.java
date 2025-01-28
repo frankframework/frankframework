@@ -33,11 +33,14 @@ import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
 
 /**
- * Registers a trigger in the scheduler so that the message is send to a javalistener
+ * Registers a trigger in the scheduler so that the message is sent to a {@link org.frankframework.receivers.JavaListener}
  * at a scheduled time.
+ * 
+ * NOTE: This element has been removed. Please use the database schedules to manage dynamic schedules.
  *
  * @author John Dekker
  */
+@Deprecated(forRemoval = true, since = "8.0.5")
 public class SchedulerSender extends SenderWithParametersBase {
 
 	private String javaListener;
