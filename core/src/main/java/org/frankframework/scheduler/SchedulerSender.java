@@ -38,6 +38,8 @@ import org.frankframework.util.SpringUtils;
 /**
  * Registers a trigger in the scheduler so that the message is sent to a {@link org.frankframework.receivers.JavaListener}
  * at a scheduled time.
+ * 
+ * @ff.danger This element has been removed. Please use the database schedules to manage dynamic schedules.
  *
  * @author John Dekker
  */
