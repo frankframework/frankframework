@@ -349,7 +349,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		assertEquals(expected, actual);
 	}
 
-
 	@Test
 	public void testWithParameters() throws Exception {
 		pipe.setName("RestGet");
@@ -367,7 +366,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.start();
 
 		String input="";
-		String expected = TestFileUtils.getTestFile("/Validation/Parameters/out.xml");
+		String expected = TestFileUtils.getTestFile("/Validation/Parameters/simple.xml");
 
 		// Set up the session.
 		// session variable "b_key" has a List value, should be mapped to multiple elements in the output
