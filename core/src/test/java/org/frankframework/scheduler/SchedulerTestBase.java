@@ -44,31 +44,11 @@ public abstract class SchedulerTestBase {
 		schedulerHelper.getScheduler().clear();
 	}
 
-	private JobDataMap createServiceJobDataMap() {
-		JobDataMap jobDataMap = new JobDataMap();
-		jobDataMap.put(ServiceJob.JAVALISTENER_KEY, "my-listener");
-		jobDataMap.put(ServiceJob.CORRELATIONID_KEY, "super-correlation-id");
-		jobDataMap.put(ServiceJob.MESSAGE_KEY, "my dummy message");
-
-		return jobDataMap;
-	}
-
 	private JobDataMap createConfiguredJobDataMap() {
 		JobDataMap jobDataMap = new JobDataMap();
 		jobDataMap.put(ConfiguredJob.JOBDEF_KEY, (IJob) null);
 
 		return jobDataMap;
-	}
-
-	protected JobDetail createServiceJob(String name) throws SchedulerException, ParseException {
-		return createServiceJob(name, SchedulerHelper.DEFAULT_GROUP);
-	}
-
-	protected JobDetail createServiceJob(String jobName, String groupName) {
-		return newJob(ServiceJob.class)
-				.withIdentity(jobName, groupName)
-				.usingJobData(createServiceJobDataMap())
-				.build();
 	}
 
 	protected JobDetail createConfiguredJob(String jobName) throws SchedulerException, ParseException {
@@ -80,18 +60,6 @@ public abstract class SchedulerTestBase {
 				.withIdentity(jobName, groupName)
 				.usingJobData(createConfiguredJobDataMap())
 				.build();
-	}
-
-	@Test
-	public void testServiceJobDetail() throws SchedulerException, ParseException {
-		JobDetail job = createServiceJob("test1");
-		assertNotNull(job);
-
-		JobKey details = job.getKey();
-		assertEquals("test1", details.getName());
-		assertEquals(SchedulerHelper.DEFAULT_GROUP, details.getGroup());
-
-		assertEquals(3, job.getJobDataMap().size());
 	}
 
 	@Test

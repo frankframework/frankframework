@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2019 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013, 2015, 2019 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ public class SchedulerHelper {
 	 * @param jobDetail
 	 * @param cronExpression null or cron expression in quartz format
 	 * @param interval 0 (trigger once) or interval (in ms) when to trigger
-	 * @param overwrite overwrite existing {@link ServiceJob job}
+	 * @param overwrite overwrite existing {@link ConfiguredJob jobs}.
 	 */
 	public void scheduleJob(JobDetail jobDetail, String cronExpression, long interval, boolean overwrite) throws SchedulerException {
 
