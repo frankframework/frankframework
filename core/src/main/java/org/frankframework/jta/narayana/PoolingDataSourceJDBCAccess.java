@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.StringTokenizer;
 
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import com.arjuna.ats.arjuna.exceptions.FatalError;
@@ -87,7 +86,8 @@ public class PoolingDataSourceJDBCAccess implements JDBCAccess {
 			JndiTemplate locator = new JndiTemplate();
 			DataSource dataSource = locator.lookup(jndiName, DataSource.class);
 			this.datasource = augmentDataSource(dataSource);
-		} catch (NamingException e) {
+		} catch (Exception e) {
+			log.fatal("unable to create database connection for Narayana", e);
 			throw new FatalError("unable to lookup datasource ["+jndiName+"]", e);
 		}
 	}
