@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -213,6 +213,12 @@ public class HttpEntityFactory {
 		return entry.getKey() + "=" + URLEncoder.encode(entry.getValue(), charSet);
 	}
 
+	/**
+	 * There is no definition for parameters with multiple values so both {@code ?id=1,2} and {@code ?id=1&id=2} are valid.
+	 * For simplicity we use the latter.
+	 * 
+	 * @see <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.4">RFC 3986 section 3.4 Query</a> 
+	 */
 	@Nonnull
 	private HttpEntity createUrlEncodedFormEntity(Message message, ParameterValueList parameters) throws IOException {
 		List<NameValuePair> requestFormElements = new ArrayList<>();
@@ -323,11 +329,11 @@ public class HttpEntityFactory {
 	}
 
 	protected FormBodyPart elementToFormBodyPart(Element element, PipeLineSession session) {
-		String part = element.getAttribute("name"); //Name of the part
-		boolean isFile = "file".equals(element.getAttribute("type")); //text of file, empty == text
-		String filename = element.getAttribute("filename"); //if type == file, the filename
-		String partSessionKey = element.getAttribute("sessionKey"); //SessionKey to retrieve data from
-		String partMimeType = element.getAttribute("mimeType"); //MimeType of the part
+		String part = element.getAttribute("name"); // Name of the part
+		boolean isFile = "file".equals(element.getAttribute("type")); // text of file, empty == text
+		String filename = element.getAttribute("filename"); // If type == file, the filename
+		String partSessionKey = element.getAttribute("sessionKey"); // SessionKey to retrieve data from
+		String partMimeType = element.getAttribute("mimeType"); // MimeType of the part
 		Message partObject = session.getMessage(partSessionKey);
 		if (Message.isEmpty(partObject) && element.hasAttribute("value")) {
 			partObject = Message.asMessage(element.getAttribute("value"));

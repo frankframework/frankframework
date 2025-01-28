@@ -908,6 +908,38 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
+	public void testContentTypeParsedFromSession() throws Exception{
+		// Arrange
+		String uri = "/testContentTypeParsedFromSession";
+		new ApiListenerBuilder(uri, List.of(HttpMethod.GET))
+				.withResultSessionKey("contentType", "text/json")
+				.withResponseContent("{\"key\" : \"value\"}")
+				.build();
+
+		// Act
+		Response result = service(createRequest(uri, HttpMethod.GET));
+
+		// Assert
+		assertEquals("text/json", result.getContentType());
+	}
+
+	@Test
+	public void testContentTypeParsedFromSessionInvalid() throws Exception{
+		// Arrange
+		String uri = "/testContentTypeParsedFromSession";
+		new ApiListenerBuilder(uri, List.of(HttpMethod.GET))
+				.withResultSessionKey("contentType", "text:json")
+				.withResponseContent("{\"key\" : \"value\"}")
+				.build();
+
+		// Act
+		Response result = service(createRequest(uri, HttpMethod.GET));
+
+		// Assert
+		assertEquals("*/*", result.getContentType());
+	}
+
+	@Test
 	public void apiListenerWithExplicitlyEnabledEtag() throws Exception {
 		// Arrange
 		String uri="/etag1";

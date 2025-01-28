@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -143,7 +143,7 @@ public class HttpSender extends AbstractHttpSender {
 				HttpGet getMethod = new HttpGet(relativePath+(parameters==null && BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message)? message.asString():""));
 
 				log.debug("HttpSender constructed GET-method [{}]", () -> getMethod.getURI().getQuery());
-				if (null != getFullContentType()) { //Manually set Content-Type header
+				if (null != getFullContentType()) { // Manually set Content-Type header
 					getMethod.setHeader("Content-Type", getFullContentType().toString());
 				}
 				return getMethod;
@@ -165,7 +165,7 @@ public class HttpSender extends AbstractHttpSender {
 
 			case DELETE:
 				HttpDelete deleteMethod = new HttpDelete(relativePath.toString());
-				if (null != getFullContentType()) { //Manually set Content-Type header
+				if (null != getFullContentType()) { // Manually set Content-Type header
 					deleteMethod.setHeader("Content-Type", getFullContentType().toString());
 				}
 				return deleteMethod;
@@ -176,7 +176,7 @@ public class HttpSender extends AbstractHttpSender {
 			case REPORT:
 				Element element = XmlUtils.buildElement(message.asString(), true);
 				HttpReport reportMethod = new HttpReport(relativePath.toString(), element);
-				if (null != getFullContentType()) { //Manually set Content-Type header
+				if (null != getFullContentType()) { // Manually set Content-Type header
 					reportMethod.setHeader("Content-Type", getFullContentType().toString());
 				}
 				return reportMethod;
@@ -185,7 +185,7 @@ public class HttpSender extends AbstractHttpSender {
 				return null;
 			}
 		} catch (Exception e) {
-			//Catch all exceptions and throw them as SenderException
+			// Catch all exceptions and throw them as SenderException
 			throw new SenderException(e);
 		}
 	}
@@ -211,7 +211,7 @@ public class HttpSender extends AbstractHttpSender {
 
 		Message responseMessage = responseHandler.getResponseMessage();
 		if (!Message.isEmpty(responseMessage)) {
-			responseMessage.closeOnCloseOf(session, this);
+			responseMessage.closeOnCloseOf(session);
 		}
 
 		if (responseHandler.isMultipart()) {

@@ -40,6 +40,7 @@ public abstract class AbstractMonitorDestination implements IMonitorDestination,
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter @Setter ApplicationContext applicationContext;
 
+	private boolean started = false;
 	private @Getter String name;
 	private String hostname;
 
@@ -79,9 +80,24 @@ public abstract class AbstractMonitorDestination implements IMonitorDestination,
 		return org.springframework.util.ClassUtils.getUserClass(clazz);
 	}
 
+	@Override
 	@Mandatory
 	public void setName(String name) {
 		this.name = name;
 	}
 
+	@Override
+	public void start() {
+		started = true;
+	}
+
+	@Override
+	public void stop() {
+		started = false;
+	}
+
+	@Override
+	public boolean isRunning() {
+		return started;
+	}
 }

@@ -11,12 +11,10 @@ import org.junit.jupiter.api.io.TempDir;
 
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.larva.LarvaLogLevel;
-import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.AppConstants;
 
 class LarvaPipeTest extends PipeTestBase<LarvaPipe> {
 
-	private final TestConfiguration configuration = new TestConfiguration();
 	@TempDir
 	private Path tempDir;
 
@@ -30,7 +28,6 @@ class LarvaPipeTest extends PipeTestBase<LarvaPipe> {
 	public void setUp() throws Exception {
 		super.setUp();
 		AppConstants.getInstance().setProperty("webapp.realpath", tempDir.toString() + File.separatorChar);
-		adapter.setConfiguration(configuration);
 	}
 
 	@Test

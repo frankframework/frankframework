@@ -26,17 +26,18 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
-import org.springframework.context.ConfigurableApplicationContext;
 
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
+import org.frankframework.monitoring.ITrigger.TriggerType;
 import org.frankframework.monitoring.events.ConsoleMonitorEvent;
 import org.frankframework.monitoring.events.FireMonitorEvent;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlBuilder;
 
 public class TriggerTest implements EventThrowing {
@@ -44,20 +45,20 @@ public class TriggerTest implements EventThrowing {
 	private @Getter String eventSourceName = "TriggerTestClass";
 	private @Getter Adapter adapter;
 
-	private ConfigurableApplicationContext applContext;
 	private IMonitorDestination destination;
 	private MonitorManager manager;
 	private Monitor monitor;
 
 	@BeforeEach
 	public void setup() {
-		applContext = mock(ConfigurableApplicationContext.class);
 		destination = mock(IMonitorDestination.class);
 		when(destination.getName()).thenReturn("dummy destination");
+		when(destination.toXml()).thenReturn(new XmlBuilder("destination"));
 
 		manager = spy(MonitorManager.class);
-		monitor = spy(Monitor.class);
-		monitor.setApplicationContext(applContext);
+		manager.refresh();
+		monitor = spy(SpringUtils.createBean(manager, Monitor.class));
+		monitor.setApplicationContext(manager);
 
 		monitor.setName("monitorName");
 		manager.addMonitor(monitor);
@@ -89,7 +90,7 @@ public class TriggerTest implements EventThrowing {
 
 		// Assert
 		verify(trigger, times(1)).configure();
-		assertTrue(trigger.isAlarm());
+		assertEquals(TriggerType.ALARM, trigger.getTriggerType());
 		assertEquals(EventType.TECHNICAL, eventTypeCaptor.getValue());
 		assertEquals(Severity.CRITICAL, severityCaptor.getValue());
 		MonitorEvent capturedEvent = monitorEventCaptor.getValue();
@@ -224,11 +225,12 @@ public class TriggerTest implements EventThrowing {
 
 		// Act
 		MonitorEvent event = eventCausedByMonitor ? new ConsoleMonitorEvent("dummyUser") : new FireMonitorEvent(this, EVENT_CODE);
-		monitor.changeState(true, Severity.CRITICAL, event);
+
+		monitor.changeState(TriggerType.ALARM, Severity.CRITICAL, event);
 
 		// Assert
 		verify(trigger, times(1)).configure();
-		assertTrue(trigger.isAlarm());
+		assertEquals(TriggerType.ALARM, trigger.getTriggerType());
 		assertEquals(EventType.TECHNICAL, eventTypeCaptor.getValue());
 		assertEquals(Severity.CRITICAL, severityCaptor.getValue());
 		MonitorEvent capturedEvent = monitorEventCaptor.getValue();
@@ -239,7 +241,7 @@ public class TriggerTest implements EventThrowing {
 		assertEquals(0, monitor.getAdditionalHitCount());
 
 		// Act
-		monitor.changeState(false, Severity.WARNING, new ConsoleMonitorEvent("dummyUser")); //WARNING, cleared by MONITOR
+		monitor.changeState(TriggerType.CLEARING, Severity.WARNING, new ConsoleMonitorEvent("dummyUser")); // WARNING, cleared by MONITOR
 
 		// Assert
 		assertEquals(EventType.CLEARING, eventTypeCaptor.getValue());
@@ -259,20 +261,10 @@ public class TriggerTest implements EventThrowing {
 	public void testMonitoringXML() throws Exception {
 		// Arrange
 		Trigger trigger = spy(Alarm.class);
-		Monitor monitor = spy(Monitor.class);
-		monitor.setApplicationContext(applContext);
-		MonitorManager manager = spy(MonitorManager.class);
-		IMonitorDestination destination = mock(IMonitorDestination.class);
-		when(destination.getName()).thenReturn("dummy destination");
-		when(destination.toXml()).thenReturn(new XmlBuilder("destination"));
-
 		trigger.addEventCodeText(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
 
-		manager.addMonitor(monitor);
 		monitor.addTrigger(trigger);
-		manager.addDestination(destination);
-		monitor.setDestinations(destination.getName());
 		monitor.setAlarmSeverity(Severity.WARNING);
 
 		// Act

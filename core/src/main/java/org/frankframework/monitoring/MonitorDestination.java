@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ public class MonitorDestination extends AbstractMonitorDestination {
 			if(!Message.isNull(message)) {
 				Message newMessage = message.copyMessage();
 				session.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, newMessage);
-				session.scheduleCloseOnSessionExit(newMessage, "Event fired by "+ monitorName);
+				session.scheduleCloseOnSessionExit(newMessage);
 			}
 			getSender().sendMessageOrThrow(new Message(makeXml(monitorName, eventType, severity, eventCode, event)), session); // close() disables unit testing Message result
 		} catch (Exception e) {

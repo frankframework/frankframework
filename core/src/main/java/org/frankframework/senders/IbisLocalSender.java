@@ -305,7 +305,7 @@ public class IbisLocalSender extends AbstractSenderWithParameters implements Has
 			result.setErrorMessage("exitState="+exitState);
 
 			result.getResult().unscheduleFromCloseOnExitOf(subAdapterSession);
-			result.getResult().closeOnCloseOf(session, this);
+			result.getResult().closeOnCloseOf(session);
 
 			return result;
 		}

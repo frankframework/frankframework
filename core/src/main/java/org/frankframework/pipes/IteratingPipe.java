@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -285,7 +285,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			} else {
 				log.debug("iteration [{}] item [{}]", totalItems, message);
 			}
-			message.closeOnCloseOf(session, "iteratingPipeItem"+totalItems);
+			message.closeOnCloseOf(session);
 
 			if (childLimiter != null) {
 				try {

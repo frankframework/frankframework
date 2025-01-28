@@ -7,7 +7,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -44,7 +43,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 	@Test
 	public void testNullInput() throws Exception {
-		//Arrange
+		// Arrange
 		pipe.setName("null_input");
 		pipe.setSchema("/Align/OptionalArray/hbp.xsd");
 		pipe.setRoot("Root");
@@ -52,16 +51,16 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.configure();
 		pipe.start();
 
-		//Act
+		// Act
 		PipeRunResult prr = doPipe(Message.nullMessage());
 
-		//Assert
+		// Assert
 		assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><ns1:Root xmlns:ns1=\"urn:pim\"/>", prr.getResult().asString());
 	}
 
 	@Test
 	public void testEmptyInput() throws Exception {
-		//Arrange
+		// Arrange
 		pipe.setName("empty_input");
 		pipe.setSchema("/Align/OptionalArray/hbp.xsd");
 		pipe.setRoot("Root");
@@ -69,16 +68,16 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.configure();
 		pipe.start();
 
-		//Act
+		// Act
 		PipeRunResult prr = doPipe("");
 
-		//Assert
+		// Assert
 		assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><ns1:Root xmlns:ns1=\"urn:pim\"/>", prr.getResult().asString());
 	}
 
 	@Test
 	public void testInputWithWhitespace() throws Exception {
-		//Arrange
+		// Arrange
 		pipe.setName("empty_input");
 		pipe.setSchema("/Align/OptionalArray/hbp.xsd");
 		pipe.setRoot("Root");
@@ -86,10 +85,10 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.configure();
 		pipe.start();
 
-		//Act
+		// Act
 		PipeRunResult prr = doPipe("         			{}");
 
-		//Assert
+		// Assert
 		assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><ns1:Root xmlns:ns1=\"urn:pim\"/>", prr.getResult().asString());
 	}
 
@@ -271,6 +270,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.addParameter(ParameterBuilder.create().withName("b").withSessionKey("b_key"));
 		pipe.addParameter(ParameterBuilder.create().withName("c").withSessionKey("c_key"));
 		pipe.addParameter(ParameterBuilder.create().withName("d").withSessionKey("d_key"));
+		pipe.addParameter(new Parameter("e", "param_e"));
 		pipe.configure();
 		pipe.start();
 
@@ -297,7 +297,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.start();
 
 		// Get request with no content, when no (valid) accept header, fall back to the default.
-		Message inputMessage = new Message("<Root><a/></Root>", new MessageContext().with("Header.Accept", acceptHeader));
+		Message inputMessage = new Message("<Root><a/><e/></Root>", new MessageContext().with("Header.Accept", acceptHeader));
 
 		PipeRunResult inResult = doPipe(inputMessage);
 		PipeRunResult outResult = pipe.getResponseValidator().validate(inputMessage, session, "Root");
@@ -349,6 +349,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		assertEquals(expected, actual);
 	}
 
+
 	@Test
 	public void testWithParameters() throws Exception {
 		pipe.setName("RestGet");
@@ -361,15 +362,21 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.addParameter(ParameterBuilder.create().withName("b").withSessionKey("b_key"));
 		pipe.addParameter(ParameterBuilder.create().withName("c").withSessionKey("c_key"));
 		pipe.addParameter(ParameterBuilder.create().withName("d").withSessionKey("d_key"));
+		pipe.addParameter(ParameterBuilder.create().withName("e").withSessionKey("e_key"));
 		pipe.configure();
 		pipe.start();
 
 		String input="";
-		String expected = TestFileUtils.getTestFile("/Validation/Parameters/simple.xml");
+		String expected = TestFileUtils.getTestFile("/Validation/Parameters/out.xml");
 
-		session.put("b_key","b_value");
-		// session variable "c_key is not present, so there should be no 'c' element in the result
-		session.put("d_key","");
+		// Set up the session.
+		// session variable "b_key" has a List value, should be mapped to multiple elements in the output
+		session.put("b_key", Arrays.asList("b_value1", "b_value2"));
+		// session variable "c_key" is not present, so there should be no 'c' element in the result
+		// session variable "d" has empty value, should be empty in output.
+		session.put("d_key", "");
+		// session variable "e" is set with a Message
+		session.put("e_key", new Message("e_value"));
 
 		PipeRunResult prr = doPipe(pipe, input,session);
 
@@ -377,54 +384,52 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	}
 
 	@Test
-	public void testWithOptionalMultiValueParameters() throws Exception {
+	public void testWithMultiValueParameterFailure() throws Exception {
 		pipe.setName("RestGet");
 		pipe.setRoot("Root");
 		pipe.setOutputFormat(DocumentFormat.XML);
-		pipe.setSchema("/Validation/Parameters/multi-value-parameters.xsd");
+		pipe.setSchema("/Validation/Parameters/simple.xsd");
 		pipe.setThrowException(true);
 
 		pipe.addParameter(new Parameter("a", "param_a"));
-		pipe.addParameter(ParameterBuilder.create().withName("b").withSessionKey("b_key"));
 		pipe.addParameter(ParameterBuilder.create().withName("c").withSessionKey("c_key"));
-
+		pipe.addParameter(ParameterBuilder.create().withName("d").withSessionKey("d_key"));
+		pipe.addParameter(ParameterBuilder.create().withName("e").withSessionKey("e_key"));
 		pipe.configure();
 		pipe.start();
 
-		String input = "";
-		String expected = TestFileUtils.getTestFile("/Validation/Parameters/multi-value-parameters.xml");
+		String input="";
 
-		session.put("b_key", Arrays.asList("b_value1", "b_value2"));
-		session.put("c_key", Message.nullMessage());
+		// session variable "c_key" is not present, but optional, does not trigger an error
+		session.put("d_key","");
+		// session variable "e_key" is present as multi-valued element, should be an error
+		session.put("e_key", Arrays.asList("e_value1", "e_value2"));
 
-		PipeRunResult prr = doPipe(pipe, input,session);
-
-		assertEquals(expected, prr.getResult().asString());
+		assertThrows(PipeRunException.class, ()-> doPipe(pipe, input,session));
 	}
 
 	@Test
-	public void testWithMandatoryMultiValueParameters() throws Exception {
+	public void testWithParameterMissingFailure() throws Exception {
 		pipe.setName("RestGet");
 		pipe.setRoot("Root");
 		pipe.setOutputFormat(DocumentFormat.XML);
-		pipe.setSchema("/Validation/Parameters/multi-value-parameters2.xsd");
+		pipe.setSchema("/Validation/Parameters/simple.xsd");
 		pipe.setThrowException(true);
 
-		pipe.addParameter(ParameterBuilder.create().withName("a").withSessionKey("a_key"));
-		pipe.addParameter(ParameterBuilder.create().withName("b").withSessionKey("b_key"));
+		pipe.addParameter(new Parameter("a", "param_a"));
 		pipe.addParameter(ParameterBuilder.create().withName("c").withSessionKey("c_key"));
-
+		pipe.addParameter(ParameterBuilder.create().withName("d").withSessionKey("d_key"));
+		pipe.addParameter(ParameterBuilder.create().withName("e").withSessionKey("e_key"));
 		pipe.configure();
 		pipe.start();
 
-		String input = "";
+		String input="";
 
-		session.put("a_key", Arrays.asList("a_value1", "a_value2"));
-		session.put("b_key", Arrays.asList("b_value1", "b_value2"));
-		session.put("c_key", Arrays.asList("c_value1", "c_value2"));
+		// session variable "c_key" is not present, but optional, does not trigger an error
+		session.put("d_key","");
+		// session variable "e_key" is missing from the session, should be an error
 
-		PipeRunException ex = assertThrows(PipeRunException.class, () -> doPipe(pipe, input,session));
-		assertTrue(ex.getMessage().contains("expected element [a]"));
+		assertThrows(PipeRunException.class, ()-> doPipe(pipe, input,session));
 	}
 
 	@Test
@@ -800,7 +805,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		// Act / Assert
 		PipeRunResult result = assertDoesNotThrow(() -> pipe.validate(message, session, "Case"));
 
-		System.err.println(result.getResult().asString());
+		log.debug("issue7146AttributesOnMultipleLevels pipe result:\n {}", result.getResult().asString());
 		String expected = TestFileUtils.getTestFile("/Validation/AttributesOnDifferentLevels/output-" + input + ".xml");
 		assertXmlEquals(expected, result.getResult().asString());
 	}

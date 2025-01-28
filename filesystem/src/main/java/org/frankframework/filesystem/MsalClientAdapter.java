@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -244,7 +244,7 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 		try (PipeLineSession session = prepareSession(httpRequest); Message request = new Message(httpRequest.body())) {
 
 			Message response = sendMessageOrThrow(request, session);
-			session.scheduleCloseOnSessionExit(response, "MsalClient-response");
+			session.scheduleCloseOnSessionExit(response);
 			return new MsalResponse(response, session);
 		} catch (Exception e) {
 			log.error("An exception occurred whilst connecting with MSAL HTTPS call to [{}]", httpRequest.url().toString(), e);
