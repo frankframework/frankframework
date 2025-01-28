@@ -44,6 +44,8 @@ import jakarta.json.JsonString;
 import jakarta.json.JsonStructure;
 import jakarta.json.JsonValue;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -68,9 +70,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import lombok.Getter;
-import lombok.Setter;
-
+import org.frankframework.stream.Message;
 import org.frankframework.xml.XmlWriter;
 
 /**
@@ -201,10 +201,12 @@ public class Json2Xml extends XmlAligner {
 	}
 
 
-	public String getNodeText(JsonValue node) {
+	private String getNodeText(JsonValue node) throws SAXException {
 		String result;
 		if (node instanceof JsonString string) {
 			result=string.getString();
+		} else if (node instanceof JsonArray) {
+			throw new SAXException("Expected simple element, got instead an array-value: [" + node + "]");
 		} else if (node instanceof JsonStructure) { // this happens when override key is present without a value
 			result=null;
 		} else {
@@ -371,17 +373,24 @@ public class Json2Xml extends XmlAligner {
 		return objectBuilder.build().getJsonString(childName);
 	}
 
-	protected String getOverride(JsonValue node) {
+	private String getOverride(JsonValue node) throws SAXException {
 		Object text = sp.getOverride(getContext());
+		// When we drop Java17 support, we can turn this into a concise switch-expression, see https://docs.oracle.com/en/java/javase/21/language/pattern-matching-switch.html#GUID-E69EEA63-E204-41B4-AA7F-D58B26A3B232
 		if (text instanceof List) {
 			// if the override is a List, then it has already been substituted via getSubstitutedChild.
 			// Therefore now get the node text, which is here an individual element already.
 			return getNodeText(node);
-		}
-		if (text instanceof String string) {
+		} else if (text instanceof Message message) {
+			try {
+				return message.asString();
+			} catch (IOException e) {
+				throw new SAXException(e);
+			}
+		} else if (text instanceof String string) {
 			return string;
+		} else {
+			return text.toString();
 		}
-		return text.toString();
 	}
 
 	protected void processChildElement(JsonValue node, String parentName, XSElementDeclaration childElementDeclaration, boolean mandatory, Set<String> processedChildren) throws SAXException {
@@ -570,7 +579,7 @@ public class Json2Xml extends XmlAligner {
 		return children;
 	}
 
-	public final String getText(XSElementDeclaration elementDeclaration, JsonValue node) {
+	private String getText(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
 		String nodeName=elementDeclaration.getName();
 		Object text;
 		if (log.isTraceEnabled()) log.trace("node [{}] currently parsed element [{}]", nodeName, getContext().getLocalName());
