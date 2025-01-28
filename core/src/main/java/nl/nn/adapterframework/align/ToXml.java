@@ -148,7 +148,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	public abstract boolean hasChild(XSElementDeclaration elementDeclaration, N node, String childName) throws SAXException;
 	public abstract Iterable<N> getChildrenByName(N node, XSElementDeclaration childElementDeclaration) throws SAXException; // returns null when no children present
 	public abstract boolean isNil(XSElementDeclaration elementDeclaration, N node); // returns true when the node is a nil
-	public abstract String getText(XSElementDeclaration elementDeclaration, N node); // returns null when no text present, will only be called when node has no children
+	public abstract String getText(XSElementDeclaration elementDeclaration, N node) throws SAXException; // returns null when no text present, will only be called when node has no children
 
 	@SuppressWarnings("unused")
 	protected Set<String> getUnprocessedChildElementNames(XSElementDeclaration elementDeclaration, N node, Set<String> processedChildren) throws SAXException {
