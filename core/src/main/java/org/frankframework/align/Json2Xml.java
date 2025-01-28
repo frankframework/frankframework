@@ -203,14 +203,16 @@ public class Json2Xml extends XmlAligner {
 		}
 	}
 
-
 	private String getNodeText(JsonValue node) throws SAXException {
 		String result;
 		if (node instanceof JsonString string) {
 			result=string.getString();
 		} else if (node instanceof JsonArray) {
 			throw new SAXException("Expected simple element, got instead an array-value: [" + node + "]");
-		} else if (node instanceof JsonStructure) { // this happens when override key is present without a value
+		} else if (node instanceof JsonObject jsonObject) { // this happens when override key is present without a value
+			if (!jsonObject.isEmpty()) {
+				throw new SAXException("Expected simple element, got instead an object-value: [" + node + "]");
+			}
 			result=null;
 		} else {
 			result=node.toString();
