@@ -30,11 +30,11 @@ import org.quartz.Trigger;
 
 public class SchedulerHelperTest extends SchedulerTestBase {
 
-	//Fill the scheduler with 4 entries, remove 1 and check which schedules are left.
+	// Fill the scheduler with 4 entries, remove 1 and check which schedules are left.
 	@Test
 	public void testDeleteTrigger() throws SchedulerException, ParseException {
-		schedulerHelper.scheduleJob(createServiceJob("target", null), 1000);
-		schedulerHelper.scheduleJob(createServiceJob("target", "something"), 1000);
+		schedulerHelper.scheduleJob(createConfiguredJob("target", null), 1000);
+		schedulerHelper.scheduleJob(createConfiguredJob("target", "something"), 1000);
 
 		schedulerHelper.deleteTrigger("target", "something");
 
@@ -44,9 +44,9 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 
 	@Test
 	public void testNullIsDefaultGroup() throws SchedulerException, ParseException {
-		schedulerHelper.scheduleJob(createServiceJob("target", null), 1000);
+		schedulerHelper.scheduleJob(createConfiguredJob("target", null), 1000);
 
-		//Make sure null, DEFAULT and SchedulerHelper.DEFAULT_GROUP are all the same
+		// Make sure null, DEFAULT and SchedulerHelper.DEFAULT_GROUP are all the same
 		assertTrue(schedulerHelper.contains("target", null));
 		assertTrue(schedulerHelper.contains("target", "DEFAULT"));
 		assertTrue(schedulerHelper.contains("target", SchedulerHelper.DEFAULT_GROUP));
@@ -54,26 +54,26 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 
 	@Test
 	public void testContains() throws SchedulerException, ParseException {
-		schedulerHelper.scheduleJob(createServiceJob("target", "some-group"), 1000);
+		schedulerHelper.scheduleJob(createConfiguredJob("target", "some-group"), 1000);
 
 		assertTrue(schedulerHelper.contains("target", "some-group"));
-		//Test and make sure it doesn't also exist in the default group
+		// Test and make sure it doesn't also exist in the default group
 		assertFalse(schedulerHelper.contains("target", SchedulerHelper.DEFAULT_GROUP));
 	}
 
 	@Test
 	public void testGetJobDetail() throws SchedulerException, ParseException {
-		schedulerHelper.scheduleJob(createServiceJob("testJob"), 1000);
+		schedulerHelper.scheduleJob(createConfiguredJob("testJob"), 1000);
 
 		JobDetail result = schedulerHelper.getJobDetail("testJob");
 		assertNotNull(result);
-		//Validate it's got the correct jobDetail
+		// Validate it's got the correct jobDetail
 		assertEquals("testJob", result.getKey().getName());
 	}
 
 	@Test
 	public void testScheduleCronJob() throws SchedulerException, ParseException {
-		JobDetail jobDetail = createServiceJob("testJob"+Math.random());
+		JobDetail jobDetail = createConfiguredJob("testJob"+Math.random());
 
 		schedulerHelper.scheduleJob(jobDetail, "0 0 1 * * ?");
 		assertTrue(schedulerHelper.contains(jobDetail.getKey().getName()));
@@ -81,7 +81,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 
 	@Test
 	public void testScheduleIntervalJob() throws SchedulerException, ParseException {
-		JobDetail jobDetail = createServiceJob("testJob"+Math.random());
+		JobDetail jobDetail = createConfiguredJob("testJob"+Math.random());
 
 		schedulerHelper.scheduleJob(jobDetail, 0);
 		assertTrue(schedulerHelper.contains(jobDetail.getKey().getName()));
@@ -89,7 +89,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 
 	@Test
 	public void addTwoTheSameJobs() throws SchedulerException, ParseException {
-		JobDetail jobDetail = createServiceJob("testJob");
+		JobDetail jobDetail = createConfiguredJob("testJob");
 
 		schedulerHelper.scheduleJob(jobDetail, 0);
 		assertTrue(schedulerHelper.contains(jobDetail.getKey().getName()));
@@ -99,7 +99,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 
 	@Test
 	public void addTwoTheSameJobsWithOverride() throws SchedulerException, ParseException {
-		JobDetail jobDetail = createServiceJob("testJob");
+		JobDetail jobDetail = createConfiguredJob("testJob");
 		String jobName = jobDetail.getKey().getName();
 
 		schedulerHelper.scheduleJob(jobDetail, null, 3600*1000, false);
@@ -114,7 +114,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 
 	@Test
 	public void testScheduleJobWithoutSchedule() throws SchedulerException, ParseException {
-		JobDetail jobDetail = createServiceJob("testJob"+Math.random());
+		JobDetail jobDetail = createConfiguredJob("testJob"+Math.random());
 
 		schedulerHelper.scheduleJob(jobDetail, null, -1, false);
 		assertFalse(schedulerHelper.contains(jobDetail.getKey().getName()));
@@ -122,7 +122,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 
 	@Test
 	public void testScheduleDuplicateJob() throws SchedulerException, ParseException {
-		JobDetail jobDetail = createServiceJob("testJob"+Math.random());
+		JobDetail jobDetail = createConfiguredJob("testJob"+Math.random());
 
 		schedulerHelper.scheduleJob(jobDetail, "0 0 1 * * ?");
 		assertThrows(SchedulerException.class, () -> schedulerHelper.scheduleJob(jobDetail, 0));
@@ -131,7 +131,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 	@Test
 	public void testStopScheduler() throws SchedulerException {
 		schedulerHelper.startScheduler();
-		//make sure the scheduler can start without any issues
+		// Make sure the scheduler can start without any issues
 		assertTrue(schedulerHelper.getScheduler().isStarted());
 	}
 }
