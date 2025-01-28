@@ -113,10 +113,10 @@ public class Json2Xml extends XmlAligner {
 		setRootElement(rootElement);
 	}
 
+	@SuppressWarnings("unchecked")
 	private static List<XSParticle> getXsdChildParticles(XSComplexTypeDefinition complexTypeDefinition) {
 		XSTerm term = complexTypeDefinition.getParticle().getTerm();
 		if (term instanceof XSModelGroup modelGroup) {
-			//noinspection unchecked
 			return modelGroup.getParticles();
 		}
 		return List.of();
