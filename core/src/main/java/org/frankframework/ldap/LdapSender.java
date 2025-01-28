@@ -285,7 +285,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	private @Getter boolean unicodePwd = false;
 	private @Getter boolean replyNotFound = false;
 
-	protected ParameterList paramList = null;
+	protected @Nonnull ParameterList paramList = new ParameterList();
 	private boolean principalParameterFound = false;
 	private Hashtable<Object, Object> jndiEnv=null;
 
@@ -296,7 +296,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (paramList == null || (!paramList.hasParameter(ENTRYNAME) && getOperation() != Operation.CHALLENGE)) {
+		if (!paramList.hasParameter(ENTRYNAME) && getOperation() != Operation.CHALLENGE) {
 			throw new ConfigurationException("[" + getName()+ "] Required parameter with the name [entryName] not found!");
 		}
 		paramList.configure();
@@ -849,25 +849,25 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	public String performOperation(Message message, PipeLineSession session) throws SenderException, ParameterException {
 		Map<String, String> paramValueMap = null;
 		String entryName = null;
-		if (paramList != null){
-			paramValueMap = paramList.getValues(message, session)
-					.getValueMap()
-					.entrySet()
-					.stream()
-					.collect(Collectors.toMap(Map.Entry::getKey, e -> {
-						if(e.getValue() instanceof Message m) {
-							try {
-								return m.asString();
-							} catch (IOException ex) {
-								throw Lombok.sneakyThrow(new SenderException("unable to read parameter ["+e.getKey()+"]", ex));
+		paramValueMap = paramList.getValues(message, session)
+				.getValueMap()
+				.entrySet()
+				.stream()
+				.collect(Collectors.toMap(
+						Map.Entry::getKey, e -> {
+							if (e.getValue() instanceof Message m) {
+								try {
+									return m.asString();
+								} catch (IOException ex) {
+									throw Lombok.sneakyThrow(new SenderException("unable to read parameter [" + e.getKey() + "]", ex));
+								}
 							}
+							return (String) e.getValue();
 						}
-						return (String) e.getValue();
-					}));
+				));
 
-			entryName = paramValueMap.get("entryName");
-			if (log.isDebugEnabled()) log.debug("entryName=[{}]", entryName);
-		}
+		entryName = paramValueMap.get("entryName");
+		if (log.isDebugEnabled()) log.debug("entryName=[{}]", entryName);
 		if ((entryName == null || StringUtils.isEmpty(entryName)) && getOperation() != Operation.CHALLENGE) {
 			throw new SenderException("entryName must be defined through params, operation ["+ getOperation()+ "]");
 		}
@@ -1147,14 +1147,11 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	@Override
 	public void addParameter(IParameter p) {
-		if (paramList == null) {
-			paramList = new ParameterList();
-		}
 		paramList.add(p);
 	}
 
 	@Override
-	public ParameterList getParameterList() {
+	public @Nonnull ParameterList getParameterList() {
 		return paramList;
 	}
 

@@ -15,13 +15,14 @@
 */
 package org.frankframework.extensions.sap.jco3;
 
+import jakarta.annotation.Nonnull;
+
 import com.sap.conn.idoc.IDocDocument;
 import com.sap.conn.idoc.IDocException;
 import com.sap.conn.idoc.IDocFactory;
 import com.sap.conn.idoc.jco.JCoIDoc;
 import com.sap.conn.jco.JCoDestination;
 
-import jakarta.annotation.Nonnull;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -60,9 +61,7 @@ public abstract class IdocSenderImpl extends SapSenderBase {
 		String tid;
 		try {
 			ParameterValueList pvl = null;
-			if (paramList!=null) {
-				pvl = paramList.getValues(message, session);
-			}
+			pvl = paramList.getValues(message, session);
 			SapSystemImpl sapSystem = getSystem(pvl);
 
 			IDocDocument idoc = parseIdoc(sapSystem,message);

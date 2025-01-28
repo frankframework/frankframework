@@ -183,12 +183,12 @@ public class NetStorageSender extends AbstractHttpSender {
 	}
 
 	@Override
-	public HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
+	public HttpRequestBase getMethod(URI uri, Message message, @Nonnull ParameterValueList parameters, PipeLineSession session) throws SenderException {
 		NetStorageRequest request = new NetStorageRequest(uri, getAction());
 		request.setVersion(actionVersion);
 		request.setHashAlgorithm(hashAlgorithm);
 
-		if(parameters != null) {
+		if(parameters.size() > 0) {
 			request.mapParameters(parameters);
 		}
 

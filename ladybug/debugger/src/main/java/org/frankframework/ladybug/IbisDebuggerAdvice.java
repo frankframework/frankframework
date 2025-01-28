@@ -250,9 +250,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			// resolve parameters itself
 			if (sender instanceof IWithParameters parameters) {
 				ParameterList parameterList = parameters.getParameterList();
-				if (parameterList!=null) {
-					parameterList.getValues(message, session);
-				}
+				parameterList.getValues(message, session);
 			}
 
 			senderResult = new SenderResult(true, Message.nullMessage(), null, "stub");

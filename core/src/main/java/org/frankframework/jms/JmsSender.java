@@ -89,7 +89,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 	private @Getter String destinationParam = null;
 	private @Setter MetricsInitializer configurationMetrics;
 
-	protected ParameterList paramList = null;
+	protected @Nonnull ParameterList paramList = new ParameterList();
 	private SoapWrapper soapWrapper = null;
 	private String responseHeaders = null;
 	private final @Getter List<String> responseHeadersList = new ArrayList<>();
@@ -110,7 +110,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isNotEmpty(getSoapAction()) && (paramList == null || !paramList.hasParameter("SoapAction"))) {
+		if (StringUtils.isNotEmpty(getSoapAction()) && !paramList.hasParameter("SoapAction")) {
 			Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName("SoapAction");
 			p.setValue(getSoapAction());
@@ -119,9 +119,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 
 		sessionStatistics = configurationMetrics.createSubDistributionSummary(this, "createSession", FrankMeterType.PIPE_DURATION);
 
-		if (paramList != null) {
-			paramList.configure();
-		}
+		paramList.configure();
 		super.configure();
 		if (isSoap()) {
 			//ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
@@ -162,14 +160,11 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 
 	@Override
 	public void addParameter(IParameter p) {
-		if (paramList==null) {
-			paramList=new ParameterList();
-		}
 		paramList.add(p);
 	}
 
 	@Override
-	public ParameterList getParameterList() {
+	public @Nonnull ParameterList getParameterList() {
 		return paramList;
 	}
 
@@ -183,19 +178,17 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 		MessageProducer messageProducer = null;
 
 		checkTransactionManagerValidity();
-		ParameterValueList pvl=null;
-		if (paramList != null) {
-			try {
-				pvl=paramList.getValues(message, pipeLineSession);
-			} catch (ParameterException e) {
-				throw new SenderException("cannot extract parameters",e);
-			}
+		ParameterValueList pvl;
+		try {
+			pvl = paramList.getValues(message, pipeLineSession);
+		} catch (ParameterException e) {
+			throw new SenderException("cannot extract parameters", e);
 		}
 
 		try {
 			String correlationID = pipeLineSession.getCorrelationId();
 			if (isSoap()) {
-				if (soapHeader == null && pvl != null && StringUtils.isNotEmpty(getSoapHeaderParam())) {
+				if (soapHeader == null && StringUtils.isNotEmpty(getSoapHeaderParam())) {
 					ParameterValue soapHeaderParamValue = pvl.get(getSoapHeaderParam());
 					if (soapHeaderParamValue == null) {
 						log.warn("no SoapHeader found using parameter [{}]", getSoapHeaderParam());

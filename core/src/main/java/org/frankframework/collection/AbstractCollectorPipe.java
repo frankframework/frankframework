@@ -97,7 +97,7 @@ public abstract class AbstractCollectorPipe<C extends ICollector<P>, P> extends 
 
 	protected ParameterValueList getParameterValueList(Message input, PipeLineSession session) throws CollectionException {
 		try {
-			return getParameterList()!=null ? getParameterList().getValues(input, session) : null;
+			return getParameterList().getValues(input, session);
 		} catch (ParameterException e) {
 			throw new CollectionException("cannot determine parameter values", e);
 		}

@@ -20,6 +20,8 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.zip.ZipOutputStream;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 
@@ -42,26 +44,23 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 	private final boolean includeFileHeaders;
 	private final String zipLocation;
 
-	static void validateParametersForAction(Action action, ParameterList parameterList) throws ConfigurationException {
+	static void validateParametersForAction(@Nonnull Action action, @Nonnull ParameterList parameterList) throws ConfigurationException {
 		switch (action) {
 			case OPEN:
 				break;
 			case WRITE:
 			case LAST:
-				if(parameterList == null) {
-					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' or parameter '"+PARAMETER_CONTENTS+"' is required");
-				}
 				if (!parameterList.hasParameter(PARAMETER_FILENAME) && !parameterList.hasParameter(PARAMETER_CONTENTS)) {
 					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' or parameter '"+PARAMETER_CONTENTS+"' is required");
 				}
 				break;
 			case CLOSE:
-				if (parameterList != null && parameterList.hasParameter(PARAMETER_FILENAME)) {
+				if (parameterList.hasParameter(PARAMETER_FILENAME)) {
 					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' cannot not be configured on action [close]");
 				}
 				break;
 			case STREAM:
-				if(parameterList == null || !parameterList.hasParameter(PARAMETER_FILENAME)) {
+				if(!parameterList.hasParameter(PARAMETER_FILENAME)) {
 					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' is required");
 				}
 				break;

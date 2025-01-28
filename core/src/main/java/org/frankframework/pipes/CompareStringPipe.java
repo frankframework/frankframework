@@ -93,13 +93,11 @@ public class CompareStringPipe extends AbstractPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		ParameterValueList pvl = null;
-		if (getParameterList() != null) {
-			try {
-				pvl = getParameterList().getValues(message, session);
-			} catch (ParameterException e) {
-				throw new PipeRunException(this, "exception extracting parameters", e);
-			}
+		ParameterValueList pvl;
+		try {
+			pvl = getParameterList().getValues(message, session);
+		} catch (ParameterException e) {
+			throw new PipeRunException(this, "exception extracting parameters", e);
 		}
 		String operand1 = getParameterValue(pvl, OPERAND1);
 		try {
@@ -208,8 +206,7 @@ public class CompareStringPipe extends AbstractPipe {
 	}
 
 	private String getParameterValue(ParameterValueList pvl, String parameterName) {
-		ParameterList parameterList = getParameterList();
-		if (pvl != null && parameterList != null) {
+		if (pvl != null) {
 			ParameterValue pv = pvl.findParameterValue(parameterName);
 			if(pv != null) {
 				return pv.asStringValue(null);

@@ -73,13 +73,11 @@ public class CompareIntegerPipe extends AbstractPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		ParameterValueList pvl = null;
-		if (getParameterList() != null) {
-			try {
-				pvl = getParameterList().getValues(message, session);
-			} catch (ParameterException e) {
-				throw new PipeRunException(this, "exception extracting parameters", e);
-			}
+		ParameterValueList pvl;
+		try {
+			pvl = getParameterList().getValues(message, session);
+		} catch (ParameterException e) {
+			throw new PipeRunException(this, "exception extracting parameters", e);
 		}
 		Integer operand1 = getOperandValue(pvl, OPERAND1, message);
 		Integer operand2 = getOperandValue(pvl, OPERAND2, message);

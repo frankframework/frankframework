@@ -46,15 +46,13 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 
 	private static final String TOPIC_PARAMETER_NAME = "topic";
 
-	protected ParameterList paramList = null;
+	protected @Nonnull ParameterList paramList = new ParameterList();
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (paramList!=null) {
-			paramList.configure();
-		}
+		paramList.configure();
 
-		if (getTopic() == null && (paramList == null || !paramList.hasParameter(TOPIC_PARAMETER_NAME))) {
+		if (getTopic() == null && !paramList.hasParameter(TOPIC_PARAMETER_NAME)) {
 			throw new ConfigurationException("topic must be specified");
 		}
 
@@ -73,14 +71,11 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 
 	@Override
 	public void addParameter(IParameter p) {
-		if (paramList==null) {
-			paramList = new ParameterList();
-		}
 		paramList.add(p);
 	}
 
 	@Override
-	public ParameterList getParameterList() {
+	public @Nonnull ParameterList getParameterList() {
 		return paramList;
 	}
 
@@ -92,13 +87,11 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 			}
 
 			String topic = getTopic();
-			if (getParameterList() != null) {
-				IParameter topicParameter = getParameterList().findParameter(TOPIC_PARAMETER_NAME);
+			IParameter topicParameter = getParameterList().findParameter(TOPIC_PARAMETER_NAME);
 
-				if (topicParameter != null) {
-					Message topicObj = Message.asMessage(topicParameter.getValue(null, message, session, false));
-					topic = topicObj.asString();
-				}
+			if (topicParameter != null) {
+				Message topicObj = Message.asMessage(topicParameter.getValue(null, message, session, false));
+				topic = topicObj.asString();
 			}
 
 			if (topic == null) {

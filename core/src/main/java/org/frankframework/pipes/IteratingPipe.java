@@ -388,7 +388,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		private Message transformMessage(Message message) throws SenderException {
 			try {
 				long preprocessingStartTime = System.currentTimeMillis();
-				ParameterValueList parameterValueList = getParameterList() != null ? getParameterList().getValues(message, session) : null;
+				ParameterValueList parameterValueList = getParameterList().getValues(message, session);
 				Message transformedMsg = msgTransformerPool.transform(message, parameterValueList);
 				long preprocessingDuration = System.currentTimeMillis() - preprocessingStartTime;
 				getStatisticsKeeper("message preprocessing").record(preprocessingDuration);

@@ -82,7 +82,7 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 
 	private SoapWrapper soapWrapper = null;
 
-	private ParameterList paramList = null;
+	private @Nonnull ParameterList paramList = new ParameterList();
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -95,9 +95,7 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 			sender.configure();
 		}
 
-		if (paramList != null) {
-			paramList.configure();
-		}
+		paramList.configure();
 		if (forceMessageIdAsCorrelationId == null) {
 			forceMessageIdAsCorrelationId = false;
 		}
@@ -356,7 +354,7 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 	 */
 	protected Map<String, Object> getMessageProperties(PipeLineSession session) {
 
-		if (session != null && paramList != null) {
+		if (session != null) {
 			return new HashMap<>(evaluateParameters(session));
 		}
 
@@ -365,9 +363,6 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 
 	@Override
 	public void addParameter(IParameter p) {
-		if (paramList == null) {
-			paramList = new ParameterList();
-		}
 		paramList.add(p);
 	}
 
@@ -375,7 +370,7 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 	 * return the Parameters
 	 */
 	@Override
-	public ParameterList getParameterList() {
+	public @Nonnull ParameterList getParameterList() {
 		return paramList;
 	}
 
@@ -386,7 +381,7 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 	 */
 	private Map<String, Object> evaluateParameters(Map<String, Object> threadContext) {
 		Map<String, Object> result = new HashMap<>();
-		if (threadContext != null && paramList != null) {
+		if (threadContext != null) {
 			for (IParameter param : paramList) {
 				Object value = param.getValue();
 

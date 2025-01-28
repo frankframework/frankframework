@@ -172,7 +172,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 
 	}
 
-	public void configure(S fileSystem, ParameterList parameterList, FrankElement owner) throws ConfigurationException {
+	public void configure(@Nonnull S fileSystem, @Nonnull ParameterList parameterList, @Nonnull FrankElement owner) throws ConfigurationException {
 		this.owner=owner;
 		this.fileSystem=fileSystem;
 		this.parameterList=parameterList;
@@ -184,7 +184,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 			actions.addAll(Arrays.asList(ACTIONS_MAIL_FS));
 		}
 
-		if (parameterList!=null && parameterList.hasParameter(PARAMETER_CONTENTS2) && !parameterList.hasParameter(PARAMETER_CONTENTS1)) {
+		if (parameterList.hasParameter(PARAMETER_CONTENTS2) && !parameterList.hasParameter(PARAMETER_CONTENTS1)) {
 			ConfigurationWarnings.add(owner, log, "parameter ["+PARAMETER_CONTENTS2+"] has been replaced with ["+PARAMETER_CONTENTS1+"]");
 			parameterList.findParameter(PARAMETER_CONTENTS2).setName(PARAMETER_CONTENTS1);
 		}
@@ -198,11 +198,11 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				action=FileSystemAction.WRITE;
 			}
 			checkConfiguration(getAction());
-		} else if (parameterList == null || !parameterList.hasParameter(PARAMETER_ACTION)) {
+		} else if (!parameterList.hasParameter(PARAMETER_ACTION)) {
 			throw new ConfigurationException(ClassUtils.nameOf(owner)+": either attribute [action] or parameter ["+PARAMETER_ACTION+"] must be specified");
 		}
 
-		if (StringUtils.isNotEmpty(getInputFolder()) && parameterList!=null && parameterList.hasParameter(PARAMETER_INPUTFOLDER)) {
+		if (StringUtils.isNotEmpty(getInputFolder()) && parameterList.hasParameter(PARAMETER_INPUTFOLDER)) {
 			ConfigurationWarnings.add(owner, log, "inputFolder configured via attribute [inputFolder] as well as via parameter ["+PARAMETER_INPUTFOLDER+"], parameter will be ignored");
 		}
 
@@ -215,7 +215,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 			}
 		}
 
-		if (parameterList != null && !(fileSystem instanceof ISupportsCustomFileAttributes<?>)) {
+		if (!(fileSystem instanceof ISupportsCustomFileAttributes<?>)) {
 			List<String> parametersWithAttributePrefix = parameterList.stream()
 					.map(IParameter::getName)
 					.filter(p -> p.startsWith(ISupportsCustomFileAttributes.FILE_ATTRIBUTE_PARAM_PREFIX))
@@ -244,10 +244,10 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, FileSystemAction.FORWARD, PARAMETER_DESTINATION, null, "destination", getDestination());
 	}
 
-	protected void actionRequiresAtLeastOneOfTwoParametersOrAttribute(HasName owner, ParameterList parameterList, FileSystemAction configuredAction, FileSystemAction action, String parameter1, String parameter2, String attributeName, String attributeValue) throws ConfigurationException {
+	protected void actionRequiresAtLeastOneOfTwoParametersOrAttribute(@Nonnull HasName owner, @Nonnull ParameterList parameterList, FileSystemAction configuredAction, FileSystemAction action, String parameter1, String parameter2, String attributeName, String attributeValue) throws ConfigurationException {
 		if (configuredAction == action) {
-			boolean parameter1Set = parameterList != null && parameterList.hasParameter(parameter1);
-			boolean parameter2Set = parameterList != null && parameterList.hasParameter(parameter2);
+			boolean parameter1Set = parameterList.hasParameter(parameter1);
+			boolean parameter2Set = parameterList.hasParameter(parameter2);
 			boolean attributeSet  = StringUtils.isNotEmpty(attributeValue);
 			if (!parameter1Set && !parameter2Set && !attributeSet) {
 				throw new ConfigurationException(ClassUtils.nameOf(owner)+": the ["+action+"] action requires the parameter ["+parameter1+"] "+(parameter2!=null?"or parameter ["+parameter2+"] ":"")+(attributeName!=null?"or the attribute ["+attributeName+"] ": "")+"to be present");

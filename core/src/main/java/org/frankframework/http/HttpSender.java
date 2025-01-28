@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URLEncoder;
 
+import jakarta.annotation.Nonnull;
 import jakarta.mail.BodyPart;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMultipart;
@@ -109,7 +110,7 @@ public class HttpSender extends AbstractHttpSender {
 	}
 
 	@Override
-	protected HttpRequestBase getMethod(URI url, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
+	protected HttpRequestBase getMethod(URI url, Message message, @Nonnull ParameterValueList parameters, PipeLineSession session) throws SenderException {
 		if (isEncodeMessages() && !Message.isEmpty(message)) {
 			try {
 				message = new Message(URLEncoder.encode(message.asString(), getCharSet()));
@@ -124,7 +125,7 @@ public class HttpSender extends AbstractHttpSender {
 	/**
 	 * Returns HttpRequestBase, with (optional) RAW or as BINARY content
 	 */
-	protected HttpRequestBase createRequestMethod(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
+	protected HttpRequestBase createRequestMethod(URI uri, Message message, @Nonnull ParameterValueList parameters, PipeLineSession session) throws SenderException {
 		try {
 			boolean queryParametersAppended = false;
 			StringBuilder relativePath = new StringBuilder(uri.getRawPath());
@@ -135,12 +136,12 @@ public class HttpSender extends AbstractHttpSender {
 
 			switch (getHttpMethod()) {
 			case GET:
-				if (parameters!=null) {
+				if (parameters.size() > 0) {
 					queryParametersAppended = appendParameters(queryParametersAppended,relativePath,parameters);
 					log.debug("path after appending of parameters [{}]", relativePath);
 				}
 
-				HttpGet getMethod = new HttpGet(relativePath+(parameters==null && BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message)? message.asString():""));
+				HttpGet getMethod = new HttpGet(relativePath+(parameters.size() == 0 && BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message)? message.asString():""));
 
 				log.debug("HttpSender constructed GET-method [{}]", () -> getMethod.getURI().getQuery());
 				if (null != getFullContentType()) { // Manually set Content-Type header

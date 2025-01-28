@@ -243,13 +243,11 @@ public class IbisLocalSender extends AbstractSenderWithParameters implements Has
 			if (correlationId != null) {
 				subAdapterSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 			}
-			if (paramList != null) {
-				try {
-					Map<String,Object> paramValues = paramList.getValues(message, session).getValueMap();
-					subAdapterSession.putAll(paramValues);
-				} catch (ParameterException e) {
-					throw new SenderException("exception evaluating parameters", e);
-				}
+			try {
+				Map<String, Object> paramValues = paramList.getValues(message, session).getValueMap();
+				subAdapterSession.putAll(paramValues);
+			} catch (ParameterException e) {
+				throw new SenderException("exception evaluating parameters", e);
 			}
 			final ServiceClient serviceClient;
 			try {

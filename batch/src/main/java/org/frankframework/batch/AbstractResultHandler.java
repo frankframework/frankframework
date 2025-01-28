@@ -15,6 +15,8 @@
 */
 package org.frankframework.batch;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -42,7 +44,7 @@ import org.frankframework.util.LogUtil;
  */
 public abstract class AbstractResultHandler implements IResultHandler, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter String name;
@@ -52,13 +54,11 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	private @Getter boolean blockByRecordType=true;
 	private @Getter AbstractPipe pipe;
 
-	protected ParameterList paramList = null;
+	protected @Nonnull ParameterList paramList = new ParameterList();
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (paramList!=null) {
-			paramList.configure();
-		}
+		paramList.configure();
 		if (StringUtils.isNotEmpty(getPrefix()) || StringUtils.isNotEmpty(getSuffix())) {
 			ConfigurationWarnings.add(this, log, "the use of attributes prefix and suffix has been replaced by 'blocks'. Please replace with 'onBlockOpen' and 'onBlockClose', respectively", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getPipe().getAdapter());
 		}
@@ -79,14 +79,11 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 
 	@Override
 	public void addParameter(IParameter p) {
-		if (paramList==null) {
-			paramList=new ParameterList();
-		}
 		paramList.add(p);
 	}
 
 	@Override
-	public ParameterList getParameterList() {
+	public @Nonnull ParameterList getParameterList() {
 		return paramList;
 	}
 
