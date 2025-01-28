@@ -139,11 +139,13 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 
 
 	@Override
-	public String getNodeText(XSElementDeclaration elementDeclaration, JsonValue node) {
+	public String getNodeText(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
 		String result;
 		if (node instanceof JsonString) {
-			result=((JsonString)node).getString();
-		} else if (node instanceof JsonStructure) { // this happens when override key is present without a value
+			result = ((JsonString) node).getString();
+		} else if (node instanceof JsonArray) {
+			throw new SAXException("Expected simple element, got instead an array-value: [" + node + "]");
+		} else if (node instanceof JsonStructure) { // this happens when override key is present without a value (?? Is that so?)
 			result=null;
 		} else {
 			result=node.toString();
@@ -304,7 +306,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	}
 
 	@Override
-	protected String getOverride(XSElementDeclaration elementDeclaration, JsonValue node) {
+	protected String getOverride(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
 		Object text = sp.getOverride(getContext());
 		if (text instanceof List) {
 			// if the override is a List, than it has already be substituted via getSubstitutedChild.

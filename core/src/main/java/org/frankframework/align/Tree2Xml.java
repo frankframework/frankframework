@@ -45,7 +45,7 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 
 	public abstract Set<String> getAllNodeChildNames(XSElementDeclaration elementDeclaration, N node) throws SAXException; // returns null when no children present, otherwise a _copy_ of the Set (it will be modified)
 	public abstract Iterable<N> getNodeChildrenByName(N node, XSElementDeclaration childElementDeclaration) throws SAXException;
-	public abstract String getNodeText(XSElementDeclaration elementDeclaration, N node);
+	public abstract String getNodeText(XSElementDeclaration elementDeclaration, N node) throws SAXException;
 
 	@Override
 	public boolean hasChild(XSElementDeclaration elementDeclaration, N node, String childName) throws SAXException {
@@ -67,7 +67,7 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 	protected N getSubstitutedChild(N node, String childName) {
 		return node;
 	}
-	protected String getOverride(XSElementDeclaration elementDeclaration, N node) {
+	protected String getOverride(XSElementDeclaration elementDeclaration, N node) throws SAXException {
 		Object text = sp.getOverride(getContext());
 		if (text instanceof String) {
 			return (String)text;
@@ -88,7 +88,7 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 	}
 
 	@Override
-	public final String getText(XSElementDeclaration elementDeclaration, N node) {
+	public final String getText(XSElementDeclaration elementDeclaration, N node) throws SAXException {
 		String nodeName=elementDeclaration.getName();
 		Object text;
 		if (log.isTraceEnabled()) log.trace("node ["+nodeName+"] currently parsed element ["+getContext().getLocalName()+"]");
