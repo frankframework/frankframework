@@ -86,6 +86,7 @@ import org.frankframework.util.XmlUtils;
  *
  * @ff.info When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
  * This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.
+ * @ff.info The use of `multi-value` parameters can be achieved by adding multiple {@link Parameter parameters} with the same name.
  * @ff.parameters Any parameters present are appended to the request (when method is <code>GET</code> as request-parameters, when method <code>POST</code>
  * as body part) except the <code>headersParams</code> list, which are added as HTTP headers, and the <code>urlParam</code> header
  *
