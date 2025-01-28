@@ -17,11 +17,18 @@ package org.frankframework.parameters;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Spliterator;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
+import org.apache.commons.collections.iterators.EmptyIterator;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -38,63 +45,112 @@ import org.frankframework.stream.Message;
  *
  * @author Gerrit van Brakel
  */
-public class ParameterList extends ArrayList<IParameter> {
+public class ParameterList implements Iterable<IParameter> {
 	private boolean inputValueRequiredForResolution;
 	private @Getter @Setter boolean namesMustBeUnique;
+	private @Nullable List<IParameter> parameters;
 
-	@Override
+	public ParameterList() {
+		super();
+	}
+
+	public ParameterList(@Nullable ParameterList parameterList) {
+		if (parameterList == null) {
+			return;
+		}
+		this.inputValueRequiredForResolution = parameterList.inputValueRequiredForResolution;
+		this.namesMustBeUnique = parameterList.namesMustBeUnique;
+		if (parameterList.parameters != null) {
+			this.parameters = new ArrayList<>(parameterList.parameters);
+		}
+	}
+
 	public void clear() {
-		super.clear();
+		if (parameters != null) {
+			parameters.clear();
+		}
 	}
 
 	public void configure() throws ConfigurationException {
-		for(IParameter param : this) {
+		if (parameters == null) {
+			return;
+		}
+		for(IParameter param : parameters) {
 			param.configure();
 		}
 		inputValueRequiredForResolution = parameterEvaluationRequiresInputValue();
 		if (isNamesMustBeUnique()) {
-			Set<String> names = new LinkedHashSet<>();
-			Set<String> duplicateNames = new LinkedHashSet<>();
-			for(IParameter param : this) {
-				if (names.contains(param.getName())) {
-					duplicateNames.add(param.getName());
-				}
-				names.add(param.getName());
-			}
+			List<String> duplicateNames = parameters.stream()
+					.collect(Collectors.groupingBy(IParameter::getName, Collectors.counting()))
+					.entrySet().stream()
+					.filter(entry -> entry.getValue() > 1)
+					.map(Map.Entry::getKey)
+					.toList();
 			if (!duplicateNames.isEmpty()) {
 				throw new ConfigurationException("Duplicate parameter names "+duplicateNames);
 			}
 		}
 	}
 
-	@Override
 	public synchronized boolean add(IParameter param) {
+		if (parameters == null) {
+			parameters = new ArrayList<>();
+		}
 		if (StringUtils.isEmpty(param.getName())) {
-			param.setName("parameter" + size());
+			param.setName("parameter" + parameters.size());
 		}
 
-		return super.add(param);
+		return parameters.add(param);
+	}
+
+	public boolean remove(IParameter param) {
+		if (parameters == null) {
+			return false;
+		}
+		return parameters.remove(param);
+	}
+
+	public IParameter remove(String name) {
+		final IParameter param = findParameter(name);
+		if (param == null) {
+			return null;
+		}
+		if (remove(param)) {
+			return param;
+		} else {
+			return null;
+		}
 	}
 
 	public IParameter getParameter(int i) {
-		return get(i);
+		if (parameters == null) {
+			throw new IndexOutOfBoundsException("Parameter list is empty");
+		}
+		return parameters.get(i);
 	}
 
 	public IParameter findParameter(String name) {
-		for (IParameter p : this) {
-			if (p != null && p.getName().equals(name)) {
-				return p;
-			}
+		if (parameters == null) {
+			return null;
 		}
-		return null;
+		return parameters.stream()
+				.filter(p -> p.getName().equals(name))
+				.findFirst().orElse(null);
 	}
 
 	public boolean hasParameter(String name) {
-		return stream().anyMatch(p -> p.getName().equals(name));
+		if (parameters == null) {
+			return false;
+		}
+		return parameters.stream()
+				.anyMatch(p -> p.getName().equals(name));
 	}
 
 	private boolean parameterEvaluationRequiresInputValue() {
-		for (IParameter p:this) {
+		if (parameters == null) {
+			return false;
+		}
+		for (IParameter p: parameters) {
 			if (p.requiresInputValueForResolution()) {
 				return true;
 			}
@@ -110,6 +166,10 @@ public class ParameterList extends ArrayList<IParameter> {
 	 * Returns a List of <link>ParameterValue<link> objects
 	 */
 	public @Nonnull ParameterValueList getValues(Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+		ParameterValueList result = new ParameterValueList();
+		if (parameters == null) {
+			return result;
+		}
 		if(inputValueRequiredForResolution && !Message.isNull(message)) {
 			try {
 				message.preserve();
@@ -121,8 +181,7 @@ public class ParameterList extends ArrayList<IParameter> {
 			message.assertNotClosed();
 		}
 
-		ParameterValueList result = new ParameterValueList();
-		for (IParameter param : this) {
+		for (IParameter param : parameters) {
 			// if a parameter has sessionKey="*", then a list is generated with a synthetic parameter referring to
 			// each session variable whose name starts with the name of the original parameter
 			if (isWildcardSessionKey(param)) {
@@ -161,7 +220,10 @@ public class ParameterList extends ArrayList<IParameter> {
 	}
 
 	public boolean consumesSessionVariable(String sessionKey) {
-		for (IParameter p:this) {
+		if (parameters == null) {
+			return false;
+		}
+		for (IParameter p: parameters) {
 			if (p.consumesSessionVariable(sessionKey)) {
 				return true;
 			}
@@ -169,4 +231,47 @@ public class ParameterList extends ArrayList<IParameter> {
 		return false;
 	}
 
+	public boolean isEmpty() {
+		if (parameters == null) {
+			return true;
+		}
+		return parameters.isEmpty();
+	}
+
+	@Nonnull
+	@Override
+	public Iterator<IParameter> iterator() {
+		if (parameters == null) {
+			//noinspection unchecked
+			return (Iterator<IParameter>) EmptyIterator.INSTANCE;
+		}
+		return parameters.iterator();
+	}
+
+	@Override
+	public void forEach(Consumer<? super IParameter> action) {
+		if (parameters == null) {
+			return;
+		}
+		parameters.forEach(action);
+	}
+
+	@Override
+	public Spliterator<IParameter> spliterator() {
+		return Iterable.super.spliterator();
+	}
+
+	public Stream<IParameter> stream() {
+		if (parameters == null) {
+			return Stream.empty();
+		}
+		return parameters.stream();
+	}
+
+	public int size() {
+		if (parameters == null) {
+			return 0;
+		}
+		return parameters.size();
+	}
 }
