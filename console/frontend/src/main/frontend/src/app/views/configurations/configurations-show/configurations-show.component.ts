@@ -87,6 +87,7 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
       },
       queryParamsHandling: 'merge',
       fragment: this.fragment,
+      replaceUrl: true,
     });
   }
 
