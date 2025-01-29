@@ -340,6 +340,10 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	}
 
 
+	/**
+	 * This test has been modified to show the behaviour in the 7.8-release branch.
+	 * The result is not desired and has been tracked by #8325.
+	 */
 	@Test
 	public void testWithParameters() throws Exception {
 		pipe.setName("RestGet");

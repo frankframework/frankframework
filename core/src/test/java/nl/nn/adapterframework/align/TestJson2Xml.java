@@ -195,7 +195,7 @@ public class TestJson2Xml extends AlignTestBase {
 	}
 
 	@Test
-	@Ignore
+	@Ignore("This test has been disabled because it does not provide the desired result. See issue #8307 for more info.")
 	public void testMultidimensionalArray() throws Exception {
 		URL schemaUrl = TestFileUtils.getTestFileURL("/Align/MultidimensionalArray/schema.xsd");
 		String jsonIn = TestFileUtils.getTestFile("/Align/MultidimensionalArray/input.json");
