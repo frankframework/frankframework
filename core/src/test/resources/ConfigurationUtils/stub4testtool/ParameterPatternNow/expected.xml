@@ -11,7 +11,7 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 			<pipe name="PutParametersInSession" className="org.frankframework.pipes.PutParametersInSession">
 				<param name="date" type="datetime" pattern="{fixedDate,date,yyyy-MM-dd HH:mm:ss}"/>

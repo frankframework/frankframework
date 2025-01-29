@@ -4,7 +4,7 @@
 			<JavaListener name="HelloBeautifulWorld" elementRole="listener" className="org.frankframework.receivers.JavaListener"/>
 		</Receiver>
 		<Pipeline firstPipe="HelloBeautifulWorld" elementRole="pipeline">
-			<Exit path="EXIT" state="success" elementRole="exit"/>
+			<Exit name="EXIT" state="success" elementRole="exit"/>
 			<EchoPipe name="HelloBeautifulWorld" getInputFromFixedValue="Hello Beautiful World" elementRole="pipe" className="org.frankframework.pipes.EchoPipe">
 				<Forward name="success" path="EXIT" elementRole="forward"/>
 			</EchoPipe>

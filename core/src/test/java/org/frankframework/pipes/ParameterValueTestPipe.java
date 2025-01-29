@@ -13,13 +13,11 @@ public class ParameterValueTestPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		ParameterValueList pvl = null;
-		if (getParameterList() != null) {
-			try {
-				pvl = getParameterList().getValues(message, session);
-			} catch (ParameterException e) {
-				throw new PipeRunException(this, "exception on extracting parameters", e);
-			}
+		ParameterValueList pvl;
+		try {
+			pvl = getParameterList().getValues(message, session);
+		} catch (ParameterException e) {
+			throw new PipeRunException(this, "exception on extracting parameters", e);
 		}
 
 		String param1 = getParameterValue(pvl, "param1");

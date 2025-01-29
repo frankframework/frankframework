@@ -88,20 +88,16 @@ public class FixedResultSender extends AbstractSenderWithParameters {
 	@Override
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		String result=returnString;
-		if (paramList!=null) {
-			ParameterValueList pvl;
-			try {
-				pvl = paramList.getValues(message, session);
-			} catch (ParameterException e) {
-				throw new SenderException("exception extracting parameters",e);
-			}
-			if (pvl!=null) {
-				for(ParameterValue pv : pvl) {
-					String from = "${"+pv.getDefinition().getName()+"}";
-					String to = pv.asStringValue("");
-					result= result.replace(from, to);
-				}
-			}
+		ParameterValueList pvl;
+		try {
+			pvl = paramList.getValues(message, session);
+		} catch (ParameterException e) {
+			throw new SenderException("exception extracting parameters",e);
+		}
+		for (ParameterValue pv : pvl) {
+			String from = "${" + pv.getDefinition().getName() + "}";
+			String to = pv.asStringValue("");
+			result = result.replace(from, to);
 		}
 
 		if (isSubstituteVars()){

@@ -16,7 +16,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
@@ -36,18 +35,16 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		createFile(null, filename, contents);
 		waitForActionToFinish();
 
-		ParameterList params = new ParameterList();
-		params.add(new Parameter("action", "read"));
-
-		params.add(new Parameter("filename", filename));
-		params.configure();
+		parameters.add(new Parameter("action", "read"));
+		parameters.add(new Parameter("filename", filename));
+		parameters.configure();
 
 		actor.setAction(FileSystemAction.WRITE);
-		actor.configure(fileSystem, params, adapter);
+		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
 		Message message = new Message(filename);
-		ParameterValueList pvl = params.getValues(null, session);
+		ParameterValueList pvl = parameters.getValues(null, session);
 
 		result = actor.doAction(message, pvl, session);
 		assertEquals(contents, result.asString());
@@ -61,19 +58,18 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		PipeLineSession session = new PipeLineSession();
 		session.put("senderwriteWithCharsetUseDefault", contents);
 
-		ParameterList params = new ParameterList();
-		params.add(ParameterBuilder.create().withName("contents").withSessionKey("senderwriteWithCharsetUseDefault"));
-		params.configure();
+		parameters.add(ParameterBuilder.create().withName("contents").withSessionKey("senderwriteWithCharsetUseDefault"));
+		parameters.configure();
 
 		waitForActionToFinish();
 
 		actor.setAction(FileSystemAction.WRITE);
 		actor.setFilename(filename);
-		actor.configure(fileSystem, null, adapter);
+		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
 		Message message = new Message(contents);
-		ParameterValueList pvl = params.getValues(message, session);
+		ParameterValueList pvl = parameters.getValues(message, session);
 
 		actor.doAction(message, pvl, session);
 
@@ -93,16 +89,15 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTargetwString", contents);
 
-		ParameterList params = new ParameterList();
-		params.add(ParameterBuilder.create().withName("contents").withSessionKey("uploadActionTargetwString"));
+		parameters.add(ParameterBuilder.create().withName("contents").withSessionKey("uploadActionTargetwString"));
 
 		actor.setAction(FileSystemAction.UPLOAD);
-		params.configure();
-		actor.configure(fileSystem, params, adapter);
+		parameters.configure();
+		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
 		Message message = new Message(filename);
-		ParameterValueList pvl = params.getValues(message, session);
+		ParameterValueList pvl = parameters.getValues(message, session);
 		result = actor.doAction(message, pvl, session);
 		waitForActionToFinish();
 
@@ -130,18 +125,17 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		Message sessionMessage = new Message(new ThrowingAfterCloseInputStream(new ByteArrayInputStream(contents.getBytes())));
 		session.put("writeLineSeparator", sessionMessage);
 
-		ParameterList params = new ParameterList();
-		params.add(ParameterBuilder.create().withName("contents").withSessionKey("writeLineSeparator"));
+		parameters.add(ParameterBuilder.create().withName("contents").withSessionKey("writeLineSeparator"));
 
 		actor.setWriteLineSeparator(true);
 		actor.setAction(FileSystemAction.WRITE);
 		actor.setFilename(filename);
-		params.configure();
-		actor.configure(fileSystem, params, adapter);
+		parameters.configure();
+		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
 		Message message = new Message("fakeInputMessage");
-		ParameterValueList pvl = params.getValues(message, session);
+		ParameterValueList pvl = parameters.getValues(message, session);
 		result = actor.doAction(message, pvl, session);
 		waitForActionToFinish();
 
@@ -168,17 +162,16 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		PipeLineSession session = new PipeLineSession();
 		session.put("fileContentSessionValue", contents);
 
-		ParameterList params = new ParameterList();
-		params.add(ParameterBuilder.create().withName("contents").withSessionKey("fileContentSessionValue"));
-		params.add(ParameterBuilder.create().withName("filename").withValue(filename));
+		parameters.add(ParameterBuilder.create().withName("contents").withSessionKey("fileContentSessionValue"));
+		parameters.add(ParameterBuilder.create().withName("filename").withValue(filename));
 
 		actor.setAction(FileSystemAction.WRITE);
-		params.configure();
-		actor.configure(fileSystem, params, adapter);
+		parameters.configure();
+		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
 		Message message = new Message("should-not-be-used");
-		ParameterValueList pvl = params.getValues(message, session);
+		ParameterValueList pvl = parameters.getValues(message, session);
 		result = actor.doAction(message, pvl, session);
 		waitForActionToFinish();
 
@@ -200,17 +193,16 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		}
 
 		PipeLineSession session = new PipeLineSession();
-		ParameterList params = new ParameterList();
 
 		actor.setWriteLineSeparator(true);
 		actor.setAction(FileSystemAction.WRITE);
 		actor.setFilename(filename);
-		params.configure();
-		actor.configure(fileSystem, params, adapter);
+		parameters.configure();
+		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
 		Message message = new Message(new ThrowingAfterCloseInputStream(new ByteArrayInputStream(contents.getBytes())));
-		ParameterValueList pvl = params.getValues(message, session);
+		ParameterValueList pvl = parameters.getValues(message, session);
 		result = actor.doAction(message, pvl, session);
 		waitForActionToFinish();
 
@@ -237,16 +229,15 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTargetwByteArray", contents.getBytes());
 
-		ParameterList params = new ParameterList();
-		params.add(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTargetwByteArray"));
+		parameters.add(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTargetwByteArray"));
 
 		actor.setAction(FileSystemAction.WRITE);
-		params.configure();
-		actor.configure(fileSystem, params, adapter);
+		parameters.configure();
+		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
 		Message message = new Message(filename);
-		ParameterValueList pvl = params.getValues(message, session);
+		ParameterValueList pvl = parameters.getValues(message, session);
 		result = actor.doAction(message, pvl, session);
 
 		String stringResult = result.asString();
@@ -272,16 +263,15 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTarget", stream);
 
-		ParameterList params = new ParameterList();
-		params.add(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTarget"));
-		params.configure();
+		parameters.add(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTarget"));
+		parameters.configure();
 
 		actor.setAction(FileSystemAction.WRITE);
-		actor.configure(fileSystem, params, adapter);
+		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
 		Message message = new Message(filename);
-		ParameterValueList pvl = params.getValues(message, session);
+		ParameterValueList pvl = parameters.getValues(message, session);
 		result = actor.doAction(message, pvl, session);
 
 		String stringResult = result.asString();
@@ -308,20 +298,18 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		}
 
 		PipeLineSession session = new PipeLineSession();
-
-		ParameterList params = new ParameterList();
-		params.add(ParameterBuilder.create().withName("contents").withSessionKey("fileSystemActorWriteActionWithBackupKey"));
-		params.configure();
+		parameters.add(ParameterBuilder.create().withName("contents").withSessionKey("fileSystemActorWriteActionWithBackupKey"));
+		parameters.configure();
 
 		actor.setAction(FileSystemAction.WRITE);
 		actor.setNumberOfBackups(numOfBackups);
-		actor.configure(fileSystem, params, adapter);
+		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
 		Message message = new Message(filename);
 		for (int i = 0; i < numOfWrites; i++) {
 			session.put("fileSystemActorWriteActionWithBackupKey", contents + i);
-			ParameterValueList pvl = params.getValues(message, session);
+			ParameterValueList pvl = parameters.getValues(message, session);
 			Message result = actor.doAction(message, pvl, session);
 
 			String stringResult = result.asString();
@@ -348,17 +336,16 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 			_deleteFile(folderName, filename);
 		}
 
-		ParameterList params = new ParameterList();
-		params.add(ParameterBuilder.create().withName("contents").withValue("tralala"));
-		params.configure();
+		parameters.add(ParameterBuilder.create().withName("contents").withValue("tralala"));
+		parameters.configure();
 
 		actor.setCreateFolder(true);
 		actor.setAction(FileSystemAction.WRITE);
-		actor.configure(fileSystem, params, adapter);
+		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
 		Message message = new Message(folderName + "/" + filename); //Flat file structure, should create folder
-		ParameterValueList pvl = params.getValues(message, session);
+		ParameterValueList pvl = parameters.getValues(message, session);
 		Message result = actor.doAction(message, pvl, session);
 		TestAssertions.assertXpathValueEquals(filename, result.asString(), "file/@name");
 		result.close();
@@ -369,7 +356,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		//Test if we can list items in the folder
 		actor.setAction(FileSystemAction.LIST);
 		actor.setInputFolder(folderName);
-		actor.configure(fileSystem, null, adapter);
+		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 		Message result2 = actor.doAction(new Message(folderName), null, session);
 		TestAssertions.assertXpathValueEquals(filename, result2.asString(), "directory/file/@name");
@@ -385,18 +372,16 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 			_deleteFile(null, filename);
 		}
 
-
-		ParameterList params = new ParameterList();
-		params.add(ParameterBuilder.create().withName("filename").withValue(filename));
-		params.configure();
+		parameters.add(ParameterBuilder.create().withName("filename").withValue(filename));
+		parameters.configure();
 
 		actor.setCreateFolder(true);
 		actor.setAction(FileSystemAction.WRITE);
-		actor.configure(fileSystem, params, adapter);
+		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
 		Message message = new Message(contents);
-		ParameterValueList pvl = params.getValues(message, session);
+		ParameterValueList pvl = parameters.getValues(message, session);
 		result = actor.doAction(message, pvl, session);
 
 		String stringResult = result.asString();
@@ -447,20 +432,19 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		createFile(null, filename, contents);
 
 		PipeLineSession session = new PipeLineSession();
-		ParameterList params = new ParameterList();
-		params.add(ParameterBuilder.create().withName("contents").withSessionKey("appendWriteLineSeparatorTest"));
-		params.configure();
+		parameters.add(ParameterBuilder.create().withName("contents").withSessionKey("appendWriteLineSeparatorTest"));
+		parameters.configure();
 
 		actor.setWriteLineSeparator(isWriteLineSeparator);
 		actor.setAction(FileSystemAction.APPEND);
-		actor.configure(fileSystem, params, adapter);
+		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
 		Message message = new Message(filename);
 		for (int i = 0; i < numOfWrites; i++) {
 			Message sessionMessage = new Message(new ThrowingAfterCloseInputStream(new ByteArrayInputStream((contents + i).getBytes())));
 			session.put("appendWriteLineSeparatorTest", sessionMessage);
-			ParameterValueList pvl = params.getValues(message, session);
+			ParameterValueList pvl = parameters.getValues(message, session);
 			Message result = actor.doAction(message, pvl, session);
 			String resultStr = result.asString();
 
@@ -486,20 +470,19 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		createFile(null, filename, contents);
 
 		PipeLineSession session = new PipeLineSession();
-		ParameterList params = new ParameterList();
-		params.add(ParameterBuilder.create().withName("contents").withSessionKey("appendActionwString"));
-		params.configure();
+		parameters.add(ParameterBuilder.create().withName("contents").withSessionKey("appendActionwString"));
+		parameters.configure();
 
 		actor.setAction(FileSystemAction.APPEND);
 		actor.setRotateSize(rotateSize);
 		actor.setNumberOfBackups(numOfBackups);
-		actor.configure(fileSystem, params, adapter);
+		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
 		Message message = new Message(filename);
 		for (int i = 0; i < numOfWrites; i++) {
 			session.put("appendActionwString", contents + i);
-			ParameterValueList pvl = params.getValues(message, session);
+			ParameterValueList pvl = parameters.getValues(message, session);
 			Message result = actor.doAction(message, pvl, session);
 			String resultStr = result.asString();
 
@@ -527,18 +510,16 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 			createFile(null, dest, "original of destination");
 		}
 
-		ParameterList params = new ParameterList();
-
-		params.add(new Parameter("destination", dest));
+		parameters.add(new Parameter("destination", dest));
 		actor.setAction(FileSystemAction.RENAME);
-		params.configure();
-		actor.configure(fileSystem, params, adapter);
+		parameters.configure();
+		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
 		deleteFile(null, dest);
 
 		Message message = new Message(filename);
-		ParameterValueList pvl = params.getValues(message, session);
+		ParameterValueList pvl = parameters.getValues(message, session);
 		result = actor.doAction(message, pvl, session);
 
 		// test
@@ -559,7 +540,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 		actor.setFilename(filename);
 		actor.setAction(FileSystemAction.CREATE);
-		actor.configure(fileSystem, null, adapter);
+		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
 		Message message = new Message(filename);
@@ -578,17 +559,16 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 	public void fileSystemActorCreateActionFilenameFromParameterTest() throws Exception {
 		String filename = "tobecreated.txt";
 
-		ParameterList params = new ParameterList();
-		params.add(new Parameter("filename", filename));
-		params.configure();
+		parameters.add(new Parameter("filename", filename));
+		parameters.configure();
 
 		actor.setFilename(filename);
 		actor.setAction(FileSystemAction.CREATE);
-		actor.configure(fileSystem, params, adapter);
+		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
 		Message message = new Message(filename);
-		actor.doAction(message, params.getValues(message, session), session);
+		actor.doAction(message, parameters.getValues(message, session), session);
 
 		boolean actual = _fileExists(filename);
 

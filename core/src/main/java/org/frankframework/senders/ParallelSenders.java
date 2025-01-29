@@ -58,7 +58,7 @@ public class ParallelSenders extends SenderSeries {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (getParameterList() != null && !getParameterList().isEmpty()) {
+		if (!getParameterList().isEmpty()) {
 			String paramList = getParameterList().stream()
 					.map(IParameter::getName)
 					.collect(Collectors.joining(", "));

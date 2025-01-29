@@ -84,7 +84,7 @@ public class LarvaPipe extends FixedForwardPipe {
 		String currentScenariosRootDirectory = larvaTool.initScenariosRootDirectories(
 				null, scenariosRootDirectories,
 				scenariosRootDescriptions);
-    	String paramExecute = currentScenariosRootDirectory;
+		String paramExecute = currentScenariosRootDirectory;
 		if (StringUtils.isNotEmpty(getExecute())) {
 			paramExecute = paramExecute + getExecute();
 		}

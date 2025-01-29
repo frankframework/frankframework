@@ -308,11 +308,9 @@ public class FileHandler implements IScopeProvider {
 		String writeSuffix_work = null;
 		if (paramList != null) {
 			ParameterValueList pvl = paramList.getValues(null, session);
-			if (pvl != null) {
-				ParameterValue writeSuffixParamValue = pvl.get("writeSuffix");
-				if (writeSuffixParamValue != null) {
-					writeSuffix_work = (String) writeSuffixParamValue.getValue();
-				}
+			ParameterValue writeSuffixParamValue = pvl.get("writeSuffix");
+			if (writeSuffixParamValue != null) {
+				writeSuffix_work = (String) writeSuffixParamValue.getValue();
 			}
 		}
 		if (writeSuffix_work == null) {

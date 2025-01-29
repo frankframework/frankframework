@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.0.0-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.1.0-SNAPSHOT">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -175,8 +175,7 @@
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
         <xs:documentation>Sets the name of the Receiver, as known to the Adapter.
- If the listener implements the name interface and &lt;code&gt;getName()&lt;/code&gt;
- of the listener is empty, the name of this object is given to the listener.</xs:documentation>
+ If the listener &lt;code&gt;getName()&lt;/code&gt; is empty, the name of this object is given to the listener.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="onError">
@@ -1033,19 +1032,6 @@
   </xs:group>
   <xs:group name="ParamElementGroup">
     <xs:choice>
-      <xs:element name="Param">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:group ref="ParamElementGroup" />
-            </xs:choice>
-          </xs:sequence>
-          <xs:attribute ref="active" />
-          <xs:attribute name="elementRole" type="xs:string" fixed="param" use="prohibited" />
-          <xs:attribute name="className" type="xs:string" default="org.frankframework.parameters.Parameter" />
-          <xs:anyAttribute processContents="skip" />
-        </xs:complexType>
-      </xs:element>
       <xs:group ref="ParamElementGroupBase" />
     </xs:choice>
   </xs:group>
@@ -1074,6 +1060,22 @@
           <xs:complexContent>
             <xs:extension base="NumberParameterType">
               <xs:attribute name="elementRole" type="xs:string" fixed="param" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="Param">
+        <xs:annotation>
+          <xs:documentation>Placeholder class to allow legacy configuration notations &lt;code&gt;&amp;lt;param type='number' /&amp;gt;&lt;/code&gt; in the new Frank!Config XSD.
+ &lt;p&gt;
+ The attribute &lt;code&gt;type&lt;/code&gt; has been removed in favor of explicit ParameterTypes such as: &lt;code&gt;NumberParameter&lt;/code&gt;, &lt;code&gt;DateParameter&lt;/code&gt; and &lt;code&gt;BooleanParameter&lt;/code&gt;.
+ Using the new elements enables the use of auto-completion for the specified type.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="ParameterType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="param" use="prohibited" />
+              <xs:anyAttribute processContents="skip" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
@@ -1295,6 +1297,25 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="NumberParameterCumulativeAttributeGroup">
     <xs:attributeGroup ref="NumberParameterDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractParameterDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="ParameterType">
+    <xs:group ref="AbstractParameterDeclaredChildGroup" />
+    <xs:attributeGroup ref="ParameterCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.parameters.Parameter" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="ParameterDeclaredAttributeGroup">
+    <xs:attribute name="type">
+      <xs:annotation>
+        <xs:documentation>The target data type of the parameter, related to the database or XSLT stylesheet to which the parameter is applied. Default: STRING</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="ParameterTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="ParameterCumulativeAttributeGroup">
+    <xs:attributeGroup ref="ParameterDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractParameterDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="XmlParameterType">
@@ -3245,44 +3266,23 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="timeout" type="frankInt" />
-    <xs:attribute name="keepAliveInterval" type="frankInt" />
+    <xs:attribute ref="keepAliveInterval" />
     <xs:attribute name="clientId" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>The clientId for this connection. Be aware that each connection (each sender or listener) needs to have a unique clientId. The MQTT broker uses the clientId to hold a persistent session, so it can send any missing messages when you reconnect.
  see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank"&gt;MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)&lt;/a&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="brokerUrl" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank"&gt;MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)&lt;/a&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="brokerUrl" use="required" />
     <xs:attribute name="topic" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#subscribe-java.lang.String-" target="_blank"&gt;MqttClient.subscribe(java.lang.String topicFilter)&lt;/a&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="qos" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank"&gt;MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)&lt;/a&gt; Default: 2</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="cleanSession" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html#setCleanSession-boolean-" target="_blank"&gt;MqttConnectOptions.setCleanSession(boolean cleanSession)&lt;/a&gt; Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="persistenceDirectory" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Stores inbound and outbound messages while they are in flight on disk storage. Recommended when reliability is paramount. Messages are persisted in memory when empty.
- see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/persist/MqttDefaultFilePersistence.html" target="_blank"&gt;MqttDefaultFilePersistence&lt;/a&gt; and &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html" target="_blank"&gt;MqttClient&lt;/a&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="automaticReconnect" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html#setAutomaticReconnect-boolean-" target="_blank"&gt;MqttConnectOptions.setAutomaticReconnect(boolean automaticReconnect)&lt;/a&gt; (apart from this recover job will also try to recover) Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="qos" />
+    <xs:attribute ref="cleanSession" />
+    <xs:attribute ref="persistenceDirectory" />
+    <xs:attribute ref="automaticReconnect" />
     <xs:attribute name="charset" type="xs:string">
       <xs:annotation>
         <xs:documentation>character encoding of received messages Default: UTF-8</xs:documentation>
@@ -4347,24 +4347,36 @@
   </xs:group>
   <xs:group name="ErrorMessageFormatterElementGroup">
     <xs:choice>
-      <xs:element name="ErrorMessageFormatter">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:group ref="ParamElementGroup" />
-            </xs:choice>
-          </xs:sequence>
-          <xs:attribute ref="active" />
-          <xs:attribute name="elementRole" type="xs:string" fixed="errorMessageFormatter" use="prohibited" />
-          <xs:attribute name="className" type="xs:string" default="org.frankframework.errormessageformatters.ErrorMessageFormatter" />
-          <xs:anyAttribute processContents="skip" />
-        </xs:complexType>
-      </xs:element>
       <xs:group ref="ErrorMessageFormatterElementGroupBase" />
     </xs:choice>
   </xs:group>
   <xs:group name="ErrorMessageFormatterElementGroupBase">
     <xs:choice>
+      <xs:element name="ErrorMessageFormatter">
+        <xs:annotation>
+          <xs:documentation>This class wraps an error in an XML string.
+ &lt;p&gt;
+ Sample xml:
+ &lt;pre&gt;&lt;code&gt;&amp;lt;errorMessage&amp;gt;
+    &amp;lt;message timestamp=&amp;quot;Mon Oct 13 12:01:57 CEST 2003&amp;quot;
+             originator=&amp;quot;NN IOS AdapterFramework(set from 'application.name' and 'application.version')&amp;quot;
+             message=&amp;quot;message describing the error that occurred&amp;quot;&amp;gt;
+    &amp;lt;location class=&amp;quot;org.frankframework.pipes.XmlSwitch&amp;quot; name=&amp;quot;ServiceSwitch&amp;quot;/&amp;gt;
+    &amp;lt;details&amp;gt;detailed information of the error&amp;lt;/details&amp;gt;
+    &amp;lt;originalMessage messageId=&amp;quot;...&amp;quot; receivedTime=&amp;quot;Mon Oct 27 12:10:18 CET 2003&amp;quot; &amp;gt;
+        &amp;lt;![CDATA[contents of message for which the error occurred]]&amp;gt;
+    &amp;lt;/originalMessage&amp;gt;
+ &amp;lt;/errorMessage&amp;gt;&lt;/code&gt;&lt;/pre&gt;</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="ErrorMessageFormatterType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="errorMessageFormatter" use="prohibited" />
+              <xs:anyAttribute processContents="skip" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="FixedErrorMessageFormatter">
         <xs:annotation>
           <xs:documentation>ErrorMessageFormatter that returns a fixed message with replacements.</xs:documentation>
@@ -4407,6 +4419,11 @@
       </xs:element>
     </xs:choice>
   </xs:group>
+  <xs:complexType name="ErrorMessageFormatterType">
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.ErrorMessageFormatter" use="prohibited" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:complexType>
   <xs:complexType name="FixedErrorMessageFormatterType">
     <xs:attributeGroup ref="FixedErrorMessageFormatterDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.FixedErrorMessageFormatter" use="prohibited" />
@@ -4723,7 +4740,11 @@
     <xs:attribute ref="reasonSessionKey" />
     <xs:attribute ref="xmlReasonSessionKey" />
     <xs:attribute ref="validateFile" />
-    <xs:attribute ref="charset" />
+    <xs:attribute name="charset" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Characterset used for reading file, only used when &lt;code&gt;validateFile&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt; Default: utf-8</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="addNamespaceToSchema" />
     <xs:attribute ref="importedSchemaLocationsToIgnore" />
     <xs:attribute ref="useBaseImportedSchemaLocationsToIgnore" />
@@ -4789,7 +4810,11 @@
     <xs:attribute ref="reasonSessionKey" />
     <xs:attribute ref="xmlReasonSessionKey" />
     <xs:attribute ref="validateFile" />
-    <xs:attribute ref="charset" />
+    <xs:attribute name="charset" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Characterset used for reading file, only used when &lt;code&gt;validateFile&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt; Default: utf-8</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="addNamespaceToSchema" />
     <xs:attribute ref="importedSchemaLocationsToIgnore" />
     <xs:attribute ref="useBaseImportedSchemaLocationsToIgnore" />
@@ -4941,7 +4966,11 @@
     <xs:attribute ref="reasonSessionKey" />
     <xs:attribute ref="xmlReasonSessionKey" />
     <xs:attribute ref="validateFile" />
-    <xs:attribute ref="charset" />
+    <xs:attribute name="charset" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Characterset used for reading file, only used when &lt;code&gt;validateFile&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt; Default: utf-8</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="addNamespaceToSchema" />
     <xs:attribute ref="importedSchemaLocationsToIgnore" />
     <xs:attribute ref="useBaseImportedSchemaLocationsToIgnore" />
@@ -6456,19 +6485,6 @@
   </xs:group>
   <xs:group name="ManagerElementGroup">
     <xs:choice>
-      <xs:element name="Manager">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="Flow" type="FlowType" />
-            </xs:choice>
-          </xs:sequence>
-          <xs:attribute ref="active" />
-          <xs:attribute name="elementRole" type="xs:string" fixed="manager" use="prohibited" />
-          <xs:attribute name="className" type="xs:string" default="org.frankframework.batch.RecordHandlerManager" />
-          <xs:anyAttribute processContents="skip" />
-        </xs:complexType>
-      </xs:element>
       <xs:group ref="ManagerElementGroupBase" />
     </xs:choice>
   </xs:group>
@@ -6498,6 +6514,20 @@
           <xs:complexContent>
             <xs:extension base="FixedPositionRecordHandlerManagerType">
               <xs:attribute name="elementRole" type="xs:string" fixed="manager" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="Manager">
+        <xs:annotation>
+          <xs:documentation>Basic implementation of RecordHandlerManager, that allows only for a single flow.
+ The manager decides which handlers to be used for a specific record.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="RecordHandlerManagerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="manager" use="prohibited" />
+              <xs:anyAttribute processContents="skip" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
@@ -9177,7 +9207,11 @@
     <xs:attribute ref="tokenEndpoint" />
     <xs:attribute ref="tokenExpiry" />
     <xs:attribute ref="clientAlias" />
-    <xs:attribute ref="clientId" />
+    <xs:attribute name="clientId" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Client_id used in authentication to &lt;code&gt;tokenEndpoint&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="clientSecret" />
     <xs:attribute ref="scope" />
     <xs:attribute ref="oauthAuthenticationMethod" />
@@ -9246,7 +9280,11 @@
     <xs:attribute ref="tokenEndpoint" />
     <xs:attribute ref="tokenExpiry" />
     <xs:attribute ref="clientAlias" />
-    <xs:attribute ref="clientId" />
+    <xs:attribute name="clientId" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Client_id used in authentication to &lt;code&gt;tokenEndpoint&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="clientSecret" />
     <xs:attribute ref="scope" />
     <xs:attribute ref="oauthAuthenticationMethod" />
@@ -10135,7 +10173,7 @@
   </xs:attributeGroup>
   <xs:complexType name="MqttSenderType">
     <xs:group ref="MqttSenderDeclaredChildGroup" />
-    <xs:attributeGroup ref="MqttFacadeDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="MqttSenderCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.mqtt.MqttSender" use="prohibited" />
   </xs:complexType>
   <xs:group name="MqttSenderDeclaredChildGroup">
@@ -10143,6 +10181,46 @@
       <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
+  <xs:attributeGroup name="MqttSenderDeclaredAttributeGroup">
+    <xs:attribute name="topic" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#subscribe-java.lang.String-" target="_blank"&gt;MqttClient.subscribe(java.lang.String topicFilter)&lt;/a&gt;
+
+ Can be dynamically set using the &lt;code&gt;topic&lt;/code&gt; parameter.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="MqttSenderCumulativeAttributeGroup">
+    <xs:attributeGroup ref="MqttSenderDeclaredAttributeGroup" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The functional name of the object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="timeout" type="frankInt" />
+    <xs:attribute ref="keepAliveInterval" />
+    <xs:attribute name="clientId" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The clientId for this connection. Be aware that each connection (each sender or listener) needs to have a unique clientId. The MQTT broker uses the clientId to hold a persistent session, so it can send any missing messages when you reconnect.
+ see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank"&gt;MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)&lt;/a&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="brokerUrl" use="required" />
+    <xs:attribute ref="qos" />
+    <xs:attribute ref="cleanSession" />
+    <xs:attribute ref="persistenceDirectory" />
+    <xs:attribute ref="automaticReconnect" />
+    <xs:attribute name="charset" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>character encoding of received messages Default: UTF-8</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="username" type="xs:string" />
+    <xs:attribute name="password" type="xs:string" />
+    <xs:attribute name="authAlias" type="xs:string" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
   <xs:complexType name="NetStorageSenderType">
     <xs:group ref="AbstractHttpSenderDeclaredChildGroup" />
     <xs:attributeGroup ref="NetStorageSenderCumulativeAttributeGroup" />
@@ -10247,7 +10325,11 @@
     <xs:attribute ref="tokenEndpoint" />
     <xs:attribute ref="tokenExpiry" />
     <xs:attribute ref="clientAlias" />
-    <xs:attribute ref="clientId" />
+    <xs:attribute name="clientId" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Client_id used in authentication to &lt;code&gt;tokenEndpoint&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="clientSecret" />
     <xs:attribute ref="scope" />
     <xs:attribute ref="oauthAuthenticationMethod" />
@@ -11018,7 +11100,11 @@
     <xs:attribute ref="tokenEndpoint" />
     <xs:attribute ref="tokenExpiry" />
     <xs:attribute ref="clientAlias" />
-    <xs:attribute ref="clientId" />
+    <xs:attribute name="clientId" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Client_id used in authentication to &lt;code&gt;tokenEndpoint&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="clientSecret" />
     <xs:attribute ref="scope" />
     <xs:attribute ref="oauthAuthenticationMethod" />
@@ -12878,7 +12964,7 @@
  &lt;p&gt;
  If the role is not specified by the role attribute, the input of
  the pipe is used as role.
-
+ &lt;p&gt;
  N.B. The role itself must be specified by hand in the deployment descriptors web.xml and application.xml.
  &lt;/p&gt;</xs:documentation>
         </xs:annotation>
@@ -16828,20 +16914,6 @@
   </xs:attributeGroup>
   <xs:group name="JobElementGroup">
     <xs:choice>
-      <xs:element name="Job">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="DirectoryCleaner" type="DirectoryCleanerType" />
-              <xs:element name="Locker" type="LockerType" />
-            </xs:choice>
-          </xs:sequence>
-          <xs:attribute ref="active" />
-          <xs:attribute name="elementRole" type="xs:string" fixed="job" use="prohibited" />
-          <xs:attribute name="className" type="xs:string" default="org.frankframework.scheduler.job.Job" />
-          <xs:anyAttribute processContents="skip" />
-        </xs:complexType>
-      </xs:element>
       <xs:group ref="JobElementGroupBase" />
     </xs:choice>
   </xs:group>
@@ -18226,57 +18298,213 @@
   </xs:attributeGroup>
   <xs:group name="SapSystemElementGroup">
     <xs:choice>
-      <xs:element name="SapSystem">
-        <xs:complexType>
-          <xs:attribute ref="active" />
-          <xs:attribute name="elementRole" type="xs:string" fixed="sapSystem" use="prohibited" />
-          <xs:attribute name="className" type="xs:string" default="org.frankframework.extensions.sap.SapSystem" />
-          <xs:anyAttribute processContents="skip" />
-        </xs:complexType>
-      </xs:element>
       <xs:group ref="SapSystemElementGroupBase" />
     </xs:choice>
   </xs:group>
   <xs:group name="SapSystemElementGroupBase">
-    <xs:choice />
-  </xs:group>
-  <xs:group name="DestinationElementGroup">
     <xs:choice>
-      <xs:element name="Destination">
+      <xs:element name="SapSystem">
+        <xs:annotation>
+          <xs:documentation>A SapSystem is a provider of repository information and connections to a SAP-system.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
-          <xs:sequence>
-            <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:group ref="SenderElementGroup_2" />
-            </xs:choice>
-          </xs:sequence>
-          <xs:attribute ref="active" />
-          <xs:attribute name="elementRole" type="xs:string" fixed="destination" use="prohibited" />
-          <xs:attribute name="className" type="xs:string" default="org.frankframework.monitoring.MonitorDestination" />
-          <xs:anyAttribute processContents="skip" />
+          <xs:complexContent>
+            <xs:extension base="SapSystemType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="sapSystem" use="prohibited" />
+              <xs:anyAttribute processContents="skip" />
+            </xs:extension>
+          </xs:complexContent>
         </xs:complexType>
       </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:complexType name="SapSystemType">
+    <xs:attributeGroup ref="SapSystemImplCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.sap.SapSystem" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="SapSystemImplDeclaredAttributeGroup">
+    <xs:attribute name="host" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default value for ashost, gwhost and mshost (i.e. when ashost, gwhost and mshost are all the same, only host needs to be specified)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ashost" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>SAP application server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="systemnr" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>SAP system nr Default: 00</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="group" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Group of SAP application servers, when specified logon group will be used and r3name and mshost need to be specified instead of ashost</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="r3name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>System ID of the SAP system</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="mshost" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>SAP message server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="msservOffset" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Number added to systemNr to find corresponding message server port Default: 3600</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="gwhost" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Gateway host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="gwservOffset" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Number added to systemNr to find corresponding gateway port Default: 3300</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="mandant" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Mandant i.e. 'destination' Default: 100</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias to obtain userid and password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="userid" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Userid used in the connection</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="passwd" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Passwd used in the connection</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="language" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Language indicator Default: NL</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="unicode" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; the SAP system is interpreted as Unicode SAP system, otherwise as non-Unicode (only applies to SapListeners, not to SapSenders) Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maxConnections" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Maximum number of connections that may connect simultaneously to the SAP system Default: 10</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="traceLevel" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Trace level (effective only when logging level is debug). 0=none, 10= maximum Default: 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="sncEnabled" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Enable or disable SNC Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="sncLibrary" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Path where the SNC library has been installed</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="sncQop" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>SNC Quality of Protection. 1: Authentication only, 2: Authentication and integrity protection, 3: Authentication, integrity and privacy protection (encryption), 8: Global default configuration, 9: Maximum protection Default: 8</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="myName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Own SNC name of the caller. For example: p:CN=MyUserID, O=ACompany, C=EN</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="partnerName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>SNC name of the communication partner server. For example: p:CN=SID, O=ACompany, C=EN</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="sncAuthMethod" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>When using SNC, this specifies if SNC should authenticate via SSO or a username/password combination. 1=SSO, 0=username/password Default: 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="sncSSO2" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Use SAP Cookie Version 2 as logon ticket for SSO based authentication Default: 1</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="SapSystemImplCumulativeAttributeGroup">
+    <xs:attributeGroup ref="SapSystemImplDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="SapSystemListItemDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="SapSystemListItemDeclaredAttributeGroup">
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The name under which the item can be retrieved.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="aliasFor" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If this attribute is set, the item is only an alias for another item.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
+  <xs:group name="DestinationElementGroup">
+    <xs:choice>
       <xs:group ref="DestinationElementGroupBase" />
     </xs:choice>
   </xs:group>
   <xs:group name="DestinationElementGroupBase">
-    <xs:choice />
-  </xs:group>
-  <xs:group name="TriggerElementGroup">
     <xs:choice>
-      <xs:element name="Trigger">
+      <xs:element name="Destination">
+        <xs:annotation>
+          <xs:documentation>IMonitorAdapter that uses a sender to send its message.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
-          <xs:sequence>
-            <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="Adapterfilter" type="AdapterfilterType" />
-              <xs:element name="Event" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
-            </xs:choice>
-          </xs:sequence>
-          <xs:attribute ref="active" />
-          <xs:attribute name="elementRole" type="xs:string" fixed="trigger" use="prohibited" />
-          <xs:attribute name="className" type="xs:string" default="org.frankframework.monitoring.Trigger" />
-          <xs:anyAttribute processContents="skip" />
+          <xs:complexContent>
+            <xs:extension base="MonitorDestinationType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="destination" use="prohibited" />
+              <xs:anyAttribute processContents="skip" />
+            </xs:extension>
+          </xs:complexContent>
         </xs:complexType>
       </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:complexType name="MonitorDestinationType">
+    <xs:group ref="MonitorDestinationDeclaredChildGroup" />
+    <xs:attributeGroup ref="AbstractMonitorDestinationDeclaredAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.MonitorDestination" use="prohibited" />
+  </xs:complexType>
+  <xs:group name="MonitorDestinationDeclaredChildGroup">
+    <xs:sequence>
+      <xs:group ref="SenderElementGroup_2" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="AbstractMonitorDestinationDeclaredAttributeGroup">
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The functional name of the object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
+  <xs:group name="TriggerElementGroup">
+    <xs:choice>
       <xs:group ref="TriggerElementGroupBase" />
     </xs:choice>
   </xs:group>
@@ -18302,6 +18530,19 @@
           <xs:complexContent>
             <xs:extension base="ClearingType">
               <xs:attribute name="elementRole" type="xs:string" fixed="trigger" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="Trigger">
+        <xs:annotation>
+          <xs:documentation>A Trigger that has its type configured at startup. Either use type = ALARM or type = CLEARING.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="TriggerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="trigger" use="prohibited" />
+              <xs:anyAttribute processContents="skip" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
@@ -18389,86 +18630,9 @@
     </xs:choice>
   </xs:group>
   <xs:complexType name="HttpSessionType">
-    <xs:attributeGroup ref="HttpSessionCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractHttpSessionDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.HttpSession" use="prohibited" />
   </xs:complexType>
-  <xs:attributeGroup name="HttpSessionDeclaredAttributeGroup">
-    <xs:attribute name="name" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>The functional name of the object.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="HttpSessionCumulativeAttributeGroup">
-    <xs:attributeGroup ref="HttpSessionDeclaredAttributeGroup" />
-    <xs:attribute name="timeout" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Timeout in ms of obtaining a connection/result. Default: 10000</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="maxConnections" />
-    <xs:attribute ref="maxExecuteRetries" />
-    <xs:attribute name="authAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Authentication alias used for authentication to the host</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="username" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Username used for authentication to the host</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="password" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Password used for authentication to the host</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="tokenEndpoint" />
-    <xs:attribute ref="tokenExpiry" />
-    <xs:attribute ref="clientAlias" />
-    <xs:attribute ref="clientId" />
-    <xs:attribute ref="clientSecret" />
-    <xs:attribute ref="scope" />
-    <xs:attribute ref="oauthAuthenticationMethod" />
-    <xs:attribute ref="samlNameId" />
-    <xs:attribute ref="samlIssuer" />
-    <xs:attribute ref="samlAudience" />
-    <xs:attribute ref="samlAssertionExpiry" />
-    <xs:attribute ref="proxyHost" />
-    <xs:attribute ref="proxyPort" />
-    <xs:attribute ref="proxyAuthAlias" />
-    <xs:attribute ref="proxyUsername" />
-    <xs:attribute ref="proxyPassword" />
-    <xs:attribute ref="proxyRealm" />
-    <xs:attribute ref="prefillProxyAuthCache" />
-    <xs:attribute ref="disableCookies" />
-    <xs:attribute ref="keystore" />
-    <xs:attribute ref="keystoreType" />
-    <xs:attribute ref="keystoreAuthAlias" />
-    <xs:attribute ref="keystorePassword" />
-    <xs:attribute ref="keyManagerAlgorithm" />
-    <xs:attribute ref="keystoreAlias" />
-    <xs:attribute ref="keystoreAliasAuthAlias" />
-    <xs:attribute ref="keystoreAliasPassword" />
-    <xs:attribute ref="truststore" />
-    <xs:attribute ref="truststoreAuthAlias" />
-    <xs:attribute ref="truststorePassword" />
-    <xs:attribute ref="truststoreType" />
-    <xs:attribute ref="trustManagerAlgorithm" />
-    <xs:attribute ref="verifyHostname" />
-    <xs:attribute ref="allowSelfSignedCertificates" />
-    <xs:attribute ref="ignoreCertificateExpiredException" />
-    <xs:attribute ref="followRedirects" />
-    <xs:attribute ref="ignoreRedirects" />
-    <xs:attribute ref="staleChecking" />
-    <xs:attribute ref="staleTimeout" />
-    <xs:attribute ref="connectionTimeToLive" />
-    <xs:attribute ref="connectionIdleTimeout" />
-    <xs:attribute ref="protocol" />
-    <xs:attribute ref="supportedCipherSuites" />
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:attributeGroup>
   <xs:attributeGroup name="ConfigurationDeclaredAttributeGroup">
     <xs:attribute name="autoStart" type="frankBoolean">
       <xs:annotation>
@@ -18502,6 +18666,92 @@
       <xs:enumeration value="TIMESTAMP" />
       <xs:enumeration value="TIME" />
       <xs:enumeration value="XMLDATETIME" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ParameterTypeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="STRING">
+        <xs:annotation>
+          <xs:documentation>Renders the contents of the first node (in combination with xslt or xpath). Please note that
+ if there are child nodes, only the contents are returned, use &lt;code&gt;XML&lt;/code&gt; if the xml tags are required</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="XML">
+        <xs:annotation>
+          <xs:documentation>Renders an xml-nodeset as an xml-string (in combination with xslt or xpath). This will include the xml tags</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="DOMDOC">
+        <xs:annotation>
+          <xs:documentation>Renders XML as a DOM document; similar to &lt;code&gt;node&lt;/code&gt;
+		with the distinction that there is always a common root node (required for XSLT 2.0)</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="DATE">
+        <xs:annotation>
+          <xs:documentation>Converts the result to a Date, by default using formatString &lt;code&gt;yyyy-MM-dd&lt;/code&gt;.
+ When applied as a JDBC parameter, the method setDate() is used</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="TIME">
+        <xs:annotation>
+          <xs:documentation>Converts the result to a Date, by default using formatString &lt;code&gt;HH:mm:ss&lt;/code&gt;.
+ When applied as a JDBC parameter, the method setTime() is used</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="DATETIME">
+        <xs:annotation>
+          <xs:documentation>Converts the result to a Date, by default using formatString &lt;code&gt;yyyy-MM-dd HH:mm:ss&lt;/code&gt;.
+ When applied as a JDBC parameter, the method setTimestamp() is used</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="TIMESTAMP">
+        <xs:annotation>
+          <xs:documentation>Similar to &lt;code&gt;DATETIME&lt;/code&gt;, except for the formatString that is &lt;code&gt;yyyy-MM-dd HH:mm:ss.SSS&lt;/code&gt; by default</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="XMLDATETIME">
+        <xs:annotation>
+          <xs:documentation>Converts the result from a XML formatted dateTime to a Date.
+ When applied as a JDBC parameter, the method setTimestamp() is used</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="NUMBER">
+        <xs:annotation>
+          <xs:documentation>Converts the result to a Number, using decimalSeparator and groupingSeparator.
+ When applied as a JDBC parameter, the method setDouble() is used</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INTEGER">
+        <xs:annotation>
+          <xs:documentation>Converts the result to an Integer</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="BOOLEAN">
+        <xs:annotation>
+          <xs:documentation>Converts the result to a Boolean</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="BINARY">
+        <xs:annotation>
+          <xs:documentation>Forces the parameter value to be treated as binary data (e.g. when using a SQL BLOB field).
+ When applied as a JDBC parameter, the method setBinaryStream() or setBytes() is used</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="CHARACTER">
+        <xs:annotation>
+          <xs:documentation>Forces the parameter value to be treated as character data (e.g. when using a SQL CLOB field).
+ When applied as a JDBC parameter, the method setCharacterStream() or setString() is used</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="LIST">
+        <xs:annotation>
+          <xs:documentation>Used for StoredProcedure OUT parameters when the database type is a &lt;code&gt;CURSOR&lt;/code&gt; or java.sql.JDBCType#REF_CURSOR.
+ See also org.frankframework.jdbc.StoredProcedureQuerySender.
+ &lt;br/&gt;
+ DEPRECATED: Type LIST can also be used in larva test to Convert a List to an xml-string (&amp;lt;items&amp;gt;&amp;lt;item&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;item&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;/items&amp;gt;)</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="XmlTypeAttributeValuesType">
@@ -19475,92 +19725,6 @@
       <xs:enumeration value="CDATA2TEXT" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ParameterTypeAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="STRING">
-        <xs:annotation>
-          <xs:documentation>Renders the contents of the first node (in combination with xslt or xpath). Please note that
- if there are child nodes, only the contents are returned, use &lt;code&gt;XML&lt;/code&gt; if the xml tags are required</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="XML">
-        <xs:annotation>
-          <xs:documentation>Renders an xml-nodeset as an xml-string (in combination with xslt or xpath). This will include the xml tags</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="DOMDOC">
-        <xs:annotation>
-          <xs:documentation>Renders XML as a DOM document; similar to &lt;code&gt;node&lt;/code&gt;
-		with the distinction that there is always a common root node (required for XSLT 2.0)</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="DATE">
-        <xs:annotation>
-          <xs:documentation>Converts the result to a Date, by default using formatString &lt;code&gt;yyyy-MM-dd&lt;/code&gt;.
- When applied as a JDBC parameter, the method setDate() is used</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="TIME">
-        <xs:annotation>
-          <xs:documentation>Converts the result to a Date, by default using formatString &lt;code&gt;HH:mm:ss&lt;/code&gt;.
- When applied as a JDBC parameter, the method setTime() is used</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="DATETIME">
-        <xs:annotation>
-          <xs:documentation>Converts the result to a Date, by default using formatString &lt;code&gt;yyyy-MM-dd HH:mm:ss&lt;/code&gt;.
- When applied as a JDBC parameter, the method setTimestamp() is used</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="TIMESTAMP">
-        <xs:annotation>
-          <xs:documentation>Similar to &lt;code&gt;DATETIME&lt;/code&gt;, except for the formatString that is &lt;code&gt;yyyy-MM-dd HH:mm:ss.SSS&lt;/code&gt; by default</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="XMLDATETIME">
-        <xs:annotation>
-          <xs:documentation>Converts the result from a XML formatted dateTime to a Date.
- When applied as a JDBC parameter, the method setTimestamp() is used</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="NUMBER">
-        <xs:annotation>
-          <xs:documentation>Converts the result to a Number, using decimalSeparator and groupingSeparator.
- When applied as a JDBC parameter, the method setDouble() is used</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="INTEGER">
-        <xs:annotation>
-          <xs:documentation>Converts the result to an Integer</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="BOOLEAN">
-        <xs:annotation>
-          <xs:documentation>Converts the result to a Boolean</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="BINARY">
-        <xs:annotation>
-          <xs:documentation>Forces the parameter value to be treated as binary data (e.g. when using a SQL BLOB field).
- When applied as a JDBC parameter, the method setBinaryStream() or setBytes() is used</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="CHARACTER">
-        <xs:annotation>
-          <xs:documentation>Forces the parameter value to be treated as character data (e.g. when using a SQL CLOB field).
- When applied as a JDBC parameter, the method setCharacterStream() or setString() is used</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="LIST">
-        <xs:annotation>
-          <xs:documentation>Used for StoredProcedure OUT parameters when the database type is a &lt;code&gt;CURSOR&lt;/code&gt; or java.sql.JDBCType#REF_CURSOR.
- See also org.frankframework.jdbc.StoredProcedureQuerySender.
- &lt;br/&gt;
- DEPRECATED: Type LIST can also be used in larva test to Convert a List to an xml-string (&amp;lt;items&amp;gt;&amp;lt;item&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;item&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;/items&amp;gt;)</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-    </xs:restriction>
-  </xs:simpleType>
   <xs:simpleType name="AlgorithmAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="MD5" />
@@ -19985,6 +20149,33 @@
       <xs:documentation>Additional condition for a row to belong to this TableListener. Impacts all process states</xs:documentation>
     </xs:annotation>
   </xs:attribute>
+  <xs:attribute name="keepAliveInterval" type="frankInt" />
+  <xs:attribute name="brokerUrl" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank"&gt;MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)&lt;/a&gt;</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="qos" type="frankInt">
+    <xs:annotation>
+      <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank"&gt;MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)&lt;/a&gt; Default: 2</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="cleanSession" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html#setCleanSession-boolean-" target="_blank"&gt;MqttConnectOptions.setCleanSession(boolean cleanSession)&lt;/a&gt; Default: true</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="persistenceDirectory" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Stores inbound and outbound messages while they are in flight on disk storage. Recommended when reliability is paramount. Messages are persisted in memory when empty.
+ see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/persist/MqttDefaultFilePersistence.html" target="_blank"&gt;MqttDefaultFilePersistence&lt;/a&gt; and &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html" target="_blank"&gt;MqttClient&lt;/a&gt;</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="automaticReconnect" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html#setAutomaticReconnect-boolean-" target="_blank"&gt;MqttConnectOptions.setAutomaticReconnect(boolean automaticReconnect)&lt;/a&gt; (apart from this recover job will also try to recover) Default: true</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
   <xs:attribute name="correlationIdFieldIndex" type="frankInt">
     <xs:annotation>
       <xs:documentation>Index of the field in the ImportParameterList of the RFC function that contains the correlationId Default: 0</xs:documentation>
@@ -20343,11 +20534,6 @@
       <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="charset" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Characterset used for reading file, only used when &lt;code&gt;validateFile&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt; Default: utf-8</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
   <xs:attribute name="addNamespaceToSchema" type="frankBoolean">
     <xs:annotation>
       <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the namespace from schemalocation is added to the schema document as targetnamespace Default: false</xs:documentation>
@@ -20561,11 +20747,6 @@
   <xs:attribute name="clientAlias" type="xs:string">
     <xs:annotation>
       <xs:documentation>Alias used to obtain client_id and client_secret for authentication to &lt;code&gt;tokenEndpoint&lt;/code&gt;</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="clientId" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Client_id used in authentication to &lt;code&gt;tokenEndpoint&lt;/code&gt;</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="clientSecret" type="xs:string">

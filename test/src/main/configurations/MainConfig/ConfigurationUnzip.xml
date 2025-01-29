@@ -27,7 +27,7 @@
 			<Forward name="success" path="EXIT" />
 		</XsltPipe>
 
-		<Exit path="EXIT" state="success" />
+		<Exit name="EXIT" state="success" />
 
 	</Pipeline>
 </Adapter>

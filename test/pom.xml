@@ -33,6 +33,19 @@
 			<type>war</type>
 		</dependency>
 
+		<dependency>
+			<groupId>com.rabbitmq</groupId>
+			<artifactId>amqp-client</artifactId>
+			<version>${rabbitmq.driver.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.rabbitmq.jms</groupId>
+			<artifactId>rabbitmq-jms</artifactId>
+			<version>${rabbitmq.jms.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+
 		<!-- these runtime dependencies are required for the Spring Boot runner, so they are on the local classpath -->
 		<dependency>
 			<groupId>org.frankframework</groupId>
@@ -364,6 +377,18 @@
 					<groupId>org.apache.activemq</groupId>
 					<artifactId>activemq-client</artifactId>
 					<version>${activemq.driver.version}</version>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>com.rabbitmq</groupId>
+					<artifactId>amqp-client</artifactId>
+					<version>${rabbitmq.driver.version}</version>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>com.rabbitmq.jms</groupId>
+					<artifactId>rabbitmq-jms</artifactId>
+					<version>${rabbitmq.jms.version}</version>
 					<scope>runtime</scope>
 				</dependency>
 			</dependencies>

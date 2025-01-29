@@ -54,7 +54,7 @@ public abstract class AbstractJdbcSender<H> extends JdbcFacade implements IBlock
 	@Getter private int timeout = 0;
 
 	protected Connection connection=null;
-	protected ParameterList paramList = null;
+	protected @Nonnull ParameterList paramList = new ParameterList();
 
 	public AbstractJdbcSender() {
 		super();
@@ -62,14 +62,11 @@ public abstract class AbstractJdbcSender<H> extends JdbcFacade implements IBlock
 
 	@Override
 	public void addParameter(IParameter p) {
-		if (paramList==null) {
-			paramList=new ParameterList();
-		}
 		paramList.add(p);
 	}
 
 	@Override
-	public ParameterList getParameterList() {
+	public @Nonnull ParameterList getParameterList() {
 		return paramList;
 	}
 
@@ -81,9 +78,7 @@ public abstract class AbstractJdbcSender<H> extends JdbcFacade implements IBlock
 			connectionStatistics = configurationMetrics.createSubDistributionSummary(this, "getConnection", FrankMeterType.PIPE_DURATION);
 		}
 
-		if (paramList!=null) {
-			paramList.configure();
-		}
+		paramList.configure();
 	}
 
 	@Override

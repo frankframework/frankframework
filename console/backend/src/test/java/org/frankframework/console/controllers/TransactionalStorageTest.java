@@ -123,7 +123,7 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 	}
 
 	@Test
-	public void testChangeProcessState() throws Exception {
+	public void testChangeMessagesProcessState() throws Exception {
 		ArgumentCaptor<Message<Object>> requestCapture = ArgumentCaptor.forClass(Message.class);
 		doCallRealMethod().when(outputGateway).sendAsyncMessage(requestCapture.capture());
 

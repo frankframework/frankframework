@@ -26,7 +26,7 @@ public interface ISenderWithParameters extends ISender, IWithParameters {
 
 	@Override
 	default boolean consumesSessionVariable(String sessionKey) {
-		return getParameterList()!=null && getParameterList().consumesSessionVariable(sessionKey);
+		return getParameterList().consumesSessionVariable(sessionKey);
 	}
 
 }

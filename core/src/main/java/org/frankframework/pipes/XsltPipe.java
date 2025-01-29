@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
    limitations under the License.
 */
 package org.frankframework.pipes;
+
+import jakarta.annotation.Nonnull;
 
 import org.springframework.beans.factory.InitializingBean;
 
@@ -46,7 +48,7 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 
 	private final @Getter XsltSender sender = createXsltSender();
 
-	{
+	public XsltPipe() {
 		setSizeStatistics(true);
 	}
 
@@ -97,16 +99,8 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 		}
 	}
 
-	/**
-	 * If true, then this pipe will process the XSLT while streaming in a different thread. Can be used to switch streaming xslt off for debugging purposes
-	 * @ff.default set by appconstant xslt.streaming.default
-	 */
-	public void setStreamingXslt(boolean streamingActive) {
-		sender.setStreamingXslt(streamingActive);
-	}
-
 	@Override
-	public ParameterList getParameterList() {
+	public @Nonnull ParameterList getParameterList() {
 		return sender.getParameterList();
 	}
 

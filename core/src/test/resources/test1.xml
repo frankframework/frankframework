@@ -9,7 +9,7 @@
 	</receiver>
 		<pipeline firstPipe="Call IFSA">
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 			<inputValidator
 				className="org.frankframework.pipes.XmlValidator"

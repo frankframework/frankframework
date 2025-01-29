@@ -15,6 +15,7 @@
 */
 package org.frankframework.senders;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
@@ -37,22 +38,17 @@ import org.frankframework.stream.Message;
  */
 public abstract class AbstractSenderWithParameters extends AbstractSender implements ISenderWithParameters {
 
-	protected ParameterList paramList = null;
+	protected @Nonnull ParameterList paramList = new ParameterList();
 	protected boolean parameterNamesMustBeUnique;
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (paramList!=null) {
-			paramList.setNamesMustBeUnique(parameterNamesMustBeUnique);
-			paramList.configure();
-		}
+		paramList.setNamesMustBeUnique(parameterNamesMustBeUnique);
+		paramList.configure();
 	}
 
 	@Override
 	public void addParameter(IParameter p) {
-		if (paramList==null) {
-			paramList=new ParameterList();
-		}
 		paramList.add(p);
 	}
 
@@ -60,13 +56,12 @@ public abstract class AbstractSenderWithParameters extends AbstractSender implem
 	 * return the Parameters
 	 */
 	@Override
-	@Nullable
-	public ParameterList getParameterList() {
+	public @Nonnull ParameterList getParameterList() {
 		return paramList;
 	}
 
 	protected void checkStringAttributeOrParameter(String attributeName, String attributeValue, String parameterName) throws ConfigurationException {
-		if (StringUtils.isEmpty(attributeValue) && (getParameterList()==null || !getParameterList().hasParameter(parameterName))) {
+		if (StringUtils.isEmpty(attributeValue) && !getParameterList().hasParameter(parameterName)) {
 			throw new ConfigurationException("either attribute "+attributeName+" or parameter "+parameterName+" must be specified");
 		}
 	}
@@ -87,7 +82,7 @@ public abstract class AbstractSenderWithParameters extends AbstractSender implem
 
 	protected @Nullable ParameterValueList getParameterValueList(Message input, PipeLineSession session) throws SenderException {
 		try {
-			return getParameterList()!=null ? getParameterList().getValues(input, session) : null;
+			return getParameterList().getValues(input, session);
 		} catch (ParameterException e) {
 			throw new SenderException("cannot determine parameter values", e);
 		}
@@ -95,7 +90,7 @@ public abstract class AbstractSenderWithParameters extends AbstractSender implem
 
 	@Override
 	public boolean consumesSessionVariable(String sessionKey) {
-		return getParameterList()!=null && getParameterList().consumesSessionVariable(sessionKey);
+		return getParameterList().consumesSessionVariable(sessionKey);
 	}
 
 }

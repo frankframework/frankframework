@@ -20,6 +20,8 @@ import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
@@ -120,7 +122,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		return new ElementRenderer(sc, e);
 	}
 
-	private class ElementRenderer extends EchoSender {
+	protected static class ElementRenderer extends EchoSender {
 
 		public SwitchCounter sc;
 		public Exception e;
@@ -951,7 +953,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 
 	@Test
-	public void testNoDuplicateNamespaces() throws Exception, IOException {
+	public void testNoDuplicateNamespaces() throws Exception {
 		pipe.setSender(getElementRenderer());
 		pipe.setTargetElement("XDOC");
 		pipe.setRemoveNamespaces(false);
@@ -967,7 +969,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	}
 
 	@Test
-	public void testBulk2() throws Exception, IOException {
+	public void testBulk2() throws Exception {
 		pipe.setSender(getElementRenderer());
 		pipe.setTargetElement("XDOC");
 		pipe.setBlockSize(4);
@@ -984,7 +986,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	}
 
 	@Test
-	public void testBulk2Parallel() throws Exception, IOException {
+	public void testBulk2Parallel() throws Exception {
 		pipe.setSender(getElementRenderer());
 		pipe.setTargetElement("XDOC");
 		pipe.setBlockSize(4);
@@ -1005,7 +1007,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 
 	@Test
-	public void testRemoveNamespacesInAttributes() throws Exception, IOException {
+	public void testRemoveNamespacesInAttributes() throws Exception {
 		pipe.setSender(getElementRenderer());
 		pipe.setTargetElement("XDOC");
 		configurePipe();
@@ -1077,7 +1079,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 	}
 
-	private class SwitchCounter {
+	protected static class SwitchCounter {
 		public int count;
 		private String prevLabel;
 		public Map<String,Integer> hitCount = new HashMap<>();
@@ -1087,17 +1089,12 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 				prevLabel=label;
 				count++;
 			}
-			Integer hits=hitCount.get(label);
-			if (hits == null) {
-				hitCount.put(label,1);
-			} else {
-				hitCount.put(label,hits+1);
-			}
+			hitCount.merge(label, 1, Integer::sum);
 		}
 	}
 
-
-	private class LoggingInputStream extends FilterInputStream {
+	@Log4j2
+	private static class LoggingInputStream extends FilterInputStream {
 
 		private final int blockSize = 10;
 		private final SwitchCounter sc;

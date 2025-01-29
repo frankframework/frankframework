@@ -1,8 +1,7 @@
 <module>
 	<adapter name="EsbSoapValidator" description="Test the functioning of the EsbSoapValidator">
 
-		<errorMessageFormatter
-			className="org.frankframework.errormessageformatters.SoapErrorMessageFormatter" />
+		<SoapErrorMessageFormatter />
 
 		<receiver>
 			<listener className="org.frankframework.receivers.JavaListener"
@@ -11,7 +10,7 @@
 
 		<pipeline firstPipe="make reply">
 			<exits>
-				<exit path="READY" state="success" />
+				<exit name="READY" state="success" />
 			</exits>
 
 			<inputValidator
@@ -65,7 +64,7 @@
 		</receiver>
 		<pipeline firstPipe="SetPolicyDetails_Request">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="SetPolicyDetails_Request"
 				className="org.frankframework.extensions.esb.EsbSoapValidator"
@@ -104,7 +103,7 @@
 		</receiver>
 		<pipeline firstPipe="Switch">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="Switch" className="org.frankframework.pipes.XmlSwitch" forwardNameSessionKey="switch" />
 			<!-- request -->

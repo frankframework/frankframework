@@ -118,7 +118,8 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			cache.setMaxElementsInMemory(maxInitialised);
 			cache.setEternal(true);
 			try {
-				cache.configure("XercesXmlValidator");
+				cache.setName("XercesXmlValidator");
+				cache.configure();
 				cache.open();
 			} catch (ConfigurationException e) {
 				cache = null;

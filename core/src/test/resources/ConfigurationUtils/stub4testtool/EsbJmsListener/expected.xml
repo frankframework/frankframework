@@ -16,7 +16,7 @@
 		</receiver>
 		<pipeline firstPipe="Store full File path and name" transactionAttribute="Required">
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 			<inputValidator className="org.frankframework.extensions.fxf.FxfXmlValidator" direction="receive"/>
 			<inputWrapper className="org.frankframework.extensions.fxf.FxfWrapperPipe" direction="unwrap"/>

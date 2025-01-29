@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank
+   Copyright 2016-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -251,16 +251,14 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 			throw new ConfigurationException("FileSessionKey should be specified");
 		}
 
-		if (getParameterList() != null) {
-			// Legacy; check if the session should be created runtime (and thus for each call)
-			if(getParameterList().hasParameter("authAlias") || getParameterList().hasParameter("username")) {
-				runtimeSession = true;
-			}
+		// Legacy; check if the session should be created runtime (and thus for each call)
+		if(getParameterList().hasParameter("authAlias") || getParameterList().hasParameter("username")) {
+			runtimeSession = true;
+		}
 
-			// If any Header params exist, use RuntimeSessions
-			if(!runtimeSession && getParameterList().stream().anyMatch(param -> param.getName().startsWith(HEADER_PARAM_PREFIX))) {
-				runtimeSession = true;
-			}
+		// If any Header params exist, use RuntimeSessions
+		if(!runtimeSession && getParameterList().stream().anyMatch(param -> param.getName().startsWith(HEADER_PARAM_PREFIX))) {
+			runtimeSession = true;
 		}
 		if(!isKeepSession()) {
 			runtimeSession = true;
@@ -323,13 +321,11 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		CloseableCmisSession cmisSession = null;
 		try {
-			ParameterValueList pvl=null;
-			if (getParameterList() != null) {
-				try {
-					pvl = getParameterList().getValues(message, session);
-				} catch (ParameterException e) {
-					throw new SenderException("Sender [" + getName() + "] caught exception evaluating parameters", e);
-				}
+			ParameterValueList pvl;
+			try {
+				pvl = getParameterList().getValues(message, session);
+			} catch (ParameterException e) {
+				throw new SenderException("Sender [" + getName() + "] caught exception evaluating parameters", e);
 			}
 
 			if(runtimeSession) {
@@ -360,7 +356,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 		} finally {
 			if (cmisSession != null && runtimeSession) {
 				log.debug("Closing CMIS runtime session");
-				session.scheduleCloseOnSessionExit(cmisSession, getLogPrefix());
+				session.scheduleCloseOnSessionExit(cmisSession);
 				cmisSession = null;
 			}
 		}
@@ -398,7 +394,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 			if (getDocumentContent) {
 				Message content = getMessageFromContentStream(document.getContentStream());
 
-				content.closeOnCloseOf(session, this);
+				content.closeOnCloseOf(session);
 				session.put(getFileSessionKey(), content);
 			}
 
@@ -413,7 +409,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 		}
 
 		Message content = getMessageFromContentStream(document.getContentStream());
-		content.closeOnCloseOf(session, this);
+		content.closeOnCloseOf(session);
 
 		if (StringUtils.isNotEmpty(getFileSessionKey())) {
 			session.put(getFileSessionKey(), content);

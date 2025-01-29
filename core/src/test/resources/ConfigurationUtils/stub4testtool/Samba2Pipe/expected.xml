@@ -17,7 +17,7 @@
 		</receiver>
 		<pipeline firstPipe="Samba2Pipe">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="Samba2Pipe" action="write"
 				className="org.frankframework.pipes.LocalFileSystemPipe">

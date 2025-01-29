@@ -6,7 +6,7 @@
 		</receiver>
 		<pipeline firstPipe="setFileName">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 
 			<pipe name="setFileName" className="org.frankframework.pipes.PutInSession"

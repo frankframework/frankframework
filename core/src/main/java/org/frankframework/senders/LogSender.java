@@ -78,7 +78,7 @@ public class LogSender extends AbstractSenderWithParameters {
 		} catch (IOException io) {
 			log.warn("unable to log message: {}", message);
 		}
-		if (getParameterList() != null && pvl != null) {
+		if (pvl != null) {
 			for (ParameterValue param : pvl) {
 				if(!LOG_LEVEL_ATTRIBUTE_NAME.equals(param.getName())) {
 					logger.log(level, "parameter [{}] value [{}]", param.getName(), param.getValue());
@@ -116,7 +116,7 @@ public class LogSender extends AbstractSenderWithParameters {
 
 	@Override
 	public String toString() {
-		String level = getParameterList() != null && getParameterList().hasParameter(LOG_LEVEL_ATTRIBUTE_NAME) ? "dynamic" : logLevel;
+		String level = getParameterList().hasParameter(LOG_LEVEL_ATTRIBUTE_NAME) ? "dynamic" : logLevel;
 		return "LogSender ["+getName()+"] logLevel ["+level+"] logCategory ["+logCategory+"]";
 	}
 

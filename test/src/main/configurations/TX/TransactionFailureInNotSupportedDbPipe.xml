@@ -19,8 +19,8 @@
 
 		<pipeline firstPipe="fixedInsert" transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success"/>
-				<exit path="ERROR" state="error"/>
+				<exit name="EXIT" state="success"/>
+				<exit name="ERROR" state="error"/>
 			</exits>
 
 			<pipe name="fixedInsert" className="org.frankframework.pipes.SenderPipe">

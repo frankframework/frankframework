@@ -113,7 +113,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 
 	private final List<PipeForward> registeredForwards = new ArrayList<>();
 	private final Map<String, PipeForward> configuredForwards = new HashMap<>();
-	private final ParameterList parameterList = new ParameterList();
+	private final @Nonnull ParameterList parameterList = new ParameterList();
 	protected boolean parameterNamesMustBeUnique;
 	private @Setter EventPublisher eventPublisher=null;
 
@@ -137,13 +137,11 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		registeredForwards.forEach(this::configureForward);
 
 		ParameterList params = getParameterList();
-		if (params!=null) {
-			try {
-				params.setNamesMustBeUnique(parameterNamesMustBeUnique);
-				params.configure();
-			} catch (ConfigurationException e) {
-				throw new ConfigurationException("while configuring parameters",e);
-			}
+		try {
+			params.setNamesMustBeUnique(parameterNamesMustBeUnique);
+			params.configure();
+		} catch (ConfigurationException e) {
+			throw new ConfigurationException("while configuring parameters", e);
 		}
 
 		if (!StringUtils.isEmpty(getElementToMove()) && !StringUtils.isEmpty(getElementToMoveChain())) {
@@ -169,7 +167,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		}
 
 		PipeForward current = configuredForwards.get(forwardName);
-		if (current==null){
+		if (current == null){
 			configuredForwards.put(forwardName, forward);
 		} else {
 			if (StringUtils.isNotBlank(forward.getPath()) && forward.getPath().equals(current.getPath())) {
@@ -201,7 +199,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 * final method to ensure nobody overrides this...
 	 */
 	@Override
-	public final void setApplicationContext(ApplicationContext applicationContext) {
+	public final void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 	}
 
@@ -237,7 +235,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 * return the Parameters
 	 */
 	@Override
-	public ParameterList getParameterList() {
+	public @Nonnull ParameterList getParameterList() {
 		return parameterList;
 	}
 
@@ -338,15 +336,15 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 
 	@Override
 	public Adapter getAdapter() {
-		if (getPipeLine() != null) {
-			return getPipeLine().getAdapter();
+		if (applicationContext instanceof Adapter adapter) {
+			return adapter;
 		}
 		return null;
 	}
 
 	@Override
 	public boolean consumesSessionVariable(String sessionKey) {
-		return sessionKey.equals(getInputFromSessionKey) || parameterList!=null && parameterList.consumesSessionVariable(sessionKey);
+		return sessionKey.equals(getInputFromSessionKey) || parameterList.consumesSessionVariable(sessionKey);
 	}
 
 	/**

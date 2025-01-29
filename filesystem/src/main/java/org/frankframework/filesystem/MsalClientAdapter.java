@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.http.Header;
@@ -244,7 +246,7 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 		try (PipeLineSession session = prepareSession(httpRequest); Message request = new Message(httpRequest.body())) {
 
 			Message response = sendMessageOrThrow(request, session);
-			session.scheduleCloseOnSessionExit(response, "MsalClient-response");
+			session.scheduleCloseOnSessionExit(response);
 			return new MsalResponse(response, session);
 		} catch (Exception e) {
 			log.error("An exception occurred whilst connecting with MSAL HTTPS call to [{}]", httpRequest.url().toString(), e);
@@ -267,7 +269,7 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 	}
 
 	@Override
-	protected HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
+	protected HttpRequestBase getMethod(URI uri, Message message, @Nonnull ParameterValueList parameters, PipeLineSession session) throws SenderException {
 		HttpMethod httpMethod = EnumUtils.parse(HttpMethod.class, (String) session.get(METHOD_SESSION_KEY));
 		@SuppressWarnings("unchecked")
 		Map<String, String> headers = (Map<String, String>) session.get(REQUEST_HEADERS_SESSION_KEY);
@@ -296,15 +298,15 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 	protected Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) {
 		// Parse headers to comma separated string
 		Header[] responseHeaders = responseHandler.getAllHeaders();
-		String headers = "";
+		StringBuilder headers = new StringBuilder();
 		for(Header header : responseHeaders) {
 			session.put(header.getName(), header.getValue());
-			if(headers.length() > 0) {
-				headers += ",";
+			if(!headers.isEmpty()) {
+				headers.append(",");
 			}
-			headers += header.getName();
+			headers.append(header.getName());
 		}
-		session.put(RESPONSE_HEADERS_SESSION_KEY, headers);
+		session.put(RESPONSE_HEADERS_SESSION_KEY, headers.toString());
 
 		return responseHandler.getResponseMessage();
 	}

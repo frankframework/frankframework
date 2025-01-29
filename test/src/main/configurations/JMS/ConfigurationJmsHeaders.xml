@@ -18,7 +18,7 @@
 
 		<pipeline firstPipe="SendMessage">
 			<exits>
-				<exit state="success" path="EXIT" />
+				<exit state="success" name="EXIT" />
 			</exits>
 
 			<pipe name="SendMessage"
@@ -42,7 +42,7 @@
 
 		<pipeline firstPipe="SendMessage">
 			<exits>
-				<exit state="success" path="EXIT" />
+				<exit state="success" name="EXIT" />
 			</exits>
 
 			<pipe name="SendMessage"

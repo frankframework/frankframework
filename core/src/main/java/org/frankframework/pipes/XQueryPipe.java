@@ -105,12 +105,9 @@ public class XQueryPipe extends FixedForwardPipe {
 		try {
 			String stringResult = input;
 			preparedExpression.bindDocument(XQConstants.CONTEXT_ITEM, stringResult, null, null);
-			if (getParameterList() != null) {
-				Map<String,Object> parametervalues = null;
-				parametervalues = getParameterList().getValues(message, session).getValueMap();
-				for(IParameter parameter : getParameterList()) {
-					preparedExpression.bindObject(new QName(parameter.getName()), parametervalues.get(parameter.getName()), null);
-				}
+			Map<String, Object> parametervalues = getParameterList().getValues(message, session).getValueMap();
+			for(IParameter parameter : getParameterList()) {
+				preparedExpression.bindObject(new QName(parameter.getName()), parametervalues.get(parameter.getName()), null);
 			}
 			XQResultSequence resultSequence = preparedExpression.executeQuery();
 			stringResult = resultSequence.getSequenceAsString(null);

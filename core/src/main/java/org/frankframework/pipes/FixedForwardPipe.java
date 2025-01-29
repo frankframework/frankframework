@@ -17,6 +17,9 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -29,7 +32,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.doc.Forward;
 import org.frankframework.parameters.IParameter;
-import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.processors.InputOutputPipeProcessor;
@@ -68,9 +70,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 			throw new ConfigurationException("has no forward with name [" + PipeForward.SUCCESS_FORWARD_NAME + "]");
 		}
 		if (StringUtils.isNotEmpty(getIfParam())) {
-			if (getParameterList() != null) {
-				ifParameter = getParameterList().findParameter(getIfParam());
-			}
+			ifParameter = getParameterList().findParameter(getIfParam());
 			if (ifParameter==null) {
 				ConfigurationWarnings.add(this, log, "ifParam ["+getIfParam()+"] not found");
 			}
@@ -118,13 +118,10 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 		return false;
 	}
 
-	protected String getParameterValue(ParameterValueList pvl, String parameterName) {
-		ParameterList parameterList = getParameterList();
-		if (pvl != null && parameterList != null) {
-			ParameterValue pv = pvl.findParameterValue(parameterName);
-			if(pv != null) {
-				return pv.asStringValue(null);
-			}
+	protected @Nullable String getParameterValue(@Nonnull ParameterValueList pvl, String parameterName) {
+		ParameterValue pv = pvl.findParameterValue(parameterName);
+		if(pv != null) {
+			return pv.asStringValue(null);
 		}
 		return null;
 	}

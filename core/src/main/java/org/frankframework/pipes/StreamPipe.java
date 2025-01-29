@@ -102,12 +102,10 @@ public class StreamPipe extends FixedForwardPipe {
 		Object result = message;
 		Map<String,Object> parameters = null;
 		ParameterList parameterList = getParameterList();
-		if (parameterList != null) {
-			try {
-				parameters = parameterList.getValues(message, session).getValueMap();
-			} catch (ParameterException e) {
-				throw new PipeRunException(this, "Could not resolve parameters", e);
-			}
+		try {
+			parameters = parameterList.getValues(message, session).getValueMap();
+		} catch (ParameterException e) {
+			throw new PipeRunException(this, "Could not resolve parameters", e);
 		}
 		InputStream inputStream = null;
 		OutputStream outputStream = null;

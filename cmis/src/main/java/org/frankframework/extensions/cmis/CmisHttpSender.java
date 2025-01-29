@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.chemistry.opencmis.client.bindings.spi.BindingSession;
 import org.apache.chemistry.opencmis.client.bindings.spi.http.Output;
 import org.apache.chemistry.opencmis.client.bindings.spi.http.Response;
@@ -54,7 +56,7 @@ import org.frankframework.stream.Message;
 public abstract class CmisHttpSender extends AbstractHttpSender {
 
 	@Override
-	public HttpRequestBase getMethod(URI uri, Message message, ParameterValueList pvl, PipeLineSession session) throws SenderException {
+	public HttpRequestBase getMethod(URI uri, Message message, @Nonnull ParameterValueList pvl, PipeLineSession session) throws SenderException {
 		HttpRequestBase method = null;
 
 		HttpMethod methodType = (HttpMethod) session.get("method");

@@ -8,7 +8,7 @@
 		</receiver>
 		<pipeline firstPipe="Generate timestamp">
 			<exits>
-				<exit path="READY" state="success"/>
+				<exit name="READY" state="success"/>
 			</exits>
 			<pipe
 				name="Generate timestamp"

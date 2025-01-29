@@ -6,7 +6,7 @@
 		</receiver>
 		<pipeline firstPipe="xml2json">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="xml2json" className="org.frankframework.pipes.JsonPipe"
 				direction="xml2json" storeResultInSessionKey="json">

@@ -6,7 +6,7 @@
 	<pipeline firstPipe="TestXmlIf">
 		<exits>
 			<exit name="EXIT" state="success" />
-			<exit path="ERROR" state="error" />
+			<exit name="ERROR" state="error" />
 		</exits>
 
 		<global-forwards>

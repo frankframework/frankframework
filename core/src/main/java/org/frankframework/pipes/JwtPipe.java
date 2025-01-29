@@ -17,7 +17,6 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
@@ -138,16 +137,13 @@ public class JwtPipe extends FixedForwardPipe {
 
 	private @Nonnull Map<String, Object> getParameterValueMap(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterList parameterList = getParameterList();
-		if (parameterList != null) {
-			ParameterValueList pvl;
-			try {
-				pvl = parameterList.getValues(message, session);
-			} catch (ParameterException e) {
-				throw new PipeRunException(this, "unable to resolve parameters", e);
-			}
-			return pvl.getValueMap();
+		ParameterValueList pvl;
+		try {
+			pvl = parameterList.getValues(message, session);
+		} catch (ParameterException e) {
+			throw new PipeRunException(this, "unable to resolve parameters", e);
 		}
-		return Collections.emptyMap();
+		return pvl.getValueMap();
 	}
 
 	private @Nonnull String createAndSignJwtToken(@Nonnull JWSSigner signer, @Nonnull JWTClaimsSet claims) throws PipeRunException {

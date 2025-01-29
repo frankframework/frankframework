@@ -18,6 +18,8 @@ package org.frankframework.batch;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -56,13 +58,11 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	private final List<InputField> inputFields = new ArrayList<>();
 	private final List<Integer> recordIdentifyingFields = new ArrayList<>();
 
-	protected @Getter ParameterList paramList = null;
+	protected @Getter @Nonnull ParameterList paramList = new ParameterList();
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (paramList!=null) {
-			paramList.configure();
-		}
+		paramList.configure();
 		if (!inputFields.isEmpty() && StringUtils.isNotEmpty(getInputSeparator())) {
 			throw new ConfigurationException(ClassUtils.nameOf(this)+" inputFields and inputSeparator cannot be specified both");
 		}
@@ -170,7 +170,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			int i = recordIdentifyingField;
 			String field = record.get(i - 1);
 			String fieldValue = field == null ? "" : field;
-			if (result.length() > 0) {
+			if (!result.isEmpty()) {
 				result.append("_");
 			}
 			result.append(fieldValue);
@@ -243,14 +243,11 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 
 	@Override
 	public void addParameter(IParameter p) {
-		if (paramList==null) {
-			paramList=new ParameterList();
-		}
 		paramList.add(p);
 	}
 
 	@Override
-	public ParameterList getParameterList() {
+	public @Nonnull ParameterList getParameterList() {
 		return paramList;
 	}
 

@@ -135,14 +135,14 @@ public class XmlUtils {
 	public static final String XSLT_STREAMING_BY_DEFAULT_KEY = "xslt.streaming.default";
 	public static final String AUTO_RELOAD_KEY = "xslt.auto.reload";
 	public static final String XSLT_BUFFERSIZE_KEY = "xslt.bufsize";
-	public static final int XSLT_BUFFERSIZE_DEFAULT=4096;
+	public static final int XSLT_BUFFERSIZE_DEFAULT = 4096;
 	public static final String INCLUDE_FIELD_DEFINITION_BY_DEFAULT_KEY = "query.includeFieldDefinition.default";
 
 	private static Boolean namespaceAwareByDefault = null;
 	private static Boolean xsltStreamingByDefault = null;
 	private static Boolean includeFieldDefinitionByDefault = null;
 	private static Boolean autoReload = null;
-	private static Integer buffersize=null;
+	private static Integer bufferSize = null;
 
 	private static final ConcurrentHashMap<String, TransformerPool> utilityTPs = new ConcurrentHashMap<>();
 	public static final String XPATH_GETROOTNODENAME = "name(/node()[position()=last()])";
@@ -448,10 +448,10 @@ public class XmlUtils {
 	}
 
 	public static synchronized int getBufSize() {
-		if (buffersize==null) {
-			buffersize = AppConstants.getInstance().getInt(XSLT_BUFFERSIZE_KEY, XSLT_BUFFERSIZE_DEFAULT);
+		if (bufferSize ==null) {
+			bufferSize = AppConstants.getInstance().getInt(XSLT_BUFFERSIZE_KEY, XSLT_BUFFERSIZE_DEFAULT);
 		}
-		return buffersize;
+		return bufferSize;
 	}
 
 	public static void parseXml(Resource resource, ContentHandler handler) throws IOException, SAXException {
@@ -975,6 +975,7 @@ public class XmlUtils {
 			factory = new TransformerFactoryImpl();
 			factory.setErrorListener(errorListener);
 			if (isXsltStreamingByDefault()) {
+				// Enabling incremental reading in Xalan implies data will be read in a different thread, which is also the thread in which XmlContentHandler callbacks will be executed.
 				factory.setAttribute(TransformerFactoryImpl.FEATURE_INCREMENTAL, Boolean.TRUE);
 			}
 			return factory;

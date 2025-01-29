@@ -41,13 +41,11 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 
 	@Override
 	public PipeRunResult doPipeWithTimeoutGuarded(Message message, PipeLineSession session) throws PipeRunException {
-		ParameterValueList pvl = null;
-		if (getParameterList() != null) {
-			try {
-				pvl = getParameterList().getValues(message, session);
-			} catch (ParameterException e) {
-				throw new PipeRunException(this, "exception extracting parameters", e);
-			}
+		ParameterValueList pvl;
+		try {
+			pvl = getParameterList().getValues(message, session);
+		} catch (ParameterException e) {
+			throw new PipeRunException(this, "exception extracting parameters", e);
 		}
 
 		String destination = getParameterValue(pvl, DESTINATION);

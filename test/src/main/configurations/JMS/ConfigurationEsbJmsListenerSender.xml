@@ -7,7 +7,7 @@
 		</receiver>
 		<pipeline firstPipe="Send2EsbJms">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="Send2EsbJms"
 				className="org.frankframework.pipes.SenderPipe">
@@ -41,7 +41,7 @@
 		</receiver>
 		<pipeline firstPipe="makeReply">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<inputWrapper
 				className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
@@ -63,7 +63,7 @@
 		</receiver>
 		<pipeline firstPipe="Send2EsbJms" transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="Send2EsbJms"
 				className="org.frankframework.pipes.SenderPipe">
@@ -97,7 +97,7 @@
 		</receiver>
 		<pipeline firstPipe="send2EsbJms" transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="send2EsbJms">
 				<sender className="org.frankframework.extensions.esb.EsbJmsSender"
@@ -148,7 +148,7 @@
 		</receiver>
 		<pipeline firstPipe="Send2EsbJms" transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="Send2EsbJms"
 				className="org.frankframework.pipes.SenderPipe">
@@ -182,7 +182,7 @@
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<inputWrapper
 				className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
@@ -232,7 +232,7 @@
 		</receiver>
 		<pipeline firstPipe="switchAction" transactionAttribute="Required">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch"
 				xpathExpression="request/@action" />
@@ -260,7 +260,7 @@
 		</receiver>
 		<pipeline firstPipe="switchAction">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				  xpathExpression="EsbJmsRRListenerSenderREQ" />
@@ -316,7 +316,7 @@
 		</receiver>
 		<pipeline firstPipe="makeReply">
 			<exits>
-				<exit path="EXIT" state="success" />
+				<exit name="EXIT" state="success" />
 			</exits>
 			<inputWrapper
 				className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"

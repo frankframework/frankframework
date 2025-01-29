@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2018-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,9 +20,6 @@ import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.springframework.beans.FatalBeanException;
@@ -31,10 +28,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.xml.sax.ContentHandler;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.IbisManager;
+import org.frankframework.core.AbstractRequestReplyExecutor;
+import org.frankframework.core.HasName;
 import org.frankframework.core.IBlockEnabledSender;
 import org.frankframework.core.ICorrelatedPullingListener;
-import org.frankframework.core.HasName;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ISender;
 import org.frankframework.core.IValidator;
@@ -43,7 +45,6 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.AbstractRequestReplyExecutor;
 import org.frankframework.core.SenderResult;
 import org.frankframework.documentbuilder.xml.XmlTee;
 import org.frankframework.management.bus.DebuggerStatusChangedEvent;
@@ -56,8 +57,8 @@ import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.InputOutputPipeProcessor;
 import org.frankframework.processors.LimitingParallelExecutionPipeProcessor;
 import org.frankframework.scheduler.job.SendMessageJob.SendMessageJobSender;
-import org.frankframework.senders.ParallelSenderExecutor;
 import org.frankframework.senders.AbstractSenderWrapper;
+import org.frankframework.senders.ParallelSenderExecutor;
 import org.frankframework.stream.Message;
 import org.frankframework.threading.ThreadConnector;
 import org.frankframework.threading.ThreadLifeCycleEventListener;
@@ -249,9 +250,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			// resolve parameters itself
 			if (sender instanceof IWithParameters parameters) {
 				ParameterList parameterList = parameters.getParameterList();
-				if (parameterList!=null) {
-					parameterList.getValues(message, session);
-				}
+				parameterList.getValues(message, session);
 			}
 
 			senderResult = new SenderResult(true, Message.nullMessage(), null, "stub");
@@ -267,7 +266,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 
 		Message capturedResult = reportGenerator.senderOutput(sender, correlationId, senderResult.getResult());
 		senderResult.setResult(capturedResult);
-		session.scheduleCloseOnSessionExit(capturedResult, REQUESTER); // The Ladybug may change the result (when stubbed).
+		session.scheduleCloseOnSessionExit(capturedResult); // The Ladybug may change the result (when stubbed).
 		return senderResult;
 	}
 
@@ -306,7 +305,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		WriterPlaceHolder writerPlaceHolder = reportGenerator.showInputValue(correlationId, label, new WriterPlaceHolder());
 		if (writerPlaceHolder!=null && writerPlaceHolder.getWriter()!=null) {
 			Writer writer = writerPlaceHolder.getWriter();
-			session.scheduleCloseOnSessionExit(writer, REQUESTER);
+			session.scheduleCloseOnSessionExit(writer);
 			XmlWriter xmlWriter = new XmlWriter(StreamCaptureUtils.limitSize(writer, writerPlaceHolder.getSizeLimit()), true);
 			contentHandler = new XmlTee(contentHandler, new PrettyPrintFilter(xmlWriter));
 		}
@@ -462,7 +461,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			input = Message.asMessage(reportGenerator.getEmptyInputReplacement(correlationId, emptyInputReplacement));
 		}
 
-		pipeLineSession.scheduleCloseOnSessionExit(input, REQUESTER); // If we're pointcutting and manipulating the Message, we need to schedule it to be closed...
+		pipeLineSession.scheduleCloseOnSessionExit(input); // If we're pointcutting and manipulating the Message, we need to schedule it to be closed...
 		return input;
 	}
 

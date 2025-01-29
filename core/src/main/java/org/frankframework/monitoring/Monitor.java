@@ -25,7 +25,6 @@ import java.util.Set;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -33,10 +32,12 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.FrankElement;
-import org.frankframework.core.IConfigurable;
 import org.frankframework.core.NameAware;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.doc.Mandatory;
+import org.frankframework.lifecycle.ConfigurableLifecycle;
+import org.frankframework.monitoring.ITrigger.TriggerType;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlBuilder;
@@ -62,8 +63,10 @@ import org.frankframework.util.XmlBuilder;
  */
 @FrankDocGroup(FrankDocGroupValue.MONITORING)
 @Log4j2
-public class Monitor implements IConfigurable, NameAware, DisposableBean, FrankElement {
+public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean, FrankElement {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+
+	private boolean started = false;
 
 	private @Getter String name;
 	private @Getter @Setter EventType type = EventType.TECHNICAL;
@@ -77,31 +80,45 @@ public class Monitor implements IConfigurable, NameAware, DisposableBean, FrankE
 	private String eventCode = null;
 	private @Getter EventThrowing raisedBy = null;
 
-
-	private MonitorManager manager = null;
+	private MonitorManager monitorManager = null;
 
 	private final List<ITrigger> triggers = new ArrayList<>();
 	private final Set<String> destinations = new HashSet<>();
-	private @Getter @Setter ApplicationContext applicationContext;
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) {
+		if (!(applicationContext instanceof MonitorManager manager)) {
+			throw new IllegalStateException("ApplicationContext is not a MonitorManager");
+		}
+		this.monitorManager = manager;
+	}
+
+	@Override
+	public ApplicationContext getApplicationContext() {
+		return monitorManager;
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
-		for(String destination : destinations) {
-			if(getManager().getDestination(destination) == null) {
+		for(String destination : destinations) { // Monitor should fail if destination does not exist.
+			if(monitorManager.getDestination(destination) == null) {
 				throw new ConfigurationException("destination ["+destination+"] does not exist");
 			}
 		}
 
-		if (log.isDebugEnabled()) log.debug("monitor [{}] configuring triggers", getName());
+		log.debug("monitor [{}] configuring triggers", getName());
 		for (ITrigger trigger : triggers) {
 			if (!trigger.isConfigured()) {
 				trigger.configure();
-				((ConfigurableApplicationContext) applicationContext).addApplicationListener(trigger);
+
+				// Add the EventListener to the MonitorManager
+				monitorManager.addApplicationListener(trigger);
 			}
 		}
 	}
 
-	public void changeState(boolean alarm, Severity severity, MonitorEvent event) throws MonitorException {
+	public void changeState(TriggerType type, Severity severity, MonitorEvent event) throws MonitorException {
+		boolean alarm = type == TriggerType.ALARM;
 		boolean up=alarm && (!raised || getAlarmSeverity()==null || getAlarmSeverity().compareTo(severity)<0);
 		boolean clear=raised && (!alarm || (up && getAlarmSeverity()!=null && getAlarmSeverity()!=severity));
 		if (clear) {
@@ -126,7 +143,7 @@ public class Monitor implements IConfigurable, NameAware, DisposableBean, FrankE
 			}
 		}
 		raised=alarm;
-		clearEvents(alarm);
+		clearEvents(type);
 	}
 
 	private boolean isHit(Severity severity) {
@@ -144,7 +161,7 @@ public class Monitor implements IConfigurable, NameAware, DisposableBean, FrankE
 		setStateChanged(event.getEventTime());
 
 		for(String destination : destinations) {
-			IMonitorDestination monitorAdapter = getManager().getDestination(destination);
+			IMonitorDestination monitorAdapter = monitorManager.getDestination(destination);
 			if (log.isDebugEnabled()) log.debug("{}firing event on destination [{}]", getLogPrefix(), destination);
 
 			if (monitorAdapter != null) {
@@ -153,9 +170,9 @@ public class Monitor implements IConfigurable, NameAware, DisposableBean, FrankE
 		}
 	}
 
-	protected void clearEvents(boolean alarm) {
+	protected void clearEvents(TriggerType alarm) {
 		for (ITrigger trigger : triggers) {
-			if (trigger.isAlarm() != alarm) {
+			if (trigger.getTriggerType() != alarm) {
 				trigger.clearEvents();
 			}
 		}
@@ -187,7 +204,7 @@ public class Monitor implements IConfigurable, NameAware, DisposableBean, FrankE
 		return String.join(",", destinations);
 	}
 
-	//Digester setter
+	// Digester setter
 	public void setDestinations(String newDestinations) {
 		destinations.clear();
 		destinations.addAll(StringUtil.split(newDestinations));
@@ -203,12 +220,12 @@ public class Monitor implements IConfigurable, NameAware, DisposableBean, FrankE
 		} else {
 			if (log.isDebugEnabled()) log.debug("{}setting destinations to [{}]", getLogPrefix(), newDestinations);
 			for(String destination : newDestinations) {
-				if(getManager().getDestination(destination) == null) {
+				if(monitorManager.getDestination(destination) == null) {
 					throw new IllegalArgumentException("destination ["+destination+"] does not exist");
 				}
 			}
 
-			//Only proceed if all destinations exist
+			// Only proceed if all destinations exist
 			destinations.clear();
 			for(String destination : newDestinations) {
 				if (log.isDebugEnabled()) log.debug("{}adding destination [{}]", getLogPrefix(), destination);
@@ -225,7 +242,8 @@ public class Monitor implements IConfigurable, NameAware, DisposableBean, FrankE
 	public void removeTrigger(ITrigger trigger) {
 		int index = triggers.indexOf(trigger);
 		if(index > -1) {
-			AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
+			// Remove the EventListener from the MonitorManager
+			AutowireCapableBeanFactory factory = monitorManager.getAutowireCapableBeanFactory();
 			factory.destroyBean(trigger);
 			triggers.remove(trigger);
 		}
@@ -235,13 +253,6 @@ public class Monitor implements IConfigurable, NameAware, DisposableBean, FrankE
 		return "Monitor ["+getName()+"] ";
 	}
 
-	public void setManager(MonitorManager manager) {
-		this.manager = manager;
-	}
-	private MonitorManager getManager() {
-		return manager;
-	}
-
 	public List<ITrigger> getTriggers() {
 		return triggers;
 	}
@@ -249,6 +260,7 @@ public class Monitor implements IConfigurable, NameAware, DisposableBean, FrankE
 		return triggers.get(index);
 	}
 
+	@Mandatory
 	@Override
 	public void setName(String string) {
 		name = string;
@@ -283,10 +295,25 @@ public class Monitor implements IConfigurable, NameAware, DisposableBean, FrankE
 	public void destroy() {
 		log.info("removing monitor [{}]", this);
 
-		AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
+		// Remove the EventListener from the MonitorManager
+		AutowireCapableBeanFactory factory = monitorManager.getAutowireCapableBeanFactory();
 		for (ITrigger trigger : triggers) {
 			factory.destroyBean(trigger);
 		}
 	}
 
+	@Override
+	public void start() {
+		started = true;
+	}
+
+	@Override
+	public void stop() {
+		started = false;
+	}
+
+	@Override
+	public boolean isRunning() {
+		return started;
+	}
 }

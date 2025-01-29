@@ -10,8 +10,8 @@
 		<pipeline firstPipe="Delay">
 			<cache />
 			<exits>
-				<exit path="READY" state="success"/>
-				<exit path="ERROR" state="error"/>
+				<exit name="READY" state="success"/>
+				<exit name="ERROR" state="error"/>
 			</exits>
 
 			<DelayPipe name="Delay" />
@@ -34,8 +34,8 @@
 		</receiver>
 		<pipeline firstPipe="Delay">
 			<exits>
-				<exit path="READY" state="success"/>
-				<exit path="ERROR" state="error"/>
+				<exit name="READY" state="success"/>
+				<exit name="ERROR" state="error"/>
 			</exits>
 
 			<DelayPipe name="Delay" />
@@ -58,8 +58,8 @@
 		</receiver>
 		<pipeline firstPipe="selectSenderBasedOnRootNode">
 			<exits>
-				<exit path="READY" state="success"/>
-				<exit path="ERROR" state="error"/>
+				<exit name="READY" state="success"/>
+				<exit name="ERROR" state="error"/>
 			</exits>
 
 			<pipe
