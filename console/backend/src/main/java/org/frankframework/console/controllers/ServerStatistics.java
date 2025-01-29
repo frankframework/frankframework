@@ -17,6 +17,8 @@ package org.frankframework.console.controllers;
 
 import jakarta.annotation.security.PermitAll;
 
+import org.frankframework.console.controllers.socket.MessageCacheStore;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,8 +40,11 @@ public class ServerStatistics {
 
 	private final FrankApiService frankApiService;
 
-	public ServerStatistics(FrankApiService frankApiService) {
+	private final MessageCacheStore messageCacheStore;
+
+	public ServerStatistics(FrankApiService frankApiService, MessageCacheStore messageCacheStore) {
 		this.frankApiService = frankApiService;
+		this.messageCacheStore = messageCacheStore;
 	}
 
 	@AllowAllIbisUserRoles
@@ -70,7 +75,14 @@ public class ServerStatistics {
 	@Description("view all configuration warnings")
 	@GetMapping(value = "/warnings", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getServerConfiguration() {
-		return frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.WARNINGS));
+		ResponseEntity<?> response = frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.WARNINGS));
+
+		String cachedMessage = messageCacheStore.get(frankApiService.getMemberTarget(), BusTopic.APPLICATION.toString());
+		String responseBody = (String)response.getBody();
+		if (cachedMessage == null && responseBody != null) {
+			messageCacheStore.put(frankApiService.getMemberTarget(), BusTopic.APPLICATION.toString(), responseBody);
+		}
+		return response;
 	}
 
 	@PermitAll
