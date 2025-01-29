@@ -41,9 +41,8 @@ public class ParameterListTest {
 		}
 		assertEquals("[key1, key2, key4, key3]", sortedList2.toString());
 
-//		assertSame(key2, list.remove("key2")); //cannot remove by name
-		assertSame(key2, list.remove(1));
-//		assertNull(list.remove("doesnt-exist"));
+		assertSame(key2, list.remove("key2")); //cannot remove by name
+		assertNull(list.remove("doesnt-exist"));
 
 		assertEquals("value3", list.findParameter("key3").getValue());
 		assertEquals("value1", list.getParameter(0).getValue());
@@ -62,7 +61,7 @@ public class ParameterListTest {
 		IParameter key = new Parameter(null, "value");
 		list.add(key);
 		list.configure();
-		IParameter keyWithName = list.get(4);
+		IParameter keyWithName = list.getParameter(4);
 		assertEquals("parameter4", keyWithName.getName());
 	}
 }

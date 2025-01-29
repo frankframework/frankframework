@@ -256,7 +256,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	}
 
 	public QueryExecutionContext getQueryExecutionContext(Connection connection, Message message) throws SenderException, SQLException, JdbcException {
-		ParameterList newParameterList = (ParameterList) paramList.clone();
+		ParameterList newParameterList = new ParameterList(paramList);
 		String query = getQuery(message);
 		if (BooleanUtils.isTrue(getUseNamedParams()) || (getUseNamedParams() == null && query.contains(UNP_START))) {
 			query = adjustQueryAndParameterListForNamedParameters(newParameterList, query);
@@ -401,7 +401,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 			return query;
 		char[] messageChars = query.toCharArray();
 		int copyFrom = 0;
-		ParameterList oldParameterList = (ParameterList) parameterList.clone();
+		ParameterList oldParameterList = new ParameterList(parameterList);
 		parameterList.clear();
 		while (startPos != -1) {
 			buffer.append(messageChars, copyFrom, startPos - copyFrom);

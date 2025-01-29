@@ -64,10 +64,8 @@ public class FileUtils {
 		}
 
 		// construct the parameterlist
-		ParameterList pl = new ParameterList();
+		ParameterList pl = new ParameterList(definedParameters);
 		try {
-			if (definedParameters != null)
-				pl.addAll(definedParameters);
 			Parameter p = new Parameter();
 			p.setName("file");
 			p.setDefaultValue(name);
@@ -83,8 +81,7 @@ public class FileUtils {
 			p.setPattern(filenamePattern);
 			p.configure();
 			pl.add(p);
-		}
-		catch(ConfigurationException e) {
+		} catch(ConfigurationException e) {
 			throw new ParameterException("file", e);
 		}
 
