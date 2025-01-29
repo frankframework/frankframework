@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,21 +44,12 @@ public class StreamCaptureUtils {
 	 * If bytes are written in chunks it triggers after processing the entire chunk.
 	 */
 	public static OutputStream limitSize(OutputStream stream, int maxSize) {
-		return new ThresholdingOutputStream(maxSize) {
-
-			@Override
-			protected void thresholdReached() throws IOException {
-				stream.close();
+		return new ThresholdingOutputStream(maxSize, OutputStream::close, tos -> {
+			if (tos.isThresholdExceeded()) { // Once reached, stop capturing (writing to the OutputStream).
+				return NullOutputStream.INSTANCE;
 			}
-
-			@Override
-			protected OutputStream getStream() {
-				if (isThresholdExceeded()) {
-					return NullOutputStream.INSTANCE;
-				}
-				return stream;
-			}
-		};
+			return stream;
+		});
 	}
 
 	public static Writer limitSize(Writer writer, int maxSize) {
