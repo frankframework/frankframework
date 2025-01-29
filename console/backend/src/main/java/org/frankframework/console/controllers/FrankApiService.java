@@ -35,6 +35,8 @@ import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.console.util.ResponseUtils;
 import org.frankframework.management.bus.OutboundGateway;
 
+import java.util.UUID;
+
 @Service
 public class FrankApiService implements ApplicationContextAware, InitializingBean {
 
@@ -53,7 +55,7 @@ public class FrankApiService implements ApplicationContextAware, InitializingBea
 
 	@Nonnull
 	protected Message<?> sendSyncMessage(RequestMessageBuilder input) {
-		Message<?> message = getGateway().sendSyncMessage(input.build(session.getMemberTarget()));
+		Message<?> message = getGateway().sendSyncMessage(input.build(getMemberTarget()));
 		if (message == null) {
 			StringBuilder errorMessage = new StringBuilder("did not receive a reply while sending message to topic [" + input.getTopic() + "]");
 			if (input.getAction() != null) {
@@ -86,6 +88,10 @@ public class FrankApiService implements ApplicationContextAware, InitializingBea
 	@Override
 	public final void afterPropertiesSet() {
 		environment = applicationContext.getEnvironment();
+	}
+
+	protected UUID getMemberTarget() {
+		return session.getMemberTarget();
 	}
 
 	/** Get a property from the Spring Environment. */

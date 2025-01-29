@@ -110,6 +110,8 @@ public class FrankApiWebSocketBase implements InitializingBean, ApplicationListe
 
 	@Nullable
 	private String findJsonDiff(@Nonnull String cachedJsonMessage, @Nonnull String latestJsonMessage) {
+		if ("{}".equals(cachedJsonMessage)) return latestJsonMessage;
+
 		try {
 			JsonValue source = Json.createReader(new StringReader(cachedJsonMessage)).readValue();
 			JsonValue target = Json.createReader(new StringReader(latestJsonMessage)).readValue();
