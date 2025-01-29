@@ -17,6 +17,7 @@ package org.frankframework.parameters;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,6 @@ import java.util.stream.Stream;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import org.apache.commons.collections.iterators.EmptyIterator;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -242,8 +242,7 @@ public class ParameterList implements Iterable<IParameter> {
 	@Override
 	public Iterator<IParameter> iterator() {
 		if (parameters == null) {
-			//noinspection unchecked
-			return (Iterator<IParameter>) EmptyIterator.INSTANCE;
+			return Collections.emptyIterator();
 		}
 		return parameters.iterator();
 	}
