@@ -152,8 +152,8 @@ export class StatusComponent implements OnInit, OnDestroy {
         filterCount += 1;
       }
     }
-    const transitionObject: Record<string, string> = {};
-    if (filterCount < 3) transitionObject['filter'] = filterString.join('+');
+    const transitionObject: Record<string, string | null> = {};
+    transitionObject['filter'] = filterCount < 3 ? filterString.join('+') : null;
     transitionObject['search'] = this.searchText;
 
     const fragment = this.adapterName === '' ? undefined : this.adapterName;
@@ -162,6 +162,7 @@ export class StatusComponent implements OnInit, OnDestroy {
       relativeTo: this.route,
       queryParams: transitionObject,
       queryParamsHandling: 'merge',
+      replaceUrl: true,
       fragment,
     });
   }

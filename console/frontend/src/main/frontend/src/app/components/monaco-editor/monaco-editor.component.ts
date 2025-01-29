@@ -173,7 +173,8 @@ export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestro
     this.zone.run(() => {
       this.router.navigate([], {
         fragment: fragment,
-        queryParamsHandling: 'preserve',
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
       });
     });
   }
