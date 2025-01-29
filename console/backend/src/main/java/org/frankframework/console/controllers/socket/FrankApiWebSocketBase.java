@@ -97,7 +97,7 @@ public class FrankApiWebSocketBase implements InitializingBean, ApplicationListe
 		}
 
 		String stringResponse = ResponseUtils.parseAsString(response);
-		String cacheTopic = customTopic != null ? customTopic : builder.getTopic().toString();
+		String cacheTopic = customTopic != null ? customTopic : builder.getTopic().name();
 		return convertMessageToDiff(target, cacheTopic, stringResponse);
 	}
 
