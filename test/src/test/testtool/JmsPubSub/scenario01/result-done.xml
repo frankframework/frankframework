@@ -1,0 +1,25 @@
+<manageDatabaseRLY>
+	<completionInformation>
+		<returnCode>OK</returnCode>
+	</completionInformation>
+	<results>
+		<result item="1">
+			<result>
+				<fielddefinition>
+					<field name="TINT" type="INTEGER" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHARACTER" columnClassName="java.lang.Integer"/>
+					<field name="TVARCHAR" type="VARCHAR" columnDisplaySize="200" precision="200" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
+				</fielddefinition>
+				<rowset>
+					<row number="0">
+						<field name="TINT">1</field>
+						<field name="TVARCHAR">TestPubSub</field>
+					</row>
+					<row number="1">
+						<field name="TINT">2</field>
+						<field name="TVARCHAR">TestPubSub</field>
+					</row>
+				</rowset>
+			</result>
+		</result>
+	</results>
+</manageDatabaseRLY>
