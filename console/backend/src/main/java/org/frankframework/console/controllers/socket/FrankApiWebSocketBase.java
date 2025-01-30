@@ -97,7 +97,7 @@ public class FrankApiWebSocketBase implements InitializingBean, ApplicationListe
 		}
 
 		String stringResponse = ResponseUtils.parseAsString(response);
-		String cacheTopic = customTopic != null ? customTopic : builder.getTopic().toString();
+		String cacheTopic = customTopic != null ? customTopic : builder.getTopic().name();
 		return convertMessageToDiff(target, cacheTopic, stringResponse);
 	}
 
@@ -110,6 +110,8 @@ public class FrankApiWebSocketBase implements InitializingBean, ApplicationListe
 
 	@Nullable
 	private String findJsonDiff(@Nonnull String cachedJsonMessage, @Nonnull String latestJsonMessage) {
+		if ("{}".equals(cachedJsonMessage)) return latestJsonMessage;
+
 		try {
 			JsonValue source = Json.createReader(new StringReader(cachedJsonMessage)).readValue();
 			JsonValue target = Json.createReader(new StringReader(latestJsonMessage)).readValue();
