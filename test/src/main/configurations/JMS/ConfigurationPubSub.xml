@@ -1,0 +1,54 @@
+<module>
+	<Adapter name="PubSubSender"
+		active="${active.jms}">
+
+		<Receiver>
+			<FrankListener name="Test-PubSub"/>
+			<JdbcMessageLog slotId="PubSubTriggerLog" />
+		</Receiver>
+
+		<Pipeline>
+			<SenderPipe name="Publish message">
+				<JdbcMessageLog slotId="PubSubSenderLog" />
+				<JmsSender
+					jmsRealm="qcf" destinationType="TOPIC"
+					destinationName="${jms.destination.fftest_topic}"
+				/>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+
+	<!-- If the framework properly uses the PubSub protocol, both PubSubReceivers should receive the message and act on it -->
+	<Adapter name="PubSubReceiver1"
+		active="${active.jms}">
+
+		<Receiver>
+			<JmsListener
+				jmsRealm="qcf" destinationType="TOPIC"
+				destinationName="${jms.destination.fftest_topic}"
+			/>
+			<JdbcMessageLog slotId="PubSubReceiver1Log" />
+		</Receiver>
+		<Pipeline>
+			<SenderPipe name="PubSub Action Adapter 1">
+				<FixedQuerySender query="INSERT INTO IBISTEMP (tkey,tvarchar,tint) VALUES (SEQ_IBISTEMP.NEXTVAL,'TestPubSub', 1)"/>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+	<Adapter name="PubSubReceiver2"
+		active="${active.jms}">
+
+		<Receiver>
+			<JmsListener
+				jmsRealm="qcf" destinationType="TOPIC"
+				destinationName="${jms.destination.fftest_topic}"
+			/>
+			<JdbcMessageLog slotId="PubSubReceiver2Log" />
+		</Receiver>
+		<Pipeline>
+			<SenderPipe name="PubSub Action Adapter 2">
+				<FixedQuerySender query="INSERT INTO IBISTEMP (tkey,tvarchar,tint) VALUES (SEQ_IBISTEMP.NEXTVAL,'TestPubSub', 2)"/>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+</module>
