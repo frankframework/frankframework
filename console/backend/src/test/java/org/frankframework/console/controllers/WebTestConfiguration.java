@@ -44,7 +44,7 @@ public class WebTestConfiguration {
 	}
 
 	@Bean
-	FrankApiService frankApiService(ClientSession clientSession) {
-		return new FrankApiService(clientSession);
+	FrankApiService frankApiService(ClientSession clientSession, MessageCacheStore messageCacheStore) {
+		return new FrankApiService(clientSession, messageCacheStore);
 	}
 }
