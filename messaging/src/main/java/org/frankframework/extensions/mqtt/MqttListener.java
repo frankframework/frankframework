@@ -102,9 +102,10 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 		}
 	}
 
-	/** Managed with SharedResources. */
 	@Override
-	public void stop() {}
+	public void stop() {
+		// Connection is handled a shared object.
+	}
 
 	@Override
 	public void connectComplete(boolean reconnect, String brokerUrl) {
