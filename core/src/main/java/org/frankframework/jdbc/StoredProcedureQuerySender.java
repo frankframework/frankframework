@@ -23,13 +23,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.jms.JMSException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -198,10 +199,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	 * @param query The query that is configured
 	 * @return Output-parameters indexed by position in the query parameter-list.
 	 */
-	private Map<Integer, IParameter> buildOutputParameterMap(ParameterList parameterList, String query) {
-		if (parameterList == null) {
-			return Collections.emptyMap();
-		}
+	private Map<Integer, IParameter> buildOutputParameterMap(@Nonnull ParameterList parameterList, String query) {
 		Pattern queryParamPattern = Pattern.compile("\\?(\\{\\w+\\})?");
 		Matcher parameterMatcher = queryParamPattern.matcher(query);
 		List<String> queryParameterNames = new ArrayList<>();
@@ -255,7 +253,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	}
 
 	@Override
-	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, String resultQuery, PreparedStatement resStmt, Message message, PipeLineSession session, ParameterList parameterList) throws SenderException {
+	protected Message executeOtherQuery(@Nonnull Connection connection, @Nonnull PreparedStatement statement, @Nonnull String query, @Nullable String resultQuery, @Nullable PreparedStatement resStmt, @Nullable Message message, @Nullable PipeLineSession session, @Nullable ParameterList parameterList) throws SenderException {
 		try {
 			CallableStatement callableStatement = (CallableStatement) statement;
 			callableStatement.setQueryTimeout(getTimeout());

@@ -70,7 +70,7 @@ public class ServerStatistics {
 	@Description("view all configuration warnings")
 	@GetMapping(value = "/warnings", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getServerConfiguration() {
-		return frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.WARNINGS));
+		return frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.WARNINGS), true);
 	}
 
 	@PermitAll

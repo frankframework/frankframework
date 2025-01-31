@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URLEncoder;
 
+import jakarta.annotation.Nonnull;
 import jakarta.mail.BodyPart;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMultipart;
@@ -109,7 +110,7 @@ public class HttpSender extends AbstractHttpSender {
 	}
 
 	@Override
-	protected HttpRequestBase getMethod(URI url, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
+	protected HttpRequestBase getMethod(URI url, Message message, @Nonnull ParameterValueList parameters, PipeLineSession session) throws SenderException {
 		if (isEncodeMessages() && !Message.isEmpty(message)) {
 			try {
 				message = new Message(URLEncoder.encode(message.asString(), getCharSet()));
@@ -124,7 +125,7 @@ public class HttpSender extends AbstractHttpSender {
 	/**
 	 * Returns HttpRequestBase, with (optional) RAW or as BINARY content
 	 */
-	protected HttpRequestBase createRequestMethod(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
+	protected HttpRequestBase createRequestMethod(URI uri, Message message, @Nonnull ParameterValueList parameters, PipeLineSession session) throws SenderException {
 		try {
 			boolean queryParametersAppended = false;
 			StringBuilder relativePath = new StringBuilder(uri.getRawPath());
@@ -135,15 +136,15 @@ public class HttpSender extends AbstractHttpSender {
 
 			switch (getHttpMethod()) {
 			case GET:
-				if (parameters!=null) {
+				if (parameters.size() > 0) {
 					queryParametersAppended = appendParameters(queryParametersAppended,relativePath,parameters);
 					log.debug("path after appending of parameters [{}]", relativePath);
 				}
 
-				HttpGet getMethod = new HttpGet(relativePath+(parameters==null && BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message)? message.asString():""));
+				HttpGet getMethod = new HttpGet(relativePath+(parameters.size() == 0 && BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message)? message.asString():""));
 
 				log.debug("HttpSender constructed GET-method [{}]", () -> getMethod.getURI().getQuery());
-				if (null != getFullContentType()) { //Manually set Content-Type header
+				if (null != getFullContentType()) { // Manually set Content-Type header
 					getMethod.setHeader("Content-Type", getFullContentType().toString());
 				}
 				return getMethod;
@@ -165,7 +166,7 @@ public class HttpSender extends AbstractHttpSender {
 
 			case DELETE:
 				HttpDelete deleteMethod = new HttpDelete(relativePath.toString());
-				if (null != getFullContentType()) { //Manually set Content-Type header
+				if (null != getFullContentType()) { // Manually set Content-Type header
 					deleteMethod.setHeader("Content-Type", getFullContentType().toString());
 				}
 				return deleteMethod;
@@ -176,7 +177,7 @@ public class HttpSender extends AbstractHttpSender {
 			case REPORT:
 				Element element = XmlUtils.buildElement(message.asString(), true);
 				HttpReport reportMethod = new HttpReport(relativePath.toString(), element);
-				if (null != getFullContentType()) { //Manually set Content-Type header
+				if (null != getFullContentType()) { // Manually set Content-Type header
 					reportMethod.setHeader("Content-Type", getFullContentType().toString());
 				}
 				return reportMethod;
@@ -185,7 +186,7 @@ public class HttpSender extends AbstractHttpSender {
 				return null;
 			}
 		} catch (Exception e) {
-			//Catch all exceptions and throw them as SenderException
+			// Catch all exceptions and throw them as SenderException
 			throw new SenderException(e);
 		}
 	}
@@ -211,7 +212,7 @@ public class HttpSender extends AbstractHttpSender {
 
 		Message responseMessage = responseHandler.getResponseMessage();
 		if (!Message.isEmpty(responseMessage)) {
-			responseMessage.closeOnCloseOf(session, this);
+			responseMessage.closeOnCloseOf(session);
 		}
 
 		if (responseHandler.isMultipart()) {

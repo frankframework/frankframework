@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2014, 2017-2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2014, 2017-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -631,7 +631,7 @@ public class JdbcUtil {
 			case INPUTSTREAM:
 			case BINARY: {
 				Message message = Message.asMessage(value);
-				message.closeOnCloseOf(session, "JDBC Blob Parameter");
+				message.closeOnCloseOf(session);
 				if (message.requiresStream()) {
 					statement.setBinaryStream(parameterIndex, message.asInputStream());
 				} else {
@@ -641,7 +641,7 @@ public class JdbcUtil {
 			}
 			case CHARACTER: {
 				Message message = Message.asMessage(value);
-				message.closeOnCloseOf(session, "JDBC Clob Parameter");
+				message.closeOnCloseOf(session);
 				if (message.requiresStream()) {
 					statement.setCharacterStream(parameterIndex, message.asReader());
 				} else {
@@ -652,14 +652,14 @@ public class JdbcUtil {
 			// noinspection deprecation
 			case BYTES: {
 				Message message = Message.asMessage(value);
-				message.closeOnCloseOf(session, "JDBC BYTES Parameter");
+				message.closeOnCloseOf(session);
 
 				statement.setBytes(parameterIndex, message.asByteArray());
 				break;
 			}
 			default:
 				Message message = Message.asMessage(value);
-				message.closeOnCloseOf(session, "JDBC Parameter");
+				message.closeOnCloseOf(session);
 				setParameter(statement, parameterIndex, message.asString(), parameterTypeMatchRequired);
 		}
 	}

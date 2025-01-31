@@ -77,6 +77,8 @@ import org.frankframework.util.StringUtil;
  * <li><code>etag.cache.password</code></li>
  * <li><code>etag.cache.authalias</code></li>
  * </ul>
+ * 
+ * @ff.tip The OPTIONS verb will automatically be handled by the framework.
  *
  * @author Niels Meijer
  */
@@ -142,6 +144,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
+		if (hasMethod(HttpMethod.OPTIONS)) {
+			throw new ConfigurationException("method OPTIONS should not be added manually as it's automatically handled by the application");
+		}
+
 		if (StringUtils.isEmpty(getUriPattern()))
 			throw new ConfigurationException("uriPattern cannot be empty");
 
@@ -314,9 +320,6 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 */
 	public void setMethods(HttpMethod... methods) {
 		this.methods = List.of(methods);
-		if (hasMethod(HttpMethod.OPTIONS)) {
-			throw new IllegalArgumentException("method OPTIONS should not be added manually");
-		}
 	}
 
 	/**

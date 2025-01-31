@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -101,7 +101,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		}
 		// As we wrap the input-stream, we should make sure it's not closed when the session is closed as that might close this stream before reading it.
 		message.unscheduleFromCloseOnExitOf(session);
-		result.closeOnCloseOf(session, this);
+		result.closeOnCloseOf(session);
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 

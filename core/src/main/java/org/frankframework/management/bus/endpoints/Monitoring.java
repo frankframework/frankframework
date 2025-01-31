@@ -51,6 +51,7 @@ import org.frankframework.monitoring.MonitorManager;
 import org.frankframework.monitoring.Severity;
 import org.frankframework.monitoring.SourceFiltering;
 import org.frankframework.monitoring.Trigger;
+import org.frankframework.monitoring.ITrigger.TriggerType;
 import org.frankframework.monitoring.events.ConsoleMonitorEvent;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.JacksonUtils;
@@ -106,7 +107,7 @@ public class Monitoring extends BusEndpointBase {
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	public Message<String> addMonitorOrTrigger(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
-		String name = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY, null); //when present update Trigger
+		String name = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY, null); // When present update Trigger
 
 		MonitorManager mm = getMonitorManager(configurationName);
 
@@ -114,12 +115,12 @@ public class Monitoring extends BusEndpointBase {
 		ITrigger trigger;
 		if(name != null) {
 			monitor = getMonitor(mm, name);
-			trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
+			trigger = SpringUtils.createBean(mm, Trigger.class);
 			updateTrigger(trigger, message);
 			monitor.addTrigger(trigger);
 		} else {
 			trigger = null;
-			monitor = SpringUtils.createBean(getApplicationContext(), Monitor.class);
+			monitor = SpringUtils.createBean(mm, Monitor.class);
 			updateMonitor(monitor, message, true);
 			mm.addMonitor(monitor);
 		}
@@ -130,7 +131,7 @@ public class Monitoring extends BusEndpointBase {
 			if (trigger != null) {
 				monitor.removeTrigger(trigger);
 			}
-			// Rethrowing this as Warning / Bad Request
+			// Re-throwing this as Warning / Bad Request
 			log.info("Trigger failed validation", e);
 			throw new BusException("trigger not added, validation failed: " + e.getMessage());
 		}
@@ -165,7 +166,7 @@ public class Monitoring extends BusEndpointBase {
 	public Message<String> updateMonitorOrTrigger(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		String monitorName = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY);
-		Integer triggerId = BusMessageUtils.getIntHeader(message, TRIGGER_NAME_KEY, null); //when present update Trigger
+		Integer triggerId = BusMessageUtils.getIntHeader(message, TRIGGER_NAME_KEY, null); // When present update Trigger
 
 		MonitorManager mm = getMonitorManager(configurationName);
 		Monitor monitor = getMonitor(mm, monitorName);
@@ -291,9 +292,10 @@ public class Monitoring extends BusEndpointBase {
 
 	private void changeMonitorState(Monitor monitor, boolean raiseMonitor) {
 		try {
+			TriggerType type = raiseMonitor ? TriggerType.ALARM : TriggerType.CLEARING;
 			log.info("{} monitor [{}]", ()->(raiseMonitor?"raising":"clearing"), monitor::getName);
 			String userPrincipalName = BusMessageUtils.getUserPrincipalName();
-			monitor.changeState(raiseMonitor, Severity.WARNING, new ConsoleMonitorEvent(userPrincipalName));
+			monitor.changeState(type, Severity.WARNING, new ConsoleMonitorEvent(userPrincipalName));
 		} catch (MonitorException e) {
 			throw new BusException("Failed to change monitor state", e);
 		}
@@ -327,9 +329,7 @@ public class Monitoring extends BusEndpointBase {
 		}
 
 		List<Map<String, Object>> monitors = new ArrayList<>();
-		for(int i = 0; i < mm.getMonitors().size(); i++) {
-			Monitor monitor = mm.getMonitor(i);
-
+		for (Monitor monitor : mm.getMonitors().values()) {
 			monitors.add(mapMonitor(monitor));
 		}
 

@@ -137,6 +137,7 @@ import org.frankframework.testutil.mock.ConnectionFactoryFactoryMock;
 import org.frankframework.testutil.mock.DataSourceFactoryMock;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.RunState;
+import org.frankframework.util.SpringUtils;
 
 @Tag("slow")
 public class ReceiverTest {
@@ -630,18 +631,16 @@ public class ReceiverTest {
 		IMonitorDestination destination = mock(IMonitorDestination.class);
 		when(destination.getName()).thenReturn("dummy-destination-name");
 
-		Monitor monitor = new Monitor();
-		monitor.setApplicationContext(configuration);
+		MonitorManager monitorManager = configuration.getBean("monitorManager", MonitorManager.class);
+		Monitor monitor = SpringUtils.createBean(monitorManager, Monitor.class);
 		monitor.setName("test-monitor");
 		monitor.setType(EventType.TECHNICAL);
 
-		MonitorManager monitorManager = new MonitorManager();
-		monitorManager.setApplicationContext(configuration);
 		monitorManager.addMonitor(monitor);
 		monitorManager.addDestination(destination);
 		monitor.setDestinations(destination.getName());
 
-		Trigger badTrigger = spy(new Trigger());
+		Trigger badTrigger = spy(SpringUtils.createBean(monitorManager, Trigger.class));
 		doThrow(IllegalStateException.class).when(badTrigger).onApplicationEvent(any(FireMonitorEvent.class));
 		badTrigger.setSeverity(Severity.WARNING);
 		badTrigger.setTriggerType(ITrigger.TriggerType.ALARM);
@@ -661,7 +660,6 @@ public class ReceiverTest {
 		badTrigger.addAdapterFilter(af);
 
 		// start adapter
-		monitorManager.configure();
 		configuration.configure();
 		configuration.start();
 

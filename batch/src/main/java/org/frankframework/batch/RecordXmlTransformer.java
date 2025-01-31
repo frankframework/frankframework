@@ -61,12 +61,10 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		ParameterList params = getParameterList();
-		if (params!=null) {
-			try {
-				params.configure();
-			} catch (ConfigurationException e) {
-				throw new ConfigurationException("while configuring parameters",e);
-			}
+		try {
+			params.configure();
+		} catch (ConfigurationException e) {
+			throw new ConfigurationException("while configuring parameters", e);
 		}
 		if (StringUtils.isNotEmpty(getStyleSheetName())||StringUtils.isNotEmpty(getXpathExpression())) {
 			transformerPool = TransformerPool.configureTransformer(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList());
@@ -82,7 +80,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 				log.debug("Transformer [{}] record before XSL transformation [{}]", getName(), xml);
 			}
 			Message message = xml.asMessage();
-			ParameterValueList pvl = paramList == null ? null : paramList.getValues(message, session);
+			ParameterValueList pvl = paramList.getValues(message, session);
 			try (Message transformedMessage = transformerPool.transform(message, pvl)) {
 				return transformedMessage.asString();
 			}

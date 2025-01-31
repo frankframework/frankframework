@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
-import org.frankframework.util.ClassUtils;
 
 /**
  * Pipe that stores all its parameter values in the ThreadContext, formerly known as Mapped Diagnostic Context (MDC), to be used in logging.
@@ -83,7 +82,7 @@ public class LogContextPipe extends FixedForwardPipe {
 			if (isExport()) {
 				ThreadContext.putAll(values);
 			} else {
-				session.scheduleCloseOnSessionExit(CloseableThreadContext.putAll(values), ClassUtils.nameOf(this));
+				session.scheduleCloseOnSessionExit(CloseableThreadContext.putAll(values));
 			}
 		}
 		return new PipeRunResult(getSuccessForward(),message);

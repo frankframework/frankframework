@@ -15,9 +15,12 @@
 */
 package org.frankframework.scheduler;
 
+import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
@@ -44,7 +47,8 @@ import org.frankframework.scheduler.job.IJob;
  * @see Adapter
  * @see Configuration
   */
-public class ConfiguredJob extends AbstractJob {
+@Log4j2
+public class ConfiguredJob implements Job {
 
 	public static final String JOBDEF_KEY = "jobdef";
 
@@ -68,4 +72,13 @@ public class ConfiguredJob extends AbstractJob {
 		}
 	}
 
+	private String getLogPrefix(JobExecutionContext context) {
+		String instName = context.getJobDetail().getKey().getName();
+		return "Job [" + instName + "] ";
+	}
+
+	private String getLogPrefix(IJob jobDef) {
+		String instName = jobDef.getName();
+		return "Job [" + instName + "] ";
+	}
 }

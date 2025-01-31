@@ -74,6 +74,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.stream.Message;
 import org.frankframework.xml.XmlWriter;
 
 /**
@@ -112,10 +113,10 @@ public class Json2Xml extends XmlAligner {
 		setRootElement(rootElement);
 	}
 
+	@SuppressWarnings("unchecked")
 	private static List<XSParticle> getXsdChildParticles(XSComplexTypeDefinition complexTypeDefinition) {
 		XSTerm term = complexTypeDefinition.getParticle().getTerm();
 		if (term instanceof XSModelGroup modelGroup) {
-			//noinspection unchecked
 			return modelGroup.getParticles();
 		}
 		return List.of();
@@ -202,12 +203,16 @@ public class Json2Xml extends XmlAligner {
 		}
 	}
 
-
-	private String getNodeText(JsonValue node) {
+	private String getNodeText(JsonValue node) throws SAXException {
 		String result;
 		if (node instanceof JsonString string) {
 			result=string.getString();
-		} else if (node instanceof JsonStructure) { // this happens when override key is present without a value
+		} else if (node instanceof JsonArray) {
+			throw new SAXException("Expected simple element, got instead an array-value: [" + node + "]");
+		} else if (node instanceof JsonObject jsonObject) { // this happens when override key is present without a value
+			if (!jsonObject.isEmpty()) {
+				throw new SAXException("Expected simple element, got instead an object-value: [" + node + "]");
+			}
 			result=null;
 		} else {
 			result=node.toString();
@@ -368,17 +373,24 @@ public class Json2Xml extends XmlAligner {
 		return objectBuilder.build().getJsonString(childName);
 	}
 
-	private String getOverride(JsonValue node) {
+	private String getOverride(JsonValue node) throws SAXException {
 		Object text = sp.getOverride(getContext());
+		// When we drop Java17 support, we can turn this into a concise switch-expression, see https://docs.oracle.com/en/java/javase/21/language/pattern-matching-switch.html#GUID-E69EEA63-E204-41B4-AA7F-D58B26A3B232
 		if (text instanceof List) {
 			// if the override is a List, then it has already been substituted via getSubstitutedChild.
 			// Therefore now get the node text, which is here an individual element already.
 			return getNodeText(node);
-		}
-		if (text instanceof String string) {
+		} else if (text instanceof Message message) {
+			try {
+				return message.asString();
+			} catch (IOException e) {
+				throw new SAXException(e);
+			}
+		} else if (text instanceof String string) {
 			return string;
+		} else {
+			return text.toString();
 		}
-		return text.toString();
 	}
 
 	private void processChildElement(JsonValue node, String parentName, XSElementDeclaration childElementDeclaration, boolean mandatory, Set<String> processedChildren, Set<String> declaredSiblingElements) throws SAXException {
@@ -565,7 +577,7 @@ public class Json2Xml extends XmlAligner {
 		return children;
 	}
 
-	private String getText(XSElementDeclaration elementDeclaration, JsonValue node) {
+	private String getText(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
 		String nodeName=elementDeclaration.getName();
 		Object text;
 		if (log.isTraceEnabled()) log.trace("node [{}] currently parsed element [{}]", nodeName, getContext().getLocalName());
@@ -660,6 +672,8 @@ public class Json2Xml extends XmlAligner {
 			return Set.of(name);
 		} else {
 			if (isMultipleOccurringChildElement(name) && node instanceof JsonArray jsonArray) {
+				// this usecase seems to be for Multivalued-Parameters (See Json2XmlValidatorTest#testMultivaluedParameters)
+				// a mapping from a multivalued json array (in a json input) does not seem to be working?
 				Set<String> result = new HashSet<>();
 				for(JsonValue n: jsonArray) {
 					result.addAll(doHandleElement(elementDeclaration, n, elementNamespace, name, qname, attributes));

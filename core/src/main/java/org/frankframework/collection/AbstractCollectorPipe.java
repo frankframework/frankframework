@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
-import org.frankframework.util.ClassUtils;
 
 /**
  * Base class for pipes that can collect items, such as multipart messages and zip archives.
@@ -98,7 +97,7 @@ public abstract class AbstractCollectorPipe<C extends ICollector<P>, P> extends 
 
 	protected ParameterValueList getParameterValueList(Message input, PipeLineSession session) throws CollectionException {
 		try {
-			return getParameterList()!=null ? getParameterList().getValues(input, session) : null;
+			return getParameterList().getValues(input, session);
 		} catch (ParameterException e) {
 			throw new CollectionException("cannot determine parameter values", e);
 		}
@@ -114,7 +113,7 @@ public abstract class AbstractCollectorPipe<C extends ICollector<P>, P> extends 
 					}
 					collection = new Collection<>(createCollector(input, session));
 					collection.setName(getCollectionName());
-					session.scheduleCloseOnSessionExit(collection, ClassUtils.nameOf(this));
+					session.scheduleCloseOnSessionExit(collection);
 					session.put(getCollectionName(), collection);
 					break;
 				}

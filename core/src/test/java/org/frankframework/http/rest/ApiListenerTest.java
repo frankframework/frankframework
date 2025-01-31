@@ -55,8 +55,9 @@ public class ApiListenerTest {
 
 	@Test
 	public void testOptionsMethod() {
-		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> listener.setMethod(HttpMethod.OPTIONS));
-		assertEquals("method OPTIONS should not be added manually", ex.getMessage());
+		listener.setMethod(HttpMethod.OPTIONS);
+		ConfigurationException ex = assertThrows(ConfigurationException.class, listener::configure);
+		assertEquals("method OPTIONS should not be added manually as it's automatically handled by the application", ex.getMessage());
 	}
 
 
@@ -75,17 +76,14 @@ public class ApiListenerTest {
 	public void testContentTypes() throws ConfigurationException {
 		for(MediaTypes type : MediaTypes.values()) {
 			listener.setProduces(type);
-			listener.configure(); //Check if the media-type passes the 'configure' checks
+			listener.configure(); // Check if the media-type passes the 'configure' checks
 
 			assertTrue(listener.getContentType().includes(type.getMimeType()));
 		}
 	}
 
 	@Test
-	public void testEmptyContentTypes() throws ConfigurationException {
-		//Check empty produces
-//		listener.setProduces(null);
-//		listener.setConsumes(null);
+	public void testAnyMimeType() throws ConfigurationException {
 		listener.configure();
 
 		assertEquals("*/*", listener.getContentType().toString());
@@ -148,8 +146,8 @@ public class ApiListenerTest {
 
 	@Test
 	public void isConsumableMULTIPARTS() {
-		//There are different multipart contentTypes, see: https://msdn.microsoft.com/en-us/library/ms527355(v=exchg.10).aspx
-		//Test at least the 3 most commonly used multiparts
+		// There are different multipart contentTypes, see: https://msdn.microsoft.com/en-us/library/ms527355(v=exchg.10).aspx
+		// Test at least the 3 most commonly used multiparts
 		List<String> acceptHeaders = new ArrayList<>();
 		acceptHeaders.add("multipart/form-data");
 		acceptHeaders.add("multipart/related");

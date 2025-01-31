@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -285,7 +285,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			} else {
 				log.debug("iteration [{}] item [{}]", totalItems, message);
 			}
-			message.closeOnCloseOf(session, "iteratingPipeItem"+totalItems);
+			message.closeOnCloseOf(session);
 
 			if (childLimiter != null) {
 				try {
@@ -388,7 +388,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		private Message transformMessage(Message message) throws SenderException {
 			try {
 				long preprocessingStartTime = System.currentTimeMillis();
-				ParameterValueList parameterValueList = getParameterList() != null ? getParameterList().getValues(message, session) : null;
+				ParameterValueList parameterValueList = getParameterList().getValues(message, session);
 				Message transformedMsg = msgTransformerPool.transform(message, parameterValueList);
 				long preprocessingDuration = System.currentTimeMillis() - preprocessingStartTime;
 				getStatisticsKeeper("message preprocessing").record(preprocessingDuration);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2024 WeAreFrank!
+   Copyright 2021, 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -144,7 +144,7 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 		if (getAction()==null) {
 			throw new ConfigurationException("attribute action not specified");
 		}
-		if ((getLimit()>0 || (getParameterList()!=null && getParameterList().hasParameter(PARAM_LIMIT))) && getAction()!=MongoAction.FINDMANY) {
+		if ((getLimit() > 0 || getParameterList().hasParameter(PARAM_LIMIT)) && getAction() != MongoAction.FINDMANY) {
 			throw new ConfigurationException("attribute limit or parameter "+PARAM_LIMIT+" can only be used for action "+MongoAction.FINDMANY);
 		}
 	}
@@ -174,7 +174,7 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 
 	@Override
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
-		message.closeOnCloseOf(session, this);
+		message.closeOnCloseOf(session);
 		MongoAction mongoAction = getAction();
 		try {
 			MessageBuilder messageBuilder = new MessageBuilder();

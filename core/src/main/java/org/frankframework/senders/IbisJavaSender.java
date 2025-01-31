@@ -105,9 +105,7 @@ public class IbisJavaSender extends AbstractSenderWithParameters implements HasP
 		try (PipeLineSession subAdapterSession = new PipeLineSession()) {
 			subAdapterSession.put(PipeLineSession.MANUAL_RETRY_KEY, session.get(PipeLineSession.MANUAL_RETRY_KEY, false));
 			try {
-				if (paramList != null) {
-					subAdapterSession.putAll(paramList.getValues(message, session).getValueMap());
-				}
+				subAdapterSession.putAll(paramList.getValues(message, session).getValueMap());
 				DispatcherManager dm;
 				Class<?> c = Class.forName("nl.nn.adapterframework.dispatcher.DispatcherManagerFactory");
 

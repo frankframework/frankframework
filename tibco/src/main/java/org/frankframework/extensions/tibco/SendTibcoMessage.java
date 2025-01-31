@@ -92,7 +92,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (getParameterList() != null && getParameterList().hasParameter("userName")) {
+		if (getParameterList().hasParameter("userName")) {
 			ConfigurationWarnings.add(this, log, "parameter [userName] has been replaced with [username]");
 		}
 
@@ -131,13 +131,11 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		} catch (IOException e) {
 			throw new PipeRunException(this,"cannot preserve input",e);
 		}
-		ParameterValueList pvl = null;
-		if (getParameterList()!=null) {
-			try {
-				pvl = getParameterList().getValues(input, session);
-			} catch (ParameterException e) {
-				throw new PipeRunException(this, "exception on extracting parameters", e);
-			}
+		ParameterValueList pvl;
+		try {
+			pvl = getParameterList().getValues(input, session);
+		} catch (ParameterException e) {
+			throw new PipeRunException(this, "exception on extracting parameters", e);
 		}
 
 		url_work = getParameterValue(pvl, "url");

@@ -34,7 +34,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.26.0</version>
+			<version>6.27.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -67,7 +67,7 @@
 		<dependency>
 			<groupId>com.github.mwiede</groupId>
 			<artifactId>jsch</artifactId>
-			<version>0.2.22</version>
+			<version>0.2.23</version>
 		</dependency>
 
 		<!-- Test scoped and provided dependencies -->

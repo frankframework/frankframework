@@ -27,6 +27,7 @@ import lombok.extern.log4j.Log4j2;
  *
  * @author Ricardo
  */
+@SuppressWarnings("deprecation")
 @Log4j2
 public class DateFormatUtilsTest {
 

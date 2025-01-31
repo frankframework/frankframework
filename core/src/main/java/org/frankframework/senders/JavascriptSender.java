@@ -135,18 +135,14 @@ public class JavascriptSender extends SenderSeries {
 		}
 
 		//Create a Parameter Value List
-		ParameterValueList pvl = null;
+		ParameterValueList pvl;
 		try {
-			if (getParameterList() != null) {
-				pvl = getParameterList().getValues(message, session);
-			}
+			pvl = getParameterList().getValues(message, session);
 		} catch (ParameterException e) {
 			throw new SenderException("unable to extract parameters", e);
 		}
 		int numberOfParameters = 0;
-		if (pvl != null) {
-			numberOfParameters = pvl.size();
-		}
+		numberOfParameters = pvl.size();
 
 		//This array will contain the parameters given in the configuration
 		Object[] jsParameters = new Object[numberOfParameters];

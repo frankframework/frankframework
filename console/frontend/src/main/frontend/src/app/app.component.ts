@@ -573,10 +573,6 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   processAdapterMessages(adapter: Partial<Adapter>, existingAdapter?: Adapter): void {
-    //   Wont work because the message "date" property keeps being updated
-    /*if (existingAdapter?.messages && adapter.messages) {
-      adapter.messages = [...existingAdapter.messages!, ...adapter.messages].slice(-this.messageKeeperSize);
-    }*/
     if (!adapter.messages) adapter.messages = existingAdapter?.messages ?? [];
   }
 

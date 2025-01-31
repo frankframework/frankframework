@@ -19,6 +19,8 @@ import java.io.IOException;
 
 import javax.xml.transform.TransformerConfigurationException;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -46,7 +48,7 @@ import org.frankframework.util.TransformerPool.OutputType;
  */
 public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 
-	protected ParameterList paramList = null;
+	protected @Nonnull ParameterList paramList = new ParameterList();
 
 	private @Getter String styleSheet;
 	private @Getter String xpathExpression;
@@ -67,19 +69,17 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 					transformerPool = TransformerPool.getXPathTransformerPool(null, getXpathExpression(), OutputType.TEXT, false, getParameterList());
 				}
 
-				ParameterValueList parameterValueList = null;
-				if (getParameterList() != null) {
-					try {
-						getParameterList().configure();
-					} catch (ConfigurationException e) {
-						log.error("exception while configuring parameters", e);
-					}
+				try {
+					getParameterList().configure();
+				} catch (ConfigurationException e) {
+					log.error("exception while configuring parameters", e);
+				}
 
-					try {
-						parameterValueList = getParameterList().getValues(new Message(errorMessage), new PipeLineSession());
-					} catch (ParameterException e) {
-						log.error("got exception extracting parameters", e);
-					}
+				ParameterValueList parameterValueList = null;
+				try {
+					parameterValueList = getParameterList().getValues(new Message(errorMessage), new PipeLineSession());
+				} catch (ParameterException e) {
+					log.error("got exception extracting parameters", e);
 				}
 				try (Message closeable = result) {
 					return transformerPool.transform(closeable, parameterValueList);
@@ -98,13 +98,10 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 	}
 
 	public void addParameter(IParameter p) {
-		if (paramList == null) {
-			paramList = new ParameterList();
-		}
 		paramList.add(p);
 	}
 
-	public ParameterList getParameterList() {
+	public @Nonnull ParameterList getParameterList() {
 		return paramList;
 	}
 

@@ -50,13 +50,11 @@ public class LdapFindMemberPipe extends AbstractLdapQueryPipe {
 	public PipeRunResult doPipeWithException(Message message, PipeLineSession session) throws PipeRunException {
 		String dnSearchIn_work;
 		String dnFind_work;
-		ParameterValueList pvl = null;
-		if (getParameterList() != null) {
-			try {
-				pvl = getParameterList().getValues(message, session);
-			} catch (ParameterException e) {
-				throw new PipeRunException(this, "exception on extracting parameters", e);
-			}
+		ParameterValueList pvl;
+		try {
+			pvl = getParameterList().getValues(message, session);
+		} catch (ParameterException e) {
+			throw new PipeRunException(this, "exception on extracting parameters", e);
 		}
 		dnSearchIn_work = getParameterValue(pvl, "dnSearchIn");
 		if (dnSearchIn_work == null) {

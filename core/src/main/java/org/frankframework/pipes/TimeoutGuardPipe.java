@@ -38,13 +38,11 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		ParameterValueList pvl = null;
-		if (getParameterList() != null) {
-			try {
-				pvl = getParameterList().getValues(message, session);
-			} catch (ParameterException e) {
-				throw new PipeRunException(this, "exception on extracting parameters", e);
-			}
+		ParameterValueList pvl;
+		try {
+			pvl = getParameterList().getValues(message, session);
+		} catch (ParameterException e) {
+			throw new PipeRunException(this, "exception on extracting parameters", e);
 		}
 		int timeout_work;
 		String timeout_work_str = getParameterValue(pvl, "timeout");

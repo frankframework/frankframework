@@ -15,11 +15,15 @@
 */
 package org.frankframework.extensions.sap.jco3;
 
-import com.sap.conn.jco.JCoDestination;
-import com.sap.conn.jco.JCoException;
-import lombok.Getter;
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import com.sap.conn.jco.JCoDestination;
+import com.sap.conn.jco.JCoException;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISenderWithParameters;
@@ -47,19 +51,17 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	private @Getter String sapSystemNameParam="sapSystemName";
 	private @Getter boolean synchronous=false;
 
-	protected ParameterList paramList = null;
+	protected @Nonnull ParameterList paramList = new ParameterList();
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (paramList!=null) {
-			paramList.configure();
-		}
+		paramList.configure();
 		if (StringUtils.isEmpty(getSapSystemName())) {
 			if (StringUtils.isEmpty(getSapSystemNameParam())) {
 				throw new ConfigurationException(getLogPrefix()+"if attribute sapSystemName is not specified, value of attribute sapSystemNameParam must indicate parameter to obtain name of sapSystem from");
 			}
-			if (paramList==null || !paramList.hasParameter(getSapSystemNameParam())) {
+			if (!paramList.hasParameter(getSapSystemNameParam())) {
 				throw new ConfigurationException(getLogPrefix()+"sapSystem must be specified, either in attribute sapSystemName, or via parameter ["+getSapSystemNameParam()+"]");
 			}
 		}
@@ -136,14 +138,11 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 
 	@Override
 	public void addParameter(IParameter p) {
-		if (paramList==null) {
-			paramList=new ParameterList();
-		}
 		paramList.add(p);
 	}
 
 	@Override
-	public ParameterList getParameterList() {
+	public @Nonnull ParameterList getParameterList() {
 		return paramList;
 	}
 

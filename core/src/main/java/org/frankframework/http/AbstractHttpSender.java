@@ -86,6 +86,7 @@ import org.frankframework.util.XmlUtils;
  *
  * @ff.info When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
  * This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.
+ * @ff.info The use of `multi-value` parameters can be achieved by adding multiple {@link Parameter parameters} with the same name.
  * @ff.parameters Any parameters present are appended to the request (when method is <code>GET</code> as request-parameters, when method <code>POST</code>
  * as body part) except the <code>headersParams</code> list, which are added as HTTP headers, and the <code>urlParam</code> header
  *
@@ -136,13 +137,10 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	protected Set<String> headerParamsSet=new LinkedHashSet<>();
 	protected Set<String> parametersToSkipWhenEmptySet=new HashSet<>();
 
-	protected ParameterList paramList = null;
+	protected @Nonnull ParameterList paramList = new ParameterList();
 
 	@Override
 	public void addParameter(IParameter p) {
-		if (paramList==null) {
-			paramList=new ParameterList();
-		}
 		paramList.add(p);
 	}
 
@@ -150,7 +148,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	 * return the Parameters
 	 */
 	@Override
-	public ParameterList getParameterList() {
+	public @Nonnull ParameterList getParameterList() {
 		return paramList;
 	}
 
@@ -161,32 +159,30 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 			super.configure();
 		}
 
-		if (paramList!=null) {
-			paramList.configure();
+		paramList.configure();
 
-			if (StringUtils.isNotEmpty(getHeadersParams())) {
-				headerParamsSet.addAll(StringUtil.split(getHeadersParams()));
+		if (StringUtils.isNotEmpty(getHeadersParams())) {
+			headerParamsSet.addAll(StringUtil.split(getHeadersParams()));
+		}
+		for (IParameter p: paramList) {
+			String paramName = p.getName();
+			if (!headerParamsSet.contains(paramName)) {
+				requestOrBodyParamsSet.add(paramName);
 			}
-			for (IParameter p: paramList) {
-				String paramName = p.getName();
-				if (!headerParamsSet.contains(paramName)) {
-					requestOrBodyParamsSet.add(paramName);
-				}
-			}
+		}
 
-			if (StringUtils.isNotEmpty(getUrlParam())) {
-				headerParamsSet.remove(getUrlParam());
-				requestOrBodyParamsSet.remove(getUrlParam());
-				urlParameter = paramList.findParameter(getUrlParam());
-			}
+		if (StringUtils.isNotEmpty(getUrlParam())) {
+			headerParamsSet.remove(getUrlParam());
+			requestOrBodyParamsSet.remove(getUrlParam());
+			urlParameter = paramList.findParameter(getUrlParam());
+		}
 
-			if (StringUtils.isNotEmpty(getParametersToSkipWhenEmpty())) {
-				if (getParametersToSkipWhenEmpty().equals("*")) {
-					parametersToSkipWhenEmptySet.addAll(headerParamsSet);
-					parametersToSkipWhenEmptySet.addAll(requestOrBodyParamsSet);
-				} else {
-					parametersToSkipWhenEmptySet.addAll(StringUtil.split(getParametersToSkipWhenEmpty()));
-				}
+		if (StringUtils.isNotEmpty(getParametersToSkipWhenEmpty())) {
+			if (getParametersToSkipWhenEmpty().equals("*")) {
+				parametersToSkipWhenEmptySet.addAll(headerParamsSet);
+				parametersToSkipWhenEmptySet.addAll(requestOrBodyParamsSet);
+			} else {
+				parametersToSkipWhenEmptySet.addAll(StringUtil.split(getParametersToSkipWhenEmpty()));
 			}
 		}
 
@@ -311,7 +307,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	 * @return a {@link HttpRequestBase HttpRequest} object
 	 * @throws SenderException
 	 */
-	protected abstract HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException;
+	protected abstract HttpRequestBase getMethod(URI uri, Message message, @Nonnull ParameterValueList parameters, PipeLineSession session) throws SenderException;
 
 	/**
 	 * Custom implementation to extract the response and format it to a String result. <br/>
@@ -342,20 +338,16 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	@Override
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl;
-		if (paramList != null) {
-			try {
-				pvl = paramList.getValues(message, session);
-			} catch (ParameterException e) {
-				throw new SenderException("caught exception evaluating parameters", e);
-			}
-		} else {
-			pvl = null;
+		try {
+			pvl = paramList.getValues(message, session);
+		} catch (ParameterException e) {
+			throw new SenderException("caught exception evaluating parameters", e);
 		}
 
 		URI targetUri;
 		final HttpRequestBase httpRequestBase;
 		try {
-			if (urlParameter != null && pvl != null) {
+			if (urlParameter != null) {
 				String url = pvl.get(getUrlParam()).asStringValue();
 				try {
 					targetUri = getURI(url);
@@ -368,7 +360,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 
 			// Resolve HeaderParameters
 			Map<String, String> headersParamsMap = new HashMap<>();
-			if (!headerParamsSet.isEmpty() && pvl != null) {
+			if (!headerParamsSet.isEmpty()) {
 				log.debug("appending header parameters {}", headersParams);
 				for (String paramName:headerParamsSet) {
 					ParameterValue paramValue = pvl.get(paramName);
@@ -425,7 +417,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 			success = validateResponseCode(statusCode);
 			reasonPhrase = StringUtils.isNotEmpty(statusline.getReasonPhrase()) ? statusline.getReasonPhrase() : "HTTP status-code ["+statusCode+"]";
 
-			if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey()) && session != null) {
+			if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey())) {
 				session.put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
 			}
 
