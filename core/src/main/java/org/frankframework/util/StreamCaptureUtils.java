@@ -22,11 +22,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.io.function.IOConsumer;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.input.TeeInputStream;
 import org.apache.commons.io.input.TeeReader;
-import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.io.output.TeeWriter;
 import org.apache.commons.io.output.ThresholdingOutputStream;
@@ -44,9 +45,14 @@ public class StreamCaptureUtils {
 	 * If bytes are written in chunks it triggers after processing the entire chunk.
 	 */
 	public static OutputStream limitSize(OutputStream stream, int maxSize) {
-		return new ThresholdingOutputStream(maxSize, OutputStream::close, tos -> {
-			if (tos.isThresholdExceeded()) { // Once reached, stop capturing (writing to the OutputStream).
-				return NullOutputStream.INSTANCE;
+		AtomicBoolean closed = new AtomicBoolean(false);
+		return new ThresholdingOutputStream(maxSize, IOConsumer.noop(), tos -> {
+			if (tos.isThresholdExceeded()) {
+				if (!closed.getAndSet(true)) {
+					stream.close();
+				}
+
+				return OutputStream.nullOutputStream();
 			}
 			return stream;
 		});

@@ -41,7 +41,7 @@ public class WriterCaptureWrapper extends Writer {
 
 	@Override
 	public void close() throws IOException {
-		if(!hasDataWritten.get()) {
+		if(!hasDataWritten.getAndSet(true)) {
 			delegate.write(NO_DATA_WRITTEN);
 		}
 

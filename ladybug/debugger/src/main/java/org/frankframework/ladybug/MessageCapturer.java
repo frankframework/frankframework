@@ -21,18 +21,20 @@ import java.io.Writer;
 import java.util.function.Consumer;
 
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import lombok.Setter;
+import nl.nn.testtool.MessageCapturerImpl;
+
 import org.frankframework.ladybug.capture.OutputStreamCaptureWrapper;
 import org.frankframework.ladybug.capture.WriterCaptureWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import nl.nn.testtool.MessageCapturerImpl;
 
 public class MessageCapturer extends MessageCapturerImpl {
 	private final Logger log = LogUtil.getLogger(this);
 
-	private @Autowired int maxMessageLength;
+	private @Setter @Autowired int maxMessageLength;
 
 	@Override
 	public StreamingType getStreamingType(Object message) {

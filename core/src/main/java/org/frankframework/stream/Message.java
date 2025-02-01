@@ -1042,7 +1042,7 @@ public class Message implements Serializable, Closeable {
 			request = StreamCaptureUtils.captureReader(asReader(), writer, maxSize);
 		} else {
 			String charset = StringUtils.isNotEmpty(getCharset()) ? getCharset() : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-			request = StreamCaptureUtils.captureInputStream(asInputStream(), new WriterOutputStream(writer, charset), maxSize);
+			request = StreamCaptureUtils.captureInputStream(asInputStream(), new WriterOutputStream(writer, charset, StreamUtil.BUFFER_SIZE, true), maxSize);
 		}
 		closeOnClose(writer);
 	}

@@ -54,7 +54,7 @@ public class OutputStreamCaptureWrapper extends OutputStream {
 
 	@Override
 	public void close() throws IOException {
-		if(!hasDataWritten.get()) {
+		if(!hasDataWritten.getAndSet(true)) {
 			delegate.write(NO_DATA_WRITTEN);
 		}
 
