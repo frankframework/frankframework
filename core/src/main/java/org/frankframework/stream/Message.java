@@ -1038,6 +1038,12 @@ public class Message implements Serializable, Closeable {
 		if (isRepeatable()) {
 			LOG.warn("repeatability of {} of type [{}] will be lost by capturing stream", this.getObjectId(), request.getClass().getTypeName());
 		}
+		if (isNull()) {
+			CloseUtils.closeSilently(writer);
+			LOG.debug("message is NULL, nothing to capture");
+			return;
+		}
+
 		if (!isBinary()) {
 			request = StreamCaptureUtils.captureReader(asReader(), writer, maxSize);
 		} else {
