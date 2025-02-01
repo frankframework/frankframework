@@ -10,11 +10,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.net.URL;
 
 import org.apache.commons.io.FilenameUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -27,12 +27,7 @@ import org.frankframework.util.StreamUtil;
 
 public class MessageCapturerTest {
 
-	private MessageCapturer capturer;
-
-	@BeforeEach
-	public void setup() {
-		capturer = new MessageCapturer();
-	}
+	private MessageCapturer capturer = new MessageCapturer();
 
 	// Similar to StreamCaptureUtilsTest
 	@ParameterizedTest
@@ -42,24 +37,41 @@ public class MessageCapturerTest {
 		InputStream stream = spy(testFileURL.openStream());
 		Message message = spy(new Message(stream));
 
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		StringWriter capture = spy(new StringWriter());
 		capturer.setMaxMessageLength(ladybugMaxLength);
 		try (Message spyMessaged = capturer.toWriter(message, capture, Lombok::sneakyThrow)) {
-			// Read 20 bytes, and then the rest, to trigger a capture close.
-			StreamUtil.copyStream(spyMessaged.asInputStream(), baos, 20);
+			// No point to verify the read data at this point.
+			// Read 20 bytes, in chunks, to trigger a capture close.
+			try (InputStream str = message.asInputStream()) {
+				int charsRead;
+				byte[] buffer = new byte[20];
+				while (true) {
+					charsRead = str.read(buffer, 0, 20);
+					if (charsRead <= 0) {
+						break;
+					}
+				}
+			}
 		}
 
-		String expected = new String(testFileURL.openStream().readAllBytes());
-		assertEquals(expected, baos.toString());
 		verify(message, times(1)).close();
 		verify(stream, times(2)).close();
 		verify(capture, times(2)).close();
 
-		int maxMessageLength = (int) (Math.round(ladybugMaxLength / 20) +1) * 20; // This is either 1, 2 or 3 buffers (see StreamUtil#copyStream).
+		String expected = new String(testFileURL.openStream().readAllBytes());
 		String captureString = capture.toString();
+		int maxMessageLength = getExpectedCapturedLength(ladybugMaxLength);
 		assertEquals(maxMessageLength, captureString.length(), "expected length ["+maxMessageLength+"], capture text was: "+captureString);
 		assertEquals(expected.substring(0, maxMessageLength), captureString);
+	}
+
+	/**
+	 * This is either 1, 2 or 3 buffers (see StreamUtil#copyStream).
+	 * @param ladybugMaxLength Max capture length of the MessageCapturer
+	 * @return Expected length, max-size rounded to the nearest buffer-size +1
+	 */
+	private int getExpectedCapturedLength(int ladybugMaxLength) {
+		return (int) (Math.round(ladybugMaxLength / 20) +1) * 20;
 	}
 
 	@ParameterizedTest
@@ -79,7 +91,7 @@ public class MessageCapturerTest {
 		String expected = new String(testFileURL.openStream().readAllBytes());
 		assertEquals(expected, baos.toString());
 
-		int maxMessageLength = (int) (Math.round(ladybugMaxLength / 20) +1) * 20; // This is either 1, 2 or 3 buffers (see StreamUtil#copyStream).
+		int maxMessageLength = getExpectedCapturedLength(ladybugMaxLength);
 		String captureString = capture.toString();
 		assertEquals(maxMessageLength, captureString.length(), "expected length ["+maxMessageLength+"], capture text was: "+captureString);
 		assertEquals(expected.substring(0, maxMessageLength), captureString);
@@ -93,19 +105,19 @@ public class MessageCapturerTest {
 		String input = new String(testFileURL.openStream().readAllBytes());
 		Message message = spy(new Message(input));
 
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		StringWriter baos = new StringWriter();
 		StringWriter capture = spy(new StringWriter());
 		capturer.setMaxMessageLength(ladybugMaxLength);
 		try (Message spyMessaged = capturer.toWriter(message, capture, Lombok::sneakyThrow)) {
 			// Read 20 bytes, and then the rest, to trigger a capture close.
-			StreamUtil.copyStream(spyMessaged.asInputStream(), baos, 20);
+			StreamUtil.copyReaderToWriter(spyMessaged.asReader(), baos, 20);
 		}
 
 		assertEquals(input, baos.toString());
 		verify(message, times(1)).close();
 		verify(capture, times(2)).close();
 
-		int maxMessageLength = (int) (Math.round(ladybugMaxLength / 20) +1) * 20; // This is either 1, 2 or 3 buffers (see StreamUtil#copyStream).
+		int maxMessageLength = getExpectedCapturedLength(ladybugMaxLength);
 		String captureString = capture.toString();
 		assertEquals(maxMessageLength, captureString.length(), "expected length ["+maxMessageLength+"], capture text was: "+captureString);
 		assertEquals(input.substring(0, maxMessageLength), captureString);
@@ -118,17 +130,24 @@ public class MessageCapturerTest {
 		String input = new String(testFileURL.openStream().readAllBytes());
 		Message message = spy(new Message(input));
 
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ByteArrayOutputStream capture = new ByteArrayOutputStream();
 		capturer.setMaxMessageLength(ladybugMaxLength);
 		try (Message spyMessaged = capturer.toOutputStream(message, capture, e -> {}, Lombok::sneakyThrow)) {
-			// Read 20 bytes, and then the rest, to trigger a capture close.
-			StreamUtil.copyStream(spyMessaged.asInputStream(), baos, 20);
+			// No point to verify the read data at this point.
+			// Read 20 bytes, in chunks, to trigger a capture close.
+			try (Reader str = message.asReader()) {
+				int charsRead;
+				char[] buffer = new char[20];
+				while (true) {
+					charsRead = str.read(buffer, 0, 20);
+					if (charsRead <= 0) {
+						break;
+					}
+				}
+			}
 		}
 
-		assertEquals(input, baos.toString());
-
-		int maxMessageLength = (int) (Math.round(ladybugMaxLength / 20) +1) * 20; // This is either 1, 2 or 3 buffers (see StreamUtil#copyStream).
+		int maxMessageLength = getExpectedCapturedLength(ladybugMaxLength);
 		String captureString = capture.toString();
 		assertEquals(maxMessageLength, captureString.length(), "expected length ["+maxMessageLength+"], capture text was: "+captureString);
 		assertEquals(input.substring(0, maxMessageLength), captureString);
