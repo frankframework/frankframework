@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,24 +15,19 @@
 */
 package org.frankframework.ladybug;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.function.Consumer;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.Setter;
 import nl.nn.testtool.MessageCapturerImpl;
 
-import org.frankframework.ladybug.capture.OutputStreamCaptureWrapper;
-import org.frankframework.ladybug.capture.WriterCaptureWrapper;
 import org.frankframework.stream.Message;
-import org.frankframework.util.LogUtil;
+import org.frankframework.util.CloseUtils;
 
 public class MessageCapturer extends MessageCapturerImpl {
-	private final Logger log = LogUtil.getLogger(this);
 
 	private @Setter @Autowired int maxMessageLength;
 
@@ -54,14 +49,11 @@ public class MessageCapturer extends MessageCapturerImpl {
 	public <T> T toWriter(T message, Writer writer, Consumer<Throwable> exceptionNotifier) {
 		if (message instanceof Message message1) {
 			try {
-				message1.captureCharacterStream(new WriterCaptureWrapper(writer), maxMessageLength);
+				// should call StreamCaptureUtils.captureReader directly...
+				message1.captureCharacterStream(writer, maxMessageLength);
 			} catch (Throwable t) {
 				exceptionNotifier.accept(t);
-				try {
-					writer.close();
-				} catch (IOException e) {
-					log.error("Could not close writer", e);
-				}
+				CloseUtils.closeSilently(writer);
 			}
 			return message;
 		}
@@ -78,14 +70,10 @@ public class MessageCapturer extends MessageCapturerImpl {
 		if (message instanceof Message m) {
 			charsetNotifier.accept(m.getCharset());
 			try {
-				m.captureBinaryStream(new OutputStreamCaptureWrapper(outputStream), maxMessageLength);
+				m.captureBinaryStream(outputStream, maxMessageLength);
 			} catch (Throwable t) {
 				exceptionNotifier.accept(t);
-				try {
-					outputStream.close();
-				} catch (IOException e) {
-					log.error("Could not close output stream", e);
-				}
+				CloseUtils.closeSilently(outputStream);
 			}
 			return message;
 		}

@@ -6,7 +6,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -175,7 +174,7 @@ public class MessageCapturerTest {
 
 	@Test
 	void testCaptureEmptyBinaryMessage() throws IOException {
-		Message message = new Message(new ByteArrayInputStream("".getBytes()));
+		Message message = new Message(InputStream.nullInputStream());
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ByteArrayOutputStream capture = new ByteArrayOutputStream();
