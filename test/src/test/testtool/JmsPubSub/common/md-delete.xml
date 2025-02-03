@@ -1,0 +1,6 @@
+<manageDatabaseREQ>
+	<delete>
+		<tableName>IBISTEMP</tableName>
+		<where>TVARCHAR='TestPubSub'</where>
+	</delete>
+</manageDatabaseREQ>

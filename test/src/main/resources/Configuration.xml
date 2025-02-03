@@ -3,7 +3,7 @@
 <configuration>
 	<jmsRealms>
 		<jmsRealm realmName="jdbc" datasourceName="${jdbc.datasource.default}"/>
-		<jmsRealm realmName="qcf" queueConnectionFactoryName="${jms.connectionfactory.qcf}" active="${active.jms}"/>
+		<jmsRealm realmName="qcf" queueConnectionFactoryName="${jms.connectionfactory.qcf}" topicConnectionFactoryName="${jms.connectionfactory.qcf}" active="${active.jms}"/>
 		<jmsRealm realmName="fxf" queueConnectionFactoryName="${jms.connectionfactory.fxf}" active="${active.fxf}"/>
 		<jmsRealm realmName="qcf_tibco_esb_rr" queueConnectionFactoryName="jms/qcf_tibco_esb_rr" active="${active.tibco}"/>
 		<jmsRealm realmName="qcf_tibco_esb_ff" queueConnectionFactoryName="jms/qcf_tibco_esb_ff" active="${active.tibco}"/>
