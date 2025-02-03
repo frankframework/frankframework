@@ -234,13 +234,32 @@ public class MessageCapturerTest {
 	}
 
 	@Test
-	void testCaptureNullMessage() throws IOException {
+	void testCaptureNullMessageAsWriter() throws IOException {
 		Message message = Message.nullMessage();
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		StringWriter capture = new StringWriter();
 		capturer.setMaxMessageLength(1024);
 		try (Message spyMessaged = capturer.toWriter(message, capture, Lombok::sneakyThrow)) {
+			// Read 20 bytes, and then the rest, to trigger a capture close.
+			StreamUtil.copyStream(spyMessaged.asInputStream(), baos, 20);
+		}
+
+		assertEquals("", baos.toString());
+
+		String captureString = capture.toString();
+		assertEquals("", captureString);
+		assertEquals(0, captureString.length());
+	}
+
+	@Test
+	void testCaptureNullMessageAsOutputStream() throws IOException {
+		Message message = Message.nullMessage();
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ByteArrayOutputStream capture = new ByteArrayOutputStream();
+		capturer.setMaxMessageLength(1024);
+		try (Message spyMessaged = capturer.toOutputStream(message, capture, e -> {}, Lombok::sneakyThrow)) {
 			// Read 20 bytes, and then the rest, to trigger a capture close.
 			StreamUtil.copyStream(spyMessaged.asInputStream(), baos, 20);
 		}
