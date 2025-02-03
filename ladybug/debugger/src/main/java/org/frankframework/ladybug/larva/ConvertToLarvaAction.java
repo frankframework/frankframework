@@ -110,6 +110,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 
 		private static final HashSet<String> allowedPipesWithSenders = new HashSet<>(Arrays.asList(
 				"SenderPipe",
+				"GenericMessageSendingPipe", // legacy
 				"ForEachChildElementPipe",
 				"ResultSetIteratingPipe",
 				"StreamLineIteratorPipe",
@@ -186,6 +187,8 @@ public class ConvertToLarvaAction implements CustomReportAction {
 		// step number - type- name - in/out . fileExtension
 		// E.g. 01-adapter-ItemIterator-in.xml
 		private static final String FILENAME_FORMAT = "%s-%s-%s-%s.%s";
+		// Chars that are not allowed in a filename and in stub name
+		private static final String INVALID_CHARS = "[\\\\/:*?\\\"<>| ]";
 		private final String reportName;
 		private final String suffix;
 		private final HashMap<Path, String> originalFiles = new HashMap<>();
@@ -244,20 +247,21 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			if(adapterInputMessage == null) {
 				adapterInputMessage = "";
 			}
-			String adapterInputFileName = getFileName(stepCounter, "adapter", adapterName, true, adapterInputMessage);
-			scenarioPropertiesMap.put("step" + stepCounter + ".adapter." + adapterName + ".write", scenarioDirPrefix + adapterInputFileName);
+			String adapterNameWithoutSpaces = adapterName.replaceAll(" ", "_");
+			String adapterInputFileName = getFileName(stepCounter, "adapter", adapterNameWithoutSpaces, true, adapterInputMessage);
+			scenarioPropertiesMap.put("step" + stepCounter + ".adapter." + adapterNameWithoutSpaces + ".write", scenarioDirPrefix + adapterInputFileName);
 			createInputOutputFile(scenarioDirPath, adapterInputFileName, adapterInputMessage);
 
-			commonPropertiesMap.putIfAbsent("adapter." + adapterName + ".className", "org.frankframework.senders.IbisJavaSender");
-			commonPropertiesMap.putIfAbsent("adapter." + adapterName + ".serviceName", TESTTOOL_PREFIX + adapterName);
-			commonPropertiesMap.putIfAbsent("adapter." + adapterName + ".convertExceptionToMessage", "true");
+			commonPropertiesMap.putIfAbsent("adapter." + adapterNameWithoutSpaces + ".className", "org.frankframework.senders.IbisJavaSender");
+			commonPropertiesMap.putIfAbsent("adapter." + adapterNameWithoutSpaces + ".serviceName", TESTTOOL_PREFIX + adapterName);
+			commonPropertiesMap.putIfAbsent("adapter." + adapterNameWithoutSpaces + ".convertExceptionToMessage", "true");
 
-			processCheckPoints(checkpoints, adapterName, scenarioDirPath, scenarioDirPrefix);
+			processCheckPoints(checkpoints, adapterNameWithoutSpaces, scenarioDirPath, scenarioDirPrefix);
 
 			String adapterOutputMessage = checkpoints.get(checkpoints.size() - 1).getMessage();
-			String adapterOutputFileName = getFileName(++stepCounter, "adapter", adapterName, false, adapterOutputMessage);
+			String adapterOutputFileName = getFileName(++stepCounter, "adapter", adapterNameWithoutSpaces, false, adapterOutputMessage);
 			scenarioPropertiesMap.put(
-					"step" + stepCounter + ".adapter." + adapterName + ".read",
+					"step" + stepCounter + ".adapter." + adapterNameWithoutSpaces + ".read",
 					scenarioDirPrefix + adapterOutputFileName);
 			createInputOutputFile(scenarioDirPath, adapterOutputFileName, adapterOutputMessage);
 
@@ -328,7 +332,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 						} else {
 							serviceName = determineStubName(checkpoints, checkpoint);
 						}
-						queueName = serviceName.substring(TESTTOOL_PREFIX.length());
+						queueName = sanitizeName(serviceName.substring(TESTTOOL_PREFIX.length()));
 						// If sender is already being stubbed, use existing stub name
 						if(existingStubs.containsKey(serviceName)) {
 							queueName = existingStubs.get(serviceName);
@@ -390,11 +394,19 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			if (StringUtils.isEmpty(fullyQualifiedName)) {
 				return "";
 			}
+			String simpleName;
 			int lastDotIndex = fullyQualifiedName.lastIndexOf('.');
 			if (lastDotIndex == -1) {
-				return fullyQualifiedName;
+				simpleName = fullyQualifiedName;
+			} else {
+				simpleName = fullyQualifiedName.substring(lastDotIndex + 1);
 			}
-			return fullyQualifiedName.substring(lastDotIndex + 1);
+			// Legacy support: in the old versions of ff/ladybug the className contains $$EnhancerBySpringCGLIB$$
+			int springEnhancerIndex = simpleName.indexOf("$$");
+			if(springEnhancerIndex != -1) {
+				simpleName = simpleName.substring(0, simpleName.indexOf("$$"));
+			}
+			return simpleName;
 		}
 
 		private String getAdapterName(String pipelineName) {
@@ -411,7 +423,8 @@ public class ConvertToLarvaAction implements CustomReportAction {
 					.filter(cp -> cp.getLevel() < checkpoint.getLevel() && !cp.getName().equals("Thread"))
 					.findFirst();
 
-			if(parentCheckPoint.isPresent() && allowedPipesWithSenders.contains(extractSimpleClassName(parentCheckPoint.get().getSourceClassName()))) {
+			String simpleName = extractSimpleClassName(parentCheckPoint.get().getSourceClassName());
+			if(parentCheckPoint.isPresent() && allowedPipesWithSenders.contains(simpleName)) {
 				sb.append(parentCheckPoint.get().getName().substring("Pipe ".length()));
 			} else if(!checkpoint.getName().equals("Sender IbisJavaSender")) {
 				sb.append(checkpoint.getName().substring("Sender ".length()));
@@ -471,10 +484,14 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			return String.format(FILENAME_FORMAT,
 					stepPadding(step),
 					type,
-					name,
+					sanitizeName(name),
 					startPoint ? "in" : "out",
 					fileExtension
 			);
+		}
+
+		private String sanitizeName(String name) {
+			return name.replaceAll(INVALID_CHARS, "_");
 		}
 
 		private String determineFileExtension(String message) {
