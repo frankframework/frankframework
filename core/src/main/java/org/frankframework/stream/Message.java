@@ -1005,6 +1005,11 @@ public class Message implements Serializable, Closeable {
 
 	public void captureBinaryStream(OutputStream outputStream, int maxSize) throws IOException {
 		LOG.debug("creating capture of {}", ClassUtils.nameOf(request));
+		if (isNull()) {
+			CloseUtils.closeSilently(outputStream);
+			LOG.debug("message is NULL, nothing to capture");
+			return;
+		}
 		if (isRepeatable()) {
 			LOG.warn("repeatability of {} of type [{}] will be lost by capturing stream", this.getObjectId(), request.getClass().getTypeName());
 		}
@@ -1035,14 +1040,20 @@ public class Message implements Serializable, Closeable {
 
 	public void captureCharacterStream(Writer writer, int maxSize) throws IOException {
 		LOG.debug("creating capture of {}", () -> ClassUtils.nameOf(request));
+		if (isNull()) {
+			CloseUtils.closeSilently(writer);
+			LOG.debug("message is NULL, nothing to capture");
+			return;
+		}
 		if (isRepeatable()) {
 			LOG.warn("repeatability of {} of type [{}] will be lost by capturing stream", this.getObjectId(), request.getClass().getTypeName());
 		}
+
 		if (!isBinary()) {
 			request = StreamCaptureUtils.captureReader(asReader(), writer, maxSize);
 		} else {
 			String charset = StringUtils.isNotEmpty(getCharset()) ? getCharset() : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-			request = StreamCaptureUtils.captureInputStream(asInputStream(), new WriterOutputStream(writer, charset), maxSize);
+			request = StreamCaptureUtils.captureInputStream(asInputStream(), new WriterOutputStream(writer, charset, StreamUtil.BUFFER_SIZE, true), maxSize);
 		}
 		closeOnClose(writer);
 	}

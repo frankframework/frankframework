@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,11 +22,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.io.function.IOConsumer;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.input.TeeInputStream;
 import org.apache.commons.io.input.TeeReader;
-import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.io.output.TeeWriter;
 import org.apache.commons.io.output.ThresholdingOutputStream;
@@ -44,21 +45,17 @@ public class StreamCaptureUtils {
 	 * If bytes are written in chunks it triggers after processing the entire chunk.
 	 */
 	public static OutputStream limitSize(OutputStream stream, int maxSize) {
-		return new ThresholdingOutputStream(maxSize) {
-
-			@Override
-			protected void thresholdReached() throws IOException {
-				stream.close();
-			}
-
-			@Override
-			protected OutputStream getStream() {
-				if (isThresholdExceeded()) {
-					return NullOutputStream.INSTANCE;
+		AtomicBoolean closed = new AtomicBoolean(false);
+		return new ThresholdingOutputStream(maxSize, IOConsumer.noop(), tos -> {
+			if (tos.isThresholdExceeded()) {
+				if (!closed.getAndSet(true)) {
+					stream.close();
 				}
-				return stream;
+
+				return OutputStream.nullOutputStream();
 			}
-		};
+			return stream;
+		});
 	}
 
 	public static Writer limitSize(Writer writer, int maxSize) {
@@ -68,9 +65,9 @@ public class StreamCaptureUtils {
 
 			@Override
 			public void write(char[] buffer, int offset, int length) throws IOException {
-				if (written<maxSize) {
+				if (written<=maxSize) {
 					writer.write(buffer, offset, length);
-					if ((written+=length)>=maxSize) {
+					if ((written+=length)>maxSize) {
 						writer.close();
 					}
 				}
@@ -83,7 +80,7 @@ public class StreamCaptureUtils {
 
 			@Override
 			public void close() throws IOException {
-				if (written<maxSize) {
+				if (written<=maxSize) {
 					writer.close();
 				}
 			}
