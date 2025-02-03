@@ -8,4 +8,5 @@
 	<Include ref="ConfigurationJmsHeaders.xml"/>
 	<Include ref="TestHighDeliveryCountWithEsbJmsListener.xml"/>
 	<Include ref="ConfigurationAwsSqsJmsListenerSender.xml"/>
+	<Include ref="ConfigurationPubSub.xml"/>
 </Configuration>
