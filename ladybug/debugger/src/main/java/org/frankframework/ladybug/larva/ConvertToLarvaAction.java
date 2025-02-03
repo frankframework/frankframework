@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -199,6 +199,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 		private int longestCommonPropertyName = 0;
 		private int longestScenarioPropertyName = 0;
 		private int stepCounter = 1;
+		private String senderListenerPackageName = "org.frankframework";
 
 		private boolean error = false;
 
@@ -247,12 +248,16 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			if(adapterInputMessage == null) {
 				adapterInputMessage = "";
 			}
+			String pipelineClassName = checkpoints.get(0).getSourceClassName();
+			if(pipelineClassName != null && pipelineClassName.startsWith("nl.nn.adapterframework")) {
+				senderListenerPackageName = "nl.nn.adapterframework";
+			}
 			String adapterNameWithoutSpaces = adapterName.replaceAll(" ", "_");
 			String adapterInputFileName = getFileName(stepCounter, "adapter", adapterNameWithoutSpaces, true, adapterInputMessage);
 			scenarioPropertiesMap.put("step" + stepCounter + ".adapter." + adapterNameWithoutSpaces + ".write", scenarioDirPrefix + adapterInputFileName);
 			createInputOutputFile(scenarioDirPath, adapterInputFileName, adapterInputMessage);
 
-			commonPropertiesMap.putIfAbsent("adapter." + adapterNameWithoutSpaces + ".className", "org.frankframework.senders.IbisJavaSender");
+			commonPropertiesMap.putIfAbsent("adapter." + adapterNameWithoutSpaces + ".className", senderListenerPackageName + ".senders.IbisJavaSender");
 			commonPropertiesMap.putIfAbsent("adapter." + adapterNameWithoutSpaces + ".serviceName", TESTTOOL_PREFIX + adapterName);
 			commonPropertiesMap.putIfAbsent("adapter." + adapterNameWithoutSpaces + ".convertExceptionToMessage", "true");
 
@@ -347,7 +352,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 							return;
 						}
 
-						commonPropertiesMap.putIfAbsent("stub." + queueName + ".className", "org.frankframework.receivers.JavaListener");
+						commonPropertiesMap.putIfAbsent("stub." + queueName + ".className", senderListenerPackageName + ".receivers.JavaListener");
 						commonPropertiesMap.putIfAbsent("stub." + queueName + ".serviceName", serviceName);
 
 						skipUntilEndOfSender = true;
