@@ -1,0 +1,15 @@
+<manageDatabaseREQ>
+	<select>
+		<tableName>IBISSTORE</tableName>
+		<columns>
+			<column>
+				<name>TYPE</name>
+			</column>
+			<column>
+				<name>SLOTID</name>
+			</column>
+		</columns>
+		<where>SLOTID like 'PubSub%'</where>
+		<order>SLOTID</order>
+	</select>
+</manageDatabaseREQ>
