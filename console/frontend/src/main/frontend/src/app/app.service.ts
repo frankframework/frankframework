@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, Subject, catchError, of, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, catchError, Observable, of, Subject } from 'rxjs';
 import { DebugService } from './services/debug.service';
 import { Title } from '@angular/platform-browser';
 import { computeServerPath, deepMerge } from './utils';
@@ -447,6 +447,7 @@ export class AppService {
     const line = message.match(/line \[(\d+)]/);
     const isValidationAlert = message.includes('Validation');
     const link = line && !isValidationAlert ? { name: configuration, '#': `L${line[1]}` } : undefined;
+    console.log(link);
     this.alerts.push({
       link: link,
       type: type,

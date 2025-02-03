@@ -1,8 +1,12 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   @for (alert of state; track alert.message) {
-    <ngb-alert data-cy-test-pipeline="runResult" [dismissible]="false" [type]="alert.type">{{
-      alert.message
-    }}</ngb-alert>
+    <ngb-alert
+      data-cy-test-pipeline="runResult"
+      [dismissible]="false"
+      [type]="alert.type"
+      data-cy="monitors-add-edit__alert"
+      >{{ alert.message }}</ngb-alert
+    >
   }
   <div class="row">
     <div class="col-lg-12 table-responsive">
@@ -138,6 +142,7 @@
                     type="number"
                     min="0"
                     [(ngModel)]="trigger.threshold"
+                    data-cy="monitors-add-edit__threshold__input"
                   />
                 </div>
               </div>

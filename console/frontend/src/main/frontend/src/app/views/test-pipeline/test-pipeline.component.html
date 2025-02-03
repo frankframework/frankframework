@@ -1,6 +1,6 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   @for (alert of state; track alert) {
-    <ngb-alert data-cy-test-pipeline="runResult" [dismissible]="false" [type]="alert.type">{{
+    <ngb-alert data-cy-test-pipeline="runResult" [dismissible]="false" [type]="alert.type" data-cy="test-pipeline__alert">{{
       alert.message
     }}</ngb-alert>
   }
@@ -21,6 +21,7 @@
                   [(selectedOption)]="selectedConfiguration"
                   data-cy-test-pipeline="selectConfig"
                   (selectedOptionChange)="setSelectedConfiguration()"
+                  data-cy="test-pipeline__config__input"
                 ></app-combobox>
               </div>
             </div>
@@ -33,6 +34,7 @@
                   [(selectedOption)]="form.adapter"
                   data-cy-test-pipeline="selectAdapter"
                   [disabled]="selectedConfiguration === ''"
+                  data-cy="test-pipeline__adapter__input"
                 ></app-combobox>
               </div>
             </div>
@@ -96,6 +98,7 @@
                   [(value)]="form.message"
                   [options]="{ language: 'text' }"
                   [actions]="editorActions"
+                  data-cy="test-pipeline__message__input"
                 ></app-monaco-editor>
               </div>
             </div>
@@ -122,7 +125,7 @@
             <h4>Result</h4>
           </div>
           <div class="ibox-content">
-            <pre class="ng-binding" contenteditable="true">{{ result }}</pre>
+            <pre class="ng-binding" contenteditable="true" data-cy="test-pipeline__result">{{ result }}</pre>
           </div>
         </div>
       </div>
