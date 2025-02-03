@@ -1,0 +1,15 @@
+<manageDatabaseREQ>
+	<select>
+		<tableName>IBISTEMP</tableName>
+		<columns>
+			<column>
+				<name>TINT</name>
+			</column>
+			<column>
+				<name>TVARCHAR</name>
+			</column>
+		</columns>
+		<where>TVARCHAR='TestPubSub'</where>
+		<order>TINT</order>
+	</select>
+</manageDatabaseREQ>
