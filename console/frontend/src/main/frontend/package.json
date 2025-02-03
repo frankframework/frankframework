@@ -56,7 +56,7 @@
     "@angular/cli": "^19.1.4",
     "@angular/compiler-cli": "^19.0.5",
     "@types/jasmine": "~4.6.4",
-    "@types/lodash": "^4.17.14",
+    "@types/lodash": "^4.17.15",
     "@types/markdown-it": "^13.0.7",
     "@types/sockjs-client": "^1.5.4",
     "@types/tinycon": "^0.6.6",
