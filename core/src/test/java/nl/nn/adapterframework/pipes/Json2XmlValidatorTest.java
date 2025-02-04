@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.pipes;
 
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
+import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreWhitespaces;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -268,6 +269,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.addParameter(ParameterBuilder.create().withName("b").withSessionKey("b_key"));
 		pipe.addParameter(ParameterBuilder.create().withName("c").withSessionKey("c_key"));
 		pipe.addParameter(ParameterBuilder.create().withName("d").withSessionKey("d_key"));
+		pipe.addParameter(new Parameter("e", "param_e"));
 		pipe.configure();
 		pipe.start();
 
@@ -294,7 +296,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.start();
 
 		// Get request with no content, when no (valid) accept header, fall back to the default.
-		Message inputMessage = new Message("<Root><a/></Root>", new MessageContext().with("Header.Accept", acceptHeader));
+		Message inputMessage = new Message("<Root><a/><e/></Root>", new MessageContext().with("Header.Accept", acceptHeader));
 
 		PipeRunResult inResult = doPipe(inputMessage);
 		PipeRunResult outResult = pipe.getResponseValidator().validate(inputMessage, session, "Root");
@@ -359,19 +361,76 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.addParameter(ParameterBuilder.create().withName("b").withSessionKey("b_key"));
 		pipe.addParameter(ParameterBuilder.create().withName("c").withSessionKey("c_key"));
 		pipe.addParameter(ParameterBuilder.create().withName("d").withSessionKey("d_key"));
+		pipe.addParameter(new Parameter("e", "param_e"));
+		pipe.addParameter(ParameterBuilder.create().withName("e").withSessionKey("e_key"));
 		pipe.configure();
 		pipe.start();
 
 		String input="";
 		String expected = TestFileUtils.getTestFile("/Validation/Parameters/out.xml");
 
-		session.put("b_key","b_value");
-		// session variable "c_key is not present, so there should be no 'c' element in the result
-		session.put("d_key","");
+		// Set up the session.
+		// session variable "b_key" has a List value, should be mapped to multiple elements in the output
+		session.put("b_key", Arrays.asList("b_value1", "b_value2"));
+		// session variable "c_key" is not present, so there should be no 'c' element in the result
+		// session variable "d" has empty value, should be empty in output.
+		session.put("d_key", "");
+		// session variable "e" is set with a Message
+		session.put("e_key", new Message("e_value"));
 
 		PipeRunResult prr = doPipe(pipe, input,session);
 
 		assertEquals(expected, prr.getResult().asString());
+	}
+
+	@Test
+	public void testWithMultiValueParameterFailure() throws Exception {
+		pipe.setName("RestGet");
+		pipe.setRoot("Root");
+		pipe.setOutputFormat(DocumentFormat.XML);
+		pipe.setSchema("/Validation/Parameters/simple.xsd");
+		pipe.setThrowException(true);
+
+		pipe.addParameter(new Parameter("a", "param_a"));
+		pipe.addParameter(ParameterBuilder.create().withName("c").withSessionKey("c_key"));
+		pipe.addParameter(ParameterBuilder.create().withName("d").withSessionKey("d_key"));
+		pipe.addParameter(ParameterBuilder.create().withName("e").withSessionKey("e_key"));
+		pipe.configure();
+		pipe.start();
+
+		String input="";
+		String expected = TestFileUtils.getTestFile("/Validation/Parameters/out.xml");
+
+		// session variable "c_key" is not present, so there should be no 'c' element in the result
+		session.put("d_key","");
+		// session variable "e_key" is present as multi-valued element, should be an error
+		session.put("e_key", Arrays.asList("e_value1", "e_value2"));
+
+		assertThrows(PipeRunException.class, ()-> doPipe(pipe, input,session));
+	}
+
+	@Test
+	public void testWithParameterMissingFailure() throws Exception {
+		pipe.setName("RestGet");
+		pipe.setRoot("Root");
+		pipe.setOutputFormat(DocumentFormat.XML);
+		pipe.setSchema("/Validation/Parameters/simple.xsd");
+		pipe.setThrowException(true);
+
+		pipe.addParameter(new Parameter("a", "param_a"));
+		pipe.addParameter(ParameterBuilder.create().withName("c").withSessionKey("c_key"));
+		pipe.addParameter(ParameterBuilder.create().withName("d").withSessionKey("d_key"));
+		pipe.addParameter(ParameterBuilder.create().withName("e").withSessionKey("e_key"));
+		pipe.configure();
+		pipe.start();
+
+		String input="";
+
+		// session variable "c_key" is not present, so there should be no 'c' element in the result
+		session.put("d_key","");
+		// session variable "e_key" is missing from the session, should be an error
+
+		assertThrows(PipeRunException.class, ()-> doPipe(pipe, input,session));
 	}
 
 	@Test
@@ -751,5 +810,36 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		System.err.println(result.getResult().asString());
 		String expected = TestFileUtils.getTestFile("/Validation/AttributesOnDifferentLevels/output-" + input + ".xml");
 		assertXmlEquals(expected, result.getResult().asString());
+	}
+
+	@Test
+	public void testExpandParameters() throws Exception {
+		// Arrange
+		pipe.setName("testExpandParameters");
+		pipe.setSchema("/Validation/Json2Xml/ParameterSubstitution/Main.xsd");
+		pipe.setThrowException(true);
+		pipe.setOutputFormat(DocumentFormat.JSON);
+		pipe.setRoot("GetDocumentAttributes_Error");
+		pipe.setDeepSearch(true);
+
+		pipe.addParameter(new Parameter("type", "/errors/"));
+		pipe.addParameter(ParameterBuilder.create().withName("title").withSessionKey("errorReason"));
+		pipe.addParameter(ParameterBuilder.create().withName("status").withSessionKey("errorCode"));
+		pipe.addParameter(ParameterBuilder.create().withName("detail").withSessionKey("errorDetailText"));
+		pipe.addParameter(new Parameter("instance", "/archiving/documents"));
+
+		pipe.configure();
+		pipe.start();
+
+		session.put("errorReason", "More than one document found");
+		session.put("errorCode", "DATA_ERROR");
+		session.put("errorDetailText", "The Devil's In The Details");
+
+		// Act
+		PipeRunResult result = pipe.doPipe(Message.asMessage("{}"), session);
+
+		// Assert
+		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/ParameterSubstitution/expected_output.json");
+		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
 	}
 }

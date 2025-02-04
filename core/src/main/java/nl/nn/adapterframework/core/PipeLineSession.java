@@ -147,15 +147,18 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	@Override
 	public Object put(String key, Object value) {
-		if (shouldCloseSessionResource(key, value)) {
+		if (!isStringMessage(value) && shouldCloseSessionResource(key, value)) {
 			closeables.put((AutoCloseable) value, "Session key [" + key + "]");
 		}
 		return super.put(key, value);
 	}
 
+	private static boolean isStringMessage(final Object value) {
+		return (value instanceof Message && "String".equals(((Message) value).getRequestClass()));
+	}
+
 	private static boolean shouldCloseSessionResource(final String key, final Object value) {
-		return value instanceof AutoCloseable &&
-			!key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX);
+		return value instanceof AutoCloseable && !key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX);
 	}
 
 	@Override
@@ -422,7 +425,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	public void scheduleCloseOnSessionExit(AutoCloseable resource, String requester) {
-		closeables.put(resource, ClassUtils.nameOf(resource) +" of "+requester);
+		if (!isStringMessage(resource)) {
+			closeables.put(resource, ClassUtils.nameOf(resource) +" of "+requester);
+		}
 	}
 
 	public boolean isScheduledForCloseOnExit(AutoCloseable message) {
