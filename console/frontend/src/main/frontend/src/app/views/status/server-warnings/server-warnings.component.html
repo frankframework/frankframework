@@ -7,40 +7,37 @@
     {{ serverInfo.fileSystem.freeSpace | humanFileSize }} available, that's {{ freeDiskSpacePercentage }}% of the total
     disk size ({{ serverInfo.fileSystem.totalSpace | humanFileSize }})
   </li>
-  <ng-container *ngIf="alerts.length > 0">
-    <li *ngIf="messageLog[selectedConfiguration].errorStoreCount === 1" class="list-group-item alert-danger">
-      <i class="m-r-md fa fa-info-circle"></i>
-      <span
-        >Errorlog contains 1 record. Service management should check whether this record has to be resent or
-        deleted</span
-      >
+  <li *ngIf="messageLog[selectedConfiguration].errorStoreCount === 1" class="list-group-item alert-danger">
+    <i class="m-r-md fa fa-info-circle"></i>
+    <span
+      >Errorlog contains 1 record. Service management should check whether this record has to be resent or deleted</span
+    >
+  </li>
+  <li *ngIf="messageLog[selectedConfiguration].errorStoreCount > 1" class="list-group-item alert-danger">
+    <i class="m-r-md fa fa-info-circle"></i>
+    <span
+      >Errorlog contains {{ messageLog[selectedConfiguration].errorStoreCount }} records. Service management should
+      check whether this record has to be resent or deleted</span
+    >
+  </li>
+  <li *ngIf="messageLog[selectedConfiguration].errorStoreCount === -1" class="list-group-item alert-warning">
+    <i class="m-r-md fa fa-info-circle"></i>
+    <span>Errorlog might contain records. This is unknown because errorStore.count.show is not set to true</span>
+  </li>
+  <ng-container *ngFor="let alert of alerts">
+    <li
+      *ngIf="
+        alert.configuration === '' || selectedConfiguration === alert.configuration || selectedConfiguration === 'All'
+      "
+      class="alert-{{ alert.type }} list-group-item"
+    >
+      <div (click)="navigateByAlert(alert)" [ngClass]="{ pointer: !!alert.link }">
+        <i class="m-r-md fa fa-{{ alert.type === 'warning' ? 'warning' : 'times' }}"></i>
+        <span *ngIf="selectedConfiguration === 'All' && alert.configuration !== ''"
+          >Configuration [{{ alert.configuration }}] -
+        </span>
+        <span>{{ alert.message }}</span>
+      </div>
     </li>
-    <li *ngIf="messageLog[selectedConfiguration].errorStoreCount > 1" class="list-group-item alert-danger">
-      <i class="m-r-md fa fa-info-circle"></i>
-      <span
-        >Errorlog contains {{ messageLog[selectedConfiguration].errorStoreCount }} records. Service management should
-        check whether this record has to be resent or deleted</span
-      >
-    </li>
-    <li *ngIf="messageLog[selectedConfiguration].errorStoreCount === -1" class="list-group-item alert-warning">
-      <i class="m-r-md fa fa-info-circle"></i>
-      <span>Errorlog might contain records. This is unknown because errorStore.count.show is not set to true</span>
-    </li>
-    <ng-container *ngFor="let alert of alerts">
-      <li
-        *ngIf="
-          alert.configuration === '' || selectedConfiguration === alert.configuration || selectedConfiguration === 'All'
-        "
-        class="alert-{{ alert.type }} list-group-item"
-      >
-        <div (click)="navigateByAlert(alert)" [ngClass]="{ pointer: !!alert.link }">
-          <i class="m-r-md fa fa-{{ alert.type === 'warning' ? 'warning' : 'times' }}"></i>
-          <span *ngIf="selectedConfiguration === 'All' && alert.configuration !== ''"
-            >Configuration [{{ alert.configuration }}] -
-          </span>
-          <span>{{ alert.message }}</span>
-        </div>
-      </li>
-    </ng-container>
   </ng-container>
 </ul>
