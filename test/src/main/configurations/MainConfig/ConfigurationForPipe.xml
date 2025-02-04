@@ -1,10 +1,15 @@
-<module>
+<Module
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd"
+	>
 	<Adapter name="ForPipe">
 		<Receiver name="ForPipe">
 			<JavaListener name="ForPipe" serviceName="ibis4test-ForPipe" />
 		</Receiver>
 		<Pipeline firstPipe="forPipe">
-			<Exit name="EXIT" state="success" />
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" />
+			</Exits>
 
 			<ForPipe name="forPipe" stopAt="10">
 				<Forward name="stop" path="EXIT" />
@@ -20,7 +25,9 @@
 			<JavaListener name="ForPipeWithParam" serviceName="ibis4test-ForPipeWithParam" />
 		</Receiver>
 		<Pipeline firstPipe="forPipe">
-			<Exit name="EXIT" state="success" />
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" />
+			</Exits>
 
 			<ForPipe name="forPipe">
 				<NumberParam name="stopAt" value="10" />
@@ -33,4 +40,4 @@
 		</Pipeline>
 	</Adapter>
 
-</module>
+</Module>

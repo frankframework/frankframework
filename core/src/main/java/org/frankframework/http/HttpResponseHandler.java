@@ -28,6 +28,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
+import org.apache.http.impl.io.EmptyInputStream;
 import org.apache.http.util.EntityUtils;
 import org.springframework.util.MimeType;
 
@@ -46,8 +47,15 @@ public class HttpResponseHandler {
 			httpEntity = httpResponse.getEntity();
 
 			MessageContext context = MessageUtils.getContext(httpResponse);
-			InputStream entityStream = new ReleaseConnectionAfterReadInputStream(this, httpEntity.getContent()); // Wrap the contentStream in a ReleaseConnectionAfterReadInputStream
-			responseMessage = new Message(entityStream, context);
+			if (httpEntity.getContent() instanceof EmptyInputStream) {
+				// No content was returned, immediately close the stream to free up resources.
+				EntityUtils.consume(httpEntity);
+				responseMessage = Message.nullMessage(context);
+			} else {
+				// Wrap the contentStream in a ReleaseConnectionAfterReadInputStream so the connection is closed and returned to the pool.
+				InputStream entityStream = new ReleaseConnectionAfterReadInputStream(this, httpEntity.getContent());
+				responseMessage = new Message(entityStream, context);
+			}
 		}
 	}
 

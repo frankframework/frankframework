@@ -15,6 +15,8 @@
 */
 package org.frankframework.console.controllers;
 
+import java.util.UUID;
+
 import jakarta.annotation.Nonnull;
 
 import org.springframework.beans.BeansException;
@@ -31,6 +33,7 @@ import lombok.Getter;
 import org.frankframework.console.ApiException;
 import org.frankframework.console.configuration.ClientSession;
 import org.frankframework.console.configuration.DeprecationInterceptor;
+import org.frankframework.console.controllers.socket.MessageCacheStore;
 import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.console.util.ResponseUtils;
 import org.frankframework.management.bus.OutboundGateway;
@@ -42,9 +45,11 @@ public class FrankApiService implements ApplicationContextAware, InitializingBea
 	private @Getter Environment environment;
 
 	private final ClientSession session;
+	private final MessageCacheStore messageCacheStore;
 
-	public FrankApiService(ClientSession session) {
+	public FrankApiService(ClientSession session, MessageCacheStore messageCacheStore) {
 		this.session = session;
+		this.messageCacheStore = messageCacheStore;
 	}
 
 	protected final OutboundGateway getGateway() {
@@ -53,7 +58,7 @@ public class FrankApiService implements ApplicationContextAware, InitializingBea
 
 	@Nonnull
 	protected Message<?> sendSyncMessage(RequestMessageBuilder input) {
-		Message<?> message = getGateway().sendSyncMessage(input.build(session.getMemberTarget()));
+		Message<?> message = getGateway().sendSyncMessage(input.build(getMemberTarget()));
 		if (message == null) {
 			StringBuilder errorMessage = new StringBuilder("did not receive a reply while sending message to topic [" + input.getTopic() + "]");
 			if (input.getAction() != null) {
@@ -72,6 +77,25 @@ public class FrankApiService implements ApplicationContextAware, InitializingBea
 		return ResponseUtils.convertToSpringResponse(response);
 	}
 
+	/**
+	 * Overload of the normal callSyncGateway but can `prefill` the cache (for WebSockets).
+	 * The response message must be an instance of String else it won't be cached.
+	 */
+	public ResponseEntity<?> callSyncGateway(RequestMessageBuilder input, boolean preFillCache) throws ApiException {
+		Message<?> response = sendSyncMessage(input);
+
+		if (preFillCache && response.getPayload() instanceof String result) {
+			String topic = input.getTopic().name();
+			String cachedMessage = messageCacheStore.get(getMemberTarget(), topic);
+			if (cachedMessage == null) {
+				messageCacheStore.put(getMemberTarget(), topic, result);
+			}
+		}
+
+		// Build the response or do some final checks / return a different response
+		return ResponseUtils.convertToSpringResponse(response);
+	}
+
 	public ResponseEntity<?> callAsyncGateway(RequestMessageBuilder input) {
 		OutboundGateway gateway = getGateway();
 		gateway.sendAsyncMessage(input.build(session.getMemberTarget()));
@@ -86,6 +110,10 @@ public class FrankApiService implements ApplicationContextAware, InitializingBea
 	@Override
 	public final void afterPropertiesSet() {
 		environment = applicationContext.getEnvironment();
+	}
+
+	private UUID getMemberTarget() {
+		return session.getMemberTarget();
 	}
 
 	/** Get a property from the Spring Environment. */

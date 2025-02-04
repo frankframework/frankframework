@@ -34,7 +34,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.26.0</version>
+			<version>6.27.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

@@ -1,0 +1,6 @@
+<manageDatabaseREQ>
+	<delete>
+		<tableName>IBISSTORE</tableName>
+		<where>SLOTID like 'PubSub%'</where>
+	</delete>
+</manageDatabaseREQ>

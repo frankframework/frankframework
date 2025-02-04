@@ -16,11 +16,11 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
   @Input() showAll: boolean = false;
   @Input() filterIAF_Util: boolean = false;
 
-  private route: ActivatedRoute = inject(ActivatedRoute);
-  private router: Router = inject(Router);
-  private appService: AppService = inject(AppService);
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly router: Router = inject(Router);
+  private readonly appService: AppService = inject(AppService);
+  private readonly subscriptions: Subscription = new Subscription();
   private configurationsList: string[] = [];
-  private subscriptions: Subscription = new Subscription();
 
   @Input({ required: true })
   set configurations(configurations: Configuration[]) {
@@ -41,6 +41,7 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
         return;
       } else if (tab) {
         this.setSelectedTab(tab);
+        this.appService.updateSelectedConfigurationTab(tab);
       } else if (this.showAllTab) {
         this.setSelectedTab(this._allTabName);
       } else if (this.tabsList.length > 0) {
@@ -62,11 +63,12 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
 
   protected override changeTab(tab: string): void {
     this.appService.updateSelectedConfigurationTab(tab);
+    const queryParameters = tab === this._allTabName ? { [this.queryParamName]: null } : { [this.queryParamName]: tab };
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: tab === this._allTabName ? { [this.queryParamName]: null } : { [this.queryParamName]: tab },
+      queryParams: queryParameters,
       queryParamsHandling: 'merge',
-      skipLocationChange: true,
+      replaceUrl: true,
     });
   }
 
