@@ -12,7 +12,7 @@
 	<description>Framework to provide credentials from various secret stores</description>
 
 	<properties>
-		<apache.tomcat.version>9.0.95</apache.tomcat.version>
+		<apache.tomcat.version>9.0.98</apache.tomcat.version>
 		<apache-directory-server.version>2.0.0.AM26</apache-directory-server.version>
 	</properties>
 
