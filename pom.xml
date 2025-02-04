@@ -17,12 +17,12 @@
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
 		<jackson.version>2.16.0</jackson.version>
-		<cxf.version>3.6.4</cxf.version>
+		<cxf.version>3.6.5</cxf.version>
 		<spring.version>5.3.39</spring.version>
-		<spring-security.version>5.8.11</spring-security.version>
+		<spring-security.version>5.8.16</spring-security.version>
 		<spring-integration.version>5.5.20</spring-integration.version>
 		<spring.boot.version>2.7.18</spring.boot.version>
-		<apache.tomcat.version>9.0.95</apache.tomcat.version>
+		<apache.tomcat.version>9.0.98</apache.tomcat.version>
 
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.13.1.Final</narayana.version>
