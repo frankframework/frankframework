@@ -134,8 +134,10 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	@SuppressWarnings("unchecked")
 	@Override
 	public String processRequest(String correlationId, String rawMessage, HashMap context) throws ListenerException {
-		try {
-			HashMap<String, Object> processContext = context != null ? context : new HashMap<>();
+		try (PipeLineSession processContext = new PipeLineSession()) {
+			if (context != null) {
+				processContext.putAll(context);
+			}
 			processContext.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 			try (Message message = new Message(rawMessage);
 				Message result = processRequest(new MessageWrapper<>(message, null, correlationId), processContext)) {
@@ -154,21 +156,21 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 		return  response;
 	}
 
-	private Message processRequest(@Nonnull MessageWrapper<M> messageWrapper, @Nonnull Map<String, Object> context) throws ListenerException {
+	private Message processRequest(@Nonnull MessageWrapper<M> messageWrapper, @Nonnull PipeLineSession parentSession) throws ListenerException {
 		if (!isOpen()) {
 			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
 		}
 		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), messageWrapper.getCorrelationId());
-		Object object = context.get("httpRequest"); //TODO dit moet weg
+		Object object = parentSession.get("httpRequest"); //TODO dit moet weg
 		if (object != null) {
 			if (object instanceof HttpServletRequest request) {
 				ISecurityHandler securityHandler = new HttpSecurityHandler(request);
-				context.put(PipeLineSession.SECURITY_HANDLER_KEY, securityHandler);
+				parentSession.put(PipeLineSession.SECURITY_HANDLER_KEY, securityHandler);
 			} else {
 				log.warn("No securityHandler added for httpRequest [{}]", object::getClass);
 			}
 		}
-		try (PipeLineSession session = new PipeLineSession(context)) {
+		try (PipeLineSession session = new PipeLineSession(parentSession)) {
 			Message message = messageWrapper.getMessage();
 			try {
 				if (throwException) {
@@ -184,7 +186,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 				}
 			} finally {
 				session.unscheduleCloseOnSessionExit(message); // The input message should not be managed by this PipelineSession but rather the method invoker
-				session.mergeToParentSession(getReturnedSessionKeys(), context);
+				session.mergeToParentSession(getReturnedSessionKeys(), parentSession);
 			}
 		}
 	}
