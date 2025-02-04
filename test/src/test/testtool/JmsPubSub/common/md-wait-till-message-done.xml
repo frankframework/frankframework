@@ -3,9 +3,6 @@
 		<tableName>IBISTEMP</tableName>
 		<columns>
 			<column>
-				<name>TKEY</name>
-			</column>
-			<column>
 				<name>TINT</name>
 			</column>
 			<column>

@@ -1,8 +1,9 @@
-<module>
+<Module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd">
 	<Adapter name="PubSubSender"
 		active="${active.jms}">
 
-		<Receiver>
+		<Receiver transactionAttribute="Required">
 			<FrankListener name="Test-PubSub"/>
 			<JdbcMessageLog slotId="PubSubTriggerLog" />
 		</Receiver>
@@ -22,7 +23,7 @@
 	<Adapter name="PubSubReceiver1"
 		active="${active.jms}">
 
-		<Receiver>
+		<Receiver transactionAttribute="Required">
 			<JmsListener
 				jmsRealm="qcf" destinationType="TOPIC"
 				destinationName="${jms.destination.fftest_topic}"
@@ -38,7 +39,7 @@
 	<Adapter name="PubSubReceiver2"
 		active="${active.jms}">
 
-		<Receiver>
+		<Receiver transactionAttribute="Required">
 			<JmsListener
 				jmsRealm="qcf" destinationType="TOPIC"
 				destinationName="${jms.destination.fftest_topic}"
@@ -51,4 +52,4 @@
 			</SenderPipe>
 		</Pipeline>
 	</Adapter>
-</module>
+</Module>
