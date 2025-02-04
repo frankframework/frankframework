@@ -4,7 +4,7 @@ export default defineConfig({
   e2e: {
     experimentalStudio: true,
     baseUrl: "http://localhost:4200",
-    setupNodeEvents(on, config) {
+    setupNodeEvents() {
       // implement node event listeners here
     },
   },
