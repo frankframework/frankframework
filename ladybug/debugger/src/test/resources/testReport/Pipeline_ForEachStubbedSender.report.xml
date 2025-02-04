@@ -1,0 +1,601 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="1.8.0_181" class="java.beans.XMLDecoder">
+	<object class="nl.nn.testtool.Report">
+		<void property="name">
+			<string>Pipeline Frank2Example/ItemIterator</string>
+		</void>
+		<void property="description">
+			<string/>
+		</void>
+		<void property="path">
+			<string/>
+		</void>
+		<void property="correlationId">
+			<string>Test a Pipeline 3</string>
+		</void>
+		<void property="startTime">
+			<long>1735312587040</long>
+		</void>
+		<void property="endTime">
+			<long>1735312587546</long>
+		</void>
+		<void property="checkpoints">
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipeline Frank2Example/ItemIterator</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>0</int>
+					</void>
+					<void property="sourceClassName">
+						<string>org.frankframework.core.PipeLine</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[18603c22:String]</string>
+					</void>
+					<void property="message">
+						<string>
+		&lt;items&gt;
+			&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+			&lt;item name=&quot;item2&quot; color=&quot;green&quot;/&gt;
+			&lt;item name=&quot;item3&quot; color=&quot;blue&quot;/&gt;
+		&lt;/items&gt;
+	</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey cid</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>Test a Pipeline 3</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey mid</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>testmessageac193001--764edd49_19408ae9a20_-7ffe</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey originalMessage</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>Message[18603c22:String]</string>
+					</void>
+					<void property="message">
+						<string>
+		&lt;items&gt;
+			&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+			&lt;item name=&quot;item2&quot; color=&quot;green&quot;/&gt;
+			&lt;item name=&quot;item3&quot; color=&quot;blue&quot;/&gt;
+		&lt;/items&gt;
+	</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey sessionkey</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>value</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey tsReceived</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>2024-12-27 16:16:27.039</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe ItemIteratorPipe</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string>org.frankframework.pipes.ForEachChildElementPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[18603c22:String]</string>
+					</void>
+					<void property="message">
+						<string>
+		&lt;items&gt;
+			&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+			&lt;item name=&quot;item2&quot; color=&quot;green&quot;/&gt;
+			&lt;item name=&quot;item3&quot; color=&quot;blue&quot;/&gt;
+		&lt;/items&gt;
+	</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe ItemIteratorPipe</string>
+					</void>
+					<void property="type">
+						<int>6</int>
+					</void>
+					<void property="level">
+						<int>2</int>
+					</void>
+					<void property="sourceClassName">
+						<string>org.frankframework.pipes.ForEachChildElementPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>
+		&lt;pipe className=&quot;org.frankframework.pipes.ForEachChildElementPipe&quot; elementXPathExpression=&quot;/items/item&quot; name=&quot;ItemIteratorPipe&quot;&gt;
+			&lt;sender className=&quot;org.frankframework.jms.JmsSender&quot; destinationName=&quot;test.queue2&quot; lookupDestination=&quot;false&quot; queueConnectionFactoryName=&quot;jms/qcf&quot; synchronous=&quot;true&quot;/&gt;
+		&lt;/pipe&gt;
+	</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Thread</string>
+					</void>
+					<void property="type">
+						<int>8</int>
+					</void>
+					<void property="level">
+						<int>2</int>
+					</void>
+					<void property="sourceClassName">
+						<string>org.frankframework.pipes.ForEachChildElementPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string/>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender ItemIteratorPipe-sender</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>3</int>
+					</void>
+					<void property="sourceClassName">
+						<string>org.frankframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[60f880:String]</string>
+					</void>
+					<void property="message">
+						<string>
+		&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+	</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>success</string>
+					</void>
+					<void property="type">
+						<int>5</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>java.lang.Boolean</string>
+					</void>
+					<void property="message">
+						<string>
+		&lt;java version=&quot;21.0.2&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+			&lt;boolean&gt;true&lt;/boolean&gt;
+		&lt;/java&gt;
+	</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender ItemIteratorPipe-sender</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string>org.frankframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[1c0d955:BufferedInputStream]</string>
+					</void>
+					<void property="message">
+						<string>item1 is red</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender ItemIteratorPipe-sender</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>3</int>
+					</void>
+					<void property="sourceClassName">
+						<string>org.frankframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[62757370:String]</string>
+					</void>
+					<void property="message">
+						<string>
+		&lt;item name=&quot;item2&quot; color=&quot;green&quot;/&gt;
+	</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>success</string>
+					</void>
+					<void property="type">
+						<int>5</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>java.lang.Boolean</string>
+					</void>
+					<void property="message">
+						<string>
+		&lt;java version=&quot;21.0.2&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+			&lt;boolean&gt;true&lt;/boolean&gt;
+		&lt;/java&gt;
+	</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender ItemIteratorPipe-sender</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string>org.frankframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[95eaecb:BufferedInputStream]</string>
+					</void>
+					<void property="message">
+						<string>item2 is green</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender ItemIteratorPipe-sender</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>3</int>
+					</void>
+					<void property="sourceClassName">
+						<string>org.frankframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[4839c420:String]</string>
+					</void>
+					<void property="message">
+						<string>
+		&lt;item name=&quot;item3&quot; color=&quot;blue&quot;/&gt;
+	</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>success</string>
+					</void>
+					<void property="type">
+						<int>5</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>java.lang.Boolean</string>
+					</void>
+					<void property="message">
+						<string>
+		&lt;java version=&quot;21.0.2&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+			&lt;boolean&gt;true&lt;/boolean&gt;
+		&lt;/java&gt;
+	</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender ItemIteratorPipe-sender</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string>org.frankframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[1a0d9b17:BufferedInputStream]</string>
+					</void>
+					<void property="message">
+						<string>item3 is blue</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Thread</string>
+					</void>
+					<void property="type">
+						<int>9</int>
+					</void>
+					<void property="level">
+						<int>3</int>
+					</void>
+					<void property="sourceClassName">
+						<string>org.frankframework.pipes.ForEachChildElementPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string/>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>XML after preprocessing: filter XPath '/items/item'</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>2</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>request to provide outputstream</string>
+					</void>
+					<void property="message">
+						<string>
+		&lt;root&gt;
+			&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+			&lt;item name=&quot;item2&quot; color=&quot;green&quot;/&gt;
+			&lt;item name=&quot;item3&quot; color=&quot;blue&quot;/&gt;
+		&lt;/root&gt;
+	</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe ItemIteratorPipe</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>2</int>
+					</void>
+					<void property="sourceClassName">
+						<string>org.frankframework.pipes.ForEachChildElementPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[605d3577:byte[]]</string>
+					</void>
+					<void property="message">
+						<string>
+		&lt;results&gt;
+			&lt;result item=&quot;1&quot;&gt;
+item1 is red
+&lt;/result&gt;
+			&lt;result item=&quot;2&quot;&gt;
+item2 is green
+&lt;/result&gt;
+			&lt;result item=&quot;3&quot;&gt;
+item3 is blue
+&lt;/result&gt;
+		&lt;/results&gt;
+	</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>exitState</string>
+					</void>
+					<void property="type">
+						<int>5</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>SUCCESS</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipeline Frank2Example/ItemIterator</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string>org.frankframework.core.PipeLine</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[605d3577:byte[]]</string>
+					</void>
+					<void property="message">
+						<string>
+		&lt;results&gt;
+			&lt;result item=&quot;1&quot;&gt;
+item1 is red
+&lt;/result&gt;
+			&lt;result item=&quot;2&quot;&gt;
+item2 is green
+&lt;/result&gt;
+			&lt;result item=&quot;3&quot;&gt;
+item3 is blue
+&lt;/result&gt;
+		&lt;/results&gt;
+	</string>
+					</void>
+				</object>
+			</void>
+		</void>
+	</object>
+</java>
