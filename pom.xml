@@ -48,7 +48,7 @@
 		<geronimo.jta.spec.version>1.1.1</geronimo.jta.spec.version>
 		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
 
-		<aws.java.sdk.version>2.25.17</aws.java.sdk.version>
+		<aws.java.sdk.version>2.29.52</aws.java.sdk.version>
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
