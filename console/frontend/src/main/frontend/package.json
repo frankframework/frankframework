@@ -9,8 +9,9 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:ci": "ng test --no-watch --no-progress --browsers=ChromeHeadless",
-    "cy:open": "cypress open",
-    "cy:run": "cypress run"
+    "e2e": "ng e2e",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run"
   },
   "private": true,
   "dependencies": {
@@ -57,6 +58,7 @@
     "@angular-eslint/template-parser": "^19.1.0",
     "@angular/cli": "^19.1.6",
     "@angular/compiler-cli": "^19.0.5",
+    "@cypress/schematic": "^3.0.0",
     "@types/jasmine": "~4.6.4",
     "@types/lodash": "^4.17.15",
     "@types/markdown-it": "^13.0.7",
@@ -65,7 +67,6 @@
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.1.0",
     "@typescript-eslint/parser": "^7.1.0",
-    "cypress": "^13.17.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.3",
@@ -77,6 +78,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "prettier": "^3.5.0",
-    "typescript": "5.7.3"
+    "typescript": "5.7.3",
+    "cypress": "latest"
   }
 }

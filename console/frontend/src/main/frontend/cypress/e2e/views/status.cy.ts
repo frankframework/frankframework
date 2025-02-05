@@ -5,7 +5,7 @@ describe('Status page', () => {
 
   it('Configuration messages should have startup massage', () => {
     cy.get('[data-cy="configuration-messages__box"]').click();
-    cy.get('[data-cy="configuration-messages__table__message ]')
+    cy.get('[data-cy="configuration-messages__table__message"]')
       .last()
       .invoke('text')
       .should('match', /Application \[.+\] startup in \d+ ms/);
