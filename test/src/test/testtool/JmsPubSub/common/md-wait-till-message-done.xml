@@ -10,6 +10,6 @@
 			</column>
 		</columns>
 		<where>TVARCHAR = 'TestPubSub'</where>
-		<order>TKEY</order>
+		<order>TINT</order>
 	</select>
 </manageDatabaseREQ>
