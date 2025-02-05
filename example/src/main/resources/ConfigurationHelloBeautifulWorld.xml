@@ -3,11 +3,11 @@ Download frankdoc.xsd from the Frank!Doc website (https://frankdoc.frankframewor
 You can refer to it directly in the xsi:noNamespaceSchemaLocation attribute but it is
 better to refer to it using Eclipse, Window, Preferences, XML, XML Catalog,
 Add..., Location: path/to/frankdoc.xsd, Key:
-http://schemas.frankframework.org/frankdoc.xsd, OK
+http://schemas.frankframework.org/FrankConfig.xsd, OK
 -->
-<Module
+<Configuration
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:noNamespaceSchemaLocation="http://schemas.frankframework.org/ibisdoc.xsd"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd"
 	name="My first beautiful configuration"
 	>
 	<Adapter name="HelloBeautifulWorld" active="${HelloBeautifulWorld.active}">
@@ -20,13 +20,16 @@ http://schemas.frankframework.org/frankdoc.xsd, OK
 			/>
 		</Receiver>
 		<Pipeline firstPipe="HelloBeautifulWorld">
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" />
+			</Exits>
+
 			<EchoPipe
 				name="HelloBeautifulWorld"
 				getInputFromFixedValue="Hello Beautiful World"
 				>
 				<Forward name="success" path="EXIT"/>
 			</EchoPipe>
-			<Exit name="EXIT" state="success"/>
 		</Pipeline>
 	</Adapter>
-</Module>
+</Configuration>
