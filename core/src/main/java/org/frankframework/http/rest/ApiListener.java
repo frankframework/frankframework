@@ -112,6 +112,9 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String headerParams = null;
 	private @Getter String contentDispositionHeaderSessionKey;
 	private @Getter String charset = null;
+	private @Getter String paramWhitelist = null;
+	private @Getter boolean copyAllParams = true;
+	private @Getter List<String> whiteListedParams = List.of();
 
 	// for jwt validation
 	private @Getter String requiredIssuer = null;
@@ -203,6 +206,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		}
 		if (responseType != HttpEntityType.MTOM && StringUtils.isNotBlank(responseMtomContentTransferEncoding)) {
 			ConfigurationWarnings.add(this, log, "[responseMtomContentTransferEncoding] should only be set when [responseType] is [MTOM]");
+		}
+
+		if (StringUtils.isBlank(paramWhitelist) && copyAllParams) {
+			ConfigurationWarnings.add(this, log, "All path parameters and query parameters will be copied into the session. ");
 		}
 	}
 
@@ -449,6 +456,38 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	/** Session key that provides the <code>Content-Disposition</code> header in the response */
 	public void setContentDispositionHeaderSessionKey(String key) {
 		this.contentDispositionHeaderSessionKey = key;
+	}
+
+	/**
+	 * Whitelist of request parameters (Query and POST Parameters) that are allowed to be
+	 * copied into the session.
+	 * <br/>
+	 * Entered as a comma-separated value.
+	 * <br/>
+	 * If left empty, then all HTTP parameters are copied into the session, which can pose
+	 * a security risk and is therefore discouraged. The risk is that parameters could be sent,
+	 * that overwrite system session variables.
+	 * <br/>
+	 * This only works as a backwards-compatibility feature.
+	 *
+	 * @param paramWhitelist Comma-separated list of allowed HTTP parameters.
+	 */
+	public void setParamWhitelist(String paramWhitelist) {
+		this.paramWhitelist = paramWhitelist;
+	}
+
+	/**
+	 * For backwards compatibility with configurations that have not yet been updated, by
+	 * default all parameters are allowed until removal of this flag.
+	 * Copying all POST and query parameters to the session is considered a security risk,
+	 * so this should not be left enabled.
+	 * <br/>
+	 * For backwards compatibility, this is {@code true} by default.
+	 *
+	 * @ff.default true
+	 */
+	public void setCopyAllParams(boolean copyAllParams) {
+		this.copyAllParams = copyAllParams;
 	}
 
 	/** Issuer to validate JWT */

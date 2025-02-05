@@ -109,6 +109,7 @@ import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.ClassLoaderUtils;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.EnumUtils;
 
@@ -146,6 +147,7 @@ public class ApiListenerServletTest {
 
 		servlet.destroy();
 		servlet = null;
+		CloseUtils.closeSilently(session);
 	}
 
 	@BeforeAll
@@ -1823,6 +1825,63 @@ public class ApiListenerServletTest {
 		assertEquals(PAYLOAD, session.get("ClaimsSet"));
 	}
 
+	@Test
+	public void testRequestAllParamsIntoSession() throws Exception {
+		// Arrange
+		new ApiListenerBuilder("/request/with/params", List.of(HttpMethod.GET))
+				.withCopyAllParams(true)
+				.build();
+
+		HttpServletRequest request = createRequest("/request/with/params?p1=1&p2=B&originalMessage=bad", HttpMethod.GET);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEquals("1", session.get("p1"));
+		assertEquals("B", session.get("p2"));
+		assertEquals("bad", session.get("originalMessage"));
+	}
+
+	@Test
+	public void testRequestNoParamsIntoSession() throws Exception {
+		// Arrange
+		new ApiListenerBuilder("/request/with/params", List.of(HttpMethod.GET))
+				.withCopyAllParams(false)
+				.build();
+
+		HttpServletRequest request = createRequest("/request/with/params?p1=1&p2=B&originalMessage=bad", HttpMethod.GET);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertFalse(session.containsKey("p1"));
+		assertFalse(session.containsKey("p2"));
+		assertFalse(session.containsKey("originalMessage"));
+	}
+
+	@Test
+	public void testRequestWhitelistedParamsIntoSession() throws Exception {
+		// Arrange
+		new ApiListenerBuilder("/request/with/params", List.of(HttpMethod.GET))
+				.withParamsWhitelist("p1,p2")
+				.build();
+
+		HttpServletRequest request = createRequest("/request/with/params?p1=1&p2=B&originalMessage=bad", HttpMethod.GET);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEquals("1", session.get("p1"));
+		assertEquals("B", session.get("p2"));
+		assertFalse(session.containsKey("originalMessage"));
+	}
+
 	private String createJWT() throws Exception {
 		JWSHeader jwsHeader = new JWSHeader.Builder(JWSAlgorithm.RS256).build();
 
@@ -2156,6 +2215,16 @@ public class ApiListenerServletTest {
 
 		public ApiListenerBuilder withResultSessionKey(String key, Object value) {
 			handler.addSessionKey(key, value);
+			return this;
+		}
+
+		public ApiListenerBuilder withParamsWhitelist(String paramWhitelist) {
+			listener.setParamWhitelist(paramWhitelist);
+			return this;
+		}
+
+		public ApiListenerBuilder withCopyAllParams(boolean copyAllParams) {
+			listener.setCopyAllParams(copyAllParams);
 			return this;
 		}
 
