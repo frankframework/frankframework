@@ -113,8 +113,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String headerParams = null;
 	private @Getter String contentDispositionHeaderSessionKey;
 	private @Getter String charset = null;
-	private @Getter @Nonnull Set<String> whitelistedParams = Set.of();
-	private @Getter boolean copyAllParams = true;
+	private @Getter @Nonnull Set<String> allowedParameterSet = Set.of();
+	private @Getter boolean allowAllParams = true;
 
 	// for jwt validation
 	private @Getter String requiredIssuer = null;
@@ -208,7 +208,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			ConfigurationWarnings.add(this, log, "[responseMtomContentTransferEncoding] should only be set when [responseType] is [MTOM]");
 		}
 
-		if (whitelistedParams.isEmpty() && copyAllParams) {
+		if (allowedParameterSet.isEmpty() && allowAllParams) {
 			ConfigurationWarnings.add(this, log, "All path parameters and query parameters will be copied into the session. This could be a security risk.");
 		}
 	}
@@ -306,11 +306,11 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return produces.accepts(acceptHeader);
 	}
 
-	public boolean isParameterAccepted(@Nonnull String parameterName) {
-		if (whitelistedParams.isEmpty() && copyAllParams) {
+	public boolean isParameterAllowed(@Nonnull String parameterName) {
+		if (allowedParameterSet.isEmpty() && allowAllParams) {
 			return true;
 		}
-		return whitelistedParams.contains(parameterName);
+		return allowedParameterSet.contains(parameterName);
 	}
 
 	/**
@@ -475,12 +475,12 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * a security risk and is therefore discouraged. The risk is that parameters could be sent,
 	 * that overwrite system session variables.
 	 * <br/>
-	 * This only works as a backwards-compatibility feature.
+	 * This only works as a backwards-compatibility feature and can be switched off setting {@link #setAllowAllParams(boolean)} to {@code false}.
 	 *
 	 * @param paramWhitelist Comma-separated list of allowed HTTP parameters.
 	 */
-	public void setParamWhitelist(@Nullable String paramWhitelist) {
-		this.whitelistedParams = StringUtil.splitToStream(paramWhitelist).collect(Collectors.toSet());
+	public void setAllowedParameters(@Nullable String paramWhitelist) {
+		this.allowedParameterSet = StringUtil.splitToStream(paramWhitelist).collect(Collectors.toSet());
 	}
 
 	/**
@@ -489,12 +489,15 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * Copying all POST and query parameters to the session is considered a security risk,
 	 * so this should not be left enabled.
 	 * <br/>
+	 * When setting {@link #setAllowedParameters(String)}, this value is ignored. This value is only
+	 * used when the allowed parameter list has not been set, or set empty.
+	 * <br/>
 	 * For backwards compatibility, this is {@code true} by default.
 	 *
 	 * @ff.default true
 	 */
-	public void setCopyAllParams(boolean copyAllParams) {
-		this.copyAllParams = copyAllParams;
+	public void setAllowAllParams(boolean allowAllParams) {
+		this.allowAllParams = allowAllParams;
 	}
 
 	/** Issuer to validate JWT */

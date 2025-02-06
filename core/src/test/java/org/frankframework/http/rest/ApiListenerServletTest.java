@@ -1829,7 +1829,7 @@ public class ApiListenerServletTest {
 	public void testRequestAllParamsIntoSession() throws Exception {
 		// Arrange
 		new ApiListenerBuilder("/request/with/params", List.of(HttpMethod.GET))
-				.withCopyAllParams(true)
+				.withAllowAllParams(true)
 				.build();
 
 		HttpServletRequest request = createRequest("/request/with/params?p1=1&p2=B&originalMessage=bad", HttpMethod.GET);
@@ -1848,7 +1848,7 @@ public class ApiListenerServletTest {
 	public void testRequestNoParamsIntoSession() throws Exception {
 		// Arrange
 		new ApiListenerBuilder("/request/with/params", List.of(HttpMethod.GET))
-				.withCopyAllParams(false)
+				.withAllowAllParams(false)
 				.build();
 
 		HttpServletRequest request = createRequest("/request/with/params?p1=1&p2=B&originalMessage=bad", HttpMethod.GET);
@@ -1867,7 +1867,7 @@ public class ApiListenerServletTest {
 	public void testRequestWhitelistedParamsIntoSession() throws Exception {
 		// Arrange
 		new ApiListenerBuilder("/request/with/params", List.of(HttpMethod.GET))
-				.withParamsWhitelist("p1,p2")
+				.withAllowedParams("p1,p2")
 				.build();
 
 		HttpServletRequest request = createRequest("/request/with/params?p1=1&p2=B&originalMessage=bad", HttpMethod.GET);
@@ -2218,13 +2218,13 @@ public class ApiListenerServletTest {
 			return this;
 		}
 
-		public ApiListenerBuilder withParamsWhitelist(String paramWhitelist) {
-			listener.setParamWhitelist(paramWhitelist);
+		public ApiListenerBuilder withAllowedParams(String allowedParams) {
+			listener.setAllowedParameters(allowedParams);
 			return this;
 		}
 
-		public ApiListenerBuilder withCopyAllParams(boolean copyAllParams) {
-			listener.setCopyAllParams(copyAllParams);
+		public ApiListenerBuilder withAllowAllParams(boolean allowAllParams) {
+			listener.setAllowAllParams(allowAllParams);
 			return this;
 		}
 

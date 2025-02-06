@@ -475,7 +475,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 						MultipartMessages parts = MultipartUtils.parseMultipart(request.getInputStream(), request.getContentType());
 						for (Entry<String, Message> entry : parts.messages().entrySet()) {
 							String fieldName = entry.getKey();
-							if (!listener.isParameterAccepted(fieldName)) {
+							if (!listener.isParameterAllowed(fieldName)) {
 								continue;
 							}
 							if ((body == null && multipartBodyName == null) || fieldName.equalsIgnoreCase(multipartBodyName)) {
@@ -622,14 +622,14 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 
 	@Nonnull
 	private Map<String, Object> extractRequestParams(HttpServletRequest request, ApiListener listener) {
-		if (listener.getWhitelistedParams().isEmpty() && !listener.isCopyAllParams()) {
+		if (listener.getAllowedParameterSet().isEmpty() && !listener.isAllowAllParams()) {
 			return Map.of();
 		}
 		Map<String, Object> params = new HashMap<>();
 		Enumeration<String> paramNames = request.getParameterNames();
 		while (paramNames.hasMoreElements()) {
 			String paramName = paramNames.nextElement();
-			if (!listener.isParameterAccepted(paramName)) {
+			if (!listener.isParameterAllowed(paramName)) {
 				continue;
 			}
 			String[] paramList = request.getParameterValues(paramName);
