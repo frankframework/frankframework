@@ -142,6 +142,10 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 			try (Message message = new Message(rawMessage);
 				Message result = processRequest(new MessageWrapper<>(message, null, correlationId), processContext)) {
 					return result.asString();
+			} finally {
+				if (context != null) {
+					context.putAll(processContext);
+				}
 			}
 		} catch (IOException e) {
 			throw new ListenerException("cannot convert stream", e);
@@ -161,11 +165,11 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
 		}
 		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), messageWrapper.getCorrelationId());
-		Object object = parentSession.get("httpRequest"); //TODO dit moet weg
+		Object object = parentSession.get(PipeLineSession.HTTP_REQUEST_KEY); //TODO dit moet weg
 		if (object != null) {
 			if (object instanceof HttpServletRequest request) {
 				ISecurityHandler securityHandler = new HttpSecurityHandler(request);
-				parentSession.put(PipeLineSession.SECURITY_HANDLER_KEY, securityHandler);
+				parentSession.setSecurityHandler(securityHandler);
 			} else {
 				log.warn("No securityHandler added for httpRequest [{}]", object::getClass);
 			}

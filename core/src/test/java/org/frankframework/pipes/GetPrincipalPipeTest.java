@@ -31,7 +31,6 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.PipeForward;
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 
@@ -46,7 +45,7 @@ class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 	public void populateSession() {
 		principal = mock(Principal.class);
 		securityHandler = mock(ISecurityHandler.class);
-		session.put(PipeLineSession.SECURITY_HANDLER_KEY, securityHandler);
+		session.setSecurityHandler(securityHandler);
 	}
 
 	@Override
@@ -64,7 +63,7 @@ class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 	}
 
 	@Test
-	void notFoundForwardConfigure() throws ConfigurationException {
+	void notFoundForwardConfigure() {
 		// Given
 		PipeForward notFound = new PipeForward(NOT_FOUND_FORWARD_NAME, NOT_FOUND_FORWARD_PATH);
 		pipe.setNotFoundForwardName(NOT_FOUND_FORWARD_NAME);

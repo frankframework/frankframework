@@ -166,7 +166,7 @@ public class JavaListenerTest {
 		listener.setThrowException(true);
 
 		HttpServletRequest servletRequest = mock(HttpServletRequest.class);
-		session.put("httpRequest", servletRequest);
+		session.put(PipeLineSession.HTTP_REQUEST_KEY, servletRequest);
 
 		// start adapter
 		startAdapter();

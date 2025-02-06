@@ -321,7 +321,7 @@ public class PipeLineSessionTest {
 	public void testMergeToParentContextMap() {
 		// Arrange
 		PipeLineSession from = new PipeLineSession();
-		Map<String, Object> to = new HashMap<>();
+		PipeLineSession to = new PipeLineSession();
 		String keys = "a,b";
 		from.put("a", 15);
 		from.put("b", 16);
