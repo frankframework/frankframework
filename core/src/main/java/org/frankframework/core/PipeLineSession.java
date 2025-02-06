@@ -128,7 +128,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * @param keysToCopy Keys to be copied, separated by {@value ,} or {@value ;}.
 	 *                   If {@code null} then all keys will be copied.
 	 *                   If an empty string then no keys will be copied.
-	 * @param parentSession Parent {@link PipeLineSession} or {@link Map}.
+	 * @param parentSession Parent {@link PipeLineSession}.
 	 */
 	public void mergeToParentSession(String keysToCopy, PipeLineSession parentSession) {
 		if (parentSession == null) {
