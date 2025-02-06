@@ -459,7 +459,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				/*
 				 * Map headers into messageContext
 				 */
-				if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
+				if (StringUtils.isNotEmpty(listener.getHeaderParams())) {
 					pipelineSession.put("headers", extractHeaderParamsAsXml(request, listener));
 				}
 
@@ -475,11 +475,14 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 						MultipartMessages parts = MultipartUtils.parseMultipart(request.getInputStream(), request.getContentType());
 						for (Entry<String, Message> entry : parts.messages().entrySet()) {
 							String fieldName = entry.getKey();
-							if((body == null && multipartBodyName == null) || fieldName.equalsIgnoreCase(multipartBodyName)) {
+							if (!listener.isParameterAccepted(fieldName)) {
+								continue;
+							}
+							if ((body == null && multipartBodyName == null) || fieldName.equalsIgnoreCase(multipartBodyName)) {
 								body = entry.getValue();
 
 								Enumeration<String> names = request.getHeaderNames();
-								while(names.hasMoreElements()) {
+								while (names.hasMoreElements()) {
 									String name = names.nextElement();
 									body.getContext().put(MessageContext.HEADER_PREFIX + name, request.getHeader(name));
 								}
@@ -619,16 +622,14 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 
 	@Nonnull
 	private Map<String, Object> extractRequestParams(HttpServletRequest request, ApiListener listener) {
-		Set<String> whitelistedParams = StringUtil.splitToStream(listener.getParamWhitelist()).collect(Collectors.toSet());
-		boolean copyAllParams = listener.isCopyAllParams() && whitelistedParams.isEmpty();
-		if (whitelistedParams.isEmpty() && !copyAllParams) {
+		if (listener.getWhitelistedParams().isEmpty() && !listener.isCopyAllParams()) {
 			return Map.of();
 		}
 		Map<String, Object> params = new HashMap<>();
 		Enumeration<String> paramNames = request.getParameterNames();
 		while (paramNames.hasMoreElements()) {
 			String paramName = paramNames.nextElement();
-			if (!copyAllParams && !whitelistedParams.contains(paramName)) {
+			if (!listener.isParameterAccepted(paramName)) {
 				continue;
 			}
 			String[] paramList = request.getParameterValues(paramName);

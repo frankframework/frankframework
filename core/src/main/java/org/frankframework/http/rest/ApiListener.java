@@ -16,6 +16,7 @@
 package org.frankframework.http.rest;
 
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -112,9 +113,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String headerParams = null;
 	private @Getter String contentDispositionHeaderSessionKey;
 	private @Getter String charset = null;
-	private @Getter String paramWhitelist = null;
+	private @Getter @Nonnull Set<String> whitelistedParams = Set.of();
 	private @Getter boolean copyAllParams = true;
-	private @Getter List<String> whiteListedParams = List.of();
 
 	// for jwt validation
 	private @Getter String requiredIssuer = null;
@@ -208,8 +208,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			ConfigurationWarnings.add(this, log, "[responseMtomContentTransferEncoding] should only be set when [responseType] is [MTOM]");
 		}
 
-		if (StringUtils.isBlank(paramWhitelist) && copyAllParams) {
-			ConfigurationWarnings.add(this, log, "All path parameters and query parameters will be copied into the session. ");
+		if (whitelistedParams.isEmpty() && copyAllParams) {
+			ConfigurationWarnings.add(this, log, "All path parameters and query parameters will be copied into the session. This could be a security risk.");
 		}
 	}
 
@@ -304,6 +304,13 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 */
 	public boolean accepts(@Nullable String acceptHeader) {
 		return produces.accepts(acceptHeader);
+	}
+
+	public boolean isParameterAccepted(@Nonnull String parameterName) {
+		if (whitelistedParams.isEmpty() && copyAllParams) {
+			return true;
+		}
+		return whitelistedParams.contains(parameterName);
 	}
 
 	/**
@@ -472,8 +479,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 *
 	 * @param paramWhitelist Comma-separated list of allowed HTTP parameters.
 	 */
-	public void setParamWhitelist(String paramWhitelist) {
-		this.paramWhitelist = paramWhitelist;
+	public void setParamWhitelist(@Nullable String paramWhitelist) {
+		this.whitelistedParams = StringUtil.splitToStream(paramWhitelist).collect(Collectors.toSet());
 	}
 
 	/**
