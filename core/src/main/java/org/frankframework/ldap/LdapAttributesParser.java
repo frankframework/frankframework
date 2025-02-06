@@ -36,7 +36,7 @@ import org.frankframework.util.XmlUtils;
 
 public class LdapAttributesParser extends XMLFilterImpl {
 	private @Getter @Nullable Attributes attributes;
-	private Attribute lastAttribute;
+	private @Nullable Attribute lastAttribute;
 	private boolean readingAttributeValue = false;
 	private final @Nonnull StringBuilder attributeValue = new StringBuilder();
 
@@ -75,6 +75,7 @@ public class LdapAttributesParser extends XMLFilterImpl {
 		switch (localName) {
 			case "attribute" -> lastAttribute = null;
 			case "value" -> {
+				Objects.requireNonNull(lastAttribute, "Invalid XML; element 'value' did not have parent 'attribute'");
 				readingAttributeValue = false;
 				if (attributeValue.isEmpty()) {
 					lastAttribute.add(null);
