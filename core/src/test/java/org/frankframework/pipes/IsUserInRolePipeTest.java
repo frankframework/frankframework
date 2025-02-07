@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.PipeForward;
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 
 /**
@@ -40,7 +39,7 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 	@BeforeEach
 	void beforeEach(){
 		securityHandler = mock(ISecurityHandler.class);
-		session.put(PipeLineSession.SECURITY_HANDLER_KEY, securityHandler);
+		session.setSecurityHandler(securityHandler);
 	}
 
 	@Test
