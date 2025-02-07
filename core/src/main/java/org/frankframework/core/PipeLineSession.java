@@ -18,8 +18,8 @@ package org.frankframework.core;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.Temporal;
-import java.util.Date;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -128,31 +128,29 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * @param keysToCopy Keys to be copied, separated by {@value ,} or {@value ;}.
 	 *                   If {@code null} then all keys will be copied.
 	 *                   If an empty string then no keys will be copied.
-	 * @param to Parent {@link PipeLineSession} or {@link Map}.
+	 * @param parentSession Parent {@link PipeLineSession}.
 	 */
-	public void mergeToParentSession(String keysToCopy, Map<String, Object> to) {
-		if (to == null) {
+	public void mergeToParentSession(String keysToCopy, PipeLineSession parentSession) {
+		if (parentSession == null) {
 			return;
 		}
 		LOG.debug("returning context, returned session keys [{}]", keysToCopy);
-		copyIfExists(EXIT_CODE_CONTEXT_KEY, to);
-		copyIfExists(EXIT_STATE_CONTEXT_KEY, to);
+		copyIfExists(EXIT_CODE_CONTEXT_KEY, parentSession);
+		copyIfExists(EXIT_STATE_CONTEXT_KEY, parentSession);
 		if (StringUtils.isNotEmpty(keysToCopy) && !"*".equals(keysToCopy)) {
 			StringTokenizer st = new StringTokenizer(keysToCopy,",;");
 			while (st.hasMoreTokens()) {
 				String key = st.nextToken();
-				to.put(key, get(key));
+				parentSession.put(key, get(key));
 			}
 		} else if (keysToCopy == null || "*".equals(keysToCopy)) { // if keys are not set explicitly ...
-			to.putAll(this);                                      // ... all keys will be copied
+			parentSession.putAll(this);                                      // ... all keys will be copied
 		}
-		Set<AutoCloseable> closeablesInDestination = to.values().stream()
+		Set<AutoCloseable> closeablesInDestination = parentSession.values().stream()
 				.filter(AutoCloseable.class::isInstance)
 				.map(AutoCloseable.class::cast)
 				.collect(Collectors.toSet());
-		if (to instanceof PipeLineSession toSession) {
-			closeablesInDestination.addAll(toSession.closeables);
-		}
+		closeablesInDestination.addAll(parentSession.closeables);
 		closeables.removeAll(closeablesInDestination);
 	}
 

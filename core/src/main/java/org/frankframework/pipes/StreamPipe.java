@@ -100,7 +100,7 @@ public class StreamPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Object result = message;
-		Map<String,Object> parameters = null;
+		Map<String,Object> parameters;
 		ParameterList parameterList = getParameterList();
 		try {
 			parameters = parameterList.getValues(message, session).getValueMap();
@@ -114,28 +114,26 @@ public class StreamPipe extends FixedForwardPipe {
 		String contentType = null;
 		String contentDisposition = null;
 		String redirectLocation = null;
-		if (parameters != null) {
-			if (parameters.get("inputStream") != null) {
-				inputStream = (InputStream) parameters.get("inputStream");
-			}
-			if (parameters.get("outputStream") != null) {
-				outputStream = (OutputStream) parameters.get("outputStream");
-			}
-			if (parameters.get("httpRequest") != null) {
-				httpRequest = (HttpServletRequest) parameters.get("httpRequest");
-			}
-			if (parameters.get("httpResponse") != null) {
-				httpResponse = (HttpServletResponse) parameters.get("httpResponse");
-			}
-			if (parameters.get("contentType") != null) {
-				contentType = (String) parameters.get("contentType");
-			}
-			if (parameters.get("contentDisposition") != null) {
-				contentDisposition = (String) parameters.get("contentDisposition");
-			}
-			if (parameters.get("redirectLocation") != null) {
-				redirectLocation = (String) parameters.get("redirectLocation");
-			}
+		if (parameters.get("inputStream") != null) {
+			inputStream = (InputStream) parameters.get("inputStream");
+		}
+		if (parameters.get("outputStream") != null) {
+			outputStream = (OutputStream) parameters.get("outputStream");
+		}
+		if (parameters.get("httpRequest") != null) {
+			httpRequest = (HttpServletRequest) parameters.get("httpRequest");
+		}
+		if (parameters.get("httpResponse") != null) {
+			httpResponse = (HttpServletResponse) parameters.get("httpResponse");
+		}
+		if (parameters.get("contentType") != null) {
+			contentType = (String) parameters.get("contentType");
+		}
+		if (parameters.get("contentDisposition") != null) {
+			contentDisposition = (String) parameters.get("contentDisposition");
+		}
+		if (parameters.get("redirectLocation") != null) {
+			redirectLocation = (String) parameters.get("redirectLocation");
 		}
 		try {
 			if (inputStream == null) {
