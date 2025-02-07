@@ -84,17 +84,14 @@ public class LdapAttributesParser {
 
 		@Override
 		public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes atts) throws SAXException {
-			switch (localName) {
-				case "attribute" -> {
-					attributeBuilder.addAttribute(atts.getValue(0));
+			if (localName.equals("attribute")) {
+				attributeBuilder.addAttribute(atts.getValue(0));
+			} else if (localName.equals("value")) {
+				if (readingAttributeValue) {
+					throw new SAXException("Invalid XML; Cannot nest value-elements");
 				}
-				case "value" -> {
-					if (readingAttributeValue) {
-						throw new SAXException("Invalid XML; Cannot nest value-elements");
-					}
-					readingAttributeValue = true;
-					attributeValue.setLength(0);
-				}
+				readingAttributeValue = true;
+				attributeValue.setLength(0);
 			}
 		}
 
