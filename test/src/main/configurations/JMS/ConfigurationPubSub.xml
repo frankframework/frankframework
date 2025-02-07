@@ -1,7 +1,7 @@
 <Module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd">
 	<Adapter name="PubSubSender"
-		active="${active.jms}">
+		active="${active.jmspubsub}">
 
 		<Receiver transactionAttribute="Required">
 			<FrankListener name="Test-PubSub"/>
@@ -21,7 +21,7 @@
 
 	<!-- If the framework properly uses the PubSub protocol, both PubSubReceivers should receive the message and act on it -->
 	<Adapter name="PubSubReceiver1"
-		active="${active.jms}">
+		active="${active.jmspubsub}">
 
 		<Receiver transactionAttribute="Required">
 			<JmsListener
@@ -37,7 +37,7 @@
 		</Pipeline>
 	</Adapter>
 	<Adapter name="PubSubReceiver2"
-		active="${active.jms}">
+		active="${active.jmspubsub}">
 
 		<Receiver transactionAttribute="Required">
 			<JmsListener
