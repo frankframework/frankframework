@@ -9,7 +9,7 @@
 				<name>TVARCHAR</name>
 			</column>
 		</columns>
-		<where>TVARCHAR='TestPubSub'</where>
+		<where>TVARCHAR = 'TestPubSub'</where>
 		<order>TINT</order>
 	</select>
 </manageDatabaseREQ>
