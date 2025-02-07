@@ -30,7 +30,7 @@
 	<Include ref="ConfigurationRemoveFromSession.xml"/>
 	<Include ref="ConfigurationSenders.xml"/>
 	<Include ref="ConfigurationBase64Pipe.xml"/>
-	<Include ref="ConfigurationFilePipe.xml"/>
+	<Include ref="ConfigurationLocalFileSystemPipe.xml"/>
 	<Include ref="ConfigurationMoveFiles.xml"/>
 	<Include ref="ConfigurationStringResolver.xml"/>
 	<Include ref="ConfigurationCorrelationMessageId.xml"/>
