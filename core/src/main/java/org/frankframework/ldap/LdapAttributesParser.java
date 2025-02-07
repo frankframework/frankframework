@@ -17,7 +17,6 @@ package org.frankframework.ldap;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Objects;
 
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
@@ -34,62 +33,89 @@ import lombok.Getter;
 
 import org.frankframework.util.XmlUtils;
 
-public class LdapAttributesParser extends XMLFilterImpl {
-	private @Getter @Nullable Attributes attributes;
-	private @Nullable Attribute lastAttribute;
-	private boolean readingAttributeValue = false;
-	private final @Nonnull StringBuilder attributeValue = new StringBuilder();
+public class LdapAttributesParser {
 
 	private LdapAttributesParser() {
 		// No-op constructor to make external instance creation impossible. Use the static method to read the attributes.
 	}
 
-	@Override
-	public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes atts) throws SAXException {
-		switch (localName) {
-			case "attributes" -> attributes = new BasicAttributes();
-			case "attribute" -> {
-				Objects.requireNonNull(attributes, "Invalid XML; element 'attribute' did not have parent 'attributes'");
-				lastAttribute = new BasicAttribute(atts.getValue(0));
-				attributes.put(lastAttribute);
+	public static @Nullable Attributes parseAttributes(Reader reader) throws SAXException, IOException {
+		AttributeBuilder attributeBuilder = new AttributeBuilder();
+		AttributeXmlParser parser = new AttributeXmlParser(attributeBuilder);
+		XmlUtils.parseXml(reader, parser);
+		return attributeBuilder.getAttributes();
+	}
+
+	private static class AttributeBuilder {
+		private @Getter @Nullable Attributes attributes;
+		private @Nullable Attribute lastAttribute;
+
+		void addAttribute(@Nonnull String name) {
+			if (attributes == null) {
+				attributes = new BasicAttributes();
 			}
-			case "value" -> {
-				if (readingAttributeValue) {
-					throw new SAXException("Invalid XML; Cannot nest value-elements");
+			lastAttribute = new BasicAttribute(name);
+			attributes.put(lastAttribute);
+		}
+
+		void addValue(@Nonnull String value) {
+			if (lastAttribute == null) {
+				throw new IllegalStateException("No attribute found");
+			}
+			lastAttribute.add(value);
+		}
+
+		void addNullValue() {
+			if (lastAttribute == null) {
+				throw new IllegalStateException("No attribute found");
+			}
+			lastAttribute.add(null);
+		}
+	}
+
+	private static class AttributeXmlParser extends XMLFilterImpl {
+		private final AttributeBuilder attributeBuilder;
+		private boolean readingAttributeValue = false;
+		private final @Nonnull StringBuilder attributeValue = new StringBuilder();
+
+		private AttributeXmlParser(AttributeBuilder attributeBuilder) {
+			this.attributeBuilder = attributeBuilder;
+		}
+
+		@Override
+		public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes atts) throws SAXException {
+			switch (localName) {
+				case "attribute" -> {
+					attributeBuilder.addAttribute(atts.getValue(0));
 				}
-				readingAttributeValue = true;
-				attributeValue.setLength(0);
+				case "value" -> {
+					if (readingAttributeValue) {
+						throw new SAXException("Invalid XML; Cannot nest value-elements");
+					}
+					readingAttributeValue = true;
+					attributeValue.setLength(0);
+				}
 			}
 		}
-	}
 
-	@Override
-	public void characters(char[] ch, int start, int length) throws SAXException {
-		if (readingAttributeValue) {
-			attributeValue.append(ch, start, length);
+		@Override
+		public void characters(char[] ch, int start, int length) {
+			if (readingAttributeValue) {
+				attributeValue.append(ch, start, length);
+			}
 		}
-	}
 
-	@Override
-	public void endElement(String uri, String localName, String qName) throws SAXException {
-		switch (localName) {
-			case "attribute" -> lastAttribute = null;
-			case "value" -> {
-				Objects.requireNonNull(lastAttribute, "Invalid XML; element 'value' did not have parent 'attribute'");
+		@Override
+		public void endElement(String uri, String localName, String qName) {
+			if (localName.equals("value")) {
 				readingAttributeValue = false;
 				if (attributeValue.isEmpty()) {
-					lastAttribute.add(null);
+					attributeBuilder.addNullValue();
 				} else {
-					lastAttribute.add(attributeValue.toString());
+					attributeBuilder.addValue(attributeValue.toString());
 				}
 				attributeValue.setLength(0);
 			}
 		}
-	}
-
-	public static @Nullable Attributes parseAttributes(Reader reader) throws SAXException, IOException {
-		LdapAttributesParser parser = new LdapAttributesParser();
-		XmlUtils.parseXml(reader, parser);
-		return parser.getAttributes();
 	}
 }
