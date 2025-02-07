@@ -40,7 +40,7 @@
 		<!-- DB Driver Versions -->
 		<h2.driver.version>2.3.232</h2.driver.version>
 		<db2.driver.version>11.5.9.0</db2.driver.version>
-		<oracle.driver.version>23.6.0.24.10</oracle.driver.version>
+		<oracle.driver.version>23.7.0.25.01</oracle.driver.version>
 		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
 		<mssql.driver.version>12.8.1.jre11</mssql.driver.version>
 		<mysql.driver.version>9.1.0</mysql.driver.version>
@@ -53,7 +53,7 @@
 		<activemq.driver.version>6.1.5</activemq.driver.version>
 		<artemis.driver.version>2.39.0</artemis.driver.version>
 
-		<rabbitmq.driver.version>5.24.0</rabbitmq.driver.version>
+		<rabbitmq.driver.version>5.25.0</rabbitmq.driver.version>
 		<rabbitmq.jms.version>3.4.0</rabbitmq.jms.version>
 
 		<aws.java.sdk.version>2.29.52</aws.java.sdk.version>
@@ -481,21 +481,6 @@
 				<groupId>org.glassfish.jaxb</groupId>
 				<artifactId>jaxb-runtime</artifactId>
 				<version>4.0.5</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-digester3</artifactId>
-				<version>3.2</version>
-				<exclusions>
-					<exclusion><!-- Prevent double asm jar in webapp -->
-						<groupId>asm</groupId>
-						<artifactId>asm</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>commons-collections</groupId>
-						<artifactId>commons-collections</artifactId>
-					</exclusion>
-				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
