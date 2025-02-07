@@ -1,8 +1,9 @@
-<module>
+<Module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd">
 	<Adapter name="PubSubSender"
-		active="${active.jms}">
+		active="${active.jmspubsub}">
 
-		<Receiver>
+		<Receiver transactionAttribute="Required">
 			<FrankListener name="Test-PubSub"/>
 			<JdbcMessageLog slotId="PubSubTriggerLog" />
 		</Receiver>
@@ -20,9 +21,9 @@
 
 	<!-- If the framework properly uses the PubSub protocol, both PubSubReceivers should receive the message and act on it -->
 	<Adapter name="PubSubReceiver1"
-		active="${active.jms}">
+		active="${active.jmspubsub}">
 
-		<Receiver>
+		<Receiver transactionAttribute="Required">
 			<JmsListener
 				jmsRealm="qcf" destinationType="TOPIC"
 				destinationName="${jms.destination.fftest_topic}"
@@ -36,9 +37,9 @@
 		</Pipeline>
 	</Adapter>
 	<Adapter name="PubSubReceiver2"
-		active="${active.jms}">
+		active="${active.jmspubsub}">
 
-		<Receiver>
+		<Receiver transactionAttribute="Required">
 			<JmsListener
 				jmsRealm="qcf" destinationType="TOPIC"
 				destinationName="${jms.destination.fftest_topic}"
@@ -51,4 +52,4 @@
 			</SenderPipe>
 		</Pipeline>
 	</Adapter>
-</module>
+</Module>
