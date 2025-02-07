@@ -51,13 +51,12 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.pipes.FilePipe;
 import org.frankframework.senders.FileSender;
 import org.frankframework.stream.Message;
 
 
 /**
- * FileHandler, available as {@link FileSender} and {@link FilePipe}, allows to write to or read from a file.
+ * FileHandler, available as {@link FileSender}, allows to write to or read from a file.
  *
  * <p>
  * Actions take place on the file specified by the fileName attribute (or when
