@@ -27,7 +27,7 @@
 .classpath     text eol=lf
 .jsdtscope     text eol=lf
 org.eclipse.*  text eol=lf
-*.properties text eol=lf
+*.properties   text eol=lf
 
 *.png binary
 *.gif binary
