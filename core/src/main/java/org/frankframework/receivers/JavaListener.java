@@ -145,6 +145,10 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 			} finally {
 				if (context != null) {
 					context.putAll(processContext);
+					processContext.values().stream()
+							.filter(AutoCloseable.class::isInstance)
+							.map(AutoCloseable.class::cast)
+							.forEach(processContext::unscheduleCloseOnSessionExit);
 				}
 			}
 		} catch (IOException e) {
