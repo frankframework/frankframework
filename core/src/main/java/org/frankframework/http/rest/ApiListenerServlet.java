@@ -476,6 +476,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 						for (Entry<String, Message> entry : parts.messages().entrySet()) {
 							String fieldName = entry.getKey();
 							if (!listener.isParameterAllowed(fieldName)) {
+								LOG.warn("Request contains multipart field [{}] which is not allowed", fieldName);
 								continue;
 							}
 							if ((body == null && multipartBodyName == null) || fieldName.equalsIgnoreCase(multipartBodyName)) {
@@ -630,6 +631,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		while (paramNames.hasMoreElements()) {
 			String paramName = paramNames.nextElement();
 			if (!listener.isParameterAllowed(paramName)) {
+				LOG.warn("Request contains parameter [{}] which is not allowed", paramName);
 				continue;
 			}
 			String[] paramList = request.getParameterValues(paramName);

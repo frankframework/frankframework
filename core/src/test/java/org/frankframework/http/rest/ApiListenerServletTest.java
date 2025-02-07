@@ -19,6 +19,7 @@ import static org.frankframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -1832,7 +1833,7 @@ public class ApiListenerServletTest {
 				.withAllowAllParams(true)
 				.build();
 
-		HttpServletRequest request = createRequest("/request/with/params?p1=1&p2=B&originalMessage=bad", HttpMethod.GET);
+		HttpServletRequest request = createRequest("/request/with/params?p1=1&p2=B", HttpMethod.GET);
 
 		// Act
 		Response result = service(request);
@@ -1841,7 +1842,6 @@ public class ApiListenerServletTest {
 		assertEquals(200, result.getStatus());
 		assertEquals("1", session.get("p1"));
 		assertEquals("B", session.get("p2"));
-		assertEquals("bad", session.get("originalMessage"));
 	}
 
 	@Test
@@ -1880,6 +1880,52 @@ public class ApiListenerServletTest {
 		assertEquals("1", session.get("p1"));
 		assertEquals("B", session.get("p2"));
 		assertFalse(session.containsKey("originalMessage"));
+	}
+
+	@Test
+	public void testConfigureBlacklistedParameter() throws Exception {
+		// Arrange
+		ApiListener apiListener = new ApiListenerBuilder("/request/with/params", List.of(HttpMethod.GET))
+				.withAllowedParams("p1,p2,uri,originalMessage")
+				.build();
+
+		HttpServletRequest request = createRequest("/request/with/params?p1=1&p2=B&originalMessage=bad", HttpMethod.GET);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertNotEquals("bad", session.get("originalMessage"));
+		// Blacklisted parameters are not allowed, despite being listed in configuration
+		assertFalse(apiListener.isParameterAllowed("uri"));
+		assertFalse(apiListener.isParameterAllowed("originalMessage"));
+		// Other configured parameter is allowed
+		assertTrue(apiListener.isParameterAllowed("p1"));
+		// Random other parameter is not allowed
+		assertFalse(apiListener.isParameterAllowed("randomname"));
+	}
+
+	@Test
+	public void testBlacklistedParameterBlockedWhenAllowAll() throws Exception {
+		// Arrange
+		ApiListener apiListener = new ApiListenerBuilder("/request/with/params", List.of(HttpMethod.GET))
+				.withAllowAllParams(true)
+				.build();
+
+		HttpServletRequest request = createRequest("/request/with/params?p1=1&p2=B&originalMessage=bad", HttpMethod.GET);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertNotEquals("bad", session.get("originalMessage"));
+		// Blacklisted parameters are not allowed, despite configuration allowing all parameters
+		assertFalse(apiListener.isParameterAllowed("uri"));
+		assertFalse(apiListener.isParameterAllowed("originalMessage"));
+		// Random other parameter is allowed
+		assertTrue(apiListener.isParameterAllowed("p1"));
 	}
 
 	private String createJWT() throws Exception {

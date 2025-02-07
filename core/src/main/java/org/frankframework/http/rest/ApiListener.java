@@ -15,6 +15,7 @@
 */
 package org.frankframework.http.rest;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -86,6 +87,11 @@ import org.frankframework.util.StringUtil;
 public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, ReceiverAware<Message> {
 
 	private static final Pattern VALID_URI_PATTERN_RE = Pattern.compile("([^/]\\*|\\*[^/\\n])");
+
+	/**
+	 * These are names that are never allowed as HTTP parameters, because the Frank!Framework sets these names as session variables.
+	 */
+	public static final Set<String> PARAM_NAME_BLACKLIST = Set.of("originalMessage", "ClaimsSet", "allowedMethods", "HttpMethod", "headers", "updateEtag", "apiPrincipal", "uri", "remoteAddr", "authorizationToken", "securityHandler", "httpRequest", "servletRequest", "servletResponse", "multipartAttachments");
 
 	private final @Getter String domain = "Http";
 	private @Getter String uriPattern;
@@ -211,6 +217,12 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		if (allowedParameterSet.isEmpty() && allowAllParams) {
 			ConfigurationWarnings.add(this, log, "All path parameters and query parameters will be copied into the session. This could be a security risk.");
 		}
+		Set<String> paramsFromBlacklist = new HashSet<>(allowedParameterSet);
+		paramsFromBlacklist.retainAll(PARAM_NAME_BLACKLIST);
+		if (!paramsFromBlacklist.isEmpty()) {
+			ConfigurationWarnings.add(this, log, "[allowedParameters] contains forbidden HTTP parameter names, these are removed: " + paramsFromBlacklist);
+			allowedParameterSet.removeAll(paramsFromBlacklist);
+		}
 	}
 
 	private void validateClaimAttribute(String claimAttributeToValidate, String claimAttributeName) throws ConfigurationException {
@@ -308,7 +320,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	public boolean isParameterAllowed(@Nonnull String parameterName) {
 		if (allowedParameterSet.isEmpty() && allowAllParams) {
-			return true;
+			return !PARAM_NAME_BLACKLIST.contains(parameterName);
 		}
 		return allowedParameterSet.contains(parameterName);
 	}
@@ -471,6 +483,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * <br/>
 	 * Entered as a comma-separated value.
 	 * <br/>
+	 * If the list contains any names that are in {@link #PARAM_NAME_BLACKLIST}, these will be removed from the list.
+	 * <br/>
 	 * If left empty, then all HTTP parameters are copied into the session, which can pose
 	 * a security risk and is therefore discouraged. The risk is that parameters could be sent,
 	 * that overwrite system session variables.
@@ -488,6 +502,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * default all parameters are allowed until removal of this flag.
 	 * Copying all POST and query parameters to the session is considered a security risk,
 	 * so this should not be left enabled.
+	 * <br/>
+	 * Even so, names listed in {@link #PARAM_NAME_BLACKLIST} will never be copied from the HTTP parameters to the session.
 	 * <br/>
 	 * When setting {@link #setAllowedParameters(String)}, this value is ignored. This value is only
 	 * used when the allowed parameter list has not been set, or set empty.
