@@ -52,24 +52,6 @@
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
 
-			<!-- Read file at classpath -->
-			<pipe
-				name="read file at classpath"
-				className="org.frankframework.pipes.FixedResultPipe"
-	        	filename="FixedResultPipe/sample.txt">
-	        	<forward name="success" path="EXIT"/>
-	        </pipe>
-
-			<!-- Read binary file -->
-			<pipe
-				name="read binary file at classpath"
-				className="org.frankframework.pipes.FixedResultPipe"
-				filename="FixedResultPipe/file.pdf">
-			</pipe>
-			<pipe name="encode binary file bytes" className="org.frankframework.pipes.Base64Pipe">
-				<forward name="success" path="EXIT" />
-			</pipe>
-
 			<!-- Delete file with use of directory and filename -->
 			<pipe
 				name="delete file"
