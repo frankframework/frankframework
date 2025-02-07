@@ -464,7 +464,11 @@ public class XmlUtils {
 	}
 
 	public static void parseXml(String source, ContentHandler handler) throws IOException, SAXException {
-		parseXml(new InputSource(new StringReader(source)), handler, null);
+		parseXml(new StringReader(source), handler);
+	}
+
+	public static void parseXml(Reader source, ContentHandler handler) throws IOException, SAXException {
+		parseXml(new InputSource(source), handler, null);
 	}
 
 	/**

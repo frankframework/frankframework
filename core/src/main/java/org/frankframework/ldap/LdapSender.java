@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ import javax.naming.directory.SearchResult;
 
 import jakarta.annotation.Nonnull;
 
-import org.apache.commons.digester3.Digester;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -287,7 +286,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	protected @Nonnull ParameterList paramList = new ParameterList();
 	private boolean principalParameterFound = false;
-	private Hashtable<Object, Object> jndiEnv=null;
+	private Hashtable<Object, Object> jndiEnv = null;
 
 	public LdapSender() {
 		super();
@@ -995,14 +994,8 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	 * @see BasicAttribute
 	 */
 	private Attributes parseAttributesFromMessage(Message message) throws SenderException {
-		Digester digester = new Digester();
-		digester.addObjectCreate("*/attributes", BasicAttributes.class);
-		digester.addFactoryCreate("*/attributes/attribute", BasicAttributeFactory.class);
-		digester.addSetNext("*/attributes/attribute","put");
-		digester.addCallMethod("*/attributes/attribute/value","add",0);
-
 		try {
-			return digester.parse(message.asReader());
+			return LdapAttributesParser.parseAttributes(message.asReader());
 		} catch (Exception e) {
 			throw new SenderException("[" + this.getClass().getName() + "] exception in digesting",	e);
 		}
