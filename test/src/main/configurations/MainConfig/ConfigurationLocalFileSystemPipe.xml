@@ -1,7 +1,7 @@
 <module>
-	<adapter name="FilePipe" description="Test the functioning of the FilePipe">
+	<adapter name="LocalFileSystemPipe" description="Test the functioning of the LocalFileSystemPipe">
 		<receiver>
-			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-FilePipe" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-LocalFileSystemPipe" />
 		</receiver>
 		<pipeline firstPipe="setFilename">
 			<exits>
@@ -15,7 +15,7 @@
 			</pipe>
 
 			<!-- get file text from sample file -->
-			<pipe name="setFileData" className="org.frankframework.pipes.FixedResultPipe" filename="/FilePipe/sample.txt">
+			<pipe name="setFileData" className="org.frankframework.pipes.FixedResultPipe" filename="/FixedResultPipe/sample.txt">
 			  <forward name="success" path="write file"/>
 			</pipe>
 
@@ -51,51 +51,6 @@
 				<param name="filename" sessionKey="filename" />
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
-
-			<!-- Read file at classpath -->
-			<pipe
-				name="read file at classpath"
-				className="org.frankframework.pipes.FixedResultPipe"
-	        	filename="FilePipe/sample.txt">
-	        	<forward name="success" path="EXIT"/>
-	        </pipe>
-
-			<!-- Read binary file as bytes -->
-			<pipe
-				name="read binary file as bytes"
-				className="org.frankframework.pipes.FilePipe"
-				actions="read"
-				outputType="bytes"
-				getInputFromFixedValue="FilePipe/file.pdf"
-				fileSource="classpath">
-			</pipe>
-			<pipe name="encode binary file bytes" className="org.frankframework.pipes.Base64Pipe">
-				<forward name="success" path="EXIT" />
-			</pipe>
-
-			<!-- Read binary file as stream -->
-			<pipe
-				name="read binary file as stream"
-				className="org.frankframework.pipes.FilePipe"
-				actions="read"
-				outputType="stream"
-				getInputFromFixedValue="FilePipe/file.pdf"
-				fileSource="classpath">
-			</pipe>
-			<pipe name="encode binary file stream" className="org.frankframework.pipes.Base64Pipe">
-				<forward name="success" path="EXIT" />
-			</pipe>
-
-			<!-- Read binary file as base64 -->
-			<pipe
-				name="read binary file as base64"
-				className="org.frankframework.pipes.FilePipe"
-				actions="read"
-				outputType="base64"
-				getInputFromFixedValue="FilePipe/file.pdf"
-				fileSource="classpath">
-				<forward name="success" path="EXIT" />
-			</pipe>
 
 			<!-- Delete file with use of directory and filename -->
 			<pipe

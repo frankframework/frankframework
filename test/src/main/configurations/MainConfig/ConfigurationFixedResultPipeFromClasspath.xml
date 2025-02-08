@@ -1,0 +1,57 @@
+<module>
+	<adapter name="FixedResultPipeFromClasspath" description="Test the functioning of the FixedResultPipe with files from classpath">
+		<receiver>
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-FixedResultPipeFromClasspath" />
+		</receiver>
+		<pipeline firstPipe="setFilename">
+			<exits>
+				<exit name="EXIT" state="success" />
+				<exit name="EXCEPTION" state="error" />
+			</exits>
+
+			<!-- Set FileName -->
+			<pipe name="setFilename" className="org.frankframework.pipes.PutInSession" sessionKey="filename" value="${testdata.dir}/test1.txt" >
+ 			 <forward name="success" path="setFileData"/>
+			</pipe>
+
+			<!-- get file text from sample file -->
+			<pipe name="setFileData" className="org.frankframework.pipes.FixedResultPipe" filename="/FixedResultPipe/sample.txt">
+			  <forward name="success" path="write file"/>
+			</pipe>
+
+			<!-- Write file -->
+			<pipe
+				name="write file"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
+	        	action="write"
+				overwrite="true"
+	        	createFolder="true">
+				<param name="filename" sessionKey="filename" />
+	        	<forward name="success" path="switchAction"/>
+				<forward name="exception" path="EXCEPTION"/>
+	        </pipe>
+
+			<!-- choose which action should be done -->
+			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch" xpathExpression="request/@action" getInputFromSessionKey="originalMessage"/>
+
+			<!-- Read file at classpath -->
+			<pipe
+				name="read file at classpath"
+				className="org.frankframework.pipes.FixedResultPipe"
+	        	filename="FixedResultPipe/sample.txt">
+	        	<forward name="success" path="EXIT"/>
+	        </pipe>
+
+			<!-- Read binary file -->
+			<pipe
+				name="read binary file at classpath"
+				className="org.frankframework.pipes.FixedResultPipe"
+				filename="FixedResultPipe/file.pdf">
+			</pipe>
+			<pipe name="encode binary file bytes" className="org.frankframework.pipes.Base64Pipe">
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+		</pipeline>
+	</adapter>
+</module>
