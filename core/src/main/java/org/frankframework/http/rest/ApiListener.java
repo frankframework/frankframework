@@ -18,6 +18,7 @@ package org.frankframework.http.rest;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -87,11 +88,12 @@ import org.frankframework.util.StringUtil;
 public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, ReceiverAware<Message> {
 
 	private static final Pattern VALID_URI_PATTERN_RE = Pattern.compile("([^/]\\*|\\*[^/\\n])");
+	private static final Pattern URI_PATTERN_VARIABLES_RE = Pattern.compile("/\\{(.+?)}(?=/|$)");
 
 	/**
 	 * These are names that are never allowed as HTTP parameters, because the Frank!Framework sets these names as session variables.
 	 */
-	public static final Set<String> PARAM_NAME_BLACKLIST = Set.of("originalMessage", "ClaimsSet", "allowedMethods", "HttpMethod", "headers", "updateEtag", "apiPrincipal", "uri", "remoteAddr", "authorizationToken", "securityHandler", "httpRequest", "servletRequest", "servletResponse", "multipartAttachments");
+	public static final Set<String> RESERVED_NAMES = Set.of("originalMessage", "ClaimsSet", "allowedMethods", "HttpMethod", "headers", "updateEtag", "apiPrincipal", "uri", "remoteAddr", "authorizationToken", "securityHandler", "servletRequest", "servletResponse", "multipartAttachments");
 
 	private final @Getter String domain = "Http";
 	private @Getter String uriPattern;
@@ -215,13 +217,26 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		}
 
 		if (allowedParameterSet.isEmpty() && allowAllParams) {
-			ConfigurationWarnings.add(this, log, "All path parameters and query parameters will be copied into the session. This could be a security risk.");
+			ConfigurationWarnings.add(this, log, "All path parameters and query parameters will be copied into the session. This could be a security risk. Set 'allowAllParams' to 'false' and specify 'allowedParameters' for your pipeline.", SuppressKeys.UNSAFE_ATTRIBUTE_SUPPRESS_KEY);
 		}
 		Set<String> paramsFromBlacklist = new HashSet<>(allowedParameterSet);
-		paramsFromBlacklist.retainAll(PARAM_NAME_BLACKLIST);
+		paramsFromBlacklist.retainAll(RESERVED_NAMES);
 		if (!paramsFromBlacklist.isEmpty()) {
-			ConfigurationWarnings.add(this, log, "[allowedParameters] contains forbidden HTTP parameter names, these are removed: " + paramsFromBlacklist);
+			ConfigurationWarnings.add(this, log, "[allowedParameters] contains reserved names that are not allowed as HTTP parameter names, these are removed: [" + paramsFromBlacklist + "]", SuppressKeys.UNSAFE_ATTRIBUTE_SUPPRESS_KEY);
 			allowedParameterSet.removeAll(paramsFromBlacklist);
+		}
+		if (StringUtils.isNotEmpty(getUriPattern())) {
+			Set<String> forbiddenPathVariables = new HashSet<>();
+			Matcher variableSegmentMatcher =  URI_PATTERN_VARIABLES_RE.matcher(getUriPattern());
+			while (variableSegmentMatcher.find()) {
+				String pathVariable = variableSegmentMatcher.group(1);
+				if (RESERVED_NAMES.contains(pathVariable)) {
+					forbiddenPathVariables.add(pathVariable);
+				}
+			}
+			if (!forbiddenPathVariables.isEmpty()) {
+				throw new ConfigurationException("URI Pattern contains reserved names as path variables, these need to be renamed: [" + forbiddenPathVariables + "]");
+			}
 		}
 	}
 
@@ -320,7 +335,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	public boolean isParameterAllowed(@Nonnull String parameterName) {
 		if (allowedParameterSet.isEmpty() && allowAllParams) {
-			return !PARAM_NAME_BLACKLIST.contains(parameterName);
+			return !RESERVED_NAMES.contains(parameterName);
 		}
 		return allowedParameterSet.contains(parameterName);
 	}
@@ -483,7 +498,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * <br/>
 	 * Entered as a comma-separated value.
 	 * <br/>
-	 * If the list contains any names that are in {@link #PARAM_NAME_BLACKLIST}, these will be removed from the list.
+	 * If the list contains any names that are in {@link #RESERVED_NAMES}, these will be removed from the list.
 	 * <br/>
 	 * If left empty, then all HTTP parameters are copied into the session, which can pose
 	 * a security risk and is therefore discouraged. The risk is that parameters could be sent,
@@ -503,7 +518,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * Copying all POST and query parameters to the session is considered a security risk,
 	 * so this should not be left enabled.
 	 * <br/>
-	 * Even so, names listed in {@link #PARAM_NAME_BLACKLIST} will never be copied from the HTTP parameters to the session.
+	 * Even so, names listed in {@link #RESERVED_NAMES} will never be copied from the HTTP parameters to the session.
 	 * <br/>
 	 * When setting {@link #setAllowedParameters(String)}, this value is ignored. This value is only
 	 * used when the allowed parameter list has not been set, or set empty.

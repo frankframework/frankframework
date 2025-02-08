@@ -16,12 +16,15 @@ limitations under the License.
 package org.frankframework.http.rest;
 
 import static org.frankframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
@@ -1926,6 +1929,13 @@ public class ApiListenerServletTest {
 		assertFalse(apiListener.isParameterAllowed("originalMessage"));
 		// Random other parameter is allowed
 		assertTrue(apiListener.isParameterAllowed("p1"));
+	}
+
+	@Test
+	public void testBlacklistedParamInUriPattern() {
+		ConfigurationException e = assertThrows(ConfigurationException.class, () -> new ApiListenerBuilder("/request/{with}/{uri}/params", List.of(HttpMethod.GET)).build());
+
+		assertThat(e.getMessage(), containsString("[uri]"));
 	}
 
 	private String createJWT() throws Exception {
