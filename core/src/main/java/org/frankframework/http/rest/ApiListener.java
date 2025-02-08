@@ -37,11 +37,13 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.HasPhysicalDestination;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Default;
 import org.frankframework.http.AbstractHttpSender;
 import org.frankframework.http.HttpEntityType;
 import org.frankframework.http.PushingListenerAdapter;
 import org.frankframework.http.mime.HttpEntityFactory;
+import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.jwt.JwtValidator;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.lifecycle.ServletManager;
@@ -93,7 +95,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	/**
 	 * These are names that are never allowed as HTTP parameters, because the Frank!Framework sets these names as session variables.
 	 */
-	public static final Set<String> RESERVED_NAMES = Set.of("originalMessage", "ClaimsSet", "allowedMethods", "HttpMethod", "headers", "updateEtag", "apiPrincipal", "uri", "remoteAddr", "authorizationToken", "securityHandler", "servletRequest", "servletResponse", "multipartAttachments");
+	public static final Set<String> RESERVED_NAMES = Set.of(PipeLineSession.ORIGINAL_MESSAGE_KEY, PipeLineSession.API_PRINCIPAL_KEY, PipeLineSession.HTTP_METHOD_KEY, PipeLineSession.HTTP_REQUEST_KEY, PipeLineSession.HTTP_RESPONSE_KEY, PipeLineSession.SECURITY_HANDLER_KEY, "ClaimsSet", "allowedMethods", "headers", ApiListenerServlet.UPDATE_ETAG_CONTEXT_KEY, "uri", "remoteAddr", ApiListenerServlet.AUTHENTICATION_COOKIE_NAME, MultipartUtils.MULTIPART_ATTACHMENTS_SESSION_KEY);
 
 	private final @Getter String domain = "Http";
 	private @Getter String uriPattern;

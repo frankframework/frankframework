@@ -81,13 +81,13 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 	@Serial private static final long serialVersionUID = 1L;
 
 	public static final String AUTHENTICATION_COOKIE_NAME = "authenticationToken";
+	public static final String UPDATE_ETAG_CONTEXT_KEY = "updateEtag";
 
 	private static final List<String> IGNORE_HEADERS = List.of("connection", "transfer-encoding", "content-type", "authorization");
 
 	private final int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
 	private final String CorsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
 	private final String CorsExposeHeaders = AppConstants.getInstance().getString("api.auth.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
-	private static final String UPDATE_ETAG_CONTEXT_KEY = "updateEtag";
 
 	private ApiServiceDispatcher dispatcher = null;
 	private IApiCache cache = null;
