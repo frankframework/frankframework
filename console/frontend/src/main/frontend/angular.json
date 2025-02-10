@@ -152,6 +152,12 @@
             "devServerTarget": "ff-console-gui:serve:development-fftest",
             "watch": true,
             "headless": false
+          },
+          "configurations": {
+            "ci": {
+              "devServerTarget": "ff-console-gui:serve:development-fftest",
+              "headless": true
+            }
           }
         }
       }

@@ -10,8 +10,10 @@
     "test": "ng test",
     "test:ci": "ng test --no-watch --no-progress --browsers=ChromeHeadless",
     "e2e": "ng e2e",
+    "e2e:ci": "ng e2e -c ci",
     "cypress:open": "cypress open",
-    "cypress:run": "cypress run"
+    "cypress:run": "cypress run",
+    "cypress:ci": "cypress run --config baseUrl=http://localhost:8080/iaf-test/iaf/gui"
   },
   "private": true,
   "dependencies": {
@@ -57,6 +59,7 @@
     "@angular-eslint/schematics": "^19.1.0",
     "@angular-eslint/template-parser": "^19.1.0",
     "@angular/cli": "^19.1.6",
+    "@angular-devkit/core": "^19.1.5",
     "@angular/compiler-cli": "^19.0.5",
     "@cypress/schematic": "^3.0.0",
     "@types/jasmine": "~4.6.4",
@@ -67,6 +70,7 @@
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.1.0",
     "@typescript-eslint/parser": "^7.1.0",
+    "cypress": "^14.0.2",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.3",
@@ -78,7 +82,6 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "prettier": "^3.5.0",
-    "typescript": "5.7.3",
-    "cypress": "latest"
+    "typescript": "5.7.3"
   }
 }
