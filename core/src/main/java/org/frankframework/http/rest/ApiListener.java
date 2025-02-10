@@ -218,6 +218,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			ConfigurationWarnings.add(this, log, "[responseMtomContentTransferEncoding] should only be set when [responseType] is [MTOM]");
 		}
 
+		// Check that none of configured parameters or path-variables matches any of the reserved names.
 		if (allowedParameterSet.isEmpty() && allowAllParams) {
 			ConfigurationWarnings.add(this, log, "All path parameters and query parameters will be copied into the session. This could be a security risk. Set 'allowAllParams' to 'false' and specify 'allowedParameters' for your pipeline.", SuppressKeys.UNSAFE_ATTRIBUTE_SUPPRESS_KEY);
 		}
@@ -239,6 +240,9 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			if (!forbiddenPathVariables.isEmpty()) {
 				throw new ConfigurationException("URI Pattern contains reserved names as path variables, these need to be renamed: [" + forbiddenPathVariables + "]");
 			}
+		}
+		if (RESERVED_NAMES.contains(getMultipartBodyName())) {
+			throw new ConfigurationException("[multipartBodyName] is a reserved name that cannot be used for any kind of request parameter");
 		}
 	}
 
@@ -366,7 +370,12 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * URI pattern to register this listener on, eq. <code>/my-listener/{something}/here</code>
+	 * URI pattern to register this listener on, eq. <code>/my-listener/{something}/here</code>.
+	 * <br/>
+	 * Pattern variables like {@code {something}} in this example are added to the PipeLineSession with
+	 * their actual value in the request URI.
+	 * <br/>
+	 * Pattern variables are not allowed to have the same name as any of the {@link #RESERVED_NAMES}.
 	 *
 	 * @ff.mandatory
 	 */
@@ -444,7 +453,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * Specify the form-part you wish to enter the pipeline
+	 * Specify the form-part you wish to enter the pipeline.
+	 * <br/>
+	 * The {@code multipartBodyName} or the names of any other multipart
+	 * fields may not be one of the {@link #RESERVED_NAMES}.
 	 *
 	 * @ff.default name of the first form-part
 	 */
