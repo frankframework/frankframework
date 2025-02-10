@@ -98,6 +98,11 @@ public class IafTestInitializer {
 	}
 
 	public static void main(String[] args) throws IOException {
+ 		SpringApplication app = configureApplication();
+		app.run(args);
+	}
+
+	static SpringApplication configureApplication() throws IOException {
 		Path runFromDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
 		Path projectDir = validateIfEclipseOrIntelliJ(runFromDir);
 
@@ -118,7 +123,8 @@ public class IafTestInitializer {
 		set.add(SpringContextScope.ENVIRONMENT.getContextFile());
 		set.add("TestFrankContext.xml");
 		app.setSources(set);
-		app.run(args);
+
+		return app;
 	}
 
 	private static void getConfigurationsDirectory(Path projectDir) throws IOException {
