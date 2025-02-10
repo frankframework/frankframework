@@ -16,11 +16,15 @@ limitations under the License.
 package org.frankframework.http.rest;
 
 import static org.frankframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
@@ -109,6 +113,7 @@ import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.ClassLoaderUtils;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.EnumUtils;
 
@@ -146,6 +151,7 @@ public class ApiListenerServletTest {
 
 		servlet.destroy();
 		servlet = null;
+		CloseUtils.closeSilently(session);
 	}
 
 	@BeforeAll
@@ -1823,6 +1829,130 @@ public class ApiListenerServletTest {
 		assertEquals(PAYLOAD, session.get("ClaimsSet"));
 	}
 
+	@Test
+	public void testRequestAllParamsIntoSession() throws Exception {
+		// Arrange
+		new ApiListenerBuilder("/request/with/params", List.of(HttpMethod.GET))
+				.withAllowAllParams(true)
+				.build();
+
+		HttpServletRequest request = createRequest("/request/with/params?p1=1&p2=B", HttpMethod.GET);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEquals("1", session.get("p1"));
+		assertEquals("B", session.get("p2"));
+	}
+
+	@Test
+	public void testRequestNoParamsIntoSession() throws Exception {
+		// Arrange
+		new ApiListenerBuilder("/request/with/params", List.of(HttpMethod.GET))
+				.withAllowAllParams(false)
+				.build();
+
+		HttpServletRequest request = createRequest("/request/with/params?p1=1&p2=B&originalMessage=bad", HttpMethod.GET);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertFalse(session.containsKey("p1"));
+		assertFalse(session.containsKey("p2"));
+		assertFalse(session.containsKey("originalMessage"));
+	}
+
+	@Test
+	public void testRequestWhitelistedParamsIntoSession() throws Exception {
+		// Arrange
+		new ApiListenerBuilder("/request/with/params", List.of(HttpMethod.GET))
+				.withAllowedParams("p1,p2")
+				.build();
+
+		HttpServletRequest request = createRequest("/request/with/params?p1=1&p2=B&originalMessage=bad", HttpMethod.GET);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEquals("1", session.get("p1"));
+		assertEquals("B", session.get("p2"));
+		assertFalse(session.containsKey("originalMessage"));
+	}
+
+	@Test
+	public void testConfigureBlacklistedParameter() throws Exception {
+		// Arrange
+		ApiListener apiListener = new ApiListenerBuilder("/request/with/params", List.of(HttpMethod.GET))
+				.withAllowedParams("p1,p2,uri,originalMessage")
+				.build();
+
+		HttpServletRequest request = createRequest("/request/with/params?p1=1&p2=B&originalMessage=bad", HttpMethod.GET);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertNotEquals("bad", session.get("originalMessage"));
+		// Blacklisted parameters are not allowed, despite being listed in configuration
+		assertFalse(apiListener.isParameterAllowed("uri"));
+		assertFalse(apiListener.isParameterAllowed("originalMessage"));
+		// Other configured parameter is allowed
+		assertTrue(apiListener.isParameterAllowed("p1"));
+		// Random other parameter is not allowed
+		assertFalse(apiListener.isParameterAllowed("randomname"));
+	}
+
+	@Test
+	public void testBlacklistedParameterBlockedWhenAllowAll() throws Exception {
+		// Arrange
+		ApiListener apiListener = new ApiListenerBuilder("/request/with/params", List.of(HttpMethod.GET))
+				.withAllowAllParams(true)
+				.build();
+
+		HttpServletRequest request = createRequest("/request/with/params?p1=1&p2=B&originalMessage=bad", HttpMethod.GET);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertNotEquals("bad", session.get("originalMessage"));
+		// Blacklisted parameters are not allowed, despite configuration allowing all parameters
+		assertFalse(apiListener.isParameterAllowed("uri"));
+		assertFalse(apiListener.isParameterAllowed("originalMessage"));
+		// Random other parameter is allowed
+		assertTrue(apiListener.isParameterAllowed("p1"));
+	}
+
+	@Test
+	public void testBlacklistedParamInUriPattern() {
+		ConfigurationException e = assertThrows(ConfigurationException.class, () -> new ApiListenerBuilder("/request/{with}/{uri}/params", List.of(HttpMethod.GET)).build());
+
+		assertThat(e.getMessage(), containsString("[uri]"));
+	}
+
+	@Test
+	public void testBlacklistedMultipartBodyName() throws ConfigurationException {
+		// Arrange
+		ApiListener apiListener = new ApiListenerBuilder("/request/with/params", List.of(HttpMethod.GET))
+				.build();
+		apiListener.setMultipartBodyName("originalMessage");
+
+		// Act
+		ConfigurationException e = assertThrows(ConfigurationException.class, apiListener::configure);
+
+		// Assert
+		assertThat(e.getMessage(), containsString("[multipartBodyName]"));
+		assertThat(e.getMessage(), containsString("[originalMessage]"));
+	}
+
 	private String createJWT() throws Exception {
 		JWSHeader jwsHeader = new JWSHeader.Builder(JWSAlgorithm.RS256).build();
 
@@ -2156,6 +2286,16 @@ public class ApiListenerServletTest {
 
 		public ApiListenerBuilder withResultSessionKey(String key, Object value) {
 			handler.addSessionKey(key, value);
+			return this;
+		}
+
+		public ApiListenerBuilder withAllowedParams(String allowedParams) {
+			listener.setAllowedParameters(allowedParams);
+			return this;
+		}
+
+		public ApiListenerBuilder withAllowAllParams(boolean allowAllParams) {
+			listener.setAllowAllParams(allowAllParams);
 			return this;
 		}
 

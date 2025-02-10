@@ -16,6 +16,7 @@
 package org.frankframework.http.rest;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.time.Instant;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -77,16 +78,16 @@ import org.frankframework.util.XmlBuilder;
 @IbisInitializer
 public class ApiListenerServlet extends AbstractHttpServlet {
 	private static final Logger LOG = LogUtil.getLogger(ApiListenerServlet.class);
-	private static final long serialVersionUID = 1L;
+	@Serial private static final long serialVersionUID = 1L;
 
 	public static final String AUTHENTICATION_COOKIE_NAME = "authenticationToken";
+	public static final String UPDATE_ETAG_CONTEXT_KEY = "updateEtag";
 
 	private static final List<String> IGNORE_HEADERS = List.of("connection", "transfer-encoding", "content-type", "authorization");
 
 	private final int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
 	private final String CorsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
 	private final String CorsExposeHeaders = AppConstants.getInstance().getString("api.auth.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
-	private static final String UPDATE_ETAG_CONTEXT_KEY = "updateEtag";
 
 	private ApiServiceDispatcher dispatcher = null;
 	private IApiCache cache = null;
@@ -296,21 +297,21 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 						break;
 					case AUTHROLE:
 						List<String> roles = listener.getAuthenticationRoleList();
-						if(roles != null) {
+						if (roles != null) {
 							boolean userIsInRole = roles.stream().anyMatch(request::isUserInRole);
-							if(userIsInRole) {
+							if (userIsInRole) {
 								userPrincipal = new ApiPrincipal();
 							}
 						}
 						break;
 					case JWT:
 						String authorizationHeader = request.getHeader(listener.getJwtHeader());
-						if(StringUtils.isNotEmpty(authorizationHeader) && authorizationHeader.contains("Bearer")) {
+						if (StringUtils.isNotEmpty(authorizationHeader) && authorizationHeader.contains("Bearer")) {
 							try {
 								Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(authorizationHeader.substring(7));
 								pipelineSession.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim(), listener.getPrincipalNameClaim()));
 								pipelineSession.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
-							} catch(Exception e) {
+							} catch (Exception e) {
 								LOG.warn("unable to validate jwt",e);
 								response.sendError(401, e.getMessage());
 								return;
@@ -325,11 +326,11 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 						JwtSecurityHandler handler = (JwtSecurityHandler)pipelineSession.getSecurityHandler();
 						try {
 							handler.validateClaims(requiredClaims, exactMatchClaims, anyMatchClaims);
-							if(StringUtils.isNotEmpty(listener.getRoleClaim())) {
+							if (StringUtils.isNotEmpty(listener.getRoleClaim())) {
 								List<String> authRoles = listener.getAuthenticationRoleList();
-								if(authRoles != null) {
+								if (authRoles != null) {
 									boolean userIsInRole = authRoles.stream().anyMatch(handler::isUserInRole);
-									if(userIsInRole) {
+									if (userIsInRole) {
 										userPrincipal = new ApiPrincipal();
 									}
 								} else {
@@ -338,7 +339,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 							} else {
 								userPrincipal = new ApiPrincipal();
 							}
-						} catch(AuthorizationException e) {
+						} catch (AuthorizationException e) {
 							response.sendError(403, e.getMessage());
 							return;
 						}
@@ -348,10 +349,10 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 						break;
 					}
 
-					if(authorizationToken != null && cache.containsKey(authorizationToken))
+					if (authorizationToken != null && cache.containsKey(authorizationToken))
 						userPrincipal = (ApiPrincipal) cache.get(authorizationToken);
 
-					if(userPrincipal == null || !userPrincipal.isLoggedIn()) {
+					if (userPrincipal == null || !userPrincipal.isLoggedIn()) {
 						cache.remove(authorizationToken);
 						if(authorizationCookie != null) {
 							CookieUtil.addCookie(request, response, authorizationCookie, 0);
@@ -362,11 +363,11 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 						return;
 					}
 
-					if(authorizationCookie != null) {
+					if (authorizationCookie != null) {
 						CookieUtil.addCookie(request, response, authorizationCookie, authTTL);
 					}
 
-					if(authorizationToken != null) {
+					if (authorizationToken != null) {
 						userPrincipal.updateExpiry();
 						userPrincipal.setToken(authorizationToken);
 						cache.put(authorizationToken, userPrincipal, authTTL);
@@ -375,7 +376,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				}
 				// Remove this? it's now available as header value
 				pipelineSession.put("remoteAddr", request.getRemoteAddr());
-				if(userPrincipal != null)
+				if (userPrincipal != null)
 					pipelineSession.put(PipeLineSession.API_PRINCIPAL_KEY, userPrincipal);
 				pipelineSession.put("uri", uri);
 
@@ -383,13 +384,13 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				 * Evaluate preconditions
 				 */
 				final String acceptHeader = request.getHeader("Accept");
-				if(!listener.accepts(acceptHeader)) { // If an Accept header is present, make sure we comply to it!
+				if (!listener.accepts(acceptHeader)) { // If an Accept header is present, make sure we comply to it!
 					LOG.warn("{} client expects Accept [{}] but listener can only provide [{}]", ()->createAbortMessage(request.getRemoteUser(), 406), ()-> acceptHeader, listener::getContentType);
 					response.sendError(406, "endpoint cannot provide the supplied MimeType");
 					return;
 				}
 
-				if(!listener.isConsumable(request.getContentType())) {
+				if (!listener.isConsumable(request.getContentType())) {
 					response.setStatus(415);
 					LOG.warn("{} did not match consumes [{}] got [{}] instead", ()-> createAbortMessage(remoteUser, 415), listener::getConsumes, request::getContentType);
 					return;
@@ -397,13 +398,13 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 
 				String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
 				LOG.debug("Evaluating preconditions for listener[{}] etagKey[{}]", listener.getName(), etagCacheKey);
-				if(cache.containsKey(etagCacheKey)) {
+				if (cache.containsKey(etagCacheKey)) {
 					String cachedEtag = (String) cache.get(etagCacheKey);
 					LOG.debug("found etag value[{}] for key[{}]", cachedEtag, etagCacheKey);
 
 					if (method == ApiListener.HttpMethod.GET) {
 						String ifNoneMatch = request.getHeader("If-None-Match");
-						if(ifNoneMatch != null && ifNoneMatch.equals(cachedEtag)) {
+						if (ifNoneMatch != null && ifNoneMatch.equals(cachedEtag)) {
 							response.setStatus(304);
 							if (LOG.isDebugEnabled()) LOG.debug("{} matched if-none-match [{}]", ()->createAbortMessage(remoteUser, 304), ()->ifNoneMatch);
 							return;
@@ -411,7 +412,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 					}
 					else {
 						String ifMatch = request.getHeader("If-Match");
-						if(ifMatch != null && !ifMatch.equals(cachedEtag)) {
+						if (ifMatch != null && !ifMatch.equals(cachedEtag)) {
 							response.setStatus(412);
 							LOG.warn("{} matched if-match [{}] method [{}]", ()->createAbortMessage(remoteUser, 412), ()->ifMatch, ()->method);
 							return;
@@ -437,17 +438,15 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 
 					if("*".equals(segment)) {
 						name = "uriIdentifier_"+uriIdentifier;
-					}
-					else if(segment.startsWith("{") && segment.endsWith("}")) {
+					} else if(segment.startsWith("{") && segment.endsWith("}")) {
 						name = segment.substring(1, segment.length()-1);
-					}
-					else {
+					} else {
 						name = null;
 					}
 
-					if(name != null) {
+					if (name != null) {
 						uriIdentifier++;
-						if(LOG.isTraceEnabled()) LOG.trace("setting uriSegment [{}] to [{}]", name, uriSegments[i]);
+						if (LOG.isTraceEnabled()) LOG.trace("setting uriSegment [{}] to [{}]", name, uriSegments[i]);
 						pipelineSession.put(name, uriSegments[i]);
 					}
 				}
@@ -455,12 +454,12 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				/*
 				 * Map queryParameters into messageContext
 				 */
-				pipelineSession.putAll(extractRequestParams(request));
+				pipelineSession.putAll(extractRequestParams(request, listener));
 
 				/*
 				 * Map headers into messageContext
 				 */
-				if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
+				if (StringUtils.isNotEmpty(listener.getHeaderParams())) {
 					pipelineSession.put("headers", extractHeaderParamsAsXml(request, listener));
 				}
 
@@ -476,11 +475,15 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 						MultipartMessages parts = MultipartUtils.parseMultipart(request.getInputStream(), request.getContentType());
 						for (Entry<String, Message> entry : parts.messages().entrySet()) {
 							String fieldName = entry.getKey();
-							if((body == null && multipartBodyName == null) || fieldName.equalsIgnoreCase(multipartBodyName)) {
+							if (!listener.isParameterAllowed(fieldName)) {
+								LOG.warn("Request contains multipart field [{}] which is not allowed", fieldName);
+								continue;
+							}
+							if ((body == null && multipartBodyName == null) || fieldName.equalsIgnoreCase(multipartBodyName)) {
 								body = entry.getValue();
 
 								Enumeration<String> names = request.getHeaderNames();
-								while(names.hasMoreElements()) {
+								while (names.hasMoreElements()) {
 									String name = names.nextElement();
 									body.getContext().put(MessageContext.HEADER_PREFIX + name, request.getHeader(name));
 								}
@@ -619,13 +622,20 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 	}
 
 	@Nonnull
-	private Map<String, Object> extractRequestParams(HttpServletRequest request) {
+	private Map<String, Object> extractRequestParams(HttpServletRequest request, ApiListener listener) {
+		if (listener.getAllowedParameterSet().isEmpty() && !listener.isAllowAllParams()) {
+			return Map.of();
+		}
 		Map<String, Object> params = new HashMap<>();
 		Enumeration<String> paramNames = request.getParameterNames();
 		while (paramNames.hasMoreElements()) {
 			String paramName = paramNames.nextElement();
+			if (!listener.isParameterAllowed(paramName)) {
+				LOG.warn("Request contains parameter [{}] which is not allowed", paramName);
+				continue;
+			}
 			String[] paramList = request.getParameterValues(paramName);
-			if(paramList.length > 1) { // contains multiple items
+			if (paramList.length > 1) { // contains multiple items
 				List<String> valueList = List.of(paramList);
 				if (LOG.isTraceEnabled()) {
 					List<String> logValueList = valueList.stream()
@@ -634,8 +644,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 					LOG.trace("setting queryParameter [{}] to {}", StringEscapeUtils.escapeJava(paramName), logValueList);
 				}
 				params.put(paramName, valueList);
-			}
-			else {
+			} else {
 				String paramValue = request.getParameter(paramName);
 				LOG.trace("setting queryParameter [{}] to [{}]", ()->paramName, ()->StringEscapeUtils.escapeJava(paramValue));
 				params.put(paramName, paramValue);

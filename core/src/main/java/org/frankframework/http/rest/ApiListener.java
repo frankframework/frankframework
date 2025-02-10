@@ -15,7 +15,10 @@
 */
 package org.frankframework.http.rest;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -34,11 +37,13 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.HasPhysicalDestination;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Default;
 import org.frankframework.http.AbstractHttpSender;
 import org.frankframework.http.HttpEntityType;
 import org.frankframework.http.PushingListenerAdapter;
 import org.frankframework.http.mime.HttpEntityFactory;
+import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.jwt.JwtValidator;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.lifecycle.ServletManager;
@@ -85,6 +90,12 @@ import org.frankframework.util.StringUtil;
 public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, ReceiverAware<Message> {
 
 	private static final Pattern VALID_URI_PATTERN_RE = Pattern.compile("([^/]\\*|\\*[^/\\n])");
+	private static final Pattern URI_PATTERN_VARIABLES_RE = Pattern.compile("/\\{(.+?)}(?=/|$)");
+
+	/**
+	 * These are names that are never allowed as HTTP parameters, because the Frank!Framework sets these names as session variables.
+	 */
+	public static final Set<String> RESERVED_NAMES = Set.of(PipeLineSession.ORIGINAL_MESSAGE_KEY, PipeLineSession.API_PRINCIPAL_KEY, PipeLineSession.HTTP_METHOD_KEY, PipeLineSession.HTTP_REQUEST_KEY, PipeLineSession.HTTP_RESPONSE_KEY, PipeLineSession.SECURITY_HANDLER_KEY, "ClaimsSet", "allowedMethods", "headers", ApiListenerServlet.UPDATE_ETAG_CONTEXT_KEY, "uri", "remoteAddr", ApiListenerServlet.AUTHENTICATION_COOKIE_NAME, MultipartUtils.MULTIPART_ATTACHMENTS_SESSION_KEY);
 
 	private final @Getter String domain = "Http";
 	private @Getter String uriPattern;
@@ -112,6 +123,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String headerParams = null;
 	private @Getter String contentDispositionHeaderSessionKey;
 	private @Getter String charset = null;
+	private @Getter @Nonnull Set<String> allowedParameterSet = Set.of();
+	private @Getter boolean allowAllParams = true;
 
 	// for jwt validation
 	private @Getter String requiredIssuer = null;
@@ -203,6 +216,33 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		}
 		if (responseType != HttpEntityType.MTOM && StringUtils.isNotBlank(responseMtomContentTransferEncoding)) {
 			ConfigurationWarnings.add(this, log, "[responseMtomContentTransferEncoding] should only be set when [responseType] is [MTOM]");
+		}
+
+		// Check that none of configured parameters or path-variables matches any of the reserved names.
+		if (allowedParameterSet.isEmpty() && allowAllParams) {
+			ConfigurationWarnings.add(this, log, "All path parameters and query parameters will be copied into the session. This could be a security risk. Set 'allowAllParams' to 'false' and specify 'allowedParameters' for your pipeline.", SuppressKeys.UNSAFE_ATTRIBUTE_SUPPRESS_KEY);
+		}
+		Set<String> paramsFromBlacklist = new HashSet<>(allowedParameterSet);
+		paramsFromBlacklist.retainAll(RESERVED_NAMES);
+		if (!paramsFromBlacklist.isEmpty()) {
+			ConfigurationWarnings.add(this, log, "[allowedParameters] contains reserved names that are not allowed as HTTP parameter names, these are removed: [" + paramsFromBlacklist + "]", SuppressKeys.UNSAFE_ATTRIBUTE_SUPPRESS_KEY);
+			allowedParameterSet.removeAll(paramsFromBlacklist);
+		}
+		if (StringUtils.isNotEmpty(getUriPattern())) {
+			Set<String> forbiddenPathVariables = new HashSet<>();
+			Matcher variableSegmentMatcher =  URI_PATTERN_VARIABLES_RE.matcher(getUriPattern());
+			while (variableSegmentMatcher.find()) {
+				String pathVariable = variableSegmentMatcher.group(1);
+				if (RESERVED_NAMES.contains(pathVariable)) {
+					forbiddenPathVariables.add(pathVariable);
+				}
+			}
+			if (!forbiddenPathVariables.isEmpty()) {
+				throw new ConfigurationException("URI Pattern contains reserved names as path variables, these need to be renamed: [" + forbiddenPathVariables + "]");
+			}
+		}
+		if (getMultipartBodyName() != null && RESERVED_NAMES.contains(getMultipartBodyName())) {
+			throw new ConfigurationException("[multipartBodyName] is a reserved name that cannot be used for any kind of request parameter, set to [" + getMultipartBodyName() + "]");
 		}
 	}
 
@@ -299,6 +339,13 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return produces.accepts(acceptHeader);
 	}
 
+	public boolean isParameterAllowed(@Nonnull String parameterName) {
+		if (allowedParameterSet.isEmpty() && allowAllParams) {
+			return !RESERVED_NAMES.contains(parameterName);
+		}
+		return allowedParameterSet.contains(parameterName);
+	}
+
 	/**
 	 * HTTP method to listen to
 	 *
@@ -323,7 +370,12 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * URI pattern to register this listener on, eq. <code>/my-listener/{something}/here</code>
+	 * URI pattern to register this listener on, eq. <code>/my-listener/{something}/here</code>.
+	 * <br/>
+	 * Pattern variables like {@code {something}} in this example are added to the PipeLineSession with
+	 * their actual value in the request URI.
+	 * <br/>
+	 * Pattern variables are not allowed to have the same name as any of the {@link #RESERVED_NAMES}.
 	 *
 	 * @ff.mandatory
 	 */
@@ -401,7 +453,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * Specify the form-part you wish to enter the pipeline
+	 * Specify the form-part you wish to enter the pipeline.
+	 * <br/>
+	 * The {@code multipartBodyName} or the names of any other multipart
+	 * fields may not be one of the {@link #RESERVED_NAMES}.
 	 *
 	 * @ff.default name of the first form-part
 	 */
@@ -449,6 +504,45 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	/** Session key that provides the <code>Content-Disposition</code> header in the response */
 	public void setContentDispositionHeaderSessionKey(String key) {
 		this.contentDispositionHeaderSessionKey = key;
+	}
+
+	/**
+	 * Whitelist of request parameters (Query and POST Parameters) that are allowed to be
+	 * copied into the session.
+	 * <br/>
+	 * Entered as a comma-separated value.
+	 * <br/>
+	 * If the list contains any names that are in {@link #RESERVED_NAMES}, these will be removed from the list.
+	 * <br/>
+	 * If left empty, then all HTTP parameters are copied into the session, which can pose
+	 * a security risk and is therefore discouraged. The risk is that parameters could be sent,
+	 * that overwrite system session variables.
+	 * <br/>
+	 * This only works as a backwards-compatibility feature and can be switched off setting {@link #setAllowAllParams(boolean)} to {@code false}.
+	 *
+	 * @param paramWhitelist Comma-separated list of allowed HTTP parameters.
+	 */
+	public void setAllowedParameters(@Nullable String paramWhitelist) {
+		this.allowedParameterSet = StringUtil.splitToStream(paramWhitelist).collect(Collectors.toSet());
+	}
+
+	/**
+	 * For backwards compatibility with configurations that have not yet been updated, by
+	 * default all parameters are allowed until removal of this flag.
+	 * Copying all POST and query parameters to the session is considered a security risk,
+	 * so this should not be left enabled.
+	 * <br/>
+	 * Even so, names listed in {@link #RESERVED_NAMES} will never be copied from the HTTP parameters to the session.
+	 * <br/>
+	 * When setting {@link #setAllowedParameters(String)}, this value is ignored. This value is only
+	 * used when the allowed parameter list has not been set, or set empty.
+	 * <br/>
+	 * For backwards compatibility, this is {@code true} by default.
+	 *
+	 * @ff.default true
+	 */
+	public void setAllowAllParams(boolean allowAllParams) {
+		this.allowAllParams = allowAllParams;
 	}
 
 	/** Issuer to validate JWT */
