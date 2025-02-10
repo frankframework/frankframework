@@ -1938,6 +1938,21 @@ public class ApiListenerServletTest {
 		assertThat(e.getMessage(), containsString("[uri]"));
 	}
 
+	@Test
+	public void testBlacklistedMultipartBodyName() throws ConfigurationException {
+		// Arrange
+		ApiListener apiListener = new ApiListenerBuilder("/request/with/params", List.of(HttpMethod.GET))
+				.build();
+		apiListener.setMultipartBodyName("originalMessage");
+
+		// Act
+		ConfigurationException e = assertThrows(ConfigurationException.class, apiListener::configure);
+
+		// Assert
+		assertThat(e.getMessage(), containsString("[multipartBodyName]"));
+		assertThat(e.getMessage(), containsString("[originalMessage]"));
+	}
+
 	private String createJWT() throws Exception {
 		JWSHeader jwsHeader = new JWSHeader.Builder(JWSAlgorithm.RS256).build();
 

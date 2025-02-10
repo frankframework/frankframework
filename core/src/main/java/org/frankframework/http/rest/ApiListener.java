@@ -241,8 +241,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 				throw new ConfigurationException("URI Pattern contains reserved names as path variables, these need to be renamed: [" + forbiddenPathVariables + "]");
 			}
 		}
-		if (RESERVED_NAMES.contains(getMultipartBodyName())) {
-			throw new ConfigurationException("[multipartBodyName] is a reserved name that cannot be used for any kind of request parameter");
+		if (getMultipartBodyName() != null && RESERVED_NAMES.contains(getMultipartBodyName())) {
+			throw new ConfigurationException("[multipartBodyName] is a reserved name that cannot be used for any kind of request parameter, set to [" + getMultipartBodyName() + "]");
 		}
 	}
 
