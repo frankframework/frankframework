@@ -447,7 +447,6 @@ export class AppService {
     const line = message.match(/line \[(\d+)]/);
     const isValidationAlert = message.includes('Validation');
     const link = line && !isValidationAlert ? { name: configuration, '#': `L${line[1]}` } : undefined;
-    console.log(link);
     this.alerts.push({
       link: link,
       type: type,
