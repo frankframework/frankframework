@@ -15,119 +15,74 @@
 */
 package org.frankframework.extensions.mqtt;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
-import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.FrankElement;
+import org.frankframework.core.NameAware;
+import org.frankframework.doc.Mandatory;
+
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IConfigurable;
-import org.frankframework.core.NameAware;
-import org.frankframework.doc.Mandatory;
-import org.frankframework.lifecycle.LifecycleException;
-import org.frankframework.util.CredentialFactory;
 
+/**
+ * Requires a resource to be configured. Example {@literal resources.yml}:
+ * <pre>{@code
+ * mqtt:
+ *   - name: "my-connection"
+ *     type: "org.frankframework.jdbc.datasource.MqttClientSettings"
+ *     url: "tcp://host:port"
+ *     properties:
+ *       automaticReconnect: "true"
+ *       cleanSession: "false"
+ * }</pre>
+ * <br>
+ * The clientId is automatically determined from {@code transactionmanager.uid}, but can optionally be overwritten. Be aware that the clientId must be unique
+ * for each instance of the framework.
+ * <br><br>
+ * Inbound and outbound messages are persisted while they are in flight to prevent data loss. The default is an in memory store, but the {@literal persistenceDirectory}
+ * flag can be used to set the disk storage location.
+ */
 @Log4j2
-public class MqttFacade implements HasPhysicalDestination, IConfigurable, NameAware, FrankElement {
+public abstract class MqttFacade implements HasPhysicalDestination, IConfigurable, NameAware, FrankElement {
 	private final @Getter String domain = "MQTT";
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter String name;
-	private @Getter int timeout = 3000;
-	private @Getter int keepAliveInterval = 30000;
-	private @Getter String brokerUrl;
+	private @Getter String resourceName;
 	private @Getter String topic;
 	private @Getter int qos = 2;
-	private @Getter boolean cleanSession = false;
-	private @Getter String persistenceDirectory;
-	private @Getter boolean automaticReconnect = true;
 	private @Getter String charset = "UTF-8";
-	private @Getter String clientId;
-
-	private @Getter String username;
-	private @Getter String password;
-	private @Getter String authAlias;
 
 	protected MqttClient client;
-	protected MqttConnectOptions connectOptions;
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isEmpty(getClientId())) {
-			throw new ConfigurationException("clientId must be specified");
-		}
-		if (StringUtils.isEmpty(getBrokerUrl())) {
-			throw new ConfigurationException("brokerUrl must be specified");
-		}
-		connectOptions = new MqttConnectOptions();
-		connectOptions.setCleanSession(isCleanSession());
-		connectOptions.setAutomaticReconnect(isAutomaticReconnect());
-		connectOptions.setConnectionTimeout(getTimeout());
-		connectOptions.setKeepAliveInterval(getKeepAliveInterval());
-		connectOptions.setMqttVersion(MqttConnectOptions.MQTT_VERSION_DEFAULT); //Default: 0, V3.1: 3, V3.1.1: 4
-
-		if(!StringUtils.isEmpty(getAuthAlias()) || (!StringUtils.isEmpty(getUsername()) && !StringUtils.isEmpty(getPassword()))) {
-			CredentialFactory credentialFactory = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-			connectOptions.setUserName(credentialFactory.getUsername());
-			connectOptions.setPassword(credentialFactory.getPassword().toCharArray());
+		if (resourceName == null) {
+			throw new ConfigurationException("resourceName is required");
 		}
 
-		try {
-			client = new MqttClient(brokerUrl, clientId, getDataStore());
-		} catch (MqttException e) {
-			throw new ConfigurationException("Could not create client", e);
-		}
-	}
-
-	private MqttClientPersistence getDataStore() {
-		if (StringUtils.isEmpty(getPersistenceDirectory())) {
-			return new MemoryPersistence();
-		}
-
-		return new MqttDefaultFilePersistence(getPersistenceDirectory());
-	}
-
-	public void start() {
-		try {
-			client.connect(connectOptions);
-		} catch (MqttException e) {
-			throw new LifecycleException("Could not connect", e);
-		}
-	}
-
-	public void stop() {
-		try {
-			client.disconnect();
-		} catch (MqttException e) {
-			log.warn("{}caught exception stopping listener", getLogPrefix(), e);
-		}
+		client = MqttClientFactory.getInstance().getClient(resourceName);
 	}
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "TOPIC(" + getTopic() + ") on (" + getBrokerUrl() + ")";
+		return "TOPIC(" + getTopic() + ") on (" + client.getServerURI() + ")";
 	}
 
 	@Override
 	public String toString() {
 		ToStringBuilder ts = new ToStringBuilder(this);
+		ts.append("name", getName());
 		ts.append("topic", getTopic());
-		ts.append("broker", getBrokerUrl());
-		ts.append("clientId", getClientId());
-		ts.append("qos", getQos());
-		ts.append("timeout", getTimeout());
 		return ts.toString();
 	}
 
@@ -138,27 +93,6 @@ public class MqttFacade implements HasPhysicalDestination, IConfigurable, NameAw
 
 	protected String getLogPrefix() {
 		return "["+getName()+"] ";
-	}
-
-	public void setTimeout(int timeout) {
-		this.timeout = timeout;
-	}
-
-	public void setKeepAliveInterval(int keepAliveInterval) {
-		this.keepAliveInterval = keepAliveInterval;
-	}
-
-	/** The clientId for this connection. Be aware that each connection (each sender or listener) needs to have a unique clientId. The MQTT broker uses the clientId to hold a persistent session, so it can send any missing messages when you reconnect.
-	 * see <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank">MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)</a> */
-	@Mandatory
-	public void setClientId(String clientId) {
-		this.clientId = clientId;
-	}
-
-	/** see <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank">MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)</a> */
-	@Mandatory
-	public void setBrokerUrl(String brokerUrl) {
-		this.brokerUrl = brokerUrl;
 	}
 
 	/** see <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#subscribe-java.lang.String-" target="_blank">MqttClient.subscribe(java.lang.String topicFilter)</a> */
@@ -174,28 +108,6 @@ public class MqttFacade implements HasPhysicalDestination, IConfigurable, NameAw
 		this.qos = qos;
 	}
 
-	/** see <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html#setCleanSession-boolean-" target="_blank">MqttConnectOptions.setCleanSession(boolean cleanSession)</a>
-	 * @ff.default true
-	 */
-	public void setCleanSession(boolean cleanSession) {
-		this.cleanSession = cleanSession;
-	}
-
-	/**
-	 * Stores inbound and outbound messages while they are in flight on disk storage. Recommended when reliability is paramount. Messages are persisted in memory when empty.
-	 * see <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/persist/MqttDefaultFilePersistence.html" target="_blank">MqttDefaultFilePersistence</a> and <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html" target="_blank">MqttClient</a> */
-	public void setPersistenceDirectory(String persistenceDirectory) {
-		this.persistenceDirectory = persistenceDirectory;
-	}
-
-
-	/** see <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html#setAutomaticReconnect-boolean-" target="_blank">MqttConnectOptions.setAutomaticReconnect(boolean automaticReconnect)</a> (apart from this recover job will also try to recover)
-	 * @ff.default true
-	 */
-	public void setAutomaticReconnect(boolean automaticReconnect) {
-		this.automaticReconnect = automaticReconnect;
-	}
-
 	/** character encoding of received messages
 	 * @ff.default UTF-8
 	 */
@@ -203,15 +115,8 @@ public class MqttFacade implements HasPhysicalDestination, IConfigurable, NameAw
 		this.charset = charset;
 	}
 
-	public void setUsername(String username) {
-		this.username = username;
+	public void setResourceName(String resourceName) {
+		this.resourceName = resourceName;
 	}
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	public void setAuthAlias(String authAlias) {
-		this.authAlias = authAlias;
-	}
 }
