@@ -5,6 +5,7 @@
       [ngClass]="adapter.status === 'warning' ? 'warning' : adapter.status === 'stopped' ? 'danger' : 'primary'"
       class="ibox-title"
       title="Click to open"
+      data-cy="adapter-status__box"
     >
       <div class="ibox-tools pull-right">
         <a> <i class="fa fa-chevron-{{ showContent(adapter) ? 'up' : 'down' }}"></i></a>
@@ -458,7 +459,7 @@
                       <td class="text-left" style="width: 200px">
                         <span [time]="message.date" appToDate></span>
                       </td>
-                      <td #messageInfo>
+                      <td #messageInfo data-cy="adapter-status__table__message">
                         {{ message.message | truncate: 700 : messageInfo }}
                       </td>
                     }

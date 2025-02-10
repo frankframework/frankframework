@@ -119,6 +119,7 @@
               (click)="addLogger()"
               class="btn btn-xs btn-primary m-r-md"
               type="button"
+              data-cy="logging-settings__add-logger-button"
             >
               <span>Add Logger</span>
             </button>
@@ -127,6 +128,7 @@
               (click)="reconfigure()"
               class="btn btn-xs pull-right btn-warning m-r-xs"
               type="button"
+              data-cy="logging-settings__reconfigure-button"
             >
               <i class="fa fa-warning" aria-hidden="true"></i>
               <span> Reconfigure</span>
@@ -140,7 +142,7 @@
               Log levels can be changed to control the amount of logging of the framework and the libraries it uses.
               Custom Log Definitions can be removed by reconfiguring Log4J2.
             </p>
-            <table class="table table-striped table-definitions">
+            <table class="table table-striped table-definitions" data-cy="logging-settings__table">
               <thead>
                 <tr>
                   <th>Name</th>

@@ -19,7 +19,7 @@
           "options": {
             "outputPath": {
               "base": "../../../target/frontend",
-              "browser": "" // needed to not have '/browser' added to the outputPath
+              "browser": ""
             },
             "index": "src/index.html",
             "polyfills": [
@@ -127,11 +127,47 @@
             ],
             "scripts": []
           }
+        },
+        "cypress-run": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "devServerTarget": "ff-console-gui:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "ff-console-gui:serve:production"
+            }
+          }
+        },
+        "cypress-open": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "watch": true,
+            "headless": false
+          }
+        },
+        "e2e": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "devServerTarget": "ff-console-gui:serve:development-fftest",
+            "watch": true,
+            "headless": false
+          },
+          "configurations": {
+            "ci": {
+              "devServerTarget": "ff-console-gui:serve:development-fftest",
+              "headless": true
+            }
+          }
         }
       }
     }
   },
   "cli": {
-    "analytics": false
+    "analytics": false,
+    "schematicCollections": [
+      "@cypress/schematic",
+      "@schematics/angular"
+    ]
   }
 }

@@ -5,6 +5,7 @@
       [showAllTab]="false"
       [configurations]="configurations"
       (selectedTabChange)="changeConfiguration($event)"
+      data-cy="monitors__configuration-tab-list"
     ></app-configuration-tab-list>
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
@@ -16,6 +17,7 @@
                 class="btn btn-primary btn-xs"
                 [routerLink]="['/monitors', 'new']"
                 [queryParams]="{ configuration: selectedConfiguration }"
+                data-cy="monitors__add-monitor-button"
               >
                 <i class="fa fa-plus"></i> Add Monitor</button
               >&nbsp;
@@ -55,7 +57,7 @@
     <div class="row">
       @for (monitor of monitors; track index; let index = $index) {
         <div class="col-lg-12">
-          <div class="ibox float-e-margins">
+          <div class="ibox float-e-margins" data-cy="monitors__monitor__ibox">
             <div class="ibox-title {{ monitor.raised ? 'danger' : 'primary' }}">
               <div class="pull-right">
                 @if (!monitor.raised && !monitor.edit) {
@@ -65,6 +67,7 @@
                     class="btn btn-warning btn-xs space-it-out"
                     type="button"
                     (click)="raise(monitor)"
+                    data-cy="monitors__raise-monitor-button"
                   >
                     <i class="fa fa-arrow-circle-o-right"></i> Raise
                   </button>
@@ -76,6 +79,7 @@
                     class="btn btn-primary btn-xs space-it-out"
                     type="button"
                     (click)="clear(monitor)"
+                    data-cy="monitors__clear-monitor-button"
                   >
                     <i class="fa fa-arrow-circle-o-right"></i> Clear
                   </button>
@@ -87,6 +91,7 @@
                     class="btn btn-danger btn-xs space-it-out"
                     type="button"
                     (click)="deleteMonitor(monitor)"
+                    data-cy="monitors__delete-monitor-button"
                   >
                     <i class="fa fa-close"></i> Delete
                   </button>
@@ -98,6 +103,7 @@
                     class="btn btn-info btn-xs space-it-out"
                     type="button"
                     (click)="monitor.edit = true"
+                    data-cy="monitors__edit-monitor-button"
                   >
                     <i class="fa fa-pencil"></i> Edit
                   </button>
@@ -109,6 +115,7 @@
                     class="btn btn-primary btn-xs space-it-out"
                     type="button"
                     (click)="edit(monitor)"
+                    data-cy="monitors__save-monitor-button"
                   >
                     <i class="fa fa-save"></i> Save
                   </button>
@@ -124,7 +131,7 @@
               </div>
               <div class="m-l-n m-r-n almost-full-width">
                 <div class="col-lg-5 col-md-8 m-r m-t-n-xs">
-                  <h4>
+                  <h4 data-cy="monitors__monitor__ibox__title">
                     {{ monitor.displayName }}
                     <span class="m-l-sm badge badge-info">{{ monitor.type }}</span>
                   </h4>
@@ -222,7 +229,7 @@
                     </thead>
                     <tbody>
                       @for (trigger of monitor.triggers; track trigger.id) {
-                        <tr>
+                        <tr data-cy="monitors__monitor__trigger__row">
                           @if (trigger.type === 'ALARM') {
                             <td><i class="fa fa-warning m-r-xs"></i> Alarm</td>
                           }
@@ -282,6 +289,7 @@
                                 class="btn btn-danger btn-xs"
                                 type="button"
                                 (click)="deleteTrigger(monitor, trigger)"
+                                data-cy="monitors__delete-trigger-button"
                               >
                                 Delete
                               </button>
@@ -297,6 +305,7 @@
                               class="btn btn-primary btn-outline btn-xs"
                               [routerLink]="['/monitors', monitor.name, 'triggers', 'new']"
                               [queryParams]="{ configuration: selectedConfiguration }"
+                              data-cy="monitors__add-trigger-button"
                             >
                               <i class="fa fa-plus"></i> <i>Add Trigger</i>
                             </button>
