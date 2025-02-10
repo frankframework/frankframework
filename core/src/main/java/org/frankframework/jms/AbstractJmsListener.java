@@ -193,7 +193,6 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 		return messageProperties;
 	}
 
-
 	/**
 	 * Extracts data from message obtained from {@link IPullingListener#getRawMessage(Map)}. May also extract
 	 * other parameters from the message and put those in the context.
@@ -220,11 +219,10 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 			return rawReply;
 		}
 		Message replyMessage;
-		if (soapHeader == null) {
-			if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
+		if (soapHeader == null && StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
 				soapHeader = (String) threadContext.get(getSoapHeaderSessionKey());
 			}
-		}
+
 		try {
 			replyMessage = soapWrapper.putInEnvelope(rawReply, getReplyEncodingStyleURI(), getReplyNamespaceURI(), soapHeader);
 		} catch (IOException e) {
@@ -300,16 +298,17 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 
 		// handle commit/rollback or acknowledge
 		try {
-			if (plr != null && !isTransacted()) {
-				if (rawMessageWrapper.getRawMessage() != null && getAcknowledgeMode() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
-					if (plr.getState() != ExitState.ERROR) { // SUCCESS and REJECTED will both be acknowledged
-						log.debug("{}acknowledging message", getLogPrefix());
-						rawMessageWrapper.getRawMessage().acknowledge();
-					} else {
-						log.warn("{}got exit state [{}], skipping acknowledge", getLogPrefix(), plr.getState());
-					}
+			if (plr != null && !isTransacted()
+					&& rawMessageWrapper.getRawMessage() != null
+					&& getAcknowledgeMode() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
+				if (plr.getState() != ExitState.ERROR) { // SUCCESS and REJECTED will both be acknowledged
+					log.debug("{}acknowledging message", getLogPrefix());
+					rawMessageWrapper.getRawMessage().acknowledge();
+				} else {
+					log.warn("{}got exit state [{}], skipping acknowledge", getLogPrefix(), plr.getState());
 				}
 			}
+
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}
