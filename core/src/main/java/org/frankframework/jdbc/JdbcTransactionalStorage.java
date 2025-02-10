@@ -697,7 +697,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		}
 	}
 
-
 	@Override
 	protected RawMessageWrapper<S> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws JdbcException {
 		try {
@@ -788,19 +787,12 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		super.setHostField(hostField);
 	}
 
-
 	/**
 	 * The name of the sequence used to generate the primary key, for DBMSes that use sequences, like Oracle
 	 * @ff.default seq_ibisstore
 	 */
 	public void setSequenceName(String string) {
 		sequenceName = string;
-	}
-
-	@Deprecated(forRemoval = true, since = "7.7.0")
-	@ConfigurationWarning("Replaced with checkTable")
-	public void setCheckIfTableExists(boolean b) {
-		setCheckTable(b);
 	}
 
 	/**

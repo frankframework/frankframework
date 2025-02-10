@@ -566,7 +566,6 @@ public class ReceiverTest {
 		PushingJmsListener listener = spy(configuration.createBean(PushingJmsListener.class));
 		listener.setTransacted(false);
 		//noinspection removal
-		listener.setJmsTransacted(false);
 		listener.setAcknowledgeMode(JMSFacade.AcknowledgeMode.CLIENT_ACKNOWLEDGE);
 		doReturn(mock(Destination.class)).when(listener).getDestination();
 		doNothing().when(listener).start();

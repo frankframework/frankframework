@@ -46,7 +46,6 @@ public class Job extends AbstractJobDef {
 		throw new NotImplementedException(); // will be replaced by appropriate executor class in JobFactory, based on function
 	}
 
-
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(super.toString());

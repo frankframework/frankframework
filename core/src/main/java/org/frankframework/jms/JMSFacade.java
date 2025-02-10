@@ -97,7 +97,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 
 	private boolean started = false;
 	private @Getter boolean transacted = false;
-	private @Getter boolean jmsTransacted = false;
 	private @Getter SubscriberType subscriberType = SubscriberType.DURABLE;
 
 	private @Getter AcknowledgeMode acknowledgeMode = AcknowledgeMode.AUTO_ACKNOWLEDGE;
@@ -294,7 +293,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 */
 	protected Session createSession() throws JmsException {
 		try {
-			return getMessagingSource().createSession(isJmsTransacted(), getAcknowledgeMode().getAcknowledgeMode());
+			return getMessagingSource().createSession(false, getAcknowledgeMode().getAcknowledgeMode());
 		} catch (JmsException e) {
 			throw e;
 		} catch (Exception e) {
@@ -677,6 +676,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		throws JMSException {
 		return send(session, dest, message, false);
 	}
+
 	public String send(Session session, Destination dest, jakarta.jms.Message message, boolean ignoreInvalidDestinationException) throws JMSException {
 		try {
 			MessageProducer mp = session.createProducer(dest);
@@ -865,24 +865,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 	/**
-	 * Controls the use of JMS transacted session.
-	 * In versions prior to 4.1, this attribute was called plainly 'transacted'. The {@link #setTransacted(boolean) transacted}
-	 * attribute, however, is now in uses to indicate the use of XA-transactions. XA transactions can be used
-	 * in a pipeline to simultaneously (in one transaction) commit or rollback messages send to a number of queues, or
-	 * even together with database actions.
-	 *
-	 * @since 4.1
-	 *
-	 * @deprecated This attribute has been added to provide the pre-4.1 transaction functionality to configurations that
-	 * relied this specific functionality. New configurations should not use it.
-	 *
-	 */
-	@Deprecated(forRemoval = true, since = "7.6.0")
-	public void setJmsTransacted(boolean jmsTransacted) {
-		this.jmsTransacted = jmsTransacted;
-	}
-
-	/**
 	 * Controls whether messages are send under transaction control.
 	 * If set <code>true</code>, messages are committed or rolled back under control of an XA-transaction.
 	 * @ff.default false
@@ -900,7 +882,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		this.correlationIdToHex = correlationIdToHex;
 	}
 
-
 	/**
 	 * Prefix to check before executing correlationIdToHex. If empty (and correlationIdToHex equals true) all correlationid's are transformed, this is useful in case you want the entire correlationId to be transformed (for example when the receiving party doesn't allow characters like a colon to be present in the correlationId).
 	 * @ff.default id:
@@ -908,7 +889,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	public void setCorrelationIdToHexPrefix(String correlationIdToHexPrefix) {
 		this.correlationIdToHexPrefix = correlationIdToHexPrefix;
 	}
-
 
 	/**
 	 * The time <i>in milliseconds</i> it takes for the message to expire. If the message is not consumed before, it will be lost. Must be a positive value for request/reply type of messages, 0 disables the expiry timeout
@@ -925,7 +905,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	public void setCorrelationIdMaxLength(int i) {
 		correlationIdMaxLength = i;
 	}
-
 
 	/**
 	 * If set, the value of this attribute is used as a selector to filter messages.

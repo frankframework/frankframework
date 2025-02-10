@@ -25,15 +25,6 @@ import org.frankframework.core.IPullingListener;
  * {@link #setTransacted(boolean) transacted} attribute. If this is set to <code>true</code>, received messages are
  * committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
  * In case of a failure, all actions within the transaction are rolled back.
- *
- * <p><b>Using jmsTransacted and acknowledgement</b><br/>
- * If jmsTransacted is set <code>true</code>: it should ensure that a message is received and processed on a both or nothing basis.
- * IBIS will commit the the message, otherwise perform rollback. However using jmsTransacted, IBIS does not bring transactions within
- * the adapters under transaction control, compromising the idea of atomic transactions. In the roll-back situation messages sent to
- * other destinations within the Pipeline are NOT rolled back if jmsTransacted is set <code>true</code>! In the failure situation the
- * message is therefore completely processed, and the roll back does not mean that the processing is rolled back! To obtain the correct
- * (transactional) behaviour, {@link #setTransacted(boolean) transacted} should be used instead of {@link #setJmsTransacted(boolean)
- * listener.transacted}.
  * </p><p>
  * Setting {@link #setAcknowledgeMode(AcknowledgeMode) listener.acknowledgeMode} to "auto" means that messages are allways acknowledged (removed from
  * the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
@@ -44,8 +35,7 @@ import org.frankframework.core.IPullingListener;
  * since a session has lower overhead in trying to prevent duplicate messages.
  * </p>
  * <p>The setting for {@link #setAcknowledgeMode(AcknowledgeMode) listener.acknowledgeMode} will only be processed if
- * the setting for {@link #setTransacted(boolean) listener.transacted} as well as for
- * {@link #setJmsTransacted(boolean) listener.jmsTransacted} is false.</p>
+ * the setting for {@link #setTransacted(boolean) listener.transacted}.</p>
  *
  * <p>If {@link #setUseReplyTo(boolean) useReplyTo} is set and a replyTo-destination is
  * specified in the message, the JmsListener sends the result of the processing

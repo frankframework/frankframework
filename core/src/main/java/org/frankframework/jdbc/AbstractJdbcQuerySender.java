@@ -121,7 +121,6 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	// blobCharset can be set to "UTF-8", or set blobBase64Direction to 'encode'.
 	// By default, BLOBs are no longer read as strings
 	private @Getter String blobCharset = null;
-	private @Getter boolean closeInputstreamOnExit=true;
 	private @Getter boolean closeOutputstreamOnExit=true;
 	private @Getter Base64Pipe.Direction blobBase64Direction=null;
 	private @Getter String streamCharset = null;
@@ -367,7 +366,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		} finally {
 			closeStatementSet(queryExecutionContext);
 			ParameterList newParameterList = queryExecutionContext.getParameterList();
-			if (isCloseInputstreamOnExit() && newParameterList != null) {
+			if (newParameterList != null) {
 				//noinspection deprecation
 				newParameterList.stream()
 						.filter(param -> param.getType() == ParameterType.INPUTSTREAM)
@@ -445,7 +444,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 				.collect(Collectors.joining(", "));
 	}
 
-	protected Message getResult(ResultSet resultset) throws JdbcException, SQLException, IOException, JMSException {
+	protected Message getResult(ResultSet resultset) throws JdbcException, SQLException, IOException {
 		return getResult(resultset,null,null);
 	}
 
@@ -569,9 +568,6 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 						contents = new Message(contents.asReader(getStreamCharset()));
 					}
 					InputStream inputStream = contents.asInputStream(getBlobCharset());
-					if (!isCloseInputstreamOnExit()) {
-						inputStream = StreamUtil.dontClose(inputStream);
-					}
 					StreamUtil.streamToStream(inputStream,blobOutputStream);
 				}
 			} finally {
@@ -603,9 +599,6 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 				clobWriter = getClobWriter(statement, getClobColumn());
 				if (contents!=null) {
 					Reader reader = contents.asReader(getStreamCharset());
-					if (!isCloseInputstreamOnExit()) {
-						reader = StreamUtil.dontClose(reader);
-					}
 					StreamUtil.readerToWriter(reader, clobWriter);
 				}
 			} finally {
@@ -963,7 +956,6 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		rowIdSessionKey = string;
 	}
 
-
 	/**
 	 * If set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as bytes or as a String)
 	 * @ff.default false
@@ -1065,15 +1057,6 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	 */
 	public void setClobSessionKey(String string) {
 		clobSessionKey = string;
-	}
-
-	/**
-	 * When set to <code>false</code>, the Inputstream is not closed after it has been used to update a BLOB or CLOB
-	 * @ff.default true
-	 */
-	@Deprecated(forRemoval = true, since = "7.6.0")
-	public void setCloseInputstreamOnExit(boolean b) {
-		closeInputstreamOnExit = b;
 	}
 
 	/**
