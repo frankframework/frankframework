@@ -301,26 +301,12 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 		// handle commit/rollback or acknowledge
 		try {
 			if (plr != null && !isTransacted()) {
-				if (isJmsTransacted()) {
-					Session queueSession = (Session) session.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
-					if (queueSession == null) {
-						log.error("{}session is null, cannot commit or roll back session", getLogPrefix());
+				if (rawMessageWrapper.getRawMessage() != null && getAcknowledgeMode() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
+					if (plr.getState() != ExitState.ERROR) { // SUCCESS and REJECTED will both be acknowledged
+						log.debug("{}acknowledging message", getLogPrefix());
+						rawMessageWrapper.getRawMessage().acknowledge();
 					} else {
-						if (plr.getState() != ExitState.SUCCESS) {
-							log.warn("{}got exit state [{}], rolling back session", getLogPrefix(), plr.getState());
-							queueSession.rollback();
-						} else {
-							queueSession.commit();
-						}
-					}
-				} else {
-					if (rawMessageWrapper.getRawMessage() != null && getAcknowledgeMode() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
-						if (plr.getState() != ExitState.ERROR) { // SUCCESS and REJECTED will both be acknowledged
-							log.debug("{}acknowledging message", getLogPrefix());
-							rawMessageWrapper.getRawMessage().acknowledge();
-						} else {
-							log.warn("{}got exit state [{}], skipping acknowledge", getLogPrefix(), plr.getState());
-						}
+						log.warn("{}got exit state [{}], skipping acknowledge", getLogPrefix(), plr.getState());
 					}
 				}
 			}
@@ -331,7 +317,7 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 
 	@Override
 	public boolean messageWillBeRedeliveredOnExitStateError() {
-		return isTransacted() || isJmsTransacted() || getAcknowledgeMode() == AcknowledgeMode.CLIENT_ACKNOWLEDGE;
+		return isTransacted() || getAcknowledgeMode() == AcknowledgeMode.CLIENT_ACKNOWLEDGE;
 	}
 
 	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, PipeLineSession pipeLineSession, Map<String, Object> properties) throws ListenerException, JMSException, IOException, SenderException {

@@ -75,7 +75,6 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 
 	private @Getter String name;
 	private @Getter String serviceName;
-	private @Getter boolean synchronous=true;
 	private @Getter String returnedSessionKeys=null;
 	private @Getter boolean throwException = true;
 	private @Getter boolean httpWsdl = false;
@@ -254,8 +253,6 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 		return "internal: "+getName();
 	}
 
-
-
 	/** Internal name of the listener, as known to the adapter. An IbisLocalSender refers to this name in its <code>javaListener</code>-attribute. */
 	@Override
 	@Mandatory
@@ -263,29 +260,9 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 		this.name = name;
 	}
 
-
 	/** External Name of the listener. An IbisJavaSender refers to this name in its <code>serviceName</code>-attribute. */
 	public void setServiceName(String jndiName) {
 		this.serviceName = jndiName;
-	}
-
-	@Deprecated(forRemoval = true, since = "7.7.0")
-	public void setLocal(String name) {
-		throw new IllegalArgumentException("do not set attribute 'local=true', just leave serviceName empty!");
-	}
-
-	@Deprecated(forRemoval = true, since = "7.7.0")
-	public void setIsolated(boolean b) {
-		throw new IllegalArgumentException("function of attribute 'isolated' is replaced by 'transactionAttribute' on PipeLine");
-	}
-
-	/**
-	 * If set <code>false</code>, the request is executed asynchronously. N.B. be aware that there is no limit on the number of threads generated
-	 * @ff.default true
-	 */
-	@Deprecated(forRemoval = true, since = "7.7.0")
-	public void setSynchronous(boolean b) {
-		synchronous = b;
 	}
 
 	/**
