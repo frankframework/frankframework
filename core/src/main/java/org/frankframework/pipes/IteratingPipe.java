@@ -55,6 +55,7 @@ import org.frankframework.senders.ParallelSenderExecutor;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlEncodingUtils;
@@ -268,11 +269,14 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				}
 				inputItems.add(item);
 			}
+
+			// This session will be closed in either the ParallelSenderExecutor or the finally statement below.
+			PipeLineSession processContext = new PipeLineSession(session);
 			String itemResult=null;
 			totalItems++;
 
 			if (StringUtils.isNotEmpty(getItemNoSessionKey())) {
-				session.put(getItemNoSessionKey(), ""+totalItems);
+				processContext.put(getItemNoSessionKey(), ""+totalItems);
 			}
 
 			Message message = itemToMessage(item);
@@ -285,7 +289,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			} else {
 				log.debug("iteration [{}] item [{}]", totalItems, message);
 			}
-			message.closeOnCloseOf(session);
+			message.closeOnCloseOf(processContext);
 
 			if (childLimiter != null) {
 				try {
@@ -303,7 +307,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 							guard.register();
 						}
 
-						ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, senderStatistics);
+						ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, processContext, senderStatistics);
 						pse.setThreadLimiter(childLimiter);
 						pse.setGuard(guard);
 						if (isCollectResults()) {
@@ -316,14 +320,14 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						}
 						long senderStartTime= System.currentTimeMillis();
 						if (sender instanceof IBlockEnabledSender<?>) {
-							SenderResult senderResult=((IBlockEnabledSender)sender).sendMessage(blockHandle, message, session);
+							SenderResult senderResult=((IBlockEnabledSender)sender).sendMessage(blockHandle, message, processContext);
 							if (senderResult.isSuccess()) {
 								itemResult = senderResult.getResult().asString();
 							} else {
 								throw new SenderException(senderResult.getErrorMessage());
 							}
 						} else {
-							itemResult = sender.sendMessageOrThrow(message, session).asString();
+							itemResult = sender.sendMessageOrThrow(message, processContext).asString();
 						}
 						senderStatistics.record((double) System.currentTimeMillis() - senderStartTime);
 						if (getBlockSize()>0 && ++itemsInBlock >= getBlockSize()) {
@@ -378,9 +382,14 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					throw new SenderException("cannot serialize item",e);
 				}
 			} finally {
-				if (!isParallel() && childLimiter !=null) {
-					// only release the semaphore for non-parallel. For parallel, it is done in the 'finally' of ParallelSenderExecutor.run()
-					childLimiter.release();
+				if (!isParallel()) {
+					processContext.mergeToParentSession(null, session); // Merge everything back to the parent session.
+					CloseUtils.closeSilently(processContext); // When using isParallel() the session will be closed in the ParallelSenderExecutor.
+
+					if (childLimiter != null) {
+						// Only release the semaphore for non-parallel. For parallel, it is done in the 'finally' of ParallelSenderExecutor.run()
+						childLimiter.release();
+					}
 				}
 			}
 		}

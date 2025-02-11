@@ -48,7 +48,7 @@ public class TestIteratingBasePipe extends IteratingPipeTestBase<IteratingTestPi
 	}
 
 	@Test
-	public void testParallelAndSessionClose() throws Exception {
+	public void testParallelWithItemNoSessionKey() throws Exception {
 		pipe.setSender(new IndexAwareSlowRenderer());
 		pipe.setParallel(true);
 		pipe.setMaxChildThreads(10);

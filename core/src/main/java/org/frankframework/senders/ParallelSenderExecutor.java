@@ -49,7 +49,7 @@ public class ParallelSenderExecutor extends AbstractRequestReplyExecutor {
 	public void run() {
 		try {
 			long startTime = System.currentTimeMillis();
-			try {
+			try (session) {
 				reply = sender.sendMessage(request, session);
 				reply.getResult().preserve(); // consume the message immediately, to release any resources (like connections) associated with the sender execution
 			} catch (Throwable tr) {
