@@ -16,6 +16,7 @@
 package org.frankframework.collection;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import lombok.Getter;
@@ -46,12 +47,12 @@ public class Collection<C extends ICollector<P>, P> implements AutoCloseable, Na
 
 	public Collection(C collector) {
 		this.collector = collector;
-		this.parts = new ArrayList<>();
+		this.parts = Collections.synchronizedList(new ArrayList<>()); // Synchronized because of parallel execution.
 	}
 
 	public void add(Message input, PipeLineSession session, ParameterValueList pvl) throws CollectionException {
 		final P part = collector.createPart(input, session, pvl);
-		log.debug("collection [{}] adding part [{}]", this::toString, ()->part);
+		log.debug("collection [{}] adding part [{}]", this::toString, () -> part);
 
 		parts.add(part);
 	}

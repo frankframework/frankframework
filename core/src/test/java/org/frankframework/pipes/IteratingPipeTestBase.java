@@ -19,6 +19,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.senders.AbstractBlockEnabledSender;
+import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.senders.EchoSender;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MatchUtils;
@@ -80,7 +81,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	}
 
 	// Sender Class to find threading issues in parallel execution
-	protected class SlowRenderer extends EchoSender {
+	protected class SlowRenderer extends AbstractSenderWithParameters {
 		@Override
 		@SuppressWarnings("java:S2925")
 		public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
