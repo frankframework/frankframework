@@ -7,7 +7,7 @@
 			<listener className="org.frankframework.http.WebServiceListener" serviceNamespaceURI="urn:items"/>
 		</receiver>
 		<receiver>
-			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="soapvalidator/item" allowAllParams="false"/>
+			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="soapvalidator/item" allowedParameters="Status,ItemId,AttributeId"/>
 		</receiver>
 		<receiver>
 			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="soapvalidator/{subPath}/items/{subPath2}" operationId="UniqueIdSoapValidator" allowAllParams="false"/>
@@ -67,7 +67,7 @@
 			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-Json2XmlValidator" throwException="false" />
 		</receiver>
 		<receiver>
-			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="json2xmlvalidator/item" allowAllParams="false"/>
+			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="json2xmlvalidator/item" allowedParameters="Status,ItemId,AttributeId"/>
 		</receiver>
 		<receiver>
 			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="json2xmlvalidator/item/post" method="POST" allowAllParams="false"/>
