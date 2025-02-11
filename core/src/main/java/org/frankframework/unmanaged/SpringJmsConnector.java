@@ -86,7 +86,6 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	private CredentialFactory credentialFactory;
 	private CacheMode cacheMode;
 	private int acknowledgeMode;
-	private boolean sessionTransacted;
 	private String messageSelector;
 	private long receiveTimeout;
 
@@ -104,13 +103,12 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	@Override
 	public void configureEndpointConnection(final IPortConnectedListener<Message> jmsListener,
 			ConnectionFactory connectionFactory, CredentialFactory credentialFactory, Destination destination,
-			IbisExceptionListener exceptionListener, CacheMode cacheMode, int acknowledgeMode, boolean sessionTransacted,
+			IbisExceptionListener exceptionListener, CacheMode cacheMode, int acknowledgeMode,
 			String messageSelector, long receiveTimeout, long pollGuardInterval) throws ConfigurationException {
 		super.configureEndpointConnection(jmsListener, connectionFactory, destination, exceptionListener);
 		this.credentialFactory = credentialFactory;
 		this.cacheMode = cacheMode;
 		this.acknowledgeMode = acknowledgeMode;
-		this.sessionTransacted = sessionTransacted;
 		this.messageSelector = messageSelector;
 		this.receiveTimeout = receiveTimeout;
 		this.pollGuardInterval = pollGuardInterval;
@@ -142,7 +140,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		} else {
 			log.debug("{} setting no transaction manager", this::getLogPrefix);
 		}
-		jmsContainer.setSessionTransacted(sessionTransacted);
+
 		if (StringUtils.isNotEmpty(messageSelector)) {
 			jmsContainer.setMessageSelector(messageSelector);
 		}

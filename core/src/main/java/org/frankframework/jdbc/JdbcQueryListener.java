@@ -23,8 +23,6 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ProcessState;
 
 /**
-
-/**
  * Database Listener that operates on a table having at least a key and a status field.
  *
  * @since   4.7

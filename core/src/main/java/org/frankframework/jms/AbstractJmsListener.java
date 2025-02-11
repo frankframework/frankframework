@@ -193,7 +193,6 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 		return messageProperties;
 	}
 
-
 	/**
 	 * Extracts data from message obtained from {@link IPullingListener#getRawMessage(Map)}. May also extract
 	 * other parameters from the message and put those in the context.
@@ -220,11 +219,10 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 			return rawReply;
 		}
 		Message replyMessage;
-		if (soapHeader == null) {
-			if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
+		if (soapHeader == null && StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
 				soapHeader = (String) threadContext.get(getSoapHeaderSessionKey());
 			}
-		}
+
 		try {
 			replyMessage = soapWrapper.putInEnvelope(rawReply, getReplyEncodingStyleURI(), getReplyNamespaceURI(), soapHeader);
 		} catch (IOException e) {
@@ -300,30 +298,17 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 
 		// handle commit/rollback or acknowledge
 		try {
-			if (plr != null && !isTransacted()) {
-				if (isJmsTransacted()) {
-					Session queueSession = (Session) session.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
-					if (queueSession == null) {
-						log.error("{}session is null, cannot commit or roll back session", getLogPrefix());
-					} else {
-						if (plr.getState() != ExitState.SUCCESS) {
-							log.warn("{}got exit state [{}], rolling back session", getLogPrefix(), plr.getState());
-							queueSession.rollback();
-						} else {
-							queueSession.commit();
-						}
-					}
+			if (plr != null && !isTransacted()
+					&& rawMessageWrapper.getRawMessage() != null
+					&& getAcknowledgeMode() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
+				if (plr.getState() != ExitState.ERROR) { // SUCCESS and REJECTED will both be acknowledged
+					log.debug("{}acknowledging message", getLogPrefix());
+					rawMessageWrapper.getRawMessage().acknowledge();
 				} else {
-					if (rawMessageWrapper.getRawMessage() != null && getAcknowledgeMode() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
-						if (plr.getState() != ExitState.ERROR) { // SUCCESS and REJECTED will both be acknowledged
-							log.debug("{}acknowledging message", getLogPrefix());
-							rawMessageWrapper.getRawMessage().acknowledge();
-						} else {
-							log.warn("{}got exit state [{}], skipping acknowledge", getLogPrefix(), plr.getState());
-						}
-					}
+					log.warn("{}got exit state [{}], skipping acknowledge", getLogPrefix(), plr.getState());
 				}
 			}
+
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}
@@ -331,7 +316,7 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 
 	@Override
 	public boolean messageWillBeRedeliveredOnExitStateError() {
-		return isTransacted() || isJmsTransacted() || getAcknowledgeMode() == AcknowledgeMode.CLIENT_ACKNOWLEDGE;
+		return isTransacted() || getAcknowledgeMode() == AcknowledgeMode.CLIENT_ACKNOWLEDGE;
 	}
 
 	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, PipeLineSession pipeLineSession, Map<String, Object> properties) throws ListenerException, JMSException, IOException, SenderException {
