@@ -7,7 +7,11 @@
       <div class="ibox float-e-margins">
         <div class="ibox-title">
           @if (viewFile) {
-            <div class="pull-right">
+            <div class="pull-right action-buttons">
+              <button (click)="popout(path)" class="btn btn-xs" type="button">
+                <i class="fa fa-arrow-circle-right" aria-hidden="true"></i>
+                <span> Pop Out</span>
+              </button>
               <button (click)="closeFile()" class="btn btn-xs pull-right" type="button" data-cy="logging__back-button">
                 <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
                 <span> Back</span>
@@ -81,6 +85,10 @@
                           <button (click)="download(file)" class="btn btn-xs pull-right" type="button">
                             <i class="fa fa-arrow-circle-o-down" aria-hidden="true"></i>
                             <span> Download</span>
+                          </button>
+                          <button (click)="popout(file)" class="btn btn-xs pull-right" type="button">
+                            <i class="fa fa-arrow-circle-right" aria-hidden="true"></i>
+                            <span> Pop Out</span>
                           </button>
                         </td>
                       }

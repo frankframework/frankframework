@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { AppService, ServerErrorResponse } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
@@ -108,8 +108,12 @@ export class LoggingComponent implements OnInit {
 
   download(file: LoggingFile): void {
     const contentType = 'application/octet-stream'; // always download instead of possibly display in new tab
-    const url = `${this.appService.absoluteApiPath}file-viewer?file=${this.miscService.escapeURL(file.path)}&accept=${contentType}`;
-    window.open(url, '_blank');
+    this.openFileNewTab(file, contentType);
+  }
+
+  popout(file: LoggingFile | string): void {
+    const contentType = 'text/plain';
+    this.openFileNewTab(file, contentType);
   }
 
   open(file: LoggingFile): void {
@@ -155,5 +159,11 @@ export class LoggingComponent implements OnInit {
 
   onSort(event: SortEvent): void {
     this.sortedlist = basicTableSort(this.originalList, this.headers, event);
+  }
+
+  private openFileNewTab(file: LoggingFile | string, contentType: string): void {
+    const filePath = typeof file === 'string' ? file : file.path;
+    const url = `${this.appService.absoluteApiPath}file-viewer?file=${this.miscService.escapeURL(filePath)}&accept=${contentType}`;
+    window.open(url, '_blank');
   }
 }
