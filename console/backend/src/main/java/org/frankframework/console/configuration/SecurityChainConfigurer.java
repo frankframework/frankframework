@@ -118,10 +118,16 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 	}
 
 	@Bean
-	public SecurityFilterChain createConsoleSecurityChain(HttpSecurity http) throws Exception {
+	public IAuthenticator createAuthenticator() {
 		String properyPrefix = "application.security.console.authentication.";
 		IAuthenticator authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, properyPrefix);
+
 		APPLICATION_LOG.info("Securing Frank!Framework Console using {}", ClassUtils.classNameOf(authenticator));
+		return authenticator;
+	}
+
+	@Bean
+	public SecurityFilterChain createConsoleSecurityChain(HttpSecurity http, IAuthenticator authenticator) throws Exception {
 
 		authenticator.registerServlet(applicationContext.getBean("backendServletBean", ServletRegistration.class).getServletConfiguration());
 		authenticator.registerServlet(applicationContext.getBean("frontendServletBean", ServletRegistration.class).getServletConfiguration());

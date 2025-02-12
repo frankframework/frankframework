@@ -18,23 +18,32 @@ package org.frankframework.console.configuration;
 import java.util.List;
 import java.util.Map;
 
-import org.frankframework.lifecycle.servlets.ServletConfiguration;
-import org.frankframework.util.SpringUtils;
+import jakarta.servlet.HttpConstraintElement;
+import jakarta.servlet.ServletRegistration.Dynamic;
+import jakarta.servlet.ServletSecurityElement;
+import jakarta.servlet.http.HttpServlet;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-import jakarta.servlet.http.HttpServlet;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
+import org.frankframework.lifecycle.servlets.IAuthenticator;
+import org.frankframework.lifecycle.servlets.JeeAuthenticator;
+import org.frankframework.lifecycle.servlets.ServletConfiguration;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.SpringUtils;
 
 @Log4j2
 public class ServletRegistration<T extends HttpServlet> extends ServletRegistrationBean<T> implements ApplicationContextAware, InitializingBean {
 	private @Setter ApplicationContext applicationContext;
 	private final @Getter ServletConfiguration servletConfiguration;
 	private final Class<T> servletClass;
+	private @Setter @Autowired IAuthenticator authenticator;
 
 	public ServletRegistration(Class<T> servletClass, ServletConfiguration config) {
 		this.servletClass = servletClass;
@@ -58,7 +67,21 @@ public class ServletRegistration<T extends HttpServlet> extends ServletRegistrat
 		setLoadOnStartup(servletConfiguration.getLoadOnStartup());
 		super.setServlet(servlet);
 
-		log.info("created servlet {} endpoint {}", this::getServletName, this::getUrlMappings);
+		log.info("created servlet {} with endpoint {} using authenticator {}", this::getServletName, this::getUrlMappings, () -> ClassUtils.classNameOf(authenticator));
+	}
+
+	@Override
+	protected void configure(Dynamic registration) {
+		if(authenticator instanceof JeeAuthenticator) {
+			registration.setServletSecurity(getServletSecurity());
+		}
+		super.configure(registration);
+	}
+
+	private ServletSecurityElement getServletSecurity() {
+		String[] roles = servletConfiguration.getSecurityRoles().toArray(new String[0]);
+		HttpConstraintElement httpConstraintElement = new HttpConstraintElement(servletConfiguration.getTransportGuarantee(), roles);
+		return new ServletSecurityElement(httpConstraintElement);
 	}
 
 	private void addUrlMappings(List<String> urlMapping) {
