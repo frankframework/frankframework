@@ -748,8 +748,8 @@
   <xs:complexType name="MonitoringType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="DestinationElementGroup" minOccurs="0" maxOccurs="unbounded" />
         <xs:element name="Monitor" minOccurs="0" maxOccurs="unbounded" type="MonitorType" />
+        <xs:group ref="DestinationElementGroup" minOccurs="0" maxOccurs="unbounded" />
       </xs:choice>
     </xs:sequence>
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.MonitorManager" use="prohibited" />
@@ -764,7 +764,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attribute name="destinations" type="xs:string" />
-    <xs:attribute name="name" type="xs:string">
+    <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>The functional name of the object.</xs:documentation>
       </xs:annotation>
@@ -835,6 +835,19 @@
   </xs:group>
   <xs:group name="ParamElementGroup">
     <xs:choice>
+      <xs:element name="Param">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:group ref="ParamElementGroup" />
+            </xs:choice>
+          </xs:sequence>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="param" />
+          <xs:attribute name="className" type="xs:string" default="org.frankframework.parameters.Parameter" />
+          <xs:anyAttribute processContents="skip" />
+        </xs:complexType>
+      </xs:element>
       <xs:group ref="ParamElementGroupBase" />
     </xs:choice>
   </xs:group>
@@ -863,16 +876,6 @@
           <xs:complexContent>
             <xs:extension base="NumberParameterType">
               <xs:attribute name="elementRole" type="xs:string" fixed="param" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="Param">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="ParameterType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="param" />
-              <xs:anyAttribute processContents="skip" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
@@ -1113,29 +1116,6 @@
     <xs:attributeGroup ref="NumberParameterDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractParameterDeclaredAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="ParameterType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractParameterDeclaredChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="ParameterCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.parameters.Parameter" />
-  </xs:complexType>
-  <xs:attributeGroup name="ParameterDeclaredAttributeGroup">
-    <xs:attribute name="type">
-      <xs:annotation>
-        <xs:documentation>The target data type of the parameter, related to the database or XSLT stylesheet to which the parameter is applied. Default: STRING</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="ParameterTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="ParameterCumulativeAttributeGroup">
-    <xs:attributeGroup ref="ParameterDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractParameterDeclaredAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="XmlParameterType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -1265,7 +1245,7 @@
   <xs:attributeGroup name="AbstractCacheAdapterDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
-        <xs:documentation>name of the cache, will be lowercased Default: &lt;code&gt;&amp;lt;ownerName&amp;gt;&lt;/code&gt;_cache</xs:documentation>
+        <xs:documentation>Name of the cache, will be lowercased Default: &lt;code&gt;&amp;lt;ownerName&amp;gt;&lt;/code&gt;_cache</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keyXPath" type="xs:string">
@@ -1430,15 +1410,6 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="ExchangeFolderSenderType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="FileSender">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="FileSenderType">
               <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
             </xs:extension>
           </xs:complexContent>
@@ -1660,15 +1631,6 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
-      <xs:element name="MultipartHttpSender">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="MultipartHttpSenderType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="NetStorageSender">
         <xs:complexType>
           <xs:complexContent>
@@ -1705,15 +1667,6 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
-      <xs:element name="RestSender">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="RestSenderType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="ResultSet2FileSender">
         <xs:complexType>
           <xs:complexContent>
@@ -1745,15 +1698,6 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="SapSenderType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="SchedulerSender">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="SchedulerSenderType">
               <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
             </xs:extension>
           </xs:complexContent>
@@ -2196,7 +2140,6 @@
     <xs:attribute ref="subscriberType" />
     <xs:attribute ref="queueConnectionFactoryName" />
     <xs:attribute ref="topicConnectionFactoryName" />
-    <xs:attribute ref="jmsTransacted" />
     <xs:attribute name="transacted" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>Controls whether messages are send under transaction control.
@@ -2670,7 +2613,6 @@
  For querytype 'select': key of session variable that contains the OutputStream, Writer or Filename to write the CLOB to</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="closeInputstreamOnExit" />
     <xs:attribute ref="closeOutputstreamOnExit" />
     <xs:attribute ref="streamCharset" />
     <xs:attribute name="avoidLocking" type="frankBoolean">
@@ -2953,127 +2895,6 @@
     <xs:attributeGroup ref="ExchangeFileSystemSenderCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.ExchangeFolderSender" />
   </xs:complexType>
-  <xs:complexType name="FileSenderType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="FileSenderDeclaredChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="FileSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.FileSender" />
-  </xs:complexType>
-  <xs:group name="FileSenderDeclaredChildGroup">
-    <xs:sequence>
-      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
-    </xs:sequence>
-  </xs:group>
-  <xs:attributeGroup name="FileSenderDeclaredAttributeGroup">
-    <xs:attribute name="name" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>The functional name of the object.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="FileSenderCumulativeAttributeGroup">
-    <xs:attributeGroup ref="FileSenderDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FileHandlerDeclaredAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:complexType name="FileHandlerType">
-    <xs:attributeGroup ref="FileHandlerDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.util.FileHandler" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="FileHandlerDeclaredAttributeGroup">
-    <xs:attribute name="charset" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>the charset to be used when transforming a string to a byte array and/or the other way around Default: the value of the system property file.encoding</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="outputType" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>either &lt;code&gt;string&lt;/code&gt;, &lt;code&gt;bytes&lt;/code&gt;, &lt;code&gt;stream&lt;/code&gt; or &lt;code&gt;base64&lt;/code&gt; Default: string</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="fileSource" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>either &lt;code&gt;filesystem&lt;/code&gt; or &lt;code&gt;classpath&lt;/code&gt; (classpath will only work for actions 'read' and 'info' and for 'info' only when resources are available as a file (i.e. doesn't work for resources in jar files and war files which are deployed without being extracted by the application server)) Default: filesystem</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="actions" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Sets actions the pipe has to perform. Possible action values:
- &lt;ul&gt;
-   &lt;li&gt;write: create a new file and write input to it&lt;/li&gt;
-   &lt;li&gt;write_append: create a new file if it does not exist, otherwise append to existing file; then write input to it&lt;/li&gt;
-   &lt;li&gt;create: create a new file, but do not write anything to it&lt;/li&gt;
-   &lt;li&gt;read: read from file&lt;/li&gt;
-   &lt;li&gt;delete: delete the file&lt;/li&gt;
-   &lt;li&gt;read_delete: read the contents, then delete (when outputType is stream the file is deleted after the stream is read)&lt;/li&gt;
-   &lt;li&gt;encode: encode base64&lt;/li&gt; &lt;li&gt;decode: decode base64&lt;/li&gt;
-   &lt;li&gt;list: returns the files and directories in the directory that satisfy the specified filter (see Dir2Xml). If a directory is not specified, the fileName is expected to include the directory&lt;/li&gt;
-   &lt;li&gt;info: returns information about the file&lt;/li&gt;
- &lt;/ul&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="directory" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Sets the directory in which the file resides or has to be created</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="writeSuffix" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Sets suffix of the file that is written (only used if filename and filenamesession are not set)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="fileName" type="xs:string" />
-    <xs:attribute name="filename" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Sets filename of the file that is written</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="fileNameSessionKey" type="xs:string" />
-    <xs:attribute name="filenameSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Sets filenameSessionKey the session key that contains the name of the file to be created (only used if filename is not set)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="testExists" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>test if the specified directory exists at configure() Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="createDirectory" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>when set to &lt;code&gt;true&lt;/code&gt;, the directory to read from or write to is created if it does not exist Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="writeLineSeparator" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>when set to &lt;code&gt;true&lt;/code&gt;, a line separator is written after the content is written Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="testCanWrite" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>when set to &lt;code&gt;true&lt;/code&gt;, a test is performed to find out if a temporary file can be created and deleted in the specified directory (only used if directory is set and combined with the action write, write_append or create) Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="skipBOM" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>when set to &lt;code&gt;true&lt;/code&gt;, a possible bytes order mark (bom) at the start of the file is skipped (only used for the action read and encoding uft-8) Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="deleteEmptyDirectory" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>(only used when actions=delete) when set to &lt;code&gt;true&lt;/code&gt;, the directory from which a file is deleted is also deleted when it contains no other files Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="streamResultToServlet" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>(only used when outputtype=stream) if set, the result is streamed to the httpservletresponse object Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:attributeGroup>
   <xs:complexType name="FileSystemSenderWithAttachmentsType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -3381,11 +3202,6 @@
       <xs:simpleType>
         <xs:union memberTypes="HttpEntityTypeAttributeValuesType variableRef" />
       </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="paramsInUrl" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If false and &lt;code&gt;methodType&lt;/code&gt;=&lt;code&gt;POST&lt;/code&gt;, request parameters are put in the request body instead of in the url Default: true</xs:documentation>
-      </xs:annotation>
     </xs:attribute>
     <xs:attribute name="firstBodyPartName" type="xs:string">
       <xs:annotation>
@@ -4078,11 +3894,6 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="JsonXsltSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="JsonXsltSenderDeclaredAttributeGroup" />
-    <xs:attribute name="streamingXslt" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If true, then this sender will process the XSLT while streaming in a different thread. Can be used to switch streaming off for debugging purposes Default: set by appconstant xslt.streaming.default</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="styleSheetName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
@@ -4160,11 +3971,6 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.XsltSender" />
   </xs:complexType>
   <xs:attributeGroup name="XsltSenderDeclaredAttributeGroup">
-    <xs:attribute name="streamingXslt" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If true, then this sender will process the XSLT while streaming in a different thread. Can be used to switch streaming off for debugging purposes Default: set by appconstant xslt.streaming.default</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="styleSheetName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
@@ -4515,7 +4321,6 @@
     <xs:attribute ref="typeField" />
     <xs:attribute ref="hostField" />
     <xs:attribute ref="sequenceName" />
-    <xs:attribute ref="checkIfTableExists" />
     <xs:attribute ref="checkTable" />
     <xs:attribute ref="createTable" />
     <xs:attribute ref="messageFieldType" />
@@ -4551,7 +4356,6 @@
     <xs:attribute ref="typeField" />
     <xs:attribute ref="hostField" />
     <xs:attribute ref="sequenceName" />
-    <xs:attribute ref="checkIfTableExists" />
     <xs:attribute ref="checkTable" />
     <xs:attribute ref="createTable" />
     <xs:attribute ref="messageFieldType" />
@@ -4831,15 +4635,6 @@
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
-  <xs:complexType name="MultipartHttpSenderType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractHttpSenderDeclaredChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="HttpSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.MultipartHttpSender" />
-  </xs:complexType>
   <xs:complexType name="NetStorageSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -5068,15 +4863,6 @@
     <xs:attributeGroup ref="ReloadSenderDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractSenderDeclaredAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="RestSenderType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractHttpSenderDeclaredChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="HttpSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.RestSender" />
-  </xs:complexType>
   <xs:complexType name="ResultSet2FileSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -5266,41 +5052,6 @@
   <xs:attributeGroup name="SapSenderImplCumulativeAttributeGroup">
     <xs:attributeGroup ref="SapSenderImplDeclaredAttributeGroup" />
     <xs:attributeGroup ref="SapSenderBaseCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:complexType name="SchedulerSenderType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="SchedulerSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.SchedulerSender" />
-  </xs:complexType>
-  <xs:attributeGroup name="SchedulerSenderDeclaredAttributeGroup">
-    <xs:attribute name="cronExpressionPattern" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>expression that generates the cron trigger</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="jobGroup" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>job group in which the new trigger is to be created (optional)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="jobNamePattern" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>pattern that leads to the name of the registered trigger(optional)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="javaListener" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>java listener to be called when scheduler trigger fires</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="SchedulerSenderCumulativeAttributeGroup">
-    <xs:attributeGroup ref="SchedulerSenderDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractSenderDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="SendGridSenderType">
     <xs:sequence>
@@ -5698,7 +5449,6 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="synchronous" />
-    <xs:attribute ref="closeInputstreamOnExit" />
     <xs:attribute ref="closeOutputstreamOnExit" />
     <xs:attribute ref="streamCharset" />
     <xs:attribute ref="prettyPrint" />
@@ -5782,8 +5532,6 @@
         <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, messages sent are put in a soap envelope and the soap envelope is removed from received messages (soap envelope will not be visible to the pipeline) Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="soapActionURI" type="xs:string" />
-    <xs:attribute name="soapActionURIParam" type="xs:string" />
     <xs:attribute name="soapAction" type="xs:string">
       <xs:annotation>
         <xs:documentation>the soapactionuri to be set in the requestheader</xs:documentation>
@@ -5794,7 +5542,6 @@
         <xs:documentation>parameter to obtain the soapactionuri</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="encodingStyleURI" type="xs:string" />
     <xs:attribute name="encodingStyle" type="xs:string">
       <xs:annotation>
         <xs:documentation>the encodingstyle to be set in the messageheader</xs:documentation>
@@ -5805,13 +5552,11 @@
         <xs:documentation>controls whether soap faults generated by the application generate an exception, or are treated as 'normal' messages Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="serviceNamespaceURI" type="xs:string" />
     <xs:attribute name="serviceNamespace" type="xs:string">
       <xs:annotation>
         <xs:documentation>the namespace of the message sent. identifies the service to be called. may be overriden by an actual namespace setting in the message to be sent</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="serviceNamespaceURIParam" type="xs:string" />
     <xs:attribute name="serviceNamespaceParam" type="xs:string">
       <xs:annotation>
         <xs:documentation>parameter to obtain the servicenamespace</xs:documentation>
@@ -6502,7 +6247,12 @@
     </xs:attribute>
     <xs:attribute name="uriPattern" type="xs:string" use="required">
       <xs:annotation>
-        <xs:documentation>URI pattern to register this listener on, eq. &lt;code&gt;/my-listener/{something}/here&lt;/code&gt;</xs:documentation>
+        <xs:documentation>URI pattern to register this listener on, eq. &lt;code&gt;/my-listener/{something}/here&lt;/code&gt;.
+ &lt;br/&gt;
+ Pattern variables like &lt;code&gt;{something}&lt;/code&gt; in this example are added to the PipeLineSession with
+ their actual value in the request URI.
+ &lt;br/&gt;
+ Pattern variables are not allowed to have the same name as any of the #RESERVED_NAMES.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="consumes">
@@ -6548,7 +6298,10 @@
     </xs:attribute>
     <xs:attribute name="multipartBodyName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Specify the form-part you wish to enter the pipeline Default: name of the first form-part</xs:documentation>
+        <xs:documentation>Specify the form-part you wish to enter the pipeline.
+ &lt;br/&gt;
+ The &lt;code&gt;multipartBodyName&lt;/code&gt; or the names of any other multipart
+ fields may not be one of the #RESERVED_NAMES. Default: name of the first form-part</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="messageIdHeader" type="xs:string">
@@ -6574,6 +6327,37 @@
     <xs:attribute name="contentDispositionHeaderSessionKey" type="xs:string">
       <xs:annotation>
         <xs:documentation>Session key that provides the &lt;code&gt;Content-Disposition&lt;/code&gt; header in the response</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowedParameters" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Whitelist of request parameters (Query and POST Parameters) that are allowed to be
+ copied into the session.
+ &lt;br/&gt;
+ Entered as a comma-separated value.
+ &lt;br/&gt;
+ If the list contains any names that are in #RESERVED_NAMES, these will be removed from the list.
+ &lt;br/&gt;
+ If left empty, then all HTTP parameters are copied into the session, which can pose
+ a security risk and is therefore discouraged. The risk is that parameters could be sent,
+ that overwrite system session variables.
+ &lt;br/&gt;
+ This only works as a backwards-compatibility feature and can be switched off setting #setAllowAllParams(boolean) to &lt;code&gt;false&lt;/code&gt;.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowAllParams" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>For backwards compatibility with configurations that have not yet been updated, by
+ default all parameters are allowed until removal of this flag.
+ Copying all POST and query parameters to the session is considered a security risk,
+ so this should not be left enabled.
+ &lt;br/&gt;
+ Even so, names listed in #RESERVED_NAMES will never be copied from the HTTP parameters to the session.
+ &lt;br/&gt;
+ When setting #setAllowedParameters(String), this value is ignored. This value is only
+ used when the allowed parameter list has not been set, or set empty.
+ &lt;br/&gt;
+ For backwards compatibility, this is &lt;code&gt;true&lt;/code&gt; by default. Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="requiredIssuer" type="xs:string">
@@ -6772,7 +6556,6 @@
     <xs:attribute ref="subscriberType" />
     <xs:attribute ref="queueConnectionFactoryName" />
     <xs:attribute ref="topicConnectionFactoryName" />
-    <xs:attribute ref="jmsTransacted" />
     <xs:attribute name="transacted" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>Controls whether messages are send under transaction control.
@@ -7004,7 +6787,6 @@
     <xs:attribute ref="subscriberType" />
     <xs:attribute ref="queueConnectionFactoryName" />
     <xs:attribute ref="topicConnectionFactoryName" />
-    <xs:attribute ref="jmsTransacted" />
     <xs:attribute name="transacted" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>Controls whether messages are send under transaction control.
@@ -7502,13 +7284,6 @@
     <xs:attribute name="serviceName" type="xs:string">
       <xs:annotation>
         <xs:documentation>External Name of the listener. An IbisJavaSender refers to this name in its &lt;code&gt;serviceName&lt;/code&gt;-attribute.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="local" type="xs:string" />
-    <xs:attribute name="isolated" type="frankBoolean" />
-    <xs:attribute name="synchronous" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;false&lt;/code&gt;, the request is executed asynchronously. N.B. be aware that there is no limit on the number of threads generated Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="returnedSessionKeys" type="xs:string">
@@ -8495,11 +8270,6 @@
   </xs:group>
   <xs:group name="ErrorMessageFormatterElementGroup">
     <xs:choice>
-      <xs:group ref="ErrorMessageFormatterElementGroupBase" />
-    </xs:choice>
-  </xs:group>
-  <xs:group name="ErrorMessageFormatterElementGroupBase">
-    <xs:choice>
       <xs:element name="ErrorMessageFormatter">
         <xs:complexType>
           <xs:sequence>
@@ -8513,6 +8283,11 @@
           <xs:anyAttribute processContents="skip" />
         </xs:complexType>
       </xs:element>
+      <xs:group ref="ErrorMessageFormatterElementGroupBase" />
+    </xs:choice>
+  </xs:group>
+  <xs:group name="ErrorMessageFormatterElementGroupBase">
+    <xs:choice>
       <xs:element name="FixedErrorMessageFormatter">
         <xs:complexType>
           <xs:complexContent>
@@ -8551,11 +8326,6 @@
       </xs:element>
     </xs:choice>
   </xs:group>
-  <xs:complexType name="ErrorMessageFormatterType">
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.ErrorMessageFormatter" />
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:complexType>
   <xs:complexType name="FixedErrorMessageFormatterType">
     <xs:attributeGroup ref="FixedErrorMessageFormatterDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.FixedErrorMessageFormatter" />
@@ -10502,6 +10272,19 @@
   </xs:group>
   <xs:group name="ManagerElementGroup">
     <xs:choice>
+      <xs:element name="Manager">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="Flow" type="FlowType" />
+            </xs:choice>
+          </xs:sequence>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="manager" />
+          <xs:attribute name="className" type="xs:string" default="org.frankframework.batch.RecordHandlerManager" />
+          <xs:anyAttribute processContents="skip" />
+        </xs:complexType>
+      </xs:element>
       <xs:group ref="ManagerElementGroupBase" />
     </xs:choice>
   </xs:group>
@@ -10523,19 +10306,6 @@
               <xs:attribute name="elementRole" type="xs:string" fixed="manager" />
             </xs:extension>
           </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="Manager">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="Flow" type="FlowType" />
-            </xs:choice>
-          </xs:sequence>
-          <xs:attribute ref="active" />
-          <xs:attribute name="elementRole" type="xs:string" fixed="manager" />
-          <xs:attribute name="className" type="xs:string" default="org.frankframework.batch.RecordHandlerManager" />
-          <xs:anyAttribute processContents="skip" />
         </xs:complexType>
       </xs:element>
     </xs:choice>
@@ -11023,15 +10793,6 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="ExceptionPipeType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="FilePipe">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="FilePipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
             </xs:extension>
           </xs:complexContent>
@@ -12904,36 +12665,6 @@
     <xs:attributeGroup ref="ExceptionPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="FilePipeType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractPipeDeclaredChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="FilePipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.FilePipe" />
-  </xs:complexType>
-  <xs:attributeGroup name="FilePipeDeclaredAttributeGroup">
-    <xs:attribute name="charset" type="xs:string" />
-    <xs:attribute name="outputType" type="xs:string" />
-    <xs:attribute name="actions" type="xs:string" />
-    <xs:attribute name="fileSource" type="xs:string" />
-    <xs:attribute name="directory" type="xs:string" />
-    <xs:attribute name="writeSuffix" type="xs:string" />
-    <xs:attribute name="filename" type="xs:string" />
-    <xs:attribute name="filenameSessionKey" type="xs:string" />
-    <xs:attribute name="createDirectory" type="frankBoolean" />
-    <xs:attribute name="writeLineSeparator" type="frankBoolean" />
-    <xs:attribute name="testExists" type="frankBoolean" />
-    <xs:attribute name="testCanWrite" type="frankBoolean" />
-    <xs:attribute name="skipBOM" type="frankBoolean" />
-    <xs:attribute name="deleteEmptyDirectory" type="frankBoolean" />
-    <xs:attribute name="streamResultToServlet" type="frankBoolean" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="FilePipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="FilePipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="FixedResultPipeType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -13370,11 +13101,6 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="JsonXsltPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="JsonXsltPipeDeclaredAttributeGroup" />
-    <xs:attribute name="streamingXslt" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If true, then this pipe will process the XSLT while streaming in a different thread. Can be used to switch streaming xslt off for debugging purposes Default: set by appconstant xslt.streaming.default</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="styleSheetName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
@@ -13451,11 +13177,6 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XsltPipe" />
   </xs:complexType>
   <xs:attributeGroup name="XsltPipeDeclaredAttributeGroup">
-    <xs:attribute name="streamingXslt" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If true, then this pipe will process the XSLT while streaming in a different thread. Can be used to switch streaming xslt off for debugging purposes Default: set by appconstant xslt.streaming.default</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="styleSheetName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
@@ -15307,6 +15028,20 @@
   </xs:attributeGroup>
   <xs:group name="JobElementGroup">
     <xs:choice>
+      <xs:element name="Job">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="DirectoryCleaner" type="DirectoryCleanerType" />
+              <xs:element name="Locker" type="LockerType" />
+            </xs:choice>
+          </xs:sequence>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="job" />
+          <xs:attribute name="className" type="xs:string" default="org.frankframework.scheduler.job.Job" />
+          <xs:anyAttribute processContents="skip" />
+        </xs:complexType>
+      </xs:element>
       <xs:group ref="JobElementGroupBase" />
     </xs:choice>
   </xs:group>
@@ -15362,16 +15097,6 @@
           <xs:complexContent>
             <xs:extension base="IbisActionJobType">
               <xs:attribute name="elementRole" type="xs:string" fixed="job" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="Job">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="JobType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="job" />
-              <xs:anyAttribute processContents="skip" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
@@ -15577,26 +15302,6 @@
     <xs:attributeGroup ref="ActionJobCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.job.IbisActionJob" />
   </xs:complexType>
-  <xs:complexType name="JobType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractJobDefDeclaredChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="JobCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.job.Job" />
-  </xs:complexType>
-  <xs:attributeGroup name="JobDeclaredAttributeGroup">
-    <xs:attribute name="function" use="required">
-      <xs:simpleType>
-        <xs:union memberTypes="JobDefFunctionsAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="JobCumulativeAttributeGroup">
-    <xs:attributeGroup ref="JobDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractJobDefCumulativeAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="LoadDatabaseSchedulesJobType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -15642,230 +15347,36 @@
   </xs:attributeGroup>
   <xs:group name="SapSystemElementGroup">
     <xs:choice>
+      <xs:element name="SapSystem">
+        <xs:complexType>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="sapSystem" />
+          <xs:attribute name="className" type="xs:string" default="org.frankframework.extensions.sap.SapSystem" />
+          <xs:anyAttribute processContents="skip" />
+        </xs:complexType>
+      </xs:element>
       <xs:group ref="SapSystemElementGroupBase" />
     </xs:choice>
   </xs:group>
   <xs:group name="SapSystemElementGroupBase">
-    <xs:choice>
-      <xs:element name="SapSystem">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="SapSystemType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="sapSystem" />
-              <xs:anyAttribute processContents="skip" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-    </xs:choice>
+    <xs:choice />
   </xs:group>
-  <xs:complexType name="SapSystemType">
-    <xs:attributeGroup ref="SapSystemImplCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.sap.SapSystem" />
-  </xs:complexType>
-  <xs:attributeGroup name="SapSystemImplDeclaredAttributeGroup">
-    <xs:attribute name="host" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Default value for ashost, gwhost and mshost (i.e. when ashost, gwhost and mshost are all the same, only host needs to be specified)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="ashost" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>SAP application server</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="systemnr" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>SAP system nr Default: 00</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="group" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Group of SAP application servers, when specified logon group will be used and r3name and mshost need to be specified instead of ashost</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="r3name" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>System ID of the SAP system</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="mshost" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>SAP message server</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="msservOffset" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Number added to systemNr to find corresponding message server port Default: 3600</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="gwhost" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Gateway host</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="gwservOffset" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Number added to systemNr to find corresponding gateway port Default: 3300</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="mandant" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Mandant i.e. 'destination' Default: 100</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="authAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Alias to obtain userid and password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="userid" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Userid used in the connection</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="passwd" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Passwd used in the connection</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="language" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Language indicator Default: NL</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="unicode" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; the SAP system is interpreted as Unicode SAP system, otherwise as non-Unicode (only applies to SapListeners, not to SapSenders) Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="maxConnections" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Maximum number of connections that may connect simultaneously to the SAP system Default: 10</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="traceLevel" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Trace level (effective only when logging level is debug). 0=none, 10= maximum Default: 0</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="sncEnabled" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Enable or disable SNC Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="sncLibrary" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Path where the SNC library has been installed</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="sncQop" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>SNC Quality of Protection. 1: Authentication only, 2: Authentication and integrity protection, 3: Authentication, integrity and privacy protection (encryption), 8: Global default configuration, 9: Maximum protection Default: 8</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="myName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Own SNC name of the caller. For example: p:CN=MyUserID, O=ACompany, C=EN</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="partnerName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>SNC name of the communication partner server. For example: p:CN=SID, O=ACompany, C=EN</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="sncAuthMethod" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>When using SNC, this specifies if SNC should authenticate via SSO or a username/password combination. 1=SSO, 0=username/password Default: 0</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="sncSSO2" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Use SAP Cookie Version 2 as logon ticket for SSO based authentication Default: 1</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="serviceOffset" type="frankInt" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="SapSystemImplCumulativeAttributeGroup">
-    <xs:attributeGroup ref="SapSystemImplDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="SapSystemListItemDeclaredAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="SapSystemListItemDeclaredAttributeGroup">
-    <xs:attribute name="name" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>The name under which the item can be retrieved.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="aliasFor" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>If this attribute is set, the item is only an alias for another item.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:attributeGroup>
-  <xs:group name="DestinationElementGroup">
-    <xs:choice>
-      <xs:group ref="DestinationElementGroupBase" />
-    </xs:choice>
-  </xs:group>
-  <xs:group name="DestinationElementGroupBase">
-    <xs:choice>
-      <xs:element name="Destination">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="MonitorDestinationType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="destination" />
-              <xs:anyAttribute processContents="skip" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="SenderMonitorAdapterDestination">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="SenderMonitorAdapterType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="destination" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-    </xs:choice>
-  </xs:group>
-  <xs:complexType name="MonitorDestinationType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="MonitorDestinationDeclaredChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="AbstractMonitorDestinationDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.MonitorDestination" />
-  </xs:complexType>
-  <xs:group name="MonitorDestinationDeclaredChildGroup">
-    <xs:sequence>
-      <xs:group ref="SenderElementGroup" minOccurs="0" maxOccurs="1" />
-    </xs:sequence>
-  </xs:group>
-  <xs:attributeGroup name="AbstractMonitorDestinationDeclaredAttributeGroup">
-    <xs:attribute name="name" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>The functional name of the object.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:attributeGroup>
-  <xs:complexType name="SenderMonitorAdapterType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="MonitorDestinationDeclaredChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="AbstractMonitorDestinationDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.SenderMonitorAdapter" />
-  </xs:complexType>
   <xs:group name="TriggerElementGroup">
     <xs:choice>
+      <xs:element name="Trigger">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="Adapterfilter" type="AdapterfilterType" />
+              <xs:element name="Event" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+            </xs:choice>
+          </xs:sequence>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="trigger" />
+          <xs:attribute name="className" type="xs:string" default="org.frankframework.monitoring.Trigger" />
+          <xs:anyAttribute processContents="skip" />
+        </xs:complexType>
+      </xs:element>
       <xs:group ref="TriggerElementGroupBase" />
     </xs:choice>
   </xs:group>
@@ -15885,16 +15396,6 @@
           <xs:complexContent>
             <xs:extension base="ClearingType">
               <xs:attribute name="elementRole" type="xs:string" fixed="trigger" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="Trigger">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="TriggerType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="trigger" />
-              <xs:anyAttribute processContents="skip" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
@@ -15964,6 +15465,69 @@
     <xs:attributeGroup ref="TriggerDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.Clearing" />
   </xs:complexType>
+  <xs:group name="DestinationElementGroup">
+    <xs:choice>
+      <xs:element name="Destination">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:group ref="SenderElementGroup" />
+            </xs:choice>
+          </xs:sequence>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="destination" />
+          <xs:attribute name="className" type="xs:string" default="org.frankframework.monitoring.MonitorDestination" />
+          <xs:anyAttribute processContents="skip" />
+        </xs:complexType>
+      </xs:element>
+      <xs:group ref="DestinationElementGroupBase" />
+    </xs:choice>
+  </xs:group>
+  <xs:group name="DestinationElementGroupBase">
+    <xs:choice>
+      <xs:element name="SenderMonitorAdapterDestination">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="SenderMonitorAdapterType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="destination" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:complexType name="SenderMonitorAdapterType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="MonitorDestinationDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="AbstractMonitorDestinationDeclaredAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.SenderMonitorAdapter" />
+  </xs:complexType>
+  <xs:complexType name="MonitorDestinationType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="MonitorDestinationDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="AbstractMonitorDestinationDeclaredAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.MonitorDestination" />
+  </xs:complexType>
+  <xs:group name="MonitorDestinationDeclaredChildGroup">
+    <xs:sequence>
+      <xs:group ref="SenderElementGroup" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="AbstractMonitorDestinationDeclaredAttributeGroup">
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The functional name of the object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
   <xs:group name="SharedResourceElementGroup">
     <xs:choice>
       <xs:element name="SharedResource">
@@ -16725,21 +16289,6 @@
       <xs:pattern value="[sS][tT][aA][rR][tT][rR][eE][cC][eE][iI][vV][eE][rR]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="JobDefFunctionsAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[sS][tT][oO][pP][aA][dD][aA][pP][tT][eE][rR]" />
-      <xs:pattern value="[sS][tT][aA][rR][tT][aA][dD][aA][pP][tT][eE][rR]" />
-      <xs:pattern value="[sS][tT][oO][pP][rR][eE][cC][eE][iI][vV][eE][rR]" />
-      <xs:pattern value="[sS][tT][aA][rR][tT][rR][eE][cC][eE][iI][vV][eE][rR]" />
-      <xs:pattern value="[sS][eE][nN][dD][mM][eE][sS][sS][aA][gG][eE]" />
-      <xs:pattern value="[eE][xX][eE][cC][uU][tT][eE][qQ][uU][eE][rR][yY]" />
-      <xs:pattern value="[cC][lL][eE][aA][nN][uU][pP][dD][aA][tT][aA][bB][aA][sS][eE]" />
-      <xs:pattern value="[cC][lL][eE][aA][nN][uU][pP][fF][iI][lL][eE][sS][yY][sS][tT][eE][mM]" />
-      <xs:pattern value="[rR][eE][cC][oO][vV][eE][rR][aA][dD][aA][pP][tT][eE][rR][sS]" />
-      <xs:pattern value="[cC][hH][eE][cC][kK][rR][eE][lL][oO][aA][dD]" />
-      <xs:pattern value="[lL][oO][aA][dD][dD][aA][tT][aA][bB][aA][sS][eE][sS][cC][hH][eE][dD][uU][lL][eE][sS]" />
-    </xs:restriction>
-  </xs:simpleType>
   <xs:simpleType name="SeverityAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[hH][aA][rR][mM][lL][eE][sS][sS]" />
@@ -16882,15 +16431,6 @@
       <xs:documentation>Used when destinationType = TOPIC.
  The JNDI-name of the connection factory to use to connect to a &lt;i&gt;topic&lt;/i&gt; if #isTransacted() returns &lt;code&gt;false&lt;/code&gt;.
  The corresponding connection factory should be configured not to support XA transactions.</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="jmsTransacted" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>Controls the use of JMS transacted session.
- In versions prior to 4.1, this attribute was called plainly 'transacted'. The transacted
- attribute, however, is now in uses to indicate the use of XA-transactions. XA transactions can be used
- in a pipeline to simultaneously (in one transaction) commit or rollback messages send to a number of queues, or
- even together with database actions.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="correlationIdToHex" type="frankBoolean">
@@ -17039,11 +16579,6 @@
   <xs:attribute name="synchronous" type="frankBoolean">
     <xs:annotation>
       <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, the result of sendMessage is the reply of the request. Default: true</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="closeInputstreamOnExit" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>When set to &lt;code&gt;false&lt;/code&gt;, the Inputstream is not closed after it has been used to update a BLOB or CLOB Default: true</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="closeOutputstreamOnExit" type="frankBoolean">
@@ -17484,7 +17019,6 @@
       <xs:documentation>The name of the sequence used to generate the primary key, for DBMSes that use sequences, like Oracle Default: seq_ibisstore</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="checkIfTableExists" type="frankBoolean" />
   <xs:attribute name="checkTable" type="frankBoolean">
     <xs:annotation>
       <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, checks are performed if the table exists and is properly created Default: false</xs:documentation>

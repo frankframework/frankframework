@@ -33,7 +33,7 @@ public interface IListenerConnector<M> {
 
 	void configureEndpointConnection(IPortConnectedListener<M> listener, ConnectionFactory connectionFactory,
 			CredentialFactory credentialFactory, Destination destination, IbisExceptionListener exceptionListener, CacheMode cacheMode,
-			int acknowledgeMode, boolean sessionTransacted, String selector, long receiveTimeout, long pollGuardInterval)
+			int acknowledgeMode, String selector, long receiveTimeout, long pollGuardInterval)
 			throws ConfigurationException;
 
 	/**

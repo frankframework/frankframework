@@ -2,6 +2,7 @@
   @if (messageLog[selectedConfiguration]) {
     <div
       (click)="msgBoxExpanded = !msgBoxExpanded"
+      data-cy="configuration-messages__box"
       [ngClass]="{
         warning: messageLog[selectedConfiguration].messageLevel === 'WARN',
         danger: messageLog[selectedConfiguration].messageLevel === 'ERROR',
@@ -45,7 +46,7 @@
                     <td class="text-center" style="width: 200px">
                       <span [time]="message.date" appToDate></span>
                     </td>
-                    <td>{{ message.message }}</td>
+                    <td data-cy="configuration-messages__table__message">{{ message.message }}</td>
                   </tr>
                 }
               }

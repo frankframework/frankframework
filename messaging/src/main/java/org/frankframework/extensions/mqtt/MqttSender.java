@@ -38,6 +38,8 @@ import org.frankframework.stream.Message;
  *
  * Links to <a href="https://www.eclipse.org/paho/files/javadoc" target="_blank">https://www.eclipse.org/paho/files/javadoc</a> are opened in a new window/tab because the response from eclipse.org contains header X-Frame-Options:SAMEORIGIN which will make the browser refuse to open the link inside this frame.
  *
+ * {@inheritDoc}
+ *
  * @author Niels Meijer
  */
 
@@ -61,12 +63,12 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 
 	@Override
 	public void start() {
-		super.start();
+		// Connection is handled a shared object.
 	}
 
 	@Override
 	public void stop() {
-		super.stop();
+		// Connection is handled a shared object.
 	}
 
 	@Override
@@ -82,10 +84,6 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 	@Override
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		try {
-			if (!client.isConnected()) {
-				super.start();
-			}
-
 			String topic = getTopic();
 			IParameter topicParameter = getParameterList().findParameter(TOPIC_PARAMETER_NAME);
 
