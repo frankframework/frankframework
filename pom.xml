@@ -45,7 +45,7 @@
 		<mssql.driver.version>12.8.1.jre11</mssql.driver.version>
 		<mysql.driver.version>9.1.0</mysql.driver.version>
 		<!-- Should upgrade to new MariaDB driver 3.1.4, 3.2.0 or newer for JDK17 support but currently not working with XA transaction managers in the framework. -->
-		<mariadb.driver.version>3.5.1</mariadb.driver.version>
+		<mariadb.driver.version>3.5.2</mariadb.driver.version>
 		<postgresql.driver.version>42.7.5</postgresql.driver.version>
 		<mongodb.driver.version>5.3.1</mongodb.driver.version>
 
