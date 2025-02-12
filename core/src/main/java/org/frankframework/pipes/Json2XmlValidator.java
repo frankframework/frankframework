@@ -31,7 +31,6 @@ import jakarta.json.JsonStructure;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
 import org.springframework.http.MediaType;
-import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.XMLFilterImpl;
@@ -354,7 +353,12 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		aligner.setErrorHandler(context.getErrorHandler());
 
 		ValidationResult validationResult = validator.validate(messageToValidate, session, validatorHandler, xml2json, context);
-		final Message jsonMessage = createResultMessage(xml2json.toString(), MediaType.APPLICATION_JSON);
+		final Message jsonMessage;
+		try {
+			jsonMessage = xml2json.toMessage();
+		} catch (IOException e) {
+			throw new PipeRunException(this, "Cannot create message", e);
+		}
 		PipeForward forward = determineForward(validationResult, session, responseMode);
 		return new PipeRunResult(forward, jsonMessage);
 	}
@@ -384,6 +388,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			// remove parameters with null values, to support optional request parameters
 			parameterValues.values().removeIf(Objects::isNull);
 			aligner.setOverrideValues(parameterValues);
+			// TODO: This parses the full JSON. This is still very large, can use too much memory. Should be replaced with an incremental parser but... That means a full rewrite of Json2Xml.
 			JsonStructure jsonStructure = Json.createReader(messageToValidate.asReader()).read();
 
 			// cannot build filter chain as usual backwardly, because it ends differently.
@@ -419,10 +424,6 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 
 		PipeForward forward = determineForward(validationResult, session, responseMode);
 		return new PipeRunResult(forward, resultMessage);
-	}
-
-	private Message createResultMessage(String content, MimeType mimeType) {
-		return new Message(content, new MessageContext().withMimeType(mimeType));
 	}
 
 	public Message addNamespace(Message xml) throws IOException {

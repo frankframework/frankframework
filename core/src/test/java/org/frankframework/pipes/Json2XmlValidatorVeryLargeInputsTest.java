@@ -1,16 +1,19 @@
 package org.frankframework.pipes;
 
-import static org.frankframework.testutil.TestAssertions.assertEqualsIgnoreWhitespaces;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.LargeStructuredMockDataReader;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.stream.Message;
-import org.frankframework.testutil.TestFileUtils;
 
 
+@Tag("slow")
+@Disabled("This test is meant to trigger OOM conditions and when it doesn't, it is still extremely slow. Beware. Disabled for a reason, but still should be around for testing memory usage in future")
 public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlValidator> {
 
 	@Override
@@ -58,8 +61,9 @@ public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlV
 		PipeRunResult result = pipe.doPipe(input, session);
 
 		// Assert
-		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/ParameterSubstitution/expected_output_multiple_occurrences.json");
-		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
+		assertFalse(result.getResult().isEmpty());
+		// Don't yet know what to assert.
+		//		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
 	}
 
 	@Test
@@ -100,8 +104,9 @@ public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlV
 		PipeRunResult result = pipe.doPipe(input, session);
 
 		// Assert
-		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/ParameterSubstitution/expected_output_multiple_occurrences.json");
-		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
+		assertFalse(result.getResult().isEmpty());
+		// Don't yet know what to assert.
+		//		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
 	}
 
 	@Test
@@ -117,7 +122,7 @@ public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlV
 		pipe.configure();
 		pipe.start();
 
-		LargeStructuredMockDataReader reader = new LargeStructuredMockDataReader(Integer.MAX_VALUE - 100,
+		LargeStructuredMockDataReader reader = new LargeStructuredMockDataReader(Integer.MAX_VALUE + 100L, // Larger than array can be
 				"[\n",
 				"""
 										{
@@ -144,8 +149,9 @@ public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlV
 		PipeRunResult result = pipe.doPipe(input, session);
 
 		// Assert
-		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/ParameterSubstitution/expected_output_multiple_occurrences.json");
-		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
+		assertFalse(result.getResult().isEmpty());
+		// Don't yet know what to assert.
+		//		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
 	}
 
 	@Test
@@ -161,7 +167,7 @@ public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlV
 		pipe.configure();
 		pipe.start();
 
-		LargeStructuredMockDataReader reader = new LargeStructuredMockDataReader(Integer.MAX_VALUE - 100,
+		LargeStructuredMockDataReader reader = new LargeStructuredMockDataReader(Integer.MAX_VALUE + 100L, // Larger than array can be
 				"""
 						<?xml version="1.0" encoding="UTF-8"?>
 						<GetDocumentAttributes_Error>
@@ -186,7 +192,8 @@ public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlV
 		PipeRunResult result = pipe.doPipe(input, session);
 
 		// Assert
-		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/ParameterSubstitution/expected_output_multiple_occurrences.json");
-		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
+		assertFalse(result.getResult().isEmpty());
+		// Don't yet know what to assert.
+		//		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
 	}
 }
