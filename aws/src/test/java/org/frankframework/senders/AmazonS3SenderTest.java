@@ -117,6 +117,6 @@ public class AmazonS3SenderTest extends WritableFileSystemSenderTest<AmazonS3Sen
 		assertTrue(_fileExists(inputFolder, FILE1), "File ["+FILE1+"] should still be there after READ action");
 		assertEquals("some content", StreamUtil.streamToString(result.asInputStream()));
 		IOException e = assertThrows(IOException.class, result::preserve); // read binary stream twice
-		assertEquals("Attempted read on closed stream.", e.getMessage());
+		assertEquals("Stream closed", e.getMessage());
 	}
 }
