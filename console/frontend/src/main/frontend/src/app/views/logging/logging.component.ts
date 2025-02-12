@@ -1,4 +1,4 @@
-import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { AfterViewInit, Component, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { AppService, ServerErrorResponse } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
@@ -22,6 +22,8 @@ export class LoggingComponent implements OnInit {
   protected sortedlist: LoggingFile[] = [];
 
   private directory: string = '';
+  private file: string = '';
+  private previousFile: string | null = null;
   private originalList: LoggingFile[] = [];
 
   constructor(
@@ -39,6 +41,9 @@ export class LoggingComponent implements OnInit {
     this.route.queryParamMap.subscribe((parameters) => {
       this.handleOldUrlParameters(parameters);
     });
+    this.route.fragment.subscribe((fragment) => {
+      this.previousFile = fragment;
+    });
   }
 
   handleUrlParameters(parameters: ParamMap): void {
@@ -51,9 +56,9 @@ export class LoggingComponent implements OnInit {
     const directory = directoryParameter.length > 0 ? directoryParameter : '';
     //The file param is only set when the user copies and pastes an url in their browser
     if (fileParameter.length > 0) {
-      const file = fileParameter;
       this.directory = directory;
-      this.path = `${directory}/${file}`;
+      this.file = fileParameter;
+      this.path = `${directory}/${fileParameter}`;
       this.viewFile = this.path;
     } else {
       this.openDirectory(directory);
@@ -83,7 +88,7 @@ export class LoggingComponent implements OnInit {
 
   closeFile(): void {
     this.viewFile = null;
-    this.router.navigate(['/logging', this.directory]);
+    this.router.navigate(['/logging', this.directory], { fragment: this.file });
   }
 
   download(file: LoggingFile): void {
@@ -108,8 +113,17 @@ export class LoggingComponent implements OnInit {
         this.sortedlist = data.list;
         this.directory = data.directory;
         this.path = data.directory;
+
         if (data.count > data.list.length) {
           this.alert = `Total number of items [${data.count}] exceeded maximum number, only showing first [${data.list.length - 1}] items!`;
+        }
+        if (this.previousFile) {
+          setTimeout(() => {
+            const element = document.querySelector(`[data-file-name="${this.previousFile}"]`);
+            if (element) {
+              element.scrollIntoView({ behavior: 'instant' });
+            }
+          });
         }
       },
       error: (data: HttpErrorResponse) => {

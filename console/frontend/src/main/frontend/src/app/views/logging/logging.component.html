@@ -55,7 +55,7 @@
               </thead>
               <tbody>
                 <tr *ngFor="let file of sortedlist | searchFilter: fileName">
-                  <td class="pointer" (click)="open(file)">{{ file.name }}</td>
+                  <td class="pointer" (click)="open(file)" [attr.data-file-name]="file.name">{{ file.name }}</td>
                   <td>
                     <span *ngIf="file.type === 'file'">{{ file.sizeDisplay }}</span>
                   </td>
