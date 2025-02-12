@@ -1505,6 +1505,16 @@ public class XmlUtils {
 		}
 	}
 
+	public static Message addRootNamespace(Message input, String namespace) {
+		try {
+			TransformerPool tp = getAddRootNamespaceTransformerPool(namespace,false,true);
+			return tp.transform(input, null);
+		} catch (Exception e) {
+			log.warn("unable to add root-namespace", e);
+			return Message.nullMessage();
+		}
+	}
+
 	public static String copyOfSelect(String input, String xpath) {
 		try {
 			TransformerPool tp = getCopyOfSelectTransformerPool(xpath, true,false);

@@ -40,6 +40,7 @@ import org.xml.sax.helpers.XMLFilterImpl;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.align.content.JsonDocumentContainer;
+import org.frankframework.stream.Message;
 import org.frankframework.util.XmlUtils;
 
 /**
@@ -72,8 +73,8 @@ public class Xml2Json extends XMLFilterImpl {
 		return xml2object.getDocumentContainer();
 	}
 
-	public String toString(boolean indent) {
-		return getDocumentContainer().toString(indent);
+	public Message toMessage() throws IOException {
+		return getDocumentContainer().toMessage();
 	}
 
 	@Override

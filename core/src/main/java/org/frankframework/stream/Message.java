@@ -419,25 +419,36 @@ public class Message implements Serializable, Closeable {
 	}
 
 	/**
-	 * return the request object as a {@link Reader}. Should not be called more than once, if request is not {@link #preserve() preserved}.
+	 * Return a {@link Reader} backed by the data in this message. {@link Reader#markSupported()} is guaranteed to be true for the returned stream.
+	 * Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
 	@Nullable
 	public Reader asReader() throws IOException {
 		return asReader(null);
 	}
 
+	/**
+	 * Return a {@link Reader} backed by the data in this message. {@link Reader#markSupported()} is guaranteed to be true for the returned stream.
+	 * Should not be called more than once, if request is not {@link #preserve() preserved}.
+	 *
+	 * @param defaultDecodingCharset is only used when {@link #isBinary()} is {@code true}.
+	 */
 	@Nullable
 	public Reader asReader(@Nullable String defaultDecodingCharset) throws IOException {
 		if (request == null) {
 			return null;
 		}
 		if (request instanceof Reader reader) {
+			if (!reader.markSupported()) {
+				reader = new BufferedReader(reader);
+				request = reader;
+			}
 			LOG.debug("returning Reader {} as Reader", this::getObjectId);
 			return reader;
 		}
 		if (request instanceof SerializableFileReference reference && !reference.isBinary()) {
 			LOG.debug("returning SerializableFileReference {} as Reader", this::getObjectId);
-			return reference.getReader();
+			return new BufferedReader(reference.getReader());
 		}
 		if (isBinary()) {
 			String readerCharset = computeDecodingCharset(defaultDecodingCharset); //Don't overwrite the Message's charset unless it's set to AUTO
@@ -445,7 +456,7 @@ public class Message implements Serializable, Closeable {
 			LOG.debug("returning InputStream {} as Reader", this::getObjectId);
 			InputStream inputStream = asInputStream();
 			try {
-				return StreamUtil.getCharsetDetectingInputStreamReader(inputStream, readerCharset);
+				return new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(inputStream, readerCharset));
 			} catch (IOException e) {
 				onExceptionClose(e);
 				throw e;
@@ -463,7 +474,8 @@ public class Message implements Serializable, Closeable {
 	}
 
 	/**
-	 * return the request object as a {@link InputStream}. Should not be called more than once, if request is not {@link #preserve() preserved}.
+	 * Return an {@link InputStream} backed by the data in this message. {@link InputStream#markSupported()} is guaranteed to be true for the returned stream.
+	 * Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
 	@Nullable
 	public InputStream asInputStream() throws IOException {
@@ -471,6 +483,9 @@ public class Message implements Serializable, Closeable {
 	}
 
 	/**
+	 * Return an {@link InputStream} backed by the data in this message. {@link InputStream#markSupported()} is guaranteed to be true for the returned stream.
+	 * Should not be called more than once, if request is not {@link #preserve() preserved}.
+	 *
 	 * @param defaultEncodingCharset is only used when the Message object is of character type (String)
 	 */
 	@Nullable
@@ -480,12 +495,16 @@ public class Message implements Serializable, Closeable {
 				return null;
 			}
 			if (request instanceof InputStream stream) {
+				if (!stream.markSupported()) {
+					stream = new BufferedInputStream(stream);
+					request = stream;
+				}
 				LOG.debug("returning InputStream {} as InputStream", this::getObjectId);
 				return stream;
 			}
 			if (request instanceof SerializableFileReference reference) {
 				LOG.debug("returning InputStream {} from SerializableFileReference", this::getObjectId);
-				return reference.getInputStream();
+				return new BufferedInputStream(reference.getInputStream());
 			}
 			if (request instanceof ThrowingSupplier) {
 				LOG.debug("returning InputStream {} from supplier", this::getObjectId);

@@ -15,6 +15,8 @@
 */
 package org.frankframework.align.content;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
@@ -26,9 +28,14 @@ import jakarta.json.stream.JsonGenerator;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.springframework.http.MediaType;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
+import org.frankframework.stream.MessageContext;
 
 /**
  * Helper class to construct JSON from XML events.
@@ -91,12 +98,80 @@ public class JsonDocumentContainer {
 		parent.addContent(child);
 	}
 
+	public Message toMessage() throws IOException {
+		return toMessage(true);
+	}
+
+	public Message toMessage(boolean indent) throws IOException {
+		if (root.getContent() == null) {
+			return Message.nullMessage(new MessageContext().withMimeType(MediaType.APPLICATION_JSON));
+		}
+		MessageBuilder messageBuilder = new MessageBuilder();
+		messageBuilder.setMimeType(MediaType.APPLICATION_JSON);
+		try (Writer writer = messageBuilder.asWriter()) {
+			toWriter(writer, indent);
+		}
+		return messageBuilder.build();
+	}
+
+	public void toWriter(Writer writer, boolean indent) throws IOException {
+		Object content = root.getContent();
+		if (content == null) {
+			return;
+		}
+		if (skipRootElement && content instanceof Map<?, ?> map) {
+			content = map.values().toArray()[0];
+		}
+		toWriter(writer, content, indent ? 0 : -1);
+	}
+
+	protected void toWriter(Writer w, Object item, int indentLevel) throws IOException {
+		if (item == null) {
+			w.append("null");
+		} else if (item instanceof String s) {
+			w.append(s);
+		} else if (item instanceof Map) {
+			w.append("{");
+			if (indentLevel >= 0) indentLevel++;
+			boolean first = true;
+			//noinspection unchecked
+			for (Entry<String, Object> entry : ((Map<String, Object>) item).entrySet()) {
+				if (!first) w.append(",");
+				first = false;
+				newLine(w, indentLevel);
+				w.append('"').append(entry.getKey()).append("\": ");
+				toWriter(w, entry.getValue(), indentLevel);
+			}
+			if (indentLevel >= 0) indentLevel--;
+			newLine(w, indentLevel);
+			w.append("}");
+		} else if (item instanceof List<?> list) {
+			w.append("[");
+			if (indentLevel >= 0) indentLevel++;
+			boolean first = true;
+			for (Object subitem : list) {
+				if (!first) w.append(",");
+				first = false;
+				newLine(w, indentLevel);
+				toWriter(w, subitem, indentLevel);
+			}
+			if (indentLevel >= 0) indentLevel--;
+			newLine(w, indentLevel);
+			w.append("]");
+		} else if (item instanceof JsonElementContainer container) {
+			toWriter(w, container.getContent(), indentLevel);
+		} else {
+			throw new NotImplementedException("cannot handle class [" + item.getClass().getName() + "]");
+		}
+	}
+
 	@Override
 	public String toString() {
 		return toString(true);
 	}
 
 	public String toString(boolean indent) {
+		// TODO: Replace with call to toWriter and a StringWriter
 		Object content = root.getContent();
 		if (content == null) {
 			return null;
@@ -177,6 +252,12 @@ public class JsonDocumentContainer {
 	private void newLine(StringBuilder sb, int indentLevel) {
 		if (indentLevel >= 0) {
 			sb.append(INDENTOR, 0, (Math.min(indentLevel, MAX_INDENT)) * 2 + 1);
+		}
+	}
+
+	private void newLine(Writer w, int indentLevel) throws IOException {
+		if (indentLevel >= 0) {
+			w.write(INDENTOR, 0, (Math.min(indentLevel, MAX_INDENT)) * 2 + 1);
 		}
 	}
 }

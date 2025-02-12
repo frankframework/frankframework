@@ -21,6 +21,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -95,6 +96,10 @@ public class MessageContext implements Serializable {
 
 	public Object get(String key) {
 		return data.get(key);
+	}
+
+	public Map<String, Object> getAll() {
+		return Collections.unmodifiableMap(data);
 	}
 
 	public boolean containsKey(String key) {

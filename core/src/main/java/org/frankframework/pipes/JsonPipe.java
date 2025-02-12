@@ -118,6 +118,7 @@ public class JsonPipe extends FixedForwardPipe {
 				}
 			case XML2JSON:
 				Map<String, Object> parameterValues = Collections.singletonMap("includeRootElement", addXmlRootElement);
+				// TODO: transform message into message directly, using different method in TransformerPool
 				String stringResult = tpXml2Json.transform(message.asSource(), parameterValues);
 				MessageContext context = new MessageContext();
 				context.withMimeType(MediaType.APPLICATION_JSON);

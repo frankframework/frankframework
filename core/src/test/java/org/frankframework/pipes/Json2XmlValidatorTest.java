@@ -157,7 +157,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		PipeRunResult prr = doPipe(pipe, input,session);
 
-		assertEquals(expected, prr.getResult().asString());
+		assertXmlEquals(expected, prr.getResult().asString());
 		assertEquals(MediaType.APPLICATION_XML, prr.getResult().getContext().get(MessageContext.METADATA_MIMETYPE));
 	}
 
