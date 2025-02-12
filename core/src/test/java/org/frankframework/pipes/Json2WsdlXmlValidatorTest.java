@@ -172,9 +172,8 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root>" + tail,
 				"<?xml version=\"1.0\" encoding=\"UTF-8\"?><root xmlns=\"xxx\">" + tail
 		);
-		testAddNamespace("<root xmlns=\"xxx\">" + tail, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root xmlns=\"xxx\">" + tail);
-		// TODO: When the document already has a namespace, this will not be preserved anymore
-//		testAddNamespace("<root xmlns=\"yyy\">" + tail, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root xmlns=\"yyy\">" + tail);
+		testAddNamespace("<root xmlns=\"xxx\">" + tail, "<root xmlns=\"xxx\">" + tail);
+		testAddNamespace("<root xmlns=\"yyy\">" + tail, "<root xmlns=\"yyy\">" + tail);
 
 		testAddNamespace("", null);
 		testAddNamespace(null, null);

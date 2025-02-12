@@ -1495,6 +1495,16 @@ public class XmlUtils {
 		}
 	}
 
+	public static String getRootNamespace(Message input) {
+		try {
+			TransformerPool tp = getGetRootNamespaceTransformerPool();
+			return tp.transform(input);
+		} catch (Exception e) {
+			log.warn("unable to find root-namespace", e);
+			return null;
+		}
+	}
+
 	public static String addRootNamespace(String input, String namespace) {
 		try {
 			TransformerPool tp = getAddRootNamespaceTransformerPool(namespace,true,false);

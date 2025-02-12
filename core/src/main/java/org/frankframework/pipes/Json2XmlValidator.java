@@ -199,7 +199,11 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			// message is XML
 			Message xmlMessage;
 			if (isAcceptNamespacelessXml()) {
-				xmlMessage = addNamespace(input);
+				try {
+					xmlMessage = addNamespace(input);
+				} catch (IOException e) {
+					throw new PipeRunException(this, "Cannot read message", e);
+				}
 				//log.debug("added namespace to message [{}]", messageToValidate);
 			} else {
 				xmlMessage = input;
@@ -421,7 +425,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		return new Message(content, new MessageContext().withMimeType(mimeType));
 	}
 
-	public Message addNamespace(Message xml) {
+	public Message addNamespace(Message xml) throws IOException {
 		if (Message.isNull(xml)) {
 			return xml;
 		}
@@ -437,8 +441,15 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		} else {
 			return xml;
 		}
+		xml.preserve();
+		String currentRootNamespace = XmlUtils.getRootNamespace(xml);
+		if (StringUtils.isNotEmpty(currentRootNamespace)) {
+			log.debug("Message already has namespace [{}]", currentRootNamespace);
+			return xml;
+		}
 		log.debug("setting namespace [{}]", namespace);
 		return XmlUtils.addRootNamespace(xml, namespace);
+
 	}
 
 	public JsonStructure createJsonSchema(String elementName) {
