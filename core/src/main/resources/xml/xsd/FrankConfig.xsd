@@ -164,7 +164,7 @@
  &lt;li&gt;a PipeRunException or another runtime-exception has been thrown by any Pipe or by the PipeLine&lt;/li&gt;
  &lt;li&gt;the setRollBackOnly() method has been called on the userTransaction (not accessible by Pipes)&lt;/li&gt;
  &lt;/ul&gt;
- &lt;/p&gt;</xs:documentation>
+ &lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;Although not mandatory, it is recommended to give your Receiver a clear name. This helps with ConfigurationWarnings and log statements.&lt;/p&gt;</xs:documentation>
     </xs:annotation>
     <xs:sequence>
       <xs:group ref="ListenerElementGroup" minOccurs="1" maxOccurs="1" />
@@ -922,8 +922,8 @@
  Configure/start/stop lifecycles are managed by Spring.</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:group ref="DestinationElementGroup" minOccurs="0" maxOccurs="unbounded" />
       <xs:element name="Monitor" minOccurs="0" maxOccurs="unbounded" type="MonitorType" />
+      <xs:group ref="DestinationElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.MonitorManager" use="prohibited" />
     <xs:attribute ref="active" />
@@ -946,7 +946,7 @@
       <xs:group ref="TriggerElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
     <xs:attribute name="destinations" type="xs:string" />
-    <xs:attribute name="name" type="xs:string">
+    <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>The functional name of the object.</xs:documentation>
       </xs:annotation>
@@ -1362,7 +1362,7 @@
  &lt;li&gt;&lt;code&gt;etag.cache.username&lt;/code&gt;&lt;/li&gt;
  &lt;li&gt;&lt;code&gt;etag.cache.password&lt;/code&gt;&lt;/li&gt;
  &lt;li&gt;&lt;code&gt;etag.cache.authalias&lt;/code&gt;&lt;/li&gt;
- &lt;/ul&gt;</xs:documentation>
+ &lt;/ul&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;The OPTIONS verb will automatically be handled by the framework.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -1384,7 +1384,7 @@
       <xs:element name="DirectoryListener">
         <xs:annotation>
           <xs:documentation>Listener that looks for files in a LocalFileSystem. The DirectoryListener keeps track of the file process by storing it in different folders. The application may create the folders if you (a) set the &lt;code&gt;root&lt;/code&gt; attribute and (b) set the attribute &lt;code&gt;createFolders&lt;/code&gt; to true.
- 
+
  The attribute &lt;code&gt;messageType&lt;/code&gt; dictates what information of the file is passed to the pipeline. This may be the name, canonical path, the entire file, or the file's metadata.
 
  &lt;p&gt;
@@ -1565,14 +1565,6 @@
  transacted attribute. If this is set to &lt;code&gt;true&lt;/code&gt;, received messages are
  committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
  In case of a failure, all actions within the transaction are rolled back.
-
- &lt;p&gt;&lt;b&gt;Using jmsTransacted and acknowledgement&lt;/b&gt;&lt;br/&gt;
- If jmsTransacted is set &lt;code&gt;true&lt;/code&gt;: it should ensure that a message is received and processed on a both or nothing basis.
- IBIS will commit the the message, otherwise perform rollback. However using jmsTransacted, IBIS does not bring transactions within
- the adapters under transaction control, compromising the idea of atomic transactions. In the roll-back situation messages sent to
- other destinations within the Pipeline are NOT rolled back if jmsTransacted is set &lt;code&gt;true&lt;/code&gt;! In the failure situation the
- message is therefore completely processed, and the roll back does not mean that the processing is rolled back! To obtain the correct
- (transactional) behaviour, transacted should be used instead of listener.transacted.
  &lt;/p&gt;&lt;p&gt;
  Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
  the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
@@ -1583,8 +1575,7 @@
  since a session has lower overhead in trying to prevent duplicate messages.
  &lt;/p&gt;
  &lt;p&gt;The setting for listener.acknowledgeMode will only be processed if
- the setting for listener.transacted as well as for
- listener.jmsTransacted is false.&lt;/p&gt;
+ the setting for listener.transacted.&lt;/p&gt;
 
  &lt;p&gt;If useReplyTo is set and a replyTo-destination is
  specified in the message, the JmsListener sends the result of the processing
@@ -1667,14 +1658,6 @@
  transacted attribute. If this is set to &lt;code&gt;true&lt;/code&gt;, received messages are
  committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
  In case of a failure, all actions within the transaction are rolled back.
-
- &lt;p&gt;&lt;b&gt;Using jmsTransacted and acknowledgement&lt;/b&gt;&lt;br/&gt;
- If jmsTransacted is set &lt;code&gt;true&lt;/code&gt;: it should ensure that a message is received and processed on a both or nothing basis.
- IBIS will commit the the message, otherwise perform rollback. However using jmsTransacted, IBIS does not bring transactions within
- the adapters under transaction control, compromising the idea of atomic transactions. In the roll-back situation messages sent to
- other destinations within the Pipeline are NOT rolled back if jmsTransacted is set &lt;code&gt;true&lt;/code&gt;! In the failure situation the
- message is therefore completely processed, and the roll back does not mean that the processing is rolled back! To obtain the correct
- (transactional) behaviour, transacted should be used instead of listener.transacted.
 &lt;p&gt;
  Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
  the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
@@ -1685,8 +1668,7 @@
  since a session has lower overhead in trying to prevent duplicate messages.
  &lt;/p&gt;
  &lt;p&gt;The setting for listener.acknowledgeMode will only be processed if
- the setting for listener.transacted as well as for
- listener.jmsTransacted is false.&lt;/p&gt;
+ the setting for listener.transacted&lt;/p&gt;
 
  &lt;p&gt;If useReplyTo is set and a replyTo-destination is
  specified in the message, the JmsListener sends the result of the processing
@@ -1714,17 +1696,6 @@
 
  This version of the &lt;code&gt;JmsListener&lt;/code&gt; supports distributed transactions using the XA-protocol.
  No special action is required to have the listener join the transaction.
-
- &lt;p&gt;&lt;b&gt;Using jmsTransacted and acknowledgement&lt;/b&gt;&lt;br/&gt;
- If jmsTransacted is set &lt;code&gt;true&lt;/code&gt;, it should ensure that a message is received and processed on
- a both or nothing basis. IBIS will commit the the message, otherwise perform rollback. However, using
- jmsTransacted, IBIS does not bring transactions within the adapters under transaction control,
- compromising the idea of atomic transactions. In the roll-back situation messages sent to other
- destinations within the Pipeline are NOT rolled back if jmsTransacted is set &lt;code&gt;true&lt;/code&gt;! In
- the failure situation the message is therefore completely processed, and the roll back does not mean
- that the processing is rolled back! To obtain the correct (transactional) behaviour, set
- &lt;code&gt;transacted&lt;/code&gt;="true" for the enclosing Receiver. Do not use jmsTransacted for any new situation.
-
  &lt;/p&gt;&lt;p&gt;
  Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
  the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
@@ -1735,8 +1706,7 @@
  since a session has lower overhead in trying to prevent duplicate messages.
  &lt;/p&gt;
  &lt;p&gt;The setting for listener.acknowledgeMode will only be processed if
- the setting for listener.transacted as well as for
- listener.jmsTransacted is false.&lt;/p&gt;
+ the setting for listener.transacted.&lt;/p&gt;
 
  &lt;p&gt;If useReplyTo is set and a replyTo-destination is
  specified in the message, the JmsListener sends the result of the processing
@@ -1924,7 +1894,12 @@
     </xs:attribute>
     <xs:attribute name="uriPattern" type="xs:string" use="required">
       <xs:annotation>
-        <xs:documentation>URI pattern to register this listener on, eq. &lt;code&gt;/my-listener/{something}/here&lt;/code&gt;</xs:documentation>
+        <xs:documentation>URI pattern to register this listener on, eq. &lt;code&gt;/my-listener/{something}/here&lt;/code&gt;.
+ &lt;br/&gt;
+ Pattern variables like &lt;code&gt;{something}&lt;/code&gt; in this example are added to the PipeLineSession with
+ their actual value in the request URI.
+ &lt;br/&gt;
+ Pattern variables are not allowed to have the same name as any of the #RESERVED_NAMES.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="consumes">
@@ -1970,7 +1945,10 @@
     </xs:attribute>
     <xs:attribute name="multipartBodyName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Specify the form-part you wish to enter the pipeline Default: name of the first form-part</xs:documentation>
+        <xs:documentation>Specify the form-part you wish to enter the pipeline.
+ &lt;br/&gt;
+ The &lt;code&gt;multipartBodyName&lt;/code&gt; or the names of any other multipart
+ fields may not be one of the #RESERVED_NAMES. Default: name of the first form-part</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="messageIdHeader" type="xs:string">
@@ -1996,6 +1974,37 @@
     <xs:attribute name="contentDispositionHeaderSessionKey" type="xs:string">
       <xs:annotation>
         <xs:documentation>Session key that provides the &lt;code&gt;Content-Disposition&lt;/code&gt; header in the response</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowedParameters" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Whitelist of request parameters (Query and POST Parameters) that are allowed to be
+ copied into the session.
+ &lt;br/&gt;
+ Entered as a comma-separated value.
+ &lt;br/&gt;
+ If the list contains any names that are in #RESERVED_NAMES, these will be removed from the list.
+ &lt;br/&gt;
+ If left empty, then all HTTP parameters are copied into the session, which can pose
+ a security risk and is therefore discouraged. The risk is that parameters could be sent,
+ that overwrite system session variables.
+ &lt;br/&gt;
+ This only works as a backwards-compatibility feature and can be switched off setting #setAllowAllParams(boolean) to &lt;code&gt;false&lt;/code&gt;.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowAllParams" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>For backwards compatibility with configurations that have not yet been updated, by
+ default all parameters are allowed until removal of this flag.
+ Copying all POST and query parameters to the session is considered a security risk,
+ so this should not be left enabled.
+ &lt;br/&gt;
+ Even so, names listed in #RESERVED_NAMES will never be copied from the HTTP parameters to the session.
+ &lt;br/&gt;
+ When setting #setAllowedParameters(String), this value is ignored. This value is only
+ used when the allowed parameter list has not been set, or set empty.
+ &lt;br/&gt;
+ For backwards compatibility, this is &lt;code&gt;true&lt;/code&gt; by default. Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="requiredIssuer" type="xs:string">
@@ -6312,7 +6321,7 @@
   <xs:attributeGroup name="AbstractCacheAdapterDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
-        <xs:documentation>name of the cache, will be lowercased Default: &lt;code&gt;&amp;lt;ownerName&amp;gt;&lt;/code&gt;_cache</xs:documentation>
+        <xs:documentation>Name of the cache, will be lowercased Default: &lt;code&gt;&amp;lt;ownerName&amp;gt;&lt;/code&gt;_cache</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keyXPath" type="xs:string">
@@ -6442,14 +6451,6 @@
  transacted attribute. If this is set to &lt;code&gt;true&lt;/code&gt;, received messages are
  committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
  In case of a failure, all actions within the transaction are rolled back.
-
- &lt;p&gt;&lt;b&gt;Using jmsTransacted and acknowledgement&lt;/b&gt;&lt;br/&gt;
- If jmsTransacted is set &lt;code&gt;true&lt;/code&gt;: it should ensure that a message is received and processed on a both or nothing basis.
- IBIS will commit the the message, otherwise perform rollback. However using jmsTransacted, IBIS does not bring transactions within
- the adapters under transaction control, compromising the idea of atomic transactions. In the roll-back situation messages sent to
- other destinations within the Pipeline are NOT rolled back if jmsTransacted is set &lt;code&gt;true&lt;/code&gt;! In the failure situation the
- message is therefore completely processed, and the roll back does not mean that the processing is rolled back! To obtain the correct
- (transactional) behaviour, transacted should be used instead of listener.transacted.
 &lt;p&gt;
  Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
  the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
@@ -6460,8 +6461,7 @@
  since a session has lower overhead in trying to prevent duplicate messages.
  &lt;/p&gt;
  &lt;p&gt;The setting for listener.acknowledgeMode will only be processed if
- the setting for listener.transacted as well as for
- listener.jmsTransacted is false.&lt;/p&gt;
+ the setting for listener.transacted&lt;/p&gt;
 
  &lt;p&gt;If useReplyTo is set and a replyTo-destination is
  specified in the message, the JmsListener sends the result of the processing
@@ -7145,7 +7145,7 @@
    param_name=param_value
    another_param_name=another_param_value
  &lt;/pre&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
- This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.&lt;/p&gt;</xs:documentation>
+ This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;The use of `multi-value` parameters can be achieved by adding multiple parameters with the same name.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -9728,11 +9728,6 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="JsonXsltSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="JsonXsltSenderDeclaredAttributeGroup" />
-    <xs:attribute name="streamingXslt" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If true, then this sender will process the XSLT while streaming in a different thread. Can be used to switch streaming off for debugging purposes Default: set by appconstant xslt.streaming.default</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="styleSheetName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
@@ -9806,11 +9801,6 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.XsltSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="XsltSenderDeclaredAttributeGroup">
-    <xs:attribute name="streamingXslt" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If true, then this sender will process the XSLT while streaming in a different thread. Can be used to switch streaming off for debugging purposes Default: set by appconstant xslt.streaming.default</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="styleSheetName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
@@ -15169,11 +15159,6 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="JsonXsltPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="JsonXsltPipeDeclaredAttributeGroup" />
-    <xs:attribute name="streamingXslt" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If true, then this pipe will process the XSLT while streaming in a different thread. Can be used to switch streaming xslt off for debugging purposes Default: set by appconstant xslt.streaming.default</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="styleSheetName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
@@ -15246,11 +15231,6 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XsltPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="XsltPipeDeclaredAttributeGroup">
-    <xs:attribute name="streamingXslt" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If true, then this pipe will process the XSLT while streaming in a different thread. Can be used to switch streaming xslt off for debugging purposes Default: set by appconstant xslt.streaming.default</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="styleSheetName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
@@ -18462,47 +18442,6 @@
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
-  <xs:group name="DestinationElementGroup">
-    <xs:choice>
-      <xs:group ref="DestinationElementGroupBase" />
-    </xs:choice>
-  </xs:group>
-  <xs:group name="DestinationElementGroupBase">
-    <xs:choice>
-      <xs:element name="Destination">
-        <xs:annotation>
-          <xs:documentation>IMonitorAdapter that uses a sender to send its message.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="MonitorDestinationType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="destination" use="prohibited" />
-              <xs:anyAttribute processContents="skip" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-    </xs:choice>
-  </xs:group>
-  <xs:complexType name="MonitorDestinationType">
-    <xs:group ref="MonitorDestinationDeclaredChildGroup" />
-    <xs:attributeGroup ref="AbstractMonitorDestinationDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.MonitorDestination" use="prohibited" />
-  </xs:complexType>
-  <xs:group name="MonitorDestinationDeclaredChildGroup">
-    <xs:sequence>
-      <xs:group ref="SenderElementGroup_2" minOccurs="0" maxOccurs="1" />
-    </xs:sequence>
-  </xs:group>
-  <xs:attributeGroup name="AbstractMonitorDestinationDeclaredAttributeGroup">
-    <xs:attribute name="name" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>The functional name of the object.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:attributeGroup>
   <xs:group name="TriggerElementGroup">
     <xs:choice>
       <xs:group ref="TriggerElementGroupBase" />
@@ -18600,6 +18539,47 @@
     <xs:attributeGroup ref="TriggerDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.Clearing" use="prohibited" />
   </xs:complexType>
+  <xs:group name="DestinationElementGroup">
+    <xs:choice>
+      <xs:group ref="DestinationElementGroupBase" />
+    </xs:choice>
+  </xs:group>
+  <xs:group name="DestinationElementGroupBase">
+    <xs:choice>
+      <xs:element name="Destination">
+        <xs:annotation>
+          <xs:documentation>IMonitorAdapter that uses a sender to send its message.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="MonitorDestinationType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="destination" use="prohibited" />
+              <xs:anyAttribute processContents="skip" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:complexType name="MonitorDestinationType">
+    <xs:group ref="MonitorDestinationDeclaredChildGroup" />
+    <xs:attributeGroup ref="AbstractMonitorDestinationDeclaredAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.MonitorDestination" use="prohibited" />
+  </xs:complexType>
+  <xs:group name="MonitorDestinationDeclaredChildGroup">
+    <xs:sequence>
+      <xs:group ref="SenderElementGroup_2" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="AbstractMonitorDestinationDeclaredAttributeGroup">
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The functional name of the object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
   <xs:group name="SharedResourceElementGroup">
     <xs:choice>
       <xs:element name="SharedResource">

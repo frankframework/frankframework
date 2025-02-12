@@ -1,8 +1,8 @@
 <div class="col-lg-12 tabs-container">
-  <ul class="nav nav-tabs" role="menu">
+  <ul class="nav nav-tabs" role="menu" data-cy="tab-list__nav-tabs">
     @for (tab of tabsList; track tab) {
       <li [ngClass]="{ active: selectedTab === tab }">
-        <a [attr.data-cy-select-tab]="tab" (click)="changeTab(tab)">{{ tab }}</a>
+        <a (click)="changeTab(tab)">{{ tab }}</a>
       </li>
     }
   </ul>

@@ -28,7 +28,7 @@ import org.frankframework.util.AppConstants;
  *
  * @author Gerrit van Brakel
  */
-public class JndiMongoClientFactory extends ObjectFactory<MongoClient> implements IMongoClientFactory {
+public class JndiMongoClientFactory extends ObjectFactory<MongoClient, MongoClient> implements IMongoClientFactory {
 
 	public static final String DEFAULT_DATASOURCE_NAME_PROPERTY = "mongodb.datasource.default";
 	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT = "mongodb/MongoClient";

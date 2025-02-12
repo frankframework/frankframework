@@ -23,10 +23,16 @@
                 ></app-combobox>
               </div>
             </div>
-            <div class="form-group">
+            <div class="row form-group">
               <label class="col-sm-3 control-label">Monitor Name</label>
               <div class="col-sm-9">
-                <input class="form-control m-b" name="name" type="text" [(ngModel)]="monitorName" />
+                <input
+                  class="form-control m-b"
+                  name="name"
+                  type="text"
+                  [(ngModel)]="monitorName"
+                  data-cy="monitors-new__name__input"
+                />
               </div>
             </div>
             <div class="col-lg-9 m-t-md">

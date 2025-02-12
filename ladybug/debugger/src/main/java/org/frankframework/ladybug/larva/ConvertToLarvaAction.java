@@ -46,11 +46,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.ConfigurationUtils;
-import org.frankframework.core.Resource;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.TransformerPool;
-import org.frankframework.util.XmlUtils;
 import org.springframework.stereotype.Component;
 
 import nl.nn.testtool.Checkpoint;
@@ -58,6 +53,12 @@ import nl.nn.testtool.CheckpointType;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.extensions.CustomReportAction;
 import nl.nn.testtool.extensions.CustomReportActionResult;
+
+import org.frankframework.configuration.ConfigurationUtils;
+import org.frankframework.core.Resource;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.TransformerPool;
+import org.frankframework.util.XmlUtils;
 
 @Component
 public class ConvertToLarvaAction implements CustomReportAction {
@@ -206,7 +207,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 		private String errorMessage;
 
 		public Scenario(Report report, Path baseDir, String pipelineName, int uuid) {
-			if(scenarioSuffix != null) {
+			if (scenarioSuffix != null) {
 				suffix = scenarioSuffix;
 			} else {
 				suffix = Integer.toString(uuid, Character.MAX_RADIX);
@@ -270,8 +271,14 @@ public class ConvertToLarvaAction implements CustomReportAction {
 					scenarioDirPrefix + adapterOutputFileName);
 			createInputOutputFile(scenarioDirPath, adapterOutputFileName, adapterOutputMessage);
 
-			longestCommonPropertyName = commonPropertiesMap.keySet().stream().max(Comparator.comparing(String::length)).get().length();
-			longestScenarioPropertyName = scenarioPropertiesMap.keySet().stream().max(Comparator.comparing(String::length)).get().length();
+			longestCommonPropertyName = commonPropertiesMap.keySet().stream()
+					.max(Comparator.comparing(String::length))
+					.map(String::length)
+					.orElse(0);
+			longestScenarioPropertyName = scenarioPropertiesMap.keySet().stream()
+					.max(Comparator.comparing(String::length))
+					.map(String::length)
+					.orElse(0);
 
 			try {
 				Files.writeString(scenarioFilePath, scenarioPropertiesToString());
@@ -284,7 +291,6 @@ public class ConvertToLarvaAction implements CustomReportAction {
 				newFiles.add(commonFilePath);
 			} catch (IOException e) {
 				handleError();
-				return;
 			}
 		}
 
@@ -428,7 +434,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 					.filter(cp -> cp.getLevel() < checkpoint.getLevel() && !cp.getName().equals("Thread"))
 					.findFirst();
 
-			String simpleName = extractSimpleClassName(parentCheckPoint.get().getSourceClassName());
+			String simpleName = extractSimpleClassName(parentCheckPoint.map(Checkpoint::getSourceClassName).orElse(""));
 			if(parentCheckPoint.isPresent() && allowedPipesWithSenders.contains(simpleName)) {
 				sb.append(parentCheckPoint.get().getName().substring("Pipe ".length()));
 			} else if(!checkpoint.getName().equals("Sender IbisJavaSender")) {
@@ -533,8 +539,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 
 		private boolean tryLoadCommonProps(Path commonFilePath) {
 			Properties currentCommonProps = new Properties();
-			try {
-				InputStream stream = Files.newInputStream(commonFilePath);
+			try (InputStream stream = Files.newInputStream(commonFilePath)) {
 				currentCommonProps.load(stream);
 			} catch (IOException e) {
 				handleError();
