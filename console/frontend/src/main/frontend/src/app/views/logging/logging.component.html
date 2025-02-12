@@ -4,7 +4,11 @@
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
         <div class="ibox-title">
-          <div class="pull-right" *ngIf="viewFile">
+          <div class="pull-right action-buttons" *ngIf="viewFile">
+            <button (click)="popout(path)" class="btn btn-xs" type="button">
+              <i class="fa fa-arrow-circle-right" aria-hidden="true"></i>
+              <span> Pop Out</span>
+            </button>
             <button (click)="closeFile()" class="btn btn-xs pull-right" type="button">
               <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
               <span> Back</span>
@@ -64,6 +68,10 @@
                     <button (click)="download(file)" class="btn btn-xs pull-right" type="button">
                       <i class="fa fa-arrow-circle-o-down" aria-hidden="true"></i>
                       <span> Download</span>
+                    </button>
+                    <button (click)="popout(file)" class="btn btn-xs pull-right" type="button">
+                      <i class="fa fa-arrow-circle-right" aria-hidden="true"></i>
+                      <span> Pop Out</span>
                     </button>
                   </td>
                   <td class="loggingBtn" *ngIf="file.type === 'directory'">
