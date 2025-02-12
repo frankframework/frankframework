@@ -62,7 +62,12 @@
                 <tbody>
                   @for (file of sortedlist | searchFilter: fileName; track file.path) {
                     <tr>
-                      <td class="pointer" (click)="open(file)" data-cy="logging__table__file">
+                      <td
+                        class="pointer"
+                        (click)="open(file)"
+                        [attr.data-file-name]="file.name"
+                        data-cy="logging__table__file"
+                      >
                         {{ file.name }}
                       </td>
                       <td>
