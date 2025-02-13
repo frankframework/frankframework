@@ -3,6 +3,7 @@ package org.frankframework.filesystem;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.testcontainers.junit.jupiter.Container;
@@ -13,6 +14,7 @@ import com.adobe.testing.s3mock.testcontainers.S3MockContainer;
 import software.amazon.awssdk.services.s3.S3Client;
 
 @Testcontainers(disabledWithoutDocker = true)
+@Tag("integration") // Requires Docker; exclude with '-DexcludedGroups=integration'
 public class AmazonS3FileSystemActorTest extends FileSystemActorCustomFileAttributesTest<S3FileRef, AmazonS3FileSystem> {
 
 	@Container
@@ -24,7 +26,7 @@ public class AmazonS3FileSystemActorTest extends FileSystemActorCustomFileAttrib
 	@Override
 	protected AmazonS3FileSystem createFileSystem() {
 		AmazonS3FileSystemTestHelper awsHelper = (AmazonS3FileSystemTestHelper) this.helper;
-		AmazonS3FileSystem s3 = new AmazonS3FileSystem() { //can't use Mockito as it mucks up the JDWP
+		AmazonS3FileSystem s3 = new AmazonS3FileSystem() { // Can't use Mockito as it mucks up the JDWP
 			@Override
 			public S3Client createS3Client() {
 				return awsHelper.getS3Client();
@@ -44,20 +46,20 @@ public class AmazonS3FileSystemActorTest extends FileSystemActorCustomFileAttrib
 	@Test
 	@Override
 	public void fileSystemActorAppendActionWithRolloverBySize() {
-		//Ignore this test
+		// Ignore this test
 	}
 
 	@Disabled("Amazon S3 does not support the APPEND action")
 	@Test
 	@Override
 	public void fileSystemActorAppendActionWriteLineSeparatorDisabled() {
-		//Ignore this test
+		// Ignore this test
 	}
 
 	@Disabled("Amazon S3 does not support the APPEND action")
 	@Test
 	@Override
 	public void fileSystemActorAppendActionWriteLineSeparatorEnabled() {
-		//Ignore this test
+		// Ignore this test
 	}
 }

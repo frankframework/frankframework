@@ -93,9 +93,14 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 		return elementNames.peek();
 	}
 
-	@Nonnull
+	@Nullable
 	public Object peek() {
-		return elementBeans.peek().bean();
+		if (!elementBeans.isEmpty()) {
+			return elementBeans.peek().bean();
+		}
+
+		// Though this should technically never happen. Allow NULL to be returned.
+		return null;
 	}
 
 	@Override
