@@ -42,11 +42,11 @@ public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlV
 				arguments(DocumentFormat.JSON, DocumentFormat.XML, 100_000_000),
 				arguments(DocumentFormat.JSON, DocumentFormat.JSON, 100_000_000),
 				arguments(DocumentFormat.XML, DocumentFormat.JSON, 500_000_000),
-				arguments(DocumentFormat.XML, DocumentFormat.XML, 500_000_000),
+				arguments(DocumentFormat.XML, DocumentFormat.XML, 500_000_000)
 //				arguments(DocumentFormat.JSON, DocumentFormat.XML, 500_000_000), // Too large to complete in reasonable amount of time with current JSON parser
 //				arguments(DocumentFormat.JSON, DocumentFormat.JSON, 500_000_000), // Too large to complete in reasonable amount of time with current JSON parser
 //				arguments(DocumentFormat.XML, DocumentFormat.JSON, Integer.MAX_VALUE / 2 - 100), // Too big for Jenkins CI. Could still fit in memory as single array. Barely testable.
-				arguments(DocumentFormat.XML, DocumentFormat.XML, Integer.MAX_VALUE / 2 - 100)
+//				arguments(DocumentFormat.XML, DocumentFormat.XML, Integer.MAX_VALUE / 2 - 100) // Too big to reliably run in CI
 //				arguments(DocumentFormat.JSON, DocumentFormat.XML, Integer.MAX_VALUE / 2 - 100), // Below are all too large to be practical to test
 //				arguments(DocumentFormat.JSON, DocumentFormat.JSON, Integer.MAX_VALUE / 2 - 100),
 //				arguments(DocumentFormat.XML, DocumentFormat.JSON, Integer.MAX_VALUE + 100L), // Larger than array can be
