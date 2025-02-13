@@ -11,6 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.testcontainers.junit.jupiter.Container;
@@ -28,6 +29,7 @@ import org.frankframework.testutil.PropertyUtil;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 
 @Testcontainers(disabledWithoutDocker = true)
+@Tag("integration") // Requires Docker; exclude with '-DexcludedGroups=integration'
 public class AmazonS3FileSystemTest extends FileSystemTest<S3FileRef, AmazonS3FileSystem> {
 
 	private static final int WAIT_TIMEOUT_MILLIS = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
