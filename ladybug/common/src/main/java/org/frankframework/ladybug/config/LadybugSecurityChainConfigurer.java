@@ -28,6 +28,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -85,7 +86,7 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware, 
 	private static final String CONSOLE_PROPERTY_PREFIX = "application.security.console.authentication.";
 
 	@Bean
-	public SecurityFilterChain createLadybugSecurityChain(HttpSecurity http) throws Exception {
+	public IAuthenticator ladybugAuthenticator() {
 		final IAuthenticator authenticator;
 		if(StringUtils.isNotBlank(environment.getProperty(STANDALONE_PROPERTY_PREFIX+"type"))) {
 			authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, STANDALONE_PROPERTY_PREFIX);
@@ -93,15 +94,15 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware, 
 			authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, CONSOLE_PROPERTY_PREFIX);
 		}
 
-		return configureChain(authenticator);
+		APPLICATION_LOG.info("Securing Ladybug TestTool using {}", ClassUtils.classNameOf(authenticator));
+		return authenticator;
 	}
 
-	private SecurityFilterChain configureChain(IAuthenticator authenticator) throws Exception {
-		APPLICATION_LOG.info("Securing Ladybug TestTool using {}", ClassUtils.classNameOf(authenticator));
-
-		authenticator.registerServlet(createServletConfig("ladybugApiServletBean"));
-		authenticator.registerServlet(createServletConfig("ladybugFrontendServletBean"));
-		authenticator.registerServlet(createServletConfig("testtoolServletBean"));
+	@Bean
+	public SecurityFilterChain createLadybugSecurityChain(HttpSecurity http, IAuthenticator ladybugAuthenticator) throws Exception {
+		ladybugAuthenticator.registerServlet(createServletConfig("ladybugApiServletBean"));
+		ladybugAuthenticator.registerServlet(createServletConfig("ladybugFrontendServletBean"));
+		ladybugAuthenticator.registerServlet(createServletConfig("testtoolServletBean"));
 
 		HttpSecurity httpSecurity = applicationContext.getBean(HTTP_SECURITY_BEAN_NAME, HttpSecurity.class);
 
@@ -109,7 +110,7 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware, 
 		httpSecurity.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
 		httpSecurity.logout(LogoutConfigurer::disable); // Disable the logout filter
 		httpSecurity.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); // Allow same origin iframe request
-		return authenticator.configureHttpSecurity(httpSecurity);
+		return ladybugAuthenticator.configureHttpSecurity(httpSecurity);
 	}
 
 	/**
