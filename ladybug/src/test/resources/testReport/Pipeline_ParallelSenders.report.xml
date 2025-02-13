@@ -1,0 +1,1421 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="1.8.0_181" class="java.beans.XMLDecoder">
+	<object class="nl.nn.testtool.Report">
+		<void property="name">
+			<string>Pipeline Frank2Example/ParallelSenders</string>
+		</void>
+		<void property="description">
+			<string/>
+		</void>
+		<void property="path">
+			<string/>
+		</void>
+		<void property="correlationId">
+			<string>Test a Pipeline 3</string>
+		</void>
+		<void property="startTime">
+			<long>1735574141216</long>
+		</void>
+		<void property="endTime">
+			<long>1735574141809</long>
+		</void>
+		<void property="checkpoints">
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipeline Frank2Example/ParallelSenders</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>0</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.core.PipeLine</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[4edb8f27:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey cid</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>Test a Pipeline 3</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey mid</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>testmessageac193001--756230b9_194183968f8_-7ffe</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey originalMessage</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>Message[4edb8f27:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey tsReceived</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>2024-12-30 16:55:41.214</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe ParallelSenders</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.pipes.SenderPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[4edb8f27:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe ParallelSenders</string>
+					</void>
+					<void property="type">
+						<int>6</int>
+					</void>
+					<void property="level">
+						<int>2</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.pipes.SenderPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>
+							&lt;pipe className=&quot;nl.nn.adapterframework.pipes.SenderPipe&quot; name=&quot;ParallelSenders&quot;&gt;
+	&lt;sender className=&quot;nl.nn.adapterframework.senders.ParallelSenders&quot;&gt;
+		&lt;sender className=&quot;nl.nn.adapterframework.jms.JmsSender&quot; destinationName=&quot;test.queue2&quot; lookupDestination=&quot;false&quot; name=&quot;1stJmsSenderInParallelSenders&quot; queueConnectionFactoryName=&quot;jms/qcf&quot; synchronous=&quot;true&quot;/&gt;
+		&lt;sender className=&quot;nl.nn.adapterframework.jms.JmsSender&quot; destinationName=&quot;test.queue2&quot; lookupDestination=&quot;false&quot; queueConnectionFactoryName=&quot;jms/qcf&quot; synchronous=&quot;true&quot;/&gt;
+		&lt;sender className=&quot;nl.nn.adapterframework.jms.JmsSender&quot; destinationName=&quot;test.queue2&quot; lookupDestination=&quot;false&quot; queueConnectionFactoryName=&quot;jms/qcf&quot; synchronous=&quot;true&quot;/&gt;
+		&lt;sender className=&quot;nl.nn.adapterframework.jms.JmsSender&quot; destinationName=&quot;test.queue2&quot; lookupDestination=&quot;false&quot; queueConnectionFactoryName=&quot;jms/qcf&quot; synchronous=&quot;true&quot;/&gt;
+	&lt;/sender&gt;
+&lt;/pipe&gt;
+						</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender ParallelSenders-sender</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>2</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.senders.ParallelSenders</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[4edb8f27:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Thread</string>
+					</void>
+					<void property="type">
+						<int>8</int>
+					</void>
+					<void property="level">
+						<int>3</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.senders.ParallelSenderExecutor</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[4edb8f27:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender 1stJmsSenderInParallelSenders</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[4edb8f27:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>success</string>
+					</void>
+					<void property="type">
+						<int>5</int>
+					</void>
+					<void property="level">
+						<int>5</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>java.lang.Boolean</string>
+					</void>
+					<void property="message">
+						<string>
+&lt;java version=&quot;21.0.2&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;boolean&gt;true&lt;/boolean&gt;
+&lt;/java&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender 1stJmsSenderInParallelSenders</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>5</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[1a5d9df0:BufferedInputStream]</string>
+					</void>
+					<void property="message">
+						<string>item1 is red</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Thread</string>
+					</void>
+					<void property="type">
+						<int>9</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.senders.ParallelSenderExecutor</string>
+					</void>
+					<void property="messageClassName">
+						<string>nl.nn.adapterframework.core.SenderResult</string>
+					</void>
+					<void property="message">
+						<string>nl.nn.adapterframework.core.SenderResult@2f2e8739</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Thread</string>
+					</void>
+					<void property="type">
+						<int>8</int>
+					</void>
+					<void property="level">
+						<int>3</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.senders.ParallelSenderExecutor</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[4edb8f27:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender JmsSender</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[4edb8f27:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>success</string>
+					</void>
+					<void property="type">
+						<int>5</int>
+					</void>
+					<void property="level">
+						<int>5</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>java.lang.Boolean</string>
+					</void>
+					<void property="message">
+						<string>
+&lt;java version=&quot;21.0.2&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;boolean&gt;true&lt;/boolean&gt;
+&lt;/java&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender JmsSender</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>5</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[45265fd:BufferedInputStream]</string>
+					</void>
+					<void property="message">
+						<string>item1 is red</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Thread</string>
+					</void>
+					<void property="type">
+						<int>9</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.senders.ParallelSenderExecutor</string>
+					</void>
+					<void property="messageClassName">
+						<string>nl.nn.adapterframework.core.SenderResult</string>
+					</void>
+					<void property="message">
+						<string>nl.nn.adapterframework.core.SenderResult@551bc750</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Thread</string>
+					</void>
+					<void property="type">
+						<int>8</int>
+					</void>
+					<void property="level">
+						<int>3</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.senders.ParallelSenderExecutor</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[4edb8f27:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender JmsSender</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[4edb8f27:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>success</string>
+					</void>
+					<void property="type">
+						<int>5</int>
+					</void>
+					<void property="level">
+						<int>5</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>java.lang.Boolean</string>
+					</void>
+					<void property="message">
+						<string>
+&lt;java version=&quot;21.0.2&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;boolean&gt;true&lt;/boolean&gt;
+&lt;/java&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender JmsSender</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>5</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[2c28ddf2:BufferedInputStream]</string>
+					</void>
+					<void property="message">
+						<string>item1 is red</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Thread</string>
+					</void>
+					<void property="type">
+						<int>9</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.senders.ParallelSenderExecutor</string>
+					</void>
+					<void property="messageClassName">
+						<string>nl.nn.adapterframework.core.SenderResult</string>
+					</void>
+					<void property="message">
+						<string>nl.nn.adapterframework.core.SenderResult@7a201f54</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Thread</string>
+					</void>
+					<void property="type">
+						<int>8</int>
+					</void>
+					<void property="level">
+						<int>3</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.senders.ParallelSenderExecutor</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[4edb8f27:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender JmsSender</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[4edb8f27:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>success</string>
+					</void>
+					<void property="type">
+						<int>5</int>
+					</void>
+					<void property="level">
+						<int>5</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>java.lang.Boolean</string>
+					</void>
+					<void property="message">
+						<string>
+&lt;java version=&quot;21.0.2&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;boolean&gt;true&lt;/boolean&gt;
+&lt;/java&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender JmsSender</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>5</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[6add49b1:BufferedInputStream]</string>
+					</void>
+					<void property="message">
+						<string>item1 is red</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Thread</string>
+					</void>
+					<void property="type">
+						<int>9</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.senders.ParallelSenderExecutor</string>
+					</void>
+					<void property="messageClassName">
+						<string>nl.nn.adapterframework.core.SenderResult</string>
+					</void>
+					<void property="message">
+						<string>nl.nn.adapterframework.core.SenderResult@419a784c</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>success</string>
+					</void>
+					<void property="type">
+						<int>5</int>
+					</void>
+					<void property="level">
+						<int>3</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>java.lang.Boolean</string>
+					</void>
+					<void property="message">
+						<string>
+&lt;java version=&quot;21.0.2&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;boolean&gt;true&lt;/boolean&gt;
+&lt;/java&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender ParallelSenders-sender</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>3</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.senders.ParallelSenders</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[2c858faf:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;results&gt;
+	&lt;result senderClass=&quot;JmsSender&quot; senderName=&quot;1stJmsSenderInParallelSenders&quot; success=&quot;true&quot; type=&quot;BufferedInputStream&quot;&gt;item1 is red&lt;/result&gt;
+	&lt;result senderClass=&quot;JmsSender&quot; success=&quot;true&quot; type=&quot;BufferedInputStream&quot;&gt;item1 is red&lt;/result&gt;
+	&lt;result senderClass=&quot;JmsSender&quot; success=&quot;true&quot; type=&quot;BufferedInputStream&quot;&gt;item1 is red&lt;/result&gt;
+	&lt;result senderClass=&quot;JmsSender&quot; success=&quot;true&quot; type=&quot;BufferedInputStream&quot;&gt;item1 is red&lt;/result&gt;
+&lt;/results&gt;
+						</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe ParallelSenders</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>2</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.pipes.SenderPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[2c858faf:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;results&gt;
+	&lt;result senderClass=&quot;JmsSender&quot; senderName=&quot;1stJmsSenderInParallelSenders&quot; success=&quot;true&quot; type=&quot;BufferedInputStream&quot;&gt;item1 is red&lt;/result&gt;
+	&lt;result senderClass=&quot;JmsSender&quot; success=&quot;true&quot; type=&quot;BufferedInputStream&quot;&gt;item1 is red&lt;/result&gt;
+	&lt;result senderClass=&quot;JmsSender&quot; success=&quot;true&quot; type=&quot;BufferedInputStream&quot;&gt;item1 is red&lt;/result&gt;
+	&lt;result senderClass=&quot;JmsSender&quot; success=&quot;true&quot; type=&quot;BufferedInputStream&quot;&gt;item1 is red&lt;/result&gt;
+&lt;/results&gt;
+						</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe ShadowSender</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.pipes.SenderPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[2c858faf:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;results&gt;
+	&lt;result senderClass=&quot;JmsSender&quot; senderName=&quot;1stJmsSenderInParallelSenders&quot; success=&quot;true&quot; type=&quot;BufferedInputStream&quot;&gt;item1 is red&lt;/result&gt;
+	&lt;result senderClass=&quot;JmsSender&quot; success=&quot;true&quot; type=&quot;BufferedInputStream&quot;&gt;item1 is red&lt;/result&gt;
+	&lt;result senderClass=&quot;JmsSender&quot; success=&quot;true&quot; type=&quot;BufferedInputStream&quot;&gt;item1 is red&lt;/result&gt;
+	&lt;result senderClass=&quot;JmsSender&quot; success=&quot;true&quot; type=&quot;BufferedInputStream&quot;&gt;item1 is red&lt;/result&gt;
+&lt;/results&gt;
+						</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe ShadowSender</string>
+					</void>
+					<void property="type">
+						<int>6</int>
+					</void>
+					<void property="level">
+						<int>2</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.pipes.SenderPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>
+							&lt;pipe className=&quot;nl.nn.adapterframework.pipes.SenderPipe&quot; getInputFromSessionKey=&quot;originalMessage&quot; name=&quot;ShadowSender&quot;&gt;
+	&lt;sender className=&quot;nl.nn.adapterframework.senders.SenderSeries&quot;&gt;
+		&lt;sender className=&quot;nl.nn.adapterframework.jms.JmsSender&quot; destinationName=&quot;test.queue2&quot; lookupDestination=&quot;false&quot; name=&quot;1stJmsSenderInShadowSender&quot; queueConnectionFactoryName=&quot;jms/qcf&quot; synchronous=&quot;true&quot;/&gt;
+		&lt;sender className=&quot;nl.nn.adapterframework.jms.JmsSender&quot; destinationName=&quot;test.queue&quot; lookupDestination=&quot;false&quot; queueConnectionFactoryName=&quot;jms/qcf&quot; synchronous=&quot;true&quot;/&gt;
+		&lt;sender className=&quot;nl.nn.adapterframework.jms.JmsSender&quot; destinationName=&quot;test.queue&quot; lookupDestination=&quot;false&quot; queueConnectionFactoryName=&quot;jms/qcf&quot; synchronous=&quot;true&quot;/&gt;
+	&lt;/sender&gt;
+&lt;/pipe&gt;
+						</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey originalMessage</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>2</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>Message[4edb8f27:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>GetInputFromSessionKey originalMessage</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>2</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>Message[4edb8f27:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender ShadowSender-sender</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>2</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.senders.SenderSeries</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[4edb8f27:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender 1stJmsSenderInShadowSender</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>3</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[4edb8f27:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>success</string>
+					</void>
+					<void property="type">
+						<int>5</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>java.lang.Boolean</string>
+					</void>
+					<void property="message">
+						<string>
+&lt;java version=&quot;21.0.2&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;boolean&gt;true&lt;/boolean&gt;
+&lt;/java&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender 1stJmsSenderInShadowSender</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[41a88711:BufferedInputStream]</string>
+					</void>
+					<void property="message">
+						<string>item1 is red</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender JmsSender</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>3</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[41a88711:BufferedInputStream]</string>
+					</void>
+					<void property="message">
+						<string>item1 is red</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>success</string>
+					</void>
+					<void property="type">
+						<int>5</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>java.lang.Boolean</string>
+					</void>
+					<void property="message">
+						<string>
+&lt;java version=&quot;21.0.2&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;boolean&gt;true&lt;/boolean&gt;
+&lt;/java&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender JmsSender</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[5594316c:BufferedInputStream]</string>
+					</void>
+					<void property="message">
+						<string>item1 is red</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender JmsSender</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>3</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[5594316c:BufferedInputStream]</string>
+					</void>
+					<void property="message">
+						<string>item1 is red</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>success</string>
+					</void>
+					<void property="type">
+						<int>5</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>java.lang.Boolean</string>
+					</void>
+					<void property="message">
+						<string>
+&lt;java version=&quot;21.0.2&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;boolean&gt;true&lt;/boolean&gt;
+&lt;/java&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender JmsSender</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[164bae15:BufferedInputStream]</string>
+					</void>
+					<void property="message">
+						<string>&gt;&gt; Captured stream was closed without being read.</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>success</string>
+					</void>
+					<void property="type">
+						<int>5</int>
+					</void>
+					<void property="level">
+						<int>3</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>java.lang.Boolean</string>
+					</void>
+					<void property="message">
+						<string>
+&lt;java version=&quot;21.0.2&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;boolean&gt;true&lt;/boolean&gt;
+&lt;/java&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender ShadowSender-sender</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>3</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.senders.SenderSeries</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[164bae15:BufferedInputStream]</string>
+					</void>
+					<void property="message">
+						<string>&gt;&gt; Captured stream was closed without being read.</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe ShadowSender</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>2</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.pipes.SenderPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[164bae15:BufferedInputStream]</string>
+					</void>
+					<void property="message">
+						<string>&gt;&gt; Captured stream was closed without being read.</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe JmsSender</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.pipes.SenderPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[164bae15:BufferedInputStream]</string>
+					</void>
+					<void property="message">
+						<string>&gt;&gt; Captured stream was closed without being read.</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe JmsSender</string>
+					</void>
+					<void property="type">
+						<int>6</int>
+					</void>
+					<void property="level">
+						<int>2</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.pipes.SenderPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>
+							&lt;pipe className=&quot;nl.nn.adapterframework.pipes.SenderPipe&quot; getInputFromSessionKey=&quot;originalMessage&quot; name=&quot;JmsSender&quot;&gt;
+	&lt;sender className=&quot;nl.nn.adapterframework.jms.JmsSender&quot; destinationName=&quot;test.queue2&quot; lookupDestination=&quot;false&quot; queueConnectionFactoryName=&quot;jms/qcf&quot; synchronous=&quot;true&quot;/&gt;
+&lt;/pipe&gt;
+						</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey originalMessage</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>2</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>Message[4edb8f27:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>GetInputFromSessionKey originalMessage</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>2</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>Message[4edb8f27:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender JmsSender-sender</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>2</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[4edb8f27:String]</string>
+					</void>
+					<void property="message">
+						<string>
+							&lt;item name=&quot;item1&quot; color=&quot;red&quot;/&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>success</string>
+					</void>
+					<void property="type">
+						<int>5</int>
+					</void>
+					<void property="level">
+						<int>3</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>java.lang.Boolean</string>
+					</void>
+					<void property="message">
+						<string>
+&lt;java version=&quot;21.0.2&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;boolean&gt;true&lt;/boolean&gt;
+&lt;/java&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender JmsSender-sender</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>3</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[325bb504:BufferedInputStream]</string>
+					</void>
+					<void property="message">
+						<string>item1 is red</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe JmsSender</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>2</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.pipes.SenderPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[325bb504:BufferedInputStream]</string>
+					</void>
+					<void property="message">
+						<string>item1 is red</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>exitState</string>
+					</void>
+					<void property="type">
+						<int>5</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>SUCCESS</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipeline Frank2Example/ParallelSenders</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.core.PipeLine</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[325bb504:BufferedInputStream]</string>
+					</void>
+					<void property="message">
+						<string>item1 is red</string>
+					</void>
+				</object>
+			</void>
+		</void>
+	</object>
+</java>

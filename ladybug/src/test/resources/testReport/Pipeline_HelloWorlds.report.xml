@@ -1,0 +1,1206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="21.0.2" class="java.beans.XMLDecoder">
+ <object class="nl.nn.testtool.Report" id="Report0">
+  <void property="checkpoints">
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="message">
+      <string>asdf</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[4490b338:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipeline HelloWorlds</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.core.PipeLine</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>Test a Pipeline 1</string>
+     </void>
+     <void property="name">
+      <string>SessionKey cid</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>testmessagec0a8b2de-70843a64_18e328c98fc_-7fd3</string>
+     </void>
+     <void property="name">
+      <string>SessionKey mid</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>asdf</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[4490b338:String]</string>
+     </void>
+     <void property="name">
+      <string>SessionKey originalMessage</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>2024-03-12 13:05:29.166</string>
+     </void>
+     <void property="name">
+      <string>SessionKey tsReceived</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>asdf</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[4490b338:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipe CheckInputIsXml</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.XmlWellFormedChecker</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>&lt;pipe className=&quot;nl.nn.adapterframework.pipes.XmlWellFormedChecker&quot; name=&quot;CheckInputIsXml&quot;&gt;
+	&lt;forward name=&quot;success&quot; path=&quot;CallHelloWorld&quot;/&gt;
+	&lt;forward name=&quot;failure&quot; path=&quot;ConvertEmptyMessageToDummyMessage&quot;/&gt;
+&lt;/pipe&gt;</string>
+     </void>
+     <void property="name">
+      <string>Pipe CheckInputIsXml</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.XmlWellFormedChecker</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>6</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>asdf</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[4490b338:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipe CheckInputIsXml</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.XmlWellFormedChecker</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>asdf</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[4490b338:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipe ConvertEmptyMessageToDummyMessage</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.EchoPipe</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>&lt;pipe className=&quot;nl.nn.adapterframework.pipes.EchoPipe&quot; emptyInputReplacement=&quot;Dummy&quot; name=&quot;ConvertEmptyMessageToDummyMessage&quot;/&gt;</string>
+     </void>
+     <void property="name">
+      <string>Pipe ConvertEmptyMessageToDummyMessage</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.EchoPipe</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>6</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>asdf</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[4490b338:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipe ConvertEmptyMessageToDummyMessage</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.EchoPipe</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>asdf</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[4490b338:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipe Text2Xml</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.Text2XmlPipe</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>&lt;pipe className=&quot;nl.nn.adapterframework.pipes.Text2XmlPipe&quot; name=&quot;Text2Xml&quot; splitLines=&quot;true&quot; xmlTag=&quot;tests&quot;/&gt;</string>
+     </void>
+     <void property="name">
+      <string>Pipe Text2Xml</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.Text2XmlPipe</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>6</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>UTF-8</string>
+     </void>
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>&lt;tests&gt;&lt;line&gt;&lt;![CDATA[asdf]]&gt;&lt;/line&gt;&lt;/tests&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[7a5a6ed0:WindowsPath]</string>
+     </void>
+     <void property="name">
+      <string>Pipe Text2Xml</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.Text2XmlPipe</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>UTF-8</string>
+     </void>
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>&lt;tests&gt;&lt;line&gt;&lt;![CDATA[asdf]]&gt;&lt;/line&gt;&lt;/tests&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[7a5a6ed0:WindowsPath]</string>
+     </void>
+     <void property="name">
+      <string>Pipe RenameElementLineToTest</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.XsltPipe</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>&lt;pipe className=&quot;nl.nn.adapterframework.pipes.XsltPipe&quot; name=&quot;RenameElementLineToTest&quot; styleSheetName=&quot;HelloWorlds/xsl/RenameElementLineToTest.xsl&quot;/&gt;</string>
+     </void>
+     <void property="name">
+      <string>Pipe RenameElementLineToTest</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.XsltPipe</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>6</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;xsl:stylesheet xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot; version=&quot;2.0&quot;&gt;
+	&lt;xsl:output omit-xml-declaration=&quot;yes&quot;/&gt;
+	&lt;xsl:template match=&quot;*|@*|comment()|processing-instruction()|text()&quot;&gt;
+		&lt;xsl:copy&gt;
+			&lt;xsl:apply-templates/&gt;
+		&lt;/xsl:copy&gt;
+	&lt;/xsl:template&gt;
+	&lt;xsl:template match=&quot;line&quot;&gt;
+		&lt;xsl:element name=&quot;test&quot;&gt;
+			&lt;xsl:apply-templates/&gt;
+		&lt;/xsl:element&gt;
+	&lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;
+</string>
+     </void>
+     <void property="name">
+      <string>HelloWorlds/xsl/RenameElementLineToTest.xsl</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.XsltPipe</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>6</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>UTF-8</string>
+     </void>
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>&lt;tests&gt;&lt;test&gt;asdf&lt;/test&gt;&lt;/tests&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[34f58e6:WindowsPath]</string>
+     </void>
+     <void property="name">
+      <string>Pipe RenameElementLineToTest</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.XsltPipe</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>UTF-8</string>
+     </void>
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>&lt;tests&gt;&lt;test&gt;asdf&lt;/test&gt;&lt;/tests&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[34f58e6:WindowsPath]</string>
+     </void>
+     <void property="name">
+      <string>Pipe CheckDummyMessage</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.XmlSwitch</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>&lt;pipe className=&quot;nl.nn.adapterframework.pipes.XmlSwitch&quot; name=&quot;CheckDummyMessage&quot; xpathExpression=&quot;/tests/test = &apos;Dummy&apos;&quot;&gt;
+	&lt;forward name=&quot;true&quot; path=&quot;CreateExampleMessage&quot;/&gt;
+	&lt;forward name=&quot;false&quot; path=&quot;CallHelloWorld&quot;/&gt;
+&lt;/pipe&gt;</string>
+     </void>
+     <void property="name">
+      <string>Pipe CheckDummyMessage</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.XmlSwitch</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>6</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>UTF-8</string>
+     </void>
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>&lt;tests&gt;&lt;test&gt;asdf&lt;/test&gt;&lt;/tests&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[34f58e6:WindowsPath]</string>
+     </void>
+     <void property="name">
+      <string>Pipe CheckDummyMessage</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.XmlSwitch</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>UTF-8</string>
+     </void>
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>&lt;tests&gt;&lt;test&gt;asdf&lt;/test&gt;&lt;/tests&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[34f58e6:WindowsPath]</string>
+     </void>
+     <void property="name">
+      <string>Pipe CallHelloWorld</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.ForEachChildElementPipe</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>&lt;pipe blockPrefix=&quot;&amp;lt;batch&amp;gt;&quot; blockSize=&quot;3&quot; blockSuffix=&quot;&amp;lt;/batch&amp;gt;&quot; className=&quot;nl.nn.adapterframework.pipes.ForEachChildElementPipe&quot; elementXPathExpression=&quot;/tests/test&quot; exceptionOnResult=&quot;[error]&quot; name=&quot;CallHelloWorld&quot; timeoutOnResult=&quot;[timeout]&quot;&gt;
+	&lt;sender className=&quot;nl.nn.adapterframework.senders.IbisLocalSender&quot; javaListener=&quot;HelloWorld&quot;/&gt;
+	&lt;forward name=&quot;success&quot; path=&quot;EXIT&quot;/&gt;
+&lt;/pipe&gt;</string>
+     </void>
+     <void property="name">
+      <string>Pipe CallHelloWorld</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.ForEachChildElementPipe</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>6</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="name">
+      <string>Thread</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.ForEachChildElementPipe</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9/Thread-41</string>
+     </void>
+     <void property="type">
+      <int>8</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>3</int>
+     </void>
+     <void property="message">
+      <string>&lt;batch&gt;&lt;test&gt;asdf&lt;/test&gt;&lt;/batch&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[61d86778:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipeline HelloWorld</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.core.PipeLine</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9/Thread-41</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>4</int>
+     </void>
+     <void property="message">
+      <string>Test a Pipeline 1</string>
+     </void>
+     <void property="name">
+      <string>SessionKey cid</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9/Thread-41</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>4</int>
+     </void>
+     <void property="message">
+      <string>synthetic-message-id-c0a8b2de-70843a64_18e328c98fc_-7fd2</string>
+     </void>
+     <void property="name">
+      <string>SessionKey mid</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9/Thread-41</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>4</int>
+     </void>
+     <void property="message">
+      <string>&lt;batch&gt;&lt;test&gt;asdf&lt;/test&gt;&lt;/batch&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[61d86778:String]</string>
+     </void>
+     <void property="name">
+      <string>SessionKey originalMessage</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9/Thread-41</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>4</int>
+     </void>
+     <void property="message">
+      <string>2024-03-12 13:05:29.296</string>
+     </void>
+     <void property="name">
+      <string>SessionKey tsReceived</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9/Thread-41</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>4</int>
+     </void>
+     <void property="message">
+      <string>&lt;batch&gt;&lt;test&gt;asdf&lt;/test&gt;&lt;/batch&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[61d86778:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipe HelloWorld</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.ReplacerPipe</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9/Thread-41</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>&lt;pipe className=&quot;nl.nn.adapterframework.pipes.ReplacerPipe&quot; emptyInputReplacement=&quot;Hello World!&quot; find=&quot;Line&quot; getInputFromSessionKey=&quot;message&quot; name=&quot;HelloWorld&quot; replace=&quot;Hello World&quot;&gt;
+	&lt;forward name=&quot;success&quot; path=&quot;READY&quot;/&gt;
+&lt;/pipe&gt;</string>
+     </void>
+     <void property="name">
+      <string>Pipe HelloWorld</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.ReplacerPipe</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9/Thread-41</string>
+     </void>
+     <void property="type">
+      <int>6</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="messageClassName">
+      <string>Message[4eeae2:&lt;null&gt;]</string>
+     </void>
+     <void property="name">
+      <string>SessionKey message</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9/Thread-41</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="messageClassName">
+      <string>Message[47e1e7e3:&lt;null&gt;]</string>
+     </void>
+     <void property="name">
+      <string>GetInputFromSessionKey message</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9/Thread-41</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>Hello World!</string>
+     </void>
+     <void property="name">
+      <string>getEmptyInputReplacement</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9/Thread-41</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>5</int>
+     </void>
+     <void property="message">
+      <string>Hello World!</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[20ec929a:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipe HelloWorld</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.ReplacerPipe</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9/Thread-41</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>4</int>
+     </void>
+     <void property="message">
+      <string>SUCCESS</string>
+     </void>
+     <void property="name">
+      <string>exitState</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9/Thread-41</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>4</int>
+     </void>
+     <void property="message">
+      <string>Hello World!</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[20ec929a:String]</string>
+     </void>
+     <void property="name">
+      <string>Pipeline HelloWorld</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.core.PipeLine</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9/Thread-41</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>3</int>
+     </void>
+     <void property="message">
+      <string>0</string>
+     </void>
+     <void property="name">
+      <string>SessionKey exitCode</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9/Thread-41</string>
+     </void>
+     <void property="type">
+      <int>5</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>XMLEncoder</string>
+     </void>
+     <void property="level">
+      <int>3</int>
+     </void>
+     <void property="message">
+      <string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;java version=&quot;21.0.2&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;object class=&quot;java.lang.Enum&quot; method=&quot;valueOf&quot;&gt;
+  &lt;class&gt;nl.nn.adapterframework.core.PipeLine$ExitState&lt;/class&gt;
+  &lt;string&gt;SUCCESS&lt;/string&gt;
+ &lt;/object&gt;
+&lt;/java&gt;
+</string>
+     </void>
+     <void property="messageClassName">
+      <string>nl.nn.adapterframework.core.PipeLine$ExitState</string>
+     </void>
+     <void property="name">
+      <string>SessionKey exitState</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9/Thread-41</string>
+     </void>
+     <void property="type">
+      <int>5</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>3</int>
+     </void>
+     <void property="name">
+      <string>Thread</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.ForEachChildElementPipe</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9/Thread-41</string>
+     </void>
+     <void property="type">
+      <int>9</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>&lt;root&gt;
+	&lt;test&gt;asdf&lt;/test&gt;
+&lt;/root&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>request to provide outputstream</string>
+     </void>
+     <void property="name">
+      <string>XML after preprocessing: filter XPath &apos;/tests/test&apos;</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="streaming">
+      <string>Character</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>UTF-8</string>
+     </void>
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>&lt;results&gt;
+&lt;result item=&quot;1&quot;&gt;
+Hello World!
+&lt;/result&gt;
+&lt;/results&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[2c485e6d:WindowsPath]</string>
+     </void>
+     <void property="name">
+      <string>Pipe CallHelloWorld</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.pipes.ForEachChildElementPipe</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>SUCCESS</string>
+     </void>
+     <void property="name">
+      <string>exitState</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>UTF-8</string>
+     </void>
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>&lt;results&gt;
+&lt;result item=&quot;1&quot;&gt;
+Hello World!
+&lt;/result&gt;
+&lt;/results&gt;</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[2c485e6d:WindowsPath]</string>
+     </void>
+     <void property="name">
+      <string>Pipeline HelloWorlds</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>nl.nn.adapterframework.core.PipeLine</string>
+     </void>
+     <void property="threadName">
+      <string>http-nio-8080-exec-9</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+  </void>
+  <void property="correlationId">
+   <string>Test a Pipeline 1</string>
+  </void>
+  <void property="endTime">
+   <long>1710245129330</long>
+  </void>
+  <void property="name">
+   <string>Pipeline HelloWorlds</string>
+  </void>
+  <void property="startTime">
+   <long>1710245129166</long>
+  </void>
+  <void property="storageId">
+   <int>2</int>
+  </void>
+  <void property="stubStrategy">
+   <string>Stub all senders</string>
+  </void>
+ </object>
+</java>
