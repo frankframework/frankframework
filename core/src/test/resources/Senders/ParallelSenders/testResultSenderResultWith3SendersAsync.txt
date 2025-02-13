@@ -1,0 +1,12 @@
+<results>
+	<result senderClass="SlowRenderer" success="true" type="String">testFile with BOM —•˜›</result>
+	<result senderClass="SlowRenderer" success="true" type="String">testFile with BOM —•˜›</result>
+	<result senderClass="SlowRenderer" success="true" type="String">testFile with BOM —•˜›</result>
+	<result senderClass="SlowRenderer" success="true" type="String">testFile with BOM —•˜›</result>
+	<result senderClass="SlowRenderer" success="true" type="String">testFile with BOM —•˜›</result>
+	<result senderClass="SlowRenderer" success="true" type="String">testFile with BOM —•˜›</result>
+	<result senderClass="SlowRenderer" success="true" type="String">testFile with BOM —•˜›</result>
+	<result senderClass="SlowRenderer" success="true" type="String">testFile with BOM —•˜›</result>
+	<result senderClass="SlowRenderer" success="true" type="String">testFile with BOM —•˜›</result>
+	<result senderClass="SlowRenderer" success="true" type="String">testFile with BOM —•˜›</result>
+</results>

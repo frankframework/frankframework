@@ -234,6 +234,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		session.close();
 
 		// Assert
+		log.debug("testResultSenderResultWith3ShadowSendersAsync result:\n", result);
 		assertEquals(ORIGINAL_SENDER_RESULT, result);
 
 		Thread.sleep(3000); // wait for results to be collected in the background
