@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,54 +15,63 @@
 */
 package org.frankframework.ladybug.config;
 
-import lombok.extern.log4j.Log4j2;
 import nl.nn.testtool.web.ApiServlet;
 import nl.nn.testtool.web.FrontendServlet;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-@Log4j2
+import org.frankframework.lifecycle.DynamicRegistration;
+import org.frankframework.lifecycle.servlets.SecuritySettings;
+import org.frankframework.lifecycle.servlets.ServletConfiguration;
+import org.frankframework.util.SpringUtils;
+
 @Configuration
-public class LadybugConfiguration {
+public class LadybugConfiguration implements ApplicationContextAware {
+	private ApplicationContext applicationContext;
 
-	@Bean
-	public ServletRegistrationBean<ApiServlet> ladybugApiServletBean() {
-		ServletRegistrationBean<ApiServlet> registrationBean = new ServletRegistrationBean<>();
-		ApiServlet servlet = new ApiServlet();
-		registrationBean.setServlet(servlet);
-		registrationBean.addUrlMappings("/iaf" + ApiServlet.getDefaultMapping());
-		registrationBean.setInitParameters(ApiServlet.getDefaultInitParameters());
-		registrationBean.setName("Ladybug-" + servlet.getClass().getSimpleName());
-		registrationBean.setLoadOnStartup(0);
-
-		log.info("created servlet {} endpoint {}", registrationBean.getServletName(), registrationBean.getUrlMappings());
-		return registrationBean;
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
+		SecuritySettings.setupDefaultSecuritySettings(applicationContext.getEnvironment());
 	}
 
 	@Bean
-	public ServletRegistrationBean<FrontendServlet> ladybugFrontendServletBean() {
-		ServletRegistrationBean<FrontendServlet> registrationBean = new ServletRegistrationBean<>();
-		FrontendServlet servlet = new FrontendServlet();
-		registrationBean.setServlet(servlet);
-		registrationBean.addUrlMappings("/iaf" + FrontendServlet.getDefaultMapping());
-		registrationBean.setName("Ladybug-" + servlet.getClass().getSimpleName());
-		registrationBean.setLoadOnStartup(0);
+	public ServletRegistration<ApiServlet> ladybugApiServletBean() {
+		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
+		servletConfiguration.setUrlMapping("/iaf" + ApiServlet.getDefaultMapping());
+		servletConfiguration.setSecurityRoles(DynamicRegistration.ALL_IBIS_USER_ROLES);
+		ApiServlet.getDefaultInitParameters().forEach(servletConfiguration::addInitParameter);
+		servletConfiguration.setName("Ladybug-ApiServlet");
+		servletConfiguration.setLoadOnStartup(0);
+		servletConfiguration.loadProperties();
 
-		log.info("created servlet {} endpoint {}", registrationBean.getServletName(), registrationBean.getUrlMappings());
-		return registrationBean;
+		return new ServletRegistration<>(ApiServlet.class, servletConfiguration);
 	}
 
 	@Bean
-	public ServletRegistrationBean<TesttoolServlet> testtoolServletBean() {
-		ServletRegistrationBean<TesttoolServlet> registrationBean = new ServletRegistrationBean<>();
-		TesttoolServlet servlet = new TesttoolServlet();
-		registrationBean.setServlet(servlet);
-		registrationBean.addUrlMappings("/iaf/testtool");
-		registrationBean.setName("TestTool");
-		registrationBean.setLoadOnStartup(0);
+	public ServletRegistration<FrontendServlet> ladybugFrontendServletBean() {
+		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
+		servletConfiguration.setUrlMapping("/iaf" + FrontendServlet.getDefaultMapping());
+		servletConfiguration.setSecurityRoles(DynamicRegistration.ALL_IBIS_USER_ROLES);
+		servletConfiguration.setName("Ladybug-FrontendServlet");
+		servletConfiguration.setLoadOnStartup(0);
+		servletConfiguration.loadProperties();
 
-		log.info("created servlet {} endpoint {}", registrationBean.getServletName(), registrationBean.getUrlMappings());
-		return registrationBean;
+		return new ServletRegistration<>(FrontendServlet.class, servletConfiguration);
+	}
+
+	@Bean
+	public ServletRegistration<TesttoolServlet> testtoolServletBean() {
+		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
+		servletConfiguration.setUrlMapping("/iaf/testtool");
+		servletConfiguration.setSecurityRoles(DynamicRegistration.ALL_IBIS_USER_ROLES);
+		servletConfiguration.setName("TestTool");
+		servletConfiguration.setLoadOnStartup(0);
+		servletConfiguration.loadProperties();
+
+		return new ServletRegistration<>(TesttoolServlet.class, servletConfiguration);
 	}
 }
