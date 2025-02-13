@@ -61,6 +61,7 @@ public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlV
 	@MethodSource("testLargeInputArguments")
 	public void testLargeCharInput(DocumentFormat inputFormat, DocumentFormat outputFormat, long minDataSize) throws Exception {
 		// Arrange
+		log.info("<*> Testing large char input, inputFormat [{}], outputFormat [{}], minDataSize [{}]", inputFormat, outputFormat, minDataSize);
 		configurePipe(pipe, inputFormat, outputFormat);
 
 		Reader reader;
@@ -74,6 +75,7 @@ public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlV
 		// Act
 		PipeRunResult prr = pipe.doPipe(input, session);
 		Message result = prr.getResult();
+		System.err.println("Output size: " + result.size() + "; input = " + inputFormat + "; output = " + outputFormat);
 
 		// Assert
 		assertResultSize(minDataSize, result);
@@ -86,6 +88,7 @@ public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlV
 	@MethodSource("testLargeInputArguments")
 	public void testLargeBinaryInput(DocumentFormat inputFormat, DocumentFormat outputFormat, long minDataSize) throws Exception {
 		// Arrange
+		log.info("<*> Testing large binary input, inputFormat [{}], outputFormat [{}], minDataSize [{}]", inputFormat, outputFormat, minDataSize);
 		configurePipe(pipe, inputFormat, outputFormat);
 
 		InputStream inputStream;
@@ -99,6 +102,7 @@ public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlV
 		// Act
 		PipeRunResult prr = pipe.doPipe(input, session);
 		Message result = prr.getResult();
+		System.err.println("Output size: " + result.size() + "; input = " + inputFormat + "; output = " + outputFormat);
 
 		// Assert
 		assertResultSize(minDataSize, result);
@@ -122,7 +126,6 @@ public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlV
 
 	private static void assertResultSize(long minDataSize, Message result) {
 		assertFalse(result.isEmpty());
-		System.err.println("Output size: " + result.size());
 
 		// JSON and XML size can vary a lot in size so allow a large margin; mostly this guards against errors where the output is really unrealistically small.
 		long maxAllowedDelta = minDataSize / 3; // Actual result may be at most 30 pct smaller or larger than minimum input size
