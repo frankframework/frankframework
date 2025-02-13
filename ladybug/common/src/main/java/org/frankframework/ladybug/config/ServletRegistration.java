@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.console.configuration;
+package org.frankframework.ladybug.config;
 
 import java.util.List;
 import java.util.Map;
@@ -43,7 +43,7 @@ public class ServletRegistration<T extends HttpServlet> extends ServletRegistrat
 	private @Setter ApplicationContext applicationContext;
 	private final @Getter ServletConfiguration servletConfiguration;
 	private final Class<T> servletClass;
-	private @Setter @Autowired IAuthenticator consoleAuthenticator;
+	private @Setter @Autowired IAuthenticator ladybugAuthenticator;
 
 	public ServletRegistration(Class<T> servletClass, ServletConfiguration config) {
 		this.servletClass = servletClass;
@@ -67,12 +67,12 @@ public class ServletRegistration<T extends HttpServlet> extends ServletRegistrat
 		setLoadOnStartup(servletConfiguration.getLoadOnStartup());
 		super.setServlet(servlet);
 
-		log.info("created servlet {} with endpoint {} using authenticator {}", this::getServletName, this::getUrlMappings, () -> ClassUtils.classNameOf(consoleAuthenticator));
+		log.info("created servlet {} with endpoint {} using authenticator {}", this::getServletName, this::getUrlMappings, () -> ClassUtils.classNameOf(ladybugAuthenticator));
 	}
 
 	@Override
 	protected void configure(Dynamic registration) {
-		if(consoleAuthenticator instanceof JeeAuthenticator) {
+		if(ladybugAuthenticator instanceof JeeAuthenticator) {
 			registration.setServletSecurity(getServletSecurity());
 		}
 		super.configure(registration);
