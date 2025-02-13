@@ -57,14 +57,14 @@ class LargeStructuredMockDataTest {
 	}
 
 	@Test
-	void parseLargeJsonDataReader() throws Exception {
+	void parseLargeJsonDataReader() {
 		Reader reader = LargeStructuredMockData.getLargeJsonDataReader(200);
 		JsonStructure jsonStructure = assertDoesNotThrow(() -> Json.createReader(reader).read());
 		assertJsonResult(jsonStructure.toString());
 	}
 
 	@Test
-	void parseLargeXmlDataReader() throws Exception {
+	void parseLargeXmlDataReader() {
 		Reader reader = LargeStructuredMockData.getLargeXmlDataReader(400);
 		StringWriter writer = new StringWriter();
 		XmlWriter handler = new XmlWriter(writer);
@@ -76,14 +76,14 @@ class LargeStructuredMockDataTest {
 	}
 
 	@Test
-	void parseLargeJsonDataInputStream() throws Exception {
+	void parseLargeJsonDataInputStream() {
 		InputStream inputStream = LargeStructuredMockData.getLargeJsonDataInputStream(200, StandardCharsets.UTF_8);
 		JsonStructure jsonStructure = assertDoesNotThrow(() -> Json.createReader(inputStream).read());
 		assertJsonResult(jsonStructure.toString());
 	}
 
 	@Test
-	void parseLargeXmlDataInputStream() throws Exception {
+	void parseLargeXmlDataInputStream() {
 		InputStream inputStream = LargeStructuredMockData.getLargeXmlDataInputStream(400, StandardCharsets.UTF_8);
 		StringWriter writer = new StringWriter();
 		XmlWriter handler = new XmlWriter(writer);

@@ -134,7 +134,7 @@ public class LargeStructuredMockData {
 			this.closingBlock = closingBlock.toCharArray();
 			this.repeatedBlock = repeatedBlock.toCharArray();
 
-			currentBuffer = this.openingBlock;
+			this.currentBuffer = this.openingBlock;
 		}
 
 		@Override
@@ -142,7 +142,7 @@ public class LargeStructuredMockData {
 			if (isClosed) {
 				throw new EOFException("Reader is closed");
 			}
-			if (currentIndex >= currentBuffer.length) {
+			if (currentBuffer != null && currentIndex >= currentBuffer.length) {
 				currentBuffer = findNextBuffer();
 				currentIndex = 0;
 			}
@@ -190,7 +190,7 @@ public class LargeStructuredMockData {
 			this.closingBlock = closingBlock.getBytes(charset);
 			this.repeatedBlock = repeatedBlock.getBytes(charset);
 
-			currentBuffer = this.openingBlock;
+			this.currentBuffer = this.openingBlock;
 		}
 
 		@Override
@@ -208,7 +208,7 @@ public class LargeStructuredMockData {
 			if (isClosed) {
 				throw new EOFException("Reader is closed");
 			}
-			if (currentIndex >= currentBuffer.length) {
+			if (currentBuffer != null && currentIndex >= currentBuffer.length) {
 				currentBuffer = findNextBuffer();
 				currentIndex = 0;
 			}
