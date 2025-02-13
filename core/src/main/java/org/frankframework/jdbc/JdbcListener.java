@@ -400,6 +400,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			updateStatusQueries.remove(state);
 		}
 	}
+
 	public String getUpdateStatusQuery(ProcessState state) {
 		return updateStatusQueries.get(state);
 	}

@@ -45,6 +45,7 @@ public class FrankResources {
 
 	private @Setter List<Resource> jdbc;
 	private @Setter List<Resource> jms;
+	private @Setter List<Resource> mqtt;
 	private @Setter List<Resource> other;
 
 	@Getter @Setter
@@ -66,7 +67,7 @@ public class FrankResources {
 	@SuppressWarnings("unchecked")
 	public @Nullable <O> O lookup(@Nonnull String name, @Nullable Properties environment, @Nonnull Class<O> lookupClass) throws ClassNotFoundException {
 		if(name.indexOf('/') == -1) {
-			throw new IllegalStateException("no resource prefix found, expected one of [jdbc/jms/mongodb]");
+			throw new IllegalStateException("no resource prefix found, expected one of [jdbc/jms/mongodb/mqtt]");
 		}
 
 		Resource resource = findResource(name);
@@ -80,11 +81,13 @@ public class FrankResources {
 		Properties properties = getConnectionProperties(resource, environment);
 		String url = StringResolver.substVars(resource.getUrl(), APP_CONSTANTS);
 		String type = StringResolver.substVars(resource.getType(), APP_CONSTANTS);
+
 		Class<?> clazz = ClassUtils.loadClass(type);
 
 		if(lookupClass.isAssignableFrom(DataSource.class) && Driver.class.isAssignableFrom(clazz)) { // It's also possible to use the native drivers instead of the DataSources directly.
 			return (O) loadDataSourceThroughDriver(clazz, url, properties);
 		}
+
 		if(lookupClass.isAssignableFrom(clazz)) {
 			return (O) createInstance(clazz, url, properties);
 		}
@@ -109,6 +112,7 @@ public class FrankResources {
 		return switch (prefix) {
 			case "jdbc" -> findResource(jdbc, resourceName);
 			case "jms" -> findResource(jms, resourceName);
+			case "mqtt" -> findResource(mqtt, resourceName);
 			case "mongodb" -> findResource(other, resourceName);
 			default -> throw new IllegalArgumentException("unexpected lookup type: " + prefix);
 		};

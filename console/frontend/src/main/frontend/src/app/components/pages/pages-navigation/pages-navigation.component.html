@@ -13,7 +13,7 @@
 
         <app-custom-views></app-custom-views>
 
-        <li appHasAccessToLink="getAdapters" routerLinkActive="active">
+        <li appHasAccessToLink="getAdapters" routerLinkActive="active" data-cy="pages-navigation__status">
           <a data-cy-nav="adapterStatus" routerLink="/status" (click)="closeExpandedItem()"
             ><i class="fa fa-dashboard"></i> <span class="nav-label">Adapter Status</span></a
           >
@@ -178,7 +178,7 @@
             ><i class="fa fa-calendar"></i> <span class="nav-label">Scheduler</span></a
           >
         </li>
-        <li appHasAccessToLink="getMonitors" routerLinkActive="active">
+        <li appHasAccessToLink="getMonitors" routerLinkActive="active" data-cy="pages-navigation__monitors">
           <a routerLink="/monitors" (click)="closeExpandedItem()"
             ><i class="fa fa-clone"></i> <span class="nav-label">Monitors</span></a
           >
