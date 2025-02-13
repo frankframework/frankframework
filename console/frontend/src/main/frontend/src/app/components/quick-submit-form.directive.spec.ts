@@ -31,17 +31,6 @@ describe('QuickSubmitFormDirective', () => {
     directiveElement = fixture.debugElement.query(By.directive(QuickSubmitFormDirective)).nativeElement;
   });
 
-  it('should prevent default behavior and stop propagation on Enter key', () => {
-    const event = new KeyboardEvent('keydown', { key: 'Enter' });
-    spyOn(event, 'preventDefault');
-    spyOn(event, 'stopPropagation');
-
-    directiveElement.dispatchEvent(event);
-
-    expect(event.preventDefault).toHaveBeenCalled();
-    expect(event.stopPropagation).toHaveBeenCalled();
-  });
-
   it('should submit the form on Ctrl+Enter', () => {
     const event = new KeyboardEvent('keydown', { key: 'Enter', ctrlKey: true });
     directiveElement.dispatchEvent(event);

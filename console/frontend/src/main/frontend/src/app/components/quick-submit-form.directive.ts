@@ -6,8 +6,8 @@ import { Directive, ElementRef, HostListener } from '@angular/core';
 export class QuickSubmitFormDirective {
   constructor(private element: ElementRef<HTMLFormElement>) {}
 
-  @HostListener('keydown.ctrl.enter', ['$event'])
-  onCtrlEnter(): boolean | void {
+  @HostListener('keydown.control.enter')
+  onControlEnter(): boolean | void {
     this.element.nativeElement.dispatchEvent(new Event('submit'));
   }
 }
