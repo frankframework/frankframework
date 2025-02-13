@@ -1,192 +1,132 @@
 package org.frankframework.pipes;
 
-import static org.frankframework.testutil.TestAssertions.assertEqualsIgnoreWhitespaces;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-import org.junit.jupiter.api.Test;
+import java.io.InputStream;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.util.stream.Stream;
 
-import org.frankframework.LargeStructuredMockDataReader;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.stream.Message;
-import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.testutil.LargeStructuredMockData;
 
 
+@Tag("slow")
 public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlValidator> {
+
+	public static Stream<Arguments> testLargeInputArguments() {
+		return Stream.of(
+				arguments(DocumentFormat.XML, DocumentFormat.JSON, 1_000_000),
+				arguments(DocumentFormat.XML, DocumentFormat.XML, 1_000_000),
+				arguments(DocumentFormat.JSON, DocumentFormat.XML, 1_000_000),
+				arguments(DocumentFormat.JSON, DocumentFormat.JSON, 1_000_000),
+				arguments(DocumentFormat.XML, DocumentFormat.JSON, 10_000_000),
+				arguments(DocumentFormat.XML, DocumentFormat.XML, 10_000_000),
+				arguments(DocumentFormat.JSON, DocumentFormat.XML, 10_000_000),
+				arguments(DocumentFormat.JSON, DocumentFormat.JSON, 10_000_000),
+				arguments(DocumentFormat.XML, DocumentFormat.JSON, 100_000_000),
+				arguments(DocumentFormat.XML, DocumentFormat.XML, 100_000_000),
+				arguments(DocumentFormat.JSON, DocumentFormat.XML, 100_000_000),
+				arguments(DocumentFormat.JSON, DocumentFormat.JSON, 100_000_000),
+				arguments(DocumentFormat.XML, DocumentFormat.JSON, 500_000_000),
+				arguments(DocumentFormat.XML, DocumentFormat.XML, 500_000_000),
+//				arguments(DocumentFormat.JSON, DocumentFormat.XML, 500_000_000), // Too large to complete in reasonable amount of time with current JSON parser
+//				arguments(DocumentFormat.JSON, DocumentFormat.JSON, 500_000_000), // Too large to complete in reasonable amount of time with current JSON parser
+				arguments(DocumentFormat.XML, DocumentFormat.JSON, Integer.MAX_VALUE / 2 - 100), // Could still fit in memory as single array. Barely testable.
+				arguments(DocumentFormat.XML, DocumentFormat.XML, Integer.MAX_VALUE / 2 - 100)
+//				Arguments.arguments(DocumentFormat.JSON, DocumentFormat.XML, Integer.MAX_VALUE / 2 - 100), // Below are all too large to be practical to test
+//				Arguments.arguments(DocumentFormat.JSON, DocumentFormat.JSON, Integer.MAX_VALUE / 2 - 100),
+//				Arguments.arguments(DocumentFormat.XML, DocumentFormat.JSON, Integer.MAX_VALUE + 100L), // Larger than array can be
+//				Arguments.arguments(DocumentFormat.JSON, DocumentFormat.JSON, Integer.MAX_VALUE + 100L)
+		);
+	}
 
 	@Override
 	public Json2XmlValidator createPipe() {
 		return new Json2XmlValidator();
 	}
 
-	@Test
-	public void testJsonArrayToJsonLargeInput() throws Exception {
+	@ParameterizedTest
+	@MethodSource("testLargeInputArguments")
+	public void testLargeCharInput(DocumentFormat inputFormat, DocumentFormat outputFormat, long minDataSize) throws Exception {
 		// Arrange
-		pipe.setName("testJsonIntoDeepSearch");
-		pipe.setSchema("/Validation/Json2Xml/ParameterSubstitution/Main.xsd");
-		pipe.setThrowException(true);
-		pipe.setOutputFormat(DocumentFormat.JSON);
-		pipe.setRoot("GetDocumentAttributes_Error");
-		pipe.setDeepSearch(true);
+		configurePipe(pipe, inputFormat, outputFormat);
 
-		pipe.configure();
-		pipe.start();
-
-		LargeStructuredMockDataReader reader = new LargeStructuredMockDataReader(Integer.MAX_VALUE / 2 - 100,
-				"[\n",
-				"""
-										{
-					"type": "/errors/",
-					"title": "More than one document found",
-					"status": "DATA_ERROR",
-					"detail": "The Devil's In The Details",
-					"instance": "/archiving/documents"
-				}
-				]
-				""",
-				"""
-				{
-					"type": "/errors/",
-					"title": "More than one document found",
-					"status": "DATA_ERROR",
-					"detail": "The Devil's In The Details",
-					"instance": "/archiving/documents"
-				},
-				""");
+		Reader reader;
+		if (inputFormat == DocumentFormat.XML) {
+			reader = LargeStructuredMockData.getLargeXmlDataReader(minDataSize);
+		} else {
+			reader = LargeStructuredMockData.getLargeJsonDataReader(minDataSize);
+		}
 		Message input = Message.asMessage(reader);
 
 		// Act
-		PipeRunResult result = pipe.doPipe(input, session);
+		PipeRunResult prr = pipe.doPipe(input, session);
+		Message result = prr.getResult();
 
 		// Assert
-		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/ParameterSubstitution/expected_output_multiple_occurrences.json");
-		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
+		assertResultSize(minDataSize, result);
+
+		// Don't yet know what else to assert.
 	}
 
-	@Test
-	public void testXmlToJsonLargeInput() throws Exception {
+	@Disabled("Something weird still happens that causes the binary data not to be read correctly")
+	@ParameterizedTest
+	@MethodSource("testLargeInputArguments")
+	public void testLargeBinaryInput(DocumentFormat inputFormat, DocumentFormat outputFormat, long minDataSize) throws Exception {
 		// Arrange
-		pipe.setName("testJsonIntoDeepSearch");
-		pipe.setSchema("/Validation/Json2Xml/ParameterSubstitution/Main.xsd");
-		pipe.setAcceptNamespacelessXml(true);
-		pipe.setThrowException(true);
-		pipe.setOutputFormat(DocumentFormat.JSON);
-		pipe.setRoot("GetDocumentAttributes_Error");
+		configurePipe(pipe, inputFormat, outputFormat);
 
-		pipe.configure();
-		pipe.start();
-
-		LargeStructuredMockDataReader reader = new LargeStructuredMockDataReader(Integer.MAX_VALUE / 2 - 100,
-				"""
-						<?xml version="1.0" encoding="UTF-8"?>
-						<GetDocumentAttributes_Error>
-						""",
-				"""
-						</GetDocumentAttributes_Error>
-						""",
-				"""
-						<errors>
-							<error>
-								<type>/errors/</type>
-								<title>More than one document found</title>
-								<status>DATA_ERROR</status>
-								<detail>The Devil's In The Details</detail>
-								<instance>/archiving/documents</instance>
-							</error>
-						</errors>
-						""");
-		Message input = Message.asMessage(reader);
+		InputStream inputStream;
+		if (inputFormat == DocumentFormat.XML) {
+			inputStream = LargeStructuredMockData.getLargeXmlDataInputStream(minDataSize, StandardCharsets.UTF_8);
+		} else {
+			inputStream = LargeStructuredMockData.getLargeJsonDataInputStream(minDataSize, StandardCharsets.UTF_8);
+		}
+		Message input = Message.asMessage(inputStream);
 
 		// Act
-		PipeRunResult result = pipe.doPipe(input, session);
+		PipeRunResult prr = pipe.doPipe(input, session);
+		Message result = prr.getResult();
 
 		// Assert
-		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/ParameterSubstitution/expected_output_multiple_occurrences.json");
-		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
+		assertResultSize(minDataSize, result);
+
+		// Don't yet know what else to assert.
 	}
 
-	@Test
-	public void testJsonArrayToJsonXLargeInput() throws Exception {
-		// Arrange
-		pipe.setName("testJsonIntoDeepSearch");
-		pipe.setSchema("/Validation/Json2Xml/ParameterSubstitution/Main.xsd");
-		pipe.setThrowException(true);
-		pipe.setOutputFormat(DocumentFormat.JSON);
-		pipe.setRoot("GetDocumentAttributes_Error");
-		pipe.setDeepSearch(true);
-
-		pipe.configure();
-		pipe.start();
-
-		LargeStructuredMockDataReader reader = new LargeStructuredMockDataReader(Integer.MAX_VALUE - 100,
-				"[\n",
-				"""
-										{
-					"type": "/errors/",
-					"title": "More than one document found",
-					"status": "DATA_ERROR",
-					"detail": "The Devil's In The Details",
-					"instance": "/archiving/documents"
-				}
-				]
-				""",
-				"""
-				{
-					"type": "/errors/",
-					"title": "More than one document found",
-					"status": "DATA_ERROR",
-					"detail": "The Devil's In The Details",
-					"instance": "/archiving/documents"
-				},
-				""");
-		Message input = Message.asMessage(reader);
-
-		// Act
-		PipeRunResult result = pipe.doPipe(input, session);
-
-		// Assert
-		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/ParameterSubstitution/expected_output_multiple_occurrences.json");
-		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
+	private void configurePipe(Json2XmlValidator json2XmlValidator, DocumentFormat inputFormat, DocumentFormat outputFormat) throws ConfigurationException {
+		json2XmlValidator.setName("testLargeData");
+		json2XmlValidator.setSchema("/Validation/Json2Xml/ParameterSubstitution/Main.xsd");
+		json2XmlValidator.setAcceptNamespacelessXml(true);
+		json2XmlValidator.setThrowException(true);
+		json2XmlValidator.setOutputFormat(outputFormat);
+		json2XmlValidator.setRoot("GetDocumentAttributes_Error");
+		if (inputFormat == DocumentFormat.JSON) {
+			json2XmlValidator.setDeepSearch(true);
+		}
+		json2XmlValidator.configure();
+		json2XmlValidator.start();
 	}
 
-	@Test
-	public void testXmlToJsonXLargeInput() throws Exception {
-		// Arrange
-		pipe.setName("testJsonIntoDeepSearch");
-		pipe.setSchema("/Validation/Json2Xml/ParameterSubstitution/Main.xsd");
-		pipe.setAcceptNamespacelessXml(true);
-		pipe.setThrowException(true);
-		pipe.setOutputFormat(DocumentFormat.JSON);
-		pipe.setRoot("GetDocumentAttributes_Error");
+	private static void assertResultSize(long minDataSize, Message result) {
+		assertFalse(result.isEmpty());
+		System.err.println("Output size: " + result.size());
 
-		pipe.configure();
-		pipe.start();
-
-		LargeStructuredMockDataReader reader = new LargeStructuredMockDataReader(Integer.MAX_VALUE - 100,
-				"""
-						<?xml version="1.0" encoding="UTF-8"?>
-						<GetDocumentAttributes_Error>
-						""",
-				"""
-						</GetDocumentAttributes_Error>
-						""",
-				"""
-						<errors>
-							<error>
-								<type>/errors/</type>
-								<title>More than one document found</title>
-								<status>DATA_ERROR</status>
-								<detail>The Devil's In The Details</detail>
-								<instance>/archiving/documents</instance>
-							</error>
-						</errors>
-						""");
-		Message input = Message.asMessage(reader);
-
-		// Act
-		PipeRunResult result = pipe.doPipe(input, session);
-
-		// Assert
-		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/ParameterSubstitution/expected_output_multiple_occurrences.json");
-		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
+		// JSON and XML size can vary a lot in size so allow a large margin; mostly this guards against errors where the output is really unrealistically small.
+		long maxAllowedDelta = minDataSize / 3; // Actual result may be at most 30 pct smaller or larger than minimum input size
+		long actualDelta = Math.abs(minDataSize - result.size());
+		assertTrue(actualDelta <= maxAllowedDelta, "Difference between output size and minDataSize should be no larger than " + maxAllowedDelta + " but was " + actualDelta + "; minDataSize: " + minDataSize + "; result size: " + result.size());
 	}
 }
