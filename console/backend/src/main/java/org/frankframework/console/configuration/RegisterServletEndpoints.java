@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 - 2024 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,6 +33,12 @@ import jakarta.servlet.MultipartConfigElement;
 public class RegisterServletEndpoints implements ApplicationContextAware {
 	private ApplicationContext applicationContext;
 
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
+		SecuritySettings.setupDefaultSecuritySettings(applicationContext.getEnvironment());
+	}
+
 	@Bean
 	public ServletRegistration<DispatcherServlet> backendServletBean() {
 		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
@@ -58,11 +64,5 @@ public class RegisterServletEndpoints implements ApplicationContextAware {
 		servletConfiguration.loadProperties();
 
 		return new ServletRegistration<>(ConsoleFrontend.class, servletConfiguration);
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
-		SecuritySettings.setupDefaultSecuritySettings(applicationContext.getEnvironment());
 	}
 }
