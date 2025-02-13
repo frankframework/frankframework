@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import jakarta.servlet.Filter;
 import jakarta.servlet.ServletContext;
 
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,7 +29,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -43,8 +43,6 @@ import org.springframework.security.config.annotation.web.configurers.LogoutConf
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 import org.springframework.web.context.ServletContextAware;
-
-import lombok.Setter;
 
 import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.lifecycle.servlets.AuthenticatorUtils;
