@@ -4,14 +4,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
-public class IafTestInitializerTest {
+@Tag("slow")
+class IafTestInitializerTest {
 
+	/**
+	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually configure the application
+	 */
 	@Test
-	public void contextLoads() throws IOException {
+	void contextLoads() throws IOException {
 		SpringApplication springApplication = IafTestInitializer.configureApplication();
 
 		ConfigurableApplicationContext run = springApplication.run();
