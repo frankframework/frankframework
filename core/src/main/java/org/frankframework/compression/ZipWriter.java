@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.collection.AbstractCollectorPipe.Action;
 import org.frankframework.collection.CollectionException;
 import org.frankframework.collection.ICollector;
@@ -35,11 +37,12 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 
+@Log4j2
 public class ZipWriter implements ICollector<MessageZipEntry> {
 
 	private static final MediaType MIMETYPE_ZIP = new MediaType("application", "zip");
-	static final String PARAMETER_FILENAME="filename";
-	static final String PARAMETER_CONTENTS="contents";
+	static final String PARAMETER_FILENAME = "filename";
+	static final String PARAMETER_CONTENTS = "contents";
 
 	private final boolean includeFileHeaders;
 	private final String zipLocation;
@@ -91,11 +94,13 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 			if (StringUtils.isEmpty(filename) && contents != input) {
 				filename = input.asString();
 			}
-			session.unscheduleCloseOnSessionExit(contents);
+			session.unscheduleCloseOnSessionExit(contents); // Message will be consumed after the zip has been build.
 			MessageZipEntry entry = new MessageZipEntry(contents, filename);
 			if (includeFileHeaders) {
 				entry.computeFileHeaders();
 			}
+
+			log.debug("created part with name [{}]", filename);
 			return entry;
 		} catch (IOException e) {
 			throw new CollectionException("cannot write item", e);
@@ -104,6 +109,8 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 
 	@Override
 	public Message build(List<MessageZipEntry> parts) throws IOException {
+		log.debug("building zip archive with [{}] parts", parts::size);
+
 		MessageBuilder messageBuilder;
 		if(StringUtils.isEmpty(zipLocation)) {
 			messageBuilder = new MessageBuilder();

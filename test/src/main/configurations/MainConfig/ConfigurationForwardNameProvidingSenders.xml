@@ -77,7 +77,7 @@
 
 	<Adapter name="ForwardNameSelectable Child Adapter - HttpSender target">
 		<Receiver>
-			<ApiListener uriPattern="/statuscodeselectable/{exit}"/>
+			<ApiListener uriPattern="/statuscodeselectable/{exit}" allowAllParams="false"/>
 		</Receiver>
 		<Pipeline>
 			<Exits>

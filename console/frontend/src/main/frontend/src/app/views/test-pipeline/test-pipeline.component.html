@@ -1,8 +1,12 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   @for (alert of state; track alert) {
-    <ngb-alert data-cy-test-pipeline="runResult" [dismissible]="false" [type]="alert.type" data-cy="test-pipeline__alert">{{
-      alert.message
-    }}</ngb-alert>
+    <ngb-alert
+      data-cy-test-pipeline="runResult"
+      [dismissible]="false"
+      [type]="alert.type"
+      data-cy="test-pipeline__alert"
+      >{{ alert.message }}</ngb-alert
+    >
   }
   <div class="row">
     <div class="col-lg-12">
@@ -91,7 +95,7 @@
             </div>
             <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30">Message</label>
-              <div class="col-sm-9" style="height: 200px">
+              <div class="col-sm-9">
                 <app-monaco-editor
                   data-cy-test-pipeline="message"
                   class="form-control"
@@ -99,6 +103,7 @@
                   [options]="{ language: 'text' }"
                   [actions]="editorActions"
                   data-cy="test-pipeline__message__input"
+                  style="height: 200px"
                 ></app-monaco-editor>
               </div>
             </div>

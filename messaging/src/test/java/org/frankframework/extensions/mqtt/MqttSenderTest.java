@@ -14,6 +14,7 @@ import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.hivemq.HiveMQContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -23,7 +24,8 @@ import org.testcontainers.utility.DockerImageName;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
+@Tag("integration") // Requires Docker; exclude with '-DexcludedGroups=integration'
 public class MqttSenderTest extends SenderTestBase<MqttSender> {
 
 	@Container

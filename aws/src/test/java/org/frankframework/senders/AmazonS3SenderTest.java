@@ -9,6 +9,7 @@ import static org.mockito.Mockito.spy;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.testcontainers.junit.jupiter.Container;
@@ -34,6 +35,7 @@ import org.frankframework.util.StreamUtil;
  *
  */
 @Testcontainers(disabledWithoutDocker = true)
+@Tag("integration") // Requires Docker; exclude with '-DexcludedGroups=integration'
 public class AmazonS3SenderTest extends WritableFileSystemSenderTest<AmazonS3Sender, S3FileRef, AmazonS3FileSystem> {
 
 	@Container
