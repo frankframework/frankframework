@@ -1,5 +1,6 @@
 package org.frankframework.pipes;
 
+import static org.bson.assertions.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -27,6 +28,7 @@ public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlV
 
 	public static Stream<Arguments> testLargeInputArguments() {
 		return Stream.of(
+				arguments(DocumentFormat.XML, DocumentFormat.JSON, Integer.MAX_VALUE + 100L), // Larger than array can be
 				arguments(DocumentFormat.XML, DocumentFormat.JSON, 1_000_000),
 				arguments(DocumentFormat.XML, DocumentFormat.XML, 1_000_000),
 				arguments(DocumentFormat.JSON, DocumentFormat.XML, 1_000_000),
@@ -72,15 +74,23 @@ public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlV
 		}
 		Message input = Message.asMessage(reader);
 
+		// Act / Assert
+		runTestAndAssert(inputFormat, outputFormat, minDataSize, input);
+	}
+
+	private void runTestAndAssert(DocumentFormat inputFormat, DocumentFormat outputFormat, long minDataSize, Message input) throws Exception {
 		// Act
-		PipeRunResult prr = pipe.doPipe(input, session);
-		Message result = prr.getResult();
-		System.err.println("Output size: " + result.size() + "; input = " + inputFormat + "; output = " + outputFormat);
+		try (PipeRunResult prr = pipe.doPipe(input, session)) {
+			Message result = prr.getResult();
+			System.err.println("Output size: " + result.size() + "; input = " + inputFormat + "; output = " + outputFormat);
 
-		// Assert
-		assertResultSize(minDataSize, result);
+			// Assert
+			assertResultSize(minDataSize, result);
 
-		// Don't yet know what else to assert.
+			// Don't yet know what else to assert.
+		} catch (OutOfMemoryError e) {
+			fail("Test ran out of memory with inputFormat [" + inputFormat + "], outputFormat [" + outputFormat + "], minDataSize [" + minDataSize + "]");
+		}
 	}
 
 	@Disabled("Something weird still happens that causes the binary data not to be read correctly")
@@ -99,15 +109,8 @@ public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlV
 		}
 		Message input = Message.asMessage(inputStream);
 
-		// Act
-		PipeRunResult prr = pipe.doPipe(input, session);
-		Message result = prr.getResult();
-		System.err.println("Output size: " + result.size() + "; input = " + inputFormat + "; output = " + outputFormat);
-
-		// Assert
-		assertResultSize(minDataSize, result);
-
-		// Don't yet know what else to assert.
+		// Act / Assert
+		runTestAndAssert(inputFormat, outputFormat, minDataSize, input);
 	}
 
 	private void configurePipe(Json2XmlValidator json2XmlValidator, DocumentFormat inputFormat, DocumentFormat outputFormat) throws ConfigurationException {
