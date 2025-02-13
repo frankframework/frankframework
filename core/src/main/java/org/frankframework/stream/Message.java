@@ -448,7 +448,7 @@ public class Message implements Serializable, Closeable {
 		}
 		if (request instanceof SerializableFileReference reference && !reference.isBinary()) {
 			LOG.debug("returning SerializableFileReference {} as Reader", this::getObjectId);
-			return new BufferedReader(reference.getReader());
+			return reference.getReader();
 		}
 		if (isBinary()) {
 			String readerCharset = computeDecodingCharset(defaultDecodingCharset); //Don't overwrite the Message's charset unless it's set to AUTO
@@ -504,7 +504,7 @@ public class Message implements Serializable, Closeable {
 			}
 			if (request instanceof SerializableFileReference reference) {
 				LOG.debug("returning InputStream {} from SerializableFileReference", this::getObjectId);
-				return new BufferedInputStream(reference.getInputStream());
+				return reference.getInputStream();
 			}
 			if (request instanceof ThrowingSupplier) {
 				LOG.debug("returning InputStream {} from supplier", this::getObjectId);

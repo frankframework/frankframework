@@ -98,10 +98,16 @@ public class JsonDocumentContainer {
 		parent.addContent(child);
 	}
 
+	/**
+	 * Produce a {@link Message} with the JSON Document content, using {@link MessageBuilder} to reduce memory usage.
+	 */
 	public Message toMessage() throws IOException {
 		return toMessage(true);
 	}
 
+	/**
+	 * Produce a {@link Message} with the JSON Document content, using {@link MessageBuilder} to reduce memory usage.
+	 */
 	public Message toMessage(boolean indent) throws IOException {
 		if (root.getContent() == null) {
 			return Message.nullMessage(new MessageContext().withMimeType(MediaType.APPLICATION_JSON));
@@ -114,6 +120,13 @@ public class JsonDocumentContainer {
 		return messageBuilder.build();
 	}
 
+	/**
+	 * Write JSON document content to the given {@link Writer}.
+	 *
+	 * @param writer
+	 * @param indent
+	 * @throws IOException
+	 */
 	public void toWriter(Writer writer, boolean indent) throws IOException {
 		Object content = root.getContent();
 		if (content == null) {
@@ -165,11 +178,21 @@ public class JsonDocumentContainer {
 		}
 	}
 
+	/**
+	 * Create JSON String representation of the JSON Document. This could use a lot of memory, depending on document size.
+	 * Be careful with using this, preferably use {@link #toMessage()}.
+	 */
 	@Override
+	@Deprecated
 	public String toString() {
 		return toString(true);
 	}
 
+	/**
+	 * Create JSON String representation of the JSON Document. This could use a lot of memory, depending on document size.
+	 * Be careful with using this, preferably use {@link #toMessage()}.
+	 */
+	@Deprecated
 	public String toString(boolean indent) {
 		// TODO: Replace with call to toWriter and a StringWriter
 		Object content = root.getContent();
