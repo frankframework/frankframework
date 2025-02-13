@@ -66,12 +66,13 @@
             </div>
             <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30">Query</label>
-              <div class="col-sm-9" style="height: 200px">
+              <div class="col-sm-9">
                 <app-monaco-editor
                   class="form-control"
                   [(value)]="form.query"
                   [options]="{ language: 'sql' }"
                   [actions]="editorActions"
+                  style="height: 200px"
                 ></app-monaco-editor>
               </div>
             </div>
