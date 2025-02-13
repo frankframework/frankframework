@@ -55,7 +55,7 @@ public class RunCypressE2eTest {
 
 	@BeforeAll
 	public static void setUp() throws IOException {
-		SpringApplication springApplication = org.frankframework.runner.IafTestInitializer.configureApplication();
+		SpringApplication springApplication = IafTestInitializer.configureApplication();
 		container = new CypressContainer().withBaseUrl("http://host.docker.internal:8080/iaf-test/iaf/gui");
 
 		run = springApplication.run();
