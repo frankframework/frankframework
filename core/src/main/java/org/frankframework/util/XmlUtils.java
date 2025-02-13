@@ -1500,7 +1500,7 @@ public class XmlUtils {
 			TransformerPool tp = getGetRootNamespaceTransformerPool();
 			return tp.transform(input);
 		} catch (Exception e) {
-			log.warn("unable to find root-namespace", e);
+			log.debug("unable to find root-namespace", e);
 			return null;
 		}
 	}

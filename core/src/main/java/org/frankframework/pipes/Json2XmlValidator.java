@@ -254,9 +254,21 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
+	 * Peek into the message to find the first character, and from that determine the input format.
+	 * For reasons of backwards compatibility:
+	 * <ul>
+	 *     <li> If the message is a null-message ({@link Message#isNull()}, then the input format is determined to be JSON and the actual message parsed will be {@code "{}"}.</li>
+	 *     <li> If the message is an empty message ({@link Message#isEmpty()}, then the input format is {@code null}, but still the actual message parsed will be {@code "{}"}.</li>
+	 * </ul>
+	 * Otherwise, the determination of input format is as follows:
+	 * <ul>
+	 *     <li> If the first non-whitespace character is an {@code '<'} the input format is XML</li>
+	 *     <li> If the first non-whitespace character is a {@code '{'}} or {@code '['} then the input format is JSON</li>
+	 *     <li> If there was no non-whitespace character in the first 1KiB of the message, or the first non-whitespace character was a different character, return {@code null}.</li>
+	 * </ul>
 	 *
 	 * @param input Message from which to read.
-	 * @return DocumentFormat of the input message, if it was possible to determine.
+	 * @return DocumentFormat of the input message, if it was possible to determine, or null.
 	 * @throws IOException Exception from reading the message.
 	 */
 	private @Nullable DocumentFormat findDocumentFormat(Message input) throws IOException {
@@ -287,29 +299,32 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			reader.reset();
 		}
 	}
+
 	/**
 	 * Peek into the first kilobyte of the message to find first non-whitespace-char. If there is no non-whitespace-char in the first kilobyte of the message or
 	 * if the message is empty, return a {@code ' '} (space) character.
 	 * After reading from the message, the stream used is reset to its original point.
+	 * This method is used only for error reporting if the input format was not valid.
 	 *
-	 * @param messageToValidate Message from which to read.
+	 * @param input Message from which to read.
 	 * @return First non-whitespace char, or a space ({@code ' '}).
 	 */
 	@SneakyThrows
-	private char findFirstChar(Message messageToValidate) {
-		if (messageToValidate == null) {
+	private char findFirstChar(Message input) {
+		if (input == null) {
 			return ' ';
 		}
-		Reader reader = messageToValidate.asReader();
+		Reader reader = input.asReader();
 		if (reader == null) {
 			return ' ';
 		}
 		reader.mark(READ_AHEAD_LIMIT);
 		try {
+			int charsRead = 0;
 			int chr;
 			do {
 				chr = reader.read();
-			} while (chr != -1 && Character.isWhitespace(chr));
+			} while (chr != -1 && Character.isWhitespace(chr) && ++charsRead < READ_AHEAD_LIMIT);
 			if (chr == -1) {
 				return ' ';
 			}
