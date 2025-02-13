@@ -59,6 +59,7 @@ public class Xml2Json extends XMLFilterImpl {
 
 	public Xml2Json(XmlAligner aligner, boolean skipArrayElementContainers, boolean skipRootElement) {
 		this.aligner = aligner;
+		// TODO: This collects the entire JSON in memory. For large documents, this means enormous memory consumption. Should be replaced with something that can write immediately to output-stream.
 		this.documentContainer = new JsonDocumentContainer(null, skipArrayElementContainers, skipRootElement);
 	}
 

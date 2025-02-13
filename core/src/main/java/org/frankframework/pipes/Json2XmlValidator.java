@@ -159,8 +159,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 
 		Optional<String> value = StringUtil.splitToStream(acceptHeaderValue)
 				.filter(Json2XmlValidator::acceptableValues)
-				.sorted(Json2XmlValidator::sortByQualifier)
-				.findFirst();
+				.min(Json2XmlValidator::sortByQualifier);
 		return value.orElse(detectedFormat.name());
 	}
 
@@ -192,10 +191,9 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		try {
 			inputFormat = findDocumentFormat(input);
 		} catch (IOException ex) {
-			throw new PipeRunException(this, "unable to find first char in request", ex);
+			throw new PipeRunException(this, "unable to determine input format from request", ex);
 		}
 		if (inputFormat == DocumentFormat.XML) {
-			// message is XML
 			Message xmlMessage;
 			if (isAcceptNamespacelessXml()) {
 				try {
@@ -203,7 +201,6 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				} catch (IOException e) {
 					throw new PipeRunException(this, "Cannot read message", e);
 				}
-				//log.debug("added namespace to message [{}]", messageToValidate);
 			} else {
 				xmlMessage = input;
 			}
@@ -227,11 +224,10 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			}
 		} else if (inputFormat == DocumentFormat.JSON) {
 			if (!isAllowJson() && !responseMode) {
-				return getErrorResult("message is not XML, because it starts with ["+findFirstChar(input)+"] and not with '<'", session, responseMode);
+				return getErrorResult("message is not XML, because it starts with [" + findFirstChar(input) + "] and not with '<'", session, responseMode);
 			}
-
 		} else if (!Message.isEmpty(input)) {
-			return getErrorResult("message is not XML or JSON, because it starts with ["+findFirstChar(input)+"] and not with '<', '{' or '['", session, responseMode);
+			return getErrorResult("message is not XML or JSON, because it starts with [" +findFirstChar(input)+ "] and not with '<', '{' or '['", session, responseMode);
 		}
 
 		Message messageToValidate;
@@ -291,8 +287,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			} while (chr != -1 && Character.isWhitespace(chr) && ++charsRead < READ_AHEAD_LIMIT);
 			return switch (chr) {
 				case '<' -> DocumentFormat.XML;
-				case '{' -> DocumentFormat.JSON;
-				case '[' -> DocumentFormat.JSON;
+				case '{', '[' -> DocumentFormat.JSON;
 				default -> null;
 			};
 		} finally {
@@ -355,7 +350,6 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		if (isIgnoreUndeclaredElements()) {
 			log.warn("cannot ignore undeclared elements when converting from XML");
 		}
-		//aligner.setIgnoreUndeclaredElements(isIgnoreUndeclaredElements()); // cannot ignore XML Schema Validation failure in this case, currently
 		Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
 
 		XMLFilterImpl handler = xml2json;
@@ -403,7 +397,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			// remove parameters with null values, to support optional request parameters
 			parameterValues.values().removeIf(Objects::isNull);
 			aligner.setOverrideValues(parameterValues);
-			// TODO: This parses the full JSON. This is still very large, can use too much memory. Should be replaced with an incremental parser but... That means a full rewrite of Json2Xml.
+			// TODO: This parses the full JSON into memory. This can use too much memory. Should be replaced with an incremental parser but... That means a full rewrite of Json2Xml.
 			JsonStructure jsonStructure = Json.createReader(messageToValidate.asReader()).read();
 
 			// cannot build filter chain as usual backwardly, because it ends differently.
@@ -445,16 +439,13 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		if (Message.isNull(xml)) {
 			return xml;
 		}
-		// TODO: Figure out if the message already has a namespace, without consuming it or converting it all to string.
-//		if (StringUtils.isEmpty(xml) || xml.indexOf("xmlns")>0) {
-//			return xml;
-//		}
 		String namespace;
 		if (StringUtils.isNotEmpty(getTargetNamespace())) {
 			namespace = getTargetNamespace();
 		} else if (StringUtils.isNotEmpty(getSchemaLocation())) {
 			namespace = getSchemaLocation().split(" ")[0];
 		} else {
+			log.debug("Target namespace or schema location is empty, not changing namespace in input");
 			return xml;
 		}
 		xml.preserve();
@@ -477,8 +468,6 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		return converter.createJsonSchema(elementName, namespace);
 	}
 
-
-
 	@Override
 	public String getPhysicalDestinationName() {
 		StringBuilder result = new StringBuilder();
@@ -488,7 +477,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 					.append("]");
 		}
 		if (StringUtils.isNotEmpty(getResponseRoot())) {
-			if (result.length() > 0) {
+			if (!result.isEmpty()) {
 				result.append("; ");
 			}
 			result.append("response message [")
