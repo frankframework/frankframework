@@ -47,7 +47,7 @@
 			<listener className="org.frankframework.receivers.JavaListener" name="local-exits" serviceName="ibis4test-exits" throwException="false" />
 		</receiver>
 		<receiver maxRetries="-1" processResultCacheSize="0"> <!-- running larva scenarios multiple times result in errors therefore removing cache -->
-			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="exits" method="POST" />
+			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="exits" method="POST" allowAllParams="false" />
 		</receiver>
 		<receiver>
 			<listener className="org.frankframework.http.WebServiceListener" serviceNamespaceURI="urn:exits-soap"/>

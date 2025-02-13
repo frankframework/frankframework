@@ -124,7 +124,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String contentDispositionHeaderSessionKey;
 	private @Getter String charset = null;
 	private @Getter @Nonnull Set<String> allowedParameterSet = Set.of();
-	private @Getter boolean allowAllParams = true;
+	private @Getter Boolean allowAllParams = null;
 
 	// for jwt validation
 	private @Getter String requiredIssuer = null;
@@ -219,8 +219,9 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		}
 
 		// Check that none of configured parameters or path-variables matches any of the reserved names.
-		if (allowedParameterSet.isEmpty() && allowAllParams) {
-			ConfigurationWarnings.add(this, log, "All path parameters and query parameters will be copied into the session. This could be a security risk. Set 'allowAllParams' to 'false' and specify 'allowedParameters' for your pipeline.", SuppressKeys.UNSAFE_ATTRIBUTE_SUPPRESS_KEY);
+		if (allowedParameterSet.isEmpty() && allowAllParams == null) {
+			ConfigurationWarnings.add(this, log, "All path parameters and query parameters will be copied into the session. This could be a security risk. Specify [allowedParameters] for your pipeline, or explicitly set [allowAllParams] to 'true'.", SuppressKeys.UNSAFE_ATTRIBUTE_SUPPRESS_KEY);
+			allowAllParams = true;
 		}
 		Set<String> paramsFromBlacklist = new HashSet<>(allowedParameterSet);
 		paramsFromBlacklist.retainAll(RESERVED_NAMES);
@@ -340,7 +341,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	public boolean isParameterAllowed(@Nonnull String parameterName) {
-		if (allowedParameterSet.isEmpty() && allowAllParams) {
+		if (allowedParameterSet.isEmpty() && isAllowAllParams()) {
 			return !RESERVED_NAMES.contains(parameterName);
 		}
 		return allowedParameterSet.contains(parameterName);
@@ -543,6 +544,11 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 */
 	public void setAllowAllParams(boolean allowAllParams) {
 		this.allowAllParams = allowAllParams;
+	}
+
+	public boolean isAllowAllParams() {
+		if (this.allowAllParams == null) return true;
+		return this.allowAllParams;
 	}
 
 	/** Issuer to validate JWT */

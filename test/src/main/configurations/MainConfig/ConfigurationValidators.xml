@@ -7,10 +7,10 @@
 			<listener className="org.frankframework.http.WebServiceListener" serviceNamespaceURI="urn:items"/>
 		</receiver>
 		<receiver>
-			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="soapvalidator/item"/>
+			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="soapvalidator/item" allowedParameters="Status,ItemId,AttributeId"/>
 		</receiver>
 		<receiver>
-			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="soapvalidator/{subPath}/items/{subPath2}" operationId="UniqueIdSoapValidator"/>
+			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="soapvalidator/{subPath}/items/{subPath2}" operationId="UniqueIdSoapValidator" allowAllParams="false"/>
 		</receiver>
 		<pipeline firstPipe="CopyItem">
 			<exits>
@@ -67,10 +67,10 @@
 			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-Json2XmlValidator" throwException="false" />
 		</receiver>
 		<receiver>
-			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="json2xmlvalidator/item" />
+			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="json2xmlvalidator/item" allowedParameters="Status,ItemId,AttributeId"/>
 		</receiver>
 		<receiver>
-			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="json2xmlvalidator/item/post" method="POST"/>
+			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="json2xmlvalidator/item/post" method="POST" allowAllParams="false"/>
 		</receiver>
 		<pipeline firstPipe="CopyItem">
 			<exits>
@@ -154,7 +154,7 @@
 			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-JsonValidator" throwException="false" />
 		</receiver>
 		<receiver>
-			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="jsonvalidator/item/post" method="POST"/>
+			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="jsonvalidator/item/post" method="POST" allowAllParams="false"/>
 		</receiver>
 		<pipeline firstPipe="Convert2XML">
 			<exits>

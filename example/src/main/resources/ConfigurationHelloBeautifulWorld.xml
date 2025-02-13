@@ -17,6 +17,7 @@ http://schemas.frankframework.org/FrankConfig.xsd, OK
 			<ApiListener
 				name="HelloBeautifulWorld"
 				uriPattern="hello-beautiful-world"
+				allowAllParams="false"
 			/>
 		</Receiver>
 		<Pipeline firstPipe="HelloBeautifulWorld">

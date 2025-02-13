@@ -7,7 +7,9 @@
 				method="POST"
 				multipartBodyName="destination"
 				authenticationMethod="AUTHROLE"
-				authenticationRoles="IbisDataAdmin"/>
+				authenticationRoles="IbisDataAdmin"
+				allowAllParams="false"
+			/>
 		</receiver>
 		<receiver name="UploadFile-jl">
 			<listener className="org.frankframework.receivers.JavaListener" name="UploadFile-jl" serviceName="${uploadFile-jl.serviceName}" />
