@@ -9,7 +9,6 @@
       class="form-control"
       [(ngModel)]="input"
       (ngModelChange)="onUpdateInput()"
-      (keyup)="onKeyPress($event)"
       (blur)="hideListDisplay()"
       (focus)="showListDisplay()"
       (click)="showListDisplay()"
