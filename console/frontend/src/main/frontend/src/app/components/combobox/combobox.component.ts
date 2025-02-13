@@ -2,6 +2,7 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  HostListener,
   Input,
   OnChanges,
   OnInit,
@@ -119,29 +120,27 @@ export class ComboboxComponent implements OnInit, OnChanges {
     this.selectedOptionChange.emit(this.selectedOption);
   }
 
-  protected onKeyPress(event: KeyboardEvent): void {
-    this.showListDisplay();
-    switch (event.key) {
-      case 'Escape': {
-        this.clearSelectedItem();
-        this.hideListDisplay();
-        break;
-      }
-      case 'Enter': {
-        this.selectItem(this.selectedIndex);
-        this.hideListDisplay();
-        break;
-      }
+  @HostListener('keydown.enter', ['$event'])
+  protected onEnter(event: KeyboardEvent): void {
+    event.preventDefault();
+    this.selectItem(this.selectedIndex);
+    this.hideListDisplay();
+  }
 
-      case 'ArrowDown': {
-        this.selectNext();
-        break;
-      }
-      case 'ArrowUp': {
-        this.selectPrevious();
-        break;
-      }
-    }
+  @HostListener('keydown.escape')
+  protected onEscape(): void {
+    this.clearSelectedItem();
+    this.hideListDisplay();
+  }
+
+  @HostListener('keydown.arrowUp')
+  protected onArrowUp(): void {
+    this.selectPrevious();
+  }
+
+  @HostListener('keydown.arrowDown')
+  protected onArrowDown(): void {
+    this.selectNext();
   }
 
   protected clearSelectedItem(): void {
