@@ -25,6 +25,7 @@
 		<property name="phase" value="-2147483648"/>
 		<property name="acceptTasksAfterContextClose" value="true"/>
 		<property name="waitForTasksToCompleteOnShutdown" value="true"/>
+		<property name="taskDecorator"><bean class="org.frankframework.threading.ThreadNamingTaskDecorator"/> </property>
 	</bean>
 
 </beans>
