@@ -29,6 +29,9 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
 
+/**
+ * Message will be closed after it's been read.
+ */
 public class MessageZipEntry extends ZipEntry {
 	private final Logger log = LogUtil.getLogger(MessageZipEntry.class);
 	private final Message message;
@@ -75,8 +78,11 @@ public class MessageZipEntry extends ZipEntry {
 		computeSize();
 	}
 
+	/**
+	 * Note: this consumes the {@link Message}.
+	 */
 	public void writeTo(OutputStream outputStream) throws IOException {
-		try (InputStream is = message.asInputStream()) {
+		try (message; InputStream is = message.asInputStream()) {
 			StreamUtil.streamToStream(is, outputStream);
 		}
 	}
@@ -89,6 +95,6 @@ public class MessageZipEntry extends ZipEntry {
 
 	@Override
 	public String toString() {
-		return "ZipEntry for [" + message.getRequestClass() + "]";
+		return "ZipEntry ["+getName()+"] for [" + message.getRequestClass() + "]";
 	}
 }

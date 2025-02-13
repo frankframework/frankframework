@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -115,7 +115,7 @@ public class ZipWriterPipe extends AbstractCollectorPipe<ZipWriter, MessageZipEn
 			PathMessage tempZipArchive = PathMessage.asTemporaryMessage(file);
 			addPartToCollection(getCollection(session), tempZipArchive, session, pvl);
 
-			//We must return a file location, not the reference or file itself
+			// We must return a file location, not the reference or file itself
 			return new PipeRunResult(getSuccessForward(), new Message(file.toString()));
 		} catch (CollectionException e) {
 			throw new PipeRunException(this, "unable to preserve message for action ["+getAction()+"]", e);

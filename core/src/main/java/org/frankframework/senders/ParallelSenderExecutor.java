@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.frankframework.stream.Message;
 public class ParallelSenderExecutor extends AbstractRequestReplyExecutor {
 	private final ISender sender;
 	@Getter private final PipeLineSession session;
+	@Setter private boolean shouldCloseSession = false;
 	@Setter private ResourceLimiter threadLimiter; // support limiting the number of threads processing in parallel
 	@Setter private Phaser guard; // support waiting for all threads to end
 	private final DistributionSummary summary;
@@ -60,6 +61,9 @@ public class ParallelSenderExecutor extends AbstractRequestReplyExecutor {
 			duration = endTime - startTime;
 			summary.record(duration);
 		} finally {
+			if (shouldCloseSession) {
+				session.close();
+			}
 			if (threadLimiter != null) {
 				threadLimiter.release();
 				log.debug("Released this limiter, available permits: {}", threadLimiter.availablePermits());
