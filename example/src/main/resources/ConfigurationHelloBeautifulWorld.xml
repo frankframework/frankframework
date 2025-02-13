@@ -5,10 +5,9 @@ better to refer to it using Eclipse, Window, Preferences, XML, XML Catalog,
 Add..., Location: path/to/frankdoc.xsd, Key:
 http://schemas.frankframework.org/FrankConfig.xsd, OK
 -->
-<Configuration
+<Module
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd"
-	name="My first beautiful configuration"
 	>
 	<Adapter name="HelloBeautifulWorld" active="${HelloBeautifulWorld.active}">
 		<Receiver
@@ -32,4 +31,4 @@ http://schemas.frankframework.org/FrankConfig.xsd, OK
 			</EchoPipe>
 		</Pipeline>
 	</Adapter>
-</Configuration>
+</Module>
