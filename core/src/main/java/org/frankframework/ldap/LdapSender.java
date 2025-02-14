@@ -164,7 +164,6 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	public static final String LDAP_ERROR_MAGIC_STRING="[LDAP: error code";
 
-	private boolean started = false;
 	private @Getter int searchTimeout = 20_000;
 
 	public @Getter Operation operation = Operation.READ;
@@ -409,20 +408,12 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	@Override
 	public void start() {
-		started = true;
-	}
-
-	@Override
-	public void stop() {
-		super.stop();
-		started = false;
 	}
 
 	@Override
 	public boolean isSynchronous() {
 		return true;
 	}
-
 
 	private String performOperationRead(String entryName, PipeLineSession session, Map<String, String> paramValueMap) throws SenderException, ParameterException {
 		DirContext dirContext = null;
@@ -448,7 +439,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	private String performOperationUpdate(String entryName, PipeLineSession session, Map<String, String> paramValueMap, Attributes attrs) throws SenderException, ParameterException {
 		String entryNameAfter = entryName;
 		if (paramValueMap != null){
-			String newEntryName = (String)paramValueMap.get("newEntryName");
+			String newEntryName = paramValueMap.get("newEntryName");
 			if (StringUtils.isNotEmpty(newEntryName)) {
 				if (log.isDebugEnabled()) log.debug("newEntryName=[{}]", newEntryName);
 				DirContext dirContext = null;
@@ -763,7 +754,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		}
 	}
 
-	private String performOperationGetSubContexts(String entryName, PipeLineSession session, Map<String, String> paramValueMap) throws SenderException, ParameterException {
+	private String performOperationGetSubContexts(String entryName, PipeLineSession session, Map<String, String> paramValueMap) throws SenderException {
 		DirContext dirContext = null;
 		try {
 			dirContext = getDirContext(paramValueMap);
@@ -777,7 +768,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		}
 	}
 
-	private String performOperationGetTree(String entryName, PipeLineSession session, Map<String, String> paramValueMap) throws SenderException, ParameterException {
+	private String performOperationGetTree(String entryName, PipeLineSession session, Map<String, String> paramValueMap) throws SenderException {
 		DirContext dirContext = null;
 		try {
 			dirContext = getDirContext(paramValueMap);
@@ -889,7 +880,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		case GET_TREE:
 			return performOperationGetTree(entryName, session, paramValueMap);
 		case CHALLENGE:
-			return performOperationChallenge((String)paramValueMap.get("principal"), session, paramValueMap);
+			return performOperationChallenge(paramValueMap.get("principal"), session, paramValueMap);
 		case CHANGE_UNICODE_PWD:
 			return performOperationChangeUnicodePwd(entryName, session, paramValueMap);
 
@@ -1132,7 +1123,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	 * http://blogs.msdn.com/b/alextch/archive/2012/05/15/how-to-set-active-directory-password-from-java-application.aspx
 	 * @throws SenderException
 	 */
-	private byte[] encodeUnicodePwd(Object value) throws SenderException {
+	private byte[] encodeUnicodePwd(Object value) {
 		log.debug("Encode unicodePwd value");
 		String quotedPassword = "\"" + value + "\"";
 		return quotedPassword.getBytes(StandardCharsets.UTF_16LE);

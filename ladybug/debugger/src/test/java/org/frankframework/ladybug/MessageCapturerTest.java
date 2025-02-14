@@ -70,7 +70,7 @@ public class MessageCapturerTest {
 	 * @return Expected length, max-size rounded to the nearest buffer-size +1
 	 */
 	private int getExpectedCapturedLength(int ladybugMaxLength) {
-		return (int) (Math.round(ladybugMaxLength / 20) +1) * 20;
+		return ((ladybugMaxLength / 20) +1) * 20;
 	}
 
 	@ParameterizedTest
@@ -192,7 +192,7 @@ public class MessageCapturerTest {
 	}
 
 	@Test
-	void testCaptureEmptyMessageButNotRead() throws IOException {
+	void testCaptureEmptyMessageButNotRead() {
 		Message message = new Message("");
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();

@@ -46,7 +46,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
 
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.CheckpointType;
@@ -60,9 +59,14 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 
-@Component
+// @Component
 public class ConvertToLarvaAction implements CustomReportAction {
 
+	public static final String INCLUDE_KEY = "include";
+	public static final String ADAPTER_KEY_PREFIX = "adapter.";
+	public static final String SERVICE_NAME_SUFFIX = ".serviceName";
+	public static final String CHECKPOINT_NAME_SENDER = "Sender ";
+	public static final String STUB_KEY_PREFIX = "stub.";
 	public static String scenarioSuffix;
 	private final AppConstants appConstants = AppConstants.getInstance();
 	private static final int MINUTES_2020 = (int) TimeUnit.MILLISECONDS.toMinutes(Instant.parse("2020-01-01T01:00:00.00Z").getEpochSecond());
@@ -85,12 +89,13 @@ public class ConvertToLarvaAction implements CustomReportAction {
 
 		List<Scenario> scenarios = reports.stream()
 				.collect(Collectors.groupingBy(report -> report.getInputCheckpoint().getName().substring(9))).entrySet()
-				.stream().<Scenario>flatMap(adapterReports -> {
+				.stream()
+				.flatMap(adapterReports -> {
 					String pipelineName = adapterReports.getKey();
 					List<Report> reportList = adapterReports.getValue();
 					return IntStream.range(0, reportList.size())
 							.mapToObj(i -> new Scenario(reportList.get(i), dir, pipelineName, Integer.parseInt(minutesSince2020 + "" + i)));
-				}).collect(Collectors.toList());
+				}).toList();
 
 		String successResultsString = scenarios.stream().filter(scenario -> !scenario.error)
 				.map(scenario -> scenario.reportName)
@@ -98,6 +103,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 		String errorResultsString = scenarios.stream().filter(scenario -> scenario.error)
 				.map(scenario -> scenario.reportName + ": " + scenario.errorMessage)
 				.collect(Collectors.joining(", "));
+
 		if (!successResultsString.isEmpty()) {
 			customReportActionResult.setSuccessMessage("Success:" + successResultsString);
 		}
@@ -241,7 +247,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			String adapterName = getAdapterName(pipelineName);
 
 			scenarioPropertiesMap.put("scenario.description", "Test scenario for adapter " + adapterName + ", automatically generated based on a ladybug report");
-			scenarioPropertiesMap.put("include", "common.properties");
+			scenarioPropertiesMap.put(INCLUDE_KEY, "common.properties");
 
 			List<Checkpoint> checkpoints = report.getCheckpoints();
 
@@ -253,14 +259,14 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			if(pipelineClassName != null && pipelineClassName.startsWith("nl.nn.adapterframework")) {
 				senderListenerPackageName = "nl.nn.adapterframework";
 			}
-			String adapterNameWithoutSpaces = adapterName.replaceAll(" ", "_");
+			String adapterNameWithoutSpaces = adapterName.replace(" ", "_");
 			String adapterInputFileName = getFileName(stepCounter, "adapter", adapterNameWithoutSpaces, true, adapterInputMessage);
 			scenarioPropertiesMap.put("step" + stepCounter + ".adapter." + adapterNameWithoutSpaces + ".write", scenarioDirPrefix + adapterInputFileName);
 			createInputOutputFile(scenarioDirPath, adapterInputFileName, adapterInputMessage);
 
-			commonPropertiesMap.putIfAbsent("adapter." + adapterNameWithoutSpaces + ".className", senderListenerPackageName + ".senders.IbisJavaSender");
-			commonPropertiesMap.putIfAbsent("adapter." + adapterNameWithoutSpaces + ".serviceName", TESTTOOL_PREFIX + adapterName);
-			commonPropertiesMap.putIfAbsent("adapter." + adapterNameWithoutSpaces + ".convertExceptionToMessage", "true");
+			commonPropertiesMap.putIfAbsent(ADAPTER_KEY_PREFIX + adapterNameWithoutSpaces + ".className", senderListenerPackageName + ".senders.IbisJavaSender");
+			commonPropertiesMap.putIfAbsent(ADAPTER_KEY_PREFIX + adapterNameWithoutSpaces + SERVICE_NAME_SUFFIX, TESTTOOL_PREFIX + adapterName);
+			commonPropertiesMap.putIfAbsent(ADAPTER_KEY_PREFIX + adapterNameWithoutSpaces + ".convertExceptionToMessage", "true");
 
 			processCheckPoints(checkpoints, adapterNameWithoutSpaces, scenarioDirPath, scenarioDirPrefix);
 
@@ -309,7 +315,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 					// SessionKey for listener found
 					String sessionKeyName = checkpoint.getName().substring("SessionKey ".length());
 					if (!ignoredSessionKeys.contains(sessionKeyName)) {
-						String paramPropertyName = "adapter." + adapterName + ".param" + paramI;
+						String paramPropertyName = ADAPTER_KEY_PREFIX + adapterName + ".param" + paramI;
 						scenarioPropertiesMap.put(paramPropertyName + ".name ", sessionKeyName);
 						String messageInOneLine = "";
 						if(checkpoint.getMessage() != null) {
@@ -318,7 +324,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 						scenarioPropertiesMap.put(paramPropertyName + ".value", messageInOneLine);
 						paramI++;
 					}
-				} else if (skipUntilEndOfSender && checkpoint.getName().startsWith("Sender ")) {
+				} else if (skipUntilEndOfSender && checkpoint.getName().startsWith(CHECKPOINT_NAME_SENDER)) {
 					// If we're currently stubbing a sender, and we haven't reached the end of it yet
 					String checkpointName = checkpoint.getName();
 					if (checkpoint.getLevel() == skipUntilEndOfSenderLevel && checkpoint.getType() == CheckpointType.ENDPOINT.toInt() && checkpointName.equals(skipUntilEndOfSenderName)) {
@@ -332,7 +338,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 						skipUntilEndOfSender = false;
 						incrementSenderPipeIndex(senderPipeStack);
 					}
-				} else if (checkpoint.getType() == CheckpointType.STARTPOINT.toInt() && checkpoint.getName().startsWith("Sender ")) {
+				} else if (checkpoint.getType() == CheckpointType.STARTPOINT.toInt() && checkpoint.getName().startsWith(CHECKPOINT_NAME_SENDER)) {
 					String senderSimpleClassName = extractSimpleClassName(checkpoint.getSourceClassName());
 					if (!allowedSenders.contains(senderSimpleClassName)) {
 						// If sender should be stubbed:
@@ -358,8 +364,8 @@ public class ConvertToLarvaAction implements CustomReportAction {
 							return;
 						}
 
-						commonPropertiesMap.putIfAbsent("stub." + queueName + ".className", senderListenerPackageName + ".receivers.JavaListener");
-						commonPropertiesMap.putIfAbsent("stub." + queueName + ".serviceName", serviceName);
+						commonPropertiesMap.putIfAbsent(STUB_KEY_PREFIX + queueName + ".className", senderListenerPackageName + ".receivers.JavaListener");
+						commonPropertiesMap.putIfAbsent(STUB_KEY_PREFIX + queueName + SERVICE_NAME_SUFFIX, serviceName);
 
 						skipUntilEndOfSender = true;
 						skipUntilEndOfSenderName = checkpoint.getName();
@@ -390,9 +396,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			}
 			if (skipUntilEndOfSender) {
 				handleError();
-				return;
 			}
-			
 		}
 
 		private void incrementSenderPipeIndex(Deque<SenderPipeCheckPoint> senderPipeStack) {
@@ -438,7 +442,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			if(parentCheckPoint.isPresent() && allowedPipesWithSenders.contains(simpleName)) {
 				sb.append(parentCheckPoint.get().getName().substring("Pipe ".length()));
 			} else if(!checkpoint.getName().equals("Sender IbisJavaSender")) {
-				sb.append(checkpoint.getName().substring("Sender ".length()));
+				sb.append(checkpoint.getName().substring(CHECKPOINT_NAME_SENDER.length()));
 			}
 
 			return sb.toString();
@@ -548,7 +552,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			currentCommonProps.forEach((key, value) -> {
 				if (key instanceof String stringKey && value instanceof String stringValue) {
 					commonPropertiesMap.putIfAbsent(stringKey, stringValue);
-					if (stringKey.startsWith("stub.") && stringKey.endsWith(".serviceName")) {
+					if (stringKey.startsWith(STUB_KEY_PREFIX) && stringKey.endsWith(SERVICE_NAME_SUFFIX)) {
 						String queueName = stringKey.substring(stringKey.indexOf(".") + 1, stringKey.lastIndexOf('.'));
 						existingStubs.put(stringValue.toLowerCase(), queueName);
 					}
@@ -561,7 +565,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 		private String commonPropertiesToString() {
 			UnaryOperator<String> getPropGroup = propName -> {
 				int lastDotIndex;
-				if (propName.equals("include")) {
+				if (propName.equals(INCLUDE_KEY)) {
 					return "0";
 				} else if ((lastDotIndex = propName.lastIndexOf('.')) != -1) {
 					return "1" + propName.substring(0, lastDotIndex);
@@ -573,7 +577,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 
 		private String scenarioPropertiesToString() {
 			UnaryOperator<String> getPropGroup = propName -> {
-				if (propName.equals("scenario.description") || propName.equals("include")) {
+				if (propName.equals("scenario.description") || propName.equals(INCLUDE_KEY)) {
 					return "0";
 				} else if (propName.startsWith("step")) {
 					return "1";

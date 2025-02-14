@@ -5,14 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterAll;
@@ -36,12 +34,12 @@ public class DelineaCredentialFactoryTest {
 		List<String> list = Stream.of(secret1, secret2, secret3, secret4)
 				.map(Secret::id)
 				.map(Objects::toString)
-				.collect(Collectors.toList());
+				.toList();
 
 		DelineaClient client = mock(DelineaClient.class);
 
 		// Get secret
-		when(client.getSecret(eq("1"), eq(null))).thenReturn(secret1);
+		when(client.getSecret("1", null)).thenReturn(secret1);
 
 		// Get secrets
 		when(client.getSecrets()).thenReturn(list);
