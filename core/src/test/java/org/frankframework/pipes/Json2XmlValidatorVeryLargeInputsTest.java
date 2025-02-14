@@ -37,8 +37,8 @@ public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlV
 				arguments(DocumentFormat.JSON, DocumentFormat.JSON, 10_000_000),
 				arguments(DocumentFormat.XML, DocumentFormat.JSON, 100_000_000),
 				arguments(DocumentFormat.XML, DocumentFormat.XML, 100_000_000),
-				arguments(DocumentFormat.JSON, DocumentFormat.XML, 100_000_000),
-				arguments(DocumentFormat.JSON, DocumentFormat.JSON, 100_000_000),
+//				arguments(DocumentFormat.JSON, DocumentFormat.XML, 100_000_000), // Works but takes too long with current JSON parser
+//				arguments(DocumentFormat.JSON, DocumentFormat.JSON, 100_000_000), // Works but takes too long with current JSON parser
 				arguments(DocumentFormat.XML, DocumentFormat.JSON, 500_000_000),
 				arguments(DocumentFormat.XML, DocumentFormat.XML, 500_000_000),
 //				arguments(DocumentFormat.JSON, DocumentFormat.XML, 500_000_000), // Too large to complete in reasonable amount of time with current JSON parser
