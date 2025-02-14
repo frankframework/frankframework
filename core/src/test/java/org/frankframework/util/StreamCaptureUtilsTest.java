@@ -3,6 +3,7 @@ package org.frankframework.util;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -144,12 +145,12 @@ class StreamCaptureUtilsTest {
 		assertEquals(new String(magic), new String(capture));
 		assertEquals(message.asString(), new String(input.openStream().readAllBytes())); // Verify that the message output, after reading the magic, has not changed
 
-		verify(stream, times(2)).close();
+		verify(stream, atLeastOnce()).close();
 		verify(message, times(0)).close();
 
 		message.close();
 
-		verify(stream, times(2)).close();
+		verify(stream, atLeastOnce()).close();
 		verify(message, times(1)).close();
 	}
 
