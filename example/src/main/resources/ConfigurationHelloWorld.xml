@@ -6,6 +6,7 @@
 				name="HelloWorld"
 				className="org.frankframework.http.rest.ApiListener"
 				uriPattern="hello-world"
+				allowAllParams="false"
 			/>
 		</receiver>
 		<receiver name="HelloWorld">

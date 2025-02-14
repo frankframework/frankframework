@@ -75,24 +75,28 @@ public class SenderSeries extends AbstractSenderWrapper {
 	}
 
 	@Override
-	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult doSendMessage(final Message input, PipeLineSession session) throws SenderException, TimeoutException {
 		String correlationID = session.getCorrelationId();
-		SenderResult result=null;
 		long t1 = System.currentTimeMillis();
+
+		Message message = input;
+		SenderResult senderResult = null;
 		for (ISender sender: getSenders()) {
-			if (log.isDebugEnabled())
-				log.debug("sending correlationID [{}] message [{}] to sender [{}]", correlationID, message, sender.getName());
-			result = sender.sendMessage(message, session);
-			if (!result.isSuccess()) {
-				return result;
+			log.debug("sending correlationID [{}] message [{}] to sender [{}]", correlationID, message, sender.getName());
+			senderResult = sender.sendMessage(message, session);
+
+			if (!senderResult.isSuccess()) { // If a sender fails with a functional error return directly
+				return senderResult;
 			}
-			message = result.getResult();
+
+			message = senderResult.getResult();
 			long t2 = System.currentTimeMillis();
 			DistributionSummary summary = getStatisticsKeeper(sender);
 			summary.record((double) t2-t1);
 			t1=t2;
 		}
-		return result!=null ? result : new SenderResult(message);
+
+		return senderResult;
 	}
 
 	@Override

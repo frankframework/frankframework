@@ -3,6 +3,7 @@ package org.frankframework.senders;
 import static org.frankframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -138,6 +139,50 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		SenderResult result = sender.sendMessage(new Message("fakeInput"), session);
 
 		assertFalse(result.isSuccess());
+	}
+
+
+
+	@Test
+	public void testResultSenderResultWith3SendersAsync() throws Exception {
+		// Arrange
+		for (int i = 0; i < 10; i++) {
+			sender.addSender(new SlowRenderer());
+		}
+
+		sender.configure();
+		sender.start();
+
+		Message inputMessage = MessageTestUtils.getNonRepeatableMessage(MessageTestUtils.MessageType.CHARACTER_UTF8);
+		session.scheduleCloseOnSessionExit(inputMessage);
+
+		// Act
+		String result = sender.sendMessageOrThrow(inputMessage, session).asString();
+
+		// Assert
+		session.close();
+
+		String expected = getExpectedTestFile("testResultSenderResultWith3SendersAsync.txt");
+		assertNotNull(expected, "cannot find expected result file");
+		assertEquals(expected, result);
+	}
+
+	// Sender Class to find threading issues in parallel execution
+	private static class SlowRenderer extends AbstractSenderWithParameters {
+		@Override
+		@SuppressWarnings("java:S2925")
+		public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
+			int random = (int) (Math.random() * 20);
+			try {
+				Thread.sleep(random);
+				return new SenderResult(message.asString());
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw new SenderException(e);
+			} catch (IOException e) {
+				throw new SenderException(e);
+			}
+		}
 	}
 
 	private static class ExceptionThrowingSender extends AbstractSender {

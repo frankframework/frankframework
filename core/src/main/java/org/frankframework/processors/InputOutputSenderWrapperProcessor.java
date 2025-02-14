@@ -43,6 +43,7 @@ public class InputOutputSenderWrapperProcessor extends AbstractSenderWrapperProc
 			}
 			session.put(abstractSenderWrapper.getStoreInputInSessionKey(), message);
 		}
+
 		if (StringUtils.isNotEmpty(abstractSenderWrapper.getGetInputFromSessionKey())) {
 			if (!session.containsKey(abstractSenderWrapper.getGetInputFromSessionKey())) {
 				throw new SenderException("getInputFromSessionKey ["+ abstractSenderWrapper.getGetInputFromSessionKey()+"] is not present in session");
@@ -53,9 +54,10 @@ public class InputOutputSenderWrapperProcessor extends AbstractSenderWrapperProc
 		} else {
 			if (StringUtils.isNotEmpty(abstractSenderWrapper.getGetInputFromFixedValue())) {
 				senderInput=new Message(abstractSenderWrapper.getGetInputFromFixedValue());
-				if (log.isDebugEnabled()) log.debug("set input to fixed value [{}]", senderInput);
+				log.debug("set input to fixed value [{}]", senderInput);
 			}
 		}
+
 		if (abstractSenderWrapper.isPreserveInput() && message==senderInput) { // test if it is the same object, not if the contents is the same
 			try {
 				message.preserve();
@@ -63,7 +65,9 @@ public class InputOutputSenderWrapperProcessor extends AbstractSenderWrapperProc
 				throw new SenderException("Could not preserve input",e);
 			}
 		}
+
 		SenderResult result = senderWrapperProcessor.sendMessage(abstractSenderWrapper, senderInput, session);
+
 		if (result.isSuccess()) {
 			if (StringUtils.isNotEmpty(abstractSenderWrapper.getStoreResultInSessionKey())) {
 				if (!abstractSenderWrapper.isPreserveInput()) {
@@ -73,10 +77,11 @@ public class InputOutputSenderWrapperProcessor extends AbstractSenderWrapperProc
 						throw new SenderException("Could not preserve result",e);
 					}
 				}
-				if (log.isDebugEnabled())
-					log.debug("storing results in session variable [{}]", abstractSenderWrapper.getStoreResultInSessionKey());
+
+				log.debug("storing results in session variable [{}]", abstractSenderWrapper::getStoreResultInSessionKey);
 				session.put(abstractSenderWrapper.getStoreResultInSessionKey(), result.getResult());
 			}
+
 			if (abstractSenderWrapper.isPreserveInput()) {
 				return new SenderResult(message);
 			}

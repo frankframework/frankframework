@@ -56,7 +56,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 
 	@Override
 	protected String getExpectedTestFile(String path) {
-		return ORIGINAL_SENDER_RESULT; //Should always return the result of the originalSender
+		return ORIGINAL_SENDER_RESULT; // Should always return the result of the originalSender
 	}
 
 	private ResultSender createResultSender() {
@@ -234,6 +234,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		session.close();
 
 		// Assert
+		log.debug("testResultSenderResultWith3ShadowSendersAsync result:\n {}", result);
 		assertEquals(ORIGINAL_SENDER_RESULT, result);
 
 		Thread.sleep(3000); // wait for results to be collected in the background
@@ -273,14 +274,14 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	@Override
 	@Disabled("Test not suited for ShadowSender")
 	public void testSingleExceptionHandling() throws Exception {
-		//Test not suited for ShadowSender
+		// Test not suited for ShadowSender
 	}
 
 	@Test
 	@Override
 	@Disabled("Test not suited for ShadowSender")
 	public void testExceptionHandling() throws Exception {
-		//Test not suited for ShadowSender
+		// Test not suited for ShadowSender
 	}
 
 }

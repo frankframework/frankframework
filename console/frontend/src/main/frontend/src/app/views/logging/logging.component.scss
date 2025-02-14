@@ -4,3 +4,7 @@ app-file-viewer {
   border: none;
   overflow: hidden;
 }
+
+.action-buttons > button + button {
+  margin-left: 6px;
+}

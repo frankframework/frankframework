@@ -1,10 +1,10 @@
 <Module
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="../FrankConfig.xsd"
+    xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd"
     name="All">
     <Adapter name="ManualExerciseMundo" description="This adapter is needed for an exercise in the Frank!Manual. Students write an adapter that does a HTTP request to this adapter. You can also access it using curl: curl -v -X POST -H &quot;Content-Type: text/xml&quot; --data &quot;@valid.xml&quot; https://frank2example.frankframework.org/api/mundo. File valid.xml is available in the Larva tests" >
         <Receiver>
-            <ApiListener name="ManualExerciseMundo" uriPattern="/mundo" method="POST" />
+            <ApiListener name="ManualExerciseMundo" uriPattern="/mundo" method="POST" allowAllParams="false" />
         </Receiver>
         <Pipeline>
             <Exits>

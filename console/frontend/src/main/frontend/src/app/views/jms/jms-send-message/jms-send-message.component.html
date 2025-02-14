@@ -97,12 +97,13 @@
             </div>
             <div class="row form-group">
               <label class="col-sm-5 col-md-3 control-label label-height-30">Message</label>
-              <div class="col-sm-9" style="height: 200px">
+              <div class="col-sm-9">
                 <app-monaco-editor
                   class="form-control"
                   [(value)]="form.message"
                   [options]="{ language: 'text' }"
                   [actions]="editorActions"
+                  style="height: 200px"
                 ></app-monaco-editor>
               </div>
             </div>

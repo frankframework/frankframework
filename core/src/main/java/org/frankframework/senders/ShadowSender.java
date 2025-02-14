@@ -154,7 +154,7 @@ public class ShadowSender extends ParallelSenders {
 		primaryGuard.arriveAndAwaitAdvance();
 
 
-		 // Wait for remaining senders to have replied & collect the results of all senders
+		// Wait for remaining senders to have replied & collect the results of all senders
 		Message originalMessage;
 		try {
 			originalMessage = isWaitForShadowsToFinish() ? message : message.copyMessage();
