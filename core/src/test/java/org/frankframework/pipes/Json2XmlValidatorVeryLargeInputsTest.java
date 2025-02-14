@@ -10,7 +10,6 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -92,7 +91,6 @@ public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlV
 		}
 	}
 
-	@Disabled("Something weird still happens that causes the binary data not to be read correctly")
 	@ParameterizedTest
 	@MethodSource("testLargeInputArguments")
 	public void testLargeBinaryInput(DocumentFormat inputFormat, DocumentFormat outputFormat, long minDataSize) throws Exception {
