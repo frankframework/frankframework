@@ -46,6 +46,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
 
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.CheckpointType;
@@ -59,7 +60,7 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 
-// @Component
+@Component
 public class ConvertToLarvaAction implements CustomReportAction {
 
 	public static final String INCLUDE_KEY = "include";

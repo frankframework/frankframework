@@ -856,7 +856,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 						}
 				));
 
-		entryName = paramValueMap.get("entryName");
+		entryName = paramValueMap.get(ENTRYNAME);
 		if (log.isDebugEnabled()) log.debug("entryName=[{}]", entryName);
 		if ((entryName == null || StringUtils.isEmpty(entryName)) && getOperation() != Operation.CHALLENGE) {
 			throw new SenderException("entryName must be defined through params, operation ["+ getOperation()+ "]");
