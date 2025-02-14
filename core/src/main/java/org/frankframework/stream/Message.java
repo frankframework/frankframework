@@ -457,7 +457,9 @@ public class Message implements Serializable, Closeable {
 			InputStream inputStream = asInputStream();
 			try {
 				BufferedReader reader = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(inputStream, readerCharset));
-				this.request = reader;
+				if (this.request instanceof InputStream) {
+					this.request = reader;
+				}
 				return reader;
 			} catch (IOException e) {
 				onExceptionClose(e);
