@@ -1,0 +1,17 @@
+<Configuration
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd"
+	name="SimpleConfiguration">
+
+	<Configuration><!-- According to the XSD this is not allowed, but it's possible when using includes -->
+
+		<Adapter name="TestAdapter">
+			<Receiver name="TestReceiver">
+				<FrankListener />
+			</Receiver>
+			<Pipeline>
+				<EchoPipe name="HelloBeautifulWorld" />
+			</Pipeline>
+		</Adapter>
+	</Configuration>
+</Configuration>

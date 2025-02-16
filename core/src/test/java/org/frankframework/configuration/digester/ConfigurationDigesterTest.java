@@ -9,9 +9,11 @@ import static org.mockito.Mockito.mock;
 
 import java.io.StringWriter;
 import java.net.URL;
+import java.util.List;
 
 import javax.xml.validation.ValidatorHandler;
 
+import org.apache.logging.log4j.Level;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -27,6 +29,7 @@ import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.Resource;
 import org.frankframework.testutil.MatchUtils;
+import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.PropertyLoader;
@@ -53,8 +56,8 @@ public class ConfigurationDigesterTest {
 		MatchUtils.assertXmlEquals(expected, result);
 	}
 
-	//Both OLD and NEW configuration parsers should set the same values for 'loadedConfiguration': properties resolved, secrets hidden
-	//The new configuration parser returns the configuration with all property not yet resolved
+	// Both OLD and NEW configuration parsers should set the same values for 'loadedConfiguration': properties resolved, secrets hidden
+	// The new configuration parser returns the configuration with all property not yet resolved
 	@Test
 	public void testNewConfigurationPreParser() throws Exception {
 		// Arrange
@@ -128,6 +131,34 @@ public class ConfigurationDigesterTest {
 		String storedResult = configuration.getLoadedConfiguration();
 		String storedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationResolvedAndHidden2.xml");
 		MatchUtils.assertXmlEquals(storedExpected, storedResult);
+	}
+
+	@Test
+	public void testMultipleConfigurationElements() throws Exception {
+		XmlWriter writer = new XmlWriter();
+		Configuration configuration = new TestConfiguration();
+		ConfigurationDigester configDigester = new ConfigurationDigester();
+		Digester digester = configDigester.getDigester(configuration);
+		digester.setContentHandler(writer);
+
+		Resource resource = Resource.getResource("/Digester/MultipleConfigurationElements.xml");
+		ContentHandler handler = configDigester.getConfigurationCanonicalizer(digester, FRANK_CONFIG_XSD, new XmlErrorHandler());
+
+		final List<String> digesterLogs;
+		try (TestAppender appender = TestAppender.newBuilder().minLogLevel(Level.DEBUG).build()) {
+			XmlUtils.parseXml(resource, handler);
+
+			digesterLogs = appender.getLogEvents().stream()
+					.filter(e -> Digester.class.getCanonicalName().equals(e.getLoggerName()))
+					.map(e -> e.getMessage().getFormattedMessage())
+					.toList();
+		}
+
+		assertEquals(2, digesterLogs.stream().filter(e -> e.contains("skipping erroneous configuration element")).toList().size());
+
+		String result = writer.toString();
+		String expected = TestFileUtils.getTestFile("/Digester/Canonicalized/MultipleConfigurationElements.xml");
+		MatchUtils.assertXmlEquals(expected, result);
 	}
 
 	@Test

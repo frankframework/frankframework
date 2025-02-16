@@ -133,7 +133,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		}
 	}
 
-	private Digester getDigester(Configuration configuration) throws ConfigurationException {
+	public Digester getDigester(Configuration configuration) throws ConfigurationException {
 		Digester digester = SpringUtils.createBean(configuration, Digester.class);
 		try {
 
