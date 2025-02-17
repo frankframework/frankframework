@@ -115,7 +115,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 		elementNames.push(localName);
 
 		if (elementNames.size() != 1 && "configuration".equals(localName)) {
-			log.debug("skipping erroneous configuration element");
+			log.debug("skipping erroneous nested configuration element");
 			// This is a bit of a strange scenario but we allow Configuration to be a root tag.
 			// Due to this, it's possible to include files with the Configuration root tag in another
 			// Configuration file. This does not directly do anything, as there is not factory, so ignore the element.
@@ -153,7 +153,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 
 		if (elementNames.size() != 1 && "configuration".equals(localName)) {
 			// See startElement where we ignore additional configuration elements
-			log.debug("skipping erroneous configuration element");
+			log.debug("skipping erroneous nested configuration element");
 		} else {
 			handleAttributeRule.end(localName);
 
