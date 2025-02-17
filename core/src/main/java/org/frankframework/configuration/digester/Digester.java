@@ -111,13 +111,22 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+		log.debug("startElement: found element [{}]", localName);
 		elementNames.push(localName);
-		DigesterRule rule = findRuleForLocalName(localName);
-		if (StringUtils.isNotEmpty(rule.getRegisterTextMethod())) {
-			// Capture the character data first.
-			elementBeans.push(new BeanRuleWrapper(rule, new StringBuilder()));
+
+		if (elementNames.size() != 1 && "configuration".equals(localName)) {
+			log.debug("skipping erroneous nested configuration element");
+			// This is a bit of a strange scenario but we allow Configuration to be a root tag.
+			// Due to this, it's possible to include files with the Configuration root tag in another
+			// Configuration file. This does not directly do anything, as there is not factory, so ignore the element.
 		} else {
-			createBeanThroughFactory(rule, localName, atts);
+			DigesterRule rule = findRuleForLocalName(localName);
+			if (StringUtils.isNotEmpty(rule.getRegisterTextMethod())) {
+				// Capture the character data first.
+				elementBeans.push(new BeanRuleWrapper(rule, new StringBuilder()));
+			} else {
+				createBeanThroughFactory(rule, localName, atts);
+			}
 		}
 
 		super.startElement(uri, localName, qName, atts);
@@ -127,6 +136,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		if (peek() instanceof StringBuilder buffer) {
 			buffer.append(ch, start, length);
+			log.debug("characters: appending character data [{}]", buffer);
 		}
 
 		super.characters(ch, start, length);
@@ -134,18 +144,24 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		handleAttributeRule.end(localName);
+		log.debug("endElement: register bean [{}]", localName);
 
 		String poppedElementNamed = elementNames.pop();
 		if (!localName.equals(poppedElementNamed)) {
 			throw new SAXException("local element [%s] do not match stack element [%s]".formatted(localName, poppedElementNamed));
 		}
 
-		BeanRuleWrapper beanWrapper = elementBeans.pop();
-		registerDigestedBeanOnParent(beanWrapper);
+		if (elementNames.size() != 1 && "configuration".equals(localName)) {
+			// See startElement where we ignore additional configuration elements
+			log.debug("skipping erroneous nested configuration element");
+		} else {
+			handleAttributeRule.end(localName);
 
-		if (beanWrapper.bean() instanceof ApplicationContext) {
-			applicationContext.pop();
+			BeanRuleWrapper beanWrapper = elementBeans.pop();
+			registerDigestedBeanOnParent(beanWrapper);
+			if (beanWrapper.bean() instanceof ApplicationContext) {
+				applicationContext.pop();
+			}
 		}
 
 		super.endElement(uri, localName, qName);

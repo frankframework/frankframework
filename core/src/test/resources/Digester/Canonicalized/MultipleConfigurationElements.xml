@@ -1,0 +1,12 @@
+<configuration name="SimpleConfiguration">
+	<configuration>
+		<adapter name="TestAdapter">
+			<receiver name="TestReceiver">
+				<listener className="org.frankframework.receivers.FrankListener"/>
+			</receiver>
+			<pipeline>
+				<pipe className="org.frankframework.pipes.EchoPipe" name="HelloBeautifulWorld"/>
+			</pipeline>
+		</adapter>
+	</configuration>
+</configuration>
