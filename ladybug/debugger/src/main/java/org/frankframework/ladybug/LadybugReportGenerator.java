@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
 package org.frankframework.ladybug;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -71,15 +74,23 @@ public class LadybugReportGenerator implements InitializingBean {
 	}
 
 	public Message pipelineInput(PipeLine pipeLine, String correlationId, Message input) {
-		return testTool.startpoint(correlationId, pipeLine.getClass().getName(), getName(pipeLine), input);
+		return testTool.startpoint(correlationId, pipeLine.getClass().getName(), getName(pipeLine), input, extractMessageContext(input));
+	}
+
+	private Map<String, Object> extractMessageContext(Object input) {
+		if (input instanceof Message m) {
+			return m.getContext().entrySet().stream().collect(
+					Collectors.toMap(Map.Entry::getKey, e -> e.getValue() != null ? e.getValue() : "null")); // return string null in case value is null
+		}
+		return new HashMap<>();
 	}
 
 	public Message pipelineOutput(PipeLine pipeLine, String correlationId, Message output) {
-		return testTool.endpoint(correlationId, pipeLine.getClass().getName(), getName(pipeLine), output);
+		return testTool.endpoint(correlationId, pipeLine.getClass().getName(), getName(pipeLine), output, extractMessageContext(output));
 	}
 
 	public Message pipelineAbort(PipeLine pipeLine, String correlationId, Message output) {
-		return testTool.abortpoint(correlationId, pipeLine.getClass().getName(), getName(pipeLine), output);
+		return testTool.abortpoint(correlationId, pipeLine.getClass().getName(), getName(pipeLine), output, extractMessageContext(output));
 	}
 
 	public Throwable pipelineAbort(PipeLine pipeLine, String correlationId, Throwable throwable) {
@@ -89,7 +100,7 @@ public class LadybugReportGenerator implements InitializingBean {
 
 	public <T> T pipeInput(PipeLine pipeLine, IPipe pipe, String correlationId, T input) {
 		PipeDescription pipeDescription = pipeDescriptionProvider.getPipeDescription(pipeLine, pipe);
-		T result = testTool.startpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), input);
+		T result = testTool.startpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), input, extractMessageContext(input));
 		if (pipeDescription.getDescription() != null) {
 			testTool.infopoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), pipeDescription.getDescription());
 			Iterator<String> iterator = pipeDescription.getResourceNames().iterator();
@@ -103,7 +114,7 @@ public class LadybugReportGenerator implements InitializingBean {
 
 	public <T> T pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, T output) {
 		PipeDescription pipeDescription = pipeDescriptionProvider.getPipeDescription(pipeLine, pipe);
-		return testTool.endpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), output);
+		return testTool.endpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), output, extractMessageContext(output));
 	}
 
 	public Throwable pipeAbort(PipeLine pipeLine, IPipe pipe, String correlationId, Throwable throwable) {
@@ -113,11 +124,11 @@ public class LadybugReportGenerator implements InitializingBean {
 	}
 
 	public <T> T senderInput(ISender sender, String correlationId, T input) {
-		return testTool.startpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), input);
+		return testTool.startpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), input, extractMessageContext(input));
 	}
 
 	public <T> T senderOutput(ISender sender, String correlationId, T output) {
-		return testTool.endpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), output);
+		return testTool.endpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), output, extractMessageContext(output));
 	}
 
 	public Throwable senderAbort(ISender sender, String correlationId, Throwable throwable){
@@ -126,11 +137,11 @@ public class LadybugReportGenerator implements InitializingBean {
 	}
 
 	public String replyListenerInput(IListener<?> listener, String correlationId, String input) {
-		return testTool.startpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), input);
+		return testTool.startpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), input, extractMessageContext(input));
 	}
 
 	public <M> M replyListenerOutput(IListener<M> listener, String correlationId, M output) {
-		return testTool.endpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), output);
+		return testTool.endpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), output, extractMessageContext(output));
 	}
 
 	public Throwable replyListenerAbort(IListener<?> listener, String correlationId, Throwable throwable){
@@ -147,11 +158,11 @@ public class LadybugReportGenerator implements InitializingBean {
 	}
 
 	public Object startThread(Object sourceObject, String threadId, String correlationId, Object input) {
-		return testTool.threadStartpoint(correlationId, threadId, sourceObject.getClass().getName(), getCheckpointNameForThread(), input);
+		return testTool.threadStartpoint(correlationId, threadId, sourceObject.getClass().getName(), getCheckpointNameForThread(), input, extractMessageContext(input));
 	}
 
 	public Object endThread(Object sourceObject, String correlationId, Object output) {
-		return testTool.threadEndpoint(correlationId, sourceObject.getClass().getName(), getCheckpointNameForThread(), output);
+		return testTool.threadEndpoint(correlationId, sourceObject.getClass().getName(), getCheckpointNameForThread(), output, extractMessageContext(output));
 	}
 
 	public Throwable abortThread(Object sourceObject, String correlationId, Throwable throwable) {
@@ -181,10 +192,10 @@ public class LadybugReportGenerator implements InitializingBean {
 				hiddenValue = "IOException while hiding value for parameter " + parameter.getName() + ": " + e.getMessage();
 				log.warn(hiddenValue, e);
 			}
-			testTool.inputpoint(correlationId, null, "Parameter " + parameter.getName(), hiddenValue);
+			testTool.inputpoint(correlationId, null, "Parameter " + parameter.getName(), hiddenValue, extractMessageContext(value));
 			return value;
 		}
-		return testTool.inputpoint(correlationId, null, "Parameter " + parameter.getName(), value);
+		return testTool.inputpoint(correlationId, null, "Parameter " + parameter.getName(), value, extractMessageContext(value));
 	}
 
 	public Object sessionOutputPoint(String correlationId, String sessionKey, Object result) {
@@ -193,7 +204,7 @@ public class LadybugReportGenerator implements InitializingBean {
 			name = "SystemKey " + sessionKey;
 		}
 
-		return testTool.outputpoint(correlationId, null, name, result);
+		return testTool.outputpoint(correlationId, null, name, result, extractMessageContext(result));
 	}
 
 	public Object sessionInputPoint(String correlationId, String sessionKey, Object result) {
@@ -201,19 +212,19 @@ public class LadybugReportGenerator implements InitializingBean {
 		if(sessionKey.startsWith(PipeLineSession.SYSTEM_MANAGED_RESOURCE_PREFIX)) {
 			name = "SystemKey " + sessionKey;
 		}
-		return testTool.inputpoint(correlationId, null, name, result);
+		return testTool.inputpoint(correlationId, null, name, result, extractMessageContext(result));
 	}
 
 	public <T> T showInputValue(String correlationId, String label, T value) {
-		return testTool.inputpoint(correlationId, null, label, value);
+		return testTool.inputpoint(correlationId, null, label, value, extractMessageContext(value));
 	}
 
 	public <T> T showOutputValue(String correlationId, String label, T value) {
-		return testTool.outputpoint(correlationId, null, label, value);
+		return testTool.outputpoint(correlationId, null, label, value, extractMessageContext(value));
 	}
 
 	public Message preserveInput(String correlationId, Message input) {
-		return testTool.outputpoint(correlationId, null, "PreserveInput", input);
+		return testTool.outputpoint(correlationId, null, "PreserveInput", input, extractMessageContext(input));
 	}
 
 	private static String getCheckpointNameForINamedObject(String checkpointNamePrefix, HasName object) {
