@@ -86,7 +86,8 @@ public class MessageContext implements Serializable {
 	}
 
 	// TODO verify if we should do a NULL assertion here, does NULL mean the same as remove ?
-	public void put(String key, Serializable value) {
+	// Should value be Serializable?
+	public void put(String key, Object value) {
 		data.put(key, value);
 	}
 
