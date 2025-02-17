@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -67,15 +67,15 @@ public class MultipartUtils {
 	@Nullable
 	public static String getFieldName(Part part) {
 		try {
-			String[] id = part.getHeader("Content-ID"); //MTOM requests
+			String[] id = part.getHeader("Content-ID"); // MTOM requests
 			if(id != null && StringUtils.isNotBlank(id[0])) {
 				String idField = id[0];
 				return idField.substring(1, idField.length()-1);
 			}
 
-			String[] cd = part.getHeader("Content-Disposition"); //MTOM Attachments and FORM-DATA requests
+			String[] cd = part.getHeader("Content-Disposition"); // MTOM Attachments and FORM-DATA requests
 			if(cd != null) {
-				String cdFields = cd[0]; //form-data; name="file1"; filename="file1" || attachment; name="file1"; filename="file1"
+				String cdFields = cd[0]; // form-data; name="file1"; filename="file1" || attachment; name="file1"; filename="file1"
 				if(cdFields != null) {
 					return parseParameterField(cdFields, "name");
 				}
@@ -88,14 +88,14 @@ public class MultipartUtils {
 
 	@Nullable
 	public static String getFieldName(AttachmentPart part) {
-		String id = part.getContentId(); //MTOM requests
+		String id = part.getContentId(); // MTOM requests
 		if(StringUtils.isNotBlank(id)) {
-			return id.substring(1, id.length()-1); //strip off < and > chars
+			return id.substring(1, id.length()-1); // Strip off < and > chars
 		}
 
-		String[] cd = part.getMimeHeader("Content-Disposition"); //MTOM Attachments and FORM-DATA requests
+		String[] cd = part.getMimeHeader("Content-Disposition"); // MTOM Attachments and FORM-DATA requests
 		if(cd != null) {
-			String cdFields = cd[0]; //form-data; name="file1"; filename="file1" || attachment; name="file1"; filename="file1"
+			String cdFields = cd[0]; // form-data; name="file1"; filename="file1" || attachment; name="file1"; filename="file1"
 			if(cdFields != null) {
 				return parseParameterField(cdFields, "name");
 			}
@@ -138,7 +138,10 @@ public class MultipartUtils {
 		MessageContext result = new MessageContext();
 		result.withMimeType(part.getContentType());
 		result.withSize(part.getSize());
-		result.withName(getFileName(part));
+		String filename = getFileName(part);
+		if (StringUtils.isNotBlank(filename)) {
+			result.withName(filename);
+		}
 
 		String id = getFieldName(part);
 		if(id != null) {
@@ -156,16 +159,16 @@ public class MultipartUtils {
 
 	public static boolean isBinary(Part part) {
 		try {
-			//Check if a filename is present (indicating it's a file and not a field)
+			// Check if a filename is present (indicating it's a file and not a field)
 			String filename = getFileName(part);
 			if(filename != null) {
 				return true;
 			}
 
-			//Check if the transfer encoding has been set when MTOM
+			// Check if the transfer encoding has been set when MTOM
 			String[] cte = part.getHeader("Content-Transfer-Encoding");
 			if(cte != null) {
-				String cteFields = cte[0]; //Content-Transfer-Encoding - binary || 8bit
+				String cteFields = cte[0]; // Content-Transfer-Encoding - binary || 8bit
 				if("binary".equalsIgnoreCase(cteFields)) {
 					return true;
 				}
@@ -177,16 +180,16 @@ public class MultipartUtils {
 	}
 
 	private static boolean isBinary(AttachmentPart part) {
-		//Check if a filename is present (indicating it's a file and not a field)
+		// Check if a filename is present (indicating it's a file and not a field)
 		String filename = getFileName(part);
 		if(filename != null) {
 			return true;
 		}
 
-		//Check if the transfer encoding has been set when MTOM
+		// Check if the transfer encoding has been set when MTOM
 		String[] cte = part.getMimeHeader("Content-Transfer-Encoding");
 		if(cte != null) {
-			String cteFields = cte[0]; //Content-Transfer-Encoding - binary || 8bit
+			String cteFields = cte[0]; // Content-Transfer-Encoding - binary || 8bit
 			if("binary".equalsIgnoreCase(cteFields)) {
 				return true;
 			}
@@ -210,7 +213,7 @@ public class MultipartUtils {
 
 	public static MultipartMessages parseMultipart(InputStream inputStream, String contentType) throws IOException {
 		try (InputStream unused = inputStream) {
-			final InputStreamDataSource dataSource = new InputStreamDataSource(contentType, inputStream); //the entire InputStream will be read here!
+			final InputStreamDataSource dataSource = new InputStreamDataSource(contentType, inputStream); // The entire InputStream will be read here!
 			final MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
 			final XmlBuilder attachments = new XmlBuilder("parts");
 			final Map<String, Message> parts = new LinkedHashMap<>();
