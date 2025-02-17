@@ -15,21 +15,20 @@
 */
 package org.frankframework.extensions.mqtt;
 
-import lombok.SneakyThrows;
+import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
+
+import lombok.SneakyThrows;
 
 import org.frankframework.jdbc.datasource.MqttClientSettings;
 import org.frankframework.jdbc.datasource.ObjectFactory;
 import org.frankframework.util.AppConstants;
-
-import java.util.Properties;
 
 public class MqttClientFactory extends ObjectFactory<MqttClient, MqttClientSettings> {
 
@@ -71,10 +70,11 @@ public class MqttClientFactory extends ObjectFactory<MqttClient, MqttClientSetti
 			clientId = AppConstants.getInstance().getProperty("transactionmanager.uid");
 		}
 
-		MqttClient client = new MqttClient(data.getUrl(), clientId, getMqttDataStore(data.getPersistenceDirectory()));
-		client.connect(connectOptions);
+		try (MqttClient client = new MqttClient(data.getUrl(), clientId, getMqttDataStore(data.getPersistenceDirectory()))) {
+			client.connect(connectOptions);
 
-		return client;
+			return client;
+		}
 	}
 
 	private MqttClientPersistence getMqttDataStore(String persistenceDirectory) {

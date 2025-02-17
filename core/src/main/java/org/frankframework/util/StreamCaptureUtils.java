@@ -65,9 +65,10 @@ public class StreamCaptureUtils {
 
 			@Override
 			public void write(char[] buffer, int offset, int length) throws IOException {
-				if (written<=maxSize) {
+				if (written <= maxSize) {
 					writer.write(buffer, offset, length);
-					if ((written+=length)>maxSize) {
+					written += length;
+					if (written > maxSize) {
 						writer.close();
 					}
 				}
