@@ -154,7 +154,7 @@ public class ConfigurationDigesterTest {
 					.toList();
 		}
 
-		assertEquals(2, digesterLogs.stream().filter(e -> e.contains("skipping erroneous configuration element")).toList().size());
+		assertEquals(2, digesterLogs.stream().filter(e -> e.contains("skipping erroneous nested configuration element")).toList().size());
 
 		String result = writer.toString();
 		String expected = TestFileUtils.getTestFile("/Digester/Canonicalized/MultipleConfigurationElements.xml");
