@@ -56,7 +56,8 @@ public class RunCypressE2eTest {
 	@BeforeAll
 	public static void setUp() throws IOException {
 		SpringApplication springApplication = IafTestInitializer.configureApplication();
-		container = new CypressContainer().withBaseUrl("http://host.docker.internal:8080/iaf-test/iaf/gui");
+		container = new CypressContainer();
+		container.withBaseUrl("http://host.docker.internal:8080/iaf-test/iaf/gui");
 
 		run = springApplication.run();
 		container.start();
@@ -76,32 +77,31 @@ public class RunCypressE2eTest {
 
 	@TestFactory
 	List<DynamicContainer> runCypressTests() throws InterruptedException, IOException, TimeoutException {
-		CypressTestResults testResults = this.container.getTestResults();
+		CypressTestResults testResults = container.getTestResults();
 
 		return convertToJUnitDynamicTests(testResults);
 	}
 
 	@Nonnull
 	private List<DynamicContainer> convertToJUnitDynamicTests(CypressTestResults testResults) {
-		List<DynamicContainer> dynamicContainers = new ArrayList<>();
-		List<CypressTestSuite> suites = testResults.getSuites();
-		for (CypressTestSuite suite : suites) {
-			createContainerFromSuite(dynamicContainers, suite);
-		}
-		return dynamicContainers;
+		return testResults.getSuites()
+				.stream()
+				.map(this::createContainerFromSuite)
+				.toList();
 	}
 
-	private void createContainerFromSuite(List<DynamicContainer> dynamicContainers, CypressTestSuite suite) {
+	private DynamicContainer createContainerFromSuite(CypressTestSuite suite) {
 		List<DynamicTest> dynamicTests = new ArrayList<>();
 		for (CypressTest test : suite.getTests()) {
 			dynamicTests.add(DynamicTest.dynamicTest(test.getDescription(), () -> {
 				if (!test.isSuccess()) {
-					log.error(test.getErrorMessage(), test.getStackTrace());
+					log.error("{}: {}", test.getErrorMessage(), test.getStackTrace());
 				}
 				Assertions.assertTrue(test.isSuccess());
 			}));
 		}
-		dynamicContainers.add(DynamicContainer.dynamicContainer(suite.getTitle(), dynamicTests));
+
+		return DynamicContainer.dynamicContainer(suite.getTitle(), dynamicTests);
 	}
 }
 

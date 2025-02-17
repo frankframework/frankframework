@@ -162,6 +162,19 @@
 
 	<build>
 		<defaultGoal>package</defaultGoal>
+
+		<!-- required for the Cypress tests, both the default, and the new path, else it won't use the default test-resources -->
+		<!-- Since intellij is dumb af and uses absolute paths, use iaf.rootdir -->
+		<testResources>
+			<testResource>
+				<directory>src/test/resources</directory>
+			</testResource>
+			<testResource>
+				<directory>${iaf.rootdir}/console/frontend/src/main/frontend</directory>
+				<targetPath>e2e</targetPath>
+			</testResource>
+		</testResources>
+
 		<plugins>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
@@ -315,16 +328,6 @@
 				</configuration>
 			</plugin>
 		</plugins>
-
-		<testResources>
-			<testResource>
-				<directory>src/test/resources</directory>
-			</testResource>
-			<testResource>
-				<directory>../console/frontend/src/main/frontend</directory>
-				<targetPath>e2e</targetPath>
-			</testResource>
-		</testResources>
 	</build>
 
 	<reporting>
