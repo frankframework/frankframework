@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GetDocumentAttributes_Error>
+	<errors>
+		<error>
+			<type>/errors/</type>
+			<title>More than one document found</title>
+			<status>DATA_ERROR</status>
+			<detail>The Devil's In The Details</detail>
+			<instance>/archiving/documents</instance>
+		</error>
+	</errors>
+	<errors>
+		<error>
+			<type>/errors/</type>
+			<title>More than one document found</title>
+			<status>DATA_ERROR</status>
+			<detail>The Devil's In The Details</detail>
+			<instance>/archiving/documents</instance>
+		</error>
+	</errors>
+</GetDocumentAttributes_Error>

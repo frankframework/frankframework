@@ -112,7 +112,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 
 		try {
 			PipeRunResult prr = instance.doPipe(new Message(testJson), session);
-			String result = prr.getResult().asString();
+			Message result = prr.getResult();
 			log.debug("result [" + ToStringBuilder.reflectionToString(prr) + "]");
 			ValidationResult event;
 			if (prr.isSuccessful()) {

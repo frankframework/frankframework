@@ -15,6 +15,7 @@
 */
 package org.frankframework.stream;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -195,8 +196,8 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 		}
 	}
 
-	public InputStream getInputStream() throws IOException {
-		return Files.newInputStream(path);
+	public BufferedInputStream getInputStream() throws IOException {
+		return new BufferedInputStream(Files.newInputStream(path));
 	}
 
 	private long getFileSize() {

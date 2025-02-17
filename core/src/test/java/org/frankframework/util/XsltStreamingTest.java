@@ -7,7 +7,6 @@ import java.io.ByteArrayInputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
@@ -158,7 +157,7 @@ public class XsltStreamingTest {
 		ByteArrayInputStream bais = new ByteArrayInputStream(input.toString().getBytes());
 		Source source = new StreamSource(new LoggingInputStream(bais, sc));
 
-		tp.transform(source, result, (Map<String,Object>) null);
+		tp.transform(source, result, null);
 		assertTrue(sc.count>2, "switch count ["+sc.count+"] should be larger than 2");
 	}
 }
