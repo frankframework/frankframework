@@ -1,9 +1,9 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import type { ChartData, ChartDataset, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { Subscription } from 'rxjs';
-import { AppConstants, AppService } from 'src/app/app.service';
+import { AppService } from 'src/app/app.service';
 import { DebugService } from 'src/app/services/debug.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { AdapterstatisticsService, Statistics } from './adapterstatistics.service';
@@ -19,38 +19,17 @@ import { FormatStatisticsPipe } from './format-statistics.pipe';
   styleUrls: ['./adapterstatistics.component.scss'],
 })
 export class AdapterstatisticsComponent implements OnInit, OnDestroy {
-  defaults = {
-    name: 'Name',
-    count: 'Count',
-    min: 'Min',
-    max: 'Max',
-    avg: 'Average',
-    stdDev: 'StdDev',
-    sum: 'Sum',
-    first: 'First',
-    last: 'Last',
-  };
-  adapterName: string | null = null;
-  configuration: string | null = null;
-  refreshing = false;
-  dataset: Partial<ChartDataset<'line', number[]>> = {
-    fill: false,
-    backgroundColor: '#2f4050',
-    pointBackgroundColor: '#2f4050',
-    borderColor: '#2f4050',
-    pointBorderColor: '#2f4050',
-    // hoverBackgroundColor: "#2f4050",
-    hoverBorderColor: '#2f4050',
-  };
-  hourlyStatistics: ChartData<'line', Statistics['hourly'][0]['count'][], Statistics['hourly'][0]['time']> = {
+  @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
+
+  protected adapterName: string | null = null;
+  protected configuration: string | null = null;
+  protected refreshing = false;
+  protected hourlyStatistics: ChartData<'line', Statistics['hourly'][0]['count'][], Statistics['hourly'][0]['time']> = {
     labels: [],
     datasets: [],
   };
-  stats?: Statistics;
-  statisticsTimeBoundaries: Record<string, string> = { ...this.defaults };
-  statisticsSizeBoundaries: Record<string, string> = { ...this.defaults };
-  statisticsNames = [];
-  options: ChartOptions<'line'> = {
+  protected stats?: Statistics;
+  protected options: ChartOptions<'line'> = {
     elements: {
       line: {
         tension: 0.5,
@@ -84,27 +63,50 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
       },
     },
   };
+  protected iboxExpanded = {
+    processReceivers: true,
+    durationPerPipe: true,
+    sizePerPipe: true,
+  };
 
+  private defaults = {
+    name: 'Name',
+    count: 'Count',
+    min: 'Min',
+    max: 'Max',
+    avg: 'Average',
+    stdDev: 'StdDev',
+    sum: 'Sum',
+    first: 'First',
+    last: 'Last',
+  };
+  protected statisticsTimeBoundaries: Record<string, string> = { ...this.defaults };
+  protected statisticsSizeBoundaries: Record<string, string> = { ...this.defaults };
+
+  private statisticsNames = [];
   private _subscriptions = new Subscription();
-  private appConstants: AppConstants;
+  private dataset: Partial<ChartDataset<'line', number[]>> = {
+    fill: false,
+    backgroundColor: '#2f4050',
+    pointBackgroundColor: '#2f4050',
+    borderColor: '#2f4050',
+    pointBorderColor: '#2f4050',
+    // hoverBackgroundColor: "#2f4050",
+    hoverBorderColor: '#2f4050',
+  };
 
-  @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
+  private appService: AppService = inject(AppService);
+  private route: ActivatedRoute = inject(ActivatedRoute);
+  private statisticsService: AdapterstatisticsService = inject(AdapterstatisticsService);
+  private SweetAlert: SweetalertService = inject(SweetalertService);
+  private Debug: DebugService = inject(DebugService);
+  private appConstants = this.appService.APP_CONSTANTS;
 
-  constructor(
-    private appService: AppService,
-    private route: ActivatedRoute,
-    private statisticsService: AdapterstatisticsService,
-    private SweetAlert: SweetalertService,
-    private Debug: DebugService,
-  ) {
-    this.appConstants = this.appService.APP_CONSTANTS;
+  ngOnInit(): void {
     const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
       this.appConstants = this.appService.APP_CONSTANTS;
     });
     this._subscriptions.add(appConstantsSubscription);
-  }
-
-  ngOnInit(): void {
     const routeParameters = this.route.snapshot.paramMap;
     this.adapterName = routeParameters.get('name');
     this.configuration = routeParameters.get('configuration');
@@ -156,7 +158,11 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     });
   }
 
-  populateBoundaries(): void {
+  collapseExpand(key: keyof typeof this.iboxExpanded): void {
+    this.iboxExpanded[key] = !this.iboxExpanded[key];
+  }
+
+  private populateBoundaries(): void {
     const timeBoundaries: string[] = (this.appConstants['Statistics.boundaries'] as string).split(',');
     const sizeBoundaries: string[] = (this.appConstants['Statistics.size.boundaries'] as string).split(',');
     const percBoundaries: string[] = (this.appConstants['Statistics.percentiles'] as string).split(',');
