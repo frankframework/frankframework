@@ -1,0 +1,878 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="1.8.0_181" class="java.beans.XMLDecoder">
+	<object class="nl.nn.testtool.Report">
+		<void property="name">
+			<string>Pipeline Frank2Example/HelloWorld</string>
+		</void>
+		<void property="description">
+			<string/>
+		</void>
+		<void property="path">
+			<string/>
+		</void>
+		<void property="correlationId">
+			<string>Test a Pipeline 1</string>
+		</void>
+		<void property="startTime">
+			<long>1735306998029</long>
+		</void>
+		<void property="endTime">
+			<long>1735306998978</long>
+		</void>
+		<void property="checkpoints">
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipeline Frank2Example/HelloWorld</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>0</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.core.PipeLine</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[412d3cc5:String]</string>
+					</void>
+					<void property="message">
+						<string>asd</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey cid</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>Test a Pipeline 1</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey mid</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>testmessageac193001--316d50e5_194085b70d2_-8000</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey originalMessage</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>Message[412d3cc5:String]</string>
+					</void>
+					<void property="message">
+						<string>asd</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey tsReceived</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>2024-12-27 14:43:17.980</string>
+					</void>
+				</object>
+			</void>
+						<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey testSessionKey</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>Test session key value</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey 2nd testSessionKey</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>&lt;UNH&gt;
+		&lt;cmp01&gt;
+			&lt;e01_0065&gt;DESADV&lt;/e01_0065&gt;
+			&lt;e02_0052&gt;D&lt;/e02_0052&gt;
+			&lt;e03_0054&gt;01B&lt;/e03_0054&gt;
+			&lt;e04_0051&gt;UN&lt;/e04_0051&gt;
+			&lt;e05_0057&gt;EAN007&lt;/e05_0057&gt;
+		&lt;/cmp01&gt;
+	&lt;/UNH&gt;</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey json</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>{"test":"test",
+						"secondline":"test",
+						"newline":"test"}</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe SenderPipe</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.pipes.SenderPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[412d3cc5:String]</string>
+					</void>
+					<void property="message">
+						<string>asd</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe SenderPipe</string>
+					</void>
+					<void property="type">
+						<int>6</int>
+					</void>
+					<void property="level">
+						<int>2</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.pipes.SenderPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>
+							&lt;pipe className=&quot;nl.nn.adapterframework.pipes.SenderPipe&quot; name=&quot;SenderPipe&quot;&gt;
+	&lt;sender className=&quot;nl.nn.adapterframework.jms.JmsSender&quot; destinationName=&quot;test.queue&quot; lookupDestination=&quot;false&quot; queueConnectionFactoryName=&quot;jms/qcf&quot; synchronous=&quot;true&quot;/&gt;
+&lt;/pipe&gt;
+						</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender SenderPipe-sender</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>2</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[412d3cc5:String]</string>
+					</void>
+					<void property="message">
+						<string>asd</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipeline Frank2Example/test</string>
+					</void>
+					<void property="type">
+						<int>8</int>
+					</void>
+					<void property="level">
+						<int>3</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.core.PipeLine</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[7ed265f8:String]</string>
+					</void>
+					<void property="message">
+						<string>asd</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SystemKey __JmsSession</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>org.apache.activemq.ActiveMQSession</string>
+					</void>
+					<void property="message">
+						<string>ActiveMQSession {id=ID:LPCENL007013628-58886-1735306490161-1:496:1,started=true,closed=false} java.lang.Object@3bc9a283</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey cid</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>Test a Pipeline 1</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey mid</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>ID:LPCENL007013628-58886-1735306490161-1:495:1:1:1</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey originalMessage</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>Message[7ed265f8:String]</string>
+					</void>
+					<void property="message">
+						<string>asd</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey replyTo</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>org.apache.activemq.command.ActiveMQTempQueue</string>
+					</void>
+					<void property="message">
+						<string>
+&lt;java version=&quot;21.0.2&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;object class=&quot;org.apache.activemq.command.ActiveMQTempQueue&quot;&gt;
+  &lt;void property=&quot;connectionId&quot;&gt;
+   &lt;string&gt;ID:LPCENL007013628-58886-1735306490161-1:495&lt;/string&gt;
+  &lt;/void&gt;
+  &lt;void property=&quot;physicalName&quot;&gt;
+   &lt;string&gt;ID:LPCENL007013628-58886-1735306490161-1:495:1&lt;/string&gt;
+  &lt;/void&gt;
+ &lt;/object&gt;
+&lt;/java&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey timestamp</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>java.time.Instant</string>
+					</void>
+					<void property="message">
+						<string>2024-12-27T13:43:18.507Z</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey tsReceived</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>2024-12-27 14:43:18.572</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>SessionKey tsSent</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>2024-12-27 14:43:18.507</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe pipe</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.pipes.EchoPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[7ed265f8:String]</string>
+					</void>
+					<void property="message">
+						<string>asd</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe pipe</string>
+					</void>
+					<void property="type">
+						<int>6</int>
+					</void>
+					<void property="level">
+						<int>5</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.pipes.EchoPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>
+							&lt;pipe className=&quot;nl.nn.adapterframework.pipes.EchoPipe&quot; getInputFromFixedValue=&quot;Adapter test1 received the message&quot; name=&quot;pipe&quot;/&gt;
+						</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>GetInputFromFixedValue</string>
+					</void>
+					<void property="type">
+						<int>4</int>
+					</void>
+					<void property="level">
+						<int>5</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>Adapter test1 received the message</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe pipe</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>5</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.pipes.EchoPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[2683f02b:String]</string>
+					</void>
+					<void property="message">
+						<string>Adapter test1 received the message</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe SenderPipe2</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.pipes.SenderPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[2683f02b:String]</string>
+					</void>
+					<void property="message">
+						<string>Adapter test1 received the message</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe SenderPipe2</string>
+					</void>
+					<void property="type">
+						<int>6</int>
+					</void>
+					<void property="level">
+						<int>5</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.pipes.SenderPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>
+							&lt;pipe className=&quot;nl.nn.adapterframework.pipes.SenderPipe&quot; name=&quot;SenderPipe2&quot;&gt;
+	&lt;sender className=&quot;nl.nn.adapterframework.jms.JmsSender&quot; destinationName=&quot;test.queue2&quot; lookupDestination=&quot;false&quot; queueConnectionFactoryName=&quot;jms/qcf&quot; synchronous=&quot;true&quot;/&gt;
+&lt;/pipe&gt;
+						</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender SenderPipe2-sender</string>
+					</void>
+					<void property="type">
+						<int>1</int>
+					</void>
+					<void property="level">
+						<int>5</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[2683f02b:String]</string>
+					</void>
+					<void property="message">
+						<string>Adapter test1 received the message</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>success</string>
+					</void>
+					<void property="type">
+						<int>5</int>
+					</void>
+					<void property="level">
+						<int>6</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>java.lang.Boolean</string>
+					</void>
+					<void property="message">
+						<string>
+&lt;java version=&quot;21.0.2&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;boolean&gt;true&lt;/boolean&gt;
+&lt;/java&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender SenderPipe2-sender</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>6</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[35ccd79e:String]</string>
+					</void>
+					<void property="message">
+						<string>Adapter test2 received the message</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe SenderPipe2</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>5</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.pipes.SenderPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[35ccd79e:String]</string>
+					</void>
+					<void property="message">
+						<string>Adapter test2 received the message</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>exitState</string>
+					</void>
+					<void property="type">
+						<int>5</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>SUCCESS</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipeline Frank2Example/test</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>4</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.core.PipeLine</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[35ccd79e:String]</string>
+					</void>
+					<void property="message">
+						<string>Adapter test2 received the message</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>success</string>
+					</void>
+					<void property="type">
+						<int>5</int>
+					</void>
+					<void property="level">
+						<int>3</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string>java.lang.Boolean</string>
+					</void>
+					<void property="message">
+						<string>
+&lt;java version=&quot;21.0.2&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;boolean&gt;true&lt;/boolean&gt;
+&lt;/java&gt;
+</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Sender SenderPipe-sender</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>3</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.jms.JmsSender</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[60b7329d:String]</string>
+					</void>
+					<void property="message">
+						<string>Adapter test2 received the message</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipe SenderPipe</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>2</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.pipes.SenderPipe</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[60b7329d:String]</string>
+					</void>
+					<void property="message">
+						<string>Adapter test2 received the message</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>exitState</string>
+					</void>
+					<void property="type">
+						<int>5</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string/>
+					</void>
+					<void property="messageClassName">
+						<string/>
+					</void>
+					<void property="message">
+						<string>SUCCESS</string>
+					</void>
+				</object>
+			</void>
+			<void method="add">
+				<object class="nl.nn.testtool.Checkpoint">
+					<void property="name">
+						<string>Pipeline Frank2Example/HelloWorld</string>
+					</void>
+					<void property="type">
+						<int>2</int>
+					</void>
+					<void property="level">
+						<int>1</int>
+					</void>
+					<void property="sourceClassName">
+						<string>nl.nn.adapterframework.core.PipeLine</string>
+					</void>
+					<void property="messageClassName">
+						<string>Message[60b7329d:String]</string>
+					</void>
+					<void property="message">
+						<string>Adapter test2 received the message</string>
+					</void>
+				</object>
+			</void>
+		</void>
+	</object>
+</java>
