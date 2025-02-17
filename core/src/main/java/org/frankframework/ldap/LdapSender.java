@@ -164,6 +164,9 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	public static final String LDAP_ERROR_MAGIC_STRING="[LDAP: error code";
 
+	// Not used yet, but already here for when this will extend Lifecycle with an `isRunning` method.
+	private boolean started = false;
+
 	private @Getter int searchTimeout = 20_000;
 
 	public @Getter Operation operation = Operation.READ;
@@ -408,6 +411,13 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	@Override
 	public void start() {
+		started = true;
+	}
+
+	@Override
+	public void stop() {
+		super.stop();
+		started = false;
 	}
 
 	@Override
