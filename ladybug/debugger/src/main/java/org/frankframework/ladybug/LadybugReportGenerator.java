@@ -78,8 +78,9 @@ public class LadybugReportGenerator implements InitializingBean {
 	}
 
 	private Map<String, Object> extractMessageContext(Object input) {
-		if(input instanceof Message m) {
-			return m.getContext().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue()));
+		if (input instanceof Message m) {
+			return m.getContext().entrySet().stream().collect(
+					Collectors.toMap(Map.Entry::getKey, e -> e.getValue() != null ? e.getValue() : "null")); // return string null in case value is null
 		}
 		return new HashMap<>();
 	}
