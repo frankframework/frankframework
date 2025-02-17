@@ -16,10 +16,12 @@
 package org.frankframework.ladybug;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import jakarta.annotation.Nonnull;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -77,12 +79,16 @@ public class LadybugReportGenerator implements InitializingBean {
 		return testTool.startpoint(correlationId, pipeLine.getClass().getName(), getName(pipeLine), input, extractMessageContext(input));
 	}
 
+	@Nonnull
 	private Map<String, Object> extractMessageContext(Object input) {
-		if (input instanceof Message m) {
-			return m.getContext().entrySet().stream().collect(
-					Collectors.toMap(Map.Entry::getKey, e -> e.getValue() != null ? e.getValue() : "null")); // return string null in case value is null
+		if (input instanceof Message message) {
+			return message.getContext().entrySet()
+					.stream()
+					.filter(e -> e.getValue() != null) // Filter out null values
+					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 		}
-		return new HashMap<>();
+
+		return Collections.emptyMap();
 	}
 
 	public Message pipelineOutput(PipeLine pipeLine, String correlationId, Message output) {

@@ -93,13 +93,13 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		Message response;
 		String acceptHeaderThatIsSomeHowStoredUnderThisKey = (String) session.get("contentType");
 
-		//Check if valid path
+		// Check if valid path
 		String requestRestPath = (String) session.get("restPath");
 		if (!getRestPath().equals(requestRestPath)) {
 			throw new ListenerException("illegal restPath value [" + requestRestPath + "], must be [" + getRestPath() + "]");
 		}
 
-		//Check if consumes has been set or contentType is set to JSON
+		// Check if consumes has been set or contentType is set to JSON
 		if(automaticallyTransformToAndFromJson && getConsumes()== MediaTypes.JSON && "application/json".equalsIgnoreCase(httpServletRequest.getContentType())) {
 			try {
 				message = transformToXml(message);
@@ -109,7 +109,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		}
 		int eTag = 0;
 
-		//Check if contentType is not overwritten which disabled auto-converting and mediatype headers
+		// Check if contentType is not overwritten which disabled auto-converting and mediatype headers
 		if(StringUtils.isEmpty(acceptHeaderThatIsSomeHowStoredUnderThisKey) || "*/*".equalsIgnoreCase(acceptHeaderThatIsSomeHowStoredUnderThisKey)) {
 			switch(getProduces()) {
 				case XML:
@@ -143,7 +143,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 				eTag = response.hashCode();
 		}
 
-		if(!session.containsKey("etag") && isGenerateEtag() && eTag != 0) { //The etag can be a negative integer...
+		if(!session.containsKey("etag") && isGenerateEtag() && eTag != 0) { // The etag can be a negative integer...
 			session.put("etag", "rest_"+eTag);
 		}
 
@@ -172,7 +172,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public Object getSpecialDefaultValue(String attributeName, Object defaultValue, Map<String, String> attributes) {
 		if ("view".equals(attributeName)) { // if attribute view is present
 			if (attributes.get("method") == null || "GET".equalsIgnoreCase(attributes.get("method"))) {// if view="true" AND no method has been supplied, or it's set to GET
-				return true; //Then the default is TRUE
+				return true; // Then the default is TRUE
 			}
 			return false;
 		}
