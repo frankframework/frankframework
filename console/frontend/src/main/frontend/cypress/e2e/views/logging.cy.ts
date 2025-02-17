@@ -4,7 +4,7 @@ describe('Logging page', () => {
   });
 
   it('Navigation should work', () => {
-    cy.get('[data-cy="logging__search__input"]').type('.log');
+    cy.get('[data-cy="logging__search__input"]').type('ibis4test.log');
     cy.get('[data-cy="logging__table__file"]').first().click();
     cy.url().should('match', /\/#\/logging\/.+\.log$/);
     cy.get('[data-cy="file-viewer__container"]')

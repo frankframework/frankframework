@@ -134,11 +134,47 @@
 			<artifactId>junit-jupiter-engine</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- Upgrade commons-compress because of vulnerability; transitive dep of testcontainers 1.19.x -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-compress</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.github.wimdeblauwe</groupId>
+			<artifactId>testcontainers-cypress</artifactId>
+			<version>1.9.1</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.code.findbugs</groupId>
+					<artifactId>jsr305</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
 	</dependencies>
 
 	<build>
 		<defaultGoal>package</defaultGoal>
+
+		<!-- required for the Cypress tests, both the default, and the new path, else it won't use the default test-resources -->
+		<!-- Since intellij is dumb af and uses absolute paths, use iaf.rootdir -->
+		<testResources>
+			<testResource>
+				<directory>src/test/resources</directory>
+			</testResource>
+			<testResource>
+				<directory>${iaf.rootdir}/console/frontend/src/main/frontend</directory>
+				<targetPath>e2e</targetPath>
+			</testResource>
+		</testResources>
+
 		<plugins>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
