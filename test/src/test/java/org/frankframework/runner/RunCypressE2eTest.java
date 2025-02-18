@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 
 import jakarta.annotation.Nonnull;
 
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import io.github.wimdeblauwe.testcontainers.cypress.CypressContainer;
@@ -56,10 +58,12 @@ public class RunCypressE2eTest {
 	@BeforeAll
 	public static void setUp() throws IOException {
 		SpringApplication springApplication = IafTestInitializer.configureApplication();
+		Consumer<OutputFrame> logConsumer = outputFrame -> log.debug(outputFrame.getUtf8String());
 		container = new CypressContainer();
 		container.withBaseUrl("http://host.docker.internal:8080/iaf-test/iaf/gui");
 
 		run = springApplication.run();
+		container.withLogConsumer(logConsumer);
 		container.start();
 
 		Assertions.assertTrue(run.isRunning());
