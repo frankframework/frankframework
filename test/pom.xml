@@ -60,6 +60,7 @@
 		<dependency>
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-ladybug-debugger</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
@@ -97,11 +98,6 @@
 		</dependency>
 
 		<!-- provided scoped dependencies -->
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-ladybug-debugger</artifactId>
-			<scope>provided</scope>
-		</dependency>
 		<dependency><!-- This dependency is here because of the CustomHighDeliveryCountEsbJmsListener -->
 			<groupId>jakarta.jms</groupId>
 			<artifactId>jakarta.jms-api</artifactId>
@@ -132,12 +128,6 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<!-- Upgrade commons-compress because of vulnerability; transitive dep of testcontainers 1.19.x -->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-compress</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

@@ -42,13 +42,16 @@ import lombok.extern.log4j.Log4j2;
 
 /**
  * Runs e2e tests with Cypress in a Testcontainer.
+ * Requires Docker, else the test will be skipped.
+ * <p>
+ * Exclude with '-DexcludedGroups=integration'
  *
  * @author Sergi Philipsen
  * @see "https://github.com/wimdeblauwe/testcontainers-cypress"
  */
 @Log4j2
 @Testcontainers(disabledWithoutDocker = true)
-@Tag("integration") // Requires Docker; exclude with '-DexcludedGroups=integration'
+@Tag("integration")
 public class RunCypressE2eTest {
 	private static CypressContainer container;
 	private static ConfigurableApplicationContext run;
