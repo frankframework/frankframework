@@ -154,13 +154,13 @@
 		<defaultGoal>package</defaultGoal>
 
 		<!-- required for the Cypress tests, both the default, and the new path, else it won't use the default test-resources -->
-		<!-- Since intellij is dumb af and uses absolute paths, use iaf.rootdir -->
+		<!-- This throws NPE's in Eclipse and makes the project unusable -->
 		<testResources>
 			<testResource>
 				<directory>src/test/resources</directory>
 			</testResource>
 			<testResource>
-				<directory>${iaf.rootdir}/console/frontend/src/main/frontend</directory>
+				<directory>../console/frontend/src/main/frontend</directory>
 				<targetPath>e2e</targetPath>
 			</testResource>
 		</testResources>
