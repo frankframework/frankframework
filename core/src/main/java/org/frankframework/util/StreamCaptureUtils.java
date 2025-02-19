@@ -93,7 +93,8 @@ public class StreamCaptureUtils {
 			@Override
 			public void close() throws IOException {
 				try {
-					if (counter.getByteCount()<maxSize && available()>0) {
+					// Assume the stream has not yet been closed
+					if (counter.getByteCount() < maxSize) {
 						// Make the bytes available for debugger even when the stream was not used (might be because the
 						// pipe or sender that normally consumes the stream is stubbed by the debugger)
 						int len = read(new byte[maxSize]);
