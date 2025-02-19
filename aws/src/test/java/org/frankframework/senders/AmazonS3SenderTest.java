@@ -9,8 +9,6 @@ import static org.mockito.Mockito.spy;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import org.frankframework.filesystem.TypeFilter;
-
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -24,6 +22,7 @@ import org.frankframework.filesystem.AmazonS3FileSystemTestHelper;
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.filesystem.S3FileRef;
+import org.frankframework.filesystem.TypeFilter;
 import org.frankframework.filesystem.WritableFileSystemSenderTest;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
@@ -121,7 +120,7 @@ public class AmazonS3SenderTest extends WritableFileSystemSenderTest<AmazonS3Sen
 		assertTrue(_fileExists(inputFolder, FILE1), "File ["+FILE1+"] should still be there after READ action");
 		assertEquals("some content", StreamUtil.streamToString(result.asInputStream()));
 		IOException e = assertThrows(IOException.class, result::preserve); // read binary stream twice
-		assertEquals("Attempted read on closed stream.", e.getMessage());
+		assertEquals("Stream closed", e.getMessage());
 	}
 
 	@Test
