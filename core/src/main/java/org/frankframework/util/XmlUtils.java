@@ -1700,7 +1700,7 @@ public class XmlUtils {
 	public static String toXhtml(Message message) throws IOException {
 		if (!Message.isEmpty(message)) {
 			String messageCharset = message.getCharset();
-			String xhtmlString = new String(message.getMagic(512), messageCharset != null ? messageCharset : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			String xhtmlString = message.peek(512);
 			if (xhtmlString.contains("<html>") || xhtmlString.contains("<html ")) {
 				CleanerProperties props = new CleanerProperties();
 				props.setOmitDoctypeDeclaration(true);

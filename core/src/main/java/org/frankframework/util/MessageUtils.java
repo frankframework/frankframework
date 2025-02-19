@@ -15,7 +15,6 @@
 */
 package org.frankframework.util;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -36,10 +35,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.logging.log4j.Logger;
-import org.apache.tika.config.TikaConfig;
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.TikaCoreProperties;
+import org.apache.tika.Tika;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.MimeType;
 
@@ -58,17 +54,7 @@ public class MessageUtils {
 
 	private static final Logger LOG = LogUtil.getLogger(MessageUtils.class);
 	private static final int CHARSET_CONFIDENCE_LEVEL = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
-	private static final TikaConfig TIKA_CONFIG = createTikaConfig();
-	private static final int TIKA_MAGIC_LENGTH = 64 * 1024; // This needs to be reasonably large to be able to correctly detect things like XML root elements after initial comment and DTDs
-
-	private static TikaConfig createTikaConfig() {
-		try {
-			return new TikaConfig();
-		} catch (TikaException | IOException e) {
-			LOG.error("unable to create Tika config, cannot determine mimetypes!", e);
-			return null;
-		}
-	}
+	private static final Tika TIKA = new Tika();
 
 	/**
 	 * Fetch metadata from the {@link HttpServletRequest} such as Content-Length, Content-Type (mimetype + charset)
@@ -177,7 +163,7 @@ public class MessageUtils {
 		}
 
 		CharsetDetector detector = new CharsetDetector();
-		detector.setText(message.getMagic());
+		detector.setText(message.asInputStream());
 		CharsetMatch match = detector.detect();
 		String charset = match.getName();
 
@@ -253,7 +239,7 @@ public class MessageUtils {
 	/**
 	 * Computes the {@link MimeType} when not available, attempts to resolve the Charset when of type TEXT.
 	 * <p>
-	 * NOTE: This is a resource intensive operation, the first {@value #TIKA_MAGIC_LENGTH} bytes are being read and stored in memory.
+	 * NOTE: This is a resource intensive operation, the first kilobytes of the message are potentially being read and stored in memory.
 	 */
 	public static MimeType computeMimeType(Message message, String filename) {
 		if(Message.isEmpty(message)) {
@@ -274,14 +260,8 @@ public class MessageUtils {
 		}
 
 		try {
-			Metadata metadata = new Metadata();
-			metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, name);
-			byte[] magic = message.getMagic(TIKA_MAGIC_LENGTH);
-			if(magic.length == 0) {
-				return null;
-			}
-			org.apache.tika.mime.MediaType tikaMediaType = TIKA_CONFIG.getDetector().detect(new ByteArrayInputStream(magic), metadata);
-			MimeType mimeType = MimeType.valueOf(tikaMediaType.toString());
+			String mediaType = TIKA.detect(message.asInputStream(), name);
+			MimeType mimeType = MimeType.valueOf(mediaType);
 			context.withMimeType(mimeType);
 			if("text".equals(mimeType.getType()) || message.getCharset() != null) { // is of type 'text' or message has charset
 				Charset charset = computeDecodingCharset(message);
@@ -385,7 +365,7 @@ public class MessageUtils {
 			message.assertNotClosed();
 			return message.asString();
 		}
-		if (object instanceof MessageWrapper wrapper) {
+		if (object instanceof MessageWrapper<?> wrapper) {
 			return wrapper.getMessage().asString();
 		}
 		// In other cases, message can be closed directly after converting to String.

@@ -319,7 +319,7 @@ public class SoapProviderTest {
 
 		assertEquals(1, message.countAttachments());
 
-		testAttachment(message, getFile(attachmentFile).asString(), "application/octet-stream");
+		testAttachment(message, getFile(attachmentFile).asString(), "text/plain");
 	}
 
 	@Test
