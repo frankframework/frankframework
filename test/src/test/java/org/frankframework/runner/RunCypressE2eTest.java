@@ -42,7 +42,6 @@ import io.github.wimdeblauwe.testcontainers.cypress.CypressTestSuite;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.Misc;
 
 /**
  * Runs e2e tests with Cypress in a Testcontainer.
@@ -65,16 +64,14 @@ public class RunCypressE2eTest {
 	public static void setUp() throws IOException {
 		SpringApplication springApplication = IafTestInitializer.configureApplication();
 
+		org.testcontainers.Testcontainers.exposeHostPorts(8080);
 
 		container = new CypressContainer();
-		container.withBaseUrl("http://"+Misc.getHostname()+":8080/iaf-test/iaf/gui");
+		container.withBaseUrl("http://host.testcontainers.internal:8080/iaf-test/iaf/gui");
 		container.withLogConsumer(frame -> LOGGER.info(frame.getUtf8StringWithoutLineEnding()));
-//		container.withMaximumTotalTestDuration(Duration.ofSeconds(5));
 
 		run = springApplication.run();
 		container.start();
-
-		System.out.println(container.getLogs());
 
 		Assertions.assertTrue(run.isRunning());
 		Assertions.assertTrue(container.isRunning());
