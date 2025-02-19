@@ -20,10 +20,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
 
 import jakarta.annotation.Nonnull;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -33,7 +33,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import io.github.wimdeblauwe.testcontainers.cypress.CypressContainer;
@@ -41,6 +40,9 @@ import io.github.wimdeblauwe.testcontainers.cypress.CypressTest;
 import io.github.wimdeblauwe.testcontainers.cypress.CypressTestResults;
 import io.github.wimdeblauwe.testcontainers.cypress.CypressTestSuite;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.Misc;
 
 /**
  * Runs e2e tests with Cypress in a Testcontainer.
@@ -57,17 +59,22 @@ import lombok.extern.log4j.Log4j2;
 public class RunCypressE2eTest {
 	private static CypressContainer container;
 	private static ConfigurableApplicationContext run;
+	private static final Logger LOGGER = LogUtil.getLogger("cypress");
 
 	@BeforeAll
 	public static void setUp() throws IOException {
 		SpringApplication springApplication = IafTestInitializer.configureApplication();
-		Consumer<OutputFrame> logConsumer = outputFrame -> log.debug(outputFrame.getUtf8String());
+
+
 		container = new CypressContainer();
-		container.withBaseUrl("http://host.docker.internal:8080/iaf-test/iaf/gui");
+		container.withBaseUrl("http://"+Misc.getHostname()+":8080/iaf-test/iaf/gui");
+		container.withLogConsumer(frame -> LOGGER.info(frame.getUtf8StringWithoutLineEnding()));
+//		container.withMaximumTotalTestDuration(Duration.ofSeconds(5));
 
 		run = springApplication.run();
-		container.withLogConsumer(logConsumer);
 		container.start();
+
+		System.out.println(container.getLogs());
 
 		Assertions.assertTrue(run.isRunning());
 		Assertions.assertTrue(container.isRunning());
@@ -102,7 +109,7 @@ public class RunCypressE2eTest {
 		for (CypressTest test : suite.getTests()) {
 			dynamicTests.add(DynamicTest.dynamicTest(test.getDescription(), () -> {
 				if (!test.isSuccess()) {
-					log.error("{}: {}", test.getErrorMessage(), test.getStackTrace());
+					log.error("{}:\n{}", test.getErrorMessage(), test.getStackTrace());
 				}
 				Assertions.assertTrue(test.isSuccess());
 			}));

@@ -44,7 +44,6 @@ describe('Monitoring page', () => {
     editMonitor();
 
     // Add a trigger
-
     cy.get('[data-cy="monitors__add-trigger-button"]').click();
     cy.get('[data-cy="monitors-add-edit__threshold__input"]').clear().type('-1{ctrl}{enter}');
     cy.get('[data-cy="monitors-add-edit__alert"]').should('have.text', 'Negative values are not allowed');
