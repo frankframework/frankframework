@@ -14,6 +14,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.io.StringWriter;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Base64;
@@ -62,6 +64,37 @@ class StreamCaptureUtilsTest {
 		String trimmedResult = base64String.replaceAll("\n", "");
 		assertEquals(expected, new String(Base64.getDecoder().decode(trimmedResult)));
 		assertEquals(expected, new String(baos.toByteArray()));
+	}
+
+	@Test
+	void testCaptureUnreadInputStream() throws IOException {
+		URL testFileURL = TestFileUtils.getTestFileURL("/Message/testString.txt");
+		ByteArrayOutputStream baos = spy(new ByteArrayOutputStream());
+
+		StreamCaptureUtils.captureInputStream(testFileURL.openStream(), baos, 16).close();
+		// Do not read!
+
+		String capture = new String(baos.toByteArray());
+		assertEquals(16, capture.length());
+		assertEquals("<root><sub>abc&a", capture);
+
+		verify(baos, times(1)).close(); // Capture should be closed together with the input.
+	}
+
+	@Test
+	void testCaptureUnreadReader() throws IOException {
+		URL testFileURL = TestFileUtils.getTestFileURL("/Message/testString.txt");
+		StringWriter baos = spy(new StringWriter());
+		Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(testFileURL.openStream());
+
+		StreamCaptureUtils.captureReader(reader, baos, 16).close();
+		// Do not read!
+
+		String capture = baos.toString();
+		assertEquals(16, capture.length());
+		assertEquals("<root><sub>abc&a", capture);
+
+		verify(baos, times(1)).close(); // Capture should be closed together with the input.
 	}
 
 	@Test
