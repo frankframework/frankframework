@@ -26,10 +26,11 @@ import org.springframework.context.annotation.Configuration;
 import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.lifecycle.servlets.SecuritySettings;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
+import org.frankframework.security.config.ServletRegistration;
 import org.frankframework.util.SpringUtils;
 
 @Configuration
-public class LadybugConfiguration implements ApplicationContextAware {
+public class LadybugServletConfiguration implements ApplicationContextAware {
 	private ApplicationContext applicationContext;
 
 	@Override

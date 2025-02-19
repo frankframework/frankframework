@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 - 2024 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ package org.frankframework.console.configuration;
 
 import jakarta.servlet.Filter;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
@@ -26,12 +24,16 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.console.filters.CacheControlFilter;
 import org.frankframework.console.filters.CorsFilter;
 import org.frankframework.console.filters.CspFilter;
 import org.frankframework.console.filters.CsrfCookieFilter;
 import org.frankframework.console.filters.SecurityLogFilter;
 import org.frankframework.console.filters.WeakShallowEtagHeaderFilter;
+import org.frankframework.security.config.ServletRegistration;
 import org.frankframework.util.SpringUtils;
 
 /**

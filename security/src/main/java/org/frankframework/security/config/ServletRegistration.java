@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.ladybug.config;
+package org.frankframework.security.config;
 
 import java.util.List;
 import java.util.Map;
@@ -23,14 +23,14 @@ import jakarta.servlet.ServletRegistration.Dynamic;
 import jakarta.servlet.ServletSecurityElement;
 import jakarta.servlet.http.HttpServlet;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.lifecycle.servlets.IAuthenticator;
 import org.frankframework.lifecycle.servlets.JeeAuthenticator;
@@ -43,7 +43,8 @@ public class ServletRegistration<T extends HttpServlet> extends ServletRegistrat
 	private @Setter ApplicationContext applicationContext;
 	private final @Getter ServletConfiguration servletConfiguration;
 	private final Class<T> servletClass;
-	private @Setter @Autowired IAuthenticator ladybugAuthenticator;
+
+	private IAuthenticator authenticator;
 
 	public ServletRegistration(Class<T> servletClass, ServletConfiguration config) {
 		this.servletClass = servletClass;
@@ -52,6 +53,8 @@ public class ServletRegistration<T extends HttpServlet> extends ServletRegistrat
 
 	@Override
 	public void afterPropertiesSet() {
+		authenticator = applicationContext.getBean(IAuthenticator.class); // Cannot use Autowired here, as it needs to look in the local BeanFactory first.
+
 		T servlet = SpringUtils.createBean(applicationContext, servletClass);
 		log.info("registering servlet [{}]", servletConfiguration::getName);
 
@@ -67,12 +70,12 @@ public class ServletRegistration<T extends HttpServlet> extends ServletRegistrat
 		setLoadOnStartup(servletConfiguration.getLoadOnStartup());
 		super.setServlet(servlet);
 
-		log.info("created servlet {} with endpoint {} using authenticator {}", this::getServletName, this::getUrlMappings, () -> ClassUtils.classNameOf(ladybugAuthenticator));
+		log.info("created servlet {} with endpoint {} using authenticator {}", this::getServletName, this::getUrlMappings, () -> ClassUtils.classNameOf(authenticator));
 	}
 
 	@Override
 	protected void configure(Dynamic registration) {
-		if(ladybugAuthenticator instanceof JeeAuthenticator) {
+		if(authenticator instanceof JeeAuthenticator) {
 			registration.setServletSecurity(getServletSecurity());
 		}
 		super.configure(registration);

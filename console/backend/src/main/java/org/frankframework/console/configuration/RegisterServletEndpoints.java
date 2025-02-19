@@ -15,11 +15,8 @@
 */
 package org.frankframework.console.configuration;
 
-import org.frankframework.console.ConsoleFrontend;
-import org.frankframework.lifecycle.DynamicRegistration;
-import org.frankframework.lifecycle.servlets.SecuritySettings;
-import org.frankframework.lifecycle.servlets.ServletConfiguration;
-import org.frankframework.util.SpringUtils;
+import jakarta.servlet.MultipartConfigElement;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -27,7 +24,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.DispatcherServlet;
 
-import jakarta.servlet.MultipartConfigElement;
+import org.frankframework.console.ConsoleFrontend;
+import org.frankframework.lifecycle.DynamicRegistration;
+import org.frankframework.lifecycle.servlets.SecuritySettings;
+import org.frankframework.lifecycle.servlets.ServletConfiguration;
+import org.frankframework.security.config.ServletRegistration;
+import org.frankframework.util.SpringUtils;
 
 @Configuration
 public class RegisterServletEndpoints implements ApplicationContextAware {

@@ -47,6 +47,7 @@ import lombok.Setter;
 import org.frankframework.lifecycle.servlets.AuthenticatorUtils;
 import org.frankframework.lifecycle.servlets.IAuthenticator;
 import org.frankframework.lifecycle.servlets.SpaCsrfTokenRequestHandler;
+import org.frankframework.security.config.ServletRegistration;
 import org.frankframework.util.ClassUtils;
 
 @Configuration
@@ -128,7 +129,6 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 
 	@Bean
 	public SecurityFilterChain createConsoleSecurityChain(HttpSecurity http, IAuthenticator consoleAuthenticator) throws Exception {
-
 		consoleAuthenticator.registerServlet(applicationContext.getBean("backendServletBean", ServletRegistration.class).getServletConfiguration());
 		consoleAuthenticator.registerServlet(applicationContext.getBean("frontendServletBean", ServletRegistration.class).getServletConfiguration());
 
