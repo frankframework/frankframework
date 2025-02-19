@@ -48,13 +48,13 @@ import org.frankframework.stream.MessageContext;
 
 public class MessageUtils {
 
-	private MessageUtils() {
-		throw new IllegalStateException("Don't construct utility class");
-	}
-
 	private static final Logger LOG = LogUtil.getLogger(MessageUtils.class);
 	private static final int CHARSET_CONFIDENCE_LEVEL = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
 	private static final Tika TIKA = new Tika();
+
+	private MessageUtils() {
+		throw new IllegalStateException("Don't construct utility class");
+	}
 
 	/**
 	 * Fetch metadata from the {@link HttpServletRequest} such as Content-Length, Content-Type (mimetype + charset)
