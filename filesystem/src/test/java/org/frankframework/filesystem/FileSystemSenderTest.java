@@ -28,7 +28,7 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 	static final String FOLDER_NAME = "folder";
 	protected FSS fileSystemSender;
 	SenderResult senderResult;
-	Message result;
+	protected Message result;
 
 	public abstract FSS createFileSystemSender();
 
