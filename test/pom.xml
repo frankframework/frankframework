@@ -148,6 +148,13 @@
 			</exclusions>
 		</dependency>
 
+		<!-- Needed for IafTestInitializer -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>${h2.driver.version}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
