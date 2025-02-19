@@ -51,7 +51,7 @@ describe('Monitoring page', () => {
     cy.get('[data-cy="monitors-add-edit__alert"]').should('have.text', 'Negative values are not allowed');
     cy.get('[data-cy="monitors-add-edit__threshold__input"]').clear();
     cy.get('[data-cy="monitors-add-edit__threshold__input"]').type('0{ctrl}{enter}');
-    findMonitor().parent().find('[data-cy="monitors__monitor__trigger__row"]').its('length').should('eq', 1);
+    findMonitor().parent().find('[data-cy="monitors__monitor__trigger__row"]').should('have.length', 1);
 
     // Raise and lower the monitor
     raiseMonitor();
