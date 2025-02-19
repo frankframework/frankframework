@@ -160,12 +160,16 @@
 				<directory>src/test/resources</directory>
 			</testResource>
 			<testResource>
-				<directory>../console/frontend/src/main/frontend</directory>
+				<directory>${iaf.rootdir}/console/frontend/src/main/frontend</directory>
 				<targetPath>e2e</targetPath>
 			</testResource>
 		</testResources>
 
 		<plugins>
+			<plugin>
+				<groupId>com.github.hazendaz.maven</groupId>
+				<artifactId>directory-maven-plugin</artifactId>
+			</plugin>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>3.3.1</version>
