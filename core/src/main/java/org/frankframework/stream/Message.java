@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -37,7 +38,6 @@ import java.io.Writer;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -424,19 +424,32 @@ public class Message implements Serializable, Closeable {
 	}
 
 	/**
-	 * return the request object as a {@link Reader}. Should not be called more than once, if request is not {@link #preserve() preserved}.
+	 * Return a {@link Reader} backed by the data in this message. {@link Reader#markSupported()} is guaranteed to be true for the returned stream.
+	 * Should not be called more than once, unless the request is {@link #isRepeatable() repeatable} or the Reader is reset to its starting position. If
+	 * the message is not {@link #isRepeatable() repeatable} then {@link #preserve()} can be called on the message to make it repeatable.
 	 */
 	@Nullable
 	public Reader asReader() throws IOException {
 		return asReader(null);
 	}
 
+	/**
+	 * Return a {@link Reader} backed by the data in this message. {@link Reader#markSupported()} is guaranteed to be true for the returned stream.
+	 * Should not be called more than once, unless the request is {@link #isRepeatable() repeatable} or the Reader is reset to its starting position. If
+	 * the message is not {@link #isRepeatable() repeatable} then {@link #preserve()} can be called on the message to make it repeatable.
+	 *
+	 * @param defaultDecodingCharset is only used when {@link #isBinary()} is {@code true}.
+	 */
 	@Nullable
 	public Reader asReader(@Nullable String defaultDecodingCharset) throws IOException {
 		if (request == null) {
 			return null;
 		}
 		if (request instanceof Reader reader) {
+			if (!reader.markSupported()) {
+				reader = new BufferedReader(reader);
+				request = reader;
+			}
 			LOG.debug("returning Reader {} as Reader", this::getObjectId);
 			return reader;
 		}
@@ -450,7 +463,11 @@ public class Message implements Serializable, Closeable {
 			LOG.debug("returning InputStream {} as Reader", this::getObjectId);
 			InputStream inputStream = asInputStream();
 			try {
-				return StreamUtil.getCharsetDetectingInputStreamReader(inputStream, readerCharset);
+				BufferedReader reader = StreamUtil.getCharsetDetectingInputStreamReader(inputStream, readerCharset);
+				if (this.request instanceof InputStream) {
+					this.request = reader;
+				}
+				return reader;
 			} catch (IOException e) {
 				onExceptionClose(e);
 				throw e;
@@ -468,7 +485,9 @@ public class Message implements Serializable, Closeable {
 	}
 
 	/**
-	 * return the request object as a {@link InputStream}. Should not be called more than once, if request is not {@link #preserve() preserved}.
+	 * Return an {@link InputStream} backed by the data in this message. {@link InputStream#markSupported()} is guaranteed to be true for the returned stream.
+	 * Should not be called more than once, unless the request is {@link #isRepeatable() repeatable} or the InputStream is reset to its starting position. If
+	 * the message is not {@link #isRepeatable() repeatable} then {@link #preserve()} can be called on the message to make it repeatable.
 	 */
 	@Nullable
 	public InputStream asInputStream() throws IOException {
@@ -476,6 +495,10 @@ public class Message implements Serializable, Closeable {
 	}
 
 	/**
+	 * Return an {@link InputStream} backed by the data in this message. {@link InputStream#markSupported()} is guaranteed to be true for the returned stream.
+	 * Should not be called more than once, unless the request is {@link #isRepeatable() repeatable} or the InputStream is reset to its starting position. If
+	 * the message is not {@link #isRepeatable() repeatable} then {@link #preserve()} can be called on the message to make it repeatable.
+	 *
 	 * @param defaultEncodingCharset is only used when the Message object is of character type (String)
 	 */
 	@Nullable
@@ -485,6 +508,10 @@ public class Message implements Serializable, Closeable {
 				return null;
 			}
 			if (request instanceof InputStream stream) {
+				if (!stream.markSupported()) {
+					stream = new BufferedInputStream(stream);
+					request = stream;
+				}
 				LOG.debug("returning InputStream {} as InputStream", this::getObjectId);
 				return stream;
 			}
@@ -494,7 +521,13 @@ public class Message implements Serializable, Closeable {
 			}
 			if (request instanceof ThrowingSupplier) {
 				LOG.debug("returning InputStream {} from supplier", this::getObjectId);
-				return ((ThrowingSupplier<InputStream, Exception>) request).get();
+				@SuppressWarnings("unchecked")
+				InputStream is = ((ThrowingSupplier<InputStream, Exception>) request).get();
+				if (is.markSupported()) {
+					return is;
+				} else {
+					return new BufferedInputStream(is);
+				}
 			}
 			if (request instanceof byte[] bytes) {
 				LOG.debug("returning byte[] {} as InputStream", this::getObjectId);
@@ -507,7 +540,7 @@ public class Message implements Serializable, Closeable {
 			String charset = getEncodingCharset(defaultEncodingCharset);
 			if (request instanceof Reader reader) {
 				LOG.debug("returning Reader {} as InputStream", this::getObjectId);
-				return new ReaderInputStream(reader, charset);
+				return new BufferedInputStream(new ReaderInputStream(reader, charset));
 			}
 			LOG.debug("returning String {} as InputStream", this::getObjectId);
 			return new ByteArrayInputStream(request.toString().getBytes(charset));
@@ -520,109 +553,23 @@ public class Message implements Serializable, Closeable {
 		}
 	}
 
-	/**
-	 * Reads the first 10k of a message. If the message does not support markSupported it is wrapped in a buffer.
-	 */
 	@Nonnull
-	public byte[] getMagic() throws IOException {
-		return getMagic(10 * 1024);
-	}
-
-	/**
-	 * Reads the first N bytes message, specified by parameter {@code readLimit}. If the message does not support markSupported it is wrapped in a buffer.
-	 *
-	 * @param readLimit amount of bytes to read.
-	 */
-	@Nonnull
-	public synchronized byte[] getMagic(int readLimit) throws IOException {
-		if (!isBinary()) {
-			return readBytesFromCharacterData(readLimit);
+	public synchronized String peek(int readLimit) throws IOException {
+		Reader r = asReader();
+		if (r == null) {
+			return "";
 		}
-
-		if (request instanceof InputStream) {
-			return readBytesFromInputStream(readLimit);
-		}
-		if (request instanceof byte[] bytes) { //copy of, else we can bump into buffer overflow exceptions
-			return Arrays.copyOf(bytes, readLimit);
-		}
-		if (isRepeatable()) {
-			try (InputStream stream = asInputStream()) { //Message is repeatable, close the stream after it's been (partially) read.
-				return readBytesFromInputStream(stream, readLimit);
-			}
-		}
-
-		return new byte[0];
-	}
-
-	@Nonnull
-	private byte[] readBytesFromCharacterData(int readLimit) throws IOException {
-		if (request instanceof Reader reader) {
-			if (!reader.markSupported()) {
-				reader = new BufferedReader(reader, readLimit);
-				request = reader;
-			}
-			reader.mark(readLimit);
-			try {
-				return readBytesFromReader(reader, readLimit);
-			} finally {
-				reader.reset();
-			}
-		}
-
-		if (request instanceof String string) {
-			if (string.isEmpty()) {
-				return new byte[0];
-			}
-			byte[] data = string.getBytes(StreamUtil.DEFAULT_CHARSET);
-			return Arrays.copyOf(data, readLimit);
-		}
-
-		if (isRepeatable()) {
-			try (Reader reader = asReader()) {
-				return readBytesFromReader(reader, readLimit);
-			}
-		}
-		return new byte[0];
-	}
-
-	@Nonnull
-	private byte[] readBytesFromReader(Reader reader, int readLimit) throws IOException {
-		var chars = new char[readLimit];
-		int charsRead = reader.read(chars);
-		if (charsRead <= 0) {
-			return new byte[0];
-		}
-		return new String(chars, 0, charsRead).getBytes(StreamUtil.DEFAULT_CHARSET);
-	}
-
-	@Nonnull
-	private byte[] readBytesFromInputStream(int readLimit) throws IOException {
-		assert request instanceof InputStream;
-		if (!((InputStream) request).markSupported()) {
-			request = new BufferedInputStream((InputStream) request, readLimit);
-		}
-		var stream = (InputStream) request;
-		stream.mark(readLimit);
-
+		r.mark(readLimit);
 		try {
-			return readBytesFromInputStream(stream, readLimit);
+			char[] buffer = new char[readLimit];
+			int len = r.read(buffer);
+			if (len <= 0) {
+				return "";
+			}
+			return new String(buffer, 0, len);
 		} finally {
-			stream.reset();
+			r.reset();
 		}
-	}
-
-	@Nonnull
-	private byte[] readBytesFromInputStream(InputStream stream, int readLimit) throws IOException {
-		var bytes = new byte[readLimit];
-		int numRead = stream.read(bytes);
-		if (numRead <= 0) {
-			return new byte[0];
-		}
-		if (numRead < readLimit) {
-			// move the bytes into a smaller array
-			bytes = Arrays.copyOf(bytes, numRead);
-		}
-		return bytes;
 	}
 
 	/**
@@ -862,13 +809,13 @@ public class Message implements Serializable, Closeable {
 	 * However, to do so, some I/O may have to be performed on the message thus making this a
 	 * potentially expensive operation which may throw an {@link IOException}.
 	 * <p/>
-	 * All I/O is done in such a way that no message data is lost (see also {@link Message#getMagic(int)}).
+	 * All I/O is done in such a way that no message data is lost .
 	 *
 	 * @param message Message to check. May be {@code null}.
 	 * @return Returns {@code false} if the message is {@code null} or of {@link Message#size()} returns 0.
 	 * 		Returns {@code true} if {@link Message#size()} returns a positive value.
 	 * 		If {@link Message#size()} returns {@link Message#MESSAGE_SIZE_UNKNOWN} then checks if any data can
-	 * 		be read via {@link Message#getMagic(int)}.
+	 * 		be read. Data read is pushed back onto the stream.
 	 * @throws IOException Throws an IOException if checking for data in the message throws an IOException.
 	 */
 	public static boolean hasDataAvailable(Message message) throws IOException {
@@ -876,10 +823,41 @@ public class Message implements Serializable, Closeable {
 			return false;
 		}
 		long size = message.size();
-		if (size == MESSAGE_SIZE_UNKNOWN) {
-			return message.getMagic(10).length != 0;
-		} else {
+		if (size != MESSAGE_SIZE_UNKNOWN) {
 			return size != 0;
+		}
+		if (message.isBinary()) {
+			return checkIfStreamHasData(message.asInputStream());
+		} else {
+			return checkIfReaderHasData(message.asReader());
+		}
+	}
+
+	private static boolean checkIfReaderHasData(Reader r) throws IOException {
+		if (r == null) {
+			return false;
+		}
+		r.mark(1);
+		try {
+			return r.read() != -1;
+		} catch (EOFException e) {
+			return false;
+		}  finally {
+			r.reset();
+		}
+	}
+
+	private static boolean checkIfStreamHasData(InputStream is) throws IOException {
+		if (is == null) {
+			return false;
+		}
+		is.mark(1);
+		try {
+			return is.read() != -1;
+		} catch (EOFException e) {
+			return false;
+		} finally {
+			is.reset();
 		}
 	}
 
