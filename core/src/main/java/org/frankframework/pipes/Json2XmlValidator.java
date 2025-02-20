@@ -16,7 +16,6 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -36,7 +35,6 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import lombok.Getter;
-import lombok.SneakyThrows;
 
 import org.frankframework.align.Json2Xml;
 import org.frankframework.align.Xml2Json;
@@ -188,12 +186,16 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
 		DocumentFormat inputFormat;
+		Character firstChar;
 		try {
-			inputFormat = findDocumentFormat(input);
+			firstChar = findFirstCharacter(input);
+			inputFormat = determineDocumentFormat(input, firstChar);
 		} catch (IOException ex) {
 			throw new PipeRunException(this, "unable to determine input format from request", ex);
 		}
 		if (inputFormat == DocumentFormat.XML) {
+			storeInputFormat(DocumentFormat.XML, input, session, responseMode);
+
 			Message xmlMessage;
 			if (isAcceptNamespacelessXml()) {
 				try {
@@ -204,10 +206,9 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			} else {
 				xmlMessage = input;
 			}
-			storeInputFormat(DocumentFormat.XML, input, session, responseMode);
 			if (getOutputFormat(session,responseMode) != DocumentFormat.JSON) {
 				xmlMessage.getContext().withMimeType(MediaType.APPLICATION_XML);
-				PipeRunResult result=super.doPipe(xmlMessage, session, responseMode, messageRoot);
+				PipeRunResult result = super.doPipe(xmlMessage, session, responseMode, messageRoot);
 				if (isProduceNamespacelessXml()) {
 					try {
 						result.setResult(XmlUtils.removeNamespaces(result.getResult()));
@@ -224,29 +225,37 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			}
 		} else if (inputFormat == DocumentFormat.JSON) {
 			if (!isAllowJson() && !responseMode) {
-				return getErrorResult("message is not XML, because it starts with [" + findFirstChar(input) + "] and not with '<'", session, responseMode);
+				return getErrorResult("message is not XML, because it starts with [" + firstChar + "] and not with '<'", session, responseMode);
 			}
 		} else if (!Message.isEmpty(input)) {
-			return getErrorResult("message is not XML or JSON, because it starts with [" +findFirstChar(input)+ "] and not with '<', '{' or '['", session, responseMode);
+			return getErrorResult("message is not XML or JSON, because it starts with [" + firstChar + "] and not with '<', '{' or '['", session, responseMode);
 		}
 
 		Message messageToValidate;
 		if (inputFormat == null) {
-			messageToValidate = new Message("{}");
 			storeInputFormat(getOutputFormat(), input, session, responseMode); //Message is empty, but could be either XML or JSON. Look at the accept header, and if not set fall back to the default OutputFormat.
+
+			messageToValidate = new Message("{}");
 		} else {
+			storeInputFormat(DocumentFormat.JSON, input, session, responseMode);
+
 			if (Message.isNull(input)) {
 				messageToValidate = new Message("{}");
 			} else {
 				messageToValidate = input;
 			}
-			storeInputFormat(DocumentFormat.JSON, input, session, responseMode);
 		}
 		try {
 			return alignJson(messageToValidate, session, responseMode);
 		} catch (XmlValidatorException e) {
 			throw new PipeRunException(this, "Cannot align JSON", e);
 		}
+	}
+
+	@Nullable
+	private static Character findFirstCharacter(Message input) throws IOException {
+		String prefix = input.peek(READ_AHEAD_LIMIT);
+		return StringUtils.isBlank(prefix) ? null : prefix.trim().charAt(0);
 	}
 
 	/**
@@ -264,69 +273,21 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	 * </ul>
 	 *
 	 * @param input Message from which to read.
+	 * @param firstChar First character of the input message, or NULL.
 	 * @return DocumentFormat of the input message, if it was possible to determine, or null.
-	 * @throws IOException Exception from reading the message.
 	 */
-	private @Nullable DocumentFormat findDocumentFormat(Message input) throws IOException {
+	private static @Nullable DocumentFormat determineDocumentFormat(Message input, Character firstChar) {
 		if (Message.isNull(input)) {
 			return DocumentFormat.JSON;
 		}
-		if (Message.isEmpty(input)) {
+		if (input.isEmpty() ||  firstChar == null) {
 			return null;
 		}
-		Reader reader = input.asReader();
-		if (reader == null) {
-			return null;
-		}
-		reader.mark(READ_AHEAD_LIMIT);
-		try {
-			int charsRead = 0;
-			int chr;
-			do {
-				chr = reader.read();
-			} while (chr != -1 && Character.isWhitespace(chr) && ++charsRead < READ_AHEAD_LIMIT);
-			return switch (chr) {
-				case '<' -> DocumentFormat.XML;
-				case '{', '[' -> DocumentFormat.JSON;
-				default -> null;
-			};
-		} finally {
-			reader.reset();
-		}
-	}
-
-	/**
-	 * Peek into the first kilobyte of the message to find first non-whitespace-char. If there is no non-whitespace-char in the first kilobyte of the message or
-	 * if the message is empty, return a {@code ' '} (space) character.
-	 * After reading from the message, the stream used is reset to its original point.
-	 * This method is used only for error reporting if the input format was not valid.
-	 *
-	 * @param input Message from which to read.
-	 * @return First non-whitespace char, or a space ({@code ' '}).
-	 */
-	@SneakyThrows
-	private char findFirstChar(Message input) {
-		if (input == null) {
-			return ' ';
-		}
-		Reader reader = input.asReader();
-		if (reader == null) {
-			return ' ';
-		}
-		reader.mark(READ_AHEAD_LIMIT);
-		try {
-			int charsRead = 0;
-			int chr;
-			do {
-				chr = reader.read();
-			} while (chr != -1 && Character.isWhitespace(chr) && ++charsRead < READ_AHEAD_LIMIT);
-			if (chr == -1) {
-				return ' ';
-			}
-			return (char) chr;
-		} finally {
-			reader.reset();
-		}
+		return switch (firstChar) {
+			case '<' -> DocumentFormat.XML;
+			case '{', '[' -> DocumentFormat.JSON;
+			default -> null;
+		};
 	}
 
 	protected RootValidations getJsonRootValidations(boolean responseMode) {
