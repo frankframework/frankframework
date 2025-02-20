@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.frankframework.stream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.time.Instant;
@@ -26,6 +27,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -51,10 +55,11 @@ public class MessageContext implements Serializable {
 
 	private static final Logger LOG = LogManager.getLogger(MessageContext.class);
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 	private static final long customSerializationVersion = 1L;
 
-	private Map<String, Object> data = new LinkedHashMap<>();
+	private Map<String, Serializable> data = new LinkedHashMap<>();
 
 	public MessageContext() {
 		super();
@@ -63,43 +68,48 @@ public class MessageContext implements Serializable {
 		this();
 		withCharset(charset);
 	}
-	public MessageContext(Map<String, ?> base) {
+	public MessageContext(Map<String, Serializable> base) {
 		this();
 		withAllFrom(base);
 	}
 
-	public MessageContext(MessageContext base) {
+	public MessageContext(@Nonnull MessageContext base) {
 		this(base.data);
 	}
 
-	public MessageContext withAllFrom(Map<String,?> base) {
-		if (base!=null) {
+	public MessageContext withAllFrom(@Nullable Map<String, Serializable> base) {
+		if (base != null) {
 			putAll(base);
 		}
 		return this;
 	}
 
-	public void putAll(Map<String, ?> base) {
-		if (base!=null) {
-			data.putAll(base);
+	public void putAll(@Nullable Map<String, Serializable> base) {
+		if (base != null) {
+			base.forEach(this::put);
 		}
 	}
 
-	// TODO verify if we should do a NULL assertion here, does NULL mean the same as remove ?
-	// Should value be Serializable?
-	public void put(String key, Object value) {
-		data.put(key, value);
+	/**
+	 * Put key in the message context. If the key already exists, it is overwritten with this value. If the value is NULL then the key is removed.
+	 */
+	public void put(@Nonnull String key, @Nullable Serializable value) {
+		if (value != null) {
+			data.put(key, value);
+		} else {
+			data.remove(key);
+		}
 	}
 
-	Object remove(String key) {
+	Serializable remove(@Nonnull String key) {
 		return data.remove(key);
 	}
 
-	public Object get(String key) {
+	public Serializable get(@Nonnull String key) {
 		return data.get(key);
 	}
 
-	public boolean containsKey(String key) {
+	public boolean containsKey(@Nonnull String key) {
 		return data.containsKey(key);
 	}
 
@@ -107,7 +117,7 @@ public class MessageContext implements Serializable {
 		return data.isEmpty();
 	}
 
-	public Set<Map.Entry<String, Object>> entrySet() {
+	public Set<Map.Entry<String, Serializable>> entrySet() {
 		return data.entrySet();
 	}
 
@@ -116,19 +126,19 @@ public class MessageContext implements Serializable {
 	 * @param charset to add
 	 * @return MessageContext with charset added
 	 */
-	public MessageContext withCharset(String charset) {
+	public MessageContext withCharset(@Nullable String charset) {
 		if (StringUtils.isNotEmpty(charset)) {
 			put(METADATA_CHARSET, charset);
 		}
 		return this;
 	}
-	public MessageContext withCharset(Charset charset) {
+	public MessageContext withCharset(@Nullable Charset charset) {
 		if (charset!=null) {
 			put(METADATA_CHARSET, charset.name());
 		}
 		return this;
 	}
-	public MessageContext withMimeType(String mimeType) {
+	public MessageContext withMimeType(@Nonnull String mimeType) {
 		try {
 			withMimeType(MimeType.valueOf(mimeType));
 		} catch (InvalidMimeTypeException imte) {
@@ -146,7 +156,7 @@ public class MessageContext implements Serializable {
 		return this;
 	}
 
-	public MessageContext withMimeType(MimeType mimeType) {
+	public MessageContext withMimeType(@Nonnull MimeType mimeType) {
 		put(METADATA_MIMETYPE, mimeType);
 		withCharset(mimeType.getCharset());
 
@@ -169,37 +179,38 @@ public class MessageContext implements Serializable {
 	public MessageContext withModificationTime(long time) {
 		return withModificationTime(Instant.ofEpochMilli(time));
 	}
-	public MessageContext withModificationTime(Date time) {
-		if (time!=null) {
+	public MessageContext withModificationTime(@Nullable Date time) {
+		if (time != null) {
 			put(METADATA_MODIFICATIONTIME, DateFormatUtils.format(time));
 		}
 		return this;
 	}
-	public MessageContext withModificationTime(Instant time) {
-		if (time!=null) {
+	public MessageContext withModificationTime(@Nullable Instant time) {
+		if (time != null) {
 			put(METADATA_MODIFICATIONTIME, DateFormatUtils.format(time));
 		}
 		return this;
 	}
-	public MessageContext withName(String name) {
+	public MessageContext withName(@Nullable String name) {
 		put(METADATA_NAME, name);
 		return this;
 	}
-	public MessageContext withLocation(String location) {
+	public MessageContext withLocation(@Nullable String location) {
 		put(METADATA_LOCATION, location);
 		return this;
 	}
-	public MessageContext with(String name, String value) {
+	public MessageContext with(@Nonnull String name, @Nullable String value) {
 		put(name, value);
 		return this;
 	}
 
-	private void writeObject(ObjectOutputStream out) throws IOException {
+	@Serial
+	private void writeObject(@Nonnull ObjectOutputStream out) throws IOException {
 		// If in future we need to make incompatible changes we can keep reading old version by selecting on version-nr
 		out.writeLong(customSerializationVersion);
 		Map<String, Serializable> serializableData = data.entrySet().stream()
 						.filter(e -> {
-							if (e.getValue() instanceof Serializable) return true;
+							if (e.getValue() != null) return true;
 							else {
 								LOG.warn("Cannot write non-serializable MessageContext entry to stream: [{}] -> [{}]", e::getKey, e::getValue);
 								return false;
@@ -209,9 +220,10 @@ public class MessageContext implements Serializable {
 		out.writeObject(serializableData);
 	}
 
+	@Serial
 	@SuppressWarnings("unchecked")
-	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+	private void readObject(@Nonnull ObjectInputStream in) throws IOException, ClassNotFoundException {
 		in.readLong(); // Custom serialization version; only version 1 yet so value can be ignored for now.
-		data = (Map<String, Object>) in.readObject();
+		data = (Map<String, Serializable>) in.readObject();
 	}
 }

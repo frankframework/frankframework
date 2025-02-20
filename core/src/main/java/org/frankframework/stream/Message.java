@@ -773,7 +773,7 @@ public class Message implements Serializable, Closeable {
 			return;
 		}
 		writer.append("context:\n");
-		for (Entry<String, Object> entry : context.entrySet()) {
+		for (Entry<String, Serializable> entry : context.entrySet()) {
 			Object value = entry.getValue();
 			if ("authorization".equalsIgnoreCase(entry.getKey())) {
 				value = StringUtil.hide((String) value);
