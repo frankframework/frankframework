@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import javax.xml.validation.ValidatorHandler;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.json.Json;
 import jakarta.json.JsonStructure;
@@ -194,35 +195,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			throw new PipeRunException(this, "unable to determine input format from request", ex);
 		}
 		if (inputFormat == DocumentFormat.XML) {
-			storeInputFormat(DocumentFormat.XML, input, session, responseMode);
-
-			Message xmlMessage;
-			if (isAcceptNamespacelessXml()) {
-				try {
-					xmlMessage = addNamespace(input);
-				} catch (IOException e) {
-					throw new PipeRunException(this, "Cannot read message", e);
-				}
-			} else {
-				xmlMessage = input;
-			}
-			if (getOutputFormat(session,responseMode) != DocumentFormat.JSON) {
-				xmlMessage.getContext().withMimeType(MediaType.APPLICATION_XML);
-				PipeRunResult result = super.doPipe(xmlMessage, session, responseMode, messageRoot);
-				if (isProduceNamespacelessXml()) {
-					try {
-						result.setResult(XmlUtils.removeNamespaces(result.getResult()));
-					} catch (XmlException e) {
-						throw new PipeRunException(this, "Cannot remove namespaces",e);
-					}
-				}
-				return result;
-			}
-			try {
-				return alignXml2Json(xmlMessage, session, responseMode);
-			} catch (Exception e) {
-				throw new PipeRunException(this, "Alignment of XML to JSON failed",e);
-			}
+			return validateXmlMessage(input, session, responseMode, messageRoot);
 		} else if (inputFormat == DocumentFormat.JSON) {
 			if (!isAllowJson() && !responseMode) {
 				return getErrorResult("message is not XML, because it starts with [" + firstChar + "] and not with '<'", session, responseMode);
@@ -231,6 +204,20 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			return getErrorResult("message is not XML or JSON, because it starts with [" + firstChar + "] and not with '<', '{' or '['", session, responseMode);
 		}
 
+		return validateJsonMessage(input, session, responseMode, inputFormat);
+	}
+
+	private PipeRunResult validateJsonMessage(Message input, PipeLineSession session, boolean responseMode, DocumentFormat inputFormat) throws PipeRunException {
+		Message messageToValidate = determineJsonInputMessage(input, session, responseMode, inputFormat);
+		try {
+			return alignJson(messageToValidate, session, responseMode);
+		} catch (XmlValidatorException e) {
+			throw new PipeRunException(this, "Cannot align JSON", e);
+		}
+	}
+
+	@Nonnull
+	private Message determineJsonInputMessage(Message input, PipeLineSession session, boolean responseMode, DocumentFormat inputFormat) {
 		Message messageToValidate;
 		if (inputFormat == null) {
 			storeInputFormat(getOutputFormat(), input, session, responseMode); //Message is empty, but could be either XML or JSON. Look at the accept header, and if not set fall back to the default OutputFormat.
@@ -245,10 +232,38 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				messageToValidate = input;
 			}
 		}
+		return messageToValidate;
+	}
+
+	private PipeRunResult validateXmlMessage(Message input, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
+		storeInputFormat(DocumentFormat.XML, input, session, responseMode);
+
+		Message xmlMessage;
+		if (isAcceptNamespacelessXml()) {
+			try {
+				xmlMessage = addNamespace(input);
+			} catch (IOException e) {
+				throw new PipeRunException(this, "Cannot read message", e);
+			}
+		} else {
+			xmlMessage = input;
+		}
+		if (getOutputFormat(session, responseMode) != DocumentFormat.JSON) {
+			xmlMessage.getContext().withMimeType(MediaType.APPLICATION_XML);
+			PipeRunResult result = super.doPipe(xmlMessage, session, responseMode, messageRoot);
+			if (isProduceNamespacelessXml()) {
+				try {
+					result.setResult(XmlUtils.removeNamespaces(result.getResult()));
+				} catch (XmlException e) {
+					throw new PipeRunException(this, "Cannot remove namespaces",e);
+				}
+			}
+			return result;
+		}
 		try {
-			return alignJson(messageToValidate, session, responseMode);
-		} catch (XmlValidatorException e) {
-			throw new PipeRunException(this, "Cannot align JSON", e);
+			return alignXml2Json(xmlMessage, session, responseMode);
+		} catch (Exception e) {
+			throw new PipeRunException(this, "Alignment of XML to JSON failed",e);
 		}
 	}
 
