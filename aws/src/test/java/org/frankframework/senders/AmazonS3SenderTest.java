@@ -1,5 +1,6 @@
 package org.frankframework.senders;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,6 +9,8 @@ import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 import java.nio.file.Path;
+
+import org.frankframework.filesystem.TypeFilter;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -119,4 +122,21 @@ public class AmazonS3SenderTest extends WritableFileSystemSenderTest<AmazonS3Sen
 		IOException e = assertThrows(IOException.class, result::preserve); // read binary stream twice
 		assertEquals("Attempted read on closed stream.", e.getMessage());
 	}
+
+
+	@Test
+	public void fileSystemSenderTestListFolders() throws Exception {
+		createFile("OtherFolder", "OtherFile", "Content of the file!");
+
+		fileSystemSender.setAction(FileSystemAction.LIST);
+		fileSystemSender.setTypeFilter(TypeFilter.FOLDERS_ONLY);
+
+		fileSystemSender.configure();
+		fileSystemSender.start();
+
+		Message result = assertDoesNotThrow(() -> fileSystemSender.sendMessageOrThrow(new Message(""), session));
+
+		assertFileCountEquals(result, 0);
+	}
+
 }

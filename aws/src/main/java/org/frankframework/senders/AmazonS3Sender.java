@@ -19,6 +19,7 @@ import org.frankframework.filesystem.AbstractFileSystemSender;
 import org.frankframework.filesystem.AmazonS3FileSystem;
 import org.frankframework.filesystem.AmazonS3FileSystemDelegator;
 import org.frankframework.filesystem.S3FileRef;
+import org.frankframework.filesystem.TypeFilter;
 
 /**
  * Sender to work with the Amazon S3 Filesystem.
@@ -37,4 +38,9 @@ public class AmazonS3Sender extends AbstractFileSystemSender<S3FileRef, AmazonS3
 	public AmazonS3Sender() {
 		setFileSystem(new AmazonS3FileSystem());
 	}
+
+	public void setTypeFilter(TypeFilter typeFilter) {
+		getFileSystem().setTypeFilter(typeFilter);
+	}
+
 }

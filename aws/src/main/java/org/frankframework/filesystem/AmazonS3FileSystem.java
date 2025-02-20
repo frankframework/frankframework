@@ -98,6 +98,16 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	private S3Client s3Client;
 	private AwsCredentialsProvider credentialProvider;
 
+	private TypeFilter typeFilter = TypeFilter.FILES_ONLY;
+
+	public AmazonS3FileSystem() {
+		super();
+	}
+
+	public void setTypeFilter(TypeFilter typeFilter) {
+		this.typeFilter = typeFilter;
+	}
+
 	@Override
 	public void configure() throws ConfigurationException {
 		if((StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isEmpty(getSecretKey())) || (StringUtils.isEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
@@ -340,7 +350,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	 * @throws FileSystemException if it cannot find the resource in S3.
 	 */
 	private void updateFileAttributes(S3FileRef f) throws FileSystemException {
-		if (f.getContentLength() == null) {
+		if (f.getContentLength() == null && f.hasName()) {
 			try {
 				getFileAttributes(f);
 			} catch (AwsServiceException e) {
@@ -525,6 +535,11 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 
 	@Override
 	public long getFileSize(S3FileRef f) throws FileSystemException {
+		// Probably a folder, which cannot have a size.
+		if (!f.hasName()) {
+			return 0;
+		}
+
 		updateFileAttributes(f);
 		return f.getContentLength();
 	}
@@ -532,6 +547,9 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	@Override
 	public Date getModificationTime(S3FileRef f) throws FileSystemException {
 		updateFileAttributes(f);
+		if (f.getLastModified() == null) {
+			return null;
+		}
 		return Date.from(f.getLastModified());
 	}
 
