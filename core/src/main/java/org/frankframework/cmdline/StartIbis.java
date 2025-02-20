@@ -17,6 +17,7 @@ package org.frankframework.cmdline;
 
 import org.frankframework.configuration.IbisContext;
 
+
 /**
  * Starts up a configuration in a plain JVM.
  *
@@ -24,6 +25,7 @@ import org.frankframework.configuration.IbisContext;
  *
  * @author  Johan Verrips
  */
+
 public class StartIbis {
 
 	@SuppressWarnings({"resource", "java:S2095"})

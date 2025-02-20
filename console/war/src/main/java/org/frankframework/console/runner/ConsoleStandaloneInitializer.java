@@ -29,13 +29,15 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.context.event.ApplicationFailedEvent;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.ApplicationListener;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * Spring Boot entrypoint or main class defined in the pom.xml when packaging using the 'spring-boot:repackage' goal.
  *
  * @author Niels Meijer
  */
-public class ConsoleStandaloneInitializer {
+@SpringBootApplication
+ public class ConsoleStandaloneInitializer {
 
 	/** Required to enable the use of WebSockets when starting as (Spring)Boot-able application. */
 	public static class WsSciWrapper implements ServletContextInitializer {
