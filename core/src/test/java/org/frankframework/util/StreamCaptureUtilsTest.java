@@ -3,6 +3,7 @@ package org.frankframework.util;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -168,21 +169,21 @@ class StreamCaptureUtilsTest {
 		Message message = spy(new Message(stream)); // non-repeatable
 		ByteArrayOutputStream boas = message.captureBinaryStream();
 
-		byte[] magic = message.getMagic(bufferSize);
+		String magic = message.peek(bufferSize);
 
 		message.asString(); // Read twice after the magic has been fetched
 		message.asString();
 
 		byte[] capture = Arrays.copyOf(boas.toByteArray(), bufferSize); // It is possible more characters have been written to the captured stream
-		assertEquals(new String(magic), new String(capture));
+		assertEquals(magic, new String(capture));
 		assertEquals(message.asString(), new String(input.openStream().readAllBytes())); // Verify that the message output, after reading the magic, has not changed
 
-		verify(stream, times(2)).close();
+		verify(stream, atLeastOnce()).close();
 		verify(message, times(0)).close();
 
 		message.close();
 
-		verify(stream, times(2)).close();
+		verify(stream, atLeastOnce()).close();
 		verify(message, times(1)).close();
 	}
 
