@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2024 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import lombok.Setter;
 import org.frankframework.lifecycle.servlets.AuthenticatorUtils;
 import org.frankframework.lifecycle.servlets.IAuthenticator;
 import org.frankframework.lifecycle.servlets.SpaCsrfTokenRequestHandler;
+import org.frankframework.security.config.ServletRegistration;
 import org.frankframework.util.ClassUtils;
 
 @Configuration
@@ -118,14 +119,19 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 	}
 
 	@Bean
-	public SecurityFilterChain createConsoleSecurityChain(HttpSecurity http) throws Exception {
+	public IAuthenticator consoleAuthenticator() {
 		String properyPrefix = "application.security.console.authentication.";
 		IAuthenticator authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, properyPrefix);
+
 		APPLICATION_LOG.info("Securing Frank!Framework Console using {}", ClassUtils.classNameOf(authenticator));
+		return authenticator;
+	}
 
-		authenticator.registerServlet(applicationContext.getBean("backendServletBean", ServletRegistration.class).getServletConfiguration());
-		authenticator.registerServlet(applicationContext.getBean("frontendServletBean", ServletRegistration.class).getServletConfiguration());
+	@Bean
+	public SecurityFilterChain createConsoleSecurityChain(HttpSecurity http, IAuthenticator consoleAuthenticator) throws Exception {
+		consoleAuthenticator.registerServlet(applicationContext.getBean("backendServletBean", ServletRegistration.class).getServletConfiguration());
+		consoleAuthenticator.registerServlet(applicationContext.getBean("frontendServletBean", ServletRegistration.class).getServletConfiguration());
 
-		return configureHttpSecurity(authenticator, http);
+		return configureHttpSecurity(consoleAuthenticator, http);
 	}
 }

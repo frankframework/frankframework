@@ -86,6 +86,8 @@ public class MessageContext implements Serializable {
 		}
 	}
 
+	// TODO verify if we should do a NULL assertion here, does NULL mean the same as remove ?
+	// Should value be Serializable?
 	public void put(String key, Object value) {
 		data.put(key, value);
 	}
@@ -212,9 +214,9 @@ public class MessageContext implements Serializable {
 		out.writeObject(serializableData);
 	}
 
+	@SuppressWarnings("unchecked")
 	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
 		in.readLong(); // Custom serialization version; only version 1 yet so value can be ignored for now.
-		//noinspection unchecked
 		data = (Map<String, Object>) in.readObject();
 	}
 }

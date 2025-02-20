@@ -18,6 +18,7 @@ package org.frankframework.jms;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -724,7 +725,9 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		Enumeration<String> names = message.getPropertyNames();
 		while (names.hasMoreElements()) {
 			String name = names.nextElement();
-			result.put(name, message.getObjectProperty(name));
+			if (message.getObjectProperty(name) instanceof Serializable value) {
+				result.put(name, value);
+			}
 		}
 		return result;
 	}

@@ -16,24 +16,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.frankframework.ladybug.util.XmlTestStorage;
-import org.frankframework.util.AppConstants;
 import org.junit.jupiter.api.Test;
 
 import nl.nn.testtool.Report;
 import nl.nn.testtool.storage.StorageException;
 
-public class ConvertToLarvaActionTest {
+import org.frankframework.ladybug.util.XmlTestStorage;
+import org.frankframework.util.AppConstants;
 
-	private static final XmlTestStorage xmlStorage = new XmlTestStorage();
-	private static final String lineSeparator = System.getProperty("line.separator");
+class ConvertToLarvaActionTest {
+
+	private static final XmlTestStorage XML_TEST_STORAGE = new XmlTestStorage();
+	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
 	@Test
-	public void simpleHelloWorldsAdapterWithNoStubbedSenderAndParam() throws StorageException, IOException {
+	void simpleHelloWorldsAdapterWithNoStubbedSenderAndParam() throws StorageException, IOException {
 		// Create report
-		File reportFile = new File(Objects.requireNonNull(this.getClass().getClassLoader().getResource("testReport/Pipeline_HelloWorlds.report.xml")).getFile());
-		Report report = xmlStorage.readReportFromFile(reportFile);
+		File reportFile = new File(Objects.requireNonNull(this.getClass().getClassLoader().getResource("testReport/Pipeline_HelloWorlds.report.xml"))
+				.getFile());
+		Report report = XML_TEST_STORAGE.readReportFromFile(reportFile);
 
 		// Create tempdir and set it as the log dir (scenarios will be created in the log dir)
 		String tmpDirPath = Files.createTempDirectory("testtool-").toFile().getAbsolutePath();
@@ -59,30 +62,31 @@ public class ConvertToLarvaActionTest {
 		assertTrue(fileMap.containsKey("02-adapter-HelloWorlds-out.xml"));
 
 		// Check a few file contents to be as expected
-		String scenarioPropertiesContent = "scenario.description            = Test scenario for adapter HelloWorlds, automatically generated based on a ladybug report" + lineSeparator
-				+ "include                         = common.properties" + lineSeparator
-				+ "" + lineSeparator
-				+ "step1.adapter.HelloWorlds.write = simpleHelloWorldsAdapterWithNoStubbedSenderAndParam/01-adapter-HelloWorlds-in.txt" + lineSeparator
+		String scenarioPropertiesContent = "scenario.description            = Test scenario for adapter HelloWorlds, automatically generated based on a ladybug report" + LINE_SEPARATOR
+				+ "include                         = common.properties" + LINE_SEPARATOR
+				+ "" + LINE_SEPARATOR
+				+ "step1.adapter.HelloWorlds.write = simpleHelloWorldsAdapterWithNoStubbedSenderAndParam/01-adapter-HelloWorlds-in.txt" + LINE_SEPARATOR
 				+ "step2.adapter.HelloWorlds.read  = simpleHelloWorldsAdapterWithNoStubbedSenderAndParam/02-adapter-HelloWorlds-out.xml";
 
-		String commonPropertiesContent = "adapter.HelloWorlds.className                 = org.frankframework.senders.IbisJavaSender" + lineSeparator
-				+ "adapter.HelloWorlds.convertExceptionToMessage = true" + lineSeparator
+		String commonPropertiesContent = "adapter.HelloWorlds.className                 = org.frankframework.senders.IbisJavaSender" + LINE_SEPARATOR
+				+ "adapter.HelloWorlds.convertExceptionToMessage = true" + LINE_SEPARATOR
 				+ "adapter.HelloWorlds.serviceName               = testtool-HelloWorlds";
 
-		for (Path p: fileMap.values()) {
-			if(p.endsWith("scenariosimpleHelloWorldsAdapterWithNoStubbedSenderAndParam.properties")) {
+		for (Path p : fileMap.values()) {
+			if (p.endsWith("scenariosimpleHelloWorldsAdapterWithNoStubbedSenderAndParam.properties")) {
 				assertTextEquals(scenarioPropertiesContent, Files.readString(p));
-			} else if(p.endsWith("common.properties")) {
+			} else if (p.endsWith("common.properties")) {
 				assertTextEquals(commonPropertiesContent, Files.readString(p));
 			}
 		}
 	}
 
 	@Test
-	public void withStubbedSenders() throws StorageException, IOException {
+	void withStubbedSenders() throws StorageException, IOException {
 		// Create report
-		File reportFile = new File(Objects.requireNonNull(this.getClass().getClassLoader().getResource("testReport/Pipeline_WithStubbedSenders.report.xml")).getFile());
-		Report report = xmlStorage.readReportFromFile(reportFile);
+		File reportFile = new File(Objects.requireNonNull(this.getClass().getClassLoader().getResource("testReport/Pipeline_WithStubbedSenders.report.xml"))
+				.getFile());
+		Report report = XML_TEST_STORAGE.readReportFromFile(reportFile);
 
 		// Create tempdir and set it as the log dir (scenarios will be created in the log dir)
 		String tmpDirPath = Files.createTempDirectory("testtool-").toFile().getAbsolutePath();
@@ -110,42 +114,43 @@ public class ConvertToLarvaActionTest {
 		assertTrue(fileMap.containsKey("03-stub-SenderPipe-out.txt"));
 
 		// Check a few file contents to be as expected
-		String scenarioPropertiesContent = "scenario.description            = Test scenario for adapter HelloWorld, automatically generated based on a ladybug report" + lineSeparator
-				+ "include                         = common.properties" + lineSeparator
-				+ "" + lineSeparator
-				+ "adapter.HelloWorld.param1.name  = testSessionKey" + lineSeparator
-				+ "adapter.HelloWorld.param1.value = Test session key value" + lineSeparator
-				+ "adapter.HelloWorld.param2.name  = 2nd testSessionKey" + lineSeparator
-				+ "adapter.HelloWorld.param2.value = <UNH>		<cmp01>			<e01_0065>DESADV</e01_0065>			<e02_0052>D</e02_0052>			<e03_0054>01B</e03_0054>			<e04_0051>UN</e04_0051>			<e05_0057>EAN007</e05_0057>		</cmp01>	</UNH>" + lineSeparator
-				+ "adapter.HelloWorld.param3.name  = json" + lineSeparator
-				+ "adapter.HelloWorld.param3.value = {\"test\":\"test\",						\"secondline\":\"test\",						\"newline\":\"test\"}" + lineSeparator
-				+ "" + lineSeparator
-				+ "step1.adapter.HelloWorld.write  = WithStubbedSenders/01-adapter-HelloWorld-in.txt" + lineSeparator
-				+ "step2.stub.SenderPipe.read      = WithStubbedSenders/02-stub-SenderPipe-in.txt" + lineSeparator
-				+ "step3.stub.SenderPipe.write     = WithStubbedSenders/03-stub-SenderPipe-out.txt" + lineSeparator
+		String scenarioPropertiesContent = "scenario.description            = Test scenario for adapter HelloWorld, automatically generated based on a ladybug report" + LINE_SEPARATOR
+				+ "include                         = common.properties" + LINE_SEPARATOR
+				+ "" + LINE_SEPARATOR
+				+ "adapter.HelloWorld.param1.name  = testSessionKey" + LINE_SEPARATOR
+				+ "adapter.HelloWorld.param1.value = Test session key value" + LINE_SEPARATOR
+				+ "adapter.HelloWorld.param2.name  = 2nd testSessionKey" + LINE_SEPARATOR
+				+ "adapter.HelloWorld.param2.value = <UNH>		<cmp01>			<e01_0065>DESADV</e01_0065>			<e02_0052>D</e02_0052>			<e03_0054>01B</e03_0054>			<e04_0051>UN</e04_0051>			<e05_0057>EAN007</e05_0057>		</cmp01>	</UNH>" + LINE_SEPARATOR
+				+ "adapter.HelloWorld.param3.name  = json" + LINE_SEPARATOR
+				+ "adapter.HelloWorld.param3.value = {\"test\":\"test\",						\"secondline\":\"test\",						\"newline\":\"test\"}" + LINE_SEPARATOR
+				+ "" + LINE_SEPARATOR
+				+ "step1.adapter.HelloWorld.write  = WithStubbedSenders/01-adapter-HelloWorld-in.txt" + LINE_SEPARATOR
+				+ "step2.stub.SenderPipe.read      = WithStubbedSenders/02-stub-SenderPipe-in.txt" + LINE_SEPARATOR
+				+ "step3.stub.SenderPipe.write     = WithStubbedSenders/03-stub-SenderPipe-out.txt" + LINE_SEPARATOR
 				+ "step4.adapter.HelloWorld.read   = WithStubbedSenders/04-adapter-HelloWorld-out.txt";
 
-		String commonPropertiesContent = "adapter.HelloWorld.className                 = org.frankframework.senders.IbisJavaSender" + lineSeparator
-				+ "adapter.HelloWorld.convertExceptionToMessage = true" + lineSeparator
-				+ "adapter.HelloWorld.serviceName               = testtool-HelloWorld" + lineSeparator
-				+ lineSeparator
-				+ "stub.SenderPipe.className                    = org.frankframework.receivers.JavaListener" + lineSeparator
+		String commonPropertiesContent = "adapter.HelloWorld.className                 = org.frankframework.senders.IbisJavaSender" + LINE_SEPARATOR
+				+ "adapter.HelloWorld.convertExceptionToMessage = true" + LINE_SEPARATOR
+				+ "adapter.HelloWorld.serviceName               = testtool-HelloWorld" + LINE_SEPARATOR
+				+ LINE_SEPARATOR
+				+ "stub.SenderPipe.className                    = org.frankframework.receivers.JavaListener" + LINE_SEPARATOR
 				+ "stub.SenderPipe.serviceName                  = testtool-SenderPipe";
 
-		for (Path p: fileMap.values()) {
-			if(p.endsWith("scenarioWithStubbedSenders.properties")) {
+		for (Path p : fileMap.values()) {
+			if (p.endsWith("scenarioWithStubbedSenders.properties")) {
 				assertTextEquals(scenarioPropertiesContent, Files.readString(p));
-			} else if(p.endsWith("common.properties")) {
+			} else if (p.endsWith("common.properties")) {
 				assertTextEquals(commonPropertiesContent, Files.readString(p));
 			}
 		}
 	}
 
 	@Test
-	public void forEachStubbedSender() throws StorageException, IOException {
+	void forEachStubbedSender() throws StorageException, IOException {
 		// Create report
-		File reportFile = new File(Objects.requireNonNull(this.getClass().getClassLoader().getResource("testReport/Pipeline_ForEachStubbedSender.report.xml")).getFile());
-		Report report = xmlStorage.readReportFromFile(reportFile);
+		File reportFile = new File(Objects.requireNonNull(this.getClass().getClassLoader().getResource("testReport/Pipeline_ForEachStubbedSender.report.xml"))
+				.getFile());
+		Report report = XML_TEST_STORAGE.readReportFromFile(reportFile);
 
 		// Create tempdir and set it as the log dir (scenarios will be created in the log dir)
 		String tmpDirPath = Files.createTempDirectory("testtool-").toFile().getAbsolutePath();
@@ -177,41 +182,42 @@ public class ConvertToLarvaActionTest {
 		assertTrue(fileMap.containsKey("08-adapter-ItemIterator-out.xml"));
 
 		// Check a few file contents to be as expected
-		String scenarioPropertiesContent = "scenario.description              = Test scenario for adapter ItemIterator, automatically generated based on a ladybug report" + lineSeparator
-				+ "include                           = common.properties" + lineSeparator
-				+ "" + lineSeparator
-				+ "adapter.ItemIterator.param1.name  = sessionkey" + lineSeparator
-				+ "adapter.ItemIterator.param1.value = value" + lineSeparator
-				+ "" + lineSeparator
-				+ "step1.adapter.ItemIterator.write  = ForEachStubbedSender/01-adapter-ItemIterator-in.xml" + lineSeparator
-				+ "step2.stub.ItemIteratorPipe.read  = ForEachStubbedSender/02-stub-ItemIteratorPipe-in.xml" + lineSeparator
-				+ "step3.stub.ItemIteratorPipe.write = ForEachStubbedSender/03-stub-ItemIteratorPipe-out.txt" + lineSeparator
-				+ "step4.stub.ItemIteratorPipe.read  = ForEachStubbedSender/04-stub-ItemIteratorPipe-in.xml" + lineSeparator
-				+ "step5.stub.ItemIteratorPipe.write = ForEachStubbedSender/05-stub-ItemIteratorPipe-out.txt" + lineSeparator
-				+ "step6.stub.ItemIteratorPipe.read  = ForEachStubbedSender/06-stub-ItemIteratorPipe-in.xml" + lineSeparator
-				+ "step7.stub.ItemIteratorPipe.write = ForEachStubbedSender/07-stub-ItemIteratorPipe-out.txt" + lineSeparator
+		String scenarioPropertiesContent = "scenario.description              = Test scenario for adapter ItemIterator, automatically generated based on a ladybug report" + LINE_SEPARATOR
+				+ "include                           = common.properties" + LINE_SEPARATOR
+				+ "" + LINE_SEPARATOR
+				+ "adapter.ItemIterator.param1.name  = sessionkey" + LINE_SEPARATOR
+				+ "adapter.ItemIterator.param1.value = value" + LINE_SEPARATOR
+				+ "" + LINE_SEPARATOR
+				+ "step1.adapter.ItemIterator.write  = ForEachStubbedSender/01-adapter-ItemIterator-in.xml" + LINE_SEPARATOR
+				+ "step2.stub.ItemIteratorPipe.read  = ForEachStubbedSender/02-stub-ItemIteratorPipe-in.xml" + LINE_SEPARATOR
+				+ "step3.stub.ItemIteratorPipe.write = ForEachStubbedSender/03-stub-ItemIteratorPipe-out.txt" + LINE_SEPARATOR
+				+ "step4.stub.ItemIteratorPipe.read  = ForEachStubbedSender/04-stub-ItemIteratorPipe-in.xml" + LINE_SEPARATOR
+				+ "step5.stub.ItemIteratorPipe.write = ForEachStubbedSender/05-stub-ItemIteratorPipe-out.txt" + LINE_SEPARATOR
+				+ "step6.stub.ItemIteratorPipe.read  = ForEachStubbedSender/06-stub-ItemIteratorPipe-in.xml" + LINE_SEPARATOR
+				+ "step7.stub.ItemIteratorPipe.write = ForEachStubbedSender/07-stub-ItemIteratorPipe-out.txt" + LINE_SEPARATOR
 				+ "step8.adapter.ItemIterator.read   = ForEachStubbedSender/08-adapter-ItemIterator-out.xml";
 
-		String commonPropertiesContent = "adapter.ItemIterator.className                 = org.frankframework.senders.IbisJavaSender" + lineSeparator
-				+ "adapter.ItemIterator.convertExceptionToMessage = true" + lineSeparator
-				+ "adapter.ItemIterator.serviceName               = testtool-ItemIterator" + lineSeparator
-				+ "" + lineSeparator
-				+ "stub.ItemIteratorPipe.className                = org.frankframework.receivers.JavaListener" + lineSeparator
+		String commonPropertiesContent = "adapter.ItemIterator.className                 = org.frankframework.senders.IbisJavaSender" + LINE_SEPARATOR
+				+ "adapter.ItemIterator.convertExceptionToMessage = true" + LINE_SEPARATOR
+				+ "adapter.ItemIterator.serviceName               = testtool-ItemIterator" + LINE_SEPARATOR
+				+ "" + LINE_SEPARATOR
+				+ "stub.ItemIteratorPipe.className                = org.frankframework.receivers.JavaListener" + LINE_SEPARATOR
 				+ "stub.ItemIteratorPipe.serviceName              = testtool-ItemIteratorPipe";
 
-		for (Path p: fileMap.values()) {
-			if(p.endsWith("scenarioForEachStubbedSender.properties")) {
+		for (Path p : fileMap.values()) {
+			if (p.endsWith("scenarioForEachStubbedSender.properties")) {
 				assertTextEquals(scenarioPropertiesContent, Files.readString(p));
-			} else if(p.endsWith("common.properties")) {
+			} else if (p.endsWith("common.properties")) {
 				assertTextEquals(commonPropertiesContent, Files.readString(p));
 			}
 		}
 	}
 
 	@Test
-	public void sameReportTwiceInAList() throws StorageException, IOException {
-		File file = new File(Objects.requireNonNull(this.getClass().getClassLoader().getResource("testReport/Pipeline_WithStubbedSenders.report.xml")).getFile());
-		Report report = xmlStorage.readReportFromFile(file);
+	void sameReportTwiceInAList() throws StorageException, IOException {
+		File file = new File(Objects.requireNonNull(this.getClass().getClassLoader().getResource("testReport/Pipeline_WithStubbedSenders.report.xml"))
+				.getFile());
+		Report report = XML_TEST_STORAGE.readReportFromFile(file);
 
 		List<Report> reports = new ArrayList<>();
 		reports.add(report);
@@ -229,29 +235,29 @@ public class ConvertToLarvaActionTest {
 		// Collect produced files
 		Set<Path> fileSet = new HashSet<>();
 		Files.walk(Paths.get(tmpDirPath + "/autogenerated/Frank2Example")).filter(Files::isRegularFile)
-				.forEach(path -> fileSet.add(path));
+				.forEach(fileSet::add);
 
 		// Check number of files created
 		assertEquals(11, fileSet.size(), "Expected number of files did not match!");
 
-		String commonPropertiesContent = "adapter.HelloWorld.className                 = org.frankframework.senders.IbisJavaSender" + lineSeparator
-				+ "adapter.HelloWorld.convertExceptionToMessage = true" + lineSeparator
-				+ "adapter.HelloWorld.serviceName               = testtool-HelloWorld" + lineSeparator
-				+ lineSeparator
-				+ "stub.SenderPipe.className                    = org.frankframework.receivers.JavaListener" + lineSeparator
+		String commonPropertiesContent = "adapter.HelloWorld.className                 = org.frankframework.senders.IbisJavaSender" + LINE_SEPARATOR
+				+ "adapter.HelloWorld.convertExceptionToMessage = true" + LINE_SEPARATOR
+				+ "adapter.HelloWorld.serviceName               = testtool-HelloWorld" + LINE_SEPARATOR
+				+ LINE_SEPARATOR
+				+ "stub.SenderPipe.className                    = org.frankframework.receivers.JavaListener" + LINE_SEPARATOR
 				+ "stub.SenderPipe.serviceName                  = testtool-SenderPipe";
 
-		for (Path p: fileSet) {
-			if(p.endsWith("common.properties")) {
+		for (Path p : fileSet) {
+			if (p.endsWith("common.properties")) {
 				assertTextEquals(commonPropertiesContent, Files.readString(p));
 			}
 		}
 	}
 
 	@Test
-	public void parallelSenders() throws StorageException, IOException {
+	void parallelSenders() throws StorageException, IOException {
 		File file = new File(Objects.requireNonNull(this.getClass().getClassLoader().getResource("testReport/Pipeline_ParallelSenders.report.xml")).getFile());
-		Report report = xmlStorage.readReportFromFile(file);
+		Report report = XML_TEST_STORAGE.readReportFromFile(file);
 
 
 		List<Report> reports = new ArrayList<>();
@@ -267,75 +273,72 @@ public class ConvertToLarvaActionTest {
 		convertToLarvaAction.handleReports(reports);
 
 		// Collect produced files
-		Set<Path> fileSet = new HashSet<>();
-		Files.walk(Paths.get(tmpDirPath + "/autogenerated/Frank2Example")).filter(Files::isRegularFile)
-				.forEach(path -> fileSet.add(path));
+		Set<Path> fileSet = Files.walk(Paths.get(tmpDirPath + "/autogenerated/Frank2Example")).filter(Files::isRegularFile).collect(Collectors.toSet());
 
 		// Check number of files created
 		assertEquals(20, fileSet.size(), "Expected number of files did not match!");
 
 		// Check a few file contents to be as expected
-		String scenarioPropertiesContent = "scenario.description                                           = Test scenario for adapter ParallelSenders, automatically generated based on a ladybug report" + lineSeparator
-				+ "include                                                        = common.properties" + lineSeparator
-				+ "" + lineSeparator
-				+ "step1.adapter.ParallelSenders.write                            = parallelSenders/01-adapter-ParallelSenders-in.xml" + lineSeparator
-				+ "step2.stub.1stJmsSenderInParallelSenders.read                  = parallelSenders/02-stub-1stJmsSenderInParallelSenders-in.xml" + lineSeparator
-				+ "step3.stub.1stJmsSenderInParallelSenders.write                 = parallelSenders/03-stub-1stJmsSenderInParallelSenders-out.txt" + lineSeparator
-				+ "step4.stub.ParallelSenders-ParallelSenders-1-JmsSender-2.read  = parallelSenders/04-stub-ParallelSenders-ParallelSenders-1-JmsSender-2-in.xml" + lineSeparator
-				+ "step5.stub.ParallelSenders-ParallelSenders-1-JmsSender-2.write = parallelSenders/05-stub-ParallelSenders-ParallelSenders-1-JmsSender-2-out.txt" + lineSeparator
-				+ "step6.stub.ParallelSenders-ParallelSenders-1-JmsSender-3.read  = parallelSenders/06-stub-ParallelSenders-ParallelSenders-1-JmsSender-3-in.xml" + lineSeparator
-				+ "step7.stub.ParallelSenders-ParallelSenders-1-JmsSender-3.write = parallelSenders/07-stub-ParallelSenders-ParallelSenders-1-JmsSender-3-out.txt" + lineSeparator
-				+ "step8.stub.ParallelSenders-ParallelSenders-1-JmsSender-4.read  = parallelSenders/08-stub-ParallelSenders-ParallelSenders-1-JmsSender-4-in.xml" + lineSeparator
-				+ "step9.stub.ParallelSenders-ParallelSenders-1-JmsSender-4.write = parallelSenders/09-stub-ParallelSenders-ParallelSenders-1-JmsSender-4-out.txt" + lineSeparator
-				+ "step10.stub.1stJmsSenderInShadowSender.read                    = parallelSenders/10-stub-1stJmsSenderInShadowSender-in.xml" + lineSeparator
-				+ "step11.stub.1stJmsSenderInShadowSender.write                   = parallelSenders/11-stub-1stJmsSenderInShadowSender-out.txt" + lineSeparator
-				+ "step12.stub.ShadowSender-SenderSeries-1-JmsSender-2.read       = parallelSenders/12-stub-ShadowSender-SenderSeries-1-JmsSender-2-in.txt" + lineSeparator
-				+ "step13.stub.ShadowSender-SenderSeries-1-JmsSender-2.write      = parallelSenders/13-stub-ShadowSender-SenderSeries-1-JmsSender-2-out.txt" + lineSeparator
-				+ "step14.stub.ShadowSender-SenderSeries-1-JmsSender-3.read       = parallelSenders/14-stub-ShadowSender-SenderSeries-1-JmsSender-3-in.txt" + lineSeparator
-				+ "step15.stub.ShadowSender-SenderSeries-1-JmsSender-3.write      = parallelSenders/15-stub-ShadowSender-SenderSeries-1-JmsSender-3-out.txt" + lineSeparator
-				+ "step16.stub.JmsSender.read                                     = parallelSenders/16-stub-JmsSender-in.xml" + lineSeparator
-				+ "step17.stub.JmsSender.write                                    = parallelSenders/17-stub-JmsSender-out.txt" + lineSeparator
+		String scenarioPropertiesContent = "scenario.description                                           = Test scenario for adapter ParallelSenders, automatically generated based on a ladybug report" + LINE_SEPARATOR
+				+ "include                                                        = common.properties" + LINE_SEPARATOR
+				+ "" + LINE_SEPARATOR
+				+ "step1.adapter.ParallelSenders.write                            = parallelSenders/01-adapter-ParallelSenders-in.xml" + LINE_SEPARATOR
+				+ "step2.stub.1stJmsSenderInParallelSenders.read                  = parallelSenders/02-stub-1stJmsSenderInParallelSenders-in.xml" + LINE_SEPARATOR
+				+ "step3.stub.1stJmsSenderInParallelSenders.write                 = parallelSenders/03-stub-1stJmsSenderInParallelSenders-out.txt" + LINE_SEPARATOR
+				+ "step4.stub.ParallelSenders-ParallelSenders-1-JmsSender-2.read  = parallelSenders/04-stub-ParallelSenders-ParallelSenders-1-JmsSender-2-in.xml" + LINE_SEPARATOR
+				+ "step5.stub.ParallelSenders-ParallelSenders-1-JmsSender-2.write = parallelSenders/05-stub-ParallelSenders-ParallelSenders-1-JmsSender-2-out.txt" + LINE_SEPARATOR
+				+ "step6.stub.ParallelSenders-ParallelSenders-1-JmsSender-3.read  = parallelSenders/06-stub-ParallelSenders-ParallelSenders-1-JmsSender-3-in.xml" + LINE_SEPARATOR
+				+ "step7.stub.ParallelSenders-ParallelSenders-1-JmsSender-3.write = parallelSenders/07-stub-ParallelSenders-ParallelSenders-1-JmsSender-3-out.txt" + LINE_SEPARATOR
+				+ "step8.stub.ParallelSenders-ParallelSenders-1-JmsSender-4.read  = parallelSenders/08-stub-ParallelSenders-ParallelSenders-1-JmsSender-4-in.xml" + LINE_SEPARATOR
+				+ "step9.stub.ParallelSenders-ParallelSenders-1-JmsSender-4.write = parallelSenders/09-stub-ParallelSenders-ParallelSenders-1-JmsSender-4-out.txt" + LINE_SEPARATOR
+				+ "step10.stub.1stJmsSenderInShadowSender.read                    = parallelSenders/10-stub-1stJmsSenderInShadowSender-in.xml" + LINE_SEPARATOR
+				+ "step11.stub.1stJmsSenderInShadowSender.write                   = parallelSenders/11-stub-1stJmsSenderInShadowSender-out.txt" + LINE_SEPARATOR
+				+ "step12.stub.ShadowSender-SenderSeries-1-JmsSender-2.read       = parallelSenders/12-stub-ShadowSender-SenderSeries-1-JmsSender-2-in.txt" + LINE_SEPARATOR
+				+ "step13.stub.ShadowSender-SenderSeries-1-JmsSender-2.write      = parallelSenders/13-stub-ShadowSender-SenderSeries-1-JmsSender-2-out.txt" + LINE_SEPARATOR
+				+ "step14.stub.ShadowSender-SenderSeries-1-JmsSender-3.read       = parallelSenders/14-stub-ShadowSender-SenderSeries-1-JmsSender-3-in.txt" + LINE_SEPARATOR
+				+ "step15.stub.ShadowSender-SenderSeries-1-JmsSender-3.write      = parallelSenders/15-stub-ShadowSender-SenderSeries-1-JmsSender-3-out.txt" + LINE_SEPARATOR
+				+ "step16.stub.JmsSender.read                                     = parallelSenders/16-stub-JmsSender-in.xml" + LINE_SEPARATOR
+				+ "step17.stub.JmsSender.write                                    = parallelSenders/17-stub-JmsSender-out.txt" + LINE_SEPARATOR
 				+ "step18.adapter.ParallelSenders.read                            = parallelSenders/18-adapter-ParallelSenders-out.txt";
 
-		String commonPropertiesContent = "adapter.ParallelSenders.className                              = org.frankframework.senders.IbisJavaSender" + lineSeparator
-				+ "adapter.ParallelSenders.convertExceptionToMessage              = true" + lineSeparator
-				+ "adapter.ParallelSenders.serviceName                            = testtool-ParallelSenders" + lineSeparator
-				+ "" + lineSeparator
-				+ "stub.1stJmsSenderInParallelSenders.className                   = org.frankframework.receivers.JavaListener" + lineSeparator
-				+ "stub.1stJmsSenderInParallelSenders.serviceName                 = testtool-1stJmsSenderInParallelSenders" + lineSeparator
-				+ "" + lineSeparator
-				+ "stub.1stJmsSenderInShadowSender.className                      = org.frankframework.receivers.JavaListener" + lineSeparator
-				+ "stub.1stJmsSenderInShadowSender.serviceName                    = testtool-1stJmsSenderInShadowSender" + lineSeparator
-				+ "" + lineSeparator
-				+ "stub.JmsSender.className                                       = org.frankframework.receivers.JavaListener" + lineSeparator
-				+ "stub.JmsSender.serviceName                                     = testtool-JmsSender" + lineSeparator
-				+ "" + lineSeparator
-				+ "stub.ParallelSenders-ParallelSenders-1-JmsSender-2.className   = org.frankframework.receivers.JavaListener" + lineSeparator
-				+ "stub.ParallelSenders-ParallelSenders-1-JmsSender-2.serviceName = testtool-ParallelSenders-ParallelSenders-1-JmsSender-2" + lineSeparator
-				+ "" + lineSeparator
-				+ "stub.ParallelSenders-ParallelSenders-1-JmsSender-3.className   = org.frankframework.receivers.JavaListener" + lineSeparator
-				+ "stub.ParallelSenders-ParallelSenders-1-JmsSender-3.serviceName = testtool-ParallelSenders-ParallelSenders-1-JmsSender-3" + lineSeparator
-				+ "" + lineSeparator
-				+ "stub.ParallelSenders-ParallelSenders-1-JmsSender-4.className   = org.frankframework.receivers.JavaListener" + lineSeparator
-				+ "stub.ParallelSenders-ParallelSenders-1-JmsSender-4.serviceName = testtool-ParallelSenders-ParallelSenders-1-JmsSender-4" + lineSeparator
-				+ "" + lineSeparator
-				+ "stub.ShadowSender-SenderSeries-1-JmsSender-2.className         = org.frankframework.receivers.JavaListener" + lineSeparator
-				+ "stub.ShadowSender-SenderSeries-1-JmsSender-2.serviceName       = testtool-ShadowSender-SenderSeries-1-JmsSender-2" + lineSeparator
-				+ "" + lineSeparator
-				+ "stub.ShadowSender-SenderSeries-1-JmsSender-3.className         = org.frankframework.receivers.JavaListener" + lineSeparator
+		String commonPropertiesContent = "adapter.ParallelSenders.className                              = org.frankframework.senders.IbisJavaSender" + LINE_SEPARATOR
+				+ "adapter.ParallelSenders.convertExceptionToMessage              = true" + LINE_SEPARATOR
+				+ "adapter.ParallelSenders.serviceName                            = testtool-ParallelSenders" + LINE_SEPARATOR
+				+ "" + LINE_SEPARATOR
+				+ "stub.1stJmsSenderInParallelSenders.className                   = org.frankframework.receivers.JavaListener" + LINE_SEPARATOR
+				+ "stub.1stJmsSenderInParallelSenders.serviceName                 = testtool-1stJmsSenderInParallelSenders" + LINE_SEPARATOR
+				+ "" + LINE_SEPARATOR
+				+ "stub.1stJmsSenderInShadowSender.className                      = org.frankframework.receivers.JavaListener" + LINE_SEPARATOR
+				+ "stub.1stJmsSenderInShadowSender.serviceName                    = testtool-1stJmsSenderInShadowSender" + LINE_SEPARATOR
+				+ "" + LINE_SEPARATOR
+				+ "stub.JmsSender.className                                       = org.frankframework.receivers.JavaListener" + LINE_SEPARATOR
+				+ "stub.JmsSender.serviceName                                     = testtool-JmsSender" + LINE_SEPARATOR
+				+ "" + LINE_SEPARATOR
+				+ "stub.ParallelSenders-ParallelSenders-1-JmsSender-2.className   = org.frankframework.receivers.JavaListener" + LINE_SEPARATOR
+				+ "stub.ParallelSenders-ParallelSenders-1-JmsSender-2.serviceName = testtool-ParallelSenders-ParallelSenders-1-JmsSender-2" + LINE_SEPARATOR
+				+ "" + LINE_SEPARATOR
+				+ "stub.ParallelSenders-ParallelSenders-1-JmsSender-3.className   = org.frankframework.receivers.JavaListener" + LINE_SEPARATOR
+				+ "stub.ParallelSenders-ParallelSenders-1-JmsSender-3.serviceName = testtool-ParallelSenders-ParallelSenders-1-JmsSender-3" + LINE_SEPARATOR
+				+ "" + LINE_SEPARATOR
+				+ "stub.ParallelSenders-ParallelSenders-1-JmsSender-4.className   = org.frankframework.receivers.JavaListener" + LINE_SEPARATOR
+				+ "stub.ParallelSenders-ParallelSenders-1-JmsSender-4.serviceName = testtool-ParallelSenders-ParallelSenders-1-JmsSender-4" + LINE_SEPARATOR
+				+ "" + LINE_SEPARATOR
+				+ "stub.ShadowSender-SenderSeries-1-JmsSender-2.className         = org.frankframework.receivers.JavaListener" + LINE_SEPARATOR
+				+ "stub.ShadowSender-SenderSeries-1-JmsSender-2.serviceName       = testtool-ShadowSender-SenderSeries-1-JmsSender-2" + LINE_SEPARATOR
+				+ "" + LINE_SEPARATOR
+				+ "stub.ShadowSender-SenderSeries-1-JmsSender-3.className         = org.frankframework.receivers.JavaListener" + LINE_SEPARATOR
 				+ "stub.ShadowSender-SenderSeries-1-JmsSender-3.serviceName       = testtool-ShadowSender-SenderSeries-1-JmsSender-3";
 
-		for (Path p: fileSet) {
-			if(p.endsWith("scenarioparallelSenders.properties")) {
+		for (Path p : fileSet) {
+			if (p.endsWith("scenarioparallelSenders.properties")) {
 				assertTextEquals(scenarioPropertiesContent, Files.readString(p));
-			} else if(p.endsWith("common.properties")) {
+			} else if (p.endsWith("common.properties")) {
 				assertTextEquals(commonPropertiesContent, Files.readString(p));
 			}
 		}
 	}
 
 	public void assertTextEquals(String expected, String actual) {
-		assertEquals(expected.replaceAll("\\n|\\r\\n", lineSeparator).trim(), actual.replaceAll("\\n|\\r\\n", lineSeparator).trim());
+		assertEquals(expected.replaceAll("\\n|\\r\\n", LINE_SEPARATOR).trim(), actual.replaceAll("\\n|\\r\\n", LINE_SEPARATOR).trim());
 	}
-
 }

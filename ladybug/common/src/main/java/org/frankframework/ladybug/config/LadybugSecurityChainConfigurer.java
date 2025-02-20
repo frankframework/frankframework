@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2024 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,15 +15,11 @@
 */
 package org.frankframework.ladybug.config;
 
-import java.util.stream.Collectors;
-
 import jakarta.servlet.Filter;
-import jakarta.servlet.ServletContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
@@ -41,16 +37,14 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
-import org.springframework.web.context.ServletContextAware;
 
 import lombok.Setter;
 
-import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.lifecycle.servlets.AuthenticatorUtils;
 import org.frankframework.lifecycle.servlets.IAuthenticator;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
+import org.frankframework.security.config.ServletRegistration;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.SpringUtils;
 
 /**
  * Enables WebSecurity, still depends on the existence of the {@link AbstractSecurityWebApplicationInitializer#DEFAULT_FILTER_NAME}.
@@ -73,19 +67,17 @@ import org.frankframework.util.SpringUtils;
 @EnableWebSecurity // Enables Spring Security (classpath)
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) // Enables JSR 250 (JAX-RS) annotations
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class LadybugSecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware, ServletContextAware {
+public class LadybugSecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware {
 	private static final Logger APPLICATION_LOG = LogManager.getLogger("APPLICATION");
-	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
 
 	private @Setter ApplicationContext applicationContext;
 	private @Setter Environment environment;
-	private @Setter ServletContext servletContext;
 
 	private static final String STANDALONE_PROPERTY_PREFIX = "application.security.testtool.authentication.";
 	private static final String CONSOLE_PROPERTY_PREFIX = "application.security.console.authentication.";
 
 	@Bean
-	public SecurityFilterChain createLadybugSecurityChain(HttpSecurity http) throws Exception {
+	public IAuthenticator ladybugAuthenticator() {
 		final IAuthenticator authenticator;
 		if(StringUtils.isNotBlank(environment.getProperty(STANDALONE_PROPERTY_PREFIX+"type"))) {
 			authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, STANDALONE_PROPERTY_PREFIX);
@@ -93,35 +85,25 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware, 
 			authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, CONSOLE_PROPERTY_PREFIX);
 		}
 
-		return configureChain(authenticator);
-	}
-
-	private SecurityFilterChain configureChain(IAuthenticator authenticator) throws Exception {
 		APPLICATION_LOG.info("Securing Ladybug TestTool using {}", ClassUtils.classNameOf(authenticator));
-
-		authenticator.registerServlet(createServletConfig("ladybugApiServletBean"));
-		authenticator.registerServlet(createServletConfig("ladybugFrontendServletBean"));
-		authenticator.registerServlet(createServletConfig("testtoolServletBean"));
-
-		HttpSecurity httpSecurity = applicationContext.getBean(HTTP_SECURITY_BEAN_NAME, HttpSecurity.class);
-
-		httpSecurity.csrf(CsrfConfigurer::disable); // Disable CSRF, should be configured in the Ladybug
-		httpSecurity.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
-		httpSecurity.logout(LogoutConfigurer::disable); // Disable the logout filter
-		httpSecurity.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); // Allow same origin iframe request
-		return authenticator.configureHttpSecurity(httpSecurity);
+		return authenticator;
 	}
 
-	/**
-	 * Create a dummy servletConfig wrapper to determine the default url-mapping and roles, and allow users to overwrite these using properties.
-	 */
-	private ServletConfiguration createServletConfig(String servletBeanName) {
-		ServletRegistrationBean<?> bean = applicationContext.getBean(servletBeanName, ServletRegistrationBean.class);
-		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
+	@Bean
+	public SecurityFilterChain createLadybugSecurityChain(HttpSecurity http, IAuthenticator ladybugAuthenticator) throws Exception {
+		ladybugAuthenticator.registerServlet(getServletConfig("ladybugApiServletBean"));
+		ladybugAuthenticator.registerServlet(getServletConfig("ladybugFrontendServletBean"));
+		ladybugAuthenticator.registerServlet(getServletConfig("testtoolServletBean"));
 
-		servletConfiguration.setSecurityRoles(DynamicRegistration.ALL_IBIS_USER_ROLES);
-		servletConfiguration.setUrlMapping(bean.getUrlMappings().stream().collect(Collectors.joining(",")));
+		http.csrf(CsrfConfigurer::disable); // Disable CSRF, should be configured in the Ladybug
+		http.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
+		http.logout(LogoutConfigurer::disable); // Disable the logout filter
+		http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); // Allow same origin iframe request
+		return ladybugAuthenticator.configureHttpSecurity(http);
+	}
 
-		return servletConfiguration;
+	private ServletConfiguration getServletConfig(String servletBeanName) {
+		ServletRegistration<?> bean = applicationContext.getBean(servletBeanName, ServletRegistration.class);
+		return bean.getServletConfiguration();
 	}
 }

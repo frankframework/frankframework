@@ -177,7 +177,7 @@ public class MessageUtilsTest {
 		try (Message message = new UrlMessage(url)) {
 			MessageDataSource ds = new MessageDataSource(new Message(message.asString()));
 			assertEquals(null, ds.getName(), "filename is unknown");
-			assertEquals("application/octet-stream", ds.getContentType(), "content-type cannot be determined");
+			assertEquals("text/plain", ds.getContentType(), "content-type cannot be determined");
 			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "contents should be the same");
 			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
 		}
@@ -201,7 +201,7 @@ public class MessageUtilsTest {
 		Message json = new Message("{\"GUID\": \"ABC\"}");
 		MimeType mimeType = MessageUtils.computeMimeType(json);
 		assertNotNull(mimeType);
-		assertEquals("application/octet-stream", mimeType.toString()); //mime-type cannot be determined
+		assertEquals("text/plain", mimeType.toString()); //mime-type cannot be determined
 	}
 	@Test
 	public void testJsonMessageWithName() {

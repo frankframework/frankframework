@@ -500,7 +500,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 		return getUrl();
 	}
 
-	/** URL or base of URL to be used */
+	/** URL or base of URL to be used. Expects all parts of the URL to already be encoded. */
 	public void setUrl(String string) {
 		url = string;
 	}

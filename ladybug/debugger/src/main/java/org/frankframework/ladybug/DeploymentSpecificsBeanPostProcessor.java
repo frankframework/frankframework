@@ -41,6 +41,11 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
 				long maxStorageSizeLong = OptionConverter.toFileSize(maxStorageSize, databaseStorage.getMaxStorageSize());
 				databaseStorage.setMaxStorageSize(maxStorageSizeLong);
 			}
+			String maxStorageDays = appConstants.getProperty("ibistesttool.maxStorageDays");
+			if (maxStorageDays != null) {
+				long maxStorageDaysLong = OptionConverter.toFileSize(maxStorageDays, -1);
+				databaseStorage.setMaxStorageDays(maxStorageDaysLong);
+			}
 		}
 
 		if (bean instanceof nl.nn.testtool.storage.file.Storage loggingStorage) {

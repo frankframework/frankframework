@@ -22,6 +22,7 @@ import org.frankframework.filesystem.AmazonS3FileSystemTestHelper;
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.filesystem.S3FileRef;
+import org.frankframework.filesystem.TypeFilter;
 import org.frankframework.filesystem.WritableFileSystemSenderTest;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
@@ -121,4 +122,21 @@ public class AmazonS3SenderTest extends WritableFileSystemSenderTest<AmazonS3Sen
 		IOException e = assertThrows(IOException.class, result::preserve); // read binary stream twice
 		assertEquals("Stream closed", e.getMessage());
 	}
+
+	@Test
+	public void fileSystemSenderTestListFolders() throws Exception {
+		fileSystemSender.setAction(FileSystemAction.LIST);
+		fileSystemSender.setTypeFilter(TypeFilter.FOLDERS_ONLY);
+
+		fileSystemSender.configure();
+		fileSystemSender.start();
+
+		createFile("OtherFolder", "OtherFile", "Content of the file!");
+
+		result = fileSystemSender.sendMessageOrThrow(new Message(""), session);
+
+		assertFolderCountEquals(result, 1);
+		assertFileCountEquals(result, 0);
+	}
+
 }
