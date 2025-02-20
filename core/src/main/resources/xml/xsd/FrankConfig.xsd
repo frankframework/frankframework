@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.0.4">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.0.5">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -4323,19 +4323,6 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
-      <xs:element name="SchedulerSender">
-        <xs:annotation>
-          <xs:documentation>Registers a trigger in the scheduler so that the message is send to a javalistener
- at a scheduled time.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="SchedulerSenderType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="SendGridSender">
         <xs:annotation>
           <xs:documentation>Sender that sends a mail via SendGrid v3 (cloud-based SMTP provider).
@@ -7399,37 +7386,6 @@
     <xs:attributeGroup ref="SapSenderImplDeclaredAttributeGroup" />
     <xs:attributeGroup ref="SapSenderBaseCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="SchedulerSenderType">
-    <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
-    <xs:attributeGroup ref="SchedulerSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.SchedulerSender" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="SchedulerSenderDeclaredAttributeGroup">
-    <xs:attribute name="cronExpressionPattern" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>expression that generates the cron trigger</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="jobGroup" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>job group in which the new trigger is to be created (optional)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="jobNamePattern" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>pattern that leads to the name of the registered trigger(optional)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="javaListener" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>java listener to be called when scheduler trigger fires</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="SchedulerSenderCumulativeAttributeGroup">
-    <xs:attributeGroup ref="SchedulerSenderDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="SenderBaseDeclaredAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="SendGridSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="SendGridSenderCumulativeAttributeGroup" />
@@ -9128,19 +9084,6 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="SapSenderType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="SchedulerErrorSender">
-        <xs:annotation>
-          <xs:documentation>Registers a trigger in the scheduler so that the message is send to a javalistener
- at a scheduled time.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="SchedulerSenderType">
               <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
