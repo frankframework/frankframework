@@ -420,7 +420,8 @@ public class Message implements Serializable, Closeable {
 
 	/**
 	 * Return a {@link Reader} backed by the data in this message. {@link Reader#markSupported()} is guaranteed to be true for the returned stream.
-	 * Should not be called more than once, unless the request is {@link #preserve() preserved} or the Reader is reset to its starting position.
+	 * Should not be called more than once, unless the request is {@link #isRepeatable() repeatable} or the Reader is reset to its starting position. If
+	 * the message is not {@link #isRepeatable() repeatable} then {@link #preserve()} can be called on the message to make it repeatable.
 	 */
 	@Nullable
 	public Reader asReader() throws IOException {
@@ -429,7 +430,8 @@ public class Message implements Serializable, Closeable {
 
 	/**
 	 * Return a {@link Reader} backed by the data in this message. {@link Reader#markSupported()} is guaranteed to be true for the returned stream.
-	 * Should not be called more than once, unless the request is {@link #preserve() preserved} or the Reader is reset to its starting position.
+	 * Should not be called more than once, unless the request is {@link #isRepeatable() repeatable} or the Reader is reset to its starting position. If
+	 * the message is not {@link #isRepeatable() repeatable} then {@link #preserve()} can be called on the message to make it repeatable.
 	 *
 	 * @param defaultDecodingCharset is only used when {@link #isBinary()} is {@code true}.
 	 */
@@ -479,7 +481,8 @@ public class Message implements Serializable, Closeable {
 
 	/**
 	 * Return an {@link InputStream} backed by the data in this message. {@link InputStream#markSupported()} is guaranteed to be true for the returned stream.
-	 * Should not be called more than once, unless the request is {@link #preserve() preserved} or the stream is reset to its starting position.
+	 * Should not be called more than once, unless the request is {@link #isRepeatable() repeatable} or the InputStream is reset to its starting position. If
+	 * the message is not {@link #isRepeatable() repeatable} then {@link #preserve()} can be called on the message to make it repeatable.
 	 */
 	@Nullable
 	public InputStream asInputStream() throws IOException {
@@ -488,7 +491,8 @@ public class Message implements Serializable, Closeable {
 
 	/**
 	 * Return an {@link InputStream} backed by the data in this message. {@link InputStream#markSupported()} is guaranteed to be true for the returned stream.
-	 * Should not be called more than once, unless the request is {@link #preserve() preserved} or the stream is reset to its starting position.
+	 * Should not be called more than once, unless the request is {@link #isRepeatable() repeatable} or the InputStream is reset to its starting position. If
+	 * the message is not {@link #isRepeatable() repeatable} then {@link #preserve()} can be called on the message to make it repeatable.
 	 *
 	 * @param defaultEncodingCharset is only used when the Message object is of character type (String)
 	 */
@@ -512,6 +516,7 @@ public class Message implements Serializable, Closeable {
 			}
 			if (request instanceof ThrowingSupplier) {
 				LOG.debug("returning InputStream {} from supplier", this::getObjectId);
+				@SuppressWarnings("unchecked")
 				InputStream is = ((ThrowingSupplier<InputStream, Exception>) request).get();
 				if (is.markSupported()) {
 					return is;
