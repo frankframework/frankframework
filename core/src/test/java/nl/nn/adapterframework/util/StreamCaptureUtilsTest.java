@@ -43,13 +43,13 @@ class StreamCaptureUtilsTest {
 		int bufferSize = 2048;
 		Message message = new Message(input.openStream()); //non-repeatable
 		ByteArrayOutputStream boas = message.captureBinaryStream();
-		byte[] magic = message.getMagic(bufferSize);
+		String magic = message.peek(bufferSize);
 
 		message.asString(); //read twice after the magic has been fetched
 		message.asString();
 
 		byte[] capture = Arrays.copyOf(boas.toByteArray(), bufferSize); //it is possible more characters have been written to the captured stream
-		assertEquals(new String(magic), new String(capture));
+		assertEquals(magic, new String(capture));
 		assertEquals(message.asString(), Message.asMessage(input).asString()); //verify that the message output, after reading the magic, has not changed
 	}
 }

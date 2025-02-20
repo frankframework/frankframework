@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2022 WeAreFrank!
+   Copyright 2019, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl;
 
 import java.io.IOException;
 
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
-import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionException;
@@ -47,10 +47,11 @@ public class CisConversionServiceImpl implements CisConversionService {
 	@Override
 	public CisConversionResult convertToPdf(Message message, String filename, ConversionOption conversionOption) {
 
-		CisConversionResult result = null;
+		CisConversionResult result;
 		MimeType mimeType = MessageUtils.computeMimeType(message, filename);
 		if(mimeType == null || "x-tika-msoffice".equals(mimeType.getSubtype())) {
-			// If we cannot determine the MimeType based on the files magic numbers, read part of the file.
+			// MessageUtils.computeMimeType may return the mimetype already set on the message, for instance from request header.
+			// For TIKA MS Office files we need to enforce that TIKA actually checks the message contents.
 			// MS Office files can be password protected, which can only be determined by reading a part of the file.
 			mimeType = getMediaType(message, filename);
 		}

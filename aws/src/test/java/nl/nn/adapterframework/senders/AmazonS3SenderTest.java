@@ -16,9 +16,9 @@ import com.amazonaws.services.s3.model.S3Object;
 
 import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
 import nl.nn.adapterframework.filesystem.AmazonS3FileSystemTestHelper;
+import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
-import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.PropertyUtil;
@@ -112,7 +112,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		assertTrue(_fileExists(inputFolder, FILE1), "File ["+FILE1+"] should still be there after READ action");
 		assertEquals("some content", StreamUtil.streamToString(result.asInputStream()));
 		IOException e = assertThrows(IOException.class, ()-> result.preserve()); // read binary stream twice
-		assertEquals("Attempted read on closed stream.", e.getMessage());
+		assertEquals("Stream closed", e.getMessage());
 	}
 
 //	@Test

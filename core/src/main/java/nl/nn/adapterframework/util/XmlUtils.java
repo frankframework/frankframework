@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -72,7 +72,12 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import com.ctc.wstx.api.ReaderConfig;
+import com.ctc.wstx.stax.WstxInputFactory;
+
+import net.sf.saxon.xpath.XPathFactoryImpl;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xalan.processor.TransformerFactoryImpl;
 import org.htmlcleaner.CleanerProperties;
@@ -91,10 +96,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 
-import com.ctc.wstx.api.ReaderConfig;
-import com.ctc.wstx.stax.WstxInputFactory;
-
-import net.sf.saxon.xpath.XPathFactoryImpl;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
@@ -119,7 +120,8 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * @author  Johan Verrips
  */
 public class XmlUtils {
-	static Logger log = LogUtil.getLogger(XmlUtils.class);
+	public static final int HTML_MAX_PREAMBLE_SIZE = 512;
+	static Logger log = LogManager.getLogger(XmlUtils.class);
 
 	public static final int DEFAULT_XSLT_VERSION = AppConstants.getInstance().getInt("xslt.version.default", 2);
 
@@ -1634,7 +1636,7 @@ public class XmlUtils {
 	public static String toXhtml(Message message) throws IOException {
 		if (!Message.isEmpty(message)) {
 			String messageCharset = message.getCharset();
-			String xhtmlString = new String(message.getMagic(512), messageCharset != null ? messageCharset : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			String xhtmlString = message.peek(HTML_MAX_PREAMBLE_SIZE);
 			if (xhtmlString.contains("<html>") || xhtmlString.contains("<html ")) {
 				CleanerProperties props = new CleanerProperties();
 				props.setOmitDoctypeDeclaration(true);

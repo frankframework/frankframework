@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.util;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -29,35 +28,28 @@ import javax.xml.soap.AttachmentPart;
 import javax.xml.soap.MimeHeader;
 import javax.xml.soap.SOAPException;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.apache.tika.config.TikaConfig;
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.TikaMetadataKeys;
-import org.springframework.util.DigestUtils;
-import org.springframework.util.MimeType;
-
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.apache.tika.Tika;
+import org.springframework.util.DigestUtils;
+import org.springframework.util.MimeType;
+
+import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 
-public abstract class MessageUtils {
+public class MessageUtils {
+
 	private static final Logger LOG = LogUtil.getLogger(MessageUtils.class);
 	private static final int CHARSET_CONFIDENCE_LEVEL = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
-	private static final TikaConfig TIKA_CONFIG = createTikaConfig();
-	private static final int TIKA_MAGIC_LENGHT = 64 * 1024; // This needs to be reasonably large to be able to correctly detect things like XML root elements after initial comment and DTDs
+	private static final Tika TIKA = new Tika();
 
-	private static TikaConfig createTikaConfig() {
-		try {
-			return new TikaConfig();
-		} catch (TikaException | IOException e) {
-			LOG.error("unable to create Tika config, cannot determine mimetypes!", e);
-			return null;
-		}
+	private MessageUtils() {
+		throw new IllegalStateException("Don't construct utility class");
 	}
 
 	/**
@@ -139,7 +131,7 @@ public abstract class MessageUtils {
 		}
 
 		CharsetDetector detector = new CharsetDetector();
-		detector.setText(message.getMagic());
+		detector.setText(message.asInputStream());
 		CharsetMatch match = detector.detect();
 		String charset = match.getName();
 
@@ -213,9 +205,9 @@ public abstract class MessageUtils {
 	}
 
 	/**
-	 * Computes the {@link MimeType} when not available, attempts to resolve the Charset when of type TEXT.
+	 * Computes the {@link MimeType} when not already available, attempts to resolve the Charset when of type TEXT.
 	 * <p>
-	 * NOTE: This is a resource intensive operation, the first {@value #TIKA_MAGIC_LENGHT} bytes are being read and stored in memory.
+	 * NOTE: This might be a resource intensive operation, the first kilobytes of the message are potentially being read and stored in memory.
 	 */
 	public static MimeType computeMimeType(Message message, String filename) {
 		if(Message.isEmpty(message)) {
@@ -236,14 +228,8 @@ public abstract class MessageUtils {
 		}
 
 		try {
-			Metadata metadata = new Metadata();
-			metadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, name);
-			byte[] magic = message.getMagic(TIKA_MAGIC_LENGHT);
-			if(magic.length == 0) {
-				return null;
-			}
-			org.apache.tika.mime.MediaType tikaMediaType = TIKA_CONFIG.getDetector().detect(new ByteArrayInputStream(magic), metadata);
-			MimeType mimeType = MimeType.valueOf(tikaMediaType.toString());
+			String mediaType = TIKA.detect(message.asInputStream(), name);
+			MimeType mimeType = MimeType.valueOf(mediaType);
 			context.withMimeType(mimeType);
 			if("text".equals(mimeType.getType()) || message.getCharset() != null) { // is of type 'text' or message has charset
 				Charset charset = computeDecodingCharset(message);
@@ -328,6 +314,31 @@ public abstract class MessageUtils {
 		} catch (IOException e) {
 			LOG.warn("unable to read Message", e);
 			return Message.MESSAGE_SIZE_UNKNOWN;
+		}
+	}
+
+	/**
+	 * Convert an object to a string. Does not close object when it is of type Message or MessageWrapper.
+	 */
+	@Deprecated
+	public static String asString(Object object) throws IOException {
+		if (object == null) {
+			return null;
+		}
+		if (object instanceof String) {
+			return (String) object;
+		}
+		if (object instanceof Message) {
+			Message message = (Message) object;
+			return message.asString();
+		}
+		if (object instanceof MessageWrapper<?>) {
+			MessageWrapper<?> wrapper = (MessageWrapper<?>) object;
+			return wrapper.getMessage().asString();
+		}
+		// In other cases, message can be closed directly after converting to String.
+		try (Message message = Message.asMessage(object)) {
+			return message.asString();
 		}
 	}
 }
