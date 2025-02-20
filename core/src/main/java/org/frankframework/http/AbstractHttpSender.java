@@ -200,7 +200,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 				}
 				staticUri = getURI(getUrl());
 			}
-		} catch (URISyntaxException e) {
+		} catch (URISyntaxException | IOException e) {
 			throw new ConfigurationException("cannot interpret url ["+getUrl()+"]", e);
 		}
 

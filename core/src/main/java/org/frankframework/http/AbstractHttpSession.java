@@ -16,13 +16,20 @@
 package org.frankframework.http;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -70,6 +77,7 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
+import org.springframework.web.util.UriUtils;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -154,6 +162,7 @@ import org.frankframework.util.StringUtil;
  * @since 7.0
  */
 public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasKeystore, HasTruststore, FrankElement {
+	public static final Pattern URI_PARSE_PATTERN = Pattern.compile("^(\\w+://)?([.a-zA-Z0-9]+:?\\d*/)?([^?&\\n]*)([?&].*)?$");
 	protected final Logger log = LogUtil.getLogger(this);
 
 	public static final String AUTHENTICATION_METHOD_KEY = "OauthAuthentication";
@@ -310,25 +319,83 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	/**
 	 * Makes sure only http(s) requests can be performed.
 	 */
-	protected URI getURI(@Nonnull String url) throws URISyntaxException {
+	protected URI getURI(@Nonnull String url) throws URISyntaxException, UnsupportedEncodingException {
 		if(StringUtils.isBlank(url)) {
 			throw new URISyntaxException("<null>", "no url provided");
 		}
-		URIBuilder uri = new URIBuilder(url);
+		//  HTTP://127.0.0.1/path/session key value/
+		//  HTTP://127.0.0.1:8080/path/session key value/
+		//  /path/session key value/
+		//  /path/session key value
+		//  /path/session key value?q=p
+		Matcher uriMatcher = URI_PARSE_PATTERN.matcher(url);
+		if (!uriMatcher.find()) {
+			throw new URISyntaxException(url, "Could not parse URI [" + url + "]");
+		}
+		String path = uriMatcher.group(3);
+		String encodedPath;
+		if (StringUtils.isEmpty(path)) {
+			encodedPath = "";
+		} else {
+			String[] pathSegments;
+			pathSegments = path.split("/");
+			encodedPath = Arrays.stream(pathSegments)
+					.map(AbstractHttpSession::tryPathDecode)
+					.map(p -> UriUtils.encodePathSegment(p, StandardCharsets.UTF_8))
+					.collect(Collectors.joining("/"));
+		}
 
+		String protocol = uriMatcher.group(1);
+		String host = uriMatcher.group(2);
+		String query = uriMatcher.group(4);
+		String encodedQuery;
+		if (query != null) {
+			encodedQuery = "?" +
+					Arrays.stream(query.substring(1).split("&"))
+							.map(s -> s.split("="))
+							.map(s -> s.length == 1 ? s[0] : (s[0] + "=" + tryRecode(s[1])))
+							.collect(Collectors.joining("&"));
+		} else {
+			encodedQuery = "";
+		}
+
+		String encodedURL = (protocol != null ? protocol : "") + (host != null ? host : "") + encodedPath + encodedQuery;
+		log.debug("Recoded original URL [{}] to [{}]", url, encodedURL);
+
+		URIBuilder uri = new URIBuilder(encodedURL);
 		if(uri.getScheme() == null) {
 			throw new URISyntaxException("", "must use an absolute url starting with http(s)://");
 		}
 		if (!uri.getScheme().matches("(?i)https?")) {
 			throw new IllegalArgumentException(ClassUtils.nameOf(this) + " only supports web based schemes. (http or https)");
 		}
-
-		if (uri.getPath()==null) {
+		if (StringUtils.isEmpty(uri.getPath())) {
+			// Fix up the path because there are some edge-cases where the regexes don't properly split host and path
 			uri.setPath("/");
 		}
 
-		log.info("created uri: scheme=[{}] host=[{}] path=[{}]", uri.getScheme(), uri.getHost(), uri.getPath());
+		log.info("created uri: scheme=[{}] host=[{}] path=[{}] query=[{}]", uri.getScheme(), uri.getHost(), uri.getPath(), uri.getQueryParams());
 		return uri.build();
+	}
+
+	private static String tryPathDecode(@Nonnull String pathSegment) {
+		try {
+			return UriUtils.decode(pathSegment, StandardCharsets.UTF_8);
+		} catch (Exception e) {
+			// Assume was not encoding, but contained characters that need encoding
+			return pathSegment;
+		}
+	}
+
+	private static String tryRecode(@Nonnull String s) {
+		String decoded;
+		try {
+			decoded = URLDecoder.decode(s, StandardCharsets.UTF_8);
+		} catch (Exception e) {
+			// Assume that encoding/decoding failed because decoding was not needed.
+			return s;
+		}
+		return URLEncoder.encode(decoded, StandardCharsets.UTF_8);
 	}
 
 	@Override

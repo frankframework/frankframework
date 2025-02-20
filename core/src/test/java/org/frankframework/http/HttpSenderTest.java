@@ -1124,6 +1124,27 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
+	public void urlParameterWithSessionKeyPartsWithSpaces() throws Throwable {
+		sender = getSender();
+		Message input = new Message("hallo");
+
+		PipeLineSession pls = new PipeLineSession(session);
+
+		Parameter parameter = new Parameter("url", null);
+		parameter.setPattern("HTTP://127.0.0.1/path/{sessionkey}/?p2={p2}");
+		sender.addParameter(parameter);
+		sender.setMethodType(HttpMethod.GET);
+
+		sender.configure();
+		sender.start();
+
+		pls.put("sessionkey", "session key value");
+		pls.put("p2", "value two");
+		String result = sender.sendMessageOrThrow(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("paramsWithSpaces1.txt"), result.trim());
+	}
+
+	@Test
 	public void unsupportedScheme() throws Throwable {
 		sender = getSender();
 		Message input = new Message("hallo");
