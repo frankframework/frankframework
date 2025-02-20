@@ -7,7 +7,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<revision>8.0.5</revision>
+		<revision>8.0.6-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>11</maven.compiler.target>
 		<maven.compiler.source>11</maven.compiler.source>
@@ -1249,7 +1249,7 @@
 		<url>https://github.com/frankframework/frankframework</url>
 		<connection>scm:git:https://github.com/frankframework/frankframework.git</connection>
 		<developerConnection>scm:git:https://github.com/frankframework/frankframework.git</developerConnection>
-		<tag>v8.0.5</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<repositories>
