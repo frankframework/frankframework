@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -127,6 +127,7 @@ import org.frankframework.xml.XmlWriter;
  * @author  Johan Verrips
  */
 public class XmlUtils {
+	public static final int HTML_MAX_PREAMBLE_SIZE = 512;
 	static Logger log = LogManager.getLogger(XmlUtils.class);
 
 	public static final int DEFAULT_XSLT_VERSION = AppConstants.getInstance().getInt("xslt.version.default", 2);
@@ -1700,7 +1701,7 @@ public class XmlUtils {
 	public static String toXhtml(Message message) throws IOException {
 		if (!Message.isEmpty(message)) {
 			String messageCharset = message.getCharset();
-			String xhtmlString = message.peek(512);
+			String xhtmlString = message.peek(HTML_MAX_PREAMBLE_SIZE);
 			if (xhtmlString.contains("<html>") || xhtmlString.contains("<html ")) {
 				CleanerProperties props = new CleanerProperties();
 				props.setOmitDoctypeDeclaration(true);
