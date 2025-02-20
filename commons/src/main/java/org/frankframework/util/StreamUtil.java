@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 */
 package org.frankframework.util;
 
-import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FilterInputStream;
@@ -132,14 +132,14 @@ public class StreamUtil {
 	/**
 	 * Return a Reader that reads the InputStream in the character set specified by the BOM. If no BOM is found, the default character set UTF-8 is used.
 	 */
-	public static Reader getCharsetDetectingInputStreamReader(InputStream inputStream) throws IOException {
+	public static BufferedReader getCharsetDetectingInputStreamReader(InputStream inputStream) throws IOException {
 		return getCharsetDetectingInputStreamReader(inputStream, DEFAULT_INPUT_STREAM_ENCODING);
 	}
 
 	/**
 	 * Return a Reader that reads the InputStream in the character set specified by the BOM. If no BOM is found, a default character set is used.
 	 */
-	public static Reader getCharsetDetectingInputStreamReader(InputStream inputStream, String defaultCharset) throws IOException {
+	public static BufferedReader getCharsetDetectingInputStreamReader(InputStream inputStream, String defaultCharset) throws IOException {
 		BOMInputStream bOMInputStream = new BOMInputStream(inputStream, ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE);
 		ByteOrderMark bom = bOMInputStream.getBOM();
 		String charsetName = bom == null ? defaultCharset : bom.getCharsetName();
@@ -148,7 +148,7 @@ public class StreamUtil {
 			charsetName = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		}
 
-		return new InputStreamReader(new BufferedInputStream(bOMInputStream), charsetName);
+		return new BufferedReader(new InputStreamReader(bOMInputStream, charsetName));
 	}
 
 	/**

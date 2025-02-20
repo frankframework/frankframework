@@ -48,7 +48,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 	@Override
 	public CisConversionResult convertToPdf(Message message, String filename, ConversionOption conversionOption) {
 
-		CisConversionResult result = null;
+		CisConversionResult result;
 		MimeType mimeType = MessageUtils.computeMimeType(message, filename);
 		if(mimeType == null || "x-tika-msoffice".equals(mimeType.getSubtype())) {
 			// MessageUtils.computeMimeType may return the mimetype already set on the message, for instance from request header.
