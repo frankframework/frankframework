@@ -237,9 +237,9 @@ public class MessageUtils {
 	}
 
 	/**
-	 * Computes the {@link MimeType} when not available, attempts to resolve the Charset when of type TEXT.
+	 * Computes the {@link MimeType} when not already available, attempts to resolve the Charset when of type TEXT.
 	 * <p>
-	 * NOTE: This is a resource intensive operation, the first kilobytes of the message are potentially being read and stored in memory.
+	 * NOTE: This might be a resource intensive operation, the first kilobytes of the message are potentially being read and stored in memory.
 	 */
 	public static MimeType computeMimeType(Message message, String filename) {
 		if(Message.isEmpty(message)) {
