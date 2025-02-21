@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:stub="http://frankframework.org/stub">
 	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes" />
-	<xsl:variable name="packageNameLegacy" select="contains(//configuration[1]/adapter[1]/receiver/listener/@className,'nl.nn.adapterframework')"/>
+	<xsl:variable name="packageNameLegacy" select="contains(//configuration[1]/adapter[1]/receiver[1]/listener[1]/@className,'nl.nn.adapterframework')"/>
 	<!-- Parameter disableValidators has been used to test the impact of validators on memory usage -->
 	<xsl:param name="disableValidators"/>
 	<!--
@@ -79,11 +79,11 @@
 				</xsl:if>
 			</xsl:element>
 			<xsl:call-template name="stubNameForStorage">
-				<xsl:with-param name="store" select="$baseReceiver/errorStorage[@className=contains(.,'.jdbc.JdbcTransactionalStorage') or @className=contains(.,'.jdbc.DummyTransactionalStorage')]"/>
+				<xsl:with-param name="store" select="$baseReceiver/errorStorage[@className[contains(.,'.jdbc.JdbcTransactionalStorage')] or @className[contains(.,'.jdbc.DummyTransactionalStorage')]]"/>
 			</xsl:call-template>
 			<xsl:copy-of select="errorSender[@className=contains(.,'.senders.IbisLocalSender')]"/>
 			<xsl:call-template name="stubNameForStorage">
-				<xsl:with-param name="store" select="$baseReceiver/messageLog[@className=contains(.,'.jdbc.JdbcTransactionalStorage') or @className=contains(.,'.jdbc.DummyTransactionalStorage')]"/>
+				<xsl:with-param name="store" select="$baseReceiver/messageLog[@className[contains(.,'.jdbc.JdbcTransactionalStorage')] or @className[contains(.,'.jdbc.DummyTransactionalStorage')]]"/>
 			</xsl:call-template>
 		</xsl:element>
 	</xsl:template>
@@ -107,11 +107,11 @@
 				</xsl:if>
 			</xsl:element>
 			<xsl:call-template name="stubNameForStorage">
-				<xsl:with-param name="store" select="errorStorage[@className=contains(.,'.jdbc.JdbcTransactionalStorage') or @className=contains(.,'.jdbc.DummyTransactionalStorage')]"/>
+				<xsl:with-param name="store" select="errorStorage[@className[contains(.,'.jdbc.JdbcTransactionalStorage')] or @className[contains(.,'.jdbc.DummyTransactionalStorage')]]"/>
 			</xsl:call-template>
 			<xsl:copy-of select="errorSender[@className=contains(.,'.senders.IbisLocalSender')]"/>
 			<xsl:call-template name="stubNameForStorage">
-				<xsl:with-param name="store" select="messageLog[@className=contains(.,'.jdbc.JdbcTransactionalStorage') or @className=contains(.,'.jdbc.DummyTransactionalStorage')]"/>
+				<xsl:with-param name="store" select="messageLog[@className[contains(.,'.jdbc.JdbcTransactionalStorage')] or @className[contains(.,'.jdbc.DummyTransactionalStorage')]]"/>
 			</xsl:call-template>
 		</xsl:element>
 	</xsl:template>
