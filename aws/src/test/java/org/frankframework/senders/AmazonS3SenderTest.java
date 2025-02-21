@@ -137,6 +137,7 @@ public class AmazonS3SenderTest extends WritableFileSystemSenderTest<AmazonS3Sen
 		Message result = assertDoesNotThrow(() -> fileSystemSender.sendMessageOrThrow(new Message(""), session));
 
 		assertFileCountEquals(result, 0);
+		assertFolderCountEquals(result, 1);
 	}
 
 }

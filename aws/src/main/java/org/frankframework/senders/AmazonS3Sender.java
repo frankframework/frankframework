@@ -39,8 +39,4 @@ public class AmazonS3Sender extends AbstractFileSystemSender<S3FileRef, AmazonS3
 		setFileSystem(new AmazonS3FileSystem());
 	}
 
-	public void setTypeFilter(TypeFilter typeFilter) {
-		getFileSystem().setTypeFilter(typeFilter);
-	}
-
 }

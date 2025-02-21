@@ -98,16 +98,6 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	private S3Client s3Client;
 	private AwsCredentialsProvider credentialProvider;
 
-	private TypeFilter typeFilter = TypeFilter.FILES_ONLY;
-
-	public AmazonS3FileSystem() {
-		super();
-	}
-
-	public void setTypeFilter(TypeFilter typeFilter) {
-		this.typeFilter = typeFilter;
-	}
-
 	@Override
 	public void configure() throws ConfigurationException {
 		if((StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isEmpty(getSecretKey())) || (StringUtils.isEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
