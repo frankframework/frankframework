@@ -1992,6 +1992,8 @@
         <xs:documentation>Filename to operate on. If not set, the parameter &lt;code&gt;filename&lt;/code&gt; is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+	  <xs:attribute name="typeFilter" type="xs:string">
+	  </xs:attribute>
     <xs:attribute name="destination" type="xs:string">
       <xs:annotation>
         <xs:documentation>Destination for &lt;code&gt;move&lt;/code&gt;, &lt;code&gt;copy&lt;/code&gt; or &lt;code&gt;rename&lt;/code&gt;. If not set, the parameter &lt;code&gt;destination&lt;/code&gt; is used. If that is not set either, the input is used</xs:documentation>

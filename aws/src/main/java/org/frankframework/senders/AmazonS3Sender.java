@@ -37,4 +37,5 @@ public class AmazonS3Sender extends AbstractFileSystemSender<S3FileRef, AmazonS3
 	public AmazonS3Sender() {
 		setFileSystem(new AmazonS3FileSystem());
 	}
+
 }

@@ -114,13 +114,17 @@ public class S3FileRef {
 
 	/** Returns either the file or foldername (suffixed with a slash) */
 	public String getName() {
-		if(StringUtils.isNotEmpty(name)) { // File: when not empty, return this immediately
+		if(hasName()) { // File: when not empty, return this immediately
 			return name;
 		}
 
 		// Folder: only take part before last slash
 		String removeEndSlash = StringUtils.chop(folder);
 		return StringUtils.substringAfterLast(removeEndSlash, '/');
+	}
+
+	public boolean hasName() {
+		return StringUtils.isNotEmpty(name);
 	}
 
 	@Nonnull
