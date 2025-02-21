@@ -76,7 +76,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		storage.setBlobsCompressed(blobsCompressed);
 		storage.configure();
 		// check created query
-		String expected = "SELECT "+keyField+","+messageField+" FROM "+tableName+" WHERE "+keyField+"=?";
+		String expected = "SELECT "+keyField+","+messageField+","+storage.getIdField()+","+storage.getCorrelationIdField()+" FROM "+tableName+" WHERE "+keyField+"=?";
 		String query = storage.selectDataQuery;
 		assertEquals(expected, query);
 

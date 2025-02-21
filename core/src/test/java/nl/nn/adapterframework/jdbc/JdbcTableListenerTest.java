@@ -308,7 +308,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 
 		assertEquals("DELETE FROM "+TEST_TABLE+" WHERE TKEY=?", browser.deleteQuery);
 		assertEquals("SELECT TKEY,IDFLD,CIDFLD FROM "+TEST_TABLE+" WHERE TKEY=?", browser.selectContextQuery);
-		assertEquals("SELECT TKEY,MSGFLD FROM "+TEST_TABLE+" WHERE TKEY=?", browser.selectDataQuery);
+		assertEquals("SELECT TKEY,MSGFLD,IDFLD,CIDFLD FROM "+TEST_TABLE+" WHERE TKEY=?", browser.selectDataQuery);
 		assertEquals("SELECT IDFLD FROM "+TEST_TABLE+" t WHERE (TINT='1' AND (fakeSelectCondition)) AND IDFLD=?", browser.checkMessageIdQuery);
 		assertEquals("SELECT CIDFLD FROM "+TEST_TABLE+" t WHERE (TINT='1' AND (fakeSelectCondition)) AND CIDFLD=?", browser.checkCorrelationIdQuery);
 		assertEquals("SELECT COUNT(*) FROM "+TEST_TABLE+" t WHERE (TINT='1' AND (fakeSelectCondition))", browser.getMessageCountQuery);
