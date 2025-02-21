@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2025 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,18 +13,16 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.console.configuration;
+package org.frankframework.ladybug.config;
 
-import jakarta.servlet.MultipartConfigElement;
-
+import nl.nn.testtool.web.ApiServlet;
+import nl.nn.testtool.web.FrontendServlet;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.DispatcherServlet;
 
-import org.frankframework.console.ConsoleFrontend;
 import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.lifecycle.servlets.SecuritySettings;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
@@ -32,7 +30,7 @@ import org.frankframework.security.config.ServletRegistration;
 import org.frankframework.util.SpringUtils;
 
 @Configuration
-public class RegisterServletEndpoints implements ApplicationContextAware {
+public class LadybugServletConfiguration implements ApplicationContextAware {
 	private ApplicationContext applicationContext;
 
 	@Override
@@ -42,29 +40,39 @@ public class RegisterServletEndpoints implements ApplicationContextAware {
 	}
 
 	@Bean
-	public ServletRegistration<DispatcherServlet> backendServletBean() {
+	public ServletRegistration<ApiServlet> ladybugApiServletBean() {
 		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
-		servletConfiguration.setName("IAF-API");
-		servletConfiguration.setUrlMapping("iaf/api/*,!/iaf/api/server/health");
+		servletConfiguration.setUrlMapping("/iaf" + ApiServlet.getDefaultMapping());
 		servletConfiguration.setSecurityRoles(DynamicRegistration.ALL_IBIS_USER_ROLES);
-		servletConfiguration.setLoadOnStartup(1);
+		ApiServlet.getDefaultInitParameters().forEach(servletConfiguration::addInitParameter);
+		servletConfiguration.setName("Ladybug-ApiServlet");
+		servletConfiguration.setLoadOnStartup(0);
 		servletConfiguration.loadProperties();
 
-		ServletRegistration<DispatcherServlet> servlet = new ServletRegistration<>(DispatcherServlet.class, servletConfiguration);
-		servlet.setMultipartConfig(new MultipartConfigElement(""));
-		servlet.setAsyncSupported(true);
-		return servlet;
+		return new ServletRegistration<>(ApiServlet.class, servletConfiguration);
 	}
 
 	@Bean
-	public ServletRegistration<ConsoleFrontend> frontendServletBean() {
+	public ServletRegistration<FrontendServlet> ladybugFrontendServletBean() {
 		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
-		servletConfiguration.setName("IAF-GUI");
-		servletConfiguration.setUrlMapping("iaf/gui/*");
+		servletConfiguration.setUrlMapping("/iaf" + FrontendServlet.getDefaultMapping());
 		servletConfiguration.setSecurityRoles(DynamicRegistration.ALL_IBIS_USER_ROLES);
-		servletConfiguration.setLoadOnStartup(1);
+		servletConfiguration.setName("Ladybug-FrontendServlet");
+		servletConfiguration.setLoadOnStartup(0);
 		servletConfiguration.loadProperties();
 
-		return new ServletRegistration<>(ConsoleFrontend.class, servletConfiguration);
+		return new ServletRegistration<>(FrontendServlet.class, servletConfiguration);
+	}
+
+	@Bean
+	public ServletRegistration<TesttoolServlet> testtoolServletBean() {
+		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
+		servletConfiguration.setUrlMapping("/iaf/testtool");
+		servletConfiguration.setSecurityRoles(DynamicRegistration.ALL_IBIS_USER_ROLES);
+		servletConfiguration.setName("TestTool");
+		servletConfiguration.setLoadOnStartup(0);
+		servletConfiguration.loadProperties();
+
+		return new ServletRegistration<>(TesttoolServlet.class, servletConfiguration);
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2024 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,28 +13,38 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.console.configuration;
+package org.frankframework.security.config;
 
 import java.util.List;
 import java.util.Map;
 
-import org.frankframework.lifecycle.servlets.ServletConfiguration;
-import org.frankframework.util.SpringUtils;
+import jakarta.servlet.HttpConstraintElement;
+import jakarta.servlet.ServletRegistration.Dynamic;
+import jakarta.servlet.ServletSecurityElement;
+import jakarta.servlet.http.HttpServlet;
+
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-import jakarta.servlet.http.HttpServlet;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.lifecycle.servlets.IAuthenticator;
+import org.frankframework.lifecycle.servlets.JeeAuthenticator;
+import org.frankframework.lifecycle.servlets.ServletConfiguration;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.SpringUtils;
 
 @Log4j2
 public class ServletRegistration<T extends HttpServlet> extends ServletRegistrationBean<T> implements ApplicationContextAware, InitializingBean {
 	private @Setter ApplicationContext applicationContext;
 	private final @Getter ServletConfiguration servletConfiguration;
 	private final Class<T> servletClass;
+
+	private IAuthenticator authenticator;
 
 	public ServletRegistration(Class<T> servletClass, ServletConfiguration config) {
 		this.servletClass = servletClass;
@@ -43,6 +53,8 @@ public class ServletRegistration<T extends HttpServlet> extends ServletRegistrat
 
 	@Override
 	public void afterPropertiesSet() {
+		authenticator = applicationContext.getBean(IAuthenticator.class); // Cannot use Autowired here, as it needs to look in the local BeanFactory first.
+
 		T servlet = SpringUtils.createBean(applicationContext, servletClass);
 		log.info("registering servlet [{}]", servletConfiguration::getName);
 
@@ -58,7 +70,21 @@ public class ServletRegistration<T extends HttpServlet> extends ServletRegistrat
 		setLoadOnStartup(servletConfiguration.getLoadOnStartup());
 		super.setServlet(servlet);
 
-		log.info("created servlet {} endpoint {}", this::getServletName, this::getUrlMappings);
+		log.info("created servlet {} with endpoint {} using authenticator {}", this::getServletName, this::getUrlMappings, () -> ClassUtils.classNameOf(authenticator));
+	}
+
+	@Override
+	protected void configure(Dynamic registration) {
+		if(authenticator instanceof JeeAuthenticator) {
+			registration.setServletSecurity(getServletSecurity());
+		}
+		super.configure(registration);
+	}
+
+	private ServletSecurityElement getServletSecurity() {
+		String[] roles = servletConfiguration.getSecurityRoles().toArray(new String[0]);
+		HttpConstraintElement httpConstraintElement = new HttpConstraintElement(servletConfiguration.getTransportGuarantee(), roles);
+		return new ServletSecurityElement(httpConstraintElement);
 	}
 
 	private void addUrlMappings(List<String> urlMapping) {
