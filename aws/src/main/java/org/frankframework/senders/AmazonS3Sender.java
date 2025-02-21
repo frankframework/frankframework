@@ -19,7 +19,6 @@ import org.frankframework.filesystem.AbstractFileSystemSender;
 import org.frankframework.filesystem.AmazonS3FileSystem;
 import org.frankframework.filesystem.AmazonS3FileSystemDelegator;
 import org.frankframework.filesystem.S3FileRef;
-import org.frankframework.filesystem.TypeFilter;
 
 /**
  * Sender to work with the Amazon S3 Filesystem.
