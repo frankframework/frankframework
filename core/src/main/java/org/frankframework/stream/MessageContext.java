@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -57,7 +56,7 @@ public class MessageContext implements Serializable {
 
 	@Serial
 	private static final long serialVersionUID = 1L;
-	private static final long customSerializationVersion = 1L;
+	private static final long CUSTOM_SERIALIZATION_VERSION = 1L;
 
 	private Map<String, Serializable> data = new LinkedHashMap<>();
 
@@ -207,17 +206,8 @@ public class MessageContext implements Serializable {
 	@Serial
 	private void writeObject(@Nonnull ObjectOutputStream out) throws IOException {
 		// If in future we need to make incompatible changes we can keep reading old version by selecting on version-nr
-		out.writeLong(customSerializationVersion);
-		Map<String, Serializable> serializableData = data.entrySet().stream()
-						.filter(e -> {
-							if (e.getValue() != null) return true;
-							else {
-								LOG.warn("Cannot write non-serializable MessageContext entry to stream: [{}] -> [{}]", e::getKey, e::getValue);
-								return false;
-							}
-						})
-						.collect(Collectors.toMap(Map.Entry::getKey, e -> (Serializable)(e.getValue())));
-		out.writeObject(serializableData);
+		out.writeLong(CUSTOM_SERIALIZATION_VERSION);
+		out.writeObject(data);
 	}
 
 	@Serial
