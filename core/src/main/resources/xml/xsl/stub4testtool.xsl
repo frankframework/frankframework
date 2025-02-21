@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:stub="http://frankframework.org/stub">
 	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes" />
+	<xsl:variable name="packageNameLegacy" select="contains(//configuration[1]/adapter[1]/receiver/listener/@className,'nl.nn.adapterframework')"/>
 	<!-- Parameter disableValidators has been used to test the impact of validators on memory usage -->
 	<xsl:param name="disableValidators"/>
 	<!--
@@ -23,6 +24,8 @@
 		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Response' to all outputWrapper elements SoapWrapperPipe with attribute direction=wrap
 	-->
 	<xsl:template match="/">
+	
+		
 		<xsl:apply-templates select="*|comment()|processing-instruction()" />
 	</xsl:template>
 
@@ -39,14 +42,14 @@
 	</xsl:template>
 
 	<!-- All receivers are disabled except those with listeners in the list below -->
-	<xsl:template match="receiver[listener[@className='org.frankframework.jdbc.JdbcQueryListener'
-										or @className='org.frankframework.jdbc.JdbcTableListener'
-										or @className='org.frankframework.receivers.DirectoryListener'
-										or @className='org.frankframework.receivers.JavaListener'
-										or @className='org.frankframework.http.WebServiceListener'
-										or @className='org.frankframework.http.RestListener'
-										or @className='org.frankframework.jdbc.MessageStoreListener'
-										or @className='org.frankframework.http.rest.ApiListener']]">
+	<xsl:template match="receiver[listener[@className=contains(.,'.jdbc.JdbcQueryListener')
+										or @className=contains(.,'.jdbc.JdbcTableListener')
+										or @className=contains(.,'.receivers.DirectoryListener')
+										or @className=contains(.,'.receivers.JavaListener')
+										or @className=contains(.,'.http.WebServiceListener')
+										or @className=contains(.,'.http.RestListener')
+										or @className=contains(.,'.jdbc.MessageStoreListener')
+										or @className=contains(.,'.http.rest.ApiListener')]]">
 		<xsl:call-template name="copy" />
 		<xsl:call-template name="stubReceiver"/>
 	</xsl:template>
@@ -65,8 +68,9 @@
 			</xsl:attribute>
 			<xsl:apply-templates select="$baseReceiver/@transactionAttribute" mode="stub"/>
 			<xsl:apply-templates select="$baseReceiver/@*[local-name()!='transactionAttribute' and local-name()!='name']" />
+	
 			<xsl:element name="listener">
-				<xsl:attribute name="className">org.frankframework.receivers.JavaListener</xsl:attribute>
+				<xsl:attribute name="className"><xsl:value-of select="if ( $packageNameLegacy=true() ) then 'nl.nn.adapterframework' else 'org.frankframework'"/>.receivers.JavaListener</xsl:attribute>
 				<xsl:attribute name="serviceName">
 					<xsl:value-of select="$receiverName" />
 				</xsl:attribute>
@@ -75,11 +79,11 @@
 				</xsl:if>
 			</xsl:element>
 			<xsl:call-template name="stubNameForStorage">
-				<xsl:with-param name="store" select="$baseReceiver/errorStorage[@className='org.frankframework.jdbc.JdbcTransactionalStorage' or @className='org.frankframework.jdbc.DummyTransactionalStorage']"/>
+				<xsl:with-param name="store" select="$baseReceiver/errorStorage[@className=contains(.,'.jdbc.JdbcTransactionalStorage') or @className=contains(.,'.jdbc.DummyTransactionalStorage')]"/>
 			</xsl:call-template>
-			<xsl:copy-of select="errorSender[@className='org.frankframework.senders.IbisLocalSender']"/>
+			<xsl:copy-of select="errorSender[@className=contains(.,'.senders.IbisLocalSender')]"/>
 			<xsl:call-template name="stubNameForStorage">
-				<xsl:with-param name="store" select="$baseReceiver/messageLog[@className='org.frankframework.jdbc.JdbcTransactionalStorage' or @className='org.frankframework.jdbc.DummyTransactionalStorage']"/>
+				<xsl:with-param name="store" select="$baseReceiver/messageLog[@className=contains(.,'.jdbc.JdbcTransactionalStorage') or @className=contains(.,'.jdbc.DummyTransactionalStorage')]"/>
 			</xsl:call-template>
 		</xsl:element>
 	</xsl:template>
@@ -94,7 +98,7 @@
 			<xsl:apply-templates select="@transactionAttribute" mode="stub"/>
 			<xsl:apply-templates select="@*[name()!='transactionAttribute' and name()!='name']" />
 			<xsl:element name="listener">
-				<xsl:attribute name="className">org.frankframework.receivers.JavaListener</xsl:attribute>
+				<xsl:attribute name="className"><xsl:value-of select="if ( $packageNameLegacy=true() ) then 'nl.nn.adapterframework' else 'org.frankframework'"/>.receivers.JavaListener</xsl:attribute>
 				<xsl:attribute name="serviceName">
 					<xsl:value-of select="$receiverName" />
 				</xsl:attribute>
@@ -103,11 +107,11 @@
 				</xsl:if>
 			</xsl:element>
 			<xsl:call-template name="stubNameForStorage">
-				<xsl:with-param name="store" select="errorStorage[@className='org.frankframework.jdbc.JdbcTransactionalStorage' or @className='org.frankframework.jdbc.DummyTransactionalStorage']"/>
+				<xsl:with-param name="store" select="errorStorage[@className=contains(.,'.jdbc.JdbcTransactionalStorage') or @className=contains(.,'.jdbc.DummyTransactionalStorage')]"/>
 			</xsl:call-template>
-			<xsl:copy-of select="errorSender[@className='org.frankframework.senders.IbisLocalSender']"/>
+			<xsl:copy-of select="errorSender[@className=contains(.,'.senders.IbisLocalSender')]"/>
 			<xsl:call-template name="stubNameForStorage">
-				<xsl:with-param name="store" select="messageLog[@className='org.frankframework.jdbc.JdbcTransactionalStorage' or @className='org.frankframework.jdbc.DummyTransactionalStorage']"/>
+				<xsl:with-param name="store" select="messageLog[@className=contains(.,'.jdbc.JdbcTransactionalStorage') or @className=contains(.,'.jdbc.DummyTransactionalStorage')]"/>
 			</xsl:call-template>
 		</xsl:element>
 	</xsl:template>
@@ -139,25 +143,24 @@
 	</xsl:template>
 
 	<!-- All senders are stubbed except those in the list below -->
-	<xsl:template match="sender[   @className='org.frankframework.jdbc.ResultSet2FileSender'
-								or @className='org.frankframework.jdbc.DirectQuerySender'
-								or @className='org.frankframework.jdbc.FixedQuerySender'
-								or @className='org.frankframework.jdbc.XmlQuerySender'
-								or @className='org.frankframework.senders.DelaySender'
-								or @className='org.frankframework.senders.EchoSender'
-								or @className='org.frankframework.senders.IbisLocalSender'
-								or @className='org.frankframework.senders.LogSender'
-								or @className='org.frankframework.senders.ParallelSenders'
-								or @className='org.frankframework.senders.SenderSeries'
-								or @className='org.frankframework.senders.SenderWrapper'
-								or @className='org.frankframework.senders.XsltSender'
-								or @className='org.frankframework.senders.CommandSender'
-								or @className='org.frankframework.senders.FixedResultSender'
-								or @className='org.frankframework.senders.JavascriptSender'
-								or @className='org.frankframework.jdbc.MessageStoreSender'
-								or @className='org.frankframework.senders.ReloadSender'
-								or @className='org.frankframework.compression.ZipWriterSender'
-								or @className='org.frankframework.senders.LocalFileSystemSender']">
+	<xsl:template match="sender[   @className=contains(.,'.jdbc.ResultSet2FileSender')
+								or @className=contains(.,'.senders.DelaySender')
+								or @className=contains(.,'.senders.EchoSender')
+								or @className=contains(.,'.senders.LogSender')
+								or @className=contains(.,'.senders.ParallelSenders')
+								or @className=contains(.,'.senders.SenderSeries')
+								or @className=contains(.,'.senders.SenderWrapper')
+								or @className=contains(.,'.senders.XsltSender')
+								or @className=contains(.,'.senders.CommandSender')
+								or @className=contains(.,'.senders.FixedResultSender')
+								or @className=contains(.,'.senders.JavascriptSender')
+								or @className=contains(.,'.jdbc.MessageStoreSender')
+								or @className=contains(.,'.senders.ReloadSender')
+								or @className=contains(.,'.compression.ZipWriterSender')
+								or @className=contains(.,'.jdbc.DirectQuerySender')
+								or @className=contains(.,'.jdbc.FixedQuerySender')
+								or @className=contains(.,'.jdbc.XmlQuerySender')
+								or @className=contains(.,'.senders.LocalFileSystemSender')]">
 		<xsl:call-template name="copy" />
 	</xsl:template>
 
@@ -170,7 +173,7 @@
 					<xsl:value-of select="@name" />
 				</xsl:attribute>
 			</xsl:if>
-			<xsl:attribute name="className">org.frankframework.senders.IbisJavaSender</xsl:attribute>
+			<xsl:attribute name="className"><xsl:value-of select="if ( $packageNameLegacy=true() ) then 'nl.nn.adapterframework' else 'org.frankframework'"/>.senders.IbisJavaSender</xsl:attribute>
 			<xsl:attribute name="serviceName">
 				<xsl:choose>
 					<!-- For backwards compatibility, the servicename based on the parent pipe name is the first option -->
@@ -242,7 +245,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template match="pipe[@className='org.frankframework.pipes.PutSystemDateInSession']">
+	<xsl:template match="pipe[@className=contains(.,'.pipes.PutSystemDateInSession')]">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*" />
 			<xsl:attribute name="returnFixedDate">true</xsl:attribute>
@@ -250,7 +253,7 @@
 		</xsl:element>
 	</xsl:template>
 
-	<xsl:template match="pipe[@className='org.frankframework.extensions.esb.EsbSoapWrapperPipe']">
+	<xsl:template match="pipe[@className=contains(.,'.extensions.esb.EsbSoapWrapperPipe')]">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*" />
 			<xsl:attribute name="useFixedValues">true</xsl:attribute>
@@ -264,7 +267,7 @@
 		</xsl:element>
 	</xsl:template>
 
-	<xsl:template match="inputWrapper[@className='org.frankframework.extensions.esb.EsbSoapWrapperPipe']">
+	<xsl:template match="inputWrapper[@className=contains(.,'.extensions.esb.EsbSoapWrapperPipe')]">
 		<xsl:element name="inputWrapper">
 			<xsl:apply-templates select="@*" />
 			<xsl:attribute name="useFixedValues">true</xsl:attribute>
@@ -285,7 +288,7 @@
 		</xsl:element>
 	</xsl:template>
 
-	<xsl:template match="outputWrapper[@className='org.frankframework.extensions.esb.EsbSoapWrapperPipe']">
+	<xsl:template match="outputWrapper[@className=contains(.,'.extensions.esb.EsbSoapWrapperPipe')]">
 		<xsl:element name="outputWrapper">
 			<xsl:apply-templates select="@*" />
 			<xsl:attribute name="useFixedValues">true</xsl:attribute>
@@ -299,27 +302,27 @@
 		</xsl:element>
 	</xsl:template>
 
-	<xsl:template match="pipe[@className='org.frankframework.pipes.GetPrincipalPipe']">
+	<xsl:template match="pipe[@className=contains(.,'.pipes.GetPrincipalPipe')]">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*" />
-			<xsl:attribute name="className">org.frankframework.pipes.EchoPipe</xsl:attribute>
+			<xsl:attribute name="className"><xsl:value-of select="if ( $packageNameLegacy=true() ) then 'nl.nn.adapterframework' else 'org.frankframework'"/>.pipes.EchoPipe</xsl:attribute>
 			<xsl:attribute name="getInputFromFixedValue">tst9</xsl:attribute>
 			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 		</xsl:element>
 	</xsl:template>
 
-	<xsl:template match="pipe[@className='org.frankframework.pipes.IsUserInRolePipe']">
+	<xsl:template match="pipe[@className=contains(.,'.pipes.IsUserInRolePipe')]">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*" />
-			<xsl:attribute name="className">org.frankframework.pipes.EchoPipe</xsl:attribute>
+			<xsl:attribute name="className"><xsl:value-of select="if ( $packageNameLegacy=true() ) then 'nl.nn.adapterframework' else 'org.frankframework'"/>.pipes.EchoPipe</xsl:attribute>
 			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 		</xsl:element>
 	</xsl:template>
 
-	<xsl:template match="pipe[@className='org.frankframework.pipes.UUIDGeneratorPipe']">
+	<xsl:template match="pipe[@className=contains(.,'.pipes.UUIDGeneratorPipe')]">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*[name()!='type']" />
-			<xsl:attribute name="className">org.frankframework.pipes.EchoPipe</xsl:attribute>
+			<xsl:attribute name="className"><xsl:value-of select="if ( $packageNameLegacy=true() ) then 'nl.nn.adapterframework' else 'org.frankframework'"/>.pipes.EchoPipe</xsl:attribute>
 			<xsl:choose>
 				<xsl:when test="@type='numeric'">
 					<xsl:attribute name="getInputFromFixedValue">1234567890123456789012345678901</xsl:attribute>
@@ -332,24 +335,24 @@
 		</xsl:element>
 	</xsl:template>
 
-	<xsl:template match="pipe[ @className='org.frankframework.pipes.Samba2Pipe' ]">
+	<xsl:template match="pipe[ @className=contains(.,'.pipes.Samba2Pipe') ]">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@name|@action|@storeResultInSessionKey|@getInputFromSessionKey|@getInputFromFixedValue" />
-			<xsl:attribute name="className">org.frankframework.pipes.LocalFileSystemPipe</xsl:attribute>
+			<xsl:attribute name="className"><xsl:value-of select="if ( $packageNameLegacy=true() ) then 'nl.nn.adapterframework' else 'org.frankframework'"/>.pipes.LocalFileSystemPipe</xsl:attribute>
 			<xsl:apply-templates
 				select="*|comment()|processing-instruction()|text()" />
 		</xsl:element>
 	</xsl:template>
 
-	<xsl:template match="pipe[ @className='org.frankframework.ftp.FtpFileRetrieverPipe'
-							or @className='org.frankframework.extensions.tibco.SendTibcoMessage'
-							or @className='org.frankframework.ldap.LdapFindMemberPipe'
-							or @className='org.frankframework.ldap.LdapFindGroupMembershipsPipe']">
+	<xsl:template match="pipe[ @className=contains(.,'.ftp.FtpFileRetrieverPipe')
+							or @className=contains(.,'.extensions.tibco.SendTibcoMessage')
+							or @className=contains(.,'.ldap.LdapFindMemberPipe')
+							or @className=contains(.,'.ldap.LdapFindGroupMembershipsPipe')]">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@name|@storeResultInSessionKey|@getInputFromSessionKey|@getInputFromFixedValue" />
-			<xsl:attribute name="className">org.frankframework.pipes.SenderPipe</xsl:attribute>
+			<xsl:attribute name="className"><xsl:value-of select="if ( $packageNameLegacy=true() ) then 'nl.nn.adapterframework' else 'org.frankframework'"/>.pipes.SenderPipe</xsl:attribute>
 			<xsl:element name="sender">
-				<xsl:attribute name="className">org.frankframework.senders.IbisJavaSender</xsl:attribute>
+				<xsl:attribute name="className"><xsl:value-of select="if ( $packageNameLegacy=true() ) then 'nl.nn.adapterframework' else 'org.frankframework'"/>.senders.IbisJavaSender</xsl:attribute>
 				<xsl:attribute name="serviceName">
 					<xsl:value-of select="concat('testtool-',@name)" />
 				</xsl:attribute>
@@ -358,8 +361,8 @@
 		</xsl:element>
 	</xsl:template>
 
-	<xsl:template match="pipe[ @className='org.frankframework.pipes.SenderPipe'
-							or @className='org.frankframework.pipes.ForEachChildElementPipe']">
+	<xsl:template match="pipe[ @className=contains(.,'.pipes.SenderPipe')
+							or @className=contains(.,'.pipes.ForEachChildElementPipe')]">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*" />
 			<xsl:attribute name="timeoutOnResult">[timeout]</xsl:attribute>
@@ -372,8 +375,8 @@
 		<xsl:attribute name="pattern"><xsl:value-of select="replace(.,'\{now','{fixedDate')"/></xsl:attribute>
 	</xsl:template>
 
-	<xsl:template match="pipe/*[local-name()='errorStorage' or local-name()='messageLog'][@className!='org.frankframework.jdbc.JdbcTransactionalStorage'
-																					  and @className!='org.frankframework.jdbc.DummyTransactionalStorage']">
+	<xsl:template match="pipe/*[local-name()='errorStorage' or local-name()='messageLog'][@className!=contains(.,'.jdbc.JdbcTransactionalStorage')
+																					  and @className!=contains(.,'.jdbc.DummyTransactionalStorage')]">
 		<xsl:call-template name="disable" />
 	</xsl:template>
 
