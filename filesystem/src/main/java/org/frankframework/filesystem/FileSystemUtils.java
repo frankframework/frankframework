@@ -139,7 +139,11 @@ public class FileSystemUtils {
 		Map<String, Object> fileProperties = fileSystem.getAdditionalFileProperties(file);
 		if (fileProperties != null) {
 			fileProperties.forEach((key, value) -> {
-				context.put(key, (Serializable)  value);
+				if (value instanceof Serializable s) {
+					context.put(key, s);
+				} else if (value != null) {
+					context.put(key, value.toString());
+				}
 			});
 		}
 		return context;
