@@ -19,9 +19,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -112,7 +112,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 	protected void createQueryTexts(IDbmsSupport dbmsSupport) throws ConfigurationException {
 		deleteQuery = "DELETE" + getFromClause(true) + getWhereClause(getKeyField()+"=?",true);
 		selectContextQuery = "SELECT "+getListClause(true)+ getWhereClause(getKeyField()+"=?",true);
-		selectDataQuery = "SELECT "+getKeyField()+","+getMessageField()+ getFromClause(true) + getWhereClause(getKeyField()+"=?",true);
+		selectDataQuery = "SELECT "+getKeyField()+","+getMessageField() + "," + getIdField() + "," + getCorrelationIdField() + getFromClause(true) + getWhereClause(getKeyField()+"=?",true);
 		checkMessageIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getIdField() + getFromClause(false) + getWhereClause(getIdField() +"=?",false);
 		checkCorrelationIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getCorrelationIdField() + getFromClause(false) + getWhereClause(getCorrelationIdField() +"=?",false);
 		try {
