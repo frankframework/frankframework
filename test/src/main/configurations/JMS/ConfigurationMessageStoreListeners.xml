@@ -1,6 +1,6 @@
 <Configuration>
 	<Module>
-		<Adapter name="MultipleReceiversAdapter" description="Used to retry messages using two EsbJmsListener and a MessageStoreListener">
+		<Adapter name="MultipleReceiversAdapter" description="Used to retry messages using two EsbJmsListener and a MessageStoreListener" active="${active.jms}">
 			<Receiver name="localReceiver"
 				elementToMove="fileContent"
 				removeCompactMsgNamespaces="false"
