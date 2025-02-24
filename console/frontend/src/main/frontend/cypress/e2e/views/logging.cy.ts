@@ -4,15 +4,21 @@ describe('Logging page', () => {
   });
 
   it('Navigation should work', () => {
-    cy.get('[data-cy="logging__search__input"]').type('.log');
+    const logFile = 'ibis4test.log';
+    const loggingPageUrlRegExp = /\/#\/logging$/;
+    const logFileUrlRegExp = new RegExp(`/#\/logging\/.+\/${logFile}$`);
+    const loggingPageAfterFileUrlRegExp = new RegExp(`/#\/logging\/.+logs#${logFile}$`);
+
+    cy.url().should('match', loggingPageUrlRegExp);
+    cy.get('[data-cy="logging__search__input"]').type(logFile);
     cy.get('[data-cy="logging__table__file"]').first().click();
-    cy.url().should('match', /\/#\/logging\/.+\.log$/);
+    cy.url().should('match', logFileUrlRegExp);
     cy.get('[data-cy="file-viewer__container"]')
       .should('be.visible')
       .and('not.have.text', '')
       .and('not.contain.text', 'Error requesting file data');
     cy.get('[data-cy="logging__back-button"]').click();
-    cy.url().should('match', /\/#\/logging\/.+logs$/);
+    cy.url().should('match', loggingPageAfterFileUrlRegExp);
     cy.get('[data-cy="logging__table__file"]').first().click();
     cy.get('[data-cy="logging__alert"]')
       .invoke('text')

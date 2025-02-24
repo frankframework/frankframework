@@ -40,16 +40,18 @@ describe('Monitoring page', () => {
   it('Add monitor with trigger', () => {
     // Add a monitor
     cy.get('[data-cy="monitors__add-monitor-button"]').click();
-    cy.get('[data-cy="monitors-new__name__input"]').click().type(`${monitorName}{ctrl}{enter}`);
-    editMonitor();
+    cy.get('[data-cy="monitors-new__name__input"]').click();
+    cy.get('[data-cy="monitors-new__name__input"]').type(`${monitorName}{ctrl}{enter}`);
 
     // Add a trigger
-
+    editMonitor();
     cy.get('[data-cy="monitors__add-trigger-button"]').click();
-    cy.get('[data-cy="monitors-add-edit__threshold__input"]').clear().type('-1{ctrl}{enter}');
+    cy.get('[data-cy="monitors-add-edit__threshold__input"]').clear();
+    cy.get('[data-cy="monitors-add-edit__threshold__input"]').type('-1{ctrl}{enter}');
     cy.get('[data-cy="monitors-add-edit__alert"]').should('have.text', 'Negative values are not allowed');
-    cy.get('[data-cy="monitors-add-edit__threshold__input"]').clear().type('0{ctrl}{enter}');
-    findMonitor().parent().find('[data-cy="monitors__monitor__trigger__row"]').should('be.visible');
+    cy.get('[data-cy="monitors-add-edit__threshold__input"]').clear();
+    cy.get('[data-cy="monitors-add-edit__threshold__input"]').type('0{ctrl}{enter}');
+    findMonitor().parent().find('[data-cy="monitors__monitor__trigger__row"]').should('have.length', 1);
 
     // Raise and lower the monitor
     raiseMonitor();

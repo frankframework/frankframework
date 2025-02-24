@@ -6,7 +6,7 @@ export default defineConfig({
     baseUrl: 'http://localhost:4200',
     reporter: 'cypress-multi-reporters',
     reporterOptions: {
-      configFile: 'reporter-config.json'
+      configFile: 'cypress.reporter-config.json'
     },
   },
 })

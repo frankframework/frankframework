@@ -98,7 +98,7 @@ public class IafTestInitializer {
 	}
 
 	public static void main(String[] args) throws IOException {
- 		SpringApplication app = configureApplication();
+		SpringApplication app = configureApplication();
 		app.run(args);
 	}
 
