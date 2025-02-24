@@ -15,6 +15,7 @@
 */
 package org.frankframework.extensions.kafka;
 
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
@@ -159,7 +160,7 @@ public class KafkaListener extends AbstractKafkaFacade implements IPullingListen
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<ConsumerRecord<String, byte[]>> wrappedMessage, @Nonnull Map<String, Object> context) {
+	public Message extractMessage(@Nonnull RawMessageWrapper<ConsumerRecord<String, byte[]>> wrappedMessage, @Nonnull Map<String, Object> threadContext) {
 		Map<String, String> headers = new HashMap<>();
 		ConsumerRecord<String, byte[]> rawMessage = wrappedMessage.getRawMessage();
 		rawMessage.headers().forEach(header -> {
@@ -169,13 +170,17 @@ public class KafkaListener extends AbstractKafkaFacade implements IPullingListen
 				log.warn("Failed to convert header key [{}] to string. Bytearray value: [{}]", header.key(), header.value(), e);
 			}
 		});
+		MessageContext context = new MessageContext();
 		context.put("kafkaTopic", rawMessage.topic());
 		context.put("kafkaKey", rawMessage.key());
 		context.put("kafkaPartition", rawMessage.partition());
 		context.put("kafkaOffset", rawMessage.offset());
 		context.put("kafkaTimestamp", rawMessage.timestamp());
-		context.put("kafkaHeaders", headers);
-		return new Message(rawMessage.value(), new MessageContext(context));
+		context.put("kafkaHeaders", (Serializable) headers);
+
+		// Copy all entries to threadContext / PipeLineSession
+		context.entrySet().forEach(entry -> threadContext.put(entry.getKey(), entry.getValue()));
+		return new Message(rawMessage.value(), context);
 	}
 
 	@Override
@@ -207,11 +212,13 @@ public class KafkaListener extends AbstractKafkaFacade implements IPullingListen
 			if (!waiting.hasNext()) return null; //TODO implement IPeekableListener don't have any logic in getRawMessage.. it should only extract a message.
 			ConsumerRecord<String, byte[]> next = waiting.next();
 			offsetAndMetadataMap.put(new TopicPartition(next.topic(), next.partition()), new OffsetAndMetadata(next.offset() + 1));
-			consumer.commitAsync(offsetAndMetadataMap, (Map<TopicPartition, OffsetAndMetadata> offsets, Exception exception) -> {
-				if (exception != null) {
-					log.error("Failed to commit offsets", exception);
-				}
-			});
+			consumer.commitAsync(
+					offsetAndMetadataMap, (Map<TopicPartition, OffsetAndMetadata> offsets, Exception exception) -> {
+						if (exception != null) {
+							log.error("Failed to commit offsets", exception);
+						}
+					}
+			);
 			return new RawMessageWrapper<>(next);
 		} finally {
 			lock.unlock();

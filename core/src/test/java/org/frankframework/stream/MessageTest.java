@@ -820,20 +820,18 @@ public class MessageTest {
 		try (Message in = new Message(source)) {
 			in.getContext().put("TEST-KEY-STRING", "TEST-VALUE");
 			in.getContext().put("TEST-KEY-INT", 1);
-			in.getContext().put("TEST-KEY-NON-SERIALIZABLE", new Object());
 			byte[] wire = serializationTester.serialize(in);
 			log.debug("Current characterWire: [{}]", () -> Hex.encodeHexString(wire));
 
 			assertNotNull(wire);
-			Message out = serializationTester.deserialize(wire);
-			assertFalse(out.isBinary());
-			assertEquals(testString, out.asString());
-			assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
-			assertEquals("TEST-VALUE", out.getContext().get("TEST-KEY-STRING"));
-			assertTrue(out.getContext().containsKey("TEST-KEY-INT"));
-			assertEquals(1, out.getContext().get("TEST-KEY-INT"));
-			assertFalse(out.getContext().containsKey("TEST-KEY-NON-SERIALIZABLE"));
-			out.close();
+			try (Message out = serializationTester.deserialize(wire)) {
+				assertFalse(out.isBinary());
+				assertEquals(testString, out.asString());
+				assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
+				assertEquals("TEST-VALUE", out.getContext().get("TEST-KEY-STRING"));
+				assertTrue(out.getContext().containsKey("TEST-KEY-INT"));
+				assertEquals(1, out.getContext().get("TEST-KEY-INT"));
+			}
 		}
 	}
 
@@ -845,23 +843,21 @@ public class MessageTest {
 			in.getContext().withCharset(StandardCharsets.UTF_8);
 			in.getContext().put("TEST-KEY-STRING", "TEST-VALUE");
 			in.getContext().put("TEST-KEY-INT", 1);
-			in.getContext().put("TEST-KEY-NON-SERIALIZABLE", new Object());
 
 			byte[] wire = serializationTester.serialize(in);
 			log.debug("Current binaryWire: [{}]", () -> Hex.encodeHexString(wire));
 
 			assertNotNull(wire);
-			Message out = serializationTester.deserialize(wire);
+			try (Message out = serializationTester.deserialize(wire)) {
 
-			assertTrue(out.isBinary());
-			assertEquals(testString, out.asString());
-			assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
-			assertEquals("TEST-VALUE", out.getContext().get("TEST-KEY-STRING"));
-			assertTrue(out.getContext().containsKey("TEST-KEY-INT"));
-			assertEquals(1, out.getContext().get("TEST-KEY-INT"));
-			assertFalse(out.getContext().containsKey("TEST-KEY-NON-SERIALIZABLE"));
-			assertEquals("UTF-8", out.getContext().get(MessageContext.METADATA_CHARSET));
-			out.close();
+				assertTrue(out.isBinary());
+				assertEquals(testString, out.asString());
+				assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
+				assertEquals("TEST-VALUE", out.getContext().get("TEST-KEY-STRING"));
+				assertTrue(out.getContext().containsKey("TEST-KEY-INT"));
+				assertEquals(1, out.getContext().get("TEST-KEY-INT"));
+				assertEquals("UTF-8", out.getContext().get(MessageContext.METADATA_CHARSET));
+			}
 		}
 	}
 
@@ -1009,10 +1005,10 @@ public class MessageTest {
 	@Test
 	public void testDeserializationCompatibilityWithByteArray() throws Exception {
 
-		for (int i = 0; i < binaryWires.length; i++) {
-			String label = binaryWires[i][0];
+		for (String[] binaryWire : binaryWires) {
+			String label = binaryWire[0];
 			log.debug("testDeserializationCompatibilityWithByteArray() " + label);
-			byte[] wire = Hex.decodeHex(binaryWires[i][1]);
+			byte[] wire = Hex.decodeHex(binaryWire[1]);
 			Message out = serializationTester.deserialize(wire);
 
 			assertTrue(out.isBinary(), label);

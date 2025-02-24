@@ -16,6 +16,7 @@
 package org.frankframework.filesystem;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.nio.file.DirectoryStream;
 import java.util.Date;
@@ -130,11 +131,22 @@ public class FileSystemUtils {
 	}
 
 	public static <F> MessageContext getContext(IBasicFileSystem<F> fileSystem, F file) throws FileSystemException {
-		return  new MessageContext(fileSystem.getAdditionalFileProperties(file))
-					.withName(fileSystem.getName(file))
-					.withLocation(fileSystem.getCanonicalName(file))
-					.withModificationTime(fileSystem.getModificationTime(file))
-					.withSize(fileSystem.getFileSize(file));
+		MessageContext context = new MessageContext()
+				.withName(fileSystem.getName(file))
+				.withLocation(fileSystem.getCanonicalName(file))
+				.withModificationTime(fileSystem.getModificationTime(file))
+				.withSize(fileSystem.getFileSize(file));
+		Map<String, Object> fileProperties = fileSystem.getAdditionalFileProperties(file);
+		if (fileProperties != null) {
+			fileProperties.forEach((key, value) -> {
+				if (value instanceof Serializable s) {
+					context.put(key, s);
+				} else if (value != null) {
+					context.put(key, value.toString());
+				}
+			});
+		}
+		return context;
 	}
 
 	public static <F> MessageContext getContext(IBasicFileSystem<F> fileSystem, F file, String charset) throws FileSystemException {
