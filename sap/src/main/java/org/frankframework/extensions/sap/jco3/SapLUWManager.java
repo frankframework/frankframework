@@ -106,8 +106,7 @@ public class SapLUWManager extends FixedForwardPipe {
 			} catch (JCoException e) {
 				throw new PipeRunException(this, "begin: could not retrieve handle", e);
 			}
-		} else
-		if (getAction().equalsIgnoreCase(ACTION_COMMIT)) {
+		} else if (getAction().equalsIgnoreCase(ACTION_COMMIT)) {
 			SapLUWHandle handle=SapLUWHandle.retrieveHandle(session,getLuwHandleSessionKey());
 			if (handle==null) {
 				throw new PipeRunException(this, "commit: cannot find handle under sessionKey ["+getLuwHandleSessionKey()+"]");
@@ -117,15 +116,13 @@ public class SapLUWManager extends FixedForwardPipe {
 			} catch (JCoException e) {
 				throw new PipeRunException(this, "commit: could not commit handle", e);
 			}
-		} else
-		if (getAction().equalsIgnoreCase(ACTION_ROLLBACK)) {
+		} else if (getAction().equalsIgnoreCase(ACTION_ROLLBACK)) {
 			SapLUWHandle handle=SapLUWHandle.retrieveHandle(session,getLuwHandleSessionKey());
 			if (handle==null) {
 				throw new PipeRunException(this, "rollback: cannot find handle under sessionKey ["+getLuwHandleSessionKey()+"]");
 			}
 			handle.rollback();
-		} else
-		if (getAction().equalsIgnoreCase(ACTION_RELEASE)) {
+		} else if (getAction().equalsIgnoreCase(ACTION_RELEASE)) {
 			try {
 				SapLUWHandle.releaseHandle(session,getLuwHandleSessionKey());
 			} catch (JCoException e) {
