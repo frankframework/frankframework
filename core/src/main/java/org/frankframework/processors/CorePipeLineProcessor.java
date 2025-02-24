@@ -29,7 +29,6 @@ import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.IPipe;
-import org.frankframework.core.IPipeLineExitHandler;
 import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
@@ -141,59 +140,54 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 
 		PipeLineResult pipeLineResult = new PipeLineResult();
 		boolean outputValidationFailed = false;
-		try {
-			while (!ready){
-
-				if (forwardTarget instanceof PipeLineExit plExit) {
-					if(!plExit.isEmptyResult()) {
-						boolean outputWrapError = false;
-						if (!plExit.isSkipWrapping()) {
-							IPipe outputWrapper = pipeLine.getOutputWrapper();
-							if (outputWrapper !=null) {
-								log.debug("wrapping PipeLineResult");
-								PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, message, pipeLineSession);
-								if (wrapResult == null) {
-									throw new PipeRunException(outputWrapper, "OutputWrapper produced NULL result");
-								}
-								if (!wrapResult.isSuccessful()) {
-									forwardTarget = pipeLine.resolveForward(outputWrapper, wrapResult.getPipeForward());
-									log.warn("forwarding execution flow to [{}] due to wrap fault", forwardTarget.getName());
-									outputWrapError = true;
-								} else {
-									log.debug("wrap succeeded");
-									message = wrapResult.getResult();
-								}
-								if(log.isDebugEnabled()) log.debug("PipeLineResult after wrapping: {}", message == null ? "<null>" : "(" + message.getClass()
-										.getSimpleName() + ") [" + message + "]");
+		while (!ready) {
+			if (forwardTarget instanceof PipeLineExit plExit) {
+				if (!plExit.isEmptyResult()) {
+					boolean outputWrapError = false;
+					if (!plExit.isSkipWrapping()) {
+						IPipe outputWrapper = pipeLine.getOutputWrapper();
+						if (outputWrapper !=null) {
+							log.debug("wrapping PipeLineResult");
+							PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, message, pipeLineSession);
+							if (wrapResult == null) {
+								throw new PipeRunException(outputWrapper, "OutputWrapper produced NULL result");
 							}
+							if (!wrapResult.isSuccessful()) {
+								forwardTarget = pipeLine.resolveForward(outputWrapper, wrapResult.getPipeForward());
+								log.warn("forwarding execution flow to [{}] due to wrap fault", forwardTarget.getName());
+								outputWrapError = true;
+							} else {
+								log.debug("wrap succeeded");
+								message = wrapResult.getResult();
+							}
+							if(log.isDebugEnabled()) log.debug("PipeLineResult after wrapping: {}", message == null ? "<null>" : "(" + message.getClass()
+									.getSimpleName() + ") [" + message + "]");
 						}
+					}
 
-						if (!outputWrapError && !plExit.isSkipValidation()) {
-							IValidator outputValidator = pipeLine.getOutputValidator();
-							if (outputValidator != null) {
-								if (outputValidationFailed) {
-									log.debug("validating error message after PipeLineResult validation failed");
+					if (!outputWrapError && !plExit.isSkipValidation()) {
+						IValidator outputValidator = pipeLine.getOutputValidator();
+						if (outputValidator != null) {
+							if (outputValidationFailed) {
+								log.debug("validating error message after PipeLineResult validation failed");
+							} else {
+								log.debug("validating PipeLineResult");
+							}
+							String exitSpecificResponseRoot = plExit.getResponseRoot();
+							PipeRunResult validationResult = pipeProcessor.validate(pipeLine, outputValidator, message, pipeLineSession, exitSpecificResponseRoot);
+							if (!validationResult.isSuccessful()) {
+								if (!outputValidationFailed) {
+									outputValidationFailed=true;
+									forwardTarget = pipeLine.resolveForward(outputValidator, validationResult.getPipeForward());
+									log.warn("forwarding execution flow to [{}] due to validation fault", forwardTarget.getName());
 								} else {
-									log.debug("validating PipeLineResult");
-								}
-								String exitSpecificResponseRoot = plExit.getResponseRoot();
-								PipeRunResult validationResult = pipeProcessor.validate(pipeLine, outputValidator, message, pipeLineSession, exitSpecificResponseRoot);
-								if (!validationResult.isSuccessful()) {
-									if (!outputValidationFailed) {
-										outputValidationFailed=true;
-										forwardTarget = pipeLine.resolveForward(outputValidator, validationResult.getPipeForward());
-										log.warn("forwarding execution flow to [{}] due to validation fault", forwardTarget.getName());
-									} else {
-										log.warn("validation of error message by validator [{}] failed, returning result anyhow", outputValidator.getName()); // to avoid endless looping
-										message = validationResult.getResult();
-										ready=true;
-									}
-								} else {
-									log.debug("validation succeeded");
+									log.warn("validation of error message by validator [{}] failed, returning result anyhow", outputValidator.getName()); // to avoid endless looping
 									message = validationResult.getResult();
 									ready=true;
 								}
 							} else {
+								log.debug("validation succeeded");
+								message = validationResult.getResult();
 								ready=true;
 							}
 						} else {
@@ -202,50 +196,43 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 					} else {
 						ready=true;
 					}
-					if (ready) {
-						ExitState state=plExit.getState();
-						pipeLineResult.setState(state);
-						pipeLineResult.setExitCode(plExit.getExitCode());
-						if (!Message.isNull(message) && !plExit.isEmptyResult()) { //TODO Replace with Message.isEmpty() once Larva can handle NULL responses...
-							pipeLineResult.setResult(message);
-						} else {
-							pipeLineResult.setResult(Message.nullMessage());
-						}
-						if (log.isDebugEnabled()){  // for performance reasons
-							StringBuilder skString = new StringBuilder();
-							for (Map.Entry<String, Object> entry: pipeLineSession.entrySet()) {
-								String key = entry.getKey();
-								Object value = entry.getValue();
-								skString.append("\n ").append(key).append("=[").append(value).append("]");
-							}
-							log.debug("Available session keys at finishing pipeline of adapter [{}]:{}", pipeLine.getOwner().getName(), skString);
-							log.debug("Pipeline of adapter [{}] finished processing messageId [{}] result: {} with exit-state [{}]", pipeLine.getOwner()
-									.getName(), messageId, message == null ? "<null>" : "(" + message.getClass()
-									.getSimpleName() + ") [" + message + "]", state);
-						}
-					}
 				} else {
-					IPipe pipeToRun=(IPipe)forwardTarget;
-					PipeRunResult pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, message, pipeLineSession);
-					message = pipeRunResult.getResult();
-
-					PipeForward pipeForward=pipeRunResult.getPipeForward();
-					// get the next pipe to run
-					forwardTarget = pipeLine.resolveForward(pipeToRun, pipeForward);
-
+					ready=true;
 				}
-			}
-		} finally {
-			for (int i=0; i<pipeLine.getExitHandlers().size(); i++) {
-				IPipeLineExitHandler exitHandler = pipeLine.getExitHandlers().get(i);
-				try {
-					if (log.isDebugEnabled()) log.debug("processing ExitHandler [{}]", exitHandler.getName());
-					exitHandler.atEndOfPipeLine(messageId,pipeLineResult,pipeLineSession);
-				} catch (Throwable t) {
-					log.warn("Caught Exception processing ExitHandler [{}]", exitHandler.getName(), t);
+				if (ready) {
+					ExitState state=plExit.getState();
+					pipeLineResult.setState(state);
+					pipeLineResult.setExitCode(plExit.getExitCode());
+					if (!Message.isNull(message) && !plExit.isEmptyResult()) { //TODO Replace with Message.isEmpty() once Larva can handle NULL responses...
+						pipeLineResult.setResult(message);
+					} else {
+						pipeLineResult.setResult(Message.nullMessage());
+					}
+					if (log.isDebugEnabled()){  // for performance reasons
+						StringBuilder skString = new StringBuilder();
+						for (Map.Entry<String, Object> entry: pipeLineSession.entrySet()) {
+							String key = entry.getKey();
+							Object value = entry.getValue();
+							skString.append("\n ").append(key).append("=[").append(value).append("]");
+						}
+						log.debug("Available session keys at finishing pipeline of adapter [{}]:{}", pipeLine.getOwner().getName(), skString);
+						log.debug("Pipeline of adapter [{}] finished processing messageId [{}] result: {} with exit-state [{}]", pipeLine.getOwner()
+								.getName(), messageId, message == null ? "<null>" : "(" + message.getClass()
+								.getSimpleName() + ") [" + message + "]", state);
+					}
 				}
+			} else {
+				IPipe pipeToRun=(IPipe)forwardTarget;
+				PipeRunResult pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, message, pipeLineSession);
+				message = pipeRunResult.getResult();
+
+				PipeForward pipeForward=pipeRunResult.getPipeForward();
+				// get the next pipe to run
+				forwardTarget = pipeLine.resolveForward(pipeToRun, pipeForward);
+
 			}
 		}
+
 		return pipeLineResult;
 	}
 

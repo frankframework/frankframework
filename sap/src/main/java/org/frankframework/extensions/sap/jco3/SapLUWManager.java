@@ -22,8 +22,6 @@ import com.sap.conn.jco.JCoException;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IPipeLineExitHandler;
-import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -47,7 +45,7 @@ import org.frankframework.stream.Message;
  * @author  Jaco de Groot
  * @since   5.0
  */
-public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHandler {
+public class SapLUWManager extends FixedForwardPipe {
 
 	public static final String ACTION_BEGIN="begin";
 	public static final String ACTION_COMMIT="commit";
@@ -58,7 +56,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	private @Getter String action;
 	private @Getter String sapSystemName;
 
-	private SapSystemImpl sapSystem;
+	private @Getter SapSystemImpl sapSystem;
 
 
 	@Override
@@ -75,9 +73,6 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 			throw new ConfigurationException("illegal action ["+getAction()+"] specified, it must be one of: "+
 				ACTION_BEGIN+", "+ACTION_COMMIT+", "+ACTION_ROLLBACK+", "+ACTION_RELEASE+".");
 		}
-		if (getAction().equalsIgnoreCase(ACTION_BEGIN)) {
-			getPipeLine().registerExitHandler(this);
-		}
 		if (StringUtils.isEmpty(getLuwHandleSessionKey())) {
 			throw new ConfigurationException("action should be specified, it must be one of: "+
 				ACTION_BEGIN+", "+ACTION_COMMIT+", "+ACTION_ROLLBACK+", "+ACTION_RELEASE+".");
@@ -85,15 +80,6 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 		sapSystem=SapSystemImpl.getSystem(getSapSystemName());
 		if (sapSystem==null) {
 			throw new ConfigurationException("cannot find SapSystem ["+getSapSystemName()+"]");
-		}
-	}
-
-	@Override
-	public void atEndOfPipeLine(String correlationId, PipeLineResult pipeLineResult, PipeLineSession session) throws PipeRunException {
-		try {
-			SapLUWHandle.releaseHandle(session,getLuwHandleSessionKey());
-		} catch (JCoException e) {
-			throw new PipeRunException(this, "could not release handle", e);
 		}
 	}
 
@@ -120,8 +106,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 			} catch (JCoException e) {
 				throw new PipeRunException(this, "begin: could not retrieve handle", e);
 			}
-		} else
-		if (getAction().equalsIgnoreCase(ACTION_COMMIT)) {
+		} else if (getAction().equalsIgnoreCase(ACTION_COMMIT)) {
 			SapLUWHandle handle=SapLUWHandle.retrieveHandle(session,getLuwHandleSessionKey());
 			if (handle==null) {
 				throw new PipeRunException(this, "commit: cannot find handle under sessionKey ["+getLuwHandleSessionKey()+"]");
@@ -131,15 +116,13 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 			} catch (JCoException e) {
 				throw new PipeRunException(this, "commit: could not commit handle", e);
 			}
-		} else
-		if (getAction().equalsIgnoreCase(ACTION_ROLLBACK)) {
+		} else if (getAction().equalsIgnoreCase(ACTION_ROLLBACK)) {
 			SapLUWHandle handle=SapLUWHandle.retrieveHandle(session,getLuwHandleSessionKey());
 			if (handle==null) {
 				throw new PipeRunException(this, "rollback: cannot find handle under sessionKey ["+getLuwHandleSessionKey()+"]");
 			}
 			handle.rollback();
-		} else
-		if (getAction().equalsIgnoreCase(ACTION_RELEASE)) {
+		} else if (getAction().equalsIgnoreCase(ACTION_RELEASE)) {
 			try {
 				SapLUWHandle.releaseHandle(session,getLuwHandleSessionKey());
 			} catch (JCoException e) {
@@ -149,20 +132,10 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 		return new PipeRunResult(getSuccessForward(),message);
 	}
 
-
-
-	public SapSystemImpl getSapSystem() {
-		return sapSystem;
-	}
-
-
-
-
 	/** Name of the SapSystem used by this object */
 	public void setSapSystemName(String string) {
 		sapSystemName = string;
 	}
-
 
 	/** One of: begin, commit, rollback, release */
 	public void setAction(String string) {
@@ -173,5 +146,4 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	public void setLuwHandleSessionKey(String string) {
 		luwHandleSessionKey = string;
 	}
-
 }

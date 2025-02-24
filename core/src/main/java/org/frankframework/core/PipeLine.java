@@ -149,8 +149,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private final Map<String, DistributionSummary> pipeWaitStatistics = new ConcurrentHashMap<>();
 	private final Map<String, DistributionSummary> pipeSizeStats = new ConcurrentHashMap<>();
 
-	private @Getter final List<IPipeLineExitHandler> exitHandlers = new ArrayList<>();
-
 	private boolean configurationSucceeded = false;
 	private boolean inputMessageConsumedMultipleTimes=false;
 
@@ -193,11 +191,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 	public IPipe getPipe(int index) {
 		return pipes.get(index);
-	}
-
-	public void registerExitHandler(IPipeLineExitHandler exitHandler) {
-		exitHandlers.add(exitHandler);
-		log.info("registered exithandler [{}]", exitHandler.getName());
 	}
 
 	/**
