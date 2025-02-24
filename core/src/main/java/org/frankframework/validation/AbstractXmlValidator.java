@@ -201,13 +201,13 @@ public abstract class AbstractXmlValidator implements FrankElement, Lifecycle {
 	 * @return ValidationResult
 	 * @throws XmlValidatorException when <code>isThrowException</code> is true and a validationerror occurred.
 	 */
-	public ValidationResult validate(Object input, PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws XmlValidatorException, PipeRunException, ConfigurationException {
+	public ValidationResult validate(Message input, PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		AbstractValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
 		ValidatorHandler validatorHandler = getValidatorHandler(session, context);
 		return validate(input, session, validatorHandler, null, context);
 	}
 
-	public ValidationResult validate(Object input, PipeLineSession session, ValidatorHandler validatorHandler, XMLFilterImpl filter, AbstractValidationContext context) throws XmlValidatorException {
+	public ValidationResult validate(Message input, PipeLineSession session, ValidatorHandler validatorHandler, XMLFilterImpl filter, AbstractValidationContext context) throws XmlValidatorException {
 
 		if (filter != null) {
 			// If a filter is present, connect its output to the context.contentHandler.
@@ -219,7 +219,7 @@ public abstract class AbstractXmlValidator implements FrankElement, Lifecycle {
 		}
 		validatorHandler.setErrorHandler(context.getErrorHandler());
 
-		InputSource is = getInputSource(Message.asMessage(input));
+		InputSource is = getInputSource(input);
 
 		return validate(is, validatorHandler, session, context);
 	}

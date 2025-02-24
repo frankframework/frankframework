@@ -1,0 +1,20 @@
+[
+    [
+        {
+            "type": "/errors/",
+            "title": "More than one document found",
+            "status": "DATA_ERROR",
+            "detail": "The Devil's In The Details",
+            "instance": "/archiving/documents"
+        }
+    ],
+    [
+        {
+            "type": "/errors/",
+            "title": "More than one document found",
+            "status": "DATA_ERROR",
+            "detail": "The Devil's In The Details",
+            "instance": "/archiving/documents"
+        }
+    ]
+]

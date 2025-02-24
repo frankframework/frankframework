@@ -40,6 +40,7 @@ import org.xml.sax.helpers.XMLFilterImpl;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.align.content.JsonDocumentContainer;
+import org.frankframework.stream.Message;
 import org.frankframework.util.XmlUtils;
 
 /**
@@ -58,6 +59,7 @@ public class Xml2Json extends XMLFilterImpl {
 
 	public Xml2Json(XmlAligner aligner, boolean skipArrayElementContainers, boolean skipRootElement) {
 		this.aligner = aligner;
+		// TODO: This collects the entire JSON in memory. For large documents, this means enormous memory consumption. Should be replaced with something that can write immediately to output-stream.
 		this.documentContainer = new JsonDocumentContainer(null, skipArrayElementContainers, skipRootElement);
 	}
 
@@ -72,8 +74,8 @@ public class Xml2Json extends XMLFilterImpl {
 		return xml2object.getDocumentContainer();
 	}
 
-	public String toString(boolean indent) {
-		return getDocumentContainer().toString(indent);
+	public Message toMessage() throws IOException {
+		return getDocumentContainer().toMessage();
 	}
 
 	@Override
