@@ -1,10 +1,12 @@
 package org.frankframework.credentialprovider.delinea;
 
+import static org.frankframework.credentialprovider.delinea.DelineaClient.SECRETS_ACCESS_REQUESTS_URI;
 import static org.frankframework.credentialprovider.delinea.DelineaClient.SECRETS_URI;
 import static org.frankframework.credentialprovider.delinea.DelineaClient.SECRET_ID_URI;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -60,6 +62,27 @@ public class DelineaClientTest {
 				.getForObject(eq(SECRET_ID_URI), eq(Secret.class), anyString());
 
 		Secret secretFromClient = delineaClient.getSecret("3", null);
+
+		assertNotNull(secretFromClient);
+		assertEquals(3, secretFromClient.id());
+	}
+
+	@Test
+	void testGetSecretWithComment() throws IOException {
+		ObjectMapper objectMapper = new ObjectMapper();
+		Secret secret = objectMapper.readValue(getContents("delinea/secret_3.json"), Secret.class);
+
+		// mock the comment request
+		doReturn(DelineaClient.EXPECTED_VIEW_COMMENT_RESPONSE)
+				.when(delineaClient)
+				.postForObject(eq(SECRETS_ACCESS_REQUESTS_URI), any(), any(), eq("3"));
+
+		// mock the secret request
+		doReturn(secret)
+				.when(delineaClient)
+				.getForObject(eq(SECRET_ID_URI), eq(Secret.class), anyString());
+
+		Secret secretFromClient = delineaClient.getSecret("3", "test with comment!");
 
 		assertNotNull(secretFromClient);
 		assertEquals(3, secretFromClient.id());

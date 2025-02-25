@@ -35,8 +35,8 @@ public class DelineaClient extends RestTemplate {
 	static final String SECRET_ID_URI = SECRETS_URI + "/{id}";
 
 	private static final String DEFAULT_TICKET_NUMBER = "string";
-	
-	private static final String EXPECTED_VIEW_COMMENT_RESPONSE = "true";
+
+	static final String EXPECTED_VIEW_COMMENT_RESPONSE = "true";
 
 	/**
 	 * Fetch and return a {@link Secret} from Delinea Secret Server, including {@code fileAttachments}
