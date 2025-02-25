@@ -33,17 +33,15 @@ public class DelineaClient extends RestTemplate {
 	static final String SECRETS_ACCESS_REQUESTS_URI = "/v1/secret-access-requests/secrets/{id}/view-comment";
 
 	static final String SECRET_ID_URI = SECRETS_URI + "/{id}";
-	static final String DEFAULT_TICKET_NUMBER = "string";
-	static final String EXPECTED_VIEW_COMMENT_RESPONSE = "true";
 
-	// Simple POJO to represent SecretAccessRequest body
-	record SecretAccessRequest(String comment, String ticketNumber) {
-	}
+	private static final String DEFAULT_TICKET_NUMBER = "string";
+	
+	private static final String EXPECTED_VIEW_COMMENT_RESPONSE = "true";
 
 	/**
 	 * Fetch and return a {@link Secret} from Delinea Secret Server, including {@code fileAttachments}
 	 *
-	 * @param id - the integer ID of the secret to be fetched
+	 * @param id               - the integer ID of the secret to be fetched
 	 * @param autoCommentValue - the auto comment value to be used if not empty
 	 * @return the {@link Secret} object
 	 */
@@ -97,5 +95,9 @@ public class DelineaClient extends RestTemplate {
 
 		// see: https://updates.thycotic.net/secretserver/restapiguide/TokenAuth/#tag/Secrets/operation/SecretsService_SearchV2
 		return getForObject(SECRETS_URI, SecretsList.class, params);
+	}
+
+	// Simple POJO to represent SecretAccessRequest body
+	record SecretAccessRequest(String comment, String ticketNumber) {
 	}
 }
