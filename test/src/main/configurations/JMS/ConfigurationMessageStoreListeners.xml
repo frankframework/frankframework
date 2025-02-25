@@ -22,7 +22,8 @@
 					destinationName="${jms.destination.i4testiaf_in}"
 					lookupDestination="false"
 					jmsRealm="qcf"
-					messageProtocol="FF" />
+					messageProtocol="FF"
+					messageSelector="SOURCE='${hostname}_multipleReceiver'" />
 
 				<JdbcErrorStorage name="errorStorage"
 					slotId="testSlot" />
