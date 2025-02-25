@@ -28,9 +28,17 @@ import org.springframework.web.client.RestTemplate;
  * RestTemplate implementation for the Delinea Secret Server REST API.
  */
 public class DelineaClient extends RestTemplate {
-	static final String SECRETS_URI = "/secrets";
+	static final String SECRETS_URI = "/v2/secrets";
+
+	static final String SECRETS_ACCESS_REQUESTS_URI = "/v1/secret-access-requests/secrets/{id}/view-comment";
 
 	static final String SECRET_ID_URI = SECRETS_URI + "/{id}";
+	static final String DEFAULT_TICKET_NUMBER = "string";
+	static final String EXPECTED_VIEW_COMMENT_RESPONSE = "true";
+
+	// Simple POJO to represent SecretAccessRequest body
+	record SecretAccessRequest(String comment, String ticketNumber) {
+	}
 
 	/**
 	 * Fetch and return a {@link Secret} from Delinea Secret Server, including {@code fileAttachments}
@@ -40,16 +48,18 @@ public class DelineaClient extends RestTemplate {
 	 * @return the {@link Secret} object
 	 */
 	public Secret getSecret(String id, String autoCommentValue) {
-		final Map<String, String> params = new HashMap<>();
-		params.put("id", id);
-
-		// it is possible to provide an auto comment value, which is shown in the audit trail on the server
-		// see: https://docs.delinea.com/online-help/integrations/uipath/config/enable-auto-comment.htm
+		// it is possible to create a new view comment before getting the secret details. Enabled when autoCommentValue is not empty.
+		// see: https://updates.thycotic.net/secretserver/restapiguide/TokenAuth/#tag/SecretAccessRequests/operation/SecretAccessRequestsService_CreateViewComment
 		if (StringUtils.isNotBlank(autoCommentValue)) {
-			params.put("autoComment", autoCommentValue);
+			String response = postForObject(SECRETS_ACCESS_REQUESTS_URI, new SecretAccessRequest(autoCommentValue, DEFAULT_TICKET_NUMBER), String.class, id);
+
+			if (!EXPECTED_VIEW_COMMENT_RESPONSE.equalsIgnoreCase(response)) {
+				return null;
+			}
 		}
 
-		return getForObject(SECRET_ID_URI, Secret.class, params);
+		// Get secret
+		return getForObject(SECRET_ID_URI, Secret.class, id);
 	}
 
 	/**

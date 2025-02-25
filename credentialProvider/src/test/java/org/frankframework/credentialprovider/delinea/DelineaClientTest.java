@@ -5,7 +5,7 @@ import static org.frankframework.credentialprovider.delinea.DelineaClient.SECRET
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -16,10 +16,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class DelineaClientTest {
 
@@ -56,7 +57,7 @@ public class DelineaClientTest {
 
 		doReturn(secret)
 				.when(delineaClient)
-				.getForObject(eq(SECRET_ID_URI), eq(Secret.class), anyMap());
+				.getForObject(eq(SECRET_ID_URI), eq(Secret.class), anyString());
 
 		Secret secretFromClient = delineaClient.getSecret("3", null);
 
