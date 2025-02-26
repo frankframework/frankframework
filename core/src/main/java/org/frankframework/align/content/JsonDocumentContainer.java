@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import jakarta.json.stream.JsonGenerator;
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
@@ -202,33 +200,6 @@ public class JsonDocumentContainer {
 			throw new RuntimeException("Unexpected IOException writing to string", e);
 		}
 		return writer.toString();
-	}
-
-	protected void generate(JsonGenerator g, String key, Object item) {
-		if (item == null) {
-			if (key != null) g.writeNull(key);
-			else g.writeNull();
-		} else if (item instanceof String string) {
-			if (key != null) g.write(key, string);
-			else g.write(string);
-		} else if (item instanceof Map) {
-			if (key != null) g.writeStartObject(key);
-			else g.writeStartObject();
-			//noinspection unchecked
-			for (Entry<String, Object> entry : ((Map<String, Object>) item).entrySet()) {
-				generate(g, entry.getKey(), entry.getValue());
-			}
-			g.writeEnd();
-		} else if (item instanceof List<?> list) {
-			if (key != null) g.writeStartArray(key);
-			else g.writeStartArray();
-			for (Object subitem : list) {
-				generate(g, null, subitem);
-			}
-			g.writeEnd();
-		} else {
-			throw new NotImplementedException("cannot handle class [" + item.getClass().getName() + "]");
-		}
 	}
 
 	private void newLine(Writer w, int indentLevel) throws IOException {
