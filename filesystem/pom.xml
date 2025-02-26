@@ -36,6 +36,12 @@
 			<artifactId>microsoft-graph</artifactId>
 			<version>6.30.0</version>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.xml.stream</groupId>
+					<artifactId>stax-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.azure</groupId>
@@ -43,7 +49,6 @@
 			<version>1.15.3</version>
 			<scope>test</scope>
 		</dependency>
-
 
 		<dependency>
 			<groupId>com.hierynomus</groupId>
