@@ -5,6 +5,7 @@ import static org.frankframework.credentialprovider.delinea.DelineaClient.SECRET
 import static org.frankframework.credentialprovider.delinea.DelineaClient.SECRET_ID_URI;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -89,6 +90,19 @@ public class DelineaClientTest {
 	}
 
 	@Test
+	void testGetSecretWithInvalidCommentResponse() {
+		// mock the comment request
+		doReturn("false")
+				.when(delineaClient)
+				.postForObject(eq(SECRETS_ACCESS_REQUESTS_URI), any(), any(), eq("3"));
+
+		Secret secretFromClient = delineaClient.getSecret("3", "test with comment!");
+
+		// Expect null because the comment request failed
+		assertNull(secretFromClient);
+	}
+
+		@Test
 	void testGetSecrets() throws IOException {
 		ObjectMapper objectMapper = new ObjectMapper();
 		SecretsList page1 = objectMapper.readValue(getContents("delinea/page1.json"), SecretsList.class);
