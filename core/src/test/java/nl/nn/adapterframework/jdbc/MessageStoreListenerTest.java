@@ -251,7 +251,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
 
 		RawMessageWrapper<?> ro = browser.browseMessage(storageKey);
-		assertEquals(storageKey, ro.getId());
+		assertEquals(message, ro.getRawMessage());
 		Object o = ro.getRawMessage();
 		if (o instanceof MessageWrapper) {
 			MessageWrapper mw = (MessageWrapper)o;

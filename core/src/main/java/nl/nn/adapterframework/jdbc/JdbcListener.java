@@ -234,7 +234,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			index = rs.findColumn(columnName);
 		} catch (SQLException e) {
 			// Assume the cause of exception is that the column does not exist in this ResultSet and return default
-			return defaultValue;
+			return null;
 		}
 		return rs.getString(index);
 	}
