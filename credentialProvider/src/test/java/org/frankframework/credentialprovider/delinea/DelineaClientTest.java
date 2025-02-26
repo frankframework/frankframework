@@ -102,7 +102,7 @@ public class DelineaClientTest {
 		assertNull(secretFromClient);
 	}
 
-		@Test
+	@Test
 	void testGetSecrets() throws IOException {
 		ObjectMapper objectMapper = new ObjectMapper();
 		SecretsList page1 = objectMapper.readValue(getContents("delinea/page1.json"), SecretsList.class);
