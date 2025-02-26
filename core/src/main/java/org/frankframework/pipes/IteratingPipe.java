@@ -399,7 +399,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			try {
 				long preprocessingStartTime = System.currentTimeMillis();
 				ParameterValueList parameterValueList = getParameterList().getValues(message, session);
-				Message transformedMsg = msgTransformerPool.transform(message, parameterValueList);
+				Message transformedMsg = msgTransformerPool.transform(message, parameterValueList.getValueMap());
 				long preprocessingDuration = System.currentTimeMillis() - preprocessingStartTime;
 				getStatisticsKeeper("message preprocessing").record(preprocessingDuration);
 				return transformedMsg;

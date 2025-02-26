@@ -203,7 +203,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 				String soapHeader = null;
 				if (soapHeaderTp != null) {
 					payload.preserve();
-					try (Message soapHeaderMsg = soapHeaderTp.transform(payload, parameterValueList)) {
+					try (Message soapHeaderMsg = soapHeaderTp.transform(payload, parameterValueList == null ? null : parameterValueList.getValueMap())) {
 						soapHeader = soapHeaderMsg.asString();
 					}
 				} else {
@@ -212,7 +212,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 					}
 				}
 				if (soapBodyTp != null) {
-					payload = soapBodyTp.transform(payload, parameterValueList);
+					payload = soapBodyTp.transform(payload, parameterValueList == null ? null : parameterValueList.getValueMap());
 				}
 
 				result = wrapMessage(payload, soapHeader, session);

@@ -82,7 +82,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 					log.error("got exception extracting parameters", e);
 				}
 				try (Message closeable = result) {
-					return transformerPool.transform(closeable, parameterValueList);
+					return transformerPool.transform(closeable, parameterValueList == null ? null :  parameterValueList.getValueMap());
 				}
 			} catch (IOException e) {
 				log.error(" cannot retrieve [{}]", getStyleSheet(), e);
