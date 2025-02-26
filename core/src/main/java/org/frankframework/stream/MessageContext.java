@@ -109,7 +109,7 @@ public class MessageContext implements Serializable {
 		return data.get(key);
 	}
 
-	public Map<String, Object> getAll() {
+	public Map<String, Serializable> getAll() {
 		return Collections.unmodifiableMap(data);
 	}
 
