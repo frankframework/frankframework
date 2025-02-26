@@ -16,6 +16,7 @@
 package org.frankframework.align.content;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -194,55 +195,13 @@ public class JsonDocumentContainer {
 	 */
 	@Deprecated
 	public String toString(boolean indent) {
-		// TODO: Replace with call to toWriter and a StringWriter
-		Object content = root.getContent();
-		if (content == null) {
-			return null;
+		Writer writer = new StringWriter();
+		try {
+			toWriter(writer, indent);
+		} catch (IOException e) {
+			throw new RuntimeException("Unexpected IOException writing to string", e);
 		}
-		if (skipRootElement && content instanceof Map<?, ?> map) {
-			content = map.values().toArray()[0];
-		}
-		StringBuilder sb = new StringBuilder();
-		toString(sb, content, indent ? 0 : -1);
-		return sb.toString();
-	}
-
-	protected void toString(StringBuilder sb, Object item, int indentLevel) {
-		if (item == null) {
-			sb.append("null");
-		} else if (item instanceof String) {
-			sb.append(item);
-		} else if (item instanceof Map) {
-			sb.append("{");
-			if (indentLevel >= 0) indentLevel++;
-			//noinspection unchecked
-			for (Entry<String, Object> entry : ((Map<String, Object>) item).entrySet()) {
-				newLine(sb, indentLevel);
-				sb.append('"').append(entry.getKey()).append("\": ");
-				toString(sb, entry.getValue(), indentLevel);
-				sb.append(",");
-			}
-			sb.deleteCharAt(sb.length() - 1);
-			if (indentLevel >= 0) indentLevel--;
-			newLine(sb, indentLevel);
-			sb.append("}");
-		} else if (item instanceof List<?> list) {
-			sb.append("[");
-			if (indentLevel >= 0) indentLevel++;
-			for (Object subitem : list) {
-				newLine(sb, indentLevel);
-				toString(sb, subitem, indentLevel);
-				sb.append(",");
-			}
-			sb.deleteCharAt(sb.length() - 1);
-			if (indentLevel >= 0) indentLevel--;
-			newLine(sb, indentLevel);
-			sb.append("]");
-		} else if (item instanceof JsonElementContainer container) {
-			toString(sb, container.getContent(), indentLevel);
-		} else {
-			throw new NotImplementedException("cannot handle class [" + item.getClass().getName() + "]");
-		}
+		return writer.toString();
 	}
 
 	protected void generate(JsonGenerator g, String key, Object item) {
@@ -269,12 +228,6 @@ public class JsonDocumentContainer {
 			g.writeEnd();
 		} else {
 			throw new NotImplementedException("cannot handle class [" + item.getClass().getName() + "]");
-		}
-	}
-
-	private void newLine(StringBuilder sb, int indentLevel) {
-		if (indentLevel >= 0) {
-			sb.append(INDENTOR, 0, (Math.min(indentLevel, MAX_INDENT)) * 2 + 1);
 		}
 	}
 
