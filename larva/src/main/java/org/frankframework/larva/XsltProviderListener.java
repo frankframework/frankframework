@@ -67,7 +67,7 @@ public class XsltProviderListener implements IConfigurable, AutoCloseable, Frank
 
 	public void processRequest(String message, Map<String, Object> parameters) throws ListenerException {
 		try {
-			result = transformerPool.transform(message, parameters, namespaceAware);
+			result = transformerPool.transformToString(message, parameters, namespaceAware);
 		} catch (IOException e) {
 			throw new ListenerException("IOException transforming xml: " + e.getMessage(), e);
 		} catch (TransformerException e) {

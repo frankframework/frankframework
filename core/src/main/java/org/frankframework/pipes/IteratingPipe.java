@@ -366,7 +366,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					}
 					if (getStopConditionTp()!=null) {
 						long stopConditionStartTime = System.currentTimeMillis();
-						String stopConditionResult = getStopConditionTp().transform(itemResult,null);
+						String stopConditionResult = getStopConditionTp().transformToString(itemResult,null);
 						long stopConditionEndTime = System.currentTimeMillis();
 						long stopConditionDuration = stopConditionEndTime - stopConditionStartTime;
 						getStatisticsKeeper("stop condition determination").record(stopConditionDuration);
@@ -399,7 +399,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			try {
 				long preprocessingStartTime = System.currentTimeMillis();
 				ParameterValueList parameterValueList = getParameterList().getValues(message, session);
-				Message transformedMsg = msgTransformerPool.transform(message, parameterValueList.getValueMap());
+				Message transformedMsg = msgTransformerPool.transform(message, parameterValueList);
 				long preprocessingDuration = System.currentTimeMillis() - preprocessingStartTime;
 				getStatisticsKeeper("message preprocessing").record(preprocessingDuration);
 				return transformedMsg;

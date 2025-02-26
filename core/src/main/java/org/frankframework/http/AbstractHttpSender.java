@@ -469,7 +469,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 			if (transformerPool != null && xhtml != null) {
 				log.debug("transforming result [{}]", xhtml);
 				try {
-					xhtml = transformerPool.transform(xhtml);
+					xhtml = transformerPool.transformToString(xhtml);
 				} catch (Exception e) {
 					throw new SenderException("Exception on transforming input", e);
 				}

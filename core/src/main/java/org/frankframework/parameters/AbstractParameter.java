@@ -248,7 +248,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		String requestedSessionKey;
 		if (tpDynamicSessionKey != null) {
 			try {
-				requestedSessionKey = tpDynamicSessionKey.transform(message.asSource());
+				requestedSessionKey = tpDynamicSessionKey.transformToString(message.asSource());
 			} catch (Exception e) {
 				throw new ParameterException(getName(), "SessionKey for parameter ["+getName()+"] exception on transformation to get name", e);
 			}
@@ -337,7 +337,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 						case DOMDOC:
 							return transformToDocument(source, pvl);
 						default:
-							String transformResult = transformerPool.transform(source, pvl.getValueMap());
+							String transformResult = transformerPool.transformToString(source, pvl.getValueMap());
 							if (StringUtils.isNotEmpty(transformResult)) {
 								result = transformResult;
 							}

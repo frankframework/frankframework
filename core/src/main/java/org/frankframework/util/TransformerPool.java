@@ -402,42 +402,50 @@ public class TransformerPool {
 	}
 
 	// TODO: Unsure what is happening here but this seems very inefficient!
-	public String transform(Message m, Map<String,Object> parameters, boolean namespaceAware) throws TransformerException, IOException, SAXException {
+	public String transformToString(Message m, Map<String,Object> parameters, boolean namespaceAware) throws TransformerException, IOException, SAXException {
 		if (namespaceAware) {
-			return transform(XmlUtils.inputSourceToSAXSource(m.asInputSource(), namespaceAware, null), parameters);
+			return transformToString(XmlUtils.inputSourceToSAXSource(m.asInputSource(), namespaceAware, null), parameters);
 		}
 		try {
-			return transform(XmlUtils.stringToSource(m.asString(), namespaceAware), parameters);
+			return transformToString(XmlUtils.stringToSource(m.asString(), namespaceAware), parameters);
 		} catch (DomBuilderException e) {
 			throw new TransformerException(e);
 		}
 	}
 
-	public String transform(String s) throws TransformerException, IOException, SAXException {
-		return transform(XmlUtils.stringToSourceForSingleUse(s), null);
+	public String transformToString(String s) throws TransformerException, IOException, SAXException {
+		return transformToString(XmlUtils.stringToSourceForSingleUse(s), null);
 	}
 
-	public String transform(String s, Map<String,Object> parameters) throws TransformerException, IOException, SAXException {
-		return transform(XmlUtils.stringToSourceForSingleUse(s), parameters);
+	public String transformToString(String s, Map<String,Object> parameters) throws TransformerException, IOException, SAXException {
+		return transformToString(XmlUtils.stringToSourceForSingleUse(s), parameters);
 	}
 
-	public String transform(String s, Map<String,Object> parameters, boolean namespaceAware) throws TransformerException, IOException, SAXException {
-		return transform(XmlUtils.stringToSourceForSingleUse(s, namespaceAware), parameters);
+	public String transformToString(String s, Map<String,Object> parameters, boolean namespaceAware) throws TransformerException, IOException, SAXException {
+		return transformToString(XmlUtils.stringToSourceForSingleUse(s, namespaceAware), parameters);
 	}
 
-	public String transform(Source s) throws TransformerException, IOException {
-		return transform(s, null);
+	public String transformToString(Source s) throws TransformerException, IOException {
+		return transformToString(s, null);
 	}
 
-	public String transform(Source s, Map<String,Object> parameters) throws TransformerException, IOException {
+	public String transformToString(Source s, Map<String,Object> parameters) throws TransformerException, IOException {
 		StringWriter out = new StringWriter(XmlUtils.getBufSize());
 		Result result = new StreamResult(out);
 		transform(s, result, parameters);
 		return out.toString();
 	}
 
-	public String transform(@Nonnull Message input) throws TransformerException, IOException, SAXException {
-		return transform(input.asSource(), null);
+	public String transformToString(@Nonnull Message input) throws TransformerException, IOException, SAXException {
+		return transformToString(input.asSource(), null);
+	}
+
+	public @Nonnull Message transform(@Nonnull Message message) throws IOException, TransformerException, SAXException {
+		return transform(message, (Map<String, Object>) null);
+	}
+
+	public @Nonnull Message transform(@Nonnull Message message, @Nullable ParameterValueList pvl) throws IOException, TransformerException, SAXException {
+		return transform(message, pvl != null ? pvl.getValueMap() : null);
 	}
 
 	/**

@@ -191,10 +191,10 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 			if (getDirection() == Direction.WRAP) {
 				Message payload = message;
 				if (rootTp != null) {
-					payload = rootTp.transform(payload, null);
+					payload = rootTp.transform(payload);
 				}
 				if (outputNamespaceTp != null) {
-					payload = new Message(outputNamespaceTp.transform(payload.asSource()));
+					payload = new Message(outputNamespaceTp.transformToString(payload.asSource()));
 				}
 				ParameterValueList parameterValueList = null;
 				if (!getParameterList().isEmpty() && (soapHeaderTp != null || soapBodyTp != null)) {
@@ -203,7 +203,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 				String soapHeader = null;
 				if (soapHeaderTp != null) {
 					payload.preserve();
-					try (Message soapHeaderMsg = soapHeaderTp.transform(payload, parameterValueList == null ? null : parameterValueList.getValueMap())) {
+					try (Message soapHeaderMsg = soapHeaderTp.transform(payload, parameterValueList)) {
 						soapHeader = soapHeaderMsg.asString();
 					}
 				} else {
@@ -212,7 +212,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 					}
 				}
 				if (soapBodyTp != null) {
-					payload = soapBodyTp.transform(payload, parameterValueList == null ? null : parameterValueList.getValueMap());
+					payload = soapBodyTp.transform(payload, parameterValueList);
 				}
 
 				result = wrapMessage(payload, soapHeader, session);
@@ -233,10 +233,10 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 					result = XmlUtils.removeNamespaces(result);
 				}
 				if (removeUnusedOutputNamespacesTp != null) {
-					result = new Message(removeUnusedOutputNamespacesTp.transform(result.asSource()));
+					result = new Message(removeUnusedOutputNamespacesTp.transformToString(result.asSource()));
 				}
 				if (rootTp != null) {
-					result = new Message(rootTp.transform(result.asSource()));
+					result = new Message(rootTp.transformToString(result.asSource()));
 				}
 			}
 		} catch (Exception t) {

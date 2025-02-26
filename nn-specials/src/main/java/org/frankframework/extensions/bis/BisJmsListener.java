@@ -199,7 +199,7 @@ public class BisJmsListener extends JmsListener {
 	public Message extractMessageBody(Message message, Map<String,Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException, XmlException {
 		context.put(MESSAGETEXT_KEY, message);
 		log.debug("extract messageBody from message [{}]", message);
-		String messageBody = requestTp.transform(message.asSource());
+		String messageBody = requestTp.transformToString(message.asSource());
 		if (isLayByNamespace()) {
 			String messageBodyNamespace = XmlUtils.getRootNamespace(messageBody);
 			if (messageBodyNamespace != null) {
