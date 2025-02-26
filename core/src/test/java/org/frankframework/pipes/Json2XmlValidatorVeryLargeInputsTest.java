@@ -3,6 +3,7 @@ package org.frankframework.pipes;
 import static org.bson.assertions.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.io.InputStream;
@@ -21,6 +22,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.LargeStructuredMockData;
+import org.frankframework.testutil.TestAssertions;
 
 
 @Tag("slow")
@@ -33,7 +35,7 @@ public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlV
 		// These tests collectively take a long time. When running the build locally, it can double
 		// the time to run unit tests in the module Core.
 		// So by default, the tests only run on the CI environment, and because of the tag "slow", only when running the "slow" tests in CI.
-		//assumeTrue(TestAssertions.isTestRunningOnCI());
+		assumeTrue(TestAssertions.isTestRunningOnCI());
 	}
 
 	public static Stream<Arguments> testLargeInputArguments() {
