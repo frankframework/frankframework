@@ -186,22 +186,15 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	 */
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
-		DocumentFormat inputFormat;
-		Character firstChar;
-		try {
-			firstChar = findFirstCharacter(input);
-			inputFormat = determineDocumentFormat(input, firstChar);
-		} catch (IOException ex) {
-			throw new PipeRunException(this, "unable to determine input format from request", ex);
-		}
+		DocumentFormat inputFormat = determineDocumentFormat(input);
 		if (inputFormat == DocumentFormat.XML) {
 			return validateXmlMessage(input, session, responseMode, messageRoot);
 		} else if (inputFormat == DocumentFormat.JSON) {
 			if (!isAllowJson() && !responseMode) {
-				return getErrorResult("message is not XML, because it starts with [" + firstChar + "] and not with '<'", session, responseMode);
+				return getErrorResult("message is not XML, because it starts with [" + findFirstCharacter(input) + "] and not with '<'", session, responseMode);
 			}
 		} else if (!Message.isEmpty(input)) {
-			return getErrorResult("message is not XML or JSON, because it starts with [" + firstChar + "] and not with '<', '{' or '['", session, responseMode);
+			return getErrorResult("message is not XML or JSON, because it starts with [" + findFirstCharacter(input) + "] and not with '<', '{' or '['", session, responseMode);
 		}
 
 		return validateJsonMessage(input, session, responseMode, inputFormat);
@@ -267,10 +260,14 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		}
 	}
 
-	@Nullable
-	private static Character findFirstCharacter(Message input) throws IOException {
-		String prefix = input.peek(READ_AHEAD_LIMIT);
-		return StringUtils.isBlank(prefix) ? null : prefix.trim().charAt(0);
+	private char findFirstCharacter(Message input) throws PipeRunException {
+		String prefix;
+		try {
+			prefix = input.peek(READ_AHEAD_LIMIT);
+		} catch (IOException e) {
+			throw new PipeRunException(this, "unable to determine input format from request", e);
+		}
+		return StringUtils.isBlank(prefix) ? ' ' : prefix.trim().charAt(0);
 	}
 
 	/**
@@ -288,16 +285,16 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	 * </ul>
 	 *
 	 * @param input Message from which to read.
-	 * @param firstChar First character of the input message, or NULL.
 	 * @return DocumentFormat of the input message, if it was possible to determine, or null.
 	 */
-	private static @Nullable DocumentFormat determineDocumentFormat(Message input, Character firstChar) {
+	private @Nullable DocumentFormat determineDocumentFormat(Message input) throws PipeRunException {
 		if (Message.isNull(input)) {
 			return DocumentFormat.JSON;
 		}
-		if (input.isEmpty() ||  firstChar == null) {
+		if (input.isEmpty()) {
 			return null;
 		}
+		char firstChar = findFirstCharacter(input);
 		return switch (firstChar) {
 			case '<' -> DocumentFormat.XML;
 			case '{', '[' -> DocumentFormat.JSON;
