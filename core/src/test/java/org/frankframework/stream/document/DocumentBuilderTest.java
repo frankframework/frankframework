@@ -21,7 +21,6 @@ import org.frankframework.documentbuilder.INodeBuilder;
 import org.frankframework.documentbuilder.JsonDocumentBuilder;
 import org.frankframework.documentbuilder.ObjectBuilder;
 import org.frankframework.documentbuilder.XmlDocumentBuilder;
-import org.frankframework.documentbuilder.json.JsonTee;
 import org.frankframework.documentbuilder.json.JsonWriter;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.xml.XmlWriter;
@@ -83,25 +82,13 @@ public class DocumentBuilderTest {
 	@Test
 	public void testJsonDocumentBuilder() throws SAXException {
 		String expected = expectedJson;
-		JsonWriter writer = new JsonWriter();
+		StringWriter result = new StringWriter();
+		JsonWriter writer = new JsonWriter(result, true);
 		try (IDocumentBuilder root = new JsonDocumentBuilder(writer)) {
 			buildDocument(root);
 		}
 		//MatchUtils.assertJsonEqual("", expected, root.getRoot().toString());
-		assertEquals(expected, writer.toString());
-	}
-
-	@Test
-	public void testJsonTee() throws SAXException {
-		String expected = expectedJson;
-		JsonWriter writer1 = new JsonWriter();
-		JsonWriter writer2 = new JsonWriter();
-		JsonTee tee = new JsonTee(writer1, writer2);
-		try (IDocumentBuilder root = new JsonDocumentBuilder(tee)) {
-			buildDocument(root);
-		}
-		assertEquals(expected, writer1.toString());
-		assertEquals(expected, writer2.toString());
+		assertEquals(expected, result.toString());
 	}
 
 	@Test

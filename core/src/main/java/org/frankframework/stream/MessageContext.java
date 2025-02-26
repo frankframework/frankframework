@@ -22,6 +22,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -106,6 +107,10 @@ public class MessageContext implements Serializable {
 
 	public Serializable get(@Nonnull String key) {
 		return data.get(key);
+	}
+
+	public Map<String, Serializable> getAll() {
+		return Collections.unmodifiableMap(data);
 	}
 
 	public boolean containsKey(@Nonnull String key) {

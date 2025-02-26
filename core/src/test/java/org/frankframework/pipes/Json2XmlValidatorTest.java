@@ -8,7 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.ByteArrayInputStream;
+import java.io.Reader;
+import java.io.StringReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -157,7 +161,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		PipeRunResult prr = doPipe(pipe, input,session);
 
-		assertEquals(expected, prr.getResult().asString());
+		assertXmlEquals(expected, prr.getResult().asString());
 		assertEquals(MediaType.APPLICATION_XML, prr.getResult().getContext().get(MessageContext.METADATA_MIMETYPE));
 	}
 
@@ -180,6 +184,48 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		assertEquals(expected, prr.getResult().asString());
 	}
 
+	@Test
+	public void testWithBinaryInputStream() throws Exception {
+		pipe.setName("BinaryInputStream");
+		pipe.setOutputFormat(DocumentFormat.JSON);
+		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
+		pipe.setTargetNamespace("http://nn.nl/XSD/CustomerAdministration/Party/1/GetPartiesOnAgreement/7");
+		pipe.setAcceptNamespacelessXml(true);
+		pipe.setThrowException(true);
+		pipe.configure();
+		pipe.start();
+
+		ByteArrayInputStream bis = new ByteArrayInputStream(TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml")
+				.getBytes(StandardCharsets.UTF_8));
+		Message input = Message.asMessage(bis);
+		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+
+		assertEquals(expected, prr.getResult().asString());
+		assertEquals(MediaType.APPLICATION_JSON, prr.getResult().getContext().get(MessageContext.METADATA_MIMETYPE));
+	}
+
+	@Test
+	public void testWithCharReader() throws Exception {
+		pipe.setName("CharReader");
+		pipe.setOutputFormat(DocumentFormat.JSON);
+		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
+		pipe.setTargetNamespace("http://nn.nl/XSD/CustomerAdministration/Party/1/GetPartiesOnAgreement/7");
+		pipe.setAcceptNamespacelessXml(true);
+		pipe.setThrowException(true);
+		pipe.configure();
+		pipe.start();
+
+		Reader r = new StringReader(TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml"));
+		Message input = Message.asMessage(r);
+		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+
+		assertEquals(expected, prr.getResult().asString());
+		assertEquals(MediaType.APPLICATION_JSON, prr.getResult().getContext().get(MessageContext.METADATA_MIMETYPE));
+	}
 
 	public String setupAcceptHeaderTest(String acceptHeaderValue) throws Exception {
 		pipe.setName("Response_To_Json_from_acceptHeader");
@@ -869,6 +915,86 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		// Assert
 		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/ParameterSubstitution/expected_output.json");
 		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
+	}
+
+	@Test
+	public void testJsonArrayToJson() throws Exception {
+		// Arrange
+		pipe.setName("testJsonIntoDeepSearch");
+		pipe.setSchema("/Validation/Json2Xml/ParameterSubstitution/Main.xsd");
+		pipe.setThrowException(true);
+		pipe.setOutputFormat(DocumentFormat.JSON);
+		pipe.setRoot("GetDocumentAttributes_Error");
+		pipe.setDeepSearch(true);
+
+		pipe.configure();
+		pipe.start();
+
+		Message input = Message.asMessage("""
+				[
+				{
+					"type": "/errors/",
+					"title": "More than one document found",
+					"status": "DATA_ERROR",
+					"detail": "The Devil's In The Details",
+					"instance": "/archiving/documents"
+				},
+				{
+					"type": "/errors/",
+					"title": "More than one document found",
+					"status": "DATA_ERROR",
+					"detail": "The Devil's In The Details",
+					"instance": "/archiving/documents"
+				}
+				]
+				""");
+
+		// Act
+		PipeRunResult result = pipe.doPipe(input, session);
+
+		// Assert
+		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/ParameterSubstitution/expected_output_multiple_occurrences.json");
+		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
+	}
+
+	@Test
+	public void testJsonArrayToXml() throws Exception {
+		// Arrange
+		pipe.setName("testJsonIntoDeepSearch");
+		pipe.setSchema("/Validation/Json2Xml/ParameterSubstitution/Main.xsd");
+		pipe.setThrowException(true);
+		pipe.setOutputFormat(DocumentFormat.XML);
+		pipe.setRoot("GetDocumentAttributes_Error");
+		pipe.setDeepSearch(true);
+
+		pipe.configure();
+		pipe.start();
+
+		Message input = Message.asMessage("""
+				[
+				{
+					"type": "/errors/",
+					"title": "More than one document found",
+					"status": "DATA_ERROR",
+					"detail": "The Devil's In The Details",
+					"instance": "/archiving/documents"
+				},
+				{
+					"type": "/errors/",
+					"title": "More than one document found",
+					"status": "DATA_ERROR",
+					"detail": "The Devil's In The Details",
+					"instance": "/archiving/documents"
+				}
+				]
+				""");
+
+		// Act
+		PipeRunResult result = pipe.doPipe(input, session);
+
+		// Assert
+		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/ParameterSubstitution/expected_output_multiple_occurrences.xml");
+		assertXmlEquals(expectedResult, result.getResult().asString());
 	}
 
 	@ParameterizedTest(name = "With DeepSearch={0} Case={1}")

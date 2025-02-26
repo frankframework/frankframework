@@ -16,10 +16,10 @@
 package org.frankframework.documentbuilder.json;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Objects;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.xml.sax.SAXException;
@@ -29,23 +29,18 @@ import org.frankframework.xml.SaxException;
 
 public class JsonWriter implements JsonEventHandler {
 
-	private Writer writer;
+	private final Writer writer;
 	private boolean closeWriterOnEndDocument = false;
 
-	private Deque<NodeState> stateStack = new ArrayDeque<>();
+	private final Deque<NodeState> stateStack = new ArrayDeque<>();
 
 	private static class NodeState {
 		private boolean firstElemSeen;
-		private boolean inArray;
+		private final boolean inArray;
 
 		private NodeState(boolean inArray) {
-			this.inArray=inArray;
+			this.inArray = inArray;
 		}
-	}
-
-	/** When the implicit {@link StringWriter} is used, it's automatically closed on endDocument. */
-	public JsonWriter() {
-		this(new StringWriter(), true);
 	}
 
 	/** When you supply a {@link Writer} you will have to close it. */
@@ -54,7 +49,7 @@ public class JsonWriter implements JsonEventHandler {
 	}
 
 	public JsonWriter(Writer writer, boolean closeWriterOnEndDocument) {
-		this.writer=writer;
+		this.writer = writer;
 		stateStack.push(new NodeState(false));
 		this.closeWriterOnEndDocument = closeWriterOnEndDocument;
 	}
@@ -78,7 +73,7 @@ public class JsonWriter implements JsonEventHandler {
 	}
 
 	private void writeSeparatingComma(boolean beforeKey) throws IOException {
-		NodeState state = stateStack.peek();
+		NodeState state = Objects.requireNonNull(stateStack.peek(), "StateStack should not be empty when this method is called");
 		if (beforeKey || state.inArray) {
 			if (state.firstElemSeen) {
 				writer.write(",");
@@ -146,7 +141,7 @@ public class JsonWriter implements JsonEventHandler {
 			writeSeparatingComma(false);
 			if (value instanceof String string) {
 				writer.write("\""+StringEscapeUtils.escapeJson(string)+"\"");
-			} else if (value==null) {
+			} else if (value == null) {
 				writer.write("null");
 			} else {
 				writer.write(StringEscapeUtils.escapeJson(value.toString()));
@@ -156,16 +151,11 @@ public class JsonWriter implements JsonEventHandler {
 		}
 	}
 
-
 	@Override
 	public void number(String value) throws SAXException {
 		try {
 			writeSeparatingComma(false);
-			if (value==null) {
-				writer.write("null");
-			} else {
-				writer.write(value);
-			}
+			writer.write(Objects.requireNonNullElse(value, "null"));
 		} catch (IOException e) {
 			throw new SaxException(e);
 		}
@@ -175,5 +165,4 @@ public class JsonWriter implements JsonEventHandler {
 	public String toString() {
 		return writer.toString();
 	}
-
 }
