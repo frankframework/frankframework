@@ -323,7 +323,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 			if (transformerPool != null) {
 				try {
-					resultString = transformerPool.transform(resultString);
+					resultString = transformerPool.transformToString(resultString);
 				} catch (SAXException e) {
 					throw new PipeRunException(this, "got error converting string [" + resultString + "] to source", e);
 				} catch (IOException | TransformerException e) {

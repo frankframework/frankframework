@@ -5,13 +5,12 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.ByteArrayOutputStream;
 
-import org.frankframework.testutil.TestAssertions;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.Resource;
 import org.frankframework.testutil.MatchUtils;
+import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool;
 
@@ -54,7 +53,7 @@ public class FlowDiagramTest {
 		TransformerPool transformerPool = TransformerPool.getInstance(resource, 2);
 		String adapter = TestFileUtils.getTestFile("/FlowDiagram/pipelineWithoutFirstPipe.xml");
 		String dot = TestFileUtils.getTestFile("/FlowDiagram/dot.txt");
-		String result = transformerPool.transform(adapter, null);
+		String result = transformerPool.transformToString(adapter, null);
 
 		assertEquals(dot, result);
 	}
@@ -65,7 +64,7 @@ public class FlowDiagramTest {
 		TransformerPool transformerPool = TransformerPool.getInstance(resource, 2);
 		String adapter = TestFileUtils.getTestFile("/FlowDiagram/pipelineExitInTheMiddle.xml");
 		String dot = TestFileUtils.getTestFile("/FlowDiagram/dot.txt");
-		String result = transformerPool.transform(adapter, null);
+		String result = transformerPool.transformToString(adapter, null);
 
 		assertEquals(dot, result);
 	}

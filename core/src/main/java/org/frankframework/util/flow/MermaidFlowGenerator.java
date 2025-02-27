@@ -218,9 +218,9 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 			Map<String, Object> xsltParams = new HashMap<>(1);//frankElements
 			xsltParams.put("frankElements", frankElements);
 			if (xml.startsWith("<adapter")) {
-				return transformerPoolAdapter.transform(xml, xsltParams);
+				return transformerPoolAdapter.transformToString(xml, xsltParams);
 			} else {
-				return transformerPoolConfig.transform(xml, xsltParams);
+				return transformerPoolConfig.transformToString(xml, xsltParams);
 			}
 		} catch (IOException | TransformerException | SAXException e) {
 			throw new FlowGenerationException("error transforming [xml] to [mermaid]", e);

@@ -154,7 +154,7 @@ public class XmlSwitch extends AbstractPipe {
 				}
 
 				message.preserve();
-				return transformerPool.transform(message, parametervalues, isNamespaceAware());
+				return transformerPool.transformToString(message, parametervalues, isNamespaceAware());
 			} catch (Throwable e) {
 				throw new PipeRunException(this, "got exception on transformation", e);
 			}

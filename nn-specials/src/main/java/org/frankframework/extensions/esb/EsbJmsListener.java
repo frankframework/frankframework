@@ -202,7 +202,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		if(message != null && !message.isEmpty() && (XmlUtils.isWellFormed(message))) {
 			try {
 				TransformerPool test = LOG_KEY_TRANSFORMER_POOLS.get(xPathExpression);
-				found = test.transform(message, null);
+				found = test.transformToString(message, null);
 
 				//xPath not found and message length is 0 but not null nor ""
 				if(found.isEmpty()) found = "";

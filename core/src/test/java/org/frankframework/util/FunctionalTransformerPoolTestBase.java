@@ -16,11 +16,11 @@ public class FunctionalTransformerPoolTestBase {
 
 	public void testTransformerPool(TransformerPool tp, String input, String expected, String message) throws TransformerException, IOException, SAXException {
 		// Test with String input/output
-		String actual=tp.transform(input, null, true);
+		String actual=tp.transformToString(input, null, true);
 		assertEqualsIgnoreCRLF(expected, actual, message);
 
 		// Test with Message input/output
-		Message messageOut = tp.transform(new Message(input), null);
+		Message messageOut = tp.transform(new Message(input));
 		String messageOutString = messageOut.asString();
 		if ("XML".equals(tp.getOutputMethod())) {
 			// If XML output then do XML compare since the formatting of the XML can be slightly different from the other transformer.
@@ -31,7 +31,7 @@ public class FunctionalTransformerPoolTestBase {
 	}
 
 	public void testTransformerPool(TransformerPool tp, Source input, String expected, String message) throws TransformerException, IOException {
-		String actual=tp.transform(input);
+		String actual=tp.transformToString(input);
 		assertEqualsIgnoreCRLF(expected,actual,message);
 	}
 

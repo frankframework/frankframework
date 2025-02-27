@@ -377,7 +377,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 					try {
 						Resource xslt = Resource.getResource(ConfigurationUtils.STUB4TESTTOOL_XSLT_DEFAULT);
 						TransformerPool tp = TransformerPool.getInstance(xslt);
-						stubbedPipe = tp.transform(checkpoint.getMessage());
+						stubbedPipe = tp.transformToString(checkpoint.getMessage());
 						// Extract sender testtool names from the pipe configuration 
 						String regex = TESTTOOL_PREFIX + "([^\"]+)";
 

@@ -72,7 +72,7 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 			try{
 				Resource xsltSource = Resource.getResource(this, getStyleSheetName());
 				TransformerPool transformerPool = TransformerPool.getInstance(xsltSource, 0);
-				messageToReturn = transformerPool.transform(messageToReturn, null);
+				messageToReturn = transformerPool.transform(messageToReturn);
 			} catch (Exception e) {
 				log.error("got error transforming resource [{}] from [{}]", messageToReturn, getStyleSheetName(), e);
 			}

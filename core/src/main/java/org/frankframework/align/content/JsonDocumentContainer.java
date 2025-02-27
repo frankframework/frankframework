@@ -30,6 +30,7 @@ import org.apache.xerces.xs.XSTypeDefinition;
 import org.springframework.http.MediaType;
 
 import lombok.Getter;
+import lombok.Lombok;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.stream.Message;
@@ -197,7 +198,7 @@ public class JsonDocumentContainer {
 		try {
 			toWriter(writer, indent);
 		} catch (IOException e) {
-			throw new RuntimeException("Unexpected IOException writing to string", e);
+			throw Lombok.sneakyThrow(e);
 		}
 		return writer.toString();
 	}
