@@ -3,7 +3,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import type { ChartData, ChartDataset, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { Subscription } from 'rxjs';
-import { AppService } from 'src/app/app.service';
+import { AppConstants, AppService } from 'src/app/app.service';
 import { DebugService } from 'src/app/services/debug.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { AdapterstatisticsService, Statistics } from './adapterstatistics.service';
@@ -38,8 +38,7 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
-      yAxis: {
-        display: true,
+      y: {
         title: {
           display: true,
           text: 'Messages Per Hour',
@@ -69,6 +68,17 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     sizePerPipe: true,
   };
 
+  private _subscriptions = new Subscription();
+  private dataset: Partial<ChartDataset<'line', number[]>> = {
+    fill: false,
+    backgroundColor: '#2f4050',
+    pointBackgroundColor: '#2f4050',
+    borderColor: '#2f4050',
+    pointBorderColor: '#2f4050',
+    // hoverBackgroundColor: "#2f4050",
+    hoverBorderColor: '#2f4050',
+  };
+
   private defaults = {
     name: 'Name',
     count: 'Count',
@@ -83,30 +93,14 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
   protected statisticsTimeBoundaries: Record<string, string> = { ...this.defaults };
   protected statisticsSizeBoundaries: Record<string, string> = { ...this.defaults };
 
-  private statisticsNames = [];
-  private _subscriptions = new Subscription();
-  private dataset: Partial<ChartDataset<'line', number[]>> = {
-    fill: false,
-    backgroundColor: '#2f4050',
-    pointBackgroundColor: '#2f4050',
-    borderColor: '#2f4050',
-    pointBorderColor: '#2f4050',
-    // hoverBackgroundColor: "#2f4050",
-    hoverBorderColor: '#2f4050',
-  };
-
   private appService: AppService = inject(AppService);
   private route: ActivatedRoute = inject(ActivatedRoute);
   private statisticsService: AdapterstatisticsService = inject(AdapterstatisticsService);
   private SweetAlert: SweetalertService = inject(SweetalertService);
   private Debug: DebugService = inject(DebugService);
-  private appConstants = this.appService.APP_CONSTANTS;
+  private appConstants: AppConstants = this.appService.APP_CONSTANTS;
 
   ngOnInit(): void {
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
-      this.appConstants = this.appService.APP_CONSTANTS;
-    });
-    this._subscriptions.add(appConstantsSubscription);
     const routeParameters = this.route.snapshot.paramMap;
     this.adapterName = routeParameters.get('name');
     this.configuration = routeParameters.get('configuration');
@@ -116,16 +110,19 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
+      this.appConstants = this.appService.APP_CONSTANTS;
+      this.populateBoundaries();
+    });
+    this._subscriptions.add(appConstantsSubscription);
+
     if (this.appConstants['Statistics.boundaries']) {
       this.populateBoundaries(); //AppConstants already loaded
-    } else {
-      const appConstantsSubscription = this.appService.appConstants$.subscribe(() => this.populateBoundaries()); //Wait for appConstants trigger to load
-      this._subscriptions.add(appConstantsSubscription);
     }
 
     window.setTimeout(() => {
       this.refresh();
-    }, 1000);
+    });
   }
 
   ngOnDestroy(): void {
@@ -138,7 +135,9 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
       this.stats = data;
       const labels: string[] = [];
       const chartData: number[] = [];
-      for (const hour of data['hourly']) {
+      const currentHour = new Date().getHours();
+      const rotatedData = this.rotateHourlyData(data['hourly'], currentHour + 1);
+      for (const hour of rotatedData) {
         labels.push(hour.time);
         chartData.push(hour.count);
       }
@@ -154,7 +153,7 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
 
       window.setTimeout(() => {
         this.refreshing = false;
-      }, 500);
+      });
     });
   }
 
@@ -199,5 +198,10 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
       ...this.defaults,
       ...statisticsSizeBoundariesAdditive,
     };
+  }
+
+  private rotateHourlyData<T>(items: T[], amount: number): T[] {
+    amount = amount % items.length;
+    return [...items.slice(amount, items.length), ...items.slice(0, amount)];
   }
 }
