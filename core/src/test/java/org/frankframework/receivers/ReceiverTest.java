@@ -86,9 +86,11 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.event.SimpleApplicationEventMulticaster;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionManager;
+import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import lombok.Lombok;
@@ -276,12 +278,17 @@ public class ReceiverTest {
 
 	public static Stream<Arguments> transactionManagers() {
 		return Stream.of(
-			Arguments.of(supplier(ReceiverTest::buildNarayanaTransactionManagerConfiguration))
+			Arguments.of(supplier(ReceiverTest::buildNarayanaTransactionManagerConfiguration)),
+			Arguments.of(supplier(ReceiverTest::buildDataSourceTransactionManagerConfiguration))
 		);
 	}
 
 	private static TestConfiguration buildNarayanaTransactionManagerConfiguration() {
 		return buildConfiguration(TransactionManagerType.NARAYANA);
+	}
+
+	private static TestConfiguration buildDataSourceTransactionManagerConfiguration() {
+		return buildConfiguration(TransactionManagerType.DATASOURCE);
 	}
 
 	private static TestConfiguration buildConfiguration(TransactionManagerType txManagerType) {
@@ -317,8 +324,8 @@ public class ReceiverTest {
 		Receiver<jakarta.jms.Message> receiver = setupReceiver(listener);
 		receiver.setErrorStorage(errorStorage);
 
-		final JtaTransactionManager txManager = configuration.getBean(JtaTransactionManager.class);
-		txManager.setDefaultTimeout(1);
+		final PlatformTransactionManager txManager = configuration.getBean("txManagerReal", PlatformTransactionManager.class);
+		((AbstractPlatformTransactionManager)txManager).setDefaultTimeout(1);
 		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.REQUIRED);
 
@@ -401,7 +408,9 @@ public class ReceiverTest {
 		mockListenerThread.start();
 		semaphore.acquire(); // Wait until thread is finished.
 
-		((DisposableBean) txManager).destroy();
+		if (txManager instanceof DisposableBean disposableBean) {
+			disposableBean.destroy();
+		}
 
 		// Assert
 		assertAll(
@@ -445,8 +454,8 @@ public class ReceiverTest {
 		receiver.setErrorStorage(errorStorage);
 		receiver.setMessageLog(messageLog);
 
-		final JtaTransactionManager txManager = configuration.getBean(JtaTransactionManager.class);
-		txManager.setDefaultTimeout(10);
+		final PlatformTransactionManager txManager = configuration.getBean("txManagerReal", PlatformTransactionManager.class);
+		((AbstractPlatformTransactionManager)txManager).setDefaultTimeout(10);
 //		txManager.setDefaultTimeout(1000000); // Long timeout for debug, do not commit this timeout!! Should be 10
 
 		receiver.setTxManager(txManager);
@@ -541,7 +550,9 @@ public class ReceiverTest {
 		mockListenerThread.start();
 		semaphore.acquire(); // Wait until thread is finished.
 
-		((DisposableBean) txManager).destroy();
+		if (txManager instanceof DisposableBean disposableBean) {
+			disposableBean.destroy();
+		}
 
 		// Assert
 		int expectedNrTimesMessageActuallyOffered = receiver.getMaxRetries() + 2;
@@ -562,7 +573,7 @@ public class ReceiverTest {
 	@Test
 	void testJmsMessageWithExceptionUntransactedAckModeClientShouldAckMsgWhenRejected() throws Exception {
 		// Arrange
-		configuration = buildConfiguration(null);
+		configuration = buildDataSourceTransactionManagerConfiguration();
 		PushingJmsListener listener = spy(configuration.createBean(PushingJmsListener.class));
 		listener.setTransacted(false);
 		//noinspection removal
@@ -623,7 +634,7 @@ public class ReceiverTest {
 	@Test
 	void testStopReceiverWithFaultyMonitor() throws Exception {
 		// Arrange
-		configuration = buildConfiguration(null);
+		configuration = buildDataSourceTransactionManagerConfiguration();
 		IListener<Serializable> listener = setupMessageStoreListener();
 		Receiver<Serializable> receiver = setupReceiver(listener);
 
@@ -683,7 +694,7 @@ public class ReceiverTest {
 	@Test
 	void testGetDeliveryCountWithJmsListener() throws Exception {
 		// Arrange
-		configuration = buildConfiguration(null);
+		configuration = buildDataSourceTransactionManagerConfiguration();
 		PushingJmsListener listener = spy(configuration.createBean(PushingJmsListener.class));
 		doReturn(mock(Destination.class)).when(listener).getDestination();
 		doNothing().when(listener).start();
@@ -992,13 +1003,13 @@ public class ReceiverTest {
 
 	@Test
 	public void testPullingReceiverStartBasic() throws Exception {
-		configuration = buildConfiguration(null);
+		configuration = buildDataSourceTransactionManagerConfiguration();
 		testStartNoTimeout(setupSlowStartPullingListener(0));
 	}
 
 	@Test
 	public void testPushingReceiverStartBasic() throws Exception {
-		configuration = buildConfiguration(null);
+		configuration = buildDataSourceTransactionManagerConfiguration();
 		testStartNoTimeout(setupSlowStartPushingListener(0));
 	}
 
@@ -1030,13 +1041,13 @@ public class ReceiverTest {
 
 	@Test
 	public void testPullingReceiverStartWithTimeout() throws Exception {
-		configuration = buildConfiguration(null);
+		configuration = buildDataSourceTransactionManagerConfiguration();
 		testStartTimeout(setupSlowStartPullingListener(10_000));
 	}
 
 	@Test
 	public void testPushingReceiverStartWithTimeout() throws Exception {
-		configuration = buildConfiguration(null);
+		configuration = buildDataSourceTransactionManagerConfiguration();
 		testStartTimeout(setupSlowStartPushingListener(10_000));
 	}
 
@@ -1089,7 +1100,7 @@ public class ReceiverTest {
 		assumeFalse(TestAssertions.isTestRunningWithSurefire() || TestAssertions.isTestRunningOnCI(), "flaky test, should not fail ci");
 
 		// Arrange
-		configuration = buildConfiguration(null);
+		configuration = buildDataSourceTransactionManagerConfiguration();
 		SlowListenerBase listener = setupSlowStartPushingListener(1_000);
 		Receiver<jakarta.jms.Message> receiver = setupReceiver(listener);
 		Adapter adapter = setupAdapter(receiver);
@@ -1325,7 +1336,7 @@ public class ReceiverTest {
 
 	@Test
 	public void startReceiver() throws Exception {
-		configuration = buildConfiguration(null);
+		configuration = buildDataSourceTransactionManagerConfiguration();
 		Receiver<jakarta.jms.Message> receiver = setupReceiver(setupSlowStartPullingListener(10_000));
 		receiver.setStartTimeout(1);
 		Adapter adapter = setupAdapter(receiver);
@@ -1426,7 +1437,7 @@ public class ReceiverTest {
 	})
 	public void testMaxBackoffDelayAdjustment(Integer maxBackoffDelay, int expectedBackoffDelay, boolean expectConfigWarning) {
 		// Arrange
-		configuration = buildConfiguration(null);
+		configuration = buildDataSourceTransactionManagerConfiguration();
 		Adapter adapter = configuration.createBean(Adapter.class);
 		adapter.setName("adapter");
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
