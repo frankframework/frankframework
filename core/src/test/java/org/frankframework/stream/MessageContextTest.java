@@ -1,7 +1,9 @@
 package org.frankframework.stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.util.MimeType;
@@ -88,5 +90,19 @@ public class MessageContextTest {
 		assertEquals("text/xml", mimetype.getType() + "/" + mimetype.getSubtype());
 		assertNull(mimetype.getParameter("name"));
 		assertNull(charset);
+	}
+
+	@Test
+	public void testPutNullRemovesKey() {
+		MessageContext context = new MessageContext();
+
+		context.put("a", "value");
+
+		assertTrue(context.containsKey("a"), "Key 'a' should be in MessageContext but not found");
+		assertEquals("value", context.get("a"));
+
+		context.put("a", null);
+
+		assertFalse(context.containsKey("a"), "Key 'a' should have been removed from MessageContext but still found");
 	}
 }

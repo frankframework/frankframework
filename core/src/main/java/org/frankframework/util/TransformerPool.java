@@ -28,6 +28,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.URIResolver;
+import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
@@ -56,12 +57,14 @@ import org.frankframework.core.Resource;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.threading.ThreadConnector;
 import org.frankframework.xml.ClassLoaderURIResolver;
 import org.frankframework.xml.NonResolvingURIResolver;
 import org.frankframework.xml.ThreadConnectingFilter;
 import org.frankframework.xml.TransformerFilter;
+import org.frankframework.xml.XmlWriter;
 
 /**
  * Pool of transformers. As of IBIS 4.2.e the Templates object is used to
@@ -398,7 +401,7 @@ public class TransformerPool {
 		return t;
 	}
 
-	//Unsure what is happening here but this seems very inefficient!
+	// TODO: Unsure what is happening here but this seems very inefficient!
 	public String transform(Message m, Map<String,Object> parameters, boolean namespaceAware) throws TransformerException, IOException, SAXException {
 		if (namespaceAware) {
 			return transform(XmlUtils.inputSourceToSAXSource(m.asInputSource(), namespaceAware, null), parameters);
@@ -423,23 +426,33 @@ public class TransformerPool {
 	}
 
 	public String transform(Source s) throws TransformerException, IOException {
-		return transform(s,(Map<String,Object>)null);
+		return transform(s, null);
 	}
 
+	// TODO: This method should probably be made private
 	public String transform(Source s, Map<String,Object> parameters) throws TransformerException, IOException {
 		return transform(s, null, parameters);
 	}
 
-	// ideally the return type should be Message
 	public String transform(@Nonnull Message input) throws TransformerException, IOException, SAXException {
-		return transform(input.asSource(), null, (Map<String,Object>) null);
+		return transform(input.asSource(), null, null);
 	}
 
 	/**
 	 * Transforms Frank messages.
 	 */
 	public Message transform(@Nonnull Message m, @Nullable ParameterValueList pvl) throws TransformerException, IOException, SAXException {
-		return new Message(transform(m.asSource(), null, pvl==null? null : pvl.getValueMap()), createMessageContext());
+		MessageBuilder messageBuilder = new MessageBuilder();
+		SAXResult saxResult = new SAXResult();
+		XmlWriter xmlWriter = messageBuilder.asXmlWriter();
+		xmlWriter.setIncludeXmlDeclaration(getOmitXmlDeclaration() != Boolean.TRUE);
+		saxResult.setHandler(xmlWriter);
+
+		transform(m.asSource(), saxResult, pvl==null ? null : pvl.getValueMap());
+
+		Message result = messageBuilder.build();
+		result.getContext().putAll(createMessageContext().getAll());
+		return result;
 	}
 
 	private MessageContext createMessageContext() {
@@ -471,7 +484,7 @@ public class TransformerPool {
 	}
 
 	/*
-	 * Should ideally only used internally. Protected so it can be used in tests.
+	 * Should ideally only be used internally. Protected so it can be used in tests.
 	 * When method parameter 'Result' is used, nothing will be returned. Should not be a public method!
 	 */
 	protected String transform(Source s, Result r, Map<String,Object> parameters) throws TransformerException, IOException {
