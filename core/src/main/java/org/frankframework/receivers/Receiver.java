@@ -1420,7 +1420,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				@Override
 				public void afterCompletion(int status) {
 					if (status != TransactionSynchronization.STATUS_COMMITTED) {
-						log.debug("{} after rollback, messageId [{}]", Receiver.this::getLogPrefix, messageWrapper::getId);
+						log.info("{} after rollback, messageId [{}]", Receiver.this::getLogPrefix, messageWrapper::getId);
 						ProcessStatusCacheItem cachedProcessStatus = getCachedProcessStatus(messageWrapper);
 						if (cachedProcessStatus.exitState == ExitState.SUCCESS) {
 							// We thought the message was a success but now it turns out to be an error after all
