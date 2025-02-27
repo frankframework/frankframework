@@ -1260,27 +1260,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			// Therefore, we use here PROPAGATION_SUPPORTS
 			IbisTransaction itx = new IbisTransaction(txManager, TXSUPPORTED, "receiver [" + getName() + "]");
 
-			if (TransactionSynchronizationManager.isSynchronizationActive()) {
-				TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-					@Override
-					public void afterCompletion(int status) {
-						if (status != TransactionSynchronization.STATUS_COMMITTED) {
-							log.debug("{} after rollback, messageId [{}]", logPrefix, messageId);
-							ProcessStatusCacheItem cachedProcessStatus = getCachedProcessStatus(messageWrapper);
-							if (cachedProcessStatus.exitState == ExitState.SUCCESS) {
-								// We thought the message was a success but now it turns out to be an error after all
-								cachedProcessStatus.exitState = ExitState.ERROR;
-								String comment = cachedProcessStatus.comments;
-								cachedProcessStatus.comments = "Error in transaction commit; rollback after successful processing" + (comment == null ? "" : "; " + comment);
-
-								error("Message appeared to have been processed successfully but transaction rolled back unexpectedly", null);
-								getAdapter().incNumOfMessagesInError();
-								getAdapter().logToMessageLogWithMessageContentsOrSize(Level.WARN, "Message appeared to have been processed successfully but transaction rolled back unexpectedly", "error", messageWrapper.getMessage());
-							}
-						}
-					}
-				});
-			}
+			registerTransactionFailureHandler(messageWrapper);
 
 			// update processing statistics
 			// count in processing statistics includes messages that are rolled back to input
@@ -1425,6 +1405,36 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			if (log.isDebugEnabled()) log.debug("{} messageId [{}] correlationId [{}] returning result [{}]", logPrefix, messageId, businessCorrelationId, result);
 
 			return result;
+		}
+	}
+
+	/**
+	 * Last-ditch option to mark the message processing as failure, in case processing fails only at the commit and
+	 * the commit is from a JMS transaction initiated by JMS client / Application Server.
+	 *
+	 * @param messageWrapper Message for which to register the failure.
+	 */
+	private void registerTransactionFailureHandler(MessageWrapper<M> messageWrapper) {
+		if (TransactionSynchronizationManager.isSynchronizationActive()) {
+			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+				@Override
+				public void afterCompletion(int status) {
+					if (status != TransactionSynchronization.STATUS_COMMITTED) {
+						log.debug("{} after rollback, messageId [{}]", Receiver.this::getLogPrefix, messageWrapper::getId);
+						ProcessStatusCacheItem cachedProcessStatus = getCachedProcessStatus(messageWrapper);
+						if (cachedProcessStatus.exitState == ExitState.SUCCESS) {
+							// We thought the message was a success but now it turns out to be an error after all
+							cachedProcessStatus.exitState = ExitState.ERROR;
+							String comment = cachedProcessStatus.comments;
+							cachedProcessStatus.comments = "Error in transaction commit; rollback after successful processing" + (comment == null ? "" : "; " + comment);
+
+							error("Message appeared to have been processed successfully but transaction rolled back unexpectedly", null);
+							getAdapter().incNumOfMessagesInError();
+							getAdapter().logToMessageLogWithMessageContentsOrSize(Level.WARN, "Message appeared to have been processed successfully but transaction rolled back unexpectedly", "error", messageWrapper.getMessage());
+						}
+					}
+				}
+			});
 		}
 	}
 
