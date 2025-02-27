@@ -60,6 +60,7 @@ import org.frankframework.management.bus.message.StringMessage;
 public class ConfigManagement extends BusEndpointBase {
 
 	private static final String HEADER_CONFIGURATION_VERSION_KEY = "version";
+	private static final String ROOT_ELEMENT_NAME = "configurations";
 
 	/**
 	 * The header 'loaded' is used to differentiate between the loaded and original (raw) XML.
@@ -80,6 +81,9 @@ public class ConfigManagement extends BusEndpointBase {
 				result.append(loadedConfiguration ? configuration.getLoadedConfiguration() : configuration.getOriginalConfiguration());
 			}
 		}
+
+		result.insert(0, "<" + ROOT_ELEMENT_NAME + ">");
+		result.append("</" + ROOT_ELEMENT_NAME + ">");
 
 		return new StringMessage(result.toString(), MediaType.APPLICATION_XML);
 	}

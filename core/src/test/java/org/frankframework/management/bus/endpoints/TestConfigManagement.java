@@ -16,8 +16,8 @@ import org.frankframework.testutil.TestConfiguration;
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 @WithMockUser(roles = { "IbisTester" })
 public class TestConfigManagement extends BusTestBase {
-	private static final String LOADED_RESULT = "<loaded authAlias=\"test\" />";
-	private static final String ORIGINAL_RESULT = "<original authAlias=\"test\" />";
+	private static final String LOADED_RESULT = "<configurations><loaded authAlias=\"test\" /></configurations>";
+	private static final String ORIGINAL_RESULT = "<configurations><original authAlias=\"test\" /></configurations>";
 
 	@Test
 	public void getOriginalConfigurationByName() {
