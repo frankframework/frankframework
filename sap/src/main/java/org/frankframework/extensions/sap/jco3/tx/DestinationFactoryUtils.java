@@ -15,14 +15,15 @@
 */
 package org.frankframework.extensions.sap.jco3.tx;
 
-import org.frankframework.extensions.sap.SapException;
-import org.frankframework.extensions.sap.jco3.SapSystemImpl;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
 import com.sap.conn.jco.JCoDestination;
 import com.sap.conn.jco.JCoException;
+
+import org.frankframework.extensions.sap.SapException;
+import org.frankframework.extensions.sap.jco3.SapSystemImpl;
 
 /**
  * Helper class for managing a JCo destinations, in particular
@@ -271,7 +272,7 @@ public abstract class DestinationFactoryUtils {
 	 * (e.g. when participating in a JtaTransactionManager transaction).
 	 * @see org.springframework.transaction.jta.JtaTransactionManager
 	 */
-	private static class JcoResourceSynchronization extends TransactionSynchronizationAdapter {
+	private static class JcoResourceSynchronization implements TransactionSynchronization {
 
 		private final Object resourceKey;
 
