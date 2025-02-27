@@ -639,7 +639,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			ListenerException e = new ListenerException(t);
 
 			processingSuccess = false;
-			incNumOfMessagesInError(); // TODO: Probably should do this later b/c a commit can fail and then it's an error too
+			incNumOfMessagesInError();
 			warn("error processing message with messageId [" + messageId + "]: " + e.getMessage());
 			result = new PipeLineResult();
 			result.setState(ExitState.ERROR);
