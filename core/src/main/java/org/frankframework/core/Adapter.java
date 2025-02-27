@@ -382,12 +382,9 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * Decrease the number of messages in process
 	 */
 	private void decNumOfMessagesInProcess(long duration, boolean processingSuccess) {
-		log.trace("Decrease nr messages in processing, using synchronized statisticsLock [{}]", statisticsLock);
 		synchronized (statisticsLock) {
 			numOfMessagesInProcess--;
-			log.trace("Increase nr messages processed, synchronize (lock) on numOfMessagesInProcess[{}]", numOfMessagesProcessed);
 			numOfMessagesProcessed.increment();
-			log.trace("Nr messages processed increased, lock released on numOfMessagesProcessed[{}]", numOfMessagesProcessed);
 			statsMessageProcessingDuration.record(duration);
 			if (processingSuccess) {
 				lastMessageProcessingState = PROCESS_STATE_OK;
@@ -396,41 +393,29 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			}
 			statisticsLock.notifyAll();
 		}
-		log.trace("Messages in processing decreased, statisticsLock [{}] has been released", statisticsLock);
 	}
 	/**
 	 * The number of messages for which processing ended unsuccessfully.
 	 */
-	private void incNumOfMessagesInError() {
-		log.trace("Increase nr messages in error, using synchronized statisticsLock [{}]", statisticsLock);
+	public void incNumOfMessagesInError() {
 		synchronized (statisticsLock) {
-			log.trace("(nested) Increase nr messages in error, synchronize (lock) on numOfMessagesInError[{}]", numOfMessagesInError);
 			numOfMessagesInError.increment();
-			log.trace("(nested) Messages in error increased, lock released on numOfMessagesInError[{}]", numOfMessagesInError);
 		}
-		log.trace("Messages in error increased, statisticsLock [{}] has been released", statisticsLock);
 	}
 
 	public void setLastExitState(String pipeName, long lastExitStateDate, String lastExitState) {
-		log.trace("Set last exit state, synchronize (lock) on sendersLastExitState[{}]", sendersLastExitState);
 		synchronized (sendersLastExitState) {
 			sendersLastExitState.put(pipeName, new SenderLastExitState(lastExitStateDate, lastExitState));
 		}
-		log.trace("Last exit state set, lock released on sendersLastExitState[{}]", sendersLastExitState);
 	}
 
 	public long getLastExitIsTimeoutDate(String pipeName) {
-		log.trace("Get last exit state, synchronize (lock) on sendersLastExitState[{}]", sendersLastExitState);
-		try {
-			synchronized (sendersLastExitState) {
-				SenderLastExitState sles = sendersLastExitState.get(pipeName);
-				if (sles != null && "timeout".equals(sles.lastExitState)) {
-					return sles.lastExitStateDate;
-				}
-				return 0;
+		synchronized (sendersLastExitState) {
+			SenderLastExitState sles = sendersLastExitState.get(pipeName);
+			if (sles != null && "timeout".equals(sles.lastExitState)) {
+				return sles.lastExitStateDate;
 			}
-		} finally {
-			log.trace("Got last exit state, lock released on sendersLastExitState[{}]", sendersLastExitState);
+			return 0;
 		}
 	}
 
@@ -654,7 +639,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			ListenerException e = new ListenerException(t);
 
 			processingSuccess = false;
-			incNumOfMessagesInError();
+			incNumOfMessagesInError(); // TODO: Probably should do this later b/c a commit can fail and then it's an error too
 			warn("error processing message with messageId [" + messageId + "]: " + e.getMessage());
 			result = new PipeLineResult();
 			result.setState(ExitState.ERROR);
@@ -739,7 +724,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * of the IReceiver. The Adapter will be a new thread, as this interface
 	 * extends the <code>Runnable</code> interface. The actual starting is done
 	 * in the <code>run</code> method.
-	 * @see Receiver#startRunning()
+	 * @see Receiver#start()
 	 */
 	@Override
 	public void start() {
@@ -844,7 +829,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * The adapter will call the <code>IReceiver</code> to <code>stopListening</code>
 	 * <p>Also the {@link PipeLine#stop} method will be called, closing all registered pipes. </p>
 	 *
-	 * @see Receiver#stopRunning
+	 * @see Receiver#stop()
 	 * @see PipeLine#stop
 	 */
 	@Override

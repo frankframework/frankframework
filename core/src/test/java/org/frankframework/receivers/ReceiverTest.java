@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
@@ -92,6 +93,8 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import lombok.Lombok;
 
@@ -576,7 +579,6 @@ public class ReceiverTest {
 		configuration = buildDataSourceTransactionManagerConfiguration();
 		PushingJmsListener listener = spy(configuration.createBean(PushingJmsListener.class));
 		listener.setTransacted(false);
-		//noinspection removal
 		listener.setAcknowledgeMode(JMSFacade.AcknowledgeMode.CLIENT_ACKNOWLEDGE);
 		doReturn(mock(Destination.class)).when(listener).getDestination();
 		doNothing().when(listener).start();
@@ -1459,5 +1461,85 @@ public class ReceiverTest {
 		} else {
 			assertTrue(configWarnings.isEmpty(), "There should not have been any config warnings");
 		}
+	}
+
+	@ParameterizedTest
+	@MethodSource("transactionManagers")
+	void testJmsMessageTransactionRollbackAfterListenerCompleted(Supplier<TestConfiguration> configurationSupplier) throws Exception {
+		// Arrange
+		configuration = configurationSupplier.get();
+		PushingJmsListener listener = spy(configuration.createBean(PushingJmsListener.class));
+		doReturn(mock(Destination.class)).when(listener).getDestination();
+		doNothing().when(listener).start();
+		doNothing().when(listener).configure();
+
+		@SuppressWarnings("unchecked")
+		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
+
+		createMessagingSource(listener);
+
+		@SuppressWarnings("unchecked")
+		IListenerConnector<jakarta.jms.Message> jmsConnectorMock = mock(IListenerConnector.class);
+		listener.setJmsConnector(jmsConnectorMock);
+		Receiver<jakarta.jms.Message> receiver = setupReceiver(listener);
+		receiver.setErrorStorage(errorStorage);
+
+		final PlatformTransactionManager txManager = configuration.getBean("txManagerReal", PlatformTransactionManager.class);
+		receiver.setTxManager(txManager);
+		receiver.setTransactionAttribute(TransactionAttribute.REQUIRED);
+
+		Adapter adapter = setupAdapter(receiver);
+
+		assertEquals(RunState.STOPPED, adapter.getRunState());
+		assertEquals(RunState.STOPPED, receiver.getRunState());
+
+		// start adapter
+		configuration.configure();
+		configuration.start();
+
+		waitWhileInState(adapter, RunState.STOPPED);
+		waitWhileInState(adapter, RunState.STARTING);
+
+		TextMessage jmsMessage = mock(TextMessage.class);
+		doReturn("dummy-message-id").when(jmsMessage).getJMSMessageID();
+		doReturn(1).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
+		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
+		doReturn("message").when(jmsMessage).getText();
+		RawMessageWrapper<jakarta.jms.Message> messageWrapper = new RawMessageWrapper<>(jmsMessage, "dummy-message-id", "dummy-cid");
+
+		final TransactionStatus tx = txManager.getTransaction(TX_REQUIRES_NEW);
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void beforeCommit(boolean readOnly) {
+				throw new RuntimeException("Sabotage the TX commit");
+			}
+		});
+
+		// No errors before we start
+		assertEquals(0, adapter.getNumOfMessagesInError());
+
+		// Act
+		try (PipeLineSession session = new PipeLineSession()) {
+			receiver.processRawMessage(listener, messageWrapper, session, false);
+		} catch (Exception e) {
+			fail("Caught exception in Receiver:", e);
+		}
+		// Still no errors before we commit
+		assertEquals(0, adapter.getNumOfMessagesInError());
+
+		assertThrows(RuntimeException.class, () -> txManager.commit(tx));
+
+		// A bit of cleanup
+		if (txManager instanceof DisposableBean disposableBean) {
+			disposableBean.destroy();
+		}
+
+		configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+		waitForState(adapter, RunState.STOPPED);
+
+		// Assert
+		// The commit should have set the message in error
+		assertEquals(1, adapter.getNumOfMessagesInError());
+
 	}
 }
