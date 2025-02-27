@@ -401,12 +401,13 @@ public class TransformerPool {
 		return t;
 	}
 
-	// TODO: Unsure what is happening here but this seems very inefficient!
 	public String transformToString(Message m, Map<String,Object> parameters, boolean namespaceAware) throws TransformerException, IOException, SAXException {
 		if (namespaceAware) {
+			// TODO: This does not appear to properly honour namespaceAware=false
 			return transformToString(XmlUtils.inputSourceToSAXSource(m.asInputSource(), namespaceAware, null), parameters);
 		}
 		try {
+			// TODO: Converting message to string first is rather inefficient with memory but this is the only way to have namespaceAware=false
 			return transformToString(XmlUtils.stringToSource(m.asString(), namespaceAware), parameters);
 		} catch (DomBuilderException e) {
 			throw new TransformerException(e);

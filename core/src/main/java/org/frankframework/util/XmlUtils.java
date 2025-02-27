@@ -856,7 +856,7 @@ public class XmlUtils {
 	}
 
 	public static Source stringToSource(String xmlString) throws DomBuilderException {
-		return stringToSource(xmlString,isNamespaceAwareByDefault());
+		return stringToSource(xmlString, isNamespaceAwareByDefault());
 	}
 
 	public static Source stringToSourceForSingleUse(String xmlString) throws SAXException {
@@ -867,6 +867,7 @@ public class XmlUtils {
 		if (namespaceAware) {
 			StringReader reader = new StringReader(xmlString);
 			InputSource is = new InputSource(reader);
+			// TODO: This method does not seem to properly honour namespaceAware=false; once that is fixed we don't have to make switch here.
 			return inputSourceToSAXSource(is, namespaceAware, null);
 		}
 		try {
@@ -884,6 +885,9 @@ public class XmlUtils {
 		return inputSourceToSAXSource(is, true, null);
 	}
 
+	/**
+	 * TODO: This does not appear to always properly honour namespaceAware=false
+	 */
 	public static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware, Resource scopeProvider) throws SAXException {
 		try {
 			return new SAXSource(getXMLReader(namespaceAware, scopeProvider), is);
