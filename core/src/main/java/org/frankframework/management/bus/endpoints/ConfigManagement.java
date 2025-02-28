@@ -73,18 +73,18 @@ public class ConfigManagement extends BusEndpointBase {
 		boolean loadedConfiguration = BusMessageUtils.getBooleanHeader(message, "loaded", false);
 		StringBuilder result = new StringBuilder();
 
-		result.append("<" + ROOT_ELEMENT_NAME + ">");
 
 		if(configurationName != null) {
 			Configuration configuration = getConfigurationByName(configurationName);
 			result.append(loadedConfiguration ? configuration.getLoadedConfiguration() : configuration.getOriginalConfiguration());
 		} else {
+			result.append("<" + ROOT_ELEMENT_NAME + ">");
 			for (Configuration configuration : getIbisManager().getConfigurations()) {
 				result.append(loadedConfiguration ? configuration.getLoadedConfiguration() : configuration.getOriginalConfiguration());
 			}
+			result.append("</" + ROOT_ELEMENT_NAME + ">");
 		}
 
-		result.append("</" + ROOT_ELEMENT_NAME + ">");
 
 		return new StringMessage(result.toString(), MediaType.APPLICATION_XML);
 	}
