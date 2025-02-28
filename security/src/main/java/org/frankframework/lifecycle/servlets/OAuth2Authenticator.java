@@ -55,9 +55,13 @@ import org.frankframework.util.StringUtil;
  * {baseUrl}/-servlet-name-/oauth2/code/{registrationId}
  * }</pre>
  * <p>
+ * {baseUrl} resolves to {baseScheme}://{baseHost}{basePort}{basePath}.
+ * 
  * The redirect url has been modified to match the servlet path and is deduced from the default
  * {@link OAuth2LoginAuthenticationFilter#DEFAULT_FILTER_PROCESSES_URI}.
  * Authentication base URL: -servlet-name- {@value OAuth2AuthorizationRequestRedirectFilter#DEFAULT_AUTHORIZATION_REQUEST_BASE_URI}
+ * 
+ * See https://docs.spring.io/spring-security/reference/servlet/oauth2/client/authorization-grants.html#oauth2Client-auth-code-redirect-uri
  *
  * @author Niels Meijer
  *
@@ -91,7 +95,10 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	private @Setter String clientId = null;
 	private @Setter String clientSecret = null;
 
-	/** Google, GitHub, Facebook, Okta, Custom */
+	/** Only used in combination with Azure */
+	private @Setter String tenantId = null;
+
+	/** Google, GitHub, Facebook, Okta, Azure, Custom */
 	private @Setter String provider;
 
 	private ClientRegistrationRepository clientRepository;
@@ -106,6 +113,8 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 		configure();
 
 		AuthorityMapper authorityMapper = new AuthorityMapper(roleMappingURL, getSecurityRoles(), getEnvironmentProperties());
+
+		// The 3 dynamic URLs use the servlet path, this cannot be changed or contain {baseUrl}.
 		http.oauth2Login(login -> login
 				.clientRegistrationRepository(clientRepository) // Explicitly set, but can also be implicitly implied.
 				.authorizedClientService(new InMemoryOAuth2AuthorizedClientService(clientRepository))
@@ -131,10 +140,9 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 		}
 		log.info("found rolemapping file [{}]", roleMappingURL);
 
-		String baseUrl = computeBaseUrl();
 		servletPath = computeRelativePathFromServlet();
-		redirectUri = computeRedirectUri(baseUrl);
-		log.debug("using oauth base-url [{}] servlet-path [{}] and redirect-uri [{}]", baseUrl, servletPath, redirectUri);
+		redirectUri = computeRedirectUri();
+		log.debug("using oauth servlet-path [{}] and redirect-uri [{}]", servletPath, redirectUri);
 
 		clientRepository = createClientRegistrationRepository();
 		SpringUtils.registerSingleton(getApplicationContext(), "clientRegistrationRepository", clientRepository);
@@ -150,6 +158,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 				CommonOAuth2Provider commonProvider = EnumUtils.parse(CommonOAuth2Provider.class, provider);
 				yield commonProvider.getBuilder(provider);
 			}
+			case "azure" -> createAzureBuilder();
 			case "custom" -> createCustomBuilder(provider, provider.toLowerCase());
 			default -> throw new IllegalStateException("unknown OAuth provider");
 		};
@@ -159,6 +168,26 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 		builder.redirectUri(getRedirectUri());
 
 		return builder.build();
+	}
+
+	private ClientRegistration.Builder createAzureBuilder() {
+		if (StringUtils.isBlank(tenantId)) throw new IllegalStateException("when using Azure provider the tentantId property is required");
+
+		ClientRegistration.Builder builder = ClientRegistration.withRegistrationId("azure");
+		builder.clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
+		builder.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE);
+
+		// Use the default scopes but allow users to overwrite them
+		builder.scope(StringUtil.split(StringUtils.isBlank(scopes) ? "openid,profile,email" : scopes));
+
+		builder.authorizationUri("https://login.microsoftonline.com/%s/oauth2/v2.0/authorize".formatted(tenantId));
+		builder.tokenUri("https://login.microsoftonline.com/%s/oauth2/v2.0/token".formatted(tenantId));
+		builder.jwkSetUri("https://login.microsoftonline.com/common/discovery/v2.0/keys");
+		builder.issuerUri("https://login.microsoftonline.com/%s/v2.0".formatted(tenantId));
+		builder.userInfoUri("https://graph.microsoft.com/oidc/userinfo");
+		builder.userNameAttributeName("email");
+		builder.clientName("azure");
+		return builder;
 	}
 
 	public Builder createCustomBuilder(String name, String registrationId) {
@@ -180,34 +209,47 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 
 
 	/**
-	 * Base-URL starts eg. `http(s)://{host}:{port}/`.
+	 * Absolute base URL starts eg. `http(s)://{host}:{port}/` or is NULL (relative).
 	 */
 	@Nullable
-	private String computeBaseUrl() {
+	private String determineBaseUrl() {
 		if (StringUtils.isEmpty(baseUrl)) {
+			log.debug("using no baseUrl");
 			return null;
 		}
 
+		final String computed;
 		if(baseUrl.endsWith("/")) { // Ensure the url does not end with a slash
-			baseUrl = baseUrl.substring(0, baseUrl.length()-1);
+			computed = baseUrl.substring(0, baseUrl.length()-1);
+		} else {
+			computed = baseUrl;
 		}
 
-		log.debug("using baseUrl [{}]", baseUrl);
-		return baseUrl;
+		log.debug("using baseUrl [{}]", computed);
+		return computed;
 	}
 
+	/**
+	 * When no base URL, spring uses {baseUrl} which resolves to: {baseScheme}://{baseHost}{basePort}{contextPath}.
+	 * And when no base URL we must add the servlet-path our selves: "{baseUrl}" + servletPath;
+	 * 
+	 * When a base URL has been set, use that instead!
+	 */
 	@Nonnull
-	private String computeRedirectUri(String baseUrl) {
-		if (baseUrl == null) {
+	private String computeRedirectUri() {
+		String determinedBaseUrl = determineBaseUrl();
+
+		if (determinedBaseUrl == null) {
 			String path = servletPath.startsWith("/") ? servletPath.substring(1) : servletPath;
 			return "{baseUrl}/%s/oauth2/code/{registrationId}".formatted(path);
 		}
 
-		return "%s/oauth2/code/{registrationId}".formatted(baseUrl);
+		return "%s/oauth2/code/{registrationId}".formatted(determinedBaseUrl);
 	}
 
 	/**
 	 * Servlet-Path that needs to be secured. May not end with a `*` or `/`.
+	 * For instance `/iaf/gui`.
 	 */
 	private String computeRelativePathFromServlet() {
 		String servletPath = getPrivateEndpoints().stream().findFirst().orElse("");
