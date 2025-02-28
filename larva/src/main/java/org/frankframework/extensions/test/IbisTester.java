@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.io.Writer;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -30,6 +31,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -250,7 +254,7 @@ public class IbisTester {
 			if (runScenariosResult!=null) {
 				return runScenariosResult;
 			}
-			if (scenariosRootDirsUnselected != null && !scenariosRootDirsUnselected.isEmpty()) {
+			if (!scenariosRootDirsUnselected.isEmpty()) {
 				for (String scenariosRootDirUnselected : scenariosRootDirsUnselected) {
 					try {
 						result = runScenario(scenariosRootDirUnselected, null,
@@ -278,7 +282,7 @@ public class IbisTester {
 		Collection<String> scenarios = evaluateXPath(
 				xhtml,
 				"(html/body//select[@name='execute'])[1]/option/@value[ends-with(.,'.properties')]");
-		if (scenarios == null || scenarios.isEmpty()) {
+		if (scenarios.isEmpty()) {
 			return error("No scenarios found");
 		} else {
 			String scenariosRootDir = evaluateXPathFirst(
@@ -380,17 +384,17 @@ public class IbisTester {
 		return string;
 	}
 
-	private static String getIsoTimeStamp() {
+	private static @Nonnull String getIsoTimeStamp() {
 		return DateFormatUtils.now();
 	}
 
-	private static String getMemoryInfo() {
+	private static @Nonnull String getMemoryInfo() {
 		long freeMem = Runtime.getRuntime().freeMemory();
 		long totalMem = Runtime.getRuntime().totalMemory();
 		return "[" + Misc.toFileSize(totalMem - freeMem) + "/" + Misc.toFileSize(totalMem) + "]";
 	}
 
-	private static String evaluateXPathFirst(String xhtml, String xpath) {
+	private static @Nullable String evaluateXPathFirst(String xhtml, String xpath) {
 		try {
 			return XmlUtils.evaluateXPathNodeSetFirstElement(xhtml, xpath);
 		} catch (Exception e) {
@@ -399,16 +403,16 @@ public class IbisTester {
 		}
 	}
 
-	private static Collection<String> evaluateXPath(String xhtml, String xpath) {
+	private static @Nonnull Collection<String> evaluateXPath(String xhtml, String xpath) {
 		try {
 			return XmlUtils.evaluateXPathNodeSet(xhtml, xpath);
 		} catch (Exception e) {
 			log.warn("Error evaluating xpath [{}]", xpath, e);
-			return null;
+			return Collections.emptyList();
 		}
 	}
 
-	private static Double evaluateXPathNumber(String xhtml, String xpath) {
+	private static @Nullable Double evaluateXPathNumber(String xhtml, String xpath) {
 		try {
 			return XmlUtils.evaluateXPathNumber(xhtml, xpath);
 		} catch (Exception e) {

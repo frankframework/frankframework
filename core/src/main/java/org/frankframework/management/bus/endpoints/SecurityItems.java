@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -260,9 +260,8 @@ public class SecurityItems extends BusEndpointBase {
 
 			try {
 				Collection<String> c = XmlUtils.evaluateXPathNodeSet(configString, "//@*[starts-with(name(),'authAlias') or ends-with(name(),'AuthAlias')]");
-				if (c != null && !c.isEmpty()) {
-					for (Iterator<String> cit = c.iterator(); cit.hasNext();) {
-						String entry = cit.next();
+				if (!c.isEmpty()) {
+					for (String entry : c) {
 						if (!entries.contains(entry)) {
 							entries.add(entry);
 						}
