@@ -86,7 +86,7 @@ import org.frankframework.util.XmlUtils;
  *
  * @ff.info When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
  * This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.
- * @ff.info The use of `multi-value` parameters can be achieved by adding multiple {@link Parameter parameters} with the same name.
+ * @ff.info The use of `multi-value` parameters can be achieved by adding multiple {@link IParameter parameters} with the same name.
  * @ff.parameters Any parameters present are appended to the request (when method is <code>GET</code> as request-parameters, when method <code>POST</code>
  * as body part) except the <code>headersParams</code> list, which are added as HTTP headers, and the <code>urlParam</code> header
  *
@@ -458,24 +458,23 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 		}
 
 		if (isXhtml() && !Message.isEmpty(result)) {
-			// TODO: Streaming XHTML conversion for better performance with large result message?
-			String xhtml;
-			try(Message m = result) {
+			Message xhtml;
+			try (Message m = result) {
 				xhtml = XmlUtils.toXhtml(m);
 			} catch (IOException e) {
 				throw new SenderException("error reading http response as String", e);
 			}
 
-			if (transformerPool != null && xhtml != null) {
+			if (transformerPool != null && !xhtml.isEmpty()) {
 				log.debug("transforming result [{}]", xhtml);
 				try {
-					xhtml = transformerPool.transformToString(xhtml);
+					xhtml = transformerPool.transform(xhtml);
 				} catch (Exception e) {
 					throw new SenderException("Exception on transforming input", e);
 				}
 			}
 
-			result = new Message(xhtml);
+			result = xhtml;
 		}
 
 		if (result == null) {

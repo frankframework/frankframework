@@ -226,7 +226,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		URL url = TestFileUtils.getTestFileURL("/HtmlCleaner/html.input.html");
 		Message message = new UrlMessage(url);
 
-		String actual = XmlUtils.toXhtml(message);
+		String actual = XmlUtils.toXhtml(message).asString();
 		String expected = TestFileUtils.getTestFile("/HtmlCleaner/html.output.html");
 		MatchUtils.assertXmlEquals(expected, actual);
 	}
@@ -236,7 +236,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		URL url = TestFileUtils.getTestFileURL("/HtmlCleaner/xhtml.input.xhtml");
 		Message message = new UrlMessage(url);
 
-		String actual = XmlUtils.toXhtml(message);
+		String actual = XmlUtils.toXhtml(message).asString();
 		String expected = TestFileUtils.getTestFile("/HtmlCleaner/xhtml.output.xhtml");
 		MatchUtils.assertXmlEquals(expected, actual);
 	}
@@ -246,7 +246,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		URL url = TestFileUtils.getTestFileURL("/HtmlCleaner/html.without-doctype.input.html");
 		Message message = new UrlMessage(url);
 
-		String actual = XmlUtils.toXhtml(message);
+		String actual = XmlUtils.toXhtml(message).asString();
 		String expected = TestFileUtils.getTestFile("/HtmlCleaner/html.without-doctype.output.html");
 		MatchUtils.assertXmlEquals(expected, actual);
 	}
@@ -255,7 +255,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	void noHtmlToXhtml() throws Exception {
 		Message message = new Message("<xml>tralalal</xml>");
 
-		String actual = XmlUtils.toXhtml(message);
+		String actual = XmlUtils.toXhtml(message).asString();
 		assertNull(actual);
 	}
 
@@ -263,7 +263,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	void nullToXhtml() throws Exception {
 		Message message = Message.nullMessage();
 
-		String actual = XmlUtils.toXhtml(message);
+		String actual = XmlUtils.toXhtml(message).asString();
 		assertNull(actual);
 	}
 
@@ -271,7 +271,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	void emptyToXhtml() throws Exception {
 		Message message = new Message("");
 
-		String actual = XmlUtils.toXhtml(message);
+		String actual = XmlUtils.toXhtml(message).asString();
 		assertNull(actual);
 	}
 
