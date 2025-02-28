@@ -159,8 +159,8 @@ public class TestReceiverOnError {
 
 	@ParameterizedTest
 	@ValueSource(classes = {MockPushingListener.class, MockPullingListener.class})
-	public <T extends MockListenerBase> void testNormalOperation(Class<T> pullingListener) throws Exception {
-		MockListenerBase listener = createListener(pullingListener);
+	public <T extends MockListenerBase> void testNormalOperation(Class<T> listenerClass) throws Exception {
+		MockListenerBase listener = createListener(listenerClass);
 		Receiver<String> receiver = startReceiver(listener);
 
 		// Act
