@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
@@ -40,9 +41,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Document;
-
-import lombok.Getter;
-import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
@@ -65,6 +63,9 @@ import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Generic parameter definition.
@@ -209,7 +210,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	private Document transformToDocument(Source xmlSource, ParameterValueList pvl) throws TransformerException, IOException {
 		TransformerPool pool = getTransformerPool();
 		DOMResult transformResult = new DOMResult();
-		pool.deprecatedParameterTransformAction(xmlSource, transformResult, pvl);
+		pool.transform(xmlSource, (Result) transformResult, pvl ==null? null : pvl.getValueMap());
 		return (Document) transformResult.getNode();
 	}
 
@@ -248,7 +249,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		String requestedSessionKey;
 		if (tpDynamicSessionKey != null) {
 			try {
-				requestedSessionKey = tpDynamicSessionKey.transformToString(message.asSource());
+				requestedSessionKey = tpDynamicSessionKey.transformToString(message);
 			} catch (Exception e) {
 				throw new ParameterException(getName(), "SessionKey for parameter ["+getName()+"] exception on transformation to get name", e);
 			}

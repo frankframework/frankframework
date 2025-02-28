@@ -16,6 +16,7 @@
 package org.frankframework.util;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Map;
@@ -48,8 +49,6 @@ import org.springframework.http.MediaType;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import lombok.Getter;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.FrankElement;
@@ -65,6 +64,8 @@ import org.frankframework.xml.ClassLoaderURIResolver;
 import org.frankframework.xml.NonResolvingURIResolver;
 import org.frankframework.xml.ThreadConnectingFilter;
 import org.frankframework.xml.TransformerFilter;
+
+import lombok.Getter;
 
 /**
  * Pool of transformers. As of IBIS 4.2.e the Templates object is used to
@@ -453,12 +454,14 @@ public class TransformerPool {
 	 * Transforms Frank messages.
 	 */
 	public @Nonnull Message transform(@Nonnull Message m, @Nullable Map<String, Object> parameterMap) throws IOException, TransformerException, SAXException {
+		if (m.isEmpty()) {
+			return Message.nullMessage();
+		}
 		MessageBuilder messageBuilder = new MessageBuilder();
-		StreamResult result = new StreamResult(messageBuilder.asOutputStream());
-
-		transform(m.asSource(), result, parameterMap);
-
-		result.getOutputStream().close();
+		try (OutputStream outputStream = messageBuilder.asOutputStream()) {
+			StreamResult result = new StreamResult(outputStream);
+			transform(m.asSource(), result, parameterMap);
+		}
 		Message output = messageBuilder.build();
 		output.getContext().putAll(createMessageContext().getAll());
 		return output;
@@ -482,21 +485,10 @@ public class TransformerPool {
 		}
 	}
 
-	/**
-	 * @deprecated only used in Parameter, need to refactor that first...
-	 * Renamed because of overloading issues.
-	 * When method parameter 'Result' is used, nothing will be returned.
-	 */
-	@Deprecated
-	public void deprecatedParameterTransformAction(Source s, Result r, ParameterValueList pvl) throws TransformerException, IOException {
-		transform(s, r, pvl==null? null : pvl.getValueMap());
-	}
-
 	/*
-	 * Should ideally only be used internally. Protected so it can be used in tests.
-	 * When method parameter 'Result' is used, nothing will be returned. Should not be a public method!
+	 * Should ideally only be used internally, however there is one use outside this class.
 	 */
-	protected void transform(@Nonnull Source s, @Nonnull Result r, Map<String,Object> parameters) throws TransformerException, IOException {
+	public void transform(@Nonnull Source s, @Nonnull Result r, Map<String,Object> parameters) throws TransformerException, IOException {
 		Transformer transformer = getTransformer();
 		try {
 			XmlUtils.setTransformerParameters(transformer, parameters);
