@@ -30,8 +30,8 @@ public class TransformerPoolNamespaceUnawarenessTest {
 	public void testNamespaceInsensitiveTransformation(String xpath, String stylesheet, int xsltVersion, boolean namespaceAware, String expectedResult) throws Exception {
 		TransformerPool tp = getTransformerPool(xpath, stylesheet, xsltVersion);
 
-		assertEquals(expectedResult, tp.transform(NAMESPACED_INPUT_MESSAGE, null, namespaceAware));
-		assertEquals(expectedResult, tp.transform(new Message(NAMESPACED_INPUT_MESSAGE), null, namespaceAware));
+		assertEquals(expectedResult, tp.transformToString(NAMESPACED_INPUT_MESSAGE, null, namespaceAware));
+		assertEquals(expectedResult, tp.transformToString(new Message(NAMESPACED_INPUT_MESSAGE), null, namespaceAware));
 
 		XmlWriter writer = new XmlWriter();
 		writer.setTextMode(true);

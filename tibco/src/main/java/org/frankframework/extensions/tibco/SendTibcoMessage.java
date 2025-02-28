@@ -190,7 +190,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 			try {
 				Resource resource = Resource.getResource(this, "/xml/xsl/esb/soapAction.xsl");
 				TransformerPool tp = TransformerPool.getInstance(resource, 2);
-				soapAction_work = tp.transform(input.asString(), null);
+				soapAction_work = tp.transformToString(input.asString(), null);
 			} catch (Exception e) {
 				log.error("failed to execute soapAction.xsl");
 			}

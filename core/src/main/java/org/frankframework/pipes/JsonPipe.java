@@ -46,7 +46,6 @@ import org.frankframework.documentbuilder.DocumentUtils;
 import org.frankframework.documentbuilder.IDocumentBuilder;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
-import org.frankframework.stream.MessageContext;
 import org.frankframework.util.TransformerPool;
 
 /**
@@ -118,11 +117,8 @@ public class JsonPipe extends FixedForwardPipe {
 				}
 			case XML2JSON:
 				Map<String, Object> parameterValues = Collections.singletonMap("includeRootElement", addXmlRootElement);
-				// TODO: transform message into message directly, using different method in TransformerPool
-				String stringResult = tpXml2Json.transform(message.asSource(), parameterValues);
-				MessageContext context = new MessageContext();
-				context.withMimeType(MediaType.APPLICATION_JSON);
-				Message result = new Message(stringResult, context);
+				Message result = tpXml2Json.transform(message, parameterValues);
+				result.getContext().withMimeType(MediaType.APPLICATION_JSON);
 				return new PipeRunResult(getSuccessForward(), result);
 			default:
 				throw new IllegalStateException("unknown direction ["+getDirection()+"]");

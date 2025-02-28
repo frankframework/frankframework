@@ -28,7 +28,7 @@ public class TransformerPoolTest {
 	@Test
 	public void plainXPath() throws Exception {
 		TransformerPool transformerPool = TransformerPool.getXPathTransformerPool(xpath, XmlUtils.DEFAULT_XSLT_VERSION);
-		String result = transformerPool.transform(xml, null);
+		String result = transformerPool.transformToString(xml, null);
 		assertEquals(expectedXpath, result);
 	}
 
@@ -36,7 +36,7 @@ public class TransformerPoolTest {
 	public void plainXPathUsingMultiUseSource() throws Exception {
 		TransformerPool transformerPool = TransformerPool.getXPathTransformerPool(xpath, XmlUtils.DEFAULT_XSLT_VERSION);
 		Source source = XmlUtils.stringToSource(xml);
-		String result = transformerPool.transform(source);
+		String result = transformerPool.transformToString(source);
 		assertEquals(expectedXpath, result);
 	}
 
@@ -44,7 +44,7 @@ public class TransformerPoolTest {
 	public void plainViaUrl() throws Exception {
 		Resource resource = Resource.getResource(stylesheetURL);
 		TransformerPool transformerPool = TransformerPool.getInstance(resource);
-		String result = transformerPool.transform(xml, null);
+		String result = transformerPool.transformToString(xml, null);
 		result=result.replaceAll("[\n\r]", "");
 		assertEquals("<authEntries>   <entry alias=\"false\"/></authEntries>", result);
 	}

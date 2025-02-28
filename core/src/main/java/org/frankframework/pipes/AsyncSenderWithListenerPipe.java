@@ -122,9 +122,9 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 			String messageTrail="no audit trail";
 			if (auditTrailTp!=null) {
 				if (isUseInputForExtract()){
-					messageTrail=auditTrailTp.transform(originalMessage);
+					messageTrail=auditTrailTp.transformToString(originalMessage);
 				} else {
-					messageTrail=auditTrailTp.transform(input);
+					messageTrail=auditTrailTp.transformToString(input);
 				}
 			} else {
 				if (StringUtils.isNotEmpty(getAuditTrailSessionKey())) {
@@ -138,12 +138,12 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 			if (correlationIDTp!=null) {
 				if (StringUtils.isNotEmpty(getCorrelationIDSessionKey())) {
 					String sourceString = session.getString(getCorrelationIDSessionKey());
-					correlationID =correlationIDTp.transform(sourceString,null);
+					correlationID =correlationIDTp.transformToString(sourceString,null);
 				} else {
 					if (isUseInputForExtract()) {
-						correlationID =correlationIDTp.transform(originalMessage);
+						correlationID =correlationIDTp.transformToString(originalMessage);
 					} else {
-						correlationID =correlationIDTp.transform(input);
+						correlationID =correlationIDTp.transformToString(input);
 					}
 				}
 				if (StringUtils.isEmpty(correlationID)) {
@@ -153,9 +153,9 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 			String label=null;
 			if (labelTp!=null) {
 				if (isUseInputForExtract()) {
-					label=labelTp.transform(originalMessage);
+					label=labelTp.transformToString(originalMessage);
 				} else {
-					label=labelTp.transform(input);
+					label=labelTp.transformToString(input);
 				}
 			}
 

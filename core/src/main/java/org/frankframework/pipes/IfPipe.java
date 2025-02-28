@@ -276,7 +276,7 @@ public class IfPipe extends AbstractPipe {
 					parameterValues = parameterList.getValues(message, session, namespaceAware).getValueMap();
 				}
 
-				String transform = transformerPool.transform(message.asString(), parameterValues, namespaceAware);
+				String transform = transformerPool.transformToString(message.asString(), parameterValues, namespaceAware);
 
 				return (StringUtils.isEmpty(transform)) ? null : transform;
 			} catch (Exception ioe) {
