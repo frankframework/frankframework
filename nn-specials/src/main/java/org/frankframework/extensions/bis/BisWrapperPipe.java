@@ -308,7 +308,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 				String payload;
 				if (bisErrorCode == null || StringUtils.isEmpty(getOutputRoot())) {
 					if (addOutputNamespaceTp != null) {
-						payload = addOutputNamespaceTp.transform(message.asSource());
+						payload = addOutputNamespaceTp.transformToString(message);
 					} else {
 						payload = message.asString();
 					}
@@ -328,20 +328,20 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 					throw new PipeRunException(this, "SOAP body is empty or message is not a SOAP message");
 				}
 				if (bisMessageHeaderTp != null) {
-					String messageHeader = bisMessageHeaderTp.transform(message.asSource());
+					String messageHeader = bisMessageHeaderTp.transformToString(message);
 					if (messageHeader != null) {
 						session.put(getBisMessageHeaderSessionKey(), messageHeader);
 						log.debug("stored [{}] in pipeLineSession under key [{}]", messageHeader, getBisMessageHeaderSessionKey());
 					}
 				}
 				if (bisErrorTp != null) {
-					String bisError = bisErrorTp.transform(message.asSource());
+					String bisError = bisErrorTp.transformToString(message);
 					if (Boolean.valueOf(bisError).booleanValue()) {
 						throw new PipeRunException(this, "bisErrorXPath [" + bisErrorXe + "] returns true");
 					}
 				}
 				if (bodyMessageTp != null) {
-					result = new Message(bodyMessageTp.transform(message.asSource()));
+					result = new Message(bodyMessageTp.transformToString(message));
 				} else {
 					result = body;
 				}
@@ -370,7 +370,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			conversationIdElement.setValue(conversationId);
 		} else {
 			if (bisMessageHeaderConversationIdTp != null) {
-				conversationIdElement.setValue(bisMessageHeaderConversationIdTp.transform(originalMessageHeader, null, true));
+				conversationIdElement.setValue(bisMessageHeaderConversationIdTp.transformToString(originalMessageHeader, null, true));
 			}
 		}
 		headerFieldsElement.addSubElement(conversationIdElement);
@@ -382,7 +382,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			externalRefToMessageIdElement.setValue(externalRefToMessageId);
 		} else {
 			if (bisMessageHeaderExternalRefToMessageIdTp != null) {
-				externalRefToMessageIdElement.setValue(bisMessageHeaderExternalRefToMessageIdTp.transform(originalMessageHeader, null, true));
+				externalRefToMessageIdElement.setValue(bisMessageHeaderExternalRefToMessageIdTp.transformToString(originalMessageHeader, null, true));
 			}
 		}
 		headerFieldsElement.addSubElement(externalRefToMessageIdElement);

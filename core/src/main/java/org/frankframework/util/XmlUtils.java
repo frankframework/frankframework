@@ -237,7 +237,7 @@ public class XmlUtils {
 
 	public static Map<String,String> getXsltConfig(Source source) throws TransformerException, IOException {
 		TransformerPool tp = getGetXsltConfigTransformerPool();
-		String metadataString = tp.transform(source);
+		String metadataString = tp.transformToString(source);
 		Map<String,String> result = new LinkedHashMap<>();
 		for (final String s : StringUtil.split(metadataString, ";")) {
 			List<String> kv = StringUtil.split(s, "=");
@@ -857,7 +857,7 @@ public class XmlUtils {
 	}
 
 	public static Source stringToSource(String xmlString) throws DomBuilderException {
-		return stringToSource(xmlString,isNamespaceAwareByDefault());
+		return stringToSource(xmlString, isNamespaceAwareByDefault());
 	}
 
 	public static Source stringToSourceForSingleUse(String xmlString) throws SAXException {
@@ -868,6 +868,7 @@ public class XmlUtils {
 		if (namespaceAware) {
 			StringReader reader = new StringReader(xmlString);
 			InputSource is = new InputSource(reader);
+			// TODO: This method does not seem to properly honour namespaceAware=false; once that is fixed we don't have to make switch here.
 			return inputSourceToSAXSource(is, namespaceAware, null);
 		}
 		try {
@@ -885,6 +886,9 @@ public class XmlUtils {
 		return inputSourceToSAXSource(is, true, null);
 	}
 
+	/**
+	 * TODO: This does not appear to always properly honour namespaceAware=false
+	 */
 	public static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware, Resource scopeProvider) throws SAXException {
 		try {
 			return new SAXSource(getXMLReader(namespaceAware, scopeProvider), is);
@@ -910,7 +914,7 @@ public class XmlUtils {
 	public static int detectXsltVersion(String xsltString) throws TransformerConfigurationException {
 		try {
 			TransformerPool tpVersion = XmlUtils.getDetectXsltVersionTransformerPool();
-			String version=tpVersion.transform(xsltString, null, true);
+			String version=tpVersion.transformToString(xsltString, null, true);
 			log.debug("detected version [{}] for xslt [{}]", version, xsltString);
 			return interpretXsltVersion(version);
 		} catch (Exception e) {
@@ -924,7 +928,7 @@ public class XmlUtils {
 			StreamSource stylesource = new StreamSource(xsltUrl.openStream());
 			stylesource.setSystemId(xsltUrl.toExternalForm());
 
-			return interpretXsltVersion(tpVersion.transform(stylesource));
+			return interpretXsltVersion(tpVersion.transformToString(stylesource));
 		} catch (Exception e) {
 			throw new TransformerConfigurationException(e);
 		}
@@ -1490,7 +1494,7 @@ public class XmlUtils {
 	public static String getRootNamespace(String input) {
 		try {
 			TransformerPool tp = getGetRootNamespaceTransformerPool();
-			return tp.transform(input,null);
+			return tp.transformToString(input,null);
 		} catch (Exception e) {
 			log.warn("unable to find root-namespace", e);
 			return null;
@@ -1500,7 +1504,7 @@ public class XmlUtils {
 	public static String getRootNamespace(Message input) {
 		try {
 			TransformerPool tp = getGetRootNamespaceTransformerPool();
-			return tp.transform(input);
+			return tp.transformToString(input);
 		} catch (Exception e) {
 			log.debug("unable to find root-namespace", e);
 			return null;
@@ -1510,7 +1514,7 @@ public class XmlUtils {
 	public static String addRootNamespace(String input, String namespace) {
 		try {
 			TransformerPool tp = getAddRootNamespaceTransformerPool(namespace,true,false);
-			return tp.transform(input,null);
+			return tp.transformToString(input,null);
 		} catch (Exception e) {
 			log.warn("unable to add root-namespace", e);
 			return null;
@@ -1520,7 +1524,7 @@ public class XmlUtils {
 	public static Message addRootNamespace(Message input, String namespace) {
 		try {
 			TransformerPool tp = getAddRootNamespaceTransformerPool(namespace,false,true);
-			return tp.transform(input, null);
+			return tp.transform(input);
 		} catch (Exception e) {
 			log.warn("unable to add root-namespace", e);
 			return Message.nullMessage();
@@ -1530,7 +1534,7 @@ public class XmlUtils {
 	public static String copyOfSelect(String input, String xpath) {
 		try {
 			TransformerPool tp = getCopyOfSelectTransformerPool(xpath, true,false);
-			return tp.transform(input,null);
+			return tp.transformToString(input,null);
 		} catch (Exception e) {
 			log.warn("unable to execute xpath expression [{}]", xpath, e);
 			return null;
