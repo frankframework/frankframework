@@ -80,91 +80,142 @@
               </tbody>
             </table>
           </div>
-          <div class="col-md-12 m-t-md table-responsive">
-            <h4>Process statistics for receivers (in ms)</h4>
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Receiver</th>
-                  <th># Threads Processing</th>
-                  @for (boundary of statisticsTimeBoundaries | formatStatKeys; track boundary; let index = $index) {
-                    @if (index > 0) {
-                      <th>{{ boundary }}</th>
-                    }
-                  }
-                </tr>
-              </thead>
-              @for (receiver of stats?.receivers; track receiver.name) {
-                <tbody>
-                  @for (threadsProcessing of receiver.processing; track threadsProcessing) {
-                    <tr>
-                      <td>{{ receiver.name }}</td>
-                      @for (
-                        thread of threadsProcessing | formatStatistics: statisticsTimeBoundaries;
-                        track thread.key
-                      ) {
-                        <td>
-                          {{ thread.value }}
-                        </td>
-                      }
-                    </tr>
-                  }
-                </tbody>
-              }
-            </table>
-          </div>
-          <div class="col-md-12 m-t-md table-responsive">
-            <h4>Duration statistics per pipe (in ms)</h4>
-            <table class="table">
-              <thead>
-                <tr>
-                  @for (boundary of statisticsTimeBoundaries | formatStatKeys; track boundary) {
-                    <th>
-                      {{ boundary }}
-                    </th>
-                  }
-                </tr>
-              </thead>
-              <tbody>
-                @for (pipe of stats?.durationPerPipe; track pipe) {
-                  <tr>
-                    @for (pipeKV of pipe | formatStatistics: statisticsTimeBoundaries; track pipeKV.key) {
-                      <td>
-                        {{ pipeKV.value }}
-                      </td>
-                    }
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-          <div class="col-md-12 m-t-md table-responsive">
-            <h4>Size statistics per pipe (in bytes)</h4>
-            <table class="table">
-              <thead>
-                <tr>
-                  @for (boundary of statisticsSizeBoundaries | formatStatKeys; track boundary) {
-                    <th>
-                      {{ boundary }}
-                    </th>
-                  }
-                </tr>
-              </thead>
-              <tbody>
-                @for (pipe of stats?.sizePerPipe; track pipe.name) {
-                  <tr>
-                    @for (pipeKV of pipe | formatStatistics: statisticsSizeBoundaries; track pipeKV.key) {
-                      <td>
-                        {{ pipeKV.value }}
-                      </td>
-                    }
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
         </div>
       </div>
     </div>
+    @if (stats && stats.totalMessageProccessingTime.count > 0) {
+      @if (stats.receivers && stats.receivers.length > 0) {
+        <div class="col-lg-12">
+          <div class="ibox float-e-margins">
+            <div class="ibox-title" (click)="collapseExpand('processReceivers')">
+              <div class="ibox-tools pull-right">
+                <a> <i class="fa fa-chevron-{{ iboxExpanded['processReceivers'] ? 'up' : 'down' }}"></i></a>
+              </div>
+              <h4>Process statistics for receivers (in ms)</h4>
+            </div>
+            @if (iboxExpanded['processReceivers']) {
+              <div class="ibox-content">
+                <div class="col-md-12 m-t-md table-responsive">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>Receiver</th>
+                        <th># Threads Processing</th>
+                        @for (
+                          boundary of statisticsTimeBoundaries | formatStatKeys;
+                          track boundary;
+                          let index = $index
+                        ) {
+                          @if (index > 0) {
+                            <th>{{ boundary }}</th>
+                          }
+                        }
+                      </tr>
+                    </thead>
+                    @for (receiver of stats.receivers; track receiver.name) {
+                      <tbody>
+                        @for (threadsProcessing of receiver.processing; track threadsProcessing) {
+                          <tr>
+                            <td>{{ receiver.name }}</td>
+                            @for (
+                              thread of threadsProcessing | formatStatistics: statisticsTimeBoundaries;
+                              track thread.key
+                            ) {
+                              <td>
+                                {{ thread.value }}
+                              </td>
+                            }
+                          </tr>
+                        } @empty {
+                          <tr>
+                            <td colspan="3">No data available</td>
+                          </tr>
+                        }
+                      </tbody>
+                    }
+                  </table>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+      <div class="col-lg-12">
+        <div class="ibox float-e-margins">
+          <div class="ibox-title" (click)="collapseExpand('durationPerPipe')">
+            <div class="ibox-tools pull-right">
+              <a> <i class="fa fa-chevron-{{ iboxExpanded['durationPerPipe'] ? 'up' : 'down' }}"></i></a>
+            </div>
+            <h4>Duration statistics per pipe (in ms)</h4>
+          </div>
+          @if (iboxExpanded['durationPerPipe']) {
+            <div class="ibox-content">
+              <div class="col-md-12 m-t-md table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      @for (boundary of statisticsTimeBoundaries | formatStatKeys; track boundary) {
+                        <th>
+                          {{ boundary }}
+                        </th>
+                      }
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (pipe of stats.durationPerPipe; track pipe) {
+                      <tr>
+                        @for (pipeKV of pipe | formatStatistics: statisticsTimeBoundaries; track pipeKV.key) {
+                          <td>
+                            {{ pipeKV.value }}
+                          </td>
+                        }
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+      <div class="col-lg-12">
+        <div class="ibox float-e-margins">
+          <div class="ibox-title" (click)="collapseExpand('sizePerPipe')">
+            <div class="ibox-tools pull-right">
+              <a> <i class="fa fa-chevron-{{ iboxExpanded['sizePerPipe'] ? 'up' : 'down' }}"></i></a>
+            </div>
+            <h4>Size statistics per pipe (in bytes)</h4>
+          </div>
+          @if (iboxExpanded['sizePerPipe']) {
+            <div class="ibox-content">
+              <div class="col-md-12 m-t-md table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      @for (boundary of statisticsSizeBoundaries | formatStatKeys; track boundary) {
+                        <th>
+                          {{ boundary }}
+                        </th>
+                      }
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (pipe of stats.sizePerPipe; track pipe.name) {
+                      <tr>
+                        @for (pipeKV of pipe | formatStatistics: statisticsSizeBoundaries; track pipeKV.key) {
+                          <td>
+                            {{ pipeKV.value }}
+                          </td>
+                        }
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
   </div>
 </div>
