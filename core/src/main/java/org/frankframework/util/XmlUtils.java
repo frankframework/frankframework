@@ -19,6 +19,7 @@ package org.frankframework.util;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -1718,7 +1719,7 @@ public class XmlUtils {
 		return null;
 	}
 
-	public static String toXhtml(Message message) throws IOException {
+	public static @Nonnull Message toXhtml(Message message) throws IOException {
 		if (!Message.isEmpty(message)) {
 			String messageCharset = message.getCharset();
 			String xhtmlString = message.peek(HTML_MAX_PREAMBLE_SIZE);
@@ -1730,10 +1731,14 @@ public class XmlUtils {
 				}
 				HtmlCleaner cleaner = new HtmlCleaner(props);
 				TagNode tagNode = cleaner.clean(message.asReader());
-				return new SimpleXmlSerializer(props).getAsString(tagNode);
+				MessageBuilder messageBuilder = new MessageBuilder();
+				OutputStream outputStream = messageBuilder.asOutputStream();
+				new SimpleXmlSerializer(props).writeToStream(tagNode, outputStream);
+				outputStream.close();
+				return messageBuilder.build();
 			}
 		}
-		return null;
+		return Message.nullMessage();
 	}
 
 	public static XPathFactory getXPathFactory() {

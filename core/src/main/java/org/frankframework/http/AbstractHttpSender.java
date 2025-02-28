@@ -458,24 +458,23 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 		}
 
 		if (isXhtml() && !Message.isEmpty(result)) {
-			// TODO: Streaming XHTML conversion for better performance with large result message?
-			String xhtml;
-			try(Message m = result) {
+			Message xhtml;
+			try (Message m = result) {
 				xhtml = XmlUtils.toXhtml(m);
 			} catch (IOException e) {
 				throw new SenderException("error reading http response as String", e);
 			}
 
-			if (transformerPool != null && xhtml != null) {
+			if (transformerPool != null && !xhtml.isEmpty()) {
 				log.debug("transforming result [{}]", xhtml);
 				try {
-					xhtml = transformerPool.transform(xhtml);
+					xhtml = transformerPool.transform(xhtml, null);
 				} catch (Exception e) {
 					throw new SenderException("Exception on transforming input", e);
 				}
 			}
 
-			result = new Message(xhtml);
+			result = xhtml;
 		}
 
 		if (result == null) {
