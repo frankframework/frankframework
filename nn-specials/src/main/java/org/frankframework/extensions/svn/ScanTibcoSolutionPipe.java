@@ -1,5 +1,5 @@
 /*
-   Copyright 2015, 2017, 2020 Nationale-Nederlanden
+   Copyright 2015, 2017, 2020 Nationale-Nederlanden, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
@@ -88,67 +87,76 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 		if (html != null) {
 			Collection<String> c = XmlUtils.evaluateXPathNodeSet(html,
 					"html/body/ul/li/a/@href");
-			if (c != null) {
-				for (Iterator<String> it = c.iterator(); it.hasNext();) {
-					String token = it.next();
-					if ("../".equals(token)) {
-						// skip reference to parent directory
-					} else if (cLevel == 0 && !"BW/".equals(token)
-							&& !"SOA/".equals(token)) {
-						skipDir(xmlStreamWriter, token);
-						// } else if (cLevel == 1 &&
-						// !token.startsWith("Customer")) {
-						// skipDir(xmlStreamWriter, token);
-					} else if (cLevel == 2
-							&& ("branches/".equals(token) || "tags/"
-									.equals(token)) && c.contains("trunk/")) {
-						skipDir(xmlStreamWriter, token);
-					} else if (cLevel == 3 && !"src/".equals(token)
-							&& c.contains("src/") && !"release/".equals(token)) {
-						skipDir(xmlStreamWriter, token);
-						// } else if (cLevel == 5 && token.endsWith("/")) {
-						// skipDir(xmlStreamWriter, token);
+			for (String token : c) {
+				if ("../".equals(token)) {
+					// skip reference to parent directory
+				} else if (cLevel == 0 && !"BW/".equals(token)
+						&& !"SOA/".equals(token)) {
+					skipDir(xmlStreamWriter, token);
+					// } else if (cLevel == 1 &&
+					// !token.startsWith("Customer")) {
+					// skipDir(xmlStreamWriter, token);
+				} else if (cLevel == 2
+						&& ("branches/".equals(token) || "tags/"
+						.equals(token)) && c.contains("trunk/")) {
+					skipDir(xmlStreamWriter, token);
+				} else if (cLevel == 3 && !"src/".equals(token)
+						&& c.contains("src/") && !"release/".equals(token)) {
+					skipDir(xmlStreamWriter, token);
+					// } else if (cLevel == 5 && token.endsWith("/")) {
+					// skipDir(xmlStreamWriter, token);
+				} else {
+					String newUrl = cUrl + token;
+					boolean dir = token.endsWith("/");
+					if (dir) {
+						xmlStreamWriter.writeStartElement("dir");
+						xmlStreamWriter.writeAttribute(
+								"name",
+								skipLastCharacter(token)
+						);
+						// xmlStreamWriter.writeAttribute("level",
+						// String.valueOf(cLevel + 1));
+						if (cLevel == 1 || cLevel == 4) {
+							addCommit(xmlStreamWriter, newUrl);
+						}
+						process(xmlStreamWriter, newUrl, cLevel + 1);
 					} else {
-						String newUrl = cUrl + token;
-						boolean dir = token.endsWith("/");
-						if (dir) {
-							xmlStreamWriter.writeStartElement("dir");
-							xmlStreamWriter.writeAttribute("name",
-									skipLastCharacter(token));
-							// xmlStreamWriter.writeAttribute("level",
-							// String.valueOf(cLevel + 1));
-							if (cLevel == 1 || cLevel == 4) {
-								addCommit(xmlStreamWriter, newUrl);
+						xmlStreamWriter.writeStartElement("file");
+						xmlStreamWriter.writeAttribute("name", token);
+						if (cLevel > 5) {
+							if (token.endsWith(".jmsDest")) {
+								addFileContent(
+										xmlStreamWriter, newUrl,
+										"jmsDest"
+								);
 							}
-							process(xmlStreamWriter, newUrl, cLevel + 1);
-						} else {
-							xmlStreamWriter.writeStartElement("file");
-							xmlStreamWriter.writeAttribute("name", token);
-							if (cLevel > 5) {
-								if (token.endsWith(".jmsDest")) {
-									addFileContent(xmlStreamWriter, newUrl,
-											"jmsDest");
-								}
-								if (token.endsWith(".jmsDestConf")) {
-									addFileContent(xmlStreamWriter, newUrl,
-											"jmsDestConf");
-								}
-								if (token.endsWith(".composite")) {
-									addFileContent(xmlStreamWriter, newUrl,
-											"composite");
-								}
-								if (token.endsWith(".process")) {
-									addFileContent(xmlStreamWriter, newUrl,
-											"process");
-								}
-								if ("defaultVars.substvar".equals(token)) {
-									addFileContent(xmlStreamWriter, newUrl,
-											"substVar");
-								}
+							if (token.endsWith(".jmsDestConf")) {
+								addFileContent(
+										xmlStreamWriter, newUrl,
+										"jmsDestConf"
+								);
+							}
+							if (token.endsWith(".composite")) {
+								addFileContent(
+										xmlStreamWriter, newUrl,
+										"composite"
+								);
+							}
+							if (token.endsWith(".process")) {
+								addFileContent(
+										xmlStreamWriter, newUrl,
+										"process"
+								);
+							}
+							if ("defaultVars.substvar".equals(token)) {
+								addFileContent(
+										xmlStreamWriter, newUrl,
+										"substVar"
+								);
 							}
 						}
-						xmlStreamWriter.writeEndElement();
 					}
+					xmlStreamWriter.writeEndElement();
 				}
 			}
 		}
@@ -203,7 +211,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 					// AMX - receive (for jmsInboundDest)
 					Collection<String> c1 = XmlUtils.evaluateXPathNodeSet(
 							content, "namedResource/@name");
-					if (c1 != null && c1.size() > 0) {
+					if (!c1.isEmpty()) {
 						if (c1.size() > 1) {
 							warnMessage.add("more then one resourceName found");
 						}
@@ -216,7 +224,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 					}
 					Collection<String> c2 = XmlUtils.evaluateXPathNodeSet(
 							content, "namedResource/configuration/@jndiName");
-					if (c2 != null && c2.size() > 0) {
+					if (!c2.isEmpty()) {
 						if (c2.size() > 1) {
 							warnMessage
 									.add("more then one resourceJndiName found");
@@ -234,11 +242,10 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 							.evaluateXPathNodeSet(
 									content,
 									"composite/service/bindingAdjunct/property[@name='JmsInboundDestinationConfig']/@simpleValue");
-					if (c1 != null && c1.size() > 0) {
-						for (Iterator<String> c1it = c1.iterator(); c1it
-								.hasNext();) {
+					if (!c1.isEmpty()) {
+						for (String s : c1) {
 							xmlStreamWriter.writeStartElement("jmsInboundDest");
-							xmlStreamWriter.writeCharacters(c1it.next());
+							xmlStreamWriter.writeCharacters(s);
 							xmlStreamWriter.writeEndElement();
 						}
 					} else {
@@ -248,34 +255,34 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 					Collection<String> c2 = XmlUtils.evaluateXPathNodeSet(
 							content,
 							"composite/reference/interface.wsdl/@wsdlLocation");
-					if (c2 != null && c2.size() > 0) {
-						for (Iterator<String> c2it = c2.iterator(); c2it
-								.hasNext();) {
-							String itn = c2it.next();
-							String wsdl = null;
+					if (!c2.isEmpty()) {
+						for (String itn : c2) {
+							String wsdl;
 							try {
 								URL url = new URL(urlString);
 								URL wsdlUrl = new URL(url, itn);
 								wsdl = getHtml(wsdlUrl.toString());
 							} catch (Exception e) {
-								error(xmlStreamWriter,
+								error(
+										xmlStreamWriter,
 										"error occurred during getting wsdl file content",
-										e, true);
+										e, true
+								);
 								wsdl = null;
 							}
 							if (wsdl != null) {
 								Collection<String> c3 = XmlUtils
-										.evaluateXPathNodeSet(wsdl,
-										// "definitions/service/port/targetAddress",
-										// "concat(.,';',../../@name)");
-												"definitions/service/port/targetAddress");
-								if (c3 != null && c3.size() > 0) {
-									for (Iterator<String> c3it = c3.iterator(); c3it
-											.hasNext();) {
+										.evaluateXPathNodeSet(
+												wsdl,
+												// "definitions/service/port/targetAddress",
+												// "concat(.,';',../../@name)");
+												"definitions/service/port/targetAddress"
+										);
+								if (!c3.isEmpty()) {
+									for (String s : c3) {
 										xmlStreamWriter
 												.writeStartElement("targetAddr");
-										xmlStreamWriter.writeCharacters(c3it
-												.next());
+										xmlStreamWriter.writeCharacters(s);
 										xmlStreamWriter.writeEndElement();
 									}
 								} else {
@@ -299,13 +306,14 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 								.evaluateXPathNodeSet(
 										content,
 										"ProcessDefinition/starter[type='com.tibco.plugin.soap.SOAPEventSource']/config/sharedChannels/jmsChannel/JMSTo");
-						if (c1 != null && c1.size() > 0) {
-							for (Iterator<String> c1it = c1.iterator(); c1it
-									.hasNext();) {
+						if (!c1.isEmpty()) {
+							for (String s : c1) {
 								xmlStreamWriter.writeStartElement("jmsTo");
-								xmlStreamWriter.writeAttribute("type",
-										"soapEventSource");
-								xmlStreamWriter.writeCharacters(c1it.next());
+								xmlStreamWriter.writeAttribute(
+										"type",
+										"soapEventSource"
+								);
+								xmlStreamWriter.writeCharacters(s);
 								xmlStreamWriter.writeEndElement();
 							}
 						} else {
@@ -325,13 +333,14 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 								.evaluateXPathNodeSet(
 										content,
 										"ProcessDefinition/activity[type='com.tibco.plugin.soap.SOAPSendReceiveActivity']/config/sharedChannels/jmsChannel/JMSTo");
-						if (c2 != null && c2.size() > 0) {
-							for (Iterator<String> c2it = c2.iterator(); c2it
-									.hasNext();) {
+						if (!c2.isEmpty()) {
+							for (String s : c2) {
 								xmlStreamWriter.writeStartElement("jmsTo");
-								xmlStreamWriter.writeAttribute("type",
-										"soapSendReceiveActivity");
-								xmlStreamWriter.writeCharacters(c2it.next());
+								xmlStreamWriter.writeAttribute(
+										"type",
+										"soapSendReceiveActivity"
+								);
+								xmlStreamWriter.writeCharacters(s);
 								xmlStreamWriter.writeEndElement();
 							}
 						} else {
@@ -349,17 +358,17 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 							content,
 							"repository/globalVariables/globalVariable",
 							"name", "value");
-					if (m1 != null && m1.size() > 0) {
-						for (Iterator<String> m1it = m1.keySet().iterator(); m1it
-								.hasNext();) {
-							Object key = m1it.next();
-							Object value = m1.get(key);
+					if (!m1.isEmpty()) {
+						for (String key : m1.keySet()) {
+							String value = m1.get(key);
 							xmlStreamWriter.writeStartElement("globalVariable");
 							xmlStreamWriter
-									.writeAttribute("name", (String) key);
-							xmlStreamWriter.writeAttribute("ref", "%%" + path
-									+ "/" + key + "%%");
-							xmlStreamWriter.writeCharacters((String) value);
+									.writeAttribute("name", key);
+							xmlStreamWriter.writeAttribute(
+									"ref", "%%" + path
+											+ "/" + key + "%%"
+							);
+							xmlStreamWriter.writeCharacters(value);
 							xmlStreamWriter.writeEndElement();
 						}
 					} else {
@@ -374,7 +383,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 				error(xmlStreamWriter, "error occurred during processing "
 						+ type + " file", e, true);
 			}
-			if (warnMessage.size() > 0) {
+			if (!warnMessage.isEmpty()) {
 				xmlStreamWriter.writeStartElement("warnMessages");
 				for (int i = 0; i < warnMessage.size(); i++) {
 					xmlStreamWriter.writeStartElement("warnMessage");
