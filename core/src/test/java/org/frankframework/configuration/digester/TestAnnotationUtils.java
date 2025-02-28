@@ -190,14 +190,15 @@ public class TestAnnotationUtils {
 	@interface MyDeprecated {
 	}
 
+	// Tests if we can parse FrankElements with the Configuration Digester
 	@Test
 	public void findInterfacesWithAnnotations() throws Exception {
-		//assumeTrue(TestAssertions.isTestRunningOnCI());
+		// assumeTrue(TestAssertions.isTestRunningOnCI());
 
 		BeanDefinitionRegistry beanDefinitionRegistry = new SimpleBeanDefinitionRegistry();
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
 		scanner.setIncludeAnnotationConfig(false);
-		//Find everything that has an interface
+		// Find everything that has an interface
 		scanner.addIncludeFilter((metadataReader, metadataReaderFactory) -> {
 			ClassMetadata metadata = metadataReader.getClassMetadata();
 			return metadata.getInterfaceNames().length > 0;
@@ -222,8 +223,9 @@ public class TestAnnotationUtils {
 		for (String beanName : names) {
 			if(beanName.contains(this.getClass().getCanonicalName())
 					|| beanName.startsWith("org.frankframework.credentialprovider")
+					|| beanName.startsWith("org.frankframework.security.config.ServletRegistration")
 					|| beanName.endsWith(".UnloadableClass")
-			) continue; //Ignore this class, the "unloadable" test-class, and also credential provider classes because they use optional dependencies not on our classpath.
+			) continue; // Ignore this class, the "unloadable" test-class, and also credential provider classes because they use optional dependencies not on our classpath.
 
 			List<Class<?>> interfaces = ClassUtils.getAllInterfaces(Class.forName(beanName));
 			interfazes.addAll(interfaces);

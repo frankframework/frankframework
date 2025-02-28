@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2024 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package org.frankframework.stream;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -195,8 +196,8 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 		}
 	}
 
-	public InputStream getInputStream() throws IOException {
-		return Files.newInputStream(path);
+	public BufferedInputStream getInputStream() throws IOException {
+		return new BufferedInputStream(Files.newInputStream(path));
 	}
 
 	private long getFileSize() {

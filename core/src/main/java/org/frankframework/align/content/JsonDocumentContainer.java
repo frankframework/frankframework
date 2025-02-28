@@ -15,20 +15,26 @@
 */
 package org.frankframework.align.content;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import jakarta.json.stream.JsonGenerator;
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.springframework.http.MediaType;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
+import org.frankframework.stream.MessageContext;
 
 /**
  * Helper class to construct JSON from XML events.
@@ -91,92 +97,114 @@ public class JsonDocumentContainer {
 		parent.addContent(child);
 	}
 
-	@Override
-	public String toString() {
-		return toString(true);
+	/**
+	 * Produce a {@link Message} with the JSON Document content, using {@link MessageBuilder} to reduce memory usage.
+	 */
+	public Message toMessage() throws IOException {
+		return toMessage(true);
 	}
 
-	public String toString(boolean indent) {
+	/**
+	 * Produce a {@link Message} with the JSON Document content, using {@link MessageBuilder} to reduce memory usage.
+	 */
+	public Message toMessage(boolean indent) throws IOException {
+		if (root.getContent() == null) {
+			return Message.nullMessage(new MessageContext().withMimeType(MediaType.APPLICATION_JSON));
+		}
+		MessageBuilder messageBuilder = new MessageBuilder();
+		messageBuilder.setMimeType(MediaType.APPLICATION_JSON);
+		try (Writer writer = messageBuilder.asWriter()) {
+			toWriter(writer, indent);
+		}
+		return messageBuilder.build();
+	}
+
+	/**
+	 * Write JSON document content to the given {@link Writer}.
+	 *
+	 * @param writer
+	 * @param indent
+	 * @throws IOException
+	 */
+	public void toWriter(Writer writer, boolean indent) throws IOException {
 		Object content = root.getContent();
 		if (content == null) {
-			return null;
+			return;
 		}
 		if (skipRootElement && content instanceof Map<?, ?> map) {
 			content = map.values().toArray()[0];
 		}
-		StringBuilder sb = new StringBuilder();
-		toString(sb, content, indent ? 0 : -1);
-		return sb.toString();
+		toWriter(writer, content, indent ? 0 : -1);
 	}
 
-	protected void toString(StringBuilder sb, Object item, int indentLevel) {
+	protected void toWriter(Writer w, Object item, int indentLevel) throws IOException {
 		if (item == null) {
-			sb.append("null");
-		} else if (item instanceof String) {
-			sb.append(item);
+			w.append("null");
+		} else if (item instanceof String s) {
+			w.append(s);
 		} else if (item instanceof Map) {
-			sb.append("{");
+			w.append("{");
 			if (indentLevel >= 0) indentLevel++;
+			boolean first = true;
 			//noinspection unchecked
 			for (Entry<String, Object> entry : ((Map<String, Object>) item).entrySet()) {
-				newLine(sb, indentLevel);
-				sb.append('"').append(entry.getKey()).append("\": ");
-				toString(sb, entry.getValue(), indentLevel);
-				sb.append(",");
+				if (!first) w.append(",");
+				first = false;
+				newLine(w, indentLevel);
+				w.append('"').append(entry.getKey()).append("\": ");
+				toWriter(w, entry.getValue(), indentLevel);
 			}
-			sb.deleteCharAt(sb.length() - 1);
 			if (indentLevel >= 0) indentLevel--;
-			newLine(sb, indentLevel);
-			sb.append("}");
+			newLine(w, indentLevel);
+			w.append("}");
 		} else if (item instanceof List<?> list) {
-			sb.append("[");
+			w.append("[");
 			if (indentLevel >= 0) indentLevel++;
+			boolean first = true;
 			for (Object subitem : list) {
-				newLine(sb, indentLevel);
-				toString(sb, subitem, indentLevel);
-				sb.append(",");
+				if (!first) w.append(",");
+				first = false;
+				newLine(w, indentLevel);
+				toWriter(w, subitem, indentLevel);
 			}
-			sb.deleteCharAt(sb.length() - 1);
 			if (indentLevel >= 0) indentLevel--;
-			newLine(sb, indentLevel);
-			sb.append("]");
+			newLine(w, indentLevel);
+			w.append("]");
 		} else if (item instanceof JsonElementContainer container) {
-			toString(sb, container.getContent(), indentLevel);
+			toWriter(w, container.getContent(), indentLevel);
 		} else {
 			throw new NotImplementedException("cannot handle class [" + item.getClass().getName() + "]");
 		}
 	}
 
-	protected void generate(JsonGenerator g, String key, Object item) {
-		if (item == null) {
-			if (key != null) g.writeNull(key);
-			else g.writeNull();
-		} else if (item instanceof String string) {
-			if (key != null) g.write(key, string);
-			else g.write(string);
-		} else if (item instanceof Map) {
-			if (key != null) g.writeStartObject(key);
-			else g.writeStartObject();
-			//noinspection unchecked
-			for (Entry<String, Object> entry : ((Map<String, Object>) item).entrySet()) {
-				generate(g, entry.getKey(), entry.getValue());
-			}
-			g.writeEnd();
-		} else if (item instanceof List<?> list) {
-			if (key != null) g.writeStartArray(key);
-			else g.writeStartArray();
-			for (Object subitem : list) {
-				generate(g, null, subitem);
-			}
-			g.writeEnd();
-		} else {
-			throw new NotImplementedException("cannot handle class [" + item.getClass().getName() + "]");
-		}
+	/**
+	 * Create JSON String representation of the JSON Document. This could use a lot of memory, depending on document size.
+	 * Be careful with using this, preferably use {@link #toMessage()}.
+	 */
+	@Override
+	@Deprecated
+	public String toString() {
+		return toString(true);
 	}
 
-	private void newLine(StringBuilder sb, int indentLevel) {
+	/**
+	 * Create JSON String representation of the JSON Document. This could use a lot of memory, depending on document size.
+	 * Be careful with using this, preferably use {@link #toMessage()}.
+	 */
+	@Deprecated
+	public String toString(boolean indent) {
+		Writer writer = new StringWriter();
+		try {
+			toWriter(writer, indent);
+		} catch (IOException e) {
+			throw new RuntimeException("Unexpected IOException writing to string", e);
+		}
+		return writer.toString();
+	}
+
+	private void newLine(Writer w, int indentLevel) throws IOException {
 		if (indentLevel >= 0) {
-			sb.append(INDENTOR, 0, (Math.min(indentLevel, MAX_INDENT)) * 2 + 1);
+			w.write(INDENTOR, 0, (Math.min(indentLevel, MAX_INDENT)) * 2 + 1);
 		}
 	}
 }

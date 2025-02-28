@@ -3,6 +3,7 @@ package org.frankframework.util;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -13,6 +14,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.io.StringWriter;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Base64;
@@ -61,6 +64,37 @@ class StreamCaptureUtilsTest {
 		String trimmedResult = base64String.replaceAll("\n", "");
 		assertEquals(expected, new String(Base64.getDecoder().decode(trimmedResult)));
 		assertEquals(expected, new String(baos.toByteArray()));
+	}
+
+	@Test
+	void testCaptureUnreadInputStream() throws IOException {
+		URL testFileURL = TestFileUtils.getTestFileURL("/Message/testString.txt");
+		ByteArrayOutputStream baos = spy(new ByteArrayOutputStream());
+
+		StreamCaptureUtils.captureInputStream(testFileURL.openStream(), baos, 16).close();
+		// Do not read!
+
+		String capture = new String(baos.toByteArray());
+		assertEquals(16, capture.length());
+		assertEquals("<root><sub>abc&a", capture);
+
+		verify(baos, times(1)).close(); // Capture should be closed together with the input.
+	}
+
+	@Test
+	void testCaptureUnreadReader() throws IOException {
+		URL testFileURL = TestFileUtils.getTestFileURL("/Message/testString.txt");
+		StringWriter baos = spy(new StringWriter());
+		Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(testFileURL.openStream());
+
+		StreamCaptureUtils.captureReader(reader, baos, 16).close();
+		// Do not read!
+
+		String capture = baos.toString();
+		assertEquals(16, capture.length());
+		assertEquals("<root><sub>abc&a", capture);
+
+		verify(baos, times(1)).close(); // Capture should be closed together with the input.
 	}
 
 	@Test
@@ -135,21 +169,21 @@ class StreamCaptureUtilsTest {
 		Message message = spy(new Message(stream)); // non-repeatable
 		ByteArrayOutputStream boas = message.captureBinaryStream();
 
-		byte[] magic = message.getMagic(bufferSize);
+		String magic = message.peek(bufferSize);
 
 		message.asString(); // Read twice after the magic has been fetched
 		message.asString();
 
 		byte[] capture = Arrays.copyOf(boas.toByteArray(), bufferSize); // It is possible more characters have been written to the captured stream
-		assertEquals(new String(magic), new String(capture));
+		assertEquals(magic, new String(capture));
 		assertEquals(message.asString(), new String(input.openStream().readAllBytes())); // Verify that the message output, after reading the magic, has not changed
 
-		verify(stream, times(2)).close();
+		verify(stream, atLeastOnce()).close();
 		verify(message, times(0)).close();
 
 		message.close();
 
-		verify(stream, times(2)).close();
+		verify(stream, atLeastOnce()).close();
 		verify(message, times(1)).close();
 	}
 

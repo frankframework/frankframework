@@ -149,8 +149,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private final Map<String, DistributionSummary> pipeWaitStatistics = new ConcurrentHashMap<>();
 	private final Map<String, DistributionSummary> pipeSizeStats = new ConcurrentHashMap<>();
 
-	private @Getter final List<IPipeLineExitHandler> exitHandlers = new ArrayList<>();
-
 	private boolean configurationSucceeded = false;
 	private boolean inputMessageConsumedMultipleTimes=false;
 
@@ -167,18 +165,13 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	@Override
 	public final void setApplicationContext(ApplicationContext context) {
-		if (context instanceof Adapter adapter) {
+		if (context instanceof Adapter contextAdapter) {
 			// This should always be the case, but in tests it may be a TestConfiguration instead...
-			this.adapter = adapter;
+			this.adapter = contextAdapter;
 
-			this.owner = adapter; // LEGACY REMOVE THIS ASAP!
+			this.owner = contextAdapter; // LEGACY REMOVE THIS ASAP!
 		} else {
-			owner = new HasName() {
-				@Override
-				public String getName() {
-					return "unknown pipeline beloging to context: "+context.getId();
-				}
-			};
+			owner = () -> "unknown pipeline beloging to context: "+context.getId();
 		}
 
 		this.applicationContext = context;
@@ -198,11 +191,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 	public IPipe getPipe(int index) {
 		return pipes.get(index);
-	}
-
-	public void registerExitHandler(IPipeLineExitHandler exitHandler) {
-		exitHandlers.add(exitHandler);
-		log.info("registered exithandler [{}]", exitHandler.getName());
 	}
 
 	/**

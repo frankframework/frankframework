@@ -140,7 +140,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 			fail("expected error [" + expectedError + "]");
 		} catch (PipeRunException e) {
 			String msg = e.getMessage();
-			if (msg == null || msg.indexOf(expectedError) < 0) {
+			if (msg == null || !msg.contains(expectedError)) {
 				fail("expected [" + expectedError + "] in error message, but was [" + msg + "]");
 			}
 		}
@@ -153,34 +153,30 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 		validatePlainText("< dit is helemaal geen xml>", "failed");
 	}
 
-	public void testAddNamespace(String xml, String expected) {
+	public void testAddNamespace(String xml, String expected) throws IOException {
 		WsdlXmlValidator val = new WsdlXmlValidator();
 		val.setSchemaLocation("xxx yyy");
-		String act = val.addNamespace(xml);
+		String act = val.addNamespace(new Message(xml)).asString();
 		assertEquals(expected, act);
 	}
 
 	@Test
-	void testAddNamespace() {
-		String tail = "<elem1>content</elem></root>";
-		testAddNamespace("<root>" + tail, "<root xmlns=\"xxx\">" + tail);
+	void testAddNamespace() throws Exception {
+		String tail = "<elem1>content</elem1></root>";
+		testAddNamespace("<root>" + tail, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root xmlns=\"xxx\">" + tail);
 		testAddNamespace(
 				"<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>" + tail,
 				"<?xml version=\"1.0\" encoding=\"UTF-8\"?><root xmlns=\"xxx\">" + tail
 		);
 		testAddNamespace(
 				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root>" + tail,
-				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root xmlns=\"xxx\">" + tail
+				"<?xml version=\"1.0\" encoding=\"UTF-8\"?><root xmlns=\"xxx\">" + tail
 		);
 		testAddNamespace("<root xmlns=\"xxx\">" + tail, "<root xmlns=\"xxx\">" + tail);
 		testAddNamespace("<root xmlns=\"yyy\">" + tail, "<root xmlns=\"yyy\">" + tail);
-		testAddNamespace(
-				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>bagger",
-				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>bagger"
-		);
-		testAddNamespace("bagger", "bagger");
-		testAddNamespace("", "");
+
+		testAddNamespace("", null);
 		testAddNamespace(null, null);
-		testAddNamespace("<root/>", "<root xmlns=\"xxx\"/>");
+		testAddNamespace("<root/>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root xmlns=\"xxx\"/>");
 	}
 }

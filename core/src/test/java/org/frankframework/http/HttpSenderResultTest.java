@@ -48,7 +48,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
 
 @Log4j2
-public class HttpSenderResultTest extends Mockito {
+class HttpSenderResultTest extends Mockito {
 
 	private HttpSender sender = null;
 
@@ -72,17 +72,17 @@ public class HttpSenderResultTest extends Mockito {
 		// Mock all requests
 		when(httpClient.execute(any(HttpHost.class), any(HttpRequestBase.class), any(HttpContext.class))).thenReturn(httpResponse);
 
-		HttpSender sender = spy(new HttpSender());
-		when(sender.getHttpClient()).thenReturn(httpClient);
+		HttpSender httpSender = spy(new HttpSender());
+		when(httpSender.getHttpClient()).thenReturn(httpClient);
 
 		// Some default settings, url will be mocked.
-		sender.setUrl("http://127.0.0.1/");
-		sender.setIgnoreRedirects(true);
-		sender.setVerifyHostname(false);
-		sender.setAllowSelfSignedCertificates(true);
+		httpSender.setUrl("http://127.0.0.1/");
+		httpSender.setIgnoreRedirects(true);
+		httpSender.setVerifyHostname(false);
+		httpSender.setAllowSelfSignedCertificates(true);
 
-		this.sender = sender;
-		return sender;
+		this.sender = httpSender;
+		return httpSender;
 	}
 
 	public HttpSender createHttpSenderFromFile(String testFile) throws IOException {
@@ -126,34 +126,34 @@ public class HttpSenderResultTest extends Mockito {
 
 	@Test
 	void simpleMockedHttpGet() throws Exception {
-		HttpSender sender = createHttpSender();
+		HttpSender httpSender = createHttpSender();
 
 		PipeLineSession session = new PipeLineSession();
 
-		sender.setMethodType(HttpMethod.GET);
+		httpSender.setMethodType(HttpMethod.GET);
 
-		sender.configure();
-		sender.start();
+		httpSender.configure();
+		httpSender.start();
 
 		// Use InputStream 'content' as result.
-		String result = sender.sendMessageOrThrow(new Message(""), session).asString();
+		String result = httpSender.sendMessageOrThrow(new Message(""), session).asString();
 		assertEquals("<dummy result/>", result);
 	}
 
 	@Test
 	void simpleMockedHttpPost() throws Exception {
 		InputStream inputStream = spy(EmptyInputStream.INSTANCE);
-		HttpSender sender = createHttpSender(inputStream, null);
+		HttpSender httpSender = createHttpSender(inputStream, null);
 
 		try (PipeLineSession session = new PipeLineSession()) {
-			sender.setContentType("application/json");
-			sender.setMethodType(HttpMethod.POST);
+			httpSender.setContentType("application/json");
+			httpSender.setMethodType(HttpMethod.POST);
 
-			sender.configure();
-			sender.start();
+			httpSender.configure();
+			httpSender.start();
 
 			// Use InputStream 'content' as result.
-			Message result = sender.sendMessageOrThrow(new Message("{\"temperature\": 0}"), session);
+			Message result = httpSender.sendMessageOrThrow(new Message("{\"temperature\": 0}"), session);
 			result.closeOnCloseOf(session);
 			assertTrue(result.isNull());
 		}
@@ -163,15 +163,15 @@ public class HttpSenderResultTest extends Mockito {
 
 	@Test
 	void simpleMultiPartResponse() throws Exception {
-		HttpSender sender = createHttpSenderFromFile("multipart1.txt");
+		HttpSender httpSender = createHttpSenderFromFile("multipart1.txt");
 
 		PipeLineSession pls = new PipeLineSession();
 
-		sender.setMethodType(HttpMethod.GET);
-		sender.configure();
-		sender.start();
+		httpSender.setMethodType(HttpMethod.GET);
+		httpSender.configure();
+		httpSender.start();
 
-		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
+		String result = httpSender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertEquals("text default", result);
 
 		int multipartAttachmentCount = 0;
@@ -187,15 +187,15 @@ public class HttpSenderResultTest extends Mockito {
 
 	@Test
 	void simpleMtomResponse() throws Exception {
-		HttpSender sender = createHttpSenderFromFile("mtom-multipart.txt");
+		HttpSender httpSender = createHttpSenderFromFile("mtom-multipart.txt");
 
 		PipeLineSession pls = new PipeLineSession();
 
-		sender.setMethodType(HttpMethod.GET);
-		sender.configure();
-		sender.start();
+		httpSender.setMethodType(HttpMethod.GET);
+		httpSender.configure();
+		httpSender.start();
 
-		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
+		String result = httpSender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertEquals("<soap:Envelope/>", result.trim());
 
 		int multipartAttachmentCount = 0;

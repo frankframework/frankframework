@@ -340,7 +340,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	 * @throws FileSystemException if it cannot find the resource in S3.
 	 */
 	private void updateFileAttributes(S3FileRef f) throws FileSystemException {
-		if (f.getContentLength() == null) {
+		if (f.getContentLength() == null && f.hasName()) {
 			try {
 				getFileAttributes(f);
 			} catch (AwsServiceException e) {
@@ -525,6 +525,11 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 
 	@Override
 	public long getFileSize(S3FileRef f) throws FileSystemException {
+		// Probably a folder, which cannot have a size.
+		if (!f.hasName()) {
+			return 0;
+		}
+
 		updateFileAttributes(f);
 		return f.getContentLength();
 	}
@@ -532,6 +537,9 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	@Override
 	public Date getModificationTime(S3FileRef f) throws FileSystemException {
 		updateFileAttributes(f);
+		if (f.getLastModified() == null) {
+			return null;
+		}
 		return Date.from(f.getLastModified());
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 - 2024 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,8 @@
 */
 package org.frankframework.console.configuration;
 
-import org.frankframework.console.ConsoleFrontend;
-import org.frankframework.lifecycle.DynamicRegistration;
-import org.frankframework.lifecycle.servlets.SecuritySettings;
-import org.frankframework.lifecycle.servlets.ServletConfiguration;
-import org.frankframework.util.SpringUtils;
+import jakarta.servlet.MultipartConfigElement;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -27,11 +24,22 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.DispatcherServlet;
 
-import jakarta.servlet.MultipartConfigElement;
+import org.frankframework.console.ConsoleFrontend;
+import org.frankframework.lifecycle.DynamicRegistration;
+import org.frankframework.lifecycle.servlets.SecuritySettings;
+import org.frankframework.lifecycle.servlets.ServletConfiguration;
+import org.frankframework.security.config.ServletRegistration;
+import org.frankframework.util.SpringUtils;
 
 @Configuration
 public class RegisterServletEndpoints implements ApplicationContextAware {
 	private ApplicationContext applicationContext;
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
+		SecuritySettings.setupDefaultSecuritySettings(applicationContext.getEnvironment());
+	}
 
 	@Bean
 	public ServletRegistration<DispatcherServlet> backendServletBean() {
@@ -58,11 +66,5 @@ public class RegisterServletEndpoints implements ApplicationContextAware {
 		servletConfiguration.loadProperties();
 
 		return new ServletRegistration<>(ConsoleFrontend.class, servletConfiguration);
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
-		SecuritySettings.setupDefaultSecuritySettings(applicationContext.getEnvironment());
 	}
 }

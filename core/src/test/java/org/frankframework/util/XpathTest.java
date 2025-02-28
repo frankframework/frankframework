@@ -59,12 +59,11 @@ public class XpathTest extends FunctionalTransformerPoolTestBase {
 	}
 	public void xpathTest(String input, String namespaceDefs, String xpath, OutputType outputType, String expected)  throws Exception {
 		boolean includeXmlDeclaration=false;
-		boolean namespaceAware=true;
 		ParameterList formalParams=null;
 		TransformerPool tp= TransformerPool.getXPathTransformerPool(namespaceDefs, xpath, outputType, includeXmlDeclaration, formalParams);
-		testTransformerPool(tp, input, expected, namespaceAware, "viaString");
-		Source source = XmlUtils.stringToSource(input,namespaceAware);
-		testTransformerPool(tp, source, expected, namespaceAware, "viaSource");
+		testTransformerPool(tp, input, expected, "viaString");
+		Source source = XmlUtils.stringToSource(input, true);
+		testTransformerPool(tp, source, expected, "viaSource");
 	}
 
 

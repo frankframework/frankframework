@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -127,6 +127,7 @@ import org.frankframework.xml.XmlWriter;
  * @author  Johan Verrips
  */
 public class XmlUtils {
+	public static final int HTML_MAX_PREAMBLE_SIZE = 512;
 	static Logger log = LogManager.getLogger(XmlUtils.class);
 
 	public static final int DEFAULT_XSLT_VERSION = AppConstants.getInstance().getInt("xslt.version.default", 2);
@@ -1495,6 +1496,16 @@ public class XmlUtils {
 		}
 	}
 
+	public static String getRootNamespace(Message input) {
+		try {
+			TransformerPool tp = getGetRootNamespaceTransformerPool();
+			return tp.transform(input);
+		} catch (Exception e) {
+			log.debug("unable to find root-namespace", e);
+			return null;
+		}
+	}
+
 	public static String addRootNamespace(String input, String namespace) {
 		try {
 			TransformerPool tp = getAddRootNamespaceTransformerPool(namespace,true,false);
@@ -1502,6 +1513,16 @@ public class XmlUtils {
 		} catch (Exception e) {
 			log.warn("unable to add root-namespace", e);
 			return null;
+		}
+	}
+
+	public static Message addRootNamespace(Message input, String namespace) {
+		try {
+			TransformerPool tp = getAddRootNamespaceTransformerPool(namespace,false,true);
+			return tp.transform(input, null);
+		} catch (Exception e) {
+			log.warn("unable to add root-namespace", e);
+			return Message.nullMessage();
 		}
 	}
 
@@ -1700,7 +1721,7 @@ public class XmlUtils {
 	public static String toXhtml(Message message) throws IOException {
 		if (!Message.isEmpty(message)) {
 			String messageCharset = message.getCharset();
-			String xhtmlString = new String(message.getMagic(512), messageCharset != null ? messageCharset : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			String xhtmlString = message.peek(HTML_MAX_PREAMBLE_SIZE);
 			if (xhtmlString.contains("<html>") || xhtmlString.contains("<html ")) {
 				CleanerProperties props = new CleanerProperties();
 				props.setOmitDoctypeDeclaration(true);

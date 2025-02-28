@@ -19,14 +19,14 @@ import org.xml.sax.SAXException;
 
 public interface INodeBuilder extends AutoCloseable {
 
-	public ArrayBuilder startArray(String elementName) throws SAXException;
-	public ObjectBuilder startObject() throws SAXException;
-	public void setValue(String value) throws SAXException;
-	public void setValue(Number value) throws SAXException;
-	public void setValue(boolean value) throws SAXException;
-	public void setNumberValue(String value) throws SAXException;
+	ArrayBuilder startArray(String elementName) throws SAXException;
+	ObjectBuilder startObject() throws SAXException;
+	void setValue(String value) throws SAXException;
+	void setValue(Number value) throws SAXException;
+	void setValue(boolean value) throws SAXException;
+	void setNumberValue(String value) throws SAXException;
 
 	@Override
-	public void close() throws SAXException;
+	void close() throws SAXException;
 
 }

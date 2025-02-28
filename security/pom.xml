@@ -72,6 +72,12 @@
 			<artifactId>lombok</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+			<optional>true</optional>
+		</dependency>
+
 		<!-- Test scoped and provided dependencies -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>

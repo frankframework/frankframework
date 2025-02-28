@@ -65,9 +65,10 @@ public class StreamCaptureUtils {
 
 			@Override
 			public void write(char[] buffer, int offset, int length) throws IOException {
-				if (written<=maxSize) {
+				if (written <= maxSize) {
 					writer.write(buffer, offset, length);
-					if ((written+=length)>maxSize) {
+					written += length;
+					if (written > maxSize) {
 						writer.close();
 					}
 				}
@@ -95,7 +96,8 @@ public class StreamCaptureUtils {
 			@Override
 			public void close() throws IOException {
 				try {
-					if (counter.getByteCount()<maxSize && available()>0) {
+					// Assume the stream has not yet been closed
+					if (counter.getByteCount() < maxSize) {
 						// Make the bytes available for debugger even when the stream was not used (might be because the
 						// pipe or sender that normally consumes the stream is stubbed by the debugger)
 						int len = read(new byte[maxSize]);
