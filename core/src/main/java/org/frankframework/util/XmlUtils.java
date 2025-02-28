@@ -1640,7 +1640,7 @@ public class XmlUtils {
 				&& Objects.equals(attribute1.getValue(), attribute2.getValue());
 	}
 
-	public static Collection<String> evaluateXPathNodeSet(String input, String xpathExpr) throws XmlException {
+	public static @Nonnull Collection<String> evaluateXPathNodeSet(String input, String xpathExpr) throws XmlException {
 		String msg = XmlUtils.removeNamespaces(input);
 
 		try {
@@ -1657,25 +1657,21 @@ public class XmlUtils {
 					c.add(nodes.item(i).getFirstChild().getNodeValue());
 				}
 			}
-			if (!c.isEmpty()) {
-				return c;
-			}
-			// TODO Don't return stupid null
-			return null;
+			return c;
 		} catch (DomBuilderException | XPathExpressionException e) {
 			throw new XmlException(e);
 		}
 	}
 
-	public static String evaluateXPathNodeSetFirstElement(String input, String xpathExpr) throws XmlException {
+	public static @Nullable String evaluateXPathNodeSetFirstElement(String input, String xpathExpr) throws XmlException {
 		Collection<String> c = evaluateXPathNodeSet(input, xpathExpr);
-		if (c != null && !c.isEmpty()) {
+		if (!c.isEmpty()) {
 			return c.iterator().next();
 		}
 		return null;
 	}
 
-	public static Double evaluateXPathNumber(String input, String xpathExpr) throws XmlException {
+	public static @Nullable Double evaluateXPathNumber(String input, String xpathExpr) throws XmlException {
 		String msg = XmlUtils.removeNamespaces(input);
 
 		try {
@@ -1689,7 +1685,7 @@ public class XmlUtils {
 		}
 	}
 
-	public static Map<String, String> evaluateXPathNodeSet(String input, String xpathExpr, String keyElement, String valueElement) throws XmlException {
+	public static @Nonnull Map<String, String> evaluateXPathNodeSet(String input, String xpathExpr, String keyElement, String valueElement) throws XmlException {
 		String msg = XmlUtils.removeNamespaces(input);
 
 		Map<String, String> m = new HashMap<>();
@@ -1711,11 +1707,7 @@ public class XmlUtils {
 		} catch (DomBuilderException | XPathExpressionException e) {
 			throw new XmlException(e);
 		}
-		if (!m.isEmpty()) {
-			return m;
-		}
-		// TODO Don't return stupid null
-		return null;
+		return m;
 	}
 
 	public static String toXhtml(Message message) throws IOException {
