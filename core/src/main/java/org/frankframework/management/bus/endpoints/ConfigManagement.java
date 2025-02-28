@@ -73,7 +73,6 @@ public class ConfigManagement extends BusEndpointBase {
 		boolean loadedConfiguration = BusMessageUtils.getBooleanHeader(message, "loaded", false);
 		StringBuilder result = new StringBuilder();
 
-
 		if(configurationName != null) {
 			Configuration configuration = getConfigurationByName(configurationName);
 			result.append(loadedConfiguration ? configuration.getLoadedConfiguration() : configuration.getOriginalConfiguration());
@@ -84,7 +83,6 @@ public class ConfigManagement extends BusEndpointBase {
 			}
 			result.append("</" + ROOT_ELEMENT_NAME + ">");
 		}
-
 
 		return new StringMessage(result.toString(), MediaType.APPLICATION_XML);
 	}
