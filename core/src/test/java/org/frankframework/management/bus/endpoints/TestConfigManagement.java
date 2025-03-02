@@ -16,8 +16,10 @@ import org.frankframework.testutil.TestConfiguration;
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 @WithMockUser(roles = { "IbisTester" })
 public class TestConfigManagement extends BusTestBase {
-	private static final String LOADED_RESULT = "<configurations><loaded authAlias=\"test\" /></configurations>";
-	private static final String ORIGINAL_RESULT = "<configurations><original authAlias=\"test\" /></configurations>";
+	private static final String LOADED_RESULT = "<loaded authAlias=\"test\" />";
+	private static final String LOADED_RESULTS = "<configurations>" + LOADED_RESULT + "</configurations>";
+	private static final String ORIGINAL_RESULT = "<original authAlias=\"test\" />";
+	private static final String ORIGINAL_RESULTS = "<configurations>" + ORIGINAL_RESULT + "</configurations>";
 
 	@Test
 	public void getOriginalConfigurationByName() {
@@ -31,7 +33,7 @@ public class TestConfigManagement extends BusTestBase {
 	public void getOriginalConfigurations() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.GET);
 		Message<?> response = callSyncGateway(request);
-		assertEquals(ORIGINAL_RESULT, response.getPayload());
+		assertEquals(ORIGINAL_RESULTS, response.getPayload());
 	}
 
 	@Test
@@ -48,7 +50,7 @@ public class TestConfigManagement extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.GET);
 		request.setHeader("loaded", true);
 		Message<?> response = callSyncGateway(request);
-		assertEquals(LOADED_RESULT, response.getPayload());
+		assertEquals(LOADED_RESULTS, response.getPayload());
 	}
 
 	@Test
