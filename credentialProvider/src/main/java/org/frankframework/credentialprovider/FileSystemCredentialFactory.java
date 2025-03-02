@@ -28,7 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 /**
- * It's required to set the property {@value FileSystemCredentialFactory#FILESYSTEM_ROOT_PROPERTY} to the directory you which to read credentials from.
+ * It's required to set the property {@value FileSystemCredentialFactory#FILESYSTEM_ROOT_PROPERTY} to the directory you wish to read credentials from.
  */
 public class FileSystemCredentialFactory implements ICredentialFactory {
 
