@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.3.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.3.1">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -2048,7 +2048,8 @@
     </xs:attribute>
     <xs:attribute name="storeMetadataInSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If set, an XML with all message properties is provided under this key</xs:documentation>
+        <xs:documentation>If set, an XML with all message properties is provided under this key.
+ Also stored in the &lt;code&gt;originalMessage&lt;/code&gt; metadata.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="charset" type="xs:string">
@@ -4034,8 +4035,8 @@
  &lt;/ul&gt;
  In the Adapter to be called:
  &lt;ul&gt;
-   &lt;li&gt;The adapter does not need to have a receiver configured to be called from a FrankSender,&lt;/li&gt;
-   &lt;li&gt;The adapter will run in the same transaction as the calling adapter,&lt;/li&gt;
+   &lt;li&gt;The adapter does not need to have a dedicated receiver configured to be called from a FrankSender.&lt;/li&gt;
+   &lt;li&gt;The adapter will run in the same transaction as the calling adapter.&lt;/li&gt;
    &lt;li&gt;If the called adapter does not to run in its own transaction, set the transaction attributes on the PipeLine attribute of this adapter
    or on the SenderPipe that contains this &lt;code&gt;FrankSender&lt;/code&gt;.&lt;/li&gt;
  &lt;/ul&gt;
@@ -4795,19 +4796,6 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="SapSenderType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="SchedulerSender">
-        <xs:annotation>
-          <xs:documentation>Registers a trigger in the scheduler so that the message is send to a javalistener
- at a scheduled time.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="SchedulerSenderType">
               <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -7931,37 +7919,6 @@
     <xs:attributeGroup ref="SapSenderImplDeclaredAttributeGroup" />
     <xs:attributeGroup ref="SapSenderBaseCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="SchedulerSenderType">
-    <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
-    <xs:attributeGroup ref="SchedulerSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.SchedulerSender" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="SchedulerSenderDeclaredAttributeGroup">
-    <xs:attribute name="cronExpressionPattern" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>expression that generates the cron trigger</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="jobGroup" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>job group in which the new trigger is to be created (optional)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="jobNamePattern" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>pattern that leads to the name of the registered trigger(optional)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="javaListener" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>java listener to be called when scheduler trigger fires</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="SchedulerSenderCumulativeAttributeGroup">
-    <xs:attributeGroup ref="SchedulerSenderDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="SenderBaseDeclaredAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="SendGridSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="SendGridSenderCumulativeAttributeGroup" />
@@ -9038,8 +8995,8 @@
  &lt;/ul&gt;
  In the Adapter to be called:
  &lt;ul&gt;
-   &lt;li&gt;The adapter does not need to have a receiver configured to be called from a FrankSender,&lt;/li&gt;
-   &lt;li&gt;The adapter will run in the same transaction as the calling adapter,&lt;/li&gt;
+   &lt;li&gt;The adapter does not need to have a dedicated receiver configured to be called from a FrankSender.&lt;/li&gt;
+   &lt;li&gt;The adapter will run in the same transaction as the calling adapter.&lt;/li&gt;
    &lt;li&gt;If the called adapter does not to run in its own transaction, set the transaction attributes on the PipeLine attribute of this adapter
    or on the SenderPipe that contains this &lt;code&gt;FrankSender&lt;/code&gt;.&lt;/li&gt;
  &lt;/ul&gt;
@@ -9799,19 +9756,6 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="SapSenderType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="SchedulerErrorSender">
-        <xs:annotation>
-          <xs:documentation>Registers a trigger in the scheduler so that the message is send to a javalistener
- at a scheduled time.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="SchedulerSenderType">
               <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -13762,50 +13706,39 @@
  &lt;h3&gt;For using a 'resultString'&lt;/h3&gt;
  You can use the EchoPipe for a static value. This looked like this before:
 
- &lt;pre&gt;
- &lt;code&gt;&amp;lt;pipe name=&amp;quot;HelloWorld&amp;quot; className=&amp;quot;org.frankframework.pipes.FixedResult&amp;quot; returnString=&amp;quot;Hello World&amp;quot;&amp;gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;pipe name=&amp;quot;HelloWorld&amp;quot; className=&amp;quot;org.frankframework.pipes.FixedResult&amp;quot; returnString=&amp;quot;Hello World&amp;quot;&amp;gt;
      &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot;/&amp;gt;
- &amp;lt;/pipe&amp;gt;&lt;/code&gt;
- &lt;/pre&gt;
+ &amp;lt;/pipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  Becomes:
- &lt;pre&gt;
- &lt;code&gt;&amp;lt;pipe name=&amp;quot;HelloWorld&amp;quot; className=&amp;quot;org.frankframework.pipes.EchoPipe&amp;quot; getInputFromFixedValue=&amp;quot;Hello World&amp;quot;&amp;gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;pipe name=&amp;quot;HelloWorld&amp;quot; className=&amp;quot;org.frankframework.pipes.EchoPipe&amp;quot; getInputFromFixedValue=&amp;quot;Hello World&amp;quot;&amp;gt;
      &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot;/&amp;gt;
- &amp;lt;/pipe&amp;gt;&lt;/code&gt;
- &lt;/pre&gt;
+ &amp;lt;/pipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;
 
  &lt;h3&gt;For replacing a value&lt;/h3&gt;
  You can use the ReplacerPipe to replace a value in multiple ways. First, when you need to replace a placeholder with a parameter.
  This looked like:
- &lt;pre&gt;
- &lt;code&gt;&amp;lt;pipe name=&amp;quot;make unique message&amp;quot; className=&amp;quot;org.frankframework.pipes.FixedResultPipe&amp;quot;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;pipe name=&amp;quot;make unique message&amp;quot; className=&amp;quot;org.frankframework.pipes.FixedResultPipe&amp;quot;
      returnString=&amp;quot;&amp;amp;lt;msg mid=&amp;amp;quot;MID&amp;amp;quot; action=&amp;amp;quot;ACTION&amp;amp;quot; /&amp;amp;gt;&amp;quot; replaceFixedParams=&amp;quot;true&amp;quot;&amp;gt;
      &amp;lt;param name=&amp;quot;MID&amp;quot; sessionKey=&amp;quot;mid&amp;quot; /&amp;gt;
      &amp;lt;param name=&amp;quot;ACTION&amp;quot; xpathExpression=&amp;quot;request/@action&amp;quot; /&amp;gt;
- &amp;lt;/pipe&amp;gt;&lt;/code&gt;
- &lt;/pre&gt;
+ &amp;lt;/pipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;
 
  And can now be written like this (note the ?{..} syntax):
- &lt;pre&gt;
- &lt;code&gt;&amp;lt;pipe name=&amp;quot;make unique message&amp;quot; className=&amp;quot;org.frankframework.pipes.ReplacerPipe&amp;quot;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;pipe name=&amp;quot;make unique message&amp;quot; className=&amp;quot;org.frankframework.pipes.ReplacerPipe&amp;quot;
      getInputFromFixedValue=&amp;quot;&amp;amp;lt;msg mid=&amp;amp;quot;?{MID}&amp;amp;quot; action=&amp;amp;quot;?{ACTION}&amp;amp;quot; /&amp;amp;gt;&amp;quot;&amp;gt;
      &amp;lt;param name=&amp;quot;MID&amp;quot; sessionKey=&amp;quot;mid&amp;quot; /&amp;gt;
      &amp;lt;param name=&amp;quot;ACTION&amp;quot; xpathExpression=&amp;quot;request/@action&amp;quot; /&amp;gt;
- &amp;lt;/pipe&amp;gt;&lt;/code&gt;
- &lt;/pre&gt;
+ &amp;lt;/pipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;
 
  When you need to replace a fixed value use the ReplacerPipe with find and replace. This looked like this:
- &lt;pre&gt;
- &lt;code&gt;&amp;lt;FixedResultPipe name=&amp;quot;InputValidateError&amp;quot;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;FixedResultPipe name=&amp;quot;InputValidateError&amp;quot;
      filename=&amp;quot;ManageFileSystem/xml/ErrorMessage.xml&amp;quot;
      replaceFrom=&amp;quot;%reasonCode&amp;quot; replaceTo=&amp;quot;NOT_WELL_FORMED_XML&amp;quot;&amp;gt;
      &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
- &amp;lt;/FixedResultPipe&amp;gt;&lt;/code&gt;
- &lt;/pre&gt;
+ &amp;lt;/FixedResultPipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;
 
  And now should be solved like this:
- &lt;pre&gt;
- &lt;code&gt;&amp;lt;FixedResultPipe name=&amp;quot;InputValidateError&amp;quot;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;FixedResultPipe name=&amp;quot;InputValidateError&amp;quot;
      filename=&amp;quot;ManageFileSystem/xml/ErrorMessage.xml&amp;quot;&amp;gt;
      &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;replaceReasonCode&amp;quot; /&amp;gt;
  &amp;lt;/FixedResultPipe&amp;gt;
@@ -13813,15 +13746,13 @@
      find=&amp;quot;%reasonCode&amp;quot;
      replace=&amp;quot;NOT_WELL_FORMED_XML&amp;quot;&amp;gt;
      &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
- &amp;lt;/ReplacerPipe&amp;gt;&lt;/code&gt;
- &lt;/pre&gt;
+ &amp;lt;/ReplacerPipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  This is also an example of now using two pipes to achieve the same result. Each pipe has its own responsibility.
 
  &lt;h2&gt;More complex configurations&lt;/h2&gt;
  In some cases, a combination of the above is needed to achieve what worked before. In some cases, FixedResultPipe
  was also used to store information in the session. For example, a port of configuration in the JMS listener sender configuration looked like this:
- &lt;pre&gt;
- &lt;code&gt;&amp;lt;CompareStringPipe name=&amp;quot;compareIdAndCid&amp;quot; &amp;gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;CompareStringPipe name=&amp;quot;compareIdAndCid&amp;quot; &amp;gt;
      &amp;lt;param name=&amp;quot;operand1&amp;quot; sessionKey=&amp;quot;id&amp;quot;/&amp;gt;
      &amp;lt;param name=&amp;quot;operand2&amp;quot; sessionKey=&amp;quot;cid&amp;quot;/&amp;gt;
      &amp;lt;forward name=&amp;quot;equals&amp;quot; path=&amp;quot;IdAndCidSame&amp;quot; /&amp;gt;
@@ -13842,12 +13773,10 @@
      &amp;lt;param name=&amp;quot;CID&amp;quot; sessionKey=&amp;quot;cid&amp;quot; /&amp;gt;
      &amp;lt;param name=&amp;quot;SAME&amp;quot; sessionKey=&amp;quot;IdAndCidSame&amp;quot; /&amp;gt;
      &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
- &amp;lt;/pipe&amp;gt;&lt;/code&gt;
- &lt;/pre&gt;
+ &amp;lt;/pipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;
 
  Was rewritten to the following:
- &lt;pre&gt;
- &lt;code&gt;&amp;lt;CompareStringPipe name=&amp;quot;compareIdAndCid&amp;quot; &amp;gt;
+ &lt;pre&gt;&lt;code&gt;&amp;lt;CompareStringPipe name=&amp;quot;compareIdAndCid&amp;quot; &amp;gt;
      &amp;lt;param name=&amp;quot;operand1&amp;quot; sessionKey=&amp;quot;id&amp;quot;/&amp;gt;
      &amp;lt;param name=&amp;quot;operand2&amp;quot; sessionKey=&amp;quot;cid&amp;quot;/&amp;gt;
      &amp;lt;forward name=&amp;quot;equals&amp;quot; path=&amp;quot;IdAndCidSame&amp;quot; /&amp;gt;
@@ -13871,8 +13800,7 @@
      &amp;lt;param name=&amp;quot;CID&amp;quot; sessionKey=&amp;quot;cid&amp;quot; /&amp;gt;
      &amp;lt;param name=&amp;quot;SAME&amp;quot; sessionKey=&amp;quot;IdAndCidSame&amp;quot; /&amp;gt;
      &amp;lt;forward name=&amp;quot;success&amp;quot; path=&amp;quot;EXIT&amp;quot; /&amp;gt;
- &amp;lt;/pipe&amp;gt;&lt;/code&gt;
- &lt;/pre&gt;
+ &amp;lt;/pipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;p&gt;
 
  &lt;h2&gt;The features/documentation of the deprecated features&lt;/h2&gt;
@@ -14486,16 +14414,15 @@
         <xs:annotation>
           <xs:documentation>This Pipe is used to replace values in a few ways. The following steps are performed:
  &lt;ol&gt;
- &lt;li&gt;If &lt;code&gt;find&lt;/code&gt; is provided, it will be replaced by &lt;code&gt;replace&lt;/code&gt;&lt;/li&gt;
+ &lt;li&gt;If the attribute &lt;code&gt;find&lt;/code&gt; is provided, the pipe will attempt to replace the provided value with the content of the attribute &lt;code&gt;replace&lt;/code&gt;.&lt;/li&gt;
  &lt;li&gt;The resulting string is substituted based on the parameters of this pipe. It will replace values in the input enclosed
- with ?{}, for instance: ?{parameterOne}, with parameters of this pipe. If a parameter for the given value is not found, it
- will not be replaced and the '?{parameterOne}' value will remain in the output.
+ with &lt;code&gt;?{...}&lt;/code&gt;, for instance text like: &lt;code&gt;?{parameterOne}&lt;/code&gt; in combination with a parameter &lt;code&gt;parameterOne&lt;/code&gt; will use the value of this Parameter. 
+ If a parameter for the given value is not found, it will not be replaced and the &lt;code&gt;?{parameterOne}&lt;/code&gt; value will remain in the output.&lt;/li&gt;
  &lt;p&gt;
- See Parameter to see how parameter values are determined.&lt;/li&gt;
  &lt;p&gt;
  &lt;li&gt;If attribute &lt;code&gt;substituteVars&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt;, then expressions &lt;code&gt;${...}&lt;/code&gt; are substituted using
  system properties, session variables and application properties. Please note that no &lt;code&gt;${...}&lt;/code&gt; patterns are left in the input. &lt;/li&gt;
- &lt;/ol&gt;</xs:documentation>
+ &lt;/ol&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;See Parameter to see how parameter values are determined.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>

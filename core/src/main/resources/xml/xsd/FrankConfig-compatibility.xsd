@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.3.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.3.1">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -6771,7 +6771,8 @@
     </xs:attribute>
     <xs:attribute name="storeMetadataInSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If set, an XML with all message properties is provided under this key</xs:documentation>
+        <xs:documentation>If set, an XML with all message properties is provided under this key.
+ Also stored in the &lt;code&gt;originalMessage&lt;/code&gt; metadata.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="charset" type="xs:string">
@@ -13453,6 +13454,7 @@
         <xs:documentation>When set &lt;code&gt;true&lt;/code&gt;, parameter replacement matches &lt;code&gt;name-of-parameter&lt;/code&gt;, not &lt;code&gt;?{name-of-parameter}&lt;/code&gt; Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="useOldSubstitutionStartDelimiter" type="frankBoolean" />
   </xs:attributeGroup>
   <xs:attributeGroup name="FixedResultPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="FixedResultPipeDeclaredAttributeGroup" />
