@@ -140,10 +140,10 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 			String logRequest;
 			if ("E".equalsIgnoreCase(getType())) {
 				log.debug("{}creating exceptionLog request", getLogPrefix());
-				logRequest = exceptionLogTp.transform("<dummy/>", parameterValues, true);
+				logRequest = exceptionLogTp.transformToString("<dummy/>", parameterValues, true);
 			} else {
 				log.debug("{}creating auditLog request", getLogPrefix());
-				logRequest = auditLogTp.transform("<dummy/>", parameterValues, true);
+				logRequest = auditLogTp.transformToString("<dummy/>", parameterValues, true);
 			}
 			session = createSession();
 			jakarta.jms.Message msg = createMessage(session, null, new Message(logRequest));

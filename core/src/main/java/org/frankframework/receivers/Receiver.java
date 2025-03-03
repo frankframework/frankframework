@@ -1523,7 +1523,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		if (labelTp != null) {
 			try {
 				message.preserve();
-				return labelTp.transform(message);
+				return labelTp.transformToString(message);
 			} catch (Exception e) {
 				log.warn("{} could not extract label: ({}) {}", this::getLogPrefix, ()-> ClassUtils.nameOf(e), e::getMessage);
 			}
@@ -1537,7 +1537,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		if (correlationIDTp != null) {
 			try {
 				messageWrapper.getMessage().preserve();
-				businessCorrelationId = correlationIDTp.transform(messageWrapper.getMessage());
+				businessCorrelationId = correlationIDTp.transformToString(messageWrapper.getMessage());
 			} catch (Exception e) {
 				log.warn("{} could not extract businessCorrelationId", logPrefix);
 			}

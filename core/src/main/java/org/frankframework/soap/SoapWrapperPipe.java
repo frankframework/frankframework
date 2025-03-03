@@ -22,8 +22,6 @@ import javax.xml.transform.TransformerException;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
-import lombok.Getter;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -39,6 +37,8 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
+
+import lombok.Getter;
 
 /**
  * Pipe to wrap or unwrap a message from/into a SOAP Envelope.
@@ -191,10 +191,10 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 			if (getDirection() == Direction.WRAP) {
 				Message payload = message;
 				if (rootTp != null) {
-					payload = rootTp.transform(payload, null);
+					payload = rootTp.transform(payload);
 				}
-				if (outputNamespaceTp != null) {
-					payload = new Message(outputNamespaceTp.transform(payload.asSource()));
+				if (outputNamespaceTp != null && !Message.isEmpty(payload)) {
+					payload = new Message(outputNamespaceTp.transformToString(payload));
 				}
 				ParameterValueList parameterValueList = null;
 				if (!getParameterList().isEmpty() && (soapHeaderTp != null || soapBodyTp != null)) {
@@ -233,10 +233,10 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 					result = XmlUtils.removeNamespaces(result);
 				}
 				if (removeUnusedOutputNamespacesTp != null) {
-					result = new Message(removeUnusedOutputNamespacesTp.transform(result.asSource()));
+					result = new Message(removeUnusedOutputNamespacesTp.transformToString(result));
 				}
 				if (rootTp != null) {
-					result = new Message(rootTp.transform(result.asSource()));
+					result = new Message(rootTp.transformToString(result));
 				}
 			}
 		} catch (Exception t) {

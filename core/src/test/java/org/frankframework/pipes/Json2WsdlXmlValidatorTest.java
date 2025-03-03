@@ -1,6 +1,6 @@
 package org.frankframework.pipes;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
@@ -157,7 +157,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 		WsdlXmlValidator val = new WsdlXmlValidator();
 		val.setSchemaLocation("xxx yyy");
 		String act = val.addNamespace(new Message(xml)).asString();
-		assertEquals(expected, act);
+		assertXmlEquals(expected, act);
 	}
 
 	@Test

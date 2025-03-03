@@ -140,7 +140,7 @@ public class BisJmsSender extends JmsSender {
 
 	private SenderResult transform(String input) throws SenderException {
 		try {
-			String replyMessage = responseTp.transform(input, null, true);
+			String replyMessage = responseTp.transformToString(input, null, true);
 			if (isRemoveResponseNamespaces()) {
 				replyMessage = XmlUtils.removeNamespaces(replyMessage);
 			}
@@ -162,8 +162,8 @@ public class BisJmsSender extends JmsSender {
 		String bisError;
 		String bisErrorList;
 		try {
-			bisError = bisErrorTp.transform(replyMessage, null, true);
-			bisErrorList = bisErrorListTp.transform(replyMessage, null, true);
+			bisError = bisErrorTp.transformToString(replyMessage, null, true);
+			bisErrorList = bisErrorListTp.transformToString(replyMessage, null, true);
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}

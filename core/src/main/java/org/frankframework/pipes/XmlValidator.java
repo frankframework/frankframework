@@ -268,7 +268,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 		if (XmlUtils.isWellFormed(message, "Envelope")) {
 			String inputRootNs;
 			try {
-				inputRootNs = transformerPoolGetRootNamespace.transform(message);
+				inputRootNs = transformerPoolGetRootNamespace.transformToString(message);
 			} catch (Exception e) {
 				throw new PipeRunException(this, "cannot extract root namespace", e);
 			}
@@ -289,12 +289,12 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 
 					try {
 						SAXSource source = XmlUtils.inputSourceToSAXSource(message.asInputSource(), true, null);
-						input = transformerPoolExtractSoapBody.transform(source);
+						input = transformerPoolExtractSoapBody.transformToString(source);
 					} catch (Exception e) {
 						throw new PipeRunException(this, "cannot extract SOAP body", e);
 					}
 					try {
-						inputRootNs = transformerPoolGetRootNamespace.transform(input, null);
+						inputRootNs = transformerPoolGetRootNamespace.transformToString(input, null);
 					} catch (Exception e) {
 						throw new PipeRunException(this, "cannot extract root namespace", e);
 					}

@@ -117,11 +117,11 @@ public class BisUtils {
 		} else {
 			if (messageHeaderInSoapBody) {
 				if (oldMessageHeaderConversationIdTp != null) {
-					conversationIdElement.setValue(oldMessageHeaderConversationIdTp.transform(originalMessageText, null, true));
+					conversationIdElement.setValue(oldMessageHeaderConversationIdTp.transformToString(originalMessageText, null, true));
 				}
 			} else {
 				if (messageHeaderConversationIdTp != null) {
-					conversationIdElement.setValue(messageHeaderConversationIdTp.transform(originalMessageText, null, true));
+					conversationIdElement.setValue(messageHeaderConversationIdTp.transformToString(originalMessageText, null, true));
 				}
 			}
 		}
@@ -135,11 +135,11 @@ public class BisUtils {
 		} else {
 			if (messageHeaderInSoapBody) {
 				if (oldMessageHeaderExternalRefToMessageIdTp != null) {
-					externalRefToMessageIdElement.setValue(oldMessageHeaderExternalRefToMessageIdTp.transform(originalMessageText, null, true));
+					externalRefToMessageIdElement.setValue(oldMessageHeaderExternalRefToMessageIdTp.transformToString(originalMessageText, null, true));
 				}
 			} else {
 				if (messageHeaderExternalRefToMessageIdTp != null) {
-					externalRefToMessageIdElement.setValue(messageHeaderExternalRefToMessageIdTp.transform(originalMessageText, null, true));
+					externalRefToMessageIdElement.setValue(messageHeaderExternalRefToMessageIdTp.transformToString(originalMessageText, null, true));
 				}
 			}
 		}
