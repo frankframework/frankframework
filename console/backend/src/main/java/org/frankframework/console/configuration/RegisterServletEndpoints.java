@@ -45,7 +45,7 @@ public class RegisterServletEndpoints implements ApplicationContextAware {
 	public ServletRegistration<DispatcherServlet> backendServletBean() {
 		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
 		servletConfiguration.setName("IAF-API");
-		servletConfiguration.setUrlMapping("iaf/api/*,!/iaf/api/server/health");
+		servletConfiguration.setUrlMapping("iaf/api/*");
 		servletConfiguration.setSecurityRoles(DynamicRegistration.ALL_IBIS_USER_ROLES);
 		servletConfiguration.setLoadOnStartup(1);
 		servletConfiguration.loadProperties();

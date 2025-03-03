@@ -39,8 +39,10 @@ import org.springframework.security.config.annotation.web.configurers.FormLoginC
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import lombok.Setter;
 
@@ -56,6 +58,7 @@ import org.frankframework.util.ClassUtils;
 @Order(Ordered.HIGHEST_PRECEDENCE+100)
 public class SecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware {
 	private static final Logger APPLICATION_LOG = LogManager.getLogger("APPLICATION");
+	public static final String EXPRESSION_IS_LOCALHOST_OR_AUTHENTICATED = "hasIpAddress('127.0.0.1') or hasIpAddress('::1') or isAuthenticated()";
 	private @Setter ApplicationContext applicationContext;
 	private boolean csrfEnabled;
 	private String csrfCookiePath;
@@ -93,6 +96,11 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 
 		// logout automatically sets CookieClearingLogoutHandler, CsrfLogoutHandler and SecurityContextLogoutHandler.
 		http.logout(t -> t.logoutRequestMatcher(this::requestMatcher).logoutSuccessHandler(new RedirectToServletRoot()));
+
+		http.authorizeHttpRequests(authorize -> authorize
+						.requestMatchers(new AntPathRequestMatcher("/**/health"))
+						.access(new WebExpressionAuthorizationManager(EXPRESSION_IS_LOCALHOST_OR_AUTHENTICATED))
+		);
 
 		return authenticator.configureHttpSecurity(http);
 	}
