@@ -128,8 +128,8 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 
 	@Bean
 	public IAuthenticator consoleAuthenticator() {
-		String properyPrefix = "application.security.console.authentication.";
-		IAuthenticator authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, properyPrefix);
+		String propertyPrefix = "application.security.console.authentication.";
+		IAuthenticator authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, propertyPrefix);
 
 		APPLICATION_LOG.info("Securing Frank!Framework Console using {}", ClassUtils.classNameOf(authenticator));
 		return authenticator;
