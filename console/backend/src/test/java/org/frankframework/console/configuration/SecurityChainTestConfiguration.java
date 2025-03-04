@@ -21,7 +21,8 @@ public class SecurityChainTestConfiguration implements ApplicationContextAware {
 	private ApplicationContext applicationContext;
 
 	/**
-	 * For MockMvc testing, we need to register the SpringSecurityFilterChain manually.
+	 * For MockMvc testing, we need to register the SpringSecurityFilterChain as a Filter in a Bean manually.
+	 * This is used by mockMvc configuration with `SecurityMockMvcConfigurers#springSecurity()`.
 	 */
 	@Bean
 	public FilterRegistrationBean<Filter> getFilterRegistrationBean() {
