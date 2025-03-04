@@ -41,6 +41,8 @@ public class SecurityChainTestConfiguration implements ApplicationContextAware {
 	/**
 	 * Needed to configure the backend endpoint for the IAF API to /* - we're missing the default /iaf/api/* mapping which is configured
 	 * in the RegisterServletEndpoints class on 'normal' startup.
+	 *
+	 * @see RegisterServletEndpoints
 	 */
 	@Bean
 	public ServletRegistration<DispatcherServlet> backendServletBean() {

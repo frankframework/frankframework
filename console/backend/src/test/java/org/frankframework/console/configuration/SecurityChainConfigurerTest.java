@@ -51,12 +51,12 @@ public class SecurityChainConfigurerTest {
 
 	@WithMockUser(authorities = "ROLE_ADMIN")
 	@Test
-	void testWithLoggedInUser() throws Exception {
-		// localhost`
+	void testServerHealthWithLoggedInUser() throws Exception {
+		// used from localhost
 		this.mockMvc.perform(MockMvcRequestBuilders.get("/server/health"))
 				.andExpect(status().isOk());
 
-		// custom remote address, but with ROLE_ADMIN
+		// custom remote address
 		this.mockMvc.perform(MockMvcRequestBuilders.get("/server/health")
 						.remoteAddress("195.1.12.1"))
 				.andExpect(status().isOk());
@@ -76,7 +76,7 @@ public class SecurityChainConfigurerTest {
 	}
 
 	@Test
-	void testIafHealthAnonymous() throws Exception {
+	void testServerHealthEndpoint() throws Exception {
 		// use localhost as remote address, not authorized
 		this.mockMvc.perform(MockMvcRequestBuilders.get("/server/health"))
 				.andExpect(status().isOk());
