@@ -69,6 +69,7 @@ export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestro
 
   ngOnDestroy(): void {
     this.editor?.dispose();
+    debugger;
   }
 
   private loadMonaco(): void {

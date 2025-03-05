@@ -74,10 +74,17 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
 
       if (executeQueryCookie) {
         this.form.query = executeQueryCookie.query;
+        this.form.queryType = executeQueryCookie.queryType;
         this.form.resultType = executeQueryCookie.resultType;
+        this.form.avoidLocking = executeQueryCookie.avoidLocking;
+        this.form.trimSpaces = executeQueryCookie.trimSpaces;
         if (data.datasources.includes(executeQueryCookie.datasource)) {
           this.form.datasource = executeQueryCookie.datasource;
         }
+
+        setTimeout(() => {
+          this.form.query = executeQueryCookie.query;
+        }, 2000);
       }
     });
   }
