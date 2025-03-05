@@ -1,0 +1,15 @@
+<manageDatabaseREQ>
+	<select>
+		<tableName>IBISSTORE</tableName>
+		<columns>
+			<column>
+				<name>TYPE</name>
+			</column>
+			<column>
+				<name>SLOTID</name>
+			</column>
+		</columns>
+		<where>SLOTID = 'multiReceiverTest' AND TYPE='E'</where>
+		<order>TYPE,MESSAGEKEY</order>
+	</select>
+</manageDatabaseREQ>
