@@ -1,7 +1,7 @@
 <Module>
 	<Adapter name="MultipleReceiversAdapter-TestTrigger" active="${active.jms}">
 		<Receiver name="testStep1Trigger-Receiver">
-			<JavaListener name="testStep1Trigger-Listener"/>
+			<JavaListener serviceName="testStep1Trigger-Listener"/>
 		</Receiver>
 
 		<Pipeline>
@@ -20,7 +20,7 @@
 
 	<Adapter name="MultipleReceiversAdapter-RetryTrigger" active="${active.jms}">
 		<Receiver name="testStep2Trigger-Receiver">
-			<JavaListener name="testStep2Trigger-Listener"/>
+			<JavaListener serviceName="testStep2Trigger-Listener"/>
 		</Receiver>
 
 		<Pipeline>
