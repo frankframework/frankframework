@@ -9,4 +9,5 @@
 	<Include ref="TestHighDeliveryCountWithEsbJmsListener.xml"/>
 	<Include ref="ConfigurationAwsSqsJmsListenerSender.xml"/>
 	<Include ref="ConfigurationPubSub.xml"/>
+	<Include ref="ConfigurationMessageStoreListeners.xml"/>
 </Configuration>

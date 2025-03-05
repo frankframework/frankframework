@@ -144,12 +144,13 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 			String mid = getStringFieldOrNull(rs, getMessageIdField());
 			Object rawMessage = ois.readObject();
 
+			RawMessageWrapper<Serializable> rawMessageWrapper;
 			if (rawMessage instanceof MessageWrapper<?>) {
 				//noinspection unchecked
-				return (MessageWrapper<Serializable>) rawMessage;
+				rawMessageWrapper = (MessageWrapper<Serializable>) rawMessage;
+			} else {
+				rawMessageWrapper = new RawMessageWrapper<>((Serializable) rawMessage, mid != null ? mid : key, cid);
 			}
-
-			RawMessageWrapper<Serializable> rawMessageWrapper = new RawMessageWrapper<>((Serializable)rawMessage, mid != null ? mid : key, cid);
 			if (key != null) {
 				rawMessageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, key);
 			}
