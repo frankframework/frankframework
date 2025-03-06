@@ -11,7 +11,9 @@
 				/>
 			</SenderPipe>
 			<SenderPipe name="Send Trigger Message">
-				<JmsSender jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}">
+				<JmsSender
+					jmsRealm="qcf"
+					destinationName="${jms.destination.i4testiaf_in}">
 					<Param name="SOURCE" value="${hostname}_multipleReceiver" />
 				</JmsSender>
 			</SenderPipe>
@@ -54,11 +56,9 @@
 			onError="RECOVER"
 			stopTimeout="600">
 
-			<EsbJmsListener name="esbListener"
+			<JmsListener name="esbListener"
 				destinationName="${jms.destination.i4testiaf_in}"
-				lookupDestination="false"
 				jmsRealm="qcf"
-				messageProtocol="FF"
 				messageSelector="SOURCE='${hostname}_multipleReceiver'" />
 
 			<JdbcErrorStorage name="errorStorage"
