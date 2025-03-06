@@ -29,7 +29,7 @@
 		&lt;Message contentType="application/xml" encoding="UTF-8"&gt;test, with comma&lt;/Message&gt;
 	&lt;/Header&gt;
 &lt;/Envelope&gt;</field>
-      <field name="EXPIRYDATE" null="true"/>
+      <field name="EXPIRYDATE">2022-04-28 08:53:24</field>
       <field name="LABEL" null="true"/>
     </row>
   </rowset>
