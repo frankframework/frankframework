@@ -17,7 +17,7 @@ package org.frankframework.components;
 
 import java.util.List;
 
-public class MessagingModule implements org.frankframework.components.Module {
+public class MessagingModule implements Module {
 
 	@Override
 	public List<String> getSpringConfigurationFiles() {

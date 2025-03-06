@@ -15,6 +15,6 @@
 */
 package org.frankframework.components;
 
-public class LarvaModule implements org.frankframework.components.Module {
+public class LarvaModule implements Module {
 
 }

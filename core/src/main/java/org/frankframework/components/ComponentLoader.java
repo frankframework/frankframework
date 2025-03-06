@@ -72,7 +72,6 @@ public class ComponentLoader {
 			try {
 				modules = CollectionUtils.collect(ServiceLoader.load(Module.class).iterator(), input -> input);
 			} catch (Throwable t) {
-				t.printStackTrace();
 				log.warn("unable to load modules", t);
 				modules = Collections.emptyList();
 			}

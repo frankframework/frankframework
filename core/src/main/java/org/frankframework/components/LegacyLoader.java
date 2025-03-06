@@ -15,10 +15,14 @@
 */
 package org.frankframework.components;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 import org.frankframework.util.Environment;
 
@@ -74,11 +78,10 @@ public class LegacyLoader {
 			ClassLoader classLoader = Environment.class.getClassLoader();
 			URL pomProperties = classLoader.getResource(FRANKFRAMEWORK_NAMESPACE + module + "/pom.properties");
 			if (pomProperties != null) {
-				String fullUrl = pomProperties.toExternalForm();
-				String jarFile = fullUrl.substring(fullUrl.indexOf("file:"), fullUrl.indexOf("!/"));
 				try {
-					ffModules.add(new LegacyModule(module, new URL(jarFile)));
-				} catch (IOException e) {
+					Manifest manifest = convertPomPropertiesToManifest(pomProperties);
+					ffModules.add(new LegacyModule(module, manifest));
+				} catch (Exception e) {
 					log.debug("unable to convert pom properties URL [{}] to jar file URL", pomProperties);
 				}
 			}
@@ -87,11 +90,30 @@ public class LegacyLoader {
 		return ffModules;
 	}
 
+	private static Manifest convertPomPropertiesToManifest(URL pomProperties) throws IOException {
+		String fullUrl = pomProperties.toExternalForm();
+		int bangSlash = fullUrl.indexOf("!/");
+		if (bangSlash > 0) { // We found a bang-slash, assume it's file
+			String jarFile = fullUrl.substring(fullUrl.indexOf("file:"), bangSlash);
+			return Environment.getManifest(new URL(jarFile));
+		} else {
+			int metaInfFolder = fullUrl.indexOf("/META-INF/");
+			if (metaInfFolder > 0) { // We found the meta-inf folder, it could be a shared classpath. Attempt to locate the MANIFEST file.
+				String manifestFile = fullUrl.substring(fullUrl.indexOf("file:"), metaInfFolder +1) + JarFile.MANIFEST_NAME;
+				URL manifestURL = new URL(manifestFile);
+				try (InputStream is = manifestURL.openStream()) { // Throws a FileNotFoundException
+					return new Manifest(is);
+				}
+			}
+		}
+		throw new FileNotFoundException("no manifest file found relative to path ["+pomProperties+"]");
+	}
+
 	public static class LegacyModule implements Module {
 		private final ModuleInformation moduleInformation;
 
-		public LegacyModule(String artifactId, URL jarFileURL) throws IOException {
-			moduleInformation = new ModuleInformation(Environment.getManifest(jarFileURL));
+		public LegacyModule(String artifactId, Manifest manifest) throws IOException {
+			moduleInformation = new ModuleInformation(manifest);
 			moduleInformation.setArtifactId(artifactId);
 			moduleInformation.setGroupId("org.frankframework");
 		}
