@@ -145,9 +145,9 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 			Object rawMessage = ois.readObject();
 
 			RawMessageWrapper<Serializable> rawMessageWrapper;
-			if (rawMessage instanceof MessageWrapper<?>) {
+			if (rawMessage instanceof RawMessageWrapper<?>) {
 				//noinspection unchecked
-				rawMessageWrapper = (MessageWrapper<Serializable>) rawMessage;
+				rawMessageWrapper = (RawMessageWrapper<Serializable>) rawMessage;
 			} else {
 				rawMessageWrapper = new RawMessageWrapper<>((Serializable) rawMessage, mid != null ? mid : key, cid);
 			}
