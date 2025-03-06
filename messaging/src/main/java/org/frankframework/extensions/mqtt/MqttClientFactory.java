@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,16 +32,7 @@ import org.frankframework.util.AppConstants;
 
 public class MqttClientFactory extends ObjectFactory<MqttClient, MqttClientSettings> {
 
-	// Thread-safe singleton
-	private static class MqttClientFactoryHolder {
-		private static final MqttClientFactory INSTANCE = new MqttClientFactory();
-	}
-
-	public static MqttClientFactory getInstance() {
-		return MqttClientFactoryHolder.INSTANCE;
-	}
-
-	private MqttClientFactory() {
+	public MqttClientFactory() {
 		super(MqttClientSettings.class);
 	}
 
@@ -58,7 +49,7 @@ public class MqttClientFactory extends ObjectFactory<MqttClient, MqttClientSetti
 		if (data.getKeepAliveInterval() != 0) {
 			connectOptions.setKeepAliveInterval(data.getKeepAliveInterval());
 		}
-		connectOptions.setMqttVersion(MqttConnectOptions.MQTT_VERSION_DEFAULT); //Default: 0, V3.1: 3, V3.1.1: 4
+		connectOptions.setMqttVersion(MqttConnectOptions.MQTT_VERSION_DEFAULT); // Default: 0, V3.1: 3, V3.1.1: 4
 
 		if (data.getUsername() != null && data.getPassword() != null) {
 			connectOptions.setUserName(data.getUsername());

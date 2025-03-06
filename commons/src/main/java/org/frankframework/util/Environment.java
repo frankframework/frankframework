@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,20 +17,19 @@ package org.frankframework.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.Optional;
 import java.util.Properties;
-
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import jakarta.annotation.Nonnull;
+
 public class Environment {
 	private static final Logger log = LogManager.getLogger(Environment.class);
-	private static final String FRANKFRAMEWORK_NAMESPACE = "META-INF/maven/org.frankframework/";
 
 	public static Properties getEnvironmentVariables() throws IOException {
 		Properties props = new Properties();
@@ -118,28 +117,18 @@ public class Environment {
 		}
 	}
 
-	/**
-	 * Get FF module version
-	 *
-	 * @param module name of the module to fetch the version
-	 * @return module version or null if not found
-	 */
-	public static @Nullable String getModuleVersion(@Nonnull String module) {
-		ClassLoader classLoader = Environment.class.getClassLoader();
-		URL pomProperties = classLoader.getResource(FRANKFRAMEWORK_NAMESPACE + module + "/pom.properties");
-
-		if (pomProperties == null) {
-			// unable to find module, assume it's not on the classpath
-			return null;
-		}
-		try (InputStream is = pomProperties.openStream()) {
-			Properties props = new Properties();
-			props.load(is);
-			return (String) props.get("version");
+	@Nonnull
+	public static Manifest getManifest(@Nonnull URL jarFileLocation) throws IOException {
+		try (JarFile file = new JarFile(jarFileLocation.getFile())) {
+			Manifest manifest = file.getManifest();
+			if (manifest == null) {
+				throw new IOException("unable to find manifest file");
+			}
+			log.info("found {} in {}", JarFile.MANIFEST_NAME, jarFileLocation);
+			return manifest;
 		} catch (IOException e) {
-			log.warn("unable to read pom.properties file for module [{}]", module, e);
-
-			return "unknown";
+			log.warn("unable to read " + JarFile.MANIFEST_NAME, e);
+			throw e;
 		}
 	}
 }
