@@ -53,7 +53,7 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
     });
     this._subscriptions.add(appConstantsSubscription);
 
-    const browseTablesCookie = this.webStorageService.get<JdbcBrowseForm>('browseTables');
+    const browseTablesSession = this.webStorageService.get<JdbcBrowseForm>('browseTables');
 
     this.jdbcService.getJdbc().subscribe((data) => {
       this.form.datasource =
@@ -64,15 +64,15 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
       this.form.datasource = data.datasources[0] ?? '';
       this.form.resultType = data.resultTypes[0] ?? '';
 
-      if (browseTablesCookie) {
-        this.form.datasource = browseTablesCookie.datasource;
-        this.form.resultType = browseTablesCookie.resultType;
-        this.form.table = browseTablesCookie.table;
-        this.form.where = browseTablesCookie.where;
-        this.form.order = browseTablesCookie.order;
-        this.form.numberOfRowsOnly = browseTablesCookie.numberOfRowsOnly;
-        this.form.minRow = browseTablesCookie.minRow;
-        this.form.maxRow = browseTablesCookie.maxRow;
+      if (browseTablesSession) {
+        this.form.datasource = browseTablesSession.datasource;
+        this.form.resultType = browseTablesSession.resultType;
+        this.form.table = browseTablesSession.table;
+        this.form.where = browseTablesSession.where;
+        this.form.order = browseTablesSession.order;
+        this.form.numberOfRowsOnly = browseTablesSession.numberOfRowsOnly;
+        this.form.minRow = browseTablesSession.minRow;
+        this.form.maxRow = browseTablesSession.maxRow;
       }
     });
   }
