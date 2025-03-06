@@ -17,6 +17,7 @@ package org.frankframework.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Optional;
 import java.util.Properties;
@@ -27,9 +28,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class Environment {
 	private static final Logger log = LogManager.getLogger(Environment.class);
+	private static final String FRANKFRAMEWORK_NAMESPACE = "META-INF/maven/org.frankframework/";
 
 	public static Properties getEnvironmentVariables() throws IOException {
 		Properties props = new Properties();
@@ -114,6 +117,31 @@ public class Environment {
 		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
 			getLogger().warn("Was not allowed to read system property [{}]: {}", property, e.getMessage());
 			return Optional.ofNullable(def);
+		}
+	}
+
+	/**
+	 * Get FF module version based on the pom.properties file.
+	 *
+	 * @param module name of the module to fetch the version
+	 * @return module version or null if not found
+	 */
+	public static @Nullable String getModuleVersion(@Nonnull String module) {
+		ClassLoader classLoader = Environment.class.getClassLoader();
+		URL pomProperties = classLoader.getResource(FRANKFRAMEWORK_NAMESPACE + module + "/pom.properties");
+
+		if (pomProperties == null) {
+			// unable to find module, assume it's not on the classpath
+			return null;
+		}
+		try (InputStream is = pomProperties.openStream()) {
+			Properties props = new Properties();
+			props.load(is);
+			return (String) props.get("version");
+		} catch (IOException e) {
+			log.warn("unable to read pom.properties file for module [{}]", module, e);
+
+			return "unknown";
 		}
 	}
 
