@@ -14,14 +14,14 @@ import lombok.extern.log4j.Log4j2;
 public class ComponentLoaderTest {
 
 	@Test
-	public void testIfWeCanFindOurSelves() {
+	public void locateCommonsModule() {
 		List<Module> modules = ComponentLoader.findAllModules();
 		assertNotNull(modules);
 		long foundCoreModule = modules.stream().filter(module -> {
 			try {
 				ModuleInformation info = module.getModuleInformation();
 				log.debug("found module: {}", info);
-				return "frankframework-core".equals(info.getArtifactId());
+				return "frankframework-commons".equals(info.getArtifactId());
 			} catch (IOException e) {
 				log.warn("unable to find manifest file in test", e);
 				return false;
