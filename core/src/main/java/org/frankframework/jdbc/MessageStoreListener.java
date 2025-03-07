@@ -139,10 +139,11 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 	protected RawMessageWrapper<Serializable> extractRawMessage(ResultSet rs) throws JdbcException {
 		try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed());
 		 ObjectInputStream ois = new RenamingObjectInputStream(blobStream)) {
+				Object rawMessage = ois.readObject();
+
 			String key = getStringFieldOrNull(rs, getKeyField());
 			String cid = getStringFieldOrNull(rs, getCorrelationIdField());
 			String mid = getStringFieldOrNull(rs, getMessageIdField());
-			Object rawMessage = ois.readObject();
 
 			RawMessageWrapper<Serializable> rawMessageWrapper;
 			if (rawMessage instanceof RawMessageWrapper<?>) {
