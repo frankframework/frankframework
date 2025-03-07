@@ -134,7 +134,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 		skipOnEmptyInput = b;
 	}
 
-	/** If {@code true}, this pipe is only executed when the value of parameter with name <code>ifParam</code> equals <code>ifValue</code> (otherwise this pipe is skipped) */
+	/** If set, this pipe is only executed when the value of parameter with name <code>ifParam</code> equals <code>ifValue</code> (otherwise this pipe is skipped) */
 	public void setIfParam(String string) {
 		ifParam = string;
 	}
