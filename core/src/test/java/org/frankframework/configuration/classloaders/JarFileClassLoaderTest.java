@@ -95,7 +95,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 			URL configurationURL = classLoader.getResource("Configuration.xml");
 			assertNotNull(configurationURL, "unable to locate test file [Configuration.xml]");
 
-			assertEquals(9, logEvents.size(), "Should find 8 log messages");
+			assertEquals(9, logEvents.size(), "Should find 9 log messages");
 			long warnMsgs = logEvents.stream().filter(k -> k.startsWith("WARN")).count();
 			assertEquals(1, warnMsgs, "Should find one warning message");
 		}
