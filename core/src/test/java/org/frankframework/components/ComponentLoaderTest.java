@@ -19,7 +19,9 @@ public class ComponentLoaderTest {
 		assertNotNull(modules);
 		long foundCoreModule = modules.stream().filter(module -> {
 			try {
-				return "frankframework-core".equals(module.getModuleInformation().getArtifactId());
+				ModuleInformation info = module.getModuleInformation();
+				log.debug("found module: {}", info);
+				return "frankframework-core".equals(info.getArtifactId());
 			} catch (IOException e) {
 				log.warn("unable to find manifest file in test", e);
 				return false;
