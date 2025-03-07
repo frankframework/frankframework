@@ -254,7 +254,7 @@ public class ShadowSender extends ParallelSenders {
 	}
 
 	/**
-	 * If set <code>true</code> the sender will wait for all shadows to have finished. Otherwise the collection of results will happen in a background thread.
+	 * If {@code true} the sender will wait for all shadows to have finished. Otherwise the collection of results will happen in a background thread.
 	 *
 	 * @ff.default false
 	 */

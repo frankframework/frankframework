@@ -334,7 +334,7 @@ public class IbisLocalSender extends AbstractSenderWithParameters implements Has
 	}
 
 	/**
-	 * If set <code>false</code>, the call is made asynchronously. This implies <code>isolated=true</code>
+	 * If {@code false}, the call is made asynchronously. This implies <code>isolated=true</code>
 	 * @ff.default true
 	 */
 	public void setSynchronous(boolean b) {
@@ -342,7 +342,7 @@ public class IbisLocalSender extends AbstractSenderWithParameters implements Has
 	}
 
 	/**
-	 * If <code>true</code>, the call is made in a separate thread, possibly using separate transaction
+	 * If {@code true}, the call is made in a separate thread, possibly using separate transaction
 	 * @ff.default false
 	 */
 	public void setIsolated(boolean b) {
@@ -350,7 +350,7 @@ public class IbisLocalSender extends AbstractSenderWithParameters implements Has
 	}
 
 	/**
-	 * If <code>true</code>, the sender waits upon open until the called {@link JavaListener} is opened
+	 * If {@code true}, the sender waits upon open until the called {@link JavaListener} is opened
 	 * @ff.default true
 	 */
 	public void setCheckDependency(boolean b) {
@@ -366,7 +366,7 @@ public class IbisLocalSender extends AbstractSenderWithParameters implements Has
 	}
 
 	/**
-	 * If set <code>false</code>, the xml-string \"&lt;error&gt;could not find JavaListener [...]&lt;/error&gt;\" is returned instead of throwing a senderexception
+	 * If {@code false}, the xml-string "&lt;error&gt;could not find JavaListener [...]&lt;/error&gt;" is returned instead of throwing a senderexception
 	 * @ff.default true
 	 */
 	public void setThrowJavaListenerNotFoundException(boolean b) {
