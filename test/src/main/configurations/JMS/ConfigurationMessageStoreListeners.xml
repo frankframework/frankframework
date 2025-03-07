@@ -1,61 +1,96 @@
-<Configuration>
-	<Module>
-		<Adapter name="MultipleReceiversAdapter" description="Used to retry messages using two EsbJmsListener and a MessageStoreListener" active="${active.jms}">
-			<Receiver name="localReceiver"
-				elementToMove="fileContent"
-				removeCompactMsgNamespaces="false"
-				maxRetries="0"
-				onError="RECOVER"
-				stopTimeout="600">
-				<JavaListener name="localListener"/>
-			</Receiver>
+<Module>
+	<Adapter name="MultipleReceiversAdapter-TestTrigger" active="${active.jms}">
+		<Receiver name="testStep1Trigger-Receiver">
+			<JavaListener serviceName="testStep1Trigger-Listener"/>
+		</Receiver>
 
-			<Receiver name="receiver"
-				elementToMove="fileContent"
-				removeCompactMsgNamespaces="false"
-				transactionAttribute="Required"
-				maxRetries="0"
-				onError="RECOVER"
-				stopTimeout="600">
-
-				<EsbJmsListener name="esbListener"
-					destinationName="${jms.destination.i4testiaf_in}"
-					lookupDestination="false"
+		<Pipeline>
+			<SenderPipe name="Pre-Test IBISSTORE Cleanup">
+				<FixedQuerySender
+					query="DELETE FROM IBISSTORE WHERE SLOTID = 'multiReceiverTest'"
+				/>
+			</SenderPipe>
+			<SenderPipe name="Send Trigger Message">
+				<JmsSender
 					jmsRealm="qcf"
-					messageProtocol="FF"
-					messageSelector="SOURCE='${hostname}_multipleReceiver'" />
+					destinationName="${jms.destination.i4testiaf_in}">
+					<Param name="SOURCE" value="${hostname}_multipleReceiver" />
+				</JmsSender>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
 
-				<JdbcErrorStorage name="errorStorage"
-					slotId="testSlot" />
+	<Adapter name="MultipleReceiversAdapter-RetryTrigger" active="${active.jms}">
+		<Receiver name="testStep2Trigger-Receiver">
+			<JavaListener serviceName="testStep2Trigger-Listener"/>
+		</Receiver>
 
-				<JdbcMessageLog name="messagelog"
-					slotId="testSlot"
-					retention="3" />
-			</Receiver>
+		<Pipeline>
+			<SenderPipe name="Find Message Key to Retry">
+				<FixedQuerySender
+					queryType="select"
+					query="SELECT MESSAGEKEY FROM IBISSTORE WHERE SLOTID = 'multiReceiverTest'"
+					scalar="true"
+				/>
+			</SenderPipe>
+			<SenderPipe name="Trigger Manual Retry">
+				<HttpSender
+					methodType="PUT"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+				>
+					<Param name="configuration" value="JMS"/>
+					<Param name="adapterName" value="MultipleReceiversAdapter"/>
+					<Param name="receiverName" value="retryReceiver"/>
+					<Param name="messageId"/>
+					<Param name="url" pattern="${web.protocol}://${web.host}:${web.port}${web.contextpath}/iaf/api/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error/messages/{messageId}"/>
+				</HttpSender>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
 
-			<Receiver name="retryReceiver"
-				elementToMove="fileContent"
-				removeCompactMsgNamespaces="false"
-				transactionAttribute="Required"
-				maxRetries="0"
-				forceRetryFlag="true"
-				pollInterval="60">
+	<Adapter name="MultipleReceiversAdapter" description="Used to retry messages using from EsbJmsListener with a MessageStoreListener" active="${active.jms}">
+		<Receiver name="jmsReceiver"
+			transactionAttribute="Required"
+			maxRetries="0"
+			onError="RECOVER"
+			stopTimeout="600">
 
-				<MessageStoreListener name="messageStoreListener"
-					datasourceName="${jdbc.datasource.default}"
-					slotId="testSlot"
-					statusValueInProcess="P" />
-			</Receiver>
+			<JmsListener name="esbListener"
+				destinationName="${jms.destination.i4testiaf_in}"
+				jmsRealm="qcf"
+				messageSelector="SOURCE='${hostname}_multipleReceiver'" />
 
-			<Pipeline firstPipe="EchoPipe">
-				<Exits>
-					<Exit path="EXIT" state="success" />
-				</Exits>
-				<EchoPipe name="EchoPipe"
-					restoreMovedElements="true">
-					<forward name="success" path="EXIT" />
-				</EchoPipe>
-			</Pipeline>
-		</Adapter>
-	</Module>
-</Configuration>
+			<JdbcErrorStorage name="errorStorage"
+				slotId="multiReceiverTest" />
+
+			<JdbcMessageLog name="messagelog"
+				slotId="multiReceiverTest"
+				retention="3" />
+		</Receiver>
+
+		<Receiver name="retryReceiver"
+			transactionAttribute="Required"
+			maxRetries="0"
+			forceRetryFlag="true"
+			pollInterval="60">
+
+			<MessageStoreListener name="messageStoreListener"
+				datasourceName="${jdbc.datasource.default}"
+				slotId="multiReceiverTest"
+				statusValueInProcess="P" />
+		</Receiver>
+
+		<Pipeline>
+			<Exits>
+				<Exit path="EXIT" state="success" />
+				<Exit path="ERROR" state="error" />
+			</Exits>
+			<XmlIfPipe name="Check If Pipeline Should Fail or Succeed"
+				getInputFromSessionKey="retry" regex="true">
+				<Forward name="then" path="EXIT"/>
+				<Forward name="else" path="ERROR"/>
+			</XmlIfPipe>
+		</Pipeline>
+	</Adapter>
+</Module>
