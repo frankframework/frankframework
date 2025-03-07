@@ -37,7 +37,7 @@ public class ComponentLoader {
 	private static Collection<Module> modules = null;
 
 	private ComponentLoader() {
-		//NO OP, should not be instantiated directly
+		// NO OP, should not be instantiated directly
 	}
 
 	public static List<Module> findAllModules() {

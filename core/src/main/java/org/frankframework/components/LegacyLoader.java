@@ -37,7 +37,7 @@ public class LegacyLoader {
 	private static final String FRANKFRAMEWORK_NAMESPACE = "META-INF/maven/org.frankframework/";
 
 	private LegacyLoader() {
-		//NO OP, should not be instantiated directly
+		// NO OP, should not be instantiated directly
 	}
 
 	/**
