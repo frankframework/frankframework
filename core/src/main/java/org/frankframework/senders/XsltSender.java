@@ -331,7 +331,7 @@ public class XsltSender extends AbstractSenderWithParameters {
 	}
 
 	/**
-	 * If set <code>true</code>, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for <code>@disable-output-escaping='yes'</code> and the value is set accordingly
+	 * If {@code true}, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for <code>@disable-output-escaping='yes'</code> and the value is set accordingly
 	 * @ff.default false, if not set in stylesheet
 	 */
 	public void setDisableOutputEscaping(Boolean b) {
@@ -340,7 +340,7 @@ public class XsltSender extends AbstractSenderWithParameters {
 
 	/**
 	 * Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. For some other use cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.
-	 * If left empty, an the xpathExpression will match any namespace
+	 * If left empty, the xpathExpression will match any namespace
 	 */
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
@@ -355,7 +355,7 @@ public class XsltSender extends AbstractSenderWithParameters {
 	}
 
 	/**
-	 * If set <code>true</code>, result is pretty-printed. If not set, the value specified in the stylesheet is followed
+	 * If {@code true}, result is pretty-printed. If not set, the value specified in the stylesheet is followed
 	 * @ff.default false, if not set in stylesheet
 	 */
 	public void setIndentXml(Boolean b) {
@@ -363,7 +363,7 @@ public class XsltSender extends AbstractSenderWithParameters {
 	}
 
 	/**
-	 * If set <code>true</code> namespaces (and prefixes) in the input message are removed before transformation
+	 * If {@code true} namespaces (and prefixes) in the input message are removed before transformation
 	 * @ff.default false
 	 */
 	public void setRemoveNamespaces(boolean b) {
@@ -371,7 +371,7 @@ public class XsltSender extends AbstractSenderWithParameters {
 	}
 
 	/**
-	 * If set <code>true</code>, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text.
+	 * If {@code true}, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text.
 	 * Beware that this option can cause spurious NullPointerExceptions due to a race condition in streaming XSLT 1.0 processing in Xalan 2.7.2
 	 * @ff.default false
 	 */
@@ -380,7 +380,7 @@ public class XsltSender extends AbstractSenderWithParameters {
 	}
 
 	/**
-	 * If set <code>true</code> empty tags in the output are removed after transformation
+	 * If {@code true} empty tags in the output are removed after transformation
 	 * @ff.default false
 	 */
 	public void setSkipEmptyTags(boolean b) {
@@ -396,7 +396,7 @@ public class XsltSender extends AbstractSenderWithParameters {
 	}
 
 	/**
-	 * If set <code>true</code> the input is written to the log file, at DEBUG level
+	 * If {@code true} the input is written to the log file, at DEBUG level
 	 * @ff.default false
 	 */
 	public void setDebugInput(boolean debugInput) {

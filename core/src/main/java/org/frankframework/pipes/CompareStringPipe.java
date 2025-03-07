@@ -55,7 +55,7 @@ import org.frankframework.util.XmlUtils;
  * <br/>
  * Substrings between "after" and "before" are ignored
  *
- * @author  Peter Leeuwenburgh
+ * @author Peter Leeuwenburgh
  */
 @Forward(name = "lessthan", description = "operand1 &lt; operand2")
 @Forward(name = "greaterthan", description = "operand1 &gt; operand2")
@@ -225,7 +225,7 @@ public class CompareStringPipe extends AbstractPipe {
 	}
 
 	/**
-	 * when set <code>true</code> the string values to compare are considered to be xml strings and before the actual compare both xml strings are transformed to a canonical form
+	 * If {@code true} the string values to compare are considered to be xml strings and before the actual compare both xml strings are transformed to a canonical form
 	 * @ff.default false
 	 */
 	public void setXml(boolean b) {

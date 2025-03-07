@@ -98,7 +98,7 @@ public class TextSplitterPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * If true, try to break up the message at spaces, instead of in the middle of words
+	 * If {@code true}, try to break up the message at spaces, instead of in the middle of words
 	 * @ff.default false
 	 */
 	public void setSoftSplit(boolean softSplit) {

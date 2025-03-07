@@ -118,7 +118,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 	 * Configure the XmlValidator
 	 * @throws ConfigurationException when:
 	 * <ul><li>the schema cannot be found</li>
-	 * <ul><li><{@link #isThrowException()} is false and there is no forward defined
+	 * <ul><li>{@link #isThrowException()} is {@code false} and there is no forward defined
 	 * for "failure"</li>
 	 * <li>when the parser does not accept setting the properties for validating</li>
 	 * </ul>
@@ -586,7 +586,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 		this.schemaLocation = schemaLocation;
 	}
 
-	/** A uri reference as a hint as to the location of a schema document with no target namespace. */
+	/** A URI reference as a hint as to the location of a schema document with no target namespace. */
 	public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
 		this.noNamespaceSchemaLocation = noNamespaceSchemaLocation;
 	}
@@ -677,7 +677,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 	}
 
 	/**
-	 * If set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path
+	 * If {@code true}, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path
 	 * @ff.default false
 	 */
 	public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {

@@ -56,7 +56,7 @@ import org.frankframework.util.MessageUtils;
  * Creates a JWT with a shared secret using the HmacSHA256 algorithm.
  *
  * @ff.parameter {@value #SHARED_SECRET_PARAMETER_NAME} overrides attribute <code>sharedSecret</code>. This parameter has worse performance, compared to this pipes attribute.
- * 
+ *
  * @author Niels Meijer
  * @since 7.9
  */
