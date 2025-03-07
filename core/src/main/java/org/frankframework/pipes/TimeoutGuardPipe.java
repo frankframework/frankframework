@@ -106,7 +106,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * when <code>true</code>, a piperunexception is thrown. otherwise the output is only logged as an error (and returned in a xml string with 'error' tags)
+	 * If {@code true}, a piperunexception is thrown. otherwise the output is only logged as an error (and returned in a xml string with 'error' tags)
 	 * @ff.default true
 	 */
 	public void setThrowException(boolean b) {

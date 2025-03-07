@@ -137,7 +137,7 @@ public class CsvParserPipe extends FixedForwardPipe {
 		this.fileContainsHeader = fileContainsHeader;
 	}
 
-	/** Comma separated list of header names. If set, then <code>fileContainsHeader</code> defaults to false. If not set, headers are taken from the first line */
+	/** Comma separated list of header names. If set, then {@code fileContainsHeader} defaults to false. If not set, headers are taken from the first line */
 	public void setFieldNames(String fieldNames) {
 		this.fieldNames = fieldNames;
 	}

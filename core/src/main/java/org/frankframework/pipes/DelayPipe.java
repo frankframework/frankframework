@@ -23,7 +23,7 @@ import org.frankframework.stream.Message;
 
 /**
  * Pipe that sleeps for a specified time, which defaults to 5000 msecs.
- * Usefull for testing purposes.
+ * Useful for testing purposes.
  *
  * @author L180564 - Johan Verrips
  */

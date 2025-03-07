@@ -178,7 +178,7 @@ public abstract class AbstractValidator extends FixedForwardPipe implements IDua
 		this.responseRoot = responseRoot;
 	}
 
-	/** If set <code>true</code>, the failure forward is replaced by the success forward (like a warning mode) */
+	/** If {@code true}, the failure forward is replaced by the success forward (like a warning mode) */
 	@Deprecated
 	@ConfigurationWarning("please specify a forward with name=failure instead")
 	public void setForwardFailureToSuccess(boolean b) {

@@ -182,7 +182,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	/**
 	 * Validate the XML or JSON input, and align/convert it into JSON or XML according to a XML Schema.
 	 * The format of the input message (XML or JSON) is automatically detected.
-	 * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
+	 * @throws PipeRunException when {@code isThrowException} is true and a validationerror occurred.
 	 */
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
@@ -491,7 +491,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * If true, the format on 'output' is set to the same as the format of the input message on 'input'. The format of the input message is stored in and retrieved from the session variable specified by outputFormatSessionKey
+	 * If {@code true}, the format on 'output' is set to the same as the format of the input message on 'input'. The format of the input message is stored in and retrieved from the session variable specified by outputFormatSessionKey
 	 * @ff.default true
 	 */
 	public void setAutoFormat(boolean autoFormat) {
@@ -499,7 +499,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * If true assume arrays in JSON do not have the element containers like in XML
+	 * If {@code true} assume arrays in JSON do not have the element containers like in XML
 	 * @ff.default true
 	 */
 	public void setCompactJsonArrays(boolean compactJsonArrays) {
@@ -507,7 +507,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * If true check that incoming JSON adheres to the specified syntax (compact or full), otherwise both types are accepted for conversion from JSON to XML
+	 * If {@code true} check that incoming JSON adheres to the specified syntax (compact or full), otherwise both types are accepted for conversion from JSON to XML
 	 * @ff.default false
 	 */
 	public void setStrictJsonArraySyntax(boolean strictJsonArraySyntax) {
@@ -515,7 +515,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * If true, assume that JSON contains/must contain a root element
+	 * If {@code true}, assume that JSON contains/must contain a root element
 	 * @ff.default false
 	 */
 	public void setJsonWithRootElements(boolean jsonWithRootElements) {
@@ -523,7 +523,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * If true, and converting from JSON to XML, parameter substitutions are searched for optional sub elements too. By default, only mandatory elements are searched for parameter substitutions. N.B. Currently this option might cause problems. Please try using more qualified parameters names (using '/') first
+	 * If {@code true}, and converting from JSON to XML, parameter substitutions are searched for optional sub elements too. By default, only mandatory elements are searched for parameter substitutions. N.B. Currently this option might cause problems. Please try using more qualified parameters names (using '/') first
 	 * @ff.default false
 	 */
 	public void setDeepSearch(boolean deepSearch) {
@@ -531,7 +531,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * If true, and converting from JSON to XML, elements in JSON that are not found in the XML Schema are ignored
+	 * If {@code true}, and converting from JSON to XML, elements in JSON that are not found in the XML Schema are ignored
 	 * @ff.default false
 	 */
 	public void setIgnoreUndeclaredElements(boolean ignoreUndeclaredElements) {
@@ -539,7 +539,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * If true, an exception is thrown when a wildcard is found in the XML Schema when parsing an object. This often indicates that an element is not properly typed in the XML Schema, and could lead to ambuigities.
+	 * If {@code true}, an exception is thrown when a wildcard is found in the XML Schema when parsing an object. This often indicates that an element is not properly typed in the XML Schema, and could lead to ambuigities.
 	 * @ff.default true
 	 */
 	public void setFailOnWildcards(boolean failOnWildcards) {
@@ -547,7 +547,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * If true, all XML is allowed to be without namespaces. If no namespaces are detected (by the presence of the string 'xmlns') in the XML, the root namespace is added to the XML
+	 * If {@code true}, all XML is allowed to be without namespaces. If no namespaces are detected (by the presence of the string 'xmlns') in the XML, the root namespace is added to the XML
 	 * @ff.default false
 	 */
 	public void setAcceptNamespacelessXml(boolean acceptNamespacelessXml) {
@@ -573,7 +573,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * If true, and converting to or from JSON, then the message root is the only rootValidation, ignoring root validations like for SOAP envelope and header set by descender classes like SoapValidator
+	 * If {@code true}, and converting to or from JSON, then the message root is the only rootValidation, ignoring root validations like for SOAP envelope and header set by descender classes like SoapValidator
 	 * @ff.default true
 	 */
 	public void setValidateJsonToRootElementOnly(boolean validateJsonToRootElementOnly) {

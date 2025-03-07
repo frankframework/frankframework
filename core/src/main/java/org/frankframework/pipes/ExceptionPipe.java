@@ -71,7 +71,7 @@ public class ExceptionPipe extends AbstractPipe {
 
 
 	/**
-	 * When <code>true</code>, a PipeRunException is thrown. Otherwise, the output is only logged as an error (and no rollback is performed).
+	 * If {@code true}, a PipeRunException is thrown. Otherwise, the output is only logged as an error (and no rollback is performed).
 	 * @ff.default true
 	 */
 	@Deprecated(forRemoval = true, since = "9.0")

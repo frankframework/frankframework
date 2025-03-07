@@ -151,7 +151,7 @@ public class PGPPipe extends FixedForwardPipe {
 	 * Emails of the senders. This will be used to verify that all the senders have signed the given message.
 	 * If not set, and the action is verify; this pipe will validate that at least one person has signed.
 	 * For signing action, it needs to be set to the email that was used to generate the private key
-	 * "that is being used for this process.
+	 * that is being used for this process.
 	 */
 	public void setVerificationAddresses(String verificationAddresses) {
 		this.verificationAddresses = split(verificationAddresses);

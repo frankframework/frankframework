@@ -194,7 +194,7 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 		this.provider = provider;
 	}
 
-	/** if true, the signature is (expected to be) base64 encoded
+	/** If {@code true}, the signature is (expected to be) base64 encoded
 	 * @ff.default true
 	 */
 	public void setSignatureBase64(boolean signatureBase64) {
@@ -237,7 +237,7 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 	}
 
 	/** Alias used to obtain keystoreAlias password
-	 * @ff default same as <code>keystoreAuthAlias</code>
+	 * @ff default same as {@code keystoreAuthAlias}
 	 */
 	@Override
 	public void setKeystoreAliasAuthAlias(String string) {

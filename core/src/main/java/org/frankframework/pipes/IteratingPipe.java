@@ -63,7 +63,7 @@ import org.frankframework.util.XmlUtils;
 
 /**
  * Base class to send a message to a Sender for each item returned by a configurable iterator.
-* <br/>
+ * <br/>
  * The output of each of the processing of each of the elements is returned in XML as follows:
  * <pre>
  *  &lt;results count="num_of_elements"&gt;
@@ -247,7 +247,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			}
 		}
 		/**
-		 * @return true when looping should continue, false when stop is required.
+		 * @return {@code true} when looping should continue, {@code false} when stop is required.
 		 */
 		public boolean endBlock() throws SenderException {
 			if (!isParallel() && sender instanceof IBlockEnabledSender<?>) {
@@ -567,8 +567,8 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	/**
-	 * Controls whether all the results of each iteration will be collected in one result message. If set <code>false</code>, only a small summary is returned.
-	 * Setting this attributes to <code>false</code> is often required to enable processing of very large files. N.B. Remember in such a case that setting transactionAttribute to NotSupported might be necessary too
+	 * Controls whether all the results of each iteration will be collected in one result message. If {@code false}, only a small summary is returned.
+	 * Setting this attributes to {@code false} is often required to enable processing of very large files. N.B. Remember in such a case that setting transactionAttribute to NotSupported might be necessary too
 	 * @ff.default true
 	 */
 	public void setCollectResults(boolean b) {
