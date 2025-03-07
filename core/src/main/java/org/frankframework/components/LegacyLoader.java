@@ -36,6 +36,10 @@ import lombok.extern.log4j.Log4j2;
 public class LegacyLoader {
 	private static final String FRANKFRAMEWORK_NAMESPACE = "META-INF/maven/org.frankframework/";
 
+	private LegacyLoader() {
+		//NO OP, should not be instantiated directly
+	}
+
 	/**
 	 * Register all IBIS modules that can be found on the classpath
 	*/

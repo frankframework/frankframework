@@ -36,6 +36,10 @@ public class ComponentLoader {
 
 	private static Collection<Module> modules = null;
 
+	private ComponentLoader() {
+		//NO OP, should not be instantiated directly
+	}
+
 	public static List<Module> findAllModules() {
 		List<Module> allModules = new ArrayList<>();
 		allModules.addAll(getModules());

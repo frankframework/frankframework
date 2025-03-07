@@ -4,8 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
+import java.util.jar.Manifest;
 
+import org.frankframework.util.Environment;
 import org.junit.jupiter.api.Test;
 
 import lombok.extern.log4j.Log4j2;
@@ -29,5 +32,14 @@ public class ComponentLoaderTest {
 		}).count();
 
 		assertEquals(1L, foundCoreModule);
+	}
+
+	@Test
+	public void testIfWeCanReadManifest() throws IOException {
+		URL jarFileWithManifest = ComponentLoaderTest.class.getResource("/ClassLoader/zip/myConfig.zip");
+		assertNotNull(jarFileWithManifest);
+		Manifest manifest = Environment.getManifest(jarFileWithManifest);
+		ModuleInformation info = new ModuleInformation(manifest);
+		assertEquals("myConfig", info.getTitle());
 	}
 }
