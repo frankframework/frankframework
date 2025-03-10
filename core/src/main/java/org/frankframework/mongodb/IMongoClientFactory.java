@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package org.frankframework.mongodb;
 import java.util.List;
 import java.util.Properties;
 
-import javax.naming.NamingException;
-
 import org.springframework.jndi.JndiLocatorSupport;
 
 import com.mongodb.client.MongoClient;
@@ -29,14 +27,14 @@ public interface IMongoClientFactory {
 	/**
 	 * Look up a MongoClient from the JNDI
 	 */
-	MongoClient getMongoClient(String dataSourceName) throws NamingException;
+	MongoClient getMongoClient(String dataSourceName);
 
 	/**
 	 * Set the JNDI environment to use for JNDI lookups.
 	 * <p>Uses a Spring JndiTemplate with the given environment settings.
 	 * @see JndiLocatorSupport#setJndiTemplate
 	 */
-	MongoClient getMongoClient(String dataSourceName, Properties jndiEnvironment) throws NamingException;
+	MongoClient getMongoClient(String dataSourceName, Properties jndiEnvironment);
 
 	/**
 	 * Return all known/registered MongoClients
