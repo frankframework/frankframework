@@ -138,8 +138,10 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 	@Override
 	protected RawMessageWrapper<Serializable> extractRawMessage(ResultSet rs) throws JdbcException {
 		try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed());
-		 ObjectInputStream ois = new RenamingObjectInputStream(blobStream)) {
-				Object rawMessage = ois.readObject();
+			ObjectInputStream ois = new RenamingObjectInputStream(blobStream)) {
+
+			// After creating the BlobInputStream, it should be read before accessing any other fields of the RecordSet
+			Object rawMessage = ois.readObject();
 
 			String key = getStringFieldOrNull(rs, getKeyField());
 			String cid = getStringFieldOrNull(rs, getCorrelationIdField());
