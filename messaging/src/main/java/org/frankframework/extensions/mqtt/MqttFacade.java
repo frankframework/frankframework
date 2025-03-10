@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 - 2023 WeAreFrank!
+   Copyright 2017-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,20 +17,16 @@ package org.frankframework.extensions.mqtt;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.eclipse.paho.client.mqttv3.MqttClient;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.FrankElement;
+import org.frankframework.core.HasPhysicalDestination;
+import org.frankframework.core.IConfigurable;
 import org.frankframework.core.NameAware;
 import org.frankframework.doc.Mandatory;
-
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
-
-import org.frankframework.core.HasPhysicalDestination;
-import org.frankframework.core.IConfigurable;
 
 /**
  * Requires a resource to be configured. Example {@literal resources.yml}:
@@ -50,11 +46,12 @@ import org.frankframework.core.IConfigurable;
  * Inbound and outbound messages are persisted while they are in flight to prevent data loss. The default is an in memory store, but the {@literal persistenceDirectory}
  * flag can be used to set the disk storage location.
  */
-@Log4j2
 public abstract class MqttFacade implements HasPhysicalDestination, IConfigurable, NameAware, FrankElement {
 	private final @Getter String domain = "MQTT";
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
+
+	private @Setter @Getter MqttClientFactory mqttClientFactory = null; // Spring should wire this!
 
 	private @Getter String name;
 	private @Getter String resourceName;
@@ -70,7 +67,7 @@ public abstract class MqttFacade implements HasPhysicalDestination, IConfigurabl
 			throw new ConfigurationException("resourceName is required");
 		}
 
-		client = MqttClientFactory.getInstance().getClient(resourceName);
+		client = mqttClientFactory.getClient(resourceName);
 	}
 
 	@Override
