@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { JmsService } from '../jms.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ServerErrorResponse } from '../../../app.service';
@@ -7,6 +7,7 @@ import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-
 import { InputFileUploadComponent } from '../../../components/input-file-upload/input-file-upload.component';
 import { LaddaModule } from 'angular2-ladda';
 import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
+import { WebStorageService } from '../../../services/web-storage.service';
 
 interface Form {
   destination: string;
@@ -57,11 +58,15 @@ export class JmsSendMessageComponent implements OnInit {
     },
   };
 
-  constructor(private jmsService: JmsService) {}
+  private jmsService: JmsService = inject(JmsService);
+  private webStorageService: WebStorageService = inject(WebStorageService);
 
   ngOnInit(): void {
     this.jmsService.getJms().subscribe((data) => {
       this.connectionFactories = data['connectionFactories'];
+
+      const browseJmsMessage = this.webStorageService.get<Form>('jmsSendMessage');
+      if (browseJmsMessage) this.form = browseJmsMessage;
     });
   }
 
@@ -69,6 +74,8 @@ export class JmsSendMessageComponent implements OnInit {
     this.processing = true;
     this.successMessage = '';
     if (!formData) return;
+
+    this.webStorageService.set<Form>('jmsSendMessage', formData);
 
     const fd = new FormData();
     if (formData.connectionFactory && formData.connectionFactory != '')
@@ -118,6 +125,7 @@ export class JmsSendMessageComponent implements OnInit {
   reset(): void {
     this.error = null;
     this.successMessage = '';
+    this.webStorageService.remove('jmsSendMessage');
     this.form = {
       destination: '',
       replyTo: '',

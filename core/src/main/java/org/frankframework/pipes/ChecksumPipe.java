@@ -31,7 +31,7 @@ import org.frankframework.stream.Message;
  * need to prove the authenticity of the message as well, please use the {@link HashPipe} which uses an algorithm and a secret to prove both
  * integrity and authenticity.
  * <p>
- * The hash is generated based on the bytes of the given input message or on the bytes read from the file path if @{code inputIsFile} is @{code true}
+ * The hash is generated based on the bytes of the given input message or on the bytes read from the file path if {@code inputIsFile} is {@code true}
  * <p>
  * The supported algorithms are:
  * <ul>

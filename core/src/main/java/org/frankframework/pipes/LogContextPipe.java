@@ -47,13 +47,13 @@ import org.frankframework.stream.Message;
 public class LogContextPipe extends FixedForwardPipe {
 
 	/**
-	 * If set to <code>true</code> the ThreadContext parameters will be exported from the current PipeLine up in the call tree.
+	 * If {@code true} the ThreadContext parameters will be exported from the current PipeLine up in the call tree.
 	 * @ff.default false
 	 */
 	private @Getter @Setter boolean export;
 
 	/**
-	 * If set {@code true} the pipe will never forward to the {@code ExceptionForward} even if an error occurred during execution.
+	 * If {@code true} the pipe will never forward to the {@code ExceptionForward} even if an error occurred during execution.
 	 * @ff.default false
 	 */
 	private @Getter @Setter boolean continueOnError;

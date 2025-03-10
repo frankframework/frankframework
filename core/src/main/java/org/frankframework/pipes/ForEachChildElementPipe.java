@@ -450,7 +450,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		this.xsltVersion=xsltVersion;
 	}
 
-	/** If set <code>true</code> namespaces (and prefixes) are removed from the items just before forwarding them to the sender. N.B. This takes place <strong>after</strong> the transformation for <code>elementXPathExpression</code> if that is specified */
+	/** If {@code true} namespaces (and prefixes) are removed from the items just before forwarding them to the sender. N.B. This takes place <strong>after</strong> the transformation for <code>elementXPathExpression</code> if that is specified */
 	public void setRemoveNamespaces(boolean b) {
 		removeNamespaces = b;
 	}

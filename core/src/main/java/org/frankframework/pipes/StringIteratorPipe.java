@@ -168,7 +168,7 @@ public abstract class StringIteratorPipe extends IteratingPipe<String> {
 	}
 
 	/**
-	 * If <code>true</code>, all items in a block are sent at once. If set false, items are sent individually, potentially leveraging block enabled sending capabilities of the sender
+	 * If {@code true}, all items in a block are sent at once. If {@code false}, items are sent individually, potentially leveraging block enabled sending capabilities of the sender
 	 * @ff.default true
 	 */
 	public void setCombineBlocks(boolean combineBlocks) {

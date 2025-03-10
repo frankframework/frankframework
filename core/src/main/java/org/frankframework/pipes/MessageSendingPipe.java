@@ -928,7 +928,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 
 
 	/**
-	 * If set <code>true</code>, the XML Well-Formedness of the result is checked
+	 * If {@code true}, the XML Well-Formedness of the result is checked
 	 * @ff.default false
 	 */
 	public void setCheckXmlWellFormed(boolean b) {
@@ -974,7 +974,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		retryMaxInterval = i;
 	}
 
-	/** XPath expression evaluated on each technical successful reply. Retry is done if condition returns true */
+	/** XPath expression evaluated on each technical successful reply. Retry is done if condition returns {@code true} */
 	public void setRetryXPath(String string) {
 		retryXPath = string;
 	}

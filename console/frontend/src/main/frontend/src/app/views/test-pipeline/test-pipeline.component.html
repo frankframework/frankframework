@@ -108,7 +108,10 @@
               </div>
             </div>
             <div class="row form-group">
-              <div class="col-sm-offset-3 col-sm-9 m-t-md">
+              <div class="col-sm-3 m-t-md">
+                <button class="btn btn-info btn-w-m font-bold" type="button" (click)="reset()">Reset</button>
+              </div>
+              <div class="col-sm-3 m-t-md">
                 <button
                   data-cy-test-pipeline="send"
                   [ladda]="processingMessage"

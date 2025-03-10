@@ -78,7 +78,7 @@ public class JsonXsltSender extends XsltSender {
 	}
 
 	/**
-	 * When <code>true</code>, the xml result of the transformation is converted back to json
+	 * If {@code true}, the xml result of the transformation is converted back to json
 	 * @ff.default true
 	 */
 	public void setJsonResult(boolean jsonResult) {

@@ -47,7 +47,7 @@ import org.frankframework.util.XmlEncodingUtils;
  * If a parameter for the given value is not found, it will not be replaced and the <code>?{parameterOne}</code> value will remain in the output.</li>
  * <p>
  * <p>
- * <li>If attribute <code>substituteVars</code> is <code>true</code>, then expressions <code>${...}</code> are substituted using
+ * <li>If attribute <code>substituteVars</code> is {@code true}, then expressions <code>${...}</code> are substituted using
  * system properties, session variables and application properties. Please note that no <code>${...}</code> patterns are left in the input. </li>
  * </ol>
  * 
@@ -124,7 +124,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * If subsituteVars is true, we need to wrap the inputStream again to substitute ${} syntax variables with
+	 * If {@code subsituteVars} is true, we need to wrap the inputStream again to substitute ${} syntax variables with
 	 * system properties, session variables and application properties.
 	 */
 	private ReplacingVariablesInputStream wrapWithSubstituteVarsInputStreamIfNeeded(ReplacingVariablesInputStream replaceParametersStream) {
