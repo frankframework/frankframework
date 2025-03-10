@@ -30,13 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import jakarta.annotation.security.RolesAllowed;
-
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.messaging.Message;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.HasPhysicalDestination;
@@ -54,8 +48,6 @@ import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.RestListener;
 import org.frankframework.jdbc.AbstractJdbcSender;
-import org.frankframework.jms.AbstractJmsListener;
-import org.frankframework.jms.JmsBrowser;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -73,6 +65,11 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.MessageKeeperMessage;
 import org.frankframework.util.RunState;
+import org.springframework.messaging.Message;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import jakarta.annotation.security.RolesAllowed;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.ADAPTER)
@@ -347,20 +344,6 @@ public class AdapterStatus extends BusEndpointBase {
 				}
 
 				receiverInfo.put("listener", listenerInfo);
-			}
-
-			if ((listener instanceof AbstractJmsListener jlb) && showPendingMsgCount) {
-				JmsBrowser<jakarta.jms.Message> jmsBrowser;
-				if (StringUtils.isEmpty(jlb.getMessageSelector())) {
-					jmsBrowser = new JmsBrowser<>();
-				} else {
-					jmsBrowser = new JmsBrowser<>(jlb.getMessageSelector());
-				}
-				jmsBrowser.setName("MessageBrowser_" + jlb.getName());
-				jmsBrowser.setJmsRealm(jlb.getJmsRealmName());
-				jmsBrowser.setDestinationName(jlb.getDestinationName());
-				jmsBrowser.setDestinationType(jlb.getDestinationType());
-				receiverInfo.put("pendingMessagesCount", getMessageCount(receiverRunState, jmsBrowser));
 			}
 
 			ISender rsender = receiver.getSender();
