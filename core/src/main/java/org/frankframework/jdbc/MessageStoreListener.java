@@ -139,17 +139,19 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 	protected RawMessageWrapper<Serializable> extractRawMessage(ResultSet rs) throws JdbcException {
 		try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed());
 		 ObjectInputStream ois = new RenamingObjectInputStream(blobStream)) {
+				Object rawMessage = ois.readObject();
+
 			String key = getStringFieldOrNull(rs, getKeyField());
 			String cid = getStringFieldOrNull(rs, getCorrelationIdField());
 			String mid = getStringFieldOrNull(rs, getMessageIdField());
-			Object rawMessage = ois.readObject();
 
-			if (rawMessage instanceof MessageWrapper<?>) {
+			RawMessageWrapper<Serializable> rawMessageWrapper;
+			if (rawMessage instanceof RawMessageWrapper<?>) {
 				//noinspection unchecked
-				return (MessageWrapper<Serializable>) rawMessage;
+				rawMessageWrapper = (RawMessageWrapper<Serializable>) rawMessage;
+			} else {
+				rawMessageWrapper = new RawMessageWrapper<>((Serializable) rawMessage, mid != null ? mid : key, cid);
 			}
-
-			RawMessageWrapper<Serializable> rawMessageWrapper = new RawMessageWrapper<>((Serializable)rawMessage, mid != null ? mid : key, cid);
 			if (key != null) {
 				rawMessageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, key);
 			}
