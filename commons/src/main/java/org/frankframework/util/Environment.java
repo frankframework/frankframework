@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,12 +21,14 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Optional;
 import java.util.Properties;
-
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class Environment {
 	private static final Logger log = LogManager.getLogger(Environment.class);
@@ -119,7 +121,7 @@ public class Environment {
 	}
 
 	/**
-	 * Get FF module version
+	 * Get FF module version based on the pom.properties file.
 	 *
 	 * @param module name of the module to fetch the version
 	 * @return module version or null if not found
@@ -140,6 +142,21 @@ public class Environment {
 			log.warn("unable to read pom.properties file for module [{}]", module, e);
 
 			return "unknown";
+		}
+	}
+
+	@Nonnull
+	public static Manifest getManifest(@Nonnull URL jarFileLocation) throws IOException {
+		try (JarFile file = new JarFile(jarFileLocation.getFile())) {
+			Manifest manifest = file.getManifest();
+			if (manifest == null) {
+				throw new IOException("unable to find manifest file");
+			}
+			log.info("found {} in {}", JarFile.MANIFEST_NAME, jarFileLocation);
+			return manifest;
+		} catch (IOException e) {
+			log.warn("unable to read " + JarFile.MANIFEST_NAME, e);
+			throw e;
 		}
 	}
 }

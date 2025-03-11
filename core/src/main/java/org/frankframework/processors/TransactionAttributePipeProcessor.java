@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,31 +15,27 @@
 */
 package org.frankframework.processors;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-
-import lombok.Getter;
-import lombok.Setter;
-
 import org.frankframework.core.HasSender;
 import org.frankframework.core.HasTransactionAttribute;
 import org.frankframework.core.IPipe;
-import org.frankframework.core.ISender;
+import org.frankframework.core.IXAEnabled;
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
-import org.frankframework.jdbc.JdbcFacade;
-import org.frankframework.jms.JMSFacade;
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.stream.Message;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.ClassUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * @author Jaco de Groot
@@ -85,8 +81,7 @@ public class TransactionAttributePipeProcessor extends AbstractPipeProcessor {
 	/** If the pipe implements HasSender and the sender is TX Capable, it should mark RollBackOnly! */
 	private boolean hasTxCapableSender(IPipe pipe) {
 		if(pipe instanceof HasSender hasSender) {
-			ISender sender = hasSender.getSender();
-			return sender instanceof JdbcFacade || sender instanceof JMSFacade;
+			return hasSender.getSender() instanceof IXAEnabled;
 		}
 		return false;
 	}
