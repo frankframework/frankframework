@@ -59,8 +59,8 @@
         }
     ],
     "jmsRealms": {
-        "dummyJmsRealm2": "JmsRealm[authAlias=<null>,authentication=<null>,credentials=<null>,datasourceName=<null>,initialContextFactoryName=<null>,jndiAuthAlias=<null>,jndiContextPrefix=,jndiProperties=<null>,log=org.frankframework.jms.JmsRealm:DEBUG in 659e0bfd,principal=<null>,providerURL=<null>,queueConnectionFactoryName=dummyQCF,realmName=dummyJmsRealm2,securityProtocol=<null>,topicConnectionFactoryName=<null>,urlPkgPrefixes=<null>,userTransactionUrl=<null>]",
-        "dummyJmsRealm1": "JmsRealm[authAlias=<null>,authentication=<null>,credentials=<null>,datasourceName=dummyDatasourceName,initialContextFactoryName=<null>,jndiAuthAlias=<null>,jndiContextPrefix=,jndiProperties=<null>,log=org.frankframework.jms.JmsRealm:DEBUG in 659e0bfd,principal=<null>,providerURL=<null>,queueConnectionFactoryName=<null>,realmName=dummyJmsRealm1,securityProtocol=<null>,topicConnectionFactoryName=<null>,urlPkgPrefixes=<null>,userTransactionUrl=<null>]"
+        "dummyJmsRealm2": "JmsRealm[authAlias=<null>,authentication=<null>,credentials=<null>,datasourceName=<null>,initialContextFactoryName=<null>,jndiAuthAlias=<null>,jndiContextPrefix=,jndiProperties=<null>,log=org.frankframework.jms.JmsRealm,principal=<null>,providerURL=<null>,queueConnectionFactoryName=dummyQCF,realmName=dummyJmsRealm2,securityProtocol=<null>,topicConnectionFactoryName=<null>,urlPkgPrefixes=<null>,userTransactionUrl=<null>]",
+        "dummyJmsRealm1": "JmsRealm[authAlias=<null>,authentication=<null>,credentials=<null>,datasourceName=dummyDatasourceName,initialContextFactoryName=<null>,jndiAuthAlias=<null>,jndiContextPrefix=,jndiProperties=<null>,log=org.frankframework.jms.JmsRealm,principal=<null>,providerURL=<null>,queueConnectionFactoryName=<null>,realmName=dummyJmsRealm1,securityProtocol=<null>,topicConnectionFactoryName=<null>,urlPkgPrefixes=<null>,userTransactionUrl=<null>]"
     },
     "sapSystems": [
     ],

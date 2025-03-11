@@ -50,7 +50,6 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 
 @BusAware("frank-management-bus")
@@ -102,7 +101,7 @@ public class SecurityItems extends BusEndpointBase {
 		List<String> jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 		return jmsRealms.stream()
 				.map(e -> JmsRealmFactory.getInstance().getJmsRealm(e))
-				.collect(Collectors.toMap(JmsRealm::getRealmName, StringUtil::reflectionToString));
+				.collect(Collectors.toMap(JmsRealm::getRealmName, JmsRealm::toString));
 	}
 
 	@SuppressWarnings("rawtypes")

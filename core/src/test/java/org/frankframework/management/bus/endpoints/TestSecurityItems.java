@@ -3,6 +3,7 @@ package org.frankframework.management.bus.endpoints;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
@@ -62,12 +63,13 @@ public class TestSecurityItems extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.SECURITY_ITEMS);
 		request.setHeader("configuration", "testConfiguration");
 		Message<?> response = callSyncGateway(request);
-		String expectedJson = TestFileUtils.getTestFile("/Management/securityItemsResponse.json");
 		String payload = (String) response.getPayload();
 		payload = payload.replaceAll("hashCode: \\d+", "HASHCODE");
 		payload = payload.replaceAll("(?:\"cyphers\":)\\[([\\r\\s\\t\\n\\w \",]+)+(:?\\])", "\"cyphers\":[\"IGNORE\"]");
 		payload = payload.replaceAll("(?:\"protocols\":)\\[([\\r\\s\\t\\n\\w \",.]+)+(:?\\])", "\"protocols\":[\"IGNORE\"]");
+		payload = payload.replaceAll("JmsRealm:.+?,", "JmsRealm,");
 
+		String expectedJson = TestFileUtils.getTestFile("/Management/securityItemsResponse.json");
 		MatchUtils.assertJsonEquals(expectedJson, payload);
 	}
 }
