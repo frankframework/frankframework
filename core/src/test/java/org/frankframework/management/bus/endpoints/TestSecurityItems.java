@@ -3,7 +3,6 @@ package org.frankframework.management.bus.endpoints;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
@@ -20,10 +19,10 @@ import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.testutil.FindAvailableDataSources.TestDatasource;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.testutil.FindAvailableDataSources.TestDatasource;
 import org.frankframework.util.SpringUtils;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
