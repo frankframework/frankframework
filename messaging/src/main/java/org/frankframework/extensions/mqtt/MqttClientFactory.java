@@ -32,7 +32,7 @@ import org.frankframework.util.AppConstants;
 
 public class MqttClientFactory extends ObjectFactory<MqttClient, MqttClientSettings> {
 
-	private MqttClientFactory() {
+	public MqttClientFactory() {
 		super(MqttClientSettings.class, "mqtt", "MQTT");
 	}
 
