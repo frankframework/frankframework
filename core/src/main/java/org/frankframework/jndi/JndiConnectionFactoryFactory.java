@@ -18,8 +18,6 @@ package org.frankframework.jndi;
 import java.util.List;
 import java.util.Properties;
 
-import javax.sql.CommonDataSource;
-
 import jakarta.jms.ConnectionFactory;
 
 import org.frankframework.jdbc.datasource.ObjectFactory;
@@ -35,8 +33,8 @@ public class JndiConnectionFactoryFactory extends ObjectFactory<ConnectionFactor
 	}
 
 	/**
-	 * Allow implementing classes to augment the DataSource.
-	 * See {@link #augment(CommonDataSource, String)}.
+	 * Allow implementing classes to augment the ConnectionFactory.
+	 * See {@link #augment(ConnectionFactory, String)}.
 	 */
 	@SuppressWarnings("java:S1172")
 	protected ConnectionFactory augmentConnectionFactory(ConnectionFactory cf, String objectName) {
