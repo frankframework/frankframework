@@ -114,6 +114,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private final Map<String,Destination> destinations = new ConcurrentHashMap<>();
 
 	private @Setter @Getter IConnectionFactoryFactory connectionFactoryFactory = null;
+	private ConnectionFactory connectionFactory;
 	private @Setter @Getter Map<String, String> proxiedDestinationNames;
 
 	// ---------------------------------------------------------------------
@@ -229,8 +230,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			throw new ConfigurationException("no connectionFactoryFactory set");
 		}
 		try {
-			ConnectionFactory cf = connectionFactoryFactory.getConnectionFactory(getConnectionFactoryName(), getJndiEnv());
-			if("com.amazon.sqs.javamessaging.SQSConnectionFactory".equals(cf.getClass().getCanonicalName()) && StringUtils.isNotBlank(getMessageSelector())) {
+			connectionFactory = connectionFactoryFactory.getConnectionFactory(getConnectionFactoryName(), getJndiEnv());
+			if("com.amazon.sqs.javamessaging.SQSConnectionFactory".equals(connectionFactory.getClass().getCanonicalName()) && StringUtils.isNotBlank(getMessageSelector())) {
 				throw new ConfigurationException("Amazon SQS does not support MessageSelectors");
 			}
 		} catch (NamingException | JmsException e) {
@@ -246,10 +247,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			throw new JmsException(getLogPrefix()+"no "+(useTopicFunctions ?"topic":"queue")+"ConnectionFactoryName specified");
 		}
 		return result;
-	}
-
-	public String getConnectionFactoryInfo() throws JmsException {
-		return getMessagingSource().getPhysicalName();
 	}
 
 	protected JmsMessagingSource getJmsMessagingSource() throws JmsException {

@@ -44,7 +44,7 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 	private @Getter @Setter int sessionWaitTimeout = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connections.sessionWaitTimeout", 15);
 
 	@Override
-	protected ConnectionFactory augment(ConnectionFactory connectionFactory, String connectionFactoryName) {
+	protected ConnectionFactory augmentConnectionFactory(ConnectionFactory connectionFactory, String connectionFactoryName) {
 		if (connectionFactory instanceof XAConnectionFactory factory) {
 			XAResourceRecoveryHelper recoveryHelper = new JmsXAResourceRecoveryHelper(factory);
 			this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);

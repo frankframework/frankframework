@@ -36,7 +36,7 @@ public class JdbcPoolUtil {
 		} else if (datasource instanceof org.apache.tomcat.dbcp.dbcp2.PoolingDataSource) {
 			OpenPoolingDataSource dataSource = (OpenPoolingDataSource) datasource;
 			addPoolMetadata(dataSource.getPool(), info);
-		} else if (datasource instanceof DelegatingDataSource source) { //Perhaps it's wrapped?
+		} else if (datasource instanceof DelegatingDataSource source) { // Perhaps it's wrapped?
 			return getConnectionPoolInfo(source.getTargetDataSource());
 		} else {
 			return null;

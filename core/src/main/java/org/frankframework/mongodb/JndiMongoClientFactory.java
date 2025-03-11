@@ -35,7 +35,7 @@ public class JndiMongoClientFactory extends ObjectFactory<MongoClient, MongoClie
 	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty(DEFAULT_DATASOURCE_NAME_PROPERTY, GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT);
 
 	public JndiMongoClientFactory() {
-		super(MongoClient.class);
+		super(MongoClient.class, "mongo", "MongoDB");
 	}
 
 	@Override

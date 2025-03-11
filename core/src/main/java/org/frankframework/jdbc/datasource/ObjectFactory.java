@@ -29,10 +29,12 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.StringUtil;
 
 /**
  * Baseclass for Object lookups.
@@ -49,14 +51,18 @@ import org.frankframework.util.LogUtil;
 public abstract class ObjectFactory<O, P> implements InitializingBean, DisposableBean {
 	protected final Logger log = LogUtil.getLogger(this);
 	private final Class<P> lookupClass;
+	private final @Getter String resourcePrefix;
+	private final @Getter String displayName;
 
 	private Map<String, O> objects = new ConcurrentHashMap<>();
 
 	@Autowired @Setter
 	private List<? extends IObjectLocator> objectLocators;
 
-	protected ObjectFactory(Class<P> lookupClass) {
+	protected ObjectFactory(Class<P> lookupClass, String resourcePrefix, String displayName) {
 		this.lookupClass = lookupClass;
+		this.resourcePrefix = resourcePrefix;
+		this.displayName = displayName;
 	}
 
 	/**
@@ -117,8 +123,27 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 
 	protected List<String> getObjectNames() {
 		List<String> names = new ArrayList<>(objects.keySet());
-		names.sort(Comparator.naturalOrder()); //AlphaNumeric order
+		names.sort(Comparator.naturalOrder()); // AlphaNumeric order
 		return Collections.unmodifiableList(names);
+	}
+
+	public List<ObjectInfo> getObjectInfo() {
+		return getObjectNames().stream().map(this::toObjectInfo).toList();
+	}
+
+	/**
+	 * Mapping from <O> to a information object, used for logging and console actions.
+	 */
+	protected ObjectInfo toObjectInfo(String name) {
+		Object obj = get(name, null);
+		return new ObjectInfo(name, StringUtil.reflectionToString(obj), null);
+	}
+
+	public static record ObjectInfo (String name, String info, String connectionPoolProperties) {
+		@Override
+		public final String toString() {
+			return "Resource [%s] %s, POOL: %s".formatted(name, info, connectionPoolProperties);
+		}
 	}
 
 	@Override

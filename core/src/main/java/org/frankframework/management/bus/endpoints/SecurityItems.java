@@ -25,11 +25,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
-import javax.sql.DataSource;
 
 import jakarta.annotation.security.RolesAllowed;
 
@@ -39,25 +39,18 @@ import org.springframework.messaging.Message;
 import lombok.Getter;
 
 import org.frankframework.configuration.Configuration;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.dbms.JdbcException;
-import org.frankframework.jdbc.FixedQuerySender;
-import org.frankframework.jdbc.IDataSourceFactory;
-import org.frankframework.jdbc.datasource.JdbcPoolUtil;
-import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
-import org.frankframework.jms.JMSFacade.DestinationType;
-import org.frankframework.jms.JmsException;
+import org.frankframework.jdbc.datasource.ObjectFactory;
+import org.frankframework.jdbc.datasource.ObjectFactory.ObjectInfo;
 import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
-import org.frankframework.jms.JmsSender;
 import org.frankframework.lifecycle.ServletManager;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
-import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 
 @BusAware("frank-management-bus")
@@ -70,7 +63,7 @@ public class SecurityItems extends BusEndpointBase {
 		Map<String, Object> returnMap = new HashMap<>();
 		returnMap.put("securityRoles", getSecurityRoles());
 		returnMap.put("jmsRealms", addJmsRealms());
-		returnMap.put("datasources", addDataSources());
+		returnMap.put("resourceFactories", addResourceFactories());
 		returnMap.put("sapSystems", addSapSystems());
 		returnMap.put("authEntries", addAuthEntries());
 		returnMap.put("xmlComponents", XmlUtils.getVersionInfo());
@@ -84,7 +77,7 @@ public class SecurityItems extends BusEndpointBase {
 		try {
 			ServletManager servletManager = getApplicationContext().getBean(ServletManager.class);
 			securityRoles = servletManager.getDeclaredRoles();
-		} catch (Exception e) { //TODO make IbisTester run without SpringEnvironmentContext
+		} catch (Exception e) { // TODO make IbisTester run without SpringEnvironmentContext
 			securityRoles = Collections.emptyList();
 		}
 	}
@@ -105,109 +98,31 @@ public class SecurityItems extends BusEndpointBase {
 		}
 	}
 
-	private ArrayList<Object> addJmsRealms() {
+	private Map<String, String> addJmsRealms() {
 		List<String> jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
-		ArrayList<Object> jmsRealmList = new ArrayList<>();
-
-		for (String realmName : jmsRealms) {
-			Map<String, Object> realm = new HashMap<>();
-			JmsRealm jmsRealm = JmsRealmFactory.getInstance().getJmsRealm(realmName);
-
-			String dsName = jmsRealm.getDatasourceName();
-			String qcfName = jmsRealm.getQueueConnectionFactoryName();
-			String tcfName = jmsRealm.getTopicConnectionFactoryName();
-			String cfInfo = null;
-
-			if(StringUtils.isNotEmpty(dsName)) {
-				realm = mapJmsRealmToDataSource(realmName, dsName);
-			} else {
-				JmsSender js = new JmsSender();
-				js.setJmsRealm(realmName);
-				if (StringUtils.isNotEmpty(tcfName)) {
-					js.setDestinationType(DestinationType.TOPIC);
-				}
-				try {
-					cfInfo = js.getConnectionFactoryInfo();
-				} catch (JmsException e) {
-					log.debug("no connectionFactory ({}): {}", ClassUtils.nameOf(e), e.getMessage());
-				}
-				if (StringUtils.isNotEmpty(qcfName)) {
-					realm.put("name", realmName);
-					realm.put("queueConnectionFactoryName", qcfName);
-					realm.put("info", cfInfo);
-				} else if (StringUtils.isNotEmpty(tcfName)) {
-					realm.put("name", realmName);
-					realm.put("topicConnectionFactoryName", tcfName);
-					realm.put("info", cfInfo);
-				}
-			}
-			jmsRealmList.add(realm);
-		}
-
-		return jmsRealmList;
+		return jmsRealms.stream()
+				.map(e -> JmsRealmFactory.getInstance().getJmsRealm(e))
+				.collect(Collectors.toMap(JmsRealm::getRealmName, StringUtil::reflectionToString));
 	}
 
-	private ArrayList<DataSourceDTO> addDataSources() {
-		IDataSourceFactory dataSourceFactory = getBean("dataSourceFactory", IDataSourceFactory.class);
-		List<String> dataSourceNames = dataSourceFactory.getDataSourceNames();
+	@SuppressWarnings("rawtypes")
+	private List<ObjectFactoryDTO> addResourceFactories() {
+		Map<String, ObjectFactory> objectFactories = getApplicationContext().getBeansOfType(ObjectFactory.class);
+		List<ObjectFactoryDTO> mappedFactories = new ArrayList<>();
 
-		ArrayList<DataSourceDTO> dsList = new ArrayList<>();
-		for(String datasourceName : dataSourceNames) {
-			DataSource ds = null;
-			try {
-				ds = dataSourceFactory.getDataSource(datasourceName);
-			} catch (IllegalStateException e) {
-				log.debug("unable to retrieve datasource info for name [{}]", datasourceName);
-			}
+		for (Entry<String, ObjectFactory> entry : objectFactories.entrySet()) {
+			final ObjectFactory<?, ?> factory = entry.getValue();
+			final List<ObjectInfo> objects = factory.getObjectInfo();
 
-			dsList.add(new DataSourceDTO(datasourceName, ds));
-		}
-
-		return dsList;
-	}
-
-	private static class DataSourceDTO {
-		private @Getter final String datasourceName;
-		private @Getter final String connectionPoolProperties;
-		private @Getter final String info;
-
-		public DataSourceDTO(String datasourceName, DataSource ds) {
-			this.datasourceName = datasourceName;
-			this.connectionPoolProperties = JdbcPoolUtil.getConnectionPoolInfo(ds);
-
-			if(ds instanceof TransactionalDbmsSupportAwareDataSourceProxy proxy) {
-				this.info = proxy.getInfo();
-			} else {
-				this.info = null;
+			if (!objects.isEmpty()) {
+				mappedFactories.add(new ObjectFactoryDTO(factory.getDisplayName(), objects));
 			}
 		}
+
+		return mappedFactories;
 	}
 
-	@Deprecated
-	private Map<String, Object> mapJmsRealmToDataSource(String jmsRealm, String datasourceName) {
-		Map<String, Object> realm = new HashMap<>();
-		FixedQuerySender qs = createBean(FixedQuerySender.class);
-
-		qs.setQuery("select datasource from database");
-		if(StringUtils.isNotEmpty(jmsRealm)) {
-			realm.put("name", jmsRealm);
-			qs.setJmsRealm(jmsRealm);
-		} else {
-			qs.setDatasourceName(datasourceName);
-		}
-
-		String dsInfo = null;
-		try {
-			qs.configure();
-			dsInfo = qs.getDatasourceInfo();
-		} catch (JdbcException | ConfigurationException e) {
-			log.debug("no datasource ({}): {}", ClassUtils.nameOf(e), e.getMessage());
-		}
-		realm.put("datasourceName", datasourceName);
-		realm.put("info", dsInfo);
-
-		return realm;
-	}
+	public static record ObjectFactoryDTO(String name, List<ObjectInfo> resources) {}
 
 	@SuppressWarnings({ "unchecked", "rawtypes", "java:S1181" })
 	private ArrayList<Object> addSapSystems() {
@@ -256,7 +171,7 @@ public class SecurityItems extends BusEndpointBase {
 		// and add all aliases that are used in the configuration
 		for (Configuration configuration : getIbisManager().getConfigurations()) {
 			String configString = configuration.getLoadedConfiguration();
-			if(StringUtils.isEmpty(configString)) continue; //If a configuration can't be found, continue...
+			if(StringUtils.isEmpty(configString)) continue; // If a configuration can't be found, continue...
 
 			try {
 				Collection<String> c = XmlUtils.evaluateXPathNodeSet(configString, "//@*[starts-with(name(),'authAlias') or ends-with(name(),'AuthAlias')]");
@@ -305,14 +220,14 @@ public class SecurityItems extends BusEndpointBase {
 
 	private Map<String, String[]> getSupportedProtocolsAndCyphers() {
 		Map<String, String[]> supportedOptions = new HashMap<>();
-        try {
+		try {
 			SSLParameters supportedSSLParameters = SSLContext.getDefault().getSupportedSSLParameters();
-            supportedOptions.put("protocols", supportedSSLParameters.getProtocols());
-			supportedOptions.put("cyphers",  supportedSSLParameters.getCipherSuites());
-        } catch (NoSuchAlgorithmException e) {
+			supportedOptions.put("protocols", supportedSSLParameters.getProtocols());
+			supportedOptions.put("cyphers", supportedSSLParameters.getCipherSuites());
+		} catch (NoSuchAlgorithmException e) {
 			supportedOptions.put("protocols", new String[0]);
 			supportedOptions.put("cyphers", new String[0]);
-        }
+		}
 		return supportedOptions;
-    }
+	}
 }

@@ -42,7 +42,7 @@ public class MqttClientFactory extends ObjectFactory<MqttClient, MqttClientSetti
 	}
 
 	private MqttClientFactory() {
-		super(MqttClientSettings.class);
+		super(MqttClientSettings.class, "mqtt", "MQTT");
 	}
 
 	@SneakyThrows
@@ -58,7 +58,7 @@ public class MqttClientFactory extends ObjectFactory<MqttClient, MqttClientSetti
 		if (data.getKeepAliveInterval() != 0) {
 			connectOptions.setKeepAliveInterval(data.getKeepAliveInterval());
 		}
-		connectOptions.setMqttVersion(MqttConnectOptions.MQTT_VERSION_DEFAULT); //Default: 0, V3.1: 3, V3.1.1: 4
+		connectOptions.setMqttVersion(MqttConnectOptions.MQTT_VERSION_DEFAULT); // Default: 0, V3.1: 3, V3.1.1: 4
 
 		if (data.getUsername() != null && data.getPassword() != null) {
 			connectOptions.setUserName(data.getUsername());
