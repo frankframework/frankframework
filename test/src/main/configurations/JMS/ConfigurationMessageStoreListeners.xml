@@ -35,15 +35,16 @@
 			</SenderPipe>
 			<SenderPipe name="Trigger Manual Retry">
 				<HttpSender
-					methodType="PUT"
+					methodType="POST"
+					postType="FORMDATA"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
 				>
 					<Param name="configuration" value="JMS"/>
 					<Param name="adapterName" value="MultipleReceiversAdapter"/>
 					<Param name="receiverName" value="retryReceiver"/>
-					<Param name="messageId"/>
-					<Param name="url" pattern="${web.protocol}://${web.host}:${web.port}${web.contextpath}/iaf/api/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error/messages/{messageId}"/>
+					<Param name="messageIds"/>
+					<Param name="url" pattern="${web.protocol}://${web.host}:${web.port}${web.contextpath}/iaf/api/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error"/>
 				</HttpSender>
 			</SenderPipe>
 		</Pipeline>
@@ -83,8 +84,8 @@
 
 		<Pipeline>
 			<Exits>
-				<Exit path="EXIT" state="success" />
-				<Exit path="ERROR" state="error" />
+				<Exit name="EXIT" state="success" />
+				<Exit name="ERROR" state="error" />
 			</Exits>
 			<XmlIfPipe name="Check If Pipeline Should Fail or Succeed"
 				getInputFromSessionKey="retry" regex="true">
