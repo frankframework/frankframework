@@ -306,6 +306,30 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
+	public void simpleMockedHttpPostWithUrlPatternAndParametersFromSessionAndInput() throws Throwable {
+		sender = getSender(false);
+		sender.setMethodType(HttpMethod.POST);
+		Parameter urlParam = ParameterBuilder.create().withName("url").withPattern("http://127.0.0.1/my/rest-resource/{fromSession}/path/{fromInput}");
+		Parameter p1 = ParameterBuilder.create().withName("fromSession").withSessionKey("fromSession");
+		Parameter p2 = ParameterBuilder.create().withName("fromInput");
+		sender.addParameter(p1);
+		sender.addParameter(p2);
+		sender.addParameter(urlParam);
+
+		sender.setTreatInputMessageAsParameters(false);
+
+		sender.configure();
+		sender.start();
+
+		session.put("fromSession", "1");
+
+		Message input = new Message("2");
+
+		String result = sender.sendMessageOrThrow(input, session).asString();
+		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostWithUrlPatternParam.txt"), result.trim());
+	}
+
+	@Test
 	public void simpleMockedHttpPostEncodeMessage() throws Throwable {
 		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo dit is mijn bericht");

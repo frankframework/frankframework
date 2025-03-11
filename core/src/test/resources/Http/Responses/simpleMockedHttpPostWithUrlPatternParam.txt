@@ -1,0 +1,6 @@
+POST /my/rest-resource/1/path/2 HTTP/1.1
+Message-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb1
+Correlation-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb2
+Content-Type: text/html; charset=UTF-8
+
+fromSession=1&fromInput=2
