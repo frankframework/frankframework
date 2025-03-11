@@ -73,7 +73,6 @@
 		<Receiver name="retryReceiver"
 			transactionAttribute="Required"
 			maxRetries="0"
-			forceRetryFlag="true"
 			pollInterval="60">
 
 			<MessageStoreListener name="messageStoreListener"
@@ -88,7 +87,7 @@
 				<Exit name="ERROR" state="error" />
 			</Exits>
 			<XmlIfPipe name="Check If Pipeline Should Fail or Succeed"
-				getInputFromSessionKey="retry" regex="true">
+				getInputFromSessionKey="__isManualRetry" regex="true">
 				<Forward name="then" path="EXIT"/>
 				<Forward name="else" path="ERROR"/>
 			</XmlIfPipe>
