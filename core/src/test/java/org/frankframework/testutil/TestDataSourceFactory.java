@@ -24,7 +24,8 @@ public class TestDataSourceFactory extends DataSourceFactory {
 	@Override
 	protected ObjectInfo toObjectInfo(String name) {
 		if (name.startsWith(FindAvailableDataSources.JDBC_RESOURCE_PREFIX)) {
-			name = name.substring(FindAvailableDataSources.JDBC_RESOURCE_PREFIX.length());
+			String chompedName = name.substring(FindAvailableDataSources.JDBC_RESOURCE_PREFIX.length());
+			return super.toObjectInfo(chompedName);
 		}
 
 		return super.toObjectInfo(name);
