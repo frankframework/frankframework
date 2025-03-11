@@ -29,11 +29,16 @@
 			"IGNORE"
 		]
 	},
-    "datasources": [
+    "resourceFactories": [
         {
-            "datasourceName": "jdbc/testconfiguration",
-            "connectionPoolProperties": "DBCP2 Pool Info: maxIdle [8], minIdle [0], maxTotal [8], numActive [0], numIdle [0], testOnBorrow [false], testOnCreate [false], testOnReturn [false], testWhileIdle [false], removeAbandonedOnBorrow [false], removeAbandonedOnMaintenance [false], removeAbandonedTimeoutDuration [PT596523H14M7S]",
-            "info": "targetDataSource [org.frankframework.jdbc.datasource.OpenPoolingDataSource]"
+            "name": "DataSources",
+            "resources": [
+                {
+                    "name": "H2",
+                    "info": "targetDataSource [org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy]",
+                    "connectionPoolProperties": null
+                }
+            ]
         }
     ],
     "authEntries": [
@@ -53,18 +58,10 @@
             "username": "*** ERROR ***"
         }
     ],
-    "jmsRealms": [
-        {
-            "name": "dummyJmsRealm1",
-            "datasourceName": "dummyDatasourceName",
-			"info": null
-        },
-        {
-            "queueConnectionFactoryName": "dummyQCF",
-            "name": "dummyJmsRealm2",
-            "info": null
-        }
-    ],
+    "jmsRealms": {
+        "dummyJmsRealm2": "JmsRealm[authAlias=<null>,authentication=<null>,credentials=<null>,datasourceName=<null>,initialContextFactoryName=<null>,jndiAuthAlias=<null>,jndiContextPrefix=,jndiProperties=<null>,log=org.frankframework.jms.JmsRealm,principal=<null>,providerURL=<null>,queueConnectionFactoryName=dummyQCF,realmName=dummyJmsRealm2,securityProtocol=<null>,topicConnectionFactoryName=<null>,urlPkgPrefixes=<null>,userTransactionUrl=<null>]",
+        "dummyJmsRealm1": "JmsRealm[authAlias=<null>,authentication=<null>,credentials=<null>,datasourceName=dummyDatasourceName,initialContextFactoryName=<null>,jndiAuthAlias=<null>,jndiContextPrefix=,jndiProperties=<null>,log=org.frankframework.jms.JmsRealm,principal=<null>,providerURL=<null>,queueConnectionFactoryName=<null>,realmName=dummyJmsRealm1,securityProtocol=<null>,topicConnectionFactoryName=<null>,urlPkgPrefixes=<null>,userTransactionUrl=<null>]"
+    },
     "sapSystems": [
     ],
     "xmlComponents": {

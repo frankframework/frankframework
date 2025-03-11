@@ -29,6 +29,8 @@ import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.util.StringUtil;
+
 /**
  * DataSource that is aware of the database metadata.
  * Fetches the metadata once and caches them.
@@ -104,7 +106,8 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 		if (metadata != null && log.isInfoEnabled()) {
 			return getInfo();
 		}
-		return obtainTargetDataSource().toString();
+
+		return StringUtil.reflectionToString(obtainTargetDataSource());
 	}
 
 	public String getInfo() {
@@ -121,5 +124,9 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 		info.append("targetDataSource [").append(obtainTargetDataSource().getClass().getName()).append("]");
 
 		return info.toString();
+	}
+
+	public String getPoolInfo() {
+		return JdbcPoolUtil.getConnectionPoolInfo(getTargetDataSource());
 	}
 }

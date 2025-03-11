@@ -30,7 +30,7 @@ import lombok.extern.log4j.Log4j2;
 
 /**
  * Old style of finding Modules, instead of self-registering, the code attempts to locate the module on the classpath.
- * This is purely for debugging purposes to see which modules are present.
+ * This is purely for debugging purposes to see which modules are present. The old module names are stored as properties in the AppConstants.
  */
 @Log4j2
 public class LegacyLoader {
@@ -46,7 +46,7 @@ public class LegacyLoader {
 	private static List<String> getApplicationModules() {
 		List<String> modulesToScanFor = new ArrayList<>();
 
-		// Legacy
+		// The complete list of modules
 		modulesToScanFor.add("frankframework-akamai");
 		modulesToScanFor.add("frankframework-aspose");
 		modulesToScanFor.add("frankframework-aws");
@@ -84,7 +84,7 @@ public class LegacyLoader {
 			if (pomProperties != null) {
 				try {
 					Manifest manifest = convertPomPropertiesToManifest(pomProperties);
-					ffModules.add(new LegacyModule(module, manifest));
+					ffModules.add(new DefaultModule(module, manifest));
 				} catch (Exception e) {
 					log.debug("unable to convert pom properties URL [{}] to jar file URL", pomProperties);
 				}
@@ -113,10 +113,10 @@ public class LegacyLoader {
 		throw new FileNotFoundException("no manifest file found relative to path ["+pomProperties+"]");
 	}
 
-	public static class LegacyModule implements Module {
+	public static class DefaultModule implements Module {
 		private final ModuleInformation moduleInformation;
 
-		public LegacyModule(String artifactId, Manifest manifest) throws IOException {
+		public DefaultModule(String artifactId, Manifest manifest) throws IOException {
 			moduleInformation = new ModuleInformation(manifest);
 			moduleInformation.setArtifactId(artifactId);
 			moduleInformation.setGroupId("org.frankframework");

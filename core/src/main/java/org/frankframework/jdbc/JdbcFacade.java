@@ -118,7 +118,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	protected DataSource getDatasource() throws JdbcException {
 		if (datasource==null) {
 			String dsName = getDatasourceName();
-			if(StringUtils.isBlank(dsName)) { //for getPhysicalDestinationName (console) when not yet configured.
+			if(StringUtils.isBlank(dsName)) { // for getPhysicalDestinationName (console) when not yet configured.
 				throw new JdbcException("No datasourceName specified");
 			}
 
@@ -135,14 +135,6 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			log.info("{}looked up Datasource [{}]: [{}]", getLogPrefix(), dsName, dsinfo);
 		}
 		return datasource;
-	}
-
-	@Deprecated
-	public String getDatasourceInfo() throws JdbcException {
-		if(getDatasource() instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
-			return ((TransactionalDbmsSupportAwareDataSourceProxy) getDatasource()).getInfo();
-		}
-		throw new IllegalStateException("Datasource should always be of type TransactionalDbmsSupportAwareDataSourceProxy, found: " + getDatasource().getClass().getName());
 	}
 
 	public void setDbmsSupportFactory(DbmsSupportFactory dbmsSupportFactory) {
