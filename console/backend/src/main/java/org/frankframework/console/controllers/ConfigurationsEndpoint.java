@@ -21,6 +21,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
@@ -68,8 +69,10 @@ public class ConfigurationsEndpoint {
 	@Relation("application")
 	@Description("view all the loaded/original configurations")
 	@GetMapping(value = "/configurations", produces = MediaType.APPLICATION_XML_VALUE)
-	public ResponseEntity<?> getConfigurationXML(@RequestParam(value = "loadedConfiguration", required = false) boolean loaded,
-												 @RequestParam(value = "flow", required = false) String flow) throws ApiException {
+	public ResponseEntity<?> getConfigurationXML(@RequestParam Map<String, String> params) throws ApiException {
+		boolean loaded = Boolean.parseBoolean(params.get("loadedConfiguration"));
+		String flow = params.get("flow");
+
 		if (StringUtils.isNotEmpty(flow)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.FLOW);
 			return frankApiService.callSyncGateway(builder);
@@ -86,16 +89,14 @@ public class ConfigurationsEndpoint {
 	@Relation("application")
 	@Description("update the entire application using an action")
 	@PutMapping(value = "/configurations", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> fullAction(@RequestBody Map<String, Object> json) throws ApiException {
+	public ResponseEntity<?> fullAction(@RequestBody ActionModel json) throws ApiException {
 		List<String> configurations = new ArrayList<>();
+		Action action = getActionOrThrow(json.action, true);
 
-		String value = RequestUtils.getValue(json, "action");
-		Action action = getActionOrThrow(value, true);
-
-		Object configurationsList = json.get("configurations");
+		String[] configurationsList = json.configurations;
 		if (configurationsList != null) {
 			try {
-				configurations.addAll((ArrayList<String>) configurationsList);
+				configurations.addAll(List.of(configurationsList));
 			} catch (Exception e) {
 				throw new ApiException(e);
 			}
@@ -157,9 +158,8 @@ public class ConfigurationsEndpoint {
 	@Relation("configuration")
 	@Description("update a specific configuration using an action")
 	@PutMapping(value = "/configurations/{configuration}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateConfiguration(@PathVariable("configuration") String configurationName, @RequestBody Map<String, Object> json) throws ApiException {
-		String value = RequestUtils.getValue(json, "action");
-		Action action = getActionOrThrow(value, false);
+	public ResponseEntity<?> updateConfiguration(@PathVariable("configuration") String configurationName, @RequestBody UpdateConfigurationModel json) throws ApiException {
+		Action action = getActionOrThrow(json.action, false);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
 		builder.addHeader("action", action.name());
@@ -187,26 +187,16 @@ public class ConfigurationsEndpoint {
 	public ResponseEntity<?> manageConfiguration(@PathVariable("configuration") String configurationName,
 												 @PathVariable(PATH_VARIABLE_VERSION) String encodedVersion,
 												 @RequestParam(value = "datasourceName", required = false) String datasourceName,
-												 @RequestBody Map<String, Object> json) throws ApiException {
+												 @RequestBody ManageConfigurationModel json) throws ApiException {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.MANAGE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader(BUS_HEADER_VERSION, HttpUtils.urlDecode(encodedVersion));
 
-		if (json.containsKey("activate")) {
-			Object obj = json.get("activate");
-			if (obj instanceof Boolean) {
-				builder.addHeader("activate", (Boolean) json.get("activate"));
-			} else {
-				throw new ApiException("activate must be of type boolean");
-			}
-		} else if (json.containsKey("autoreload")) {
-			Object obj = json.get("autoreload");
-			if (obj instanceof Boolean) {
-				builder.addHeader("autoreload", (Boolean) json.get("autoreload"));
-			} else {
-				throw new ApiException("autoreload must be of type boolean");
-			}
+		if (json.activate.isPresent()) {
+			builder.addHeader("activate", json.activate.get());
+		} else if (json.autoreload.isPresent()) {
+			builder.addHeader("autoreload", json.autoreload.get());
 		}
 
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasourceName);
@@ -218,7 +208,7 @@ public class ConfigurationsEndpoint {
 	@Relation("configuration")
 	@Description("upload a new configuration versions")
 	@PostMapping(value = "/configurations", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> uploadConfiguration(ConfigurationMultipartBody multipartBody) throws ApiException {
+	public ResponseEntity<?> uploadConfiguration(UploadConfigurationModel multipartBody) throws ApiException {
 		String datasource = RequestUtils.resolveRequiredProperty("datasource", multipartBody.datasource, "");
 		boolean multipleConfigs = RequestUtils.resolveRequiredProperty("multiple_configs", multipartBody.multiple_configs, false);
 		boolean activateConfig = RequestUtils.resolveRequiredProperty("activate_config", multipartBody.activate_config, true);
@@ -283,7 +273,16 @@ public class ConfigurationsEndpoint {
 		return frankApiService.callAsyncGateway(builder);
 	}
 
-	public record ConfigurationMultipartBody(
+	public record ActionModel(String action, String[] configurations) {}
+
+	public record UpdateConfigurationModel(String action) {}
+
+	public record ManageConfigurationModel(
+			Optional<Boolean> activate,
+			Optional<Boolean> autoreload
+	) {}
+
+	public record UploadConfigurationModel(
 			String datasource,
 			String user,
 			boolean multiple_configs,

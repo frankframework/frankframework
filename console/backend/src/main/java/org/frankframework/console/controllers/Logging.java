@@ -41,11 +41,12 @@ public class Logging {
 	@Relation("logging")
 	@Description("view files/folders inside the log directory")
 	@GetMapping(value = "/logging", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getLogDirectory(@RequestParam(value = "directory", required = false) String directory,
-											 @RequestParam(value = "wildcard", required = false) String wildcard) {
+	public ResponseEntity<?> getLogDirectory(@RequestParam GetLogDirectoryParamsModel params) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.LOGGING, BusAction.GET);
-		builder.addHeader("directory", directory);
-		builder.addHeader("wildcard", wildcard);
+		builder.addHeader("directory", params.directory);
+		builder.addHeader("wildcard", params.wildcard);
 		return frankApiService.callSyncGateway(builder);
 	}
+
+	public record GetLogDirectoryParamsModel(String directory, String wildcard) {}
 }

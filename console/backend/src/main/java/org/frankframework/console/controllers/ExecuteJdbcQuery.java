@@ -59,11 +59,11 @@ public class ExecuteJdbcQuery {
 	@PostMapping(value = "/jdbc/query", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("jdbc")
 	@Description("execute a JDBC query on a datasource")
-	public ResponseEntity<?> executeJdbcQuery(@RequestBody Map<String, Object> json) {
+	public ResponseEntity<?> executeJdbcQuery(@RequestBody ExecuteJdbcQueryModel json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.JDBC, BusAction.MANAGE);
-		String datasource = RequestUtils.getValue(json, "datasource");
-		String query = RequestUtils.getValue(json, "query");
-		String resultType = RequestUtils.getValue(json, "resultType");
+		String datasource = json.datasource;
+		String query = json.query;
+		String resultType = json.resultType;
 
 		if (resultType == null || query == null) {
 			throw new ApiException("Missing data, datasource, resultType and query are expected.", 400);
@@ -71,10 +71,10 @@ public class ExecuteJdbcQuery {
 		builder.addHeader("query", query);
 		builder.addHeader("resultType", resultType);
 
-		builder.addHeader("avoidLocking", RequestUtils.getBooleanValue(json, "avoidLocking"));
-		builder.addHeader("trimSpaces", RequestUtils.getBooleanValue(json, "trimSpaces"));
+		builder.addHeader("avoidLocking", json.avoidLocking);
+		builder.addHeader("trimSpaces", json.trimSpaces);
 
-		String queryType = RequestUtils.getValue(json, "queryType");
+		String queryType = json.queryType;
 		if ("AUTO".equals(queryType)) {
 			queryType = "other"; // defaults to other
 
@@ -91,4 +91,13 @@ public class ExecuteJdbcQuery {
 		builder.addHeader("queryType", queryType);
 		return frankApiService.callSyncGateway(builder);
 	}
+
+	public record ExecuteJdbcQueryModel(
+			String datasource,
+			String query,
+			String resultType,
+			String queryType,
+			boolean avoidLocking,
+			boolean trimSpaces
+	) {}
 }

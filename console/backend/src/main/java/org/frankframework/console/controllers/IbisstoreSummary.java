@@ -44,14 +44,16 @@ public class IbisstoreSummary {
 	@Relation("jdbc")
 	@Description("view database dump of the IbisStore table")
 	@PostMapping(value = "/jdbc/summary", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getIbisStoreSummary(@RequestBody Map<String, Object> json) {
-		String query = RequestUtils.getValue(json, "query");
-		String datasource = RequestUtils.getValue(json, "datasource");
+	public ResponseEntity<?> getIbisStoreSummary(@RequestBody IbisStoreSummaryModel json) {
+		String query = json.query;
+		String datasource = json.datasource;
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISSTORE_SUMMARY);
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
 		builder.addHeader("query", query);
 		return frankApiService.callSyncGateway(builder);
 	}
+
+	public record IbisStoreSummaryModel(String query, String datasource) {}
 
 }

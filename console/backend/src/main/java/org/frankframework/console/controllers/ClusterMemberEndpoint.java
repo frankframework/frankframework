@@ -22,7 +22,6 @@ import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Scope;
@@ -40,7 +39,6 @@ import org.frankframework.console.ApiException;
 import org.frankframework.console.Description;
 import org.frankframework.console.Relation;
 import org.frankframework.console.configuration.ClientSession;
-import org.frankframework.console.util.RequestUtils;
 import org.frankframework.console.util.ResponseUtils;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.OutboundGateway.ClusterMember;
@@ -56,21 +54,27 @@ import org.frankframework.util.JacksonUtils;
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class ClusterMemberEndpoint implements ApplicationListener<ClusterMemberEvent> {
 
-	@Autowired
-	private ClientSession session;
+	private final ClientSession session;
 
-	@Autowired
 	@Qualifier("outboundGateway")
-	private OutboundGateway outboundGateway;
+	private final OutboundGateway outboundGateway;
 
-	@Autowired
-	protected SimpMessagingTemplate messagingTemplate;
+	protected final SimpMessagingTemplate messagingTemplate;
+
+	public ClusterMemberEndpoint(ClientSession session, OutboundGateway outboundGateway, SimpMessagingTemplate messagingTemplate) {
+		this.session = session;
+		this.outboundGateway = outboundGateway;
+		this.messagingTemplate = messagingTemplate;
+	}
 
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("cluster")
 	@Description("view all available cluster members")
 	@GetMapping(value = "/cluster/members", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getClusterMembers(@RequestParam(value = "id", required = false) String id, @RequestParam(value = "type", required = false) String type) {
+	public ResponseEntity<?> getClusterMembers(@RequestParam Map<String, String> params) {
+		String id = params.get("id");
+		String type = params.get("type");
+
 		if(StringUtils.isNotEmpty(id)) {
 			setMemberTarget(id);
 		}
@@ -109,9 +113,8 @@ public class ClusterMemberEndpoint implements ApplicationListener<ClusterMemberE
 	@Relation("cluster")
 	@Description("select a specific cluster member to retrieve data from")
 	@PostMapping(value = "/cluster/members", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> setClusterMemberTarget(@RequestBody Map<String, Object> json) {
-		String memberId = RequestUtils.getValue(json, "id");
-		setMemberTarget(memberId);
+	public ResponseEntity<?> setClusterMemberTarget(@RequestBody ClusterMemberTargetModel json) {
+		setMemberTarget(json.id);
 		return ResponseEntity.accepted().build();
 	}
 
@@ -120,6 +123,10 @@ public class ClusterMemberEndpoint implements ApplicationListener<ClusterMemberE
 		String jsonResponse = JacksonUtils.convertToJson(new EventWrapper(event.getType(), event.getMember()));
 		this.messagingTemplate.convertAndSend("/event/cluster", jsonResponse);
 	}
+
+	public record ClusterMemberTargetModel(
+			String id
+	) {}
 
 	private void setMemberTarget(String id) {
 		List<ClusterMember> members = outboundGateway.getMembers();
@@ -133,5 +140,5 @@ public class ClusterMemberEndpoint implements ApplicationListener<ClusterMemberE
 		session.setMemberTarget(uuid);
 	}
 
-	private static record EventWrapper(EventType type, ClusterMember member) {}
+	private record EventWrapper(EventType type, ClusterMember member) {}
 }

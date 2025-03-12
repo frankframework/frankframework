@@ -71,7 +71,7 @@ public class Monitors {
 	@Relation("monitoring")
 	@Description("add a new monitor")
 	@PostMapping(value = {"", "/"}, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> addMonitor(@PathVariable("configuration") String configurationName, @RequestBody CreateMonitorJson json) {
+	public ResponseEntity<?> addMonitor(@PathVariable("configuration") String configurationName, @RequestBody CreateMonitorModel json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.UPLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.setJsonPayload(json);
@@ -183,5 +183,5 @@ public class Monitors {
 		return frankApiService.callSyncGateway(builder);
 	}
 
-	public record CreateMonitorJson(String name) {}
+	public record CreateMonitorModel(String name) {}
 }
