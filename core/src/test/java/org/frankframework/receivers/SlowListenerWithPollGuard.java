@@ -3,24 +3,39 @@ package org.frankframework.receivers;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Map;
 import java.util.Timer;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import jakarta.annotation.Nonnull;
 import jakarta.jms.Message;
 
+import org.springframework.context.ApplicationContext;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPortConnectedListener;
+import org.frankframework.core.IPushingListener;
 import org.frankframework.core.IbisExceptionListener;
+import org.frankframework.core.PipeLineResult;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.unmanaged.PollGuard;
 import org.frankframework.unmanaged.SpringJmsConnector;
 
-public class SlowListenerWithPollGuard extends SlowPushingListener implements IPortConnectedListener<Message> {
+@Log4j2
+public class SlowListenerWithPollGuard implements IPushingListener<Message>, IPortConnectedListener<Message> {
+
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
+	private @Getter @Setter String name;
+	private @Setter int startupDelay = 10000;
+	private @Setter int shutdownDelay = 0;
+	private @Getter boolean closed = false;
 
     private @Getter @Setter int pollGuardInterval = 0;
     private PollGuard pollGuard = null;
@@ -43,7 +58,13 @@ public class SlowListenerWithPollGuard extends SlowPushingListener implements IP
 
 	@Override
     public void start() {
-        super.start();
+		if (startupDelay > 0) {
+			try {
+				Thread.sleep(startupDelay);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+		}
 
         if (pollGuardInterval > 0) {
             log.debug("Creating poll-guard timer with interval [" + pollGuardInterval + "ms] while starting SpringJmsConnector");
@@ -61,7 +82,15 @@ public class SlowListenerWithPollGuard extends SlowPushingListener implements IP
             pollGuardTimer.cancel();
             pollGuardTimer = null;
         }
-        super.stop();
+		if (shutdownDelay > 0) {
+			try {
+				Thread.sleep(shutdownDelay);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+			log.debug("Closed after delay");
+		}
+		closed = true;
     }
 
     @Override
@@ -78,4 +107,30 @@ public class SlowListenerWithPollGuard extends SlowPushingListener implements IP
     public Receiver<Message> getReceiver() {
         return receiver;
     }
+
+
+	@Override
+	public void setHandler(IMessageHandler<Message> handler) {
+		// No-op
+	}
+
+	@Override
+	public void setExceptionListener(IbisExceptionListener listener) {
+		// No-op
+	}
+
+	@Override
+	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) {
+		return null;
+	}
+
+	@Override
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<Message> rawMessage, PipeLineSession pipeLineSession) {
+		// No-op
+	}
+
+	@Override
+	public org.frankframework.stream.Message extractMessage(@Nonnull RawMessageWrapper<Message> rawMessage, @Nonnull Map<String, Object> context) {
+		return org.frankframework.stream.Message.asMessage(rawMessage.getRawMessage());
+	}
 }

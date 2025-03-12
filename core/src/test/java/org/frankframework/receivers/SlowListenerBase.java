@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 
-public abstract class SlowListenerBase implements IListener<jakarta.jms.Message> {
+public abstract class SlowListenerBase implements IListener<String> {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -47,12 +47,12 @@ public abstract class SlowListenerBase implements IListener<jakarta.jms.Message>
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<jakarta.jms.Message> rawMessage, PipeLineSession pipeLineSession) {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<String> rawMessage, PipeLineSession pipeLineSession) {
 		// No-op
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<jakarta.jms.Message> rawMessage, @Nonnull Map<String, Object> context) {
+	public Message extractMessage(@Nonnull RawMessageWrapper<String> rawMessage, @Nonnull Map<String, Object> context) {
 		return Message.asMessage(rawMessage.getRawMessage());
 	}
 

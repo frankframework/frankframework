@@ -19,11 +19,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import jakarta.annotation.Nonnull;
-import jakarta.jms.Message;
 
 import org.frankframework.core.IPullingListener;
 
-public class SlowPullingListener extends SlowListenerBase implements IPullingListener<jakarta.jms.Message> {
+public class SlowPullingListener extends SlowListenerBase implements IPullingListener<String> {
 
 	@Nonnull
 	@Override
@@ -37,7 +36,7 @@ public class SlowPullingListener extends SlowListenerBase implements IPullingLis
 	}
 
 	@Override
-	public RawMessageWrapper<Message> getRawMessage(@Nonnull Map<String, Object> threadContext) {
+	public RawMessageWrapper<String> getRawMessage(@Nonnull Map<String, Object> threadContext) {
 		return null;
 	}
 }
