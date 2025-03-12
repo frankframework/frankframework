@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.TypeDescription;
@@ -88,6 +89,9 @@ public class ResourceObjectLocator implements IObjectLocator, InitializingBean {
 
 	@Nullable
 	private FrankResource findFrankResource(String name) {
+		if (StringUtils.isBlank(name)) {
+			throw new IllegalStateException("invalid resource defined");
+		}
 		int slashPos = name.indexOf('/');
 		String prefix = name.substring(0, slashPos);
 		String resourceName = name.substring(slashPos + 1);
@@ -100,8 +104,14 @@ public class ResourceObjectLocator implements IObjectLocator, InitializingBean {
 
 	@Override
 	public <O> O lookup(String name, Properties environment, Class<O> lookupClass) throws Exception {
+		if (resourceUrl == null) {
+			log.debug("resource locator is not configured, skip lookup");
+			return null;
+		}
+
 		FrankResource resource = findFrankResource(name);
 		if(resource == null) {
+			log.debug("no resource found for name [{}]", name);
 			return null; // If the lookup returns null, fail-fast to allow other ResourceFactories to locate the object.
 		}
 

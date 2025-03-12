@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 
 public class ResourceObjectLocatorTest {
 
@@ -36,5 +38,26 @@ public class ResourceObjectLocatorTest {
 
 		Object obj = locator.lookup("idonotexist/qwerty", null, Object.class);
 		assertNull(obj);
+	}
+
+	@Test
+	public void testNonInitializedLocator() throws Exception {
+		ResourceObjectLocator locator = new ResourceObjectLocator();
+		locator.setResourceFile("blaat");
+		locator.afterPropertiesSet();
+
+		Object obj = locator.lookup("idonotexist/qwerty", null, Object.class);
+		assertNull(obj);
+	}
+
+	@ParameterizedTest
+	@NullAndEmptySource
+	public void validEmptyLookup(String lookupString) throws Exception {
+		ResourceObjectLocator locator = new ResourceObjectLocator();
+		locator.setResourceFile("ResourceLocator/validResources.yml");
+		locator.afterPropertiesSet();
+
+		IllegalStateException e = assertThrows(IllegalStateException.class, () -> locator.lookup(lookupString, null, Object.class));
+		assertTrue(e.getMessage().contains("invalid resource"));
 	}
 }

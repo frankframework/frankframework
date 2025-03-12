@@ -16,7 +16,6 @@
 package org.frankframework.jdbc.datasource;
 
 import java.util.List;
-import java.util.Optional;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -32,8 +31,10 @@ public class FrankResources {
 			return null; // No matching resources found.
 		}
 
-		Optional<FrankResource> optional = resources.stream().filter(e -> name.equals(e.getName())).findFirst();
-		return optional.orElse(null);
+		return resources.stream()
+				.filter(e -> name.equals(e.getName()))
+				.findFirst()
+				.orElse(null);
 	}
 
 }
