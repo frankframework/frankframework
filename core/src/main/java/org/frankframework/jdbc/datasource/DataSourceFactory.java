@@ -27,6 +27,7 @@ import jakarta.annotation.Nullable;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 import org.frankframework.jdbc.IDataSourceFactory;
+import org.frankframework.util.StringUtil;
 
 /**
  * Factory through which (TX-enabled) DataSources can be retrieved.
@@ -36,7 +37,7 @@ import org.frankframework.jdbc.IDataSourceFactory;
 public class DataSourceFactory extends ObjectFactory<CommonDataSource, CommonDataSource> implements IDataSourceFactory {
 
 	public DataSourceFactory() {
-		super(CommonDataSource.class);
+		super(CommonDataSource.class, "jdbc", "DataSources");
 	}
 
 	/**
@@ -70,5 +71,15 @@ public class DataSourceFactory extends ObjectFactory<CommonDataSource, CommonDat
 	@Override
 	public List<String> getDataSourceNames() {
 		return getObjectNames();
+	}
+
+	@Override
+	protected ObjectInfo toObjectInfo(String name) {
+		DataSource datasource = getDataSource(name);
+		if (datasource instanceof TransactionalDbmsSupportAwareDataSourceProxy ds) {
+			return new ObjectInfo(name, ds.getInfo(), ds.getPoolInfo());
+		}
+
+		return new ObjectInfo(name, StringUtil.reflectionToString(datasource), null);
 	}
 }

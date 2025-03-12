@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 - 2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,26 +18,41 @@ package org.frankframework.jndi;
 import java.util.List;
 import java.util.Properties;
 
-import javax.naming.NamingException;
-
 import jakarta.jms.ConnectionFactory;
 
 import org.frankframework.jdbc.datasource.ObjectFactory;
 import org.frankframework.jms.IConnectionFactoryFactory;
+import org.frankframework.jms.TransactionalMetadataAwareConnectionFactoryProxy;
+import org.frankframework.util.StringUtil;
 
 public class JndiConnectionFactoryFactory extends ObjectFactory<ConnectionFactory, ConnectionFactory> implements IConnectionFactoryFactory {
+	public static final String CLOSE = "], ";
 
 	public JndiConnectionFactoryFactory() {
-		super(ConnectionFactory.class);
+		super(ConnectionFactory.class, "jms", "Connection Factories");
+	}
+
+	/**
+	 * Allow implementing classes to augment the ConnectionFactory.
+	 * See {@link #augment(ConnectionFactory, String)}.
+	 */
+	@SuppressWarnings("java:S1172")
+	protected ConnectionFactory augmentConnectionFactory(ConnectionFactory cf, String objectName) {
+		return cf;
 	}
 
 	@Override
-	public ConnectionFactory getConnectionFactory(String connectionFactoryName) throws NamingException {
+	protected final ConnectionFactory augment(ConnectionFactory connectionFactory, String objectName) {
+		return new TransactionalMetadataAwareConnectionFactoryProxy(augmentConnectionFactory(connectionFactory, objectName));
+	}
+
+	@Override
+	public ConnectionFactory getConnectionFactory(String connectionFactoryName) {
 		return getConnectionFactory(connectionFactoryName, null);
 	}
 
 	@Override
-	public ConnectionFactory getConnectionFactory(String connectionFactoryName, Properties environment) throws NamingException {
+	public ConnectionFactory getConnectionFactory(String connectionFactoryName, Properties environment) {
 		return get(connectionFactoryName, environment);
 	}
 
@@ -46,4 +61,13 @@ public class JndiConnectionFactoryFactory extends ObjectFactory<ConnectionFactor
 		return getObjectNames();
 	}
 
+	@Override
+	protected ObjectInfo toObjectInfo(String name) {
+		ConnectionFactory cf = getConnectionFactory(name);
+		if (cf instanceof TransactionalMetadataAwareConnectionFactoryProxy mcf) {
+			return new ObjectInfo(name, mcf.getInfo(), mcf.getPoolInfo());
+		}
+
+		return new ObjectInfo(name, StringUtil.reflectionToString(cf), null);
+	}
 }

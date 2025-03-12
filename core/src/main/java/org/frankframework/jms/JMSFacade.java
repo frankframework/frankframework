@@ -229,8 +229,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			throw new ConfigurationException("no connectionFactoryFactory set");
 		}
 		try {
-			ConnectionFactory cf = connectionFactoryFactory.getConnectionFactory(getConnectionFactoryName(), getJndiEnv());
-			if("com.amazon.sqs.javamessaging.SQSConnectionFactory".equals(cf.getClass().getCanonicalName()) && StringUtils.isNotBlank(getMessageSelector())) {
+			ConnectionFactory connectionFactory = connectionFactoryFactory.getConnectionFactory(getConnectionFactoryName(), getJndiEnv());
+			if("com.amazon.sqs.javamessaging.SQSConnectionFactory".equals(connectionFactory.getClass().getCanonicalName()) && StringUtils.isNotBlank(getMessageSelector())) {
 				throw new ConfigurationException("Amazon SQS does not support MessageSelectors");
 			}
 		} catch (NamingException | JmsException e) {
@@ -246,10 +246,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			throw new JmsException(getLogPrefix()+"no "+(useTopicFunctions ?"topic":"queue")+"ConnectionFactoryName specified");
 		}
 		return result;
-	}
-
-	public String getConnectionFactoryInfo() throws JmsException {
-		return getMessagingSource().getPhysicalName();
 	}
 
 	protected JmsMessagingSource getJmsMessagingSource() throws JmsException {
@@ -313,6 +309,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	/**
 	 * Obtains a connection and a serviceQueue.
 	 */
+	@Override
 	public void start() {
 		try {
 			getMessagingSource(); // obtain and cache connection, then start it.

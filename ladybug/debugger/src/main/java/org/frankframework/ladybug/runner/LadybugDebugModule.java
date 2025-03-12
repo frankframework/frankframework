@@ -19,7 +19,7 @@ import java.util.List;
 
 import org.frankframework.components.Module;
 
-public class LadybugDebugger implements Module {
+public class LadybugDebugModule implements Module {
 
 	@Override
 	public List<String> getSpringConfigurationFiles() {
