@@ -1,4 +1,4 @@
-package org.frankframework.receivers;
+package org.frankframework.jms;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -24,6 +24,8 @@ import org.frankframework.core.IPushingListener;
 import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.receivers.RawMessageWrapper;
+import org.frankframework.receivers.Receiver;
 import org.frankframework.unmanaged.PollGuard;
 import org.frankframework.unmanaged.SpringJmsConnector;
 

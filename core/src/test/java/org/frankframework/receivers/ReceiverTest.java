@@ -21,8 +21,6 @@ import static org.frankframework.testutil.mock.WaitUtils.waitForState;
 import static org.frankframework.testutil.mock.WaitUtils.waitWhileInState;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,7 +34,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -54,9 +51,7 @@ import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -187,13 +182,6 @@ public class ReceiverTest {
 
 	protected <T extends SlowListenerBase> T createSlowListener(Class<T> cls, int startupDelay, int shutdownDelay) {
 		T listener = configuration.createBean(cls);
-		listener.setStartupDelay(startupDelay);
-		listener.setShutdownDelay(shutdownDelay);
-		return listener;
-	}
-
-	protected SlowListenerWithPollGuard createSlowListenerWithPollGuard(int startupDelay, int shutdownDelay) {
-		SlowListenerWithPollGuard listener = configuration.createBean(SlowListenerWithPollGuard.class);
 		listener.setStartupDelay(startupDelay);
 		listener.setShutdownDelay(shutdownDelay);
 		return listener;
@@ -553,68 +541,6 @@ public class ReceiverTest {
 		);
 	}
 
-
-	@Test
-	void testJmsMessageWithExceptionUntransactedAckModeClientShouldAckMsgWhenRejected() throws Exception {
-		// TODO: This test should be moved to JMS module, since it tests some JMS Listener specific features and not a receiver specific feature
-		// Arrange
-		configuration = buildDataSourceTransactionManagerConfiguration();
-		PushingJmsListener listener = spy(configuration.createBean(PushingJmsListener.class));
-		listener.setTransacted(false);
-		listener.setAcknowledgeMode(JMSFacade.AcknowledgeMode.CLIENT_ACKNOWLEDGE);
-		doReturn(mock(Destination.class)).when(listener).getDestination();
-		doNothing().when(listener).start();
-		doNothing().when(listener).configure();
-
-		createMessagingSource(listener);
-
-		@SuppressWarnings("unchecked")
-		IListenerConnector<jakarta.jms.Message> jmsConnectorMock = mock(IListenerConnector.class);
-		listener.setJmsConnector(jmsConnectorMock);
-		Receiver<jakarta.jms.Message> receiver = setupReceiver(listener);
-		receiver.setMaxRetries(1);
-
-		Adapter adapter = setupAdapter(receiver, ExitState.ERROR);
-
-		assertEquals(RunState.STOPPED, adapter.getRunState());
-		assertEquals(RunState.STOPPED, receiver.getRunState());
-
-		// start adapter
-		configuration.configure();
-		configuration.start();
-
-		waitWhileInState(adapter, RunState.STOPPED);
-		waitWhileInState(adapter, RunState.STARTING);
-
-		TextMessage jmsMessage = mock(TextMessage.class);
-		doReturn("dummy-message-id").when(jmsMessage).getJMSMessageID();
-		doAnswer(invocation -> receiver.getMaxRetries() + 2).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
-		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
-		doReturn("message").when(jmsMessage).getText();
-		RawMessageWrapper<jakarta.jms.Message> messageWrapper = new RawMessageWrapper<>(jmsMessage, "dummy-message-id", "dummy-cid");
-
-		final Semaphore semaphore = new Semaphore(0);
-		Thread mockListenerThread = new Thread("mock-listener-thread") {
-			@Override
-			public void run() {
-				try (PipeLineSession session = new PipeLineSession()) {
-					receiver.processRawMessage(listener, messageWrapper, session, false);
-				} catch (Exception e) {
-					LOG.warn("Caught exception in Receiver:", e);
-				} finally {
-					semaphore.release();
-				}
-			}
-		};
-
-		// Act
-		mockListenerThread.start();
-		semaphore.acquire(); // Wait until thread is finished.
-
-		// Assert
-		verify(jmsMessage, atLeastOnce()).acknowledge();
-	}
-
 	@Test
 	void testStopReceiverWithFaultyMonitor() throws Exception {
 		// Arrange
@@ -691,7 +617,7 @@ public class ReceiverTest {
 		receiver.setMessageLog(messageLog);
 		receiver.configure();
 
-		// Should have 3 retries with JMS listeners
+		// For backward compatibility reasons, should have 3 retries with listeners that know the delivery count.
 		assertEquals(3, receiver.getMaxRetries());
 
 		RawMessageWrapper<String> rawMessage = new RawMessageWrapper<>("message", "dummy-message-id", "dummy-cid");
@@ -1186,119 +1112,6 @@ public class ReceiverTest {
 		LOG.info("Receiver RunState: {}", receiver.getRunState());
 
 		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
-	}
-
-	@Test
-	public void testPollGuardStartTimeout() throws Exception {
-		// TODO: This test needs to be moved to the JMS module
-		// Arrange
-		configuration = buildNarayanaTransactionManagerConfiguration();
-
-		// Create listener without any delays in starting or stopping, they will be set later
-		SlowListenerWithPollGuard listener = createSlowListenerWithPollGuard(0, 0);
-		listener.setPollGuardInterval(1_000);
-		listener.setMockLastPollDelayMs(10_000); // Last Poll always before PollGuard triggered
-
-		Receiver<jakarta.jms.Message> receiver = setupReceiver(listener);
-		Adapter adapter = setupAdapter(receiver);
-
-		assertEquals(RunState.STOPPED, adapter.getRunState());
-		assertEquals(RunState.STOPPED, receiver.getRunState());
-
-		// start adapter
-		configuration.configure();
-		configuration.start();
-
-		waitWhileInState(adapter, RunState.STOPPED);
-		waitWhileInState(adapter, RunState.STARTING);
-
-		LOG.info("Adapter RunState: {}", adapter.getRunState());
-		LOG.info("Receiver RunState: {}", receiver.getRunState());
-		assertEquals(RunState.STARTED, adapter.getRunState());
-
-		waitForState(receiver, RunState.STARTED); // Don't continue until the receiver has been started.
-
-		// Act
-		// From here the PollGuard should be triggering startup-delay timeout-guard
-		listener.setStartupDelay(100_000);
-
-		LOG.warn("Test sleeping to let poll guard timer run and do its work for a while");
-		await().atMost(5, TimeUnit.SECONDS)
-				.until(receiver::getRunState, equalTo(RunState.EXCEPTION_STARTING));
-
-		// Assert
-		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState());
-
-		List<String> errors = new ArrayList<>(adapter.getMessageKeeper())
-				.stream()
-				.filter(msg -> msg != null && "ERROR".equals(msg.getMessageLevel()))
-				.map(Object::toString)
-				.toList();
-
-		assertThat(errors, hasItem(containsString("Failed to restart receiver")));
-
-		// After
-		configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
-
-		waitWhileInState(receiver, RunState.STARTED);
-		waitWhileInState(receiver, RunState.STOPPING);
-		LOG.info("Receiver RunState: {}", receiver.getRunState());
-
-		assertEquals(RunState.STOPPED, receiver.getRunState());
-	}
-
-	@Test
-	public void testPollGuardStopTimeout() throws Exception {
-		// TODO: This test needs to be moved to the JMS module
-		configuration = buildNarayanaTransactionManagerConfiguration();
-		// Create listener without any delays in starting or stopping, they will be set later
-		SlowListenerWithPollGuard listener = createSlowListenerWithPollGuard(0, 0);
-		listener.setPollGuardInterval(1_000);
-		listener.setMockLastPollDelayMs(10_000); // Last Poll always before PollGuard triggered
-
-		Receiver<jakarta.jms.Message> receiver = setupReceiver(listener);
-		Adapter adapter = setupAdapter(receiver);
-
-		assertEquals(RunState.STOPPED, adapter.getRunState());
-		assertEquals(RunState.STOPPED, receiver.getRunState());
-
-		// start adapter
-		configuration.configure();
-		configuration.start();
-
-		waitWhileInState(adapter, RunState.STOPPED);
-		waitWhileInState(adapter, RunState.STARTING);
-
-		LOG.info("Adapter RunState: {}", adapter.getRunState());
-		LOG.info("Receiver RunState: {}", receiver.getRunState());
-		assertEquals(RunState.STARTED, adapter.getRunState());
-
-		waitForState(receiver, RunState.STARTED); // Don't continue until the receiver has been started.
-
-		// From here the PollGuard should be triggering stop-delay timeout-guard
-		listener.setShutdownDelay(100_000);
-
-//		log.warn("Test sleeping to let poll guard timer run and do its work for a while");
-//		Thread.sleep(5_000);
-//		log.warn("Test resuming");
-
-		// Receiver may be in state "stopping" (by PollGuard) or in state "starting" while we come out of sleep, so wait until it's started
-		waitForState(receiver, RunState.STARTED);
-
-		configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
-
-		waitWhileInState(receiver, RunState.STARTED);
-		waitWhileInState(receiver, RunState.STOPPING);
-		LOG.info("Receiver RunState: {}", receiver.getRunState());
-
-		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
-
-		List<String> warnings = new ArrayList<>(adapter.getMessageKeeper())
-				.stream()
-				.filter(msg -> msg != null && "WARN".equals(msg.getMessageLevel()))
-				.map(Object::toString)
-				.toList();
-		assertThat(warnings, everyItem(containsString("JMS poll timeout")));
 	}
 
 	@Test
