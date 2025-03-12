@@ -576,13 +576,21 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 			// get value
 			Object substitutionValue = getValueForFormatting(alreadyResolvedParameters, session, substitutionPattern);
-			params.add(substitutionValue);
+			if (substitutionValue instanceof Message substitutionMessage) {
+				try {
+					params.add(substitutionMessage.asString());
+				} catch (IOException e) {
+					throw new ParameterException(getName(), "Cannot convert substitution pattern ["+ substitutionPattern +"] from message to string", e);
+				}
+			} else {
+				params.add(substitutionValue);
+			}
 			formatPattern.append('{').append(paramPosition++);
 		}
 		try {
 			return MessageFormat.format(formatPattern.toString(), params.toArray());
 		} catch (Exception e) {
-			throw new ParameterException(getName(), "Cannot parse ["+formatPattern.toString()+"]", e);
+			throw new ParameterException(getName(), "Cannot parse ["+ formatPattern +"]", e);
 		}
 	}
 
