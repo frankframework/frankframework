@@ -220,7 +220,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 		// Check that none of configured parameters or path-variables matches any of the reserved names.
 		if (allowedParameterSet.isEmpty() && allowAllParams == null) {
-			ConfigurationWarnings.add(this, log, "All path parameters and query parameters will be copied into the session. This could be a security risk. Specify [allowedParameters] for your pipeline, or explicitly set [allowAllParams] to 'true'.", SuppressKeys.UNSAFE_ATTRIBUTE_SUPPRESS_KEY);
+			ConfigurationWarnings.add(this, log, "SECURITY RISK All path parameters and query parameters will be copied into the session. This could be a security risk. Specify [allowedParameters] for your pipeline, or explicitly set [allowAllParams] to 'true'.", SuppressKeys.UNSAFE_ATTRIBUTE_SUPPRESS_KEY);
 			allowAllParams = true;
 		}
 		Set<String> paramsFromBlacklist = new HashSet<>(allowedParameterSet);
