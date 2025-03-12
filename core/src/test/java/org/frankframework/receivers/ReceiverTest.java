@@ -48,19 +48,14 @@ import static org.mockito.Mockito.when;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-
-import jakarta.jms.Destination;
-import jakarta.jms.TextMessage;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
@@ -96,7 +91,6 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SpringEventErrorHandler;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
-import org.frankframework.core.IListenerConnector;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.ListenerException;
@@ -110,9 +104,6 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.TransactionAttribute;
 import org.frankframework.jdbc.JdbcTransactionalStorage;
 import org.frankframework.jdbc.MessageStoreListener;
-import org.frankframework.jms.JMSFacade;
-import org.frankframework.jms.MessagingSource;
-import org.frankframework.jms.PushingJmsListener;
 import org.frankframework.jta.narayana.NarayanaJtaTransactionManager;
 import org.frankframework.management.Action;
 import org.frankframework.monitoring.AdapterFilter;
@@ -406,13 +397,6 @@ public class ReceiverTest {
 			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, movedToErrorStorage.get(), "movedToErrorStorage: Mismatch in nr of messages moved to error storage"),
 			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, txNotCompletedAfterReceiverEnds.get(), "txNotCompletedAfterReceiverEnds: Mismatch in nr of transactions not completed after receiver finishes")
 		);
-	}
-
-	private void createMessagingSource(PushingJmsListener listener) throws NoSuchFieldException, IllegalAccessException {
-		Field messagingSourceField = JMSFacade.class.getDeclaredField("messagingSource");
-		messagingSourceField.setAccessible(true);
-		MessagingSource messagingSource = mock(MessagingSource.class);
-		messagingSourceField.set(listener, messagingSource);
 	}
 
 	@ParameterizedTest
@@ -1243,24 +1227,15 @@ public class ReceiverTest {
 
 	@ParameterizedTest
 	@MethodSource("transactionManagers")
-	void testJmsMessageTransactionRollbackAfterListenerCompleted(Supplier<TestConfiguration> configurationSupplier) throws Exception {
-		// TODO: Check this can be done properly without the JMS listener
+	void testMessageTransactionRollbackAfterListenerCompleted(Supplier<TestConfiguration> configurationSupplier) throws Exception {
 		// Arrange
 		configuration = configurationSupplier.get();
-		PushingJmsListener listener = spy(configuration.createBean(PushingJmsListener.class));
-		doReturn(mock(Destination.class)).when(listener).getDestination();
-		doNothing().when(listener).start();
-		doNothing().when(listener).configure();
+		MockPushingListener listener = spy(configuration.createBean(MockPushingListener.class));
 
 		@SuppressWarnings("unchecked")
 		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
 
-		createMessagingSource(listener);
-
-		@SuppressWarnings("unchecked")
-		IListenerConnector<jakarta.jms.Message> jmsConnectorMock = mock(IListenerConnector.class);
-		listener.setJmsConnector(jmsConnectorMock);
-		Receiver<jakarta.jms.Message> receiver = setupReceiver(listener);
+		Receiver<String> receiver = setupReceiver(listener);
 		receiver.setErrorStorage(errorStorage);
 
 		final PlatformTransactionManager txManager = configuration.getBean("txManagerReal", PlatformTransactionManager.class);
@@ -1279,12 +1254,7 @@ public class ReceiverTest {
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
 
-		TextMessage jmsMessage = mock(TextMessage.class);
-		doReturn("dummy-message-id").when(jmsMessage).getJMSMessageID();
-		doReturn(1).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
-		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
-		doReturn("message").when(jmsMessage).getText();
-		RawMessageWrapper<jakarta.jms.Message> messageWrapper = new RawMessageWrapper<>(jmsMessage, "dummy-message-id", "dummy-cid");
+		RawMessageWrapper<String> messageWrapper = new RawMessageWrapper<>("message", "dummy-message-id", "dummy-cid");
 
 		final TransactionStatus tx = txManager.getTransaction(TX_REQUIRES_NEW);
 		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {

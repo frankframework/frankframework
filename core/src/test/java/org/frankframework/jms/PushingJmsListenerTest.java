@@ -135,7 +135,6 @@ public class PushingJmsListenerTest {
 
 	@Test
 	void testJmsMessageWithExceptionUntransactedAckModeClientShouldAckMsgWhenRejected() throws Exception {
-		// TODO: This test should be moved to JMS module, since it tests some JMS Listener specific features and not a receiver specific feature
 		// Arrange
 		configuration = buildConfiguration(TransactionManagerType.DATASOURCE);
 		PushingJmsListener listener = spy(configuration.createBean(PushingJmsListener.class));
