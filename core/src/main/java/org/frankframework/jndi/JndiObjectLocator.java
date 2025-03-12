@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,8 +34,7 @@ import org.frankframework.jdbc.datasource.IObjectLocator;
 import org.frankframework.util.ClassUtils;
 
 /**
- * Baseclass for JDNI lookups.
- * Would be nice if we could have used JndiObjectFactoryBean but it has too much overhead
+ * Class that does the actual JDNI lookup.
  *
  * @author Niels Meijer
  *
@@ -55,8 +54,8 @@ public class JndiObjectLocator implements IObjectLocator, ApplicationContextAwar
 		JndiTemplate locator = new JndiTemplate(jndiEnvironment);
 		try {
 			return locator.lookup(prefixedJndiName, lookupClass);
-		} catch (NameNotFoundException e) { //Fallback and search again but this time without prefix
-			if (!jndiName.equals(prefixedJndiName)) { //But only if a prefix was used during the first lookup.
+		} catch (NameNotFoundException e) { // Fallback and search again but this time without prefix
+			if (!jndiName.equals(prefixedJndiName)) { // But only if a prefix was used during the first lookup.
 				log.debug("prefixed JNDI name [{}] not found - trying original name [{}], exception: ({}): {}", ()->prefixedJndiName, ()->jndiName, ()->ClassUtils.nameOf(e), e::getMessage);
 				try {
 					return locator.lookup(jndiName, lookupClass);
@@ -64,7 +63,7 @@ public class JndiObjectLocator implements IObjectLocator, ApplicationContextAwar
 					log.debug("non-prefixed JNDI name [{}] not found, exception: ({}): {}", ()->jndiName, ()->ClassUtils.nameOf(e2), e2::getMessage);
 				}
 			}
-			return null; //Neither lookup returned an (unexpected) exception, assume the object cannot be found in this IObjectLocator.
+			return null; // Neither lookup returned an (unexpected) exception, assume the object cannot be found in this IObjectLocator.
 		}
 	}
 

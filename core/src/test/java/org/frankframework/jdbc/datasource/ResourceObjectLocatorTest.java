@@ -1,6 +1,7 @@
 package org.frankframework.jdbc.datasource;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -25,5 +26,15 @@ public class ResourceObjectLocatorTest {
 
 		IllegalStateException e = assertThrows(IllegalStateException.class, locator::afterPropertiesSet);
 		assertTrue(e.getMessage().contains("[ResourceLocator/invalidResources.yml]"));
+	}
+
+	@Test
+	public void testNonExistingPrefix() throws Exception {
+		ResourceObjectLocator locator = new ResourceObjectLocator();
+		locator.setResourceFile("ResourceLocator/validResources.yml");
+		locator.afterPropertiesSet();
+
+		Object obj = locator.lookup("idonotexist/qwerty", null, Object.class);
+		assertNull(obj);
 	}
 }
