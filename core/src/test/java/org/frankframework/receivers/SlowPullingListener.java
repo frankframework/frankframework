@@ -20,8 +20,11 @@ import java.util.Map;
 
 import jakarta.annotation.Nonnull;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.IPullingListener;
 
+@Log4j2
 public class SlowPullingListener extends SlowListenerBase implements IPullingListener<String> {
 
 	@Nonnull

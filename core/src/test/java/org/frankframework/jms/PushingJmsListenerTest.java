@@ -32,6 +32,7 @@ import jakarta.jms.Message;
 import jakarta.jms.TextMessage;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -52,6 +53,7 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.util.RunState;
 
+@Tag("slow")
 @Log4j2
 public class PushingJmsListenerTest {
 	private TestConfiguration configuration;

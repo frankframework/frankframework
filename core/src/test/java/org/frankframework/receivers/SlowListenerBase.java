@@ -19,21 +19,20 @@ import java.util.Map;
 
 import jakarta.annotation.Nonnull;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListener;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
-import org.frankframework.util.LogUtil;
 
+@Log4j2
 public abstract class SlowListenerBase implements IListener<String> {
-	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter String name;

@@ -57,7 +57,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -86,6 +85,7 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import lombok.Lombok;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SpringEventErrorHandler;
@@ -124,14 +124,13 @@ import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.testutil.mock.DataSourceFactoryMock;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.RunState;
 import org.frankframework.util.SpringUtils;
 
 @Tag("slow")
+@Log4j2
 public class ReceiverTest {
 	public static final DefaultTransactionDefinition TX_REQUIRES_NEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-	protected static final Logger LOG = LogUtil.getLogger(ReceiverTest.class);
 	private TestConfiguration configuration;
 	private String adapterName;
 
@@ -286,7 +285,7 @@ public class ReceiverTest {
 			configuration = new TestConfiguration(false);
 		}
 
-		LOG.info("!Configuration Context for [{}] has been created.", txManagerType);
+		log.info("!Configuration Context for [{}] has been created.", txManagerType);
 		return configuration;
 	}
 
@@ -355,13 +354,13 @@ public class ReceiverTest {
 							receiver.processRawMessage(listener, messageWrapper, session, false);
 							processedNoException.incrementAndGet();
 						} catch (Exception e) {
-							LOG.warn("Caught exception in Receiver:", e);
+							log.warn("Caught exception in Receiver:", e);
 							exceptionsFromReceiver.incrementAndGet();
 						} finally {
 							if (tx.isRollbackOnly()) {
 								rolledBackTXCounter.incrementAndGet();
 							} else {
-								LOG.debug("Main TX not marked for rollback-only.");
+								log.debug("Main TX not marked for rollback-only.");
 							}
 							if (!tx.isCompleted()) {
 								// We do rollback inside the Receiver already but if the TX is aborted
@@ -461,7 +460,7 @@ public class ReceiverTest {
 						final int deliveryCount = nrTries;
 						listener.setMockedDeliveryCount(deliveryCount);
 
-						LOG.info("Nr tries: {}, Nr rolled back transactions: {}, delivery count: {}", nrTries, rolledBackTXCounter.get(), receiver.getDeliveryCount(messageWrapper));
+						log.info("Nr tries: {}, Nr rolled back transactions: {}, delivery count: {}", nrTries, rolledBackTXCounter.get(), receiver.getDeliveryCount(messageWrapper));
 						final TransactionStatus tx = txManager.getTransaction(TX_REQUIRES_NEW);
 						//noinspection unchecked
 						reset(errorStorage, listener);
@@ -478,13 +477,13 @@ public class ReceiverTest {
 							receiver.processRawMessage(listener, messageWrapper, session, false);
 							processedNoException.incrementAndGet();
 						} catch (Exception e) {
-							LOG.warn("Caught exception in Receiver:", e);
+							log.warn("Caught exception in Receiver:", e);
 							exceptionsFromReceiver.incrementAndGet();
 						} finally {
 							if (tx.isRollbackOnly()) {
 								rolledBackTXCounter.incrementAndGet();
 							} else {
-								LOG.debug("Main TX not marked for rollback-only");
+								log.debug("Main TX not marked for rollback-only");
 							}
 							if (!tx.isCompleted()) {
 								// We do rollback inside the Receiver already but if the TX is aborted
@@ -572,8 +571,8 @@ public class ReceiverTest {
 		waitWhileInState(receiver, RunState.STOPPED);
 		waitWhileInState(receiver, RunState.STARTING);
 
-		LOG.info("Adapter RunState: {}", adapter.getRunState());
-		LOG.info("Receiver RunState: {}", receiver.getRunState());
+		log.info("Adapter RunState: {}", adapter.getRunState());
+		log.info("Receiver RunState: {}", receiver.getRunState());
 
 		// Act
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
@@ -902,12 +901,12 @@ public class ReceiverTest {
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
 
-		LOG.info("Adapter RunState: {}", adapter.getRunState());
+		log.info("Adapter RunState: {}", adapter.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
 
 		waitWhileInState(receiver, RunState.STOPPED); // Ensure the next waitWhileInState doesn't skip when STATE is still STOPPED
 		waitWhileInState(receiver, RunState.STARTING); // Don't continue until the receiver has been started.
-		LOG.info("Receiver RunState: {}", receiver.getRunState());
+		log.info("Receiver RunState: {}", receiver.getRunState());
 
 		assertFalse(listener.isClosed()); // Not closed, thus open
 		assertFalse(receiver.getSender().isSynchronous()); // Not closed, thus open
@@ -941,13 +940,13 @@ public class ReceiverTest {
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
 
-		LOG.info("Adapter RunState: {}", adapter.getRunState());
+		log.info("Adapter RunState: {}", adapter.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
 
 		waitWhileInState(receiver, RunState.STOPPED); // Ensure the next waitWhileInState doesn't skip when STATE is still STOPPED
 		waitWhileInState(receiver, RunState.STARTING); // Don't continue until the receiver has been started.
 
-		LOG.info("Receiver RunState: {}", receiver.getRunState());
+		log.info("Receiver RunState: {}", receiver.getRunState());
 		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState(), "Receiver should be in state [EXCEPTION_STARTING]");
 		await().atMost(500, TimeUnit.MILLISECONDS)
 						.until(()-> receiver.getSender().isSynchronous());
@@ -958,7 +957,7 @@ public class ReceiverTest {
 				.atMost(10, TimeUnit.SECONDS)
 				.pollInterval(100, TimeUnit.MILLISECONDS)
 				.until(() -> {
-					LOG.info("<*> Receiver runstate: {}", receiver.getRunState());
+					log.info("<*> Receiver runstate: {}", receiver.getRunState());
 					return receiver.isInRunState(RunState.STOPPED);
 				});
 		assertEquals(RunState.STOPPED, receiver.getRunState());
@@ -1000,7 +999,7 @@ public class ReceiverTest {
 					.atMost(5, TimeUnit.SECONDS)
 					.pollInterval(1, TimeUnit.SECONDS)
 					.until(() -> {
-						LOG.info("<*> Receiver runstate: {}", receiver.getRunState());
+						log.info("<*> Receiver runstate: {}", receiver.getRunState());
 						return adapter.getRunState() == RunState.STOPPED;
 					});
 
@@ -1045,15 +1044,15 @@ public class ReceiverTest {
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
 
-		LOG.info("Adapter RunState: {}", adapter.getRunState());
-		LOG.info("Receiver RunState: {}", receiver.getRunState());
+		log.info("Adapter RunState: {}", adapter.getRunState());
+		log.info("Receiver RunState: {}", receiver.getRunState());
 		waitForState(receiver, RunState.STARTED); // Don't continue until the receiver has been started.
 
 		configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
 		waitWhileInState(receiver, RunState.STARTED);
 		waitWhileInState(receiver, RunState.STOPPING);
-		LOG.info("Receiver RunState: {}", receiver.getRunState());
+		log.info("Receiver RunState: {}", receiver.getRunState());
 
 		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
@@ -1085,15 +1084,15 @@ public class ReceiverTest {
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
 
-		LOG.info("Adapter RunState: {}", adapter.getRunState());
-		LOG.info("Receiver RunState: {}", receiver.getRunState());
+		log.info("Adapter RunState: {}", adapter.getRunState());
+		log.info("Receiver RunState: {}", receiver.getRunState());
 		waitForState(receiver, RunState.STARTED); // Don't continue until the receiver has been started.
 
 		configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
 		waitWhileInState(receiver, RunState.STARTED);
 		waitWhileInState(receiver, RunState.STOPPING);
-		LOG.info("Receiver RunState: {}", receiver.getRunState());
+		log.info("Receiver RunState: {}", receiver.getRunState());
 
 		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
 	}
@@ -1117,24 +1116,24 @@ public class ReceiverTest {
 		waitWhileInState(receiver, RunState.STOPPED);
 		waitWhileInState(receiver, RunState.STARTING);
 
-		LOG.info("Adapter RunState: {}", adapter.getRunState());
-		LOG.info("Receiver RunState: {}", receiver.getRunState());
+		log.info("Adapter RunState: {}", adapter.getRunState());
+		log.info("Receiver RunState: {}", receiver.getRunState());
 
 		// stop receiver then start
 		Semaphore semaphore = new Semaphore(0);
 		TaskExecutor taskExecutor = configuration.getApplicationContext().getBean("taskExecutor", TaskExecutor.class);
 		taskExecutor.execute(()-> {
 			try {
-				LOG.debug("Stopping receiver [{}] from executor-thread.", receiver.getName());
+				log.debug("Stopping receiver [{}] from executor-thread.", receiver.getName());
 				configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 				waitForState(receiver, RunState.STOPPED);
 
 				if (receiver.getRunState() != RunState.STOPPED) {
-					LOG.error("Receiver should be in state STOPPED, instead is in state [{}]", receiver.getRunState());
+					log.error("Receiver should be in state STOPPED, instead is in state [{}]", receiver.getRunState());
 					return;
 				}
 
-				LOG.debug("Restarting receiver [{}] from executor-thread.", receiver.getName());
+				log.debug("Restarting receiver [{}] from executor-thread.", receiver.getName());
 				configuration.getIbisManager().handleAction(Action.STARTRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 				waitForState(receiver, RunState.STARTING, RunState.EXCEPTION_STARTING);
 				waitWhileInState(receiver, RunState.STARTING);
