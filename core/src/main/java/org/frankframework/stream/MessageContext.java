@@ -64,7 +64,7 @@ public class MessageContext implements Serializable {
 	public MessageContext() {
 		super();
 	}
-	public MessageContext(String charset) {
+	public MessageContext(@Nullable String charset) {
 		this();
 		withCharset(charset);
 	}

@@ -15,7 +15,6 @@
 */
 package org.frankframework.larva;
 
-import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -48,18 +47,16 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	@Override
 	public Message processRequest(IListener<M> origin, RawMessageWrapper<M> rawMessage, Message message, PipeLineSession session) throws ListenerException {
 		try {
-			ListenerMessage requestMessage = new ListenerMessage(message.asString(), session);
+			ListenerMessage requestMessage = new ListenerMessage(message, session);
 			requestMessages.add(requestMessage);
 
 			ListenerMessage responseMessage = getResponseMessage(defaultTimeout);
-			Message responseAsMessage = new Message(responseMessage.getMessage());
+			Message responseAsMessage = responseMessage.getMessage();
 			if (responseMessage.getContext() != null && responseMessage.getContext() != session) {
 				// Sometimes the response has a different PipeLineSession than the original request. If we don't close it here, we'll leak it.
 				responseMessage.getContext().close();
 			}
 			return responseAsMessage;
-		} catch (IOException e) {
-			throw new ListenerException("cannot convert message to string", e);
 		} catch (TimeoutException e) {
 			throw new ListenerException("error processing request", e);
 		}

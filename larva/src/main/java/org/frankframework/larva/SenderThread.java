@@ -15,8 +15,6 @@
 */
 package org.frankframework.larva;
 
-import java.io.IOException;
-
 import org.apache.logging.log4j.Logger;
 
 import org.frankframework.core.ISender;
@@ -37,15 +35,14 @@ public class SenderThread extends Thread {
 	private final String name;
 	private final ISender sender;
 	private PipeLineSession session;
-	private final String request;
-	private String response;
+	private final Message request;
+	private Message response;
 	private final String correlationId;
 	private SenderException senderException;
-	private IOException ioException;
 	private TimeoutException timeoutException;
 	private final boolean convertExceptionToMessage;
 
-	public SenderThread(ISender sender, String request, PipeLineSession session, boolean convertExceptionToMessage, String correlationId) {
+	public SenderThread(ISender sender, Message request, PipeLineSession session, boolean convertExceptionToMessage, String correlationId) {
 		name = sender.getName();
 		this.sender = sender;
 		this.request = request;
@@ -60,21 +57,17 @@ public class SenderThread extends Thread {
 	public void run() {
 		session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 
-		try (Message input = new Message(request); SenderResult result = sender.sendMessage(input, session)) {
-			response = (Message.isNull(result.getResult())) ? "" : result.getResult().asString();
+		try {
+			SenderResult result = sender.sendMessage(request, session);
+			// TODO: NullMessage should now be OK and shouldn't need to be replaced with empty-string message?
+			response = (Message.isNull(result.getResult())) ? new Message("") : result.getResult();
+			session.unscheduleCloseOnSessionExit(response);
 		} catch(SenderException e) {
 			if (convertExceptionToMessage) {
 				response = throwableToXml(e);
 			} else {
 				log.error("SenderException for ISender '{}'", name, e);
 				senderException = e;
-			}
-		} catch(IOException e) {
-			if (convertExceptionToMessage) {
-				response = throwableToXml(e);
-			} else {
-				log.error("IOException for ISender '{}'", name, e);
-				ioException = e;
 			}
 		} catch(TimeoutException e) {
 			if (convertExceptionToMessage) {
@@ -86,7 +79,7 @@ public class SenderThread extends Thread {
 		}
 	}
 
-    public String getResponse() {
+    public Message getResponse() {
 		log.debug("Getting response for Sender: {}", name);
         while (this.isAlive()) {
             try {
@@ -107,16 +100,6 @@ public class SenderThread extends Thread {
         return senderException;
     }
 
-    public IOException getIOException() {
-        while (this.isAlive()) {
-            try {
-                Thread.sleep(100);
-            } catch(InterruptedException e) {
-            }
-        }
-        return ioException;
-    }
-
     public TimeoutException getTimeoutException() {
         while (this.isAlive()) {
             try {
@@ -127,13 +110,17 @@ public class SenderThread extends Thread {
         return timeoutException;
     }
 
-	static String throwableToXml(Throwable throwable) {
+	static Message throwableToXml(Throwable throwable) {
+		return new Message(throwableToXmlString(throwable));
+	}
+
+	static String throwableToXmlString(Throwable throwable) {
 		StringBuilder xml = new StringBuilder("<throwable>");
 		xml.append("<class>").append(throwable.getClass().getName()).append("</class>");
 		xml.append("<message>").append(XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(throwable.getMessage()))).append("</message>");
 		Throwable cause = throwable.getCause();
 		if (cause != null) {
-			xml = new StringBuilder(xml + "<cause>" + throwableToXml(cause) + "</cause>");
+			xml = new StringBuilder(xml + "<cause>" + throwableToXmlString(cause) + "</cause>");
 		}
 		xml.append("</throwable>");
 		return xml.toString();

@@ -23,6 +23,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.stream.Message;
 
 public interface Queue extends Map<String,Object> {
 
@@ -30,7 +31,7 @@ public interface Queue extends Map<String,Object> {
 
 	void open() throws ConfigurationException;
 
-	int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> xsltParameters) throws TimeoutException, SenderException, ListenerException;
-	String executeRead(String step, String stepDisplayName, Properties properties, String fileName, String fileContent) throws SenderException, IOException, TimeoutException, ListenerException;
+	int executeWrite(String stepDisplayName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) throws TimeoutException, SenderException, ListenerException;
+	Message executeRead(String step, String stepDisplayName, Properties properties, String fileName, Message fileContent) throws SenderException, IOException, TimeoutException, ListenerException;
 
 }

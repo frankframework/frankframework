@@ -31,6 +31,7 @@ import org.frankframework.core.FrankElement;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.Resource;
+import org.frankframework.stream.Message;
 import org.frankframework.util.TransformerPool;
 
 /**
@@ -47,7 +48,7 @@ public class XsltProviderListener implements IConfigurable, AutoCloseable, Frank
 	private @Setter int xsltVersion=0; // set to 0 for auto-detect.
 	private @Setter boolean namespaceAware = true;
 	private TransformerPool transformerPool = null;
-	private String result;
+	private Message result;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -65,9 +66,9 @@ public class XsltProviderListener implements IConfigurable, AutoCloseable, Frank
 		}
 	}
 
-	public void processRequest(String message, Map<String, Object> parameters) throws ListenerException {
+	public void processRequest(Message message, Map<String, Object> parameters) throws ListenerException {
 		try {
-			result = transformerPool.transformToString(message, parameters, namespaceAware);
+			result = new Message(transformerPool.transformToString(message, parameters, namespaceAware));
 		} catch (IOException e) {
 			throw new ListenerException("IOException transforming xml: " + e.getMessage(), e);
 		} catch (TransformerException e) {
@@ -77,8 +78,8 @@ public class XsltProviderListener implements IConfigurable, AutoCloseable, Frank
 		}
 	}
 
-	public String getResult() {
-		String result = this.result;
+	public Message getResult() {
+		Message result = this.result;
 		this.result = null;
 		return result;
 	}

@@ -25,6 +25,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.stream.Message;
 
 public class QuerySenderQueue extends HashMap<String, Object> implements Queue {
 
@@ -39,12 +40,12 @@ public class QuerySenderQueue extends HashMap<String, Object> implements Queue {
 	}
 
 	@Override
-	public int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> xsltParameters) throws TimeoutException, SenderException {
+	public int executeWrite(String stepDisplayName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) throws TimeoutException, SenderException {
 		throw new IllegalStateException("QuerySender has no 'write' step");
 	}
 
 	@Override
-	public String executeRead(String step, String stepDisplayName, Properties properties, String fileName, String fileContent) throws SenderException, IOException, TimeoutException {
+	public Message executeRead(String step, String stepDisplayName, Properties properties, String fileName, Message fileContent) throws SenderException, IOException, TimeoutException {
 		throw new NotImplementedException("executeRead");
 	}
 }
