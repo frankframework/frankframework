@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -138,36 +139,27 @@ public class TransactionalStorage {
 			@PathVariable("storageSource") StorageSource storageSource,
 			@PathVariable("storageSourceName") String storageSourceName,
 			@PathVariable("processState") String processState,
-			@RequestParam(value = "type", required = false) String type,
-			@RequestParam(value = "host", required = false) String host,
-			@RequestParam(value = "id", required = false) String id,
-			@RequestParam(value = "messageId", required = false) String messageId,
-			@RequestParam(value = "correlationId", required = false) String correlationId,
-			@RequestParam(value = "comment", required = false) String comment,
-			@RequestParam(value = "message", required = false) String message,
-			@RequestParam(value = "label", required = false) String label,
-			@RequestParam(value = "startDate", required = false) String startDateStr,
-			@RequestParam(value = "endDate", required = false) String endDateStr,
-			@RequestParam(value = "sort", required = false) String sort,
-			@RequestParam(value = "skip", required = false, defaultValue = "0") int skipMessages,
-			@RequestParam(value = "max", required = false, defaultValue = "0") int maxMessages
+			@RequestParam Map<String, String> params
 	) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.FIND);
 		addHeaders(configuration, adapterName, storageSource, storageSourceName, processState, builder);
 
-		builder.addHeader("type", type);
-		builder.addHeader("host", host);
-		builder.addHeader("idMask", id);
-		builder.addHeader("messageId", messageId);
-		builder.addHeader("correlationId", correlationId);
-		builder.addHeader("comment", comment);
-		builder.addHeader("message", message);
-		builder.addHeader("label", label);
-		builder.addHeader("startDate", startDateStr);
-		builder.addHeader("endDate", endDateStr);
-		builder.addHeader("sort", sort);
-		builder.addHeader("skip", skipMessages);
-		builder.addHeader("max", maxMessages);
+		builder.addHeader("skip", Integer.parseInt(params.getOrDefault("skip", "0")));
+		builder.addHeader("max", Integer.parseInt(params.getOrDefault("max", "0")));
+
+		builder.addHeader("type", params.get("type"));
+		builder.addHeader("host", params.get("host"));
+		builder.addHeader("idMask", params.get("id"));
+		builder.addHeader("messageId", params.get("messageId"));
+		builder.addHeader("correlationId", params.get("correlationId"));
+		builder.addHeader("comment", params.get("comment"));
+		builder.addHeader("message", params.get("message"));
+		builder.addHeader("label", params.get("label"));
+		builder.addHeader("startDate", params.get("startDateStr"));
+		builder.addHeader("endDate", params.get("endDateStr"));
+		builder.addHeader("sort", params.get("sort"));
+		builder.addHeader("skip", params.get("skipMessages"));
+		builder.addHeader("max", params.get("maxMessages"));
 		return frankApiService.callSyncGateway(builder);
 	}
 
@@ -191,7 +183,8 @@ public class TransactionalStorage {
 	@Relation("pipeline")
 	@PostMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> resendReceiverMessages(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapter,
-													@PathVariable("receiverName") String receiver, @RequestPart("messageIds") String messageIdsPart) {
+													@PathVariable("receiverName") String receiver,
+													@RequestPart("messageIds") String messageIdsPart) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
 
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
@@ -206,7 +199,8 @@ public class TransactionalStorage {
 	@PostMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/{processState}/move/{targetState}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> changeMessagesProcessState(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapter,
 														@PathVariable("receiverName") String receiver, @PathVariable("processState") String processState,
-														@PathVariable("targetState") String targetState, @RequestPart("messageIds") String messageIdsPart) {
+														@PathVariable("targetState") String targetState,
+														@RequestPart("messageIds") String messageIdsPart) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.MANAGE);
 
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
@@ -241,7 +235,8 @@ public class TransactionalStorage {
 	@Relation("pipeline")
 	@DeleteMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> deleteReceiverMessages(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapter,
-													@PathVariable("receiverName") String receiver, @RequestPart("messageIds") String messageIdsPart) {
+													@PathVariable("receiverName") String receiver,
+													@RequestPart("messageIds") String messageIdsPart) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
 
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);

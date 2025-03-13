@@ -33,6 +33,8 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 
+import java.util.Map;
+
 @RestController
 public class Webservices {
 
@@ -69,12 +71,13 @@ public class Webservices {
 	@Relation("webservices")
 	@Description("view WDSL specificiation")
 	@GetMapping(value = "/webservices/{configuration}/{resourceName}", produces = MediaType.APPLICATION_XML_VALUE)
-	public ResponseEntity<?> getWsdl(@PathVariable("configuration") String configuration, @PathVariable("resourceName") String resourceName,
-									 @RequestParam(defaultValue = "true") boolean indent, @RequestParam(defaultValue = "false") boolean useIncludes) {
+	public ResponseEntity<?> getWsdl(@PathVariable("configuration") String configuration,
+									 @PathVariable("resourceName") String resourceName,
+									 @RequestParam Map<String, String> params) {
 		RequestMessageBuilder request = RequestMessageBuilder.create(BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
 
-		request.addHeader("indent", indent);
-		request.addHeader("useIncludes", useIncludes);
+		request.addHeader("indent", params.getOrDefault("indent", "true"));
+		request.addHeader("useIncludes", params.getOrDefault("useIncludes", "false"));
 		request.addHeader("type", "wsdl");
 
 		String adapterName;

@@ -15,8 +15,6 @@
 */
 package org.frankframework.console.controllers;
 
-import java.util.Map;
-
 import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.logging.log4j.Level;
@@ -58,17 +56,14 @@ public class UpdateLoggingConfig {
 	@Relation("logging")
 	@Description("update the application log configuration")
 	@PutMapping(value = "/server/logging", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateLogConfiguration(@RequestBody Map<String, Object> json) {
-		Level loglevel = Level.toLevel(RequestUtils.getValue(json, "loglevel"), null);
-		Boolean logIntermediaryResults = RequestUtils.getBooleanValue(json, "logIntermediaryResults");
-		Integer maxMessageLength = RequestUtils.getIntegerValue(json, "maxMessageLength");
-		Boolean enableDebugger = RequestUtils.getBooleanValue(json, "enableDebugger");
+	public ResponseEntity<?> updateLogConfiguration(@RequestBody UpdateLogConfigurationModel json) {
+		Level loglevel = Level.toLevel(json.loglevel, null);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.LOG_CONFIGURATION, BusAction.MANAGE);
 		builder.addHeader("logLevel", loglevel == null ? null : loglevel.name());
-		builder.addHeader("logIntermediaryResults", logIntermediaryResults);
-		builder.addHeader("maxMessageLength", maxMessageLength);
-		builder.addHeader("enableDebugger", enableDebugger);
+		builder.addHeader("logIntermediaryResults", json.logIntermediaryResults);
+		builder.addHeader("maxMessageLength", json.maxMessageLength);
+		builder.addHeader("enableDebugger", json.enableDebugger);
 		return frankApiService.callAsyncGateway(builder);
 	}
 
@@ -86,7 +81,7 @@ public class UpdateLoggingConfig {
 	@Relation("logging")
 	@Description("create a new logger definition")
 	@PostMapping(value = "/server/logging/settings", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> createLogDefinition(LogDefinitionMultipartBody multipartBody) {
+	public ResponseEntity<?> createLogDefinition(CreateLogDefinitionMultipartModel multipartBody) {
 		String logger = RequestUtils.resolveRequiredProperty("logger", multipartBody.logger(), null);
 		String level = RequestUtils.resolveRequiredProperty("level", multipartBody.level(), null);
 
@@ -100,31 +95,34 @@ public class UpdateLoggingConfig {
 	@Relation("logging")
 	@Description("update the loglevel of a specific logger")
 	@PutMapping(value = "/server/logging/settings", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateLogDefinition(@RequestBody Map<String, Object> json) {
+	public ResponseEntity<?> updateLogDefinition(@RequestBody UpdateLogDefinitionModel json) {
 		RequestMessageBuilder request = RequestMessageBuilder.create(BusTopic.LOG_DEFINITIONS, BusAction.MANAGE);
 
-		for (Map.Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			if ("level".equalsIgnoreCase(key)) {
-				Level level = Level.toLevel("" + value, null);
-				if (level != null) {
-					request.addHeader("level", level.name());
-				}
-			} else if ("logger".equalsIgnoreCase(key)) {
-				String logPackage = (String) value;
-				request.addHeader("logPackage", logPackage);
-			} else if ("reconfigure".equalsIgnoreCase(key)) {
-				boolean reconfigure = Boolean.parseBoolean("" + value);
-				request.addHeader("reconfigure", reconfigure);
-			}
+		Level level = Level.toLevel(json.level, null);
+		if (level != null) {
+			request.addHeader("level", level.name());
 		}
+		request.addHeader("logger", json.logger);
+		request.addHeader("reconfigure", json.reconfigure);
 
 		return frankApiService.callSyncGateway(request);
 	}
 
-	public record LogDefinitionMultipartBody(
+	public record UpdateLogConfigurationModel(
+			String loglevel,
+			Boolean logIntermediaryResults,
+			Boolean enableDebugger,
+			Integer maxMessageLength
+	) {}
+
+	public record CreateLogDefinitionMultipartModel(
 		String logger,
 		String level
+	) {}
+
+	public record UpdateLogDefinitionModel(
+			String level,
+			String logger,
+			Boolean reconfigure
 	) {}
 }
