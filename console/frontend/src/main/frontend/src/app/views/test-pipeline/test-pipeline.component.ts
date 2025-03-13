@@ -83,7 +83,6 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
   };
 
   private file: File | null = null;
-  private testPipelineSessionLoaded = false;
   private subscriptions: Subscription = new Subscription();
 
   private http: HttpClient = inject(HttpClient);
@@ -91,6 +90,7 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
   private webStorageService: WebStorageService = inject(WebStorageService);
 
   ngOnInit(): void {
+    this.setTestPipelineSession();
     this.setConfigurations();
     const configurationsSubscription = this.appService.configurations$.subscribe(() => {
       this.setConfigurations();
@@ -100,9 +100,6 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
     this.setAdapters();
     const adaptersSubscription = this.appService.adapters$.subscribe(() => {
       this.setAdapters();
-      if (!this.testPipelineSessionLoaded) {
-        this.setTestPipelineSession();
-      }
     });
     this.subscriptions.add(adaptersSubscription);
   }
@@ -120,6 +117,9 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
 
   private setAdapters(): void {
     this.adapters = this.appService.adapters;
+    if (this.selectedConfiguration) {
+      this.setAdapterOptions(this.selectedConfiguration);
+    }
   }
 
   private setTestPipelineSession(): void {
