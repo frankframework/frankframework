@@ -271,12 +271,12 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 		this.auditTrailNamespaceDefs = auditTrailNamespaceDefs;
 	}
 
-	/** Key of a PipelineSession-variable. If specified, the value of the PipelineSession variable is used as audit trail (instead of the default 'no audit trail) */
+	/** Key of a PipelineSession-variable. If specified, the value of the PipelineSession variable is used as audit trail (instead of the default 'no audit trail') */
 	public void setAuditTrailSessionKey(String string) {
 		auditTrailSessionKey = string;
 	}
 	/**
-	 * If set <code>true</code>, the input of the Pipe is used to extract audit trail, correlationid and label (instead of the wrapped input)
+	 * If {@code true}, the input of the Pipe is used to extract audit trail, correlationid and label (instead of the wrapped input)
 	 * @ff.default true
 	 */
 	public void setUseInputForExtract(boolean b) {

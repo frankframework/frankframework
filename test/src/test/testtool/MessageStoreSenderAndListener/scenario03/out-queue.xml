@@ -15,7 +15,7 @@
   <rowset>
     <row number="0">
       <field name="MESSAGEKEY">768</field>
-      <field name="TYPE">M</field>
+      <field name="TYPE">A</field>
       <field name="SLOTID">TestMessageStoreSenderAndListener-Queue</field>
       <field name="HOST">LPZWNL000040524</field>
       <field name="MESSAGEID">1</field>
@@ -29,7 +29,7 @@
 		&lt;Message contentType="application/xml" encoding="UTF-8"&gt;test, with comma&lt;/Message&gt;
 	&lt;/Header&gt;
 &lt;/Envelope&gt;</field>
-      <field name="EXPIRYDATE" null="true"/>
+      <field name="EXPIRYDATE">2022-04-28 08:53:24</field>
       <field name="LABEL" null="true"/>
     </row>
   </rowset>

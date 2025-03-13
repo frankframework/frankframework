@@ -73,8 +73,8 @@ public class CompressPipe extends FixedForwardPipe {
 		 */
 		GZ,
 		/**
-		 * Zip format; also used when direction is compress and resultIsContent=<code>false</code>
-		 * or when direction is decompress and messageIsContent=<code>false</code>
+		 * Zip format; also used when direction is compress and resultIsContent={@code false}
+		 * or when direction is decompress and messageIsContent={@code false}
 		 */
 		ZIP
 	}
@@ -225,7 +225,7 @@ public class CompressPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * if <code>true</code> the pipe compresses, otherwise it decompress
+	 * If {@code true} the pipe compresses, otherwise it decompress
 	 * @ff.default false
 	 */
 	public void setCompress(boolean b) {

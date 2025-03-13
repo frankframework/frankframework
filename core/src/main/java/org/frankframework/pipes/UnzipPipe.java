@@ -281,7 +281,7 @@ public class UnzipPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * If true, file is automatically deleted upon normal JVM termination
+	 * If {@code true}, file is automatically deleted upon normal JVM termination
 	 * @ff.default true
 	 * @deprecated
 	 */
@@ -292,7 +292,7 @@ public class UnzipPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * If set <code>false</code>, only a small summary (count of items in zip) is returned
+	 * If {@code false}, only a small summary (count of items in zip) is returned
 	 * @ff.default true
 	 */
 	public void setCollectResults(boolean b) {
@@ -300,7 +300,7 @@ public class UnzipPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * If set <code>true</code>, the contents of the files in the zip are returned in the result xml message of this pipe. Please note this can consume a lot of memory for large files or a large number of files
+	 * If {@code true}, the contents of the files in the zip are returned in the result xml message of this pipe. Please note this can consume a lot of memory for large files or a large number of files
 	 * @ff.default false
 	 */
 	public void setCollectFileContents(boolean b) {
@@ -316,7 +316,7 @@ public class UnzipPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * If set <code>false</code>, a suffix is added to the original filename to be sure it is unique
+	 * If {@code false}, a suffix is added to the original filename to be sure it is unique
 	 * @ff.default false
 	 */
 	public void setKeepOriginalFileName(boolean b) {
@@ -330,7 +330,7 @@ public class UnzipPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * If set <code>true</code>, the path of the zip entry will be preserved. Otherwise, the zip entries will be extracted to the root folder
+	 * If {@code true}, the path of the zip entry will be preserved. Otherwise, the zip entries will be extracted to the root folder
 	 * @ff.default false
 	 */
 	public void setKeepOriginalFilePath(boolean b) {
@@ -338,7 +338,7 @@ public class UnzipPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * If set <code>true</code>, validation of directory is ignored
+	 * If {@code true}, validation of directory is ignored
 	 * @ff.default false
 	 */
 	public void setAssumeDirectoryExists(boolean assumeDirectoryExists) {
@@ -352,7 +352,7 @@ public class UnzipPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * If set <code>true</code>, the input is assumed to be the name of a file to be processed. Otherwise, the input itself is used.
+	 * If {@code true}, the input is assumed to be the name of a file to be processed. Otherwise, the input itself is used.
 	 * @ff.default false
 	 */
 	@Deprecated

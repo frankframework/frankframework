@@ -26,12 +26,12 @@
 		<spring-security.version>6.4.3</spring-security.version>
 		<spring-integration.version>6.4.2</spring-integration.version>
 		<spring.boot.version>3.4.3</spring.boot.version>
-		<tomcat.version>10.1.36</tomcat.version>
+		<tomcat.version>10.1.39</tomcat.version>
 		<bouncycastle.version>1.80</bouncycastle.version>
 
 		<narayana.version>7.2.1.Final</narayana.version>
 		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
-		<micrometer.version>1.14.4</micrometer.version>
+		<micrometer.version>1.14.5</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>4.0-SNAPSHOT</frankdoc.version>
@@ -50,7 +50,7 @@
 		<mongodb.driver.version>5.3.1</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
-		<activemq.driver.version>6.1.5</activemq.driver.version>
+		<activemq.driver.version>6.1.6</activemq.driver.version>
 		<artemis.driver.version>2.39.0</artemis.driver.version>
 
 		<rabbitmq.driver.version>5.25.0</rabbitmq.driver.version>
@@ -787,6 +787,10 @@
 								<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
 								<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 							</manifest>
+							<manifestEntries>
+								<groupId>${project.groupId}</groupId>
+								<artifactId>${project.artifactId}</artifactId>
+							</manifestEntries>
 						</archive>
 					</configuration>
 				</plugin>

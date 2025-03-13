@@ -93,7 +93,7 @@ import org.frankframework.util.XmlUtils;
  * </ol>
  * </p><p>
  * The <code>base64</code> attribute is only used when the value of the PipeLineSession variable <code>sessionKey</code> is a String object
- * or when the value of the attachment element is used. If <code>base64=true</code> then the value will be decoded before it's used.
+ * or when the value of the attachment element is used. If {@code base64=true} then the value will be decoded before it's used.
  * </p><p>
  * <b>Compilation and Deployment Note:</b> mail.jar (v1.2) and activation.jar must appear BEFORE j2ee.jar.
  * Otherwise errors like the following might occur: <code>NoClassDefFoundException: com/sun/mail/util/MailDateFormat</code>
@@ -108,7 +108,7 @@ public class MailSender extends AbstractMailSender implements HasPhysicalDestina
 	private @Getter String smtpHost;
 	private @Getter int smtpPort=25;
 	/**
-	 * When set to true, we ensure TLS is being used
+	 * If {@code true}, we ensure TLS is being used
 	 *
 	 * @ff.default false
 	 */

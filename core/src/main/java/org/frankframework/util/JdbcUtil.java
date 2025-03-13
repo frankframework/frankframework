@@ -44,9 +44,6 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipException;
 
-import jakarta.jms.BytesMessage;
-import jakarta.jms.JMSException;
-import jakarta.jms.TextMessage;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64InputStream;
@@ -63,7 +60,6 @@ import org.frankframework.dbms.JdbcException;
 import org.frankframework.documentbuilder.ArrayBuilder;
 import org.frankframework.documentbuilder.INodeBuilder;
 import org.frankframework.documentbuilder.ObjectBuilder;
-import org.frankframework.jms.BytesMessageInputStream;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterType;
@@ -411,22 +407,8 @@ public class JdbcUtil {
 			}
 			String rawMessage;
 			if (objectOK) {
-				// TODO: Direct handling of JMS messages in here should be removed. I do not expect any current instances to actually store unwrapped JMS Messages?
 				if (result instanceof MessageWrapper<?> wrapper) {
 					rawMessage = wrapper.getMessage().asString();
-				} else if (result instanceof TextMessage message) {
-					try {
-						rawMessage = message.getText();
-					} catch (JMSException e) {
-						throw new JdbcException(e);
-					}
-				} else if (result instanceof BytesMessage bytesMessage) {
-					try {
-						InputStream input = new BytesMessageInputStream(bytesMessage);
-						rawMessage = StreamUtil.streamToString(input);
-					} catch (IOException e) {
-						throw new JdbcException(e);
-					}
 				} else {
 					rawMessage = MessageUtils.asString(result);
 				}

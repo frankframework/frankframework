@@ -119,7 +119,7 @@ public abstract class AbstractSenderWrapper extends AbstractSenderWithParameters
 	}
 
 	/**
-	 * If set <code>true</code>, the input of a pipe is restored before processing the next one
+	 * If {@code true}, the input of a pipe is restored before processing the next one
 	 * @ff.default false
 	 */
 	public void setPreserveInput(boolean preserveInput) {

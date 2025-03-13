@@ -441,13 +441,13 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		return sizeStatistics;
 	}
 
-	/** when set to <code>true</code> a record is written to the security log when the pipe has finished successfully */
+	/** If {@code true} a record is written to the security log when the pipe has finished successfully */
 	@Override
 	public void setWriteToSecLog(boolean b) {
 		writeToSecLog = b;
 	}
 
-	/** (only used when <code>writeToSecLog=true</code>) comma separated list of keys of session variables that is appended to the security log record */
+	/** (only used when {@code writeToSecLog} is {@code true}) comma separated list of keys of session variables that is appended to the security log record */
 	@Override
 	public void setSecLogSessionKeys(String string) {
 		secLogSessionKeys = string;

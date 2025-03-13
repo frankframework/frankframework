@@ -127,7 +127,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 	}
 
 	/**
-	 * If set, the processing continues directly at the forward of this pipe, without executing the pipe itself, if the input is empty
+	 * If {@code true}, the processing continues directly at the forward of this pipe, without executing the pipe itself, if the input is empty
 	 * @ff.default false
 	 */
 	public void setSkipOnEmptyInput(boolean b) {
@@ -139,7 +139,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 		ifParam = string;
 	}
 
-	/** See <code>ifParam</code> */
+	/** See {@code ifParam} */
 	public void setIfValue(String string) {
 		ifValue = string;
 	}

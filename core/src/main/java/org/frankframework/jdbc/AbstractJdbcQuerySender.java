@@ -37,7 +37,6 @@ import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import jakarta.jms.JMSException;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.BooleanUtils;
@@ -635,7 +634,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		}
 	}
 
-	protected Message executePackageQuery(QueryExecutionContext queryExecutionContext) throws SenderException, JdbcException, IOException, JMSException {
+	protected Message executePackageQuery(QueryExecutionContext queryExecutionContext) throws SenderException, JdbcException, IOException {
 		Connection connection = queryExecutionContext.getConnection();
 		String query = queryExecutionContext.getQuery();
 		Object[] paramArray = new Object[10];
@@ -736,14 +735,14 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 			return getUpdateStatementResult(statement, resultQuery, resStmt, numRowsAffected);
 		} catch (SQLException e) {
 			throw new SenderException("got exception executing query ["+query+"]", e);
-		} catch (JdbcException|IOException|JMSException e) {
+		} catch (JdbcException | IOException e) {
 			throw new SenderException("got exception executing a SQL command", e);
 		} catch (ParameterException e) {
 			throw new SenderException("got exception evaluating parameters", e);
 		}
 	}
 
-	protected Message getUpdateStatementResult(PreparedStatement statement, String resultQuery, PreparedStatement resStmt, int numRowsAffected) throws SQLException, JdbcException, IOException, JMSException {
+	protected Message getUpdateStatementResult(PreparedStatement statement, String resultQuery, PreparedStatement resStmt, int numRowsAffected) throws SQLException, JdbcException, IOException {
 		if (resStmt != null) {
 			log.debug("obtaining result from [{}]", resultQuery);
 			try (ResultSet rs = resStmt.executeQuery()) {

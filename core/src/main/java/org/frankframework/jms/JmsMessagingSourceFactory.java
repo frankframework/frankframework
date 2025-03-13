@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2021, 2024 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,12 +22,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
-import jakarta.jms.ConnectionMetaData;
-import jakarta.jms.JMSException;
-
-import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IbisException;
@@ -94,34 +89,6 @@ public class JmsMessagingSourceFactory extends AbstractMessagingSourceFactory {
 			throw new JmsException("Could not find connection factory ["+cfName+"]");
 		}
 
-		if(log.isInfoEnabled()) {
-			String connectionFactoryInfo = getConnectionFactoryInfo(connectionFactory);
-			if (connectionFactoryInfo==null) {
-				connectionFactoryInfo = connectionFactory.toString();
-			}
-			log.info("{}looked up connection factory [{}]: [{}]", jmsFacade.getLogPrefix(), cfName, connectionFactoryInfo);
-		}
-		return new TransactionAwareConnectionFactoryProxy(connectionFactory);
-	}
-
-	public String getConnectionFactoryInfo(ConnectionFactory connectionFactory) {
-		String info=null;
-		Connection connection = null;
-		try {
-			connection = connectionFactory.createConnection();
-			ConnectionMetaData metaData = connection.getMetaData();
-			info = "jms provider name [" + metaData.getJMSProviderName() + "] jms provider version [" + metaData.getProviderVersion() + "] jms version [" + metaData.getJMSVersion() + "]";
-		} catch (JMSException e) {
-			log.warn("Exception determining connection factory info",e);
-		} finally {
-			if (connection != null) {
-				try {
-					connection.close();
-				} catch (JMSException e1) {
-					log.warn("Exception closing connection for metadata", e1);
-				}
-			}
-		}
-		return info;
+		return connectionFactory;
 	}
 }

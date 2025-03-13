@@ -33,11 +33,14 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 
 	private static final String RESOURCE_NAME = "mqtt/hivemq";
 
+	private static MqttClientFactory mqttClientFactory;
+
 	@Override
 	public MqttSender createSender() {
 		MqttSender sender = new MqttSender();
 		sender.setName("senderName");
 		sender.setResourceName(RESOURCE_NAME);
+		sender.setMqttClientFactory(mqttClientFactory);
 
 		return sender;
 	}
@@ -47,7 +50,8 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 		MqttClient client = new MqttClient(String.format("tcp://%s:%s", hivemqCe.getHost(), hivemqCe.getMqttPort()), "clientId", new MemoryPersistence());
 		client.connect();
 
-		MqttClientFactory.getInstance().add(client, RESOURCE_NAME);
+		mqttClientFactory = new MqttClientFactory();
+		mqttClientFactory.add(client, RESOURCE_NAME);
 	}
 
 	@Test

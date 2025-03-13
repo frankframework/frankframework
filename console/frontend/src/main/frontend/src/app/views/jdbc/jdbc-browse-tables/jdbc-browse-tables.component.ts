@@ -1,7 +1,7 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService, ServerErrorResponse } from 'src/app/app.service';
-import { JdbcBrowseForm, JdbcQueryForm, JdbcService } from '../jdbc.service';
+import { JdbcBrowseForm, JdbcService } from '../jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { LaddaModule } from 'angular2-ladda';
@@ -56,23 +56,17 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
     const browseTablesSession = this.webStorageService.get<JdbcBrowseForm>('browseTables');
 
     this.jdbcService.getJdbc().subscribe((data) => {
-      this.form.datasource =
-        this.appConstants['jdbc.datasource.default'] == undefined
-          ? data.datasources[0]
-          : (this.appConstants['jdbc.datasource.default'] as string);
       this.datasources = data.datasources;
-      this.form.datasource = data.datasources[0] ?? '';
-      this.form.resultType = data.resultTypes[0] ?? '';
 
       if (browseTablesSession) {
-        this.form.datasource = browseTablesSession.datasource;
-        this.form.resultType = browseTablesSession.resultType;
-        this.form.table = browseTablesSession.table;
-        this.form.where = browseTablesSession.where;
-        this.form.order = browseTablesSession.order;
-        this.form.numberOfRowsOnly = browseTablesSession.numberOfRowsOnly;
-        this.form.minRow = browseTablesSession.minRow;
-        this.form.maxRow = browseTablesSession.maxRow;
+        this.form = browseTablesSession;
+      } else {
+        this.form.datasource =
+          this.appConstants['jdbc.datasource.default'] == undefined
+            ? data.datasources[0]
+            : (this.appConstants['jdbc.datasource.default'] as string);
+        this.form.datasource = data.datasources[0] ?? '';
+        this.form.resultType = data.resultTypes[0] ?? '';
       }
     });
   }

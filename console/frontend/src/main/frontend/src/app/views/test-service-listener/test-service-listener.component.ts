@@ -76,9 +76,7 @@ export class TestServiceListenerComponent implements OnInit {
         this.services = data.services.map((service) => ({ label: service }));
 
         const testServiceListenerSession = this.webStorageService.get<Form>('testServiceListener');
-        if (testServiceListenerSession) {
-          this.form = testServiceListenerSession;
-        }
+        if (testServiceListenerSession) this.form = testServiceListenerSession;
       });
   }
 

@@ -29,6 +29,11 @@ public class ParameterBuilder extends Parameter {
 		return this;
 	}
 
+	public ParameterBuilder withPattern(String pattern) {
+		setPattern(pattern);
+		return this;
+	}
+
 	public ParameterBuilder withSessionKey(String sessionKey) {
 		setSessionKey(sessionKey);
 		return this;
