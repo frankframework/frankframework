@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,21 +19,20 @@ import java.util.Map;
 
 import jakarta.annotation.Nonnull;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListener;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
-import org.frankframework.util.LogUtil;
 
-public abstract class SlowListenerBase implements IListener<jakarta.jms.Message> {
-	protected Logger log = LogUtil.getLogger(this);
+@Log4j2
+public abstract class SlowListenerBase implements IListener<String> {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter String name;
@@ -47,12 +46,12 @@ public abstract class SlowListenerBase implements IListener<jakarta.jms.Message>
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<jakarta.jms.Message> rawMessage, PipeLineSession pipeLineSession) {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<String> rawMessage, PipeLineSession pipeLineSession) {
 		// No-op
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<jakarta.jms.Message> rawMessage, @Nonnull Map<String, Object> context) {
+	public Message extractMessage(@Nonnull RawMessageWrapper<String> rawMessage, @Nonnull Map<String, Object> context) {
 		return Message.asMessage(rawMessage.getRawMessage());
 	}
 

@@ -25,6 +25,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -52,6 +54,7 @@ import org.frankframework.dbms.DbmsException;
 import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.jdbc.dbms.ConcurrentJdbcActionTester;
 import org.frankframework.receivers.RawMessageWrapper;
+import org.frankframework.receivers.Receiver;
 import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
@@ -63,7 +66,7 @@ public class JdbcTableListenerTest {
 
 	static final String TEST_TABLE = "temp";
 
-	private JdbcTableListener listener;
+	private JdbcTableListener<String> listener;
 	private DatabaseTestEnvironment env;
 
 	/*
@@ -76,6 +79,9 @@ public class JdbcTableListenerTest {
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) {
+		Receiver<String> receiver = mock(Receiver.class);
+		when(receiver.isTransacted()).thenReturn(false);
+
 		listener = env.createBean(JdbcTableListener.class);
 		listener.setTableName(TEST_TABLE);
 		listener.setKeyField("TKEY");
@@ -83,6 +89,7 @@ public class JdbcTableListenerTest {
 		listener.setStatusValueAvailable("1");
 		listener.setStatusValueProcessed("2");
 		listener.setStatusValueError("3");
+		listener.setReceiver(receiver);
 		this.env = env;
 	}
 
@@ -499,7 +506,7 @@ public class JdbcTableListenerTest {
 
 		try (Connection connection1 = env.getConnection()) {
 			connection1.setAutoCommit(false);
-			RawMessageWrapper<?> rawMessage1 = listener.getRawMessage(connection1,null);
+			RawMessageWrapper<String> rawMessage1 = listener.getRawMessage(connection1,null);
 			assertEquals("10",rawMessage1.getRawMessage());
 			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test")!=null) {
 				connection1.commit();
@@ -616,7 +623,7 @@ public class JdbcTableListenerTest {
 		}
 		try (Connection connection1 = env.getConnection()) {
 			connection1.setAutoCommit(false);
-			RawMessageWrapper<?> rawMessage1 = listener.getRawMessage(connection1, null);
+			RawMessageWrapper<String> rawMessage1 = listener.getRawMessage(connection1, null);
 			assertEquals("10",rawMessage1.getRawMessage());
 			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test")!=null) {
 				connection1.commit();
@@ -640,12 +647,11 @@ public class JdbcTableListenerTest {
 		}
 		try (Connection connection1 = env.getConnection()) {
 			connection1.setAutoCommit(false);
-			RawMessageWrapper<?> rawMessage1 = listener.getRawMessage(connection1, null);
+			RawMessageWrapper<String> rawMessage1 = listener.getRawMessage(connection1, null);
 			assertEquals("10",rawMessage1.getRawMessage());
 			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test")!=null) {
 				connection1.commit();
 			}
-
 
 			try(Connection connection = env.getConnection()) {
 				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (11,1)", null, new PipeLineSession());
