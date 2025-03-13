@@ -15,6 +15,7 @@
 */
 package org.frankframework.console.controllers;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.MediaType;
@@ -95,15 +96,15 @@ public class Monitors {
 	@Description("update a specific monitor")
 	@PutMapping(value = "/{monitorName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateMonitor(@PathVariable("configuration") String configName,
-										   @PathVariable(value = "monitorName", required = false) String monitorName, @RequestBody Map<String, Object> json) {
+										   @PathVariable(value = "monitorName", required = false) String monitorName,
+										   @RequestBody UpdateMonitorRequestModel json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.MANAGE);
 		addDefaultHeaders(configName, monitorName, builder);
 
-		Object state = json.remove("action");
-		if (state != null) {
-			builder.addHeader("state", String.valueOf(state));
+		if (json.action != null) {
+			builder.addHeader("state", json.action);
 		}
-		builder.setJsonPayload(json);
+		builder.setJsonPayload(new UpdateMonitorModel(json.name, json.type, json.destinations));
 
 		return frankApiService.callSyncGateway(builder);
 	}
@@ -135,7 +136,8 @@ public class Monitors {
 	@Description("update a specific monitors triggers")
 	@PostMapping(value = "/{monitorName}/triggers", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> addTrigger(@PathVariable("configuration") String configName,
-										@PathVariable(value = "monitorName", required = false) String monitorName, @RequestBody Map<String, Object> json) {
+										@PathVariable(value = "monitorName", required = false) String monitorName,
+										@RequestBody AddOrUpdateTriggerModel json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.UPLOAD);
 		addDefaultHeaders(configName, monitorName, builder);
 		builder.setJsonPayload(json);
@@ -162,7 +164,7 @@ public class Monitors {
 	@PutMapping(value = "/{monitorName}/triggers/{trigger}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateTrigger(@PathVariable("configuration") String configName,
 										   @PathVariable("monitorName") String monitorName, @PathVariable("trigger") int index,
-										   @RequestBody Map<String, Object> json) {
+										   @RequestBody AddOrUpdateTriggerModel json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.MANAGE);
 		addDefaultHeaders(configName, monitorName, builder);
 		builder.addHeader(TRIGGER_HEADER, index);
@@ -184,4 +186,18 @@ public class Monitors {
 	}
 
 	public record CreateMonitorModel(String name) {}
+
+	public record UpdateMonitorRequestModel(String name, String type, List<String> destinations, String action) {}
+	public record UpdateMonitorModel(String name, String type, List<String> destinations) {}
+
+	public record AddOrUpdateTriggerModel(
+			String filter,
+			String type,
+			String severity,
+			Integer threshold,
+			Integer period,
+			List<String> adapters,
+			List<String> events,
+			Map<String, List<String>> sources
+	) {}
 }
