@@ -32,8 +32,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.stream.Message;
 import org.frankframework.util.FileUtils;
-import org.frankframework.util.StreamUtil;
 
 /**
  * File listener for the Test Tool.
@@ -78,7 +78,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 		try {
 			setTimeout(0);
 			try {
-				String message = getMessage();
+				Message message = getMessage();
 				if (message != null) {
 					throw new ConfigurationException("Found remaining message on fileListener ["+getName()+"]");
 				}
@@ -98,8 +98,8 @@ public class FileListener implements IConfigurable, AutoCloseable {
 	 *
 	 * @return The message read from the specified file
 	 */
-	public String getMessage() throws TimeoutException, ListenerException {
-		String result;
+	public Message getMessage() throws TimeoutException, ListenerException {
+		Message result;
 		if (waitBeforeRead != -1) {
 			try {
 				Thread.sleep(waitBeforeRead);
@@ -121,7 +121,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 			try {
 				File file2 = new File(filename2);
 				boolean equal = isFileBinaryEqual(file, file2);
-				result = Boolean.toString(equal);
+				result = new Message(Boolean.toString(equal));
 			} catch (IOException e) {
 				throw new ListenerException("Exception comparing files '"
 						+ filename + "' and '" + filename2 + "': "
@@ -143,18 +143,13 @@ public class FileListener implements IConfigurable, AutoCloseable {
 				}
 			}
 			if (file != null && file.exists()) {
-				StringBuilder stringBuilder = new StringBuilder();
+				// TODO: copy file to a temporary file and return a FileMessage?
 				try (InputStream fileInputStream = new FileInputStream(file)) {
-					byte[] buffer = new byte[StreamUtil.BUFFER_SIZE];
-					int length = fileInputStream.read(buffer);
-					while (length != -1) {
-						stringBuilder.append(new String(buffer, 0, length, StandardCharsets.UTF_8));
-						length = fileInputStream.read(buffer);
-					}
+					result = new Message(fileInputStream.readAllBytes());
+					result.getContext().withCharset(StandardCharsets.UTF_8).withName(file.getName());
 				} catch(IOException e) {
 					throw new ListenerException("Exception reading file '" + file.getAbsolutePath() + "': " + e.getMessage(), e);
 				}
-				result = stringBuilder.toString();
 				try {
 					Files.delete(file.toPath());
 				} catch (IOException e) {
