@@ -1604,18 +1604,7 @@ public class LarvaTool {
 		} else {
 			encoding = null;
 		}
-		Message result = new FileMessage(new File(fileName), encoding);
-		if (encoding == null) {
-			try {
-				Charset charset = MessageUtils.computeDecodingCharset(result);
-				if (charset != null) {
-					result.getContext().withCharset(charset);
-				}
-			} catch (IOException e) {
-				errorMessage("Cannot compute decoding charset for file: [" + fileName + "]", e);
-			}
-		}
-		return result;
+		return new FileMessage(new File(fileName), encoding);
 	}
 
 	private @Nullable String parseEncodingFromXml(@Nonnull String fileName) {
