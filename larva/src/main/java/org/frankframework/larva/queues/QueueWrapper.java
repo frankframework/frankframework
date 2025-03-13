@@ -16,7 +16,6 @@
 package org.frankframework.larva.queues;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -262,13 +261,13 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	}
 
 	@Override
-	public int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
+	public int executeWrite(String stepDisplayName, Message fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
 		if (get() instanceof FileSender fileSender) {
 			fileSender.sendMessage(fileContent);
 			return LarvaTool.RESULT_OK;
 		}
 		if (get() instanceof DelaySender delaySender) {
-			try (PipeLineSession session = new PipeLineSession(); Message message = new Message(fileContent); ) {
+			try (PipeLineSession session = new PipeLineSession(); Message message = fileContent; ) {
 				SenderResult senderResult = delaySender.sendMessage(message, session);
 				CloseUtils.closeSilently(senderResult.getResult());
 			}
@@ -308,7 +307,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 
 
 	@Override
-	public String executeRead(String step, String stepDisplayName, Properties properties, String fileName, String fileContent) throws SenderException, IOException, TimeoutException, ListenerException {
+	public Message executeRead(String step, String stepDisplayName, Properties properties, String fileName, Message fileContent) throws SenderException, TimeoutException, ListenerException {
 		if (get() instanceof FileSender fileSender) {
 			return fileSender.getMessage();
 		}
@@ -327,10 +326,6 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			SenderException senderException = senderThread.getSenderException();
 			if (senderException != null) {
 				throw senderException;
-			}
-			IOException ioException = senderThread.getIOException();
-			if (ioException != null) {
-				throw ioException;
 			}
 			TimeoutException timeoutException = senderThread.getTimeoutException();
 			if (timeoutException != null) {

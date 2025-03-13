@@ -18,16 +18,17 @@ package org.frankframework.larva;
 import lombok.Getter;
 
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.stream.Message;
 
 /**
  * @author Jaco de Groot
  */
 @Getter
 public class ListenerMessage {
-	private final String message;
+	private final Message message;
 	private final PipeLineSession context;
 
-	public ListenerMessage(String message, PipeLineSession context) {
+	public ListenerMessage(Message message, PipeLineSession context) {
 		this.message = message;
 		this.context = context;
 	}

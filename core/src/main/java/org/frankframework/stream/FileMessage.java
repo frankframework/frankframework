@@ -16,16 +16,20 @@
 package org.frankframework.stream;
 
 import java.io.File;
+import java.io.Serial;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class FileMessage extends Message {
 
-	private static final long serialVersionUID = 5219660236736759665L;
+	@Serial private static final long serialVersionUID = 5219660236736759665L;
 
 	public FileMessage(File file) {
 		this(file, null);
 	}
 
-	public FileMessage(File file, String charset) {
+	public FileMessage(@Nonnull File file, @Nullable String charset) {
 		super(new SerializableFileReference(charset, file.toPath()), new MessageContext(charset).withModificationTime(file.lastModified())
 				.withSize(file.length())
 				.withName(file.getName())
