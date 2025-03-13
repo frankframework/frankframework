@@ -24,6 +24,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -53,8 +57,6 @@ import jakarta.annotation.Nonnull;
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.Session;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Common baseclass for Pulling and Pushing JMS Listeners.
@@ -84,7 +86,7 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 
 	private SoapWrapper soapWrapper = null;
 
-	private @Nonnull ParameterList paramList = new ParameterList();
+	private final @Nonnull ParameterList paramList = new ParameterList();
 
 	@Override
 	public void configure() throws ConfigurationException {

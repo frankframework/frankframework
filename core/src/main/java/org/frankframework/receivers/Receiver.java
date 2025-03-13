@@ -102,7 +102,6 @@ import org.frankframework.doc.Category;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Protected;
-import org.frankframework.jdbc.JdbcFacade;
 import org.frankframework.jdbc.MessageStoreListener;
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.logging.IbisMaskingLayout;
@@ -597,9 +596,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			}
 			if (getListener() instanceof IPullingListener) {
 				listenerContainer = createListenerContainer();
-			}
-			if (getListener() instanceof JdbcFacade) {
-				((JdbcFacade)getListener()).setTransacted(isTransacted());
 			}
 			getListener().configure();
 			if (getListener() instanceof HasPhysicalDestination) {
@@ -1825,7 +1821,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * Suspend the receiver for {@code delayTimeInSeconds} seconds
 	 * @param delayTimeInSeconds Number of seconds the receiver thread should be suspended from processing new messages.
 	 */
-	protected void suspendReceiverThread(int delayTimeInSeconds) {
+	public void suspendReceiverThread(int delayTimeInSeconds) {
 		int currentInterval = delayTimeInSeconds;
 		while (isInRunState(RunState.STARTED) && currentInterval-- > 0) {
 			try {

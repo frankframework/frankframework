@@ -149,23 +149,25 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	@Override
 	public void destroy() throws Exception {
 		Exception masterException=null;
-		for (Entry<String,O> entry:objects.entrySet()) {
+
+		for (Entry<String, O> entry : objects.entrySet()) {
 			final String name = entry.getKey();
 			if (entry.getValue() instanceof AutoCloseable closable) {
 				try {
 					log.debug("closing [{}] object [{}]", () -> ClassUtils.nameOf(closable), () -> name);
 					closable.close();
 				} catch (Exception e) {
-					if (masterException==null) {
-						masterException = new Exception("Exception caught closing ["+ClassUtils.nameOf(closable)+"] object ["+name+"] held by ("+getClass().getSimpleName()+")", e);
+					if (masterException == null) {
+						masterException = new Exception("Exception caught closing [" + ClassUtils.nameOf(closable) + "] object [" + name + "] held by (" + getClass().getSimpleName() + ")", e);
 					} else {
 						masterException.addSuppressed(e);
 					}
 				}
 			}
 		}
+
 		objects.clear();
-		if (masterException!=null) {
+		if (masterException != null) {
 			throw masterException;
 		}
 	}

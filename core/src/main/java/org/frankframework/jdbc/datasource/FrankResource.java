@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,26 +15,23 @@
 */
 package org.frankframework.jdbc.datasource;
 
-import java.util.List;
+import java.util.Properties;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
+import lombok.Getter;
 import lombok.Setter;
 
-public class FrankResources {
+@Getter @Setter
+public class FrankResource {
+	String name;
+	String type;
+	String url;
+	String authalias;
+	String username;
+	String password;
+	Properties properties;
 
-	private @Setter List<FrankResource> resources;
-
-	public @Nullable FrankResource findResource(@Nonnull String name) {
-		if (resources == null) {
-			return null; // No matching resources found.
-		}
-
-		return resources.stream()
-				.filter(e -> name.equals(e.getName()))
-				.findFirst()
-				.orElse(null);
+	@Override
+	public String toString() {
+		return "FrankResource ["+ name+"]";
 	}
-
 }

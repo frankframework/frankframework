@@ -61,6 +61,11 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 		listener.setConnectionsArePooled(false);
 		listener.setDatasourceName(dataSourceName);
 		doReturn(new GenericDbmsSupport()).when(listener).getDbmsSupport();
+
+		Receiver<Serializable> receiver = mock(Receiver.class);
+		when(receiver.isTransacted()).thenReturn(false);
+		listener.setReceiver(receiver);
+
 		return listener;
 	}
 
