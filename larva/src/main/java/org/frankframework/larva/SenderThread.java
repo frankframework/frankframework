@@ -59,8 +59,7 @@ public class SenderThread extends Thread {
 
 		try {
 			SenderResult result = sender.sendMessage(request, session);
-			// TODO: NullMessage should now be OK and shouldn't need to be replaced with empty-string message?
-			response = (Message.isNull(result.getResult())) ? new Message("") : result.getResult();
+			response = (result.getResult() == null) ? Message.nullMessage() : result.getResult();
 			session.unscheduleCloseOnSessionExit(response);
 		} catch(SenderException e) {
 			if (convertExceptionToMessage) {
