@@ -33,6 +33,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
 
 import org.frankframework.core.ListenerException;
@@ -40,7 +41,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.http.rest.ApiCacheManager;
 import org.frankframework.http.rest.IApiCache;
-import org.frankframework.receivers.ServiceClient;
 import org.frankframework.stream.Message;
 import org.frankframework.util.HttpUtils;
 import org.frankframework.util.LogUtil;
@@ -151,7 +151,7 @@ public class RestServiceDispatcher {
 
 		context.put("contentType", contentType);
 		context.put("userAgent", httpServletRequest.getHeader("User-Agent"));
-		ServiceClient listener=(ServiceClient)methodConfig.get(KEY_LISTENER);
+		RestListener listener=(RestListener)methodConfig.get(KEY_LISTENER);
 		String etagKey=(String)methodConfig.get(KEY_ETAG_KEY);
 		String contentTypeKey=(String)methodConfig.get(KEY_CONTENT_TYPE_KEY);
 
@@ -160,50 +160,46 @@ public class RestServiceDispatcher {
 			context.put("principal", principal.getName());
 		}
 
-		String ctName = Thread.currentThread().getName();
-		try {
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("listener", listener.getName())) {
 			boolean writeToSecLog = false;
-			if (listener instanceof RestListener restListener) {
-				if (restListener.isRetrieveMultipart() && MultipartUtils.isMultipart(httpServletRequest)) {
-					try {
-						InputStreamDataSource dataSource = new InputStreamDataSource(httpServletRequest.getContentType(), httpServletRequest.getInputStream()); //the entire InputStream will be read here!
-						MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
+			if (listener.isRetrieveMultipart() && MultipartUtils.isMultipart(httpServletRequest)) {
+				try {
+					InputStreamDataSource dataSource = new InputStreamDataSource(httpServletRequest.getContentType(), httpServletRequest.getInputStream()); // The entire InputStream will be read here!
+					MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
 
-						for (int i = 0; i < mimeMultipart.getCount(); i++) {
-							BodyPart bodyPart = mimeMultipart.getBodyPart(i);
-							String fieldName = MultipartUtils.getFieldName(bodyPart);
-							PartMessage bodyPartMessage = new PartMessage(bodyPart);
+					for (int i = 0; i < mimeMultipart.getCount(); i++) {
+						BodyPart bodyPart = mimeMultipart.getBodyPart(i);
+						String fieldName = MultipartUtils.getFieldName(bodyPart);
+						PartMessage bodyPartMessage = new PartMessage(bodyPart);
 
-							log.trace("setting parameter [{}] to [{}]", fieldName, bodyPartMessage);
-							context.put(fieldName, bodyPartMessage);
+						log.trace("setting parameter [{}] to [{}]", fieldName, bodyPartMessage);
+						context.put(fieldName, bodyPartMessage);
 
-							if (MultipartUtils.isBinary(bodyPart)) { // Process form file field (input type="file").
-								String fieldNameName = fieldName + "Name";
-								String fileName = MultipartUtils.getFileName(bodyPart);
-								log.trace("setting parameter [{}] to [{}]", fieldNameName, fileName);
-								context.put(fieldNameName, fileName);
-							}
+						if (MultipartUtils.isBinary(bodyPart)) { // Process form file field (input type="file").
+							String fieldNameName = fieldName + "Name";
+							String fileName = MultipartUtils.getFileName(bodyPart);
+							log.trace("setting parameter [{}] to [{}]", fieldNameName, fileName);
+							context.put(fieldNameName, fileName);
 						}
-					} catch (MessagingException | IOException e) {
-						throw new ListenerException(e);
 					}
+				} catch (MessagingException | IOException e) {
+					throw new ListenerException(e);
 				}
-				writeToSecLog = restListener.isWriteToSecLog();
-				if (writeToSecLog) {
-					context.put("writeSecLogMessage", restListener.isWriteSecLogMessage());
-				}
-				boolean authorized;
-				if (principal == null) {
-					authorized = true;
-				} else {
-					String authRoles = restListener.getAuthRoles();
-					authorized = StringUtil.splitToStream(authRoles, ",;")
-							.anyMatch(httpServletRequest::isUserInRole);
-				}
-				if (!authorized) {
-					throw new ListenerException("Not allowed for uri [" + uri + "]");
-				}
-				Thread.currentThread().setName(restListener.getName() + "["+ctName+"]");
+			}
+			writeToSecLog = listener.isWriteToSecLog();
+			if (writeToSecLog) {
+				context.put("writeSecLogMessage", listener.isWriteSecLogMessage());
+			}
+			boolean authorized;
+			if (principal == null) {
+				authorized = true;
+			} else {
+				String authRoles = listener.getAuthRoles();
+				authorized = StringUtil.splitToStream(authRoles, ",;")
+						.anyMatch(httpServletRequest::isUserInRole);
+			}
+			if (!authorized) {
+				throw new ListenerException("Not allowed for uri [" + uri + "]");
 			}
 
 			if (etagKey!=null) context.put(etagKey,etag);
@@ -216,7 +212,7 @@ public class RestServiceDispatcher {
 				secLog.info(HttpUtils.getExtendedCommandIssuedBy(httpServletRequest));
 			}
 
-			//Caching: check for etags
+			// Caching: check for etags
 			if(uri.startsWith("/")) uri = uri.substring(1);
 			if(uri.contains("?")) {
 				uri = uri.split("\\?")[0];
@@ -227,13 +223,13 @@ public class RestServiceDispatcher {
 				String cachedEtag = (String) cache.get(etagCacheKey);
 
 				if(ifNoneMatch != null && ifNoneMatch.equalsIgnoreCase(cachedEtag) && "GET".equalsIgnoreCase(method)) {
-					//Exit with 304
+					// Exit with 304
 					context.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 304);
 					if(log.isDebugEnabled()) log.trace("aborting request with status 304, matched if-none-match [{}]", ifNoneMatch);
 					return null;
 				}
 				if(ifMatch != null && !ifMatch.equalsIgnoreCase(cachedEtag) && !"GET".equalsIgnoreCase(method)) {
-					//Exit with 412
+					// Exit with 412
 					context.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 412);
 					if(log.isDebugEnabled()) log.trace("aborting request with status 412, matched if-match [{}] method [{}]", ifMatch, method);
 					return null;
@@ -241,8 +237,8 @@ public class RestServiceDispatcher {
 			}
 
 			Message result=listener.processRequest(new Message(request), context);
-			//Caching: pipeline has been processed, save etag
-			if(!Message.isNull(result) && cache != null && context.containsKey("etag")) { //In case the eTag has manually been set and the pipeline exited in error state...
+			// Caching: pipeline has been processed, save etag
+			if(!Message.isNull(result) && cache != null && context.containsKey("etag")) { // In case the eTag has manually been set and the pipeline exited in error state...
 				cache.put(etagCacheKey, context.get("etag"));
 			}
 
@@ -250,14 +246,10 @@ public class RestServiceDispatcher {
 				log.warn("result is null!");
 			}
 			return result;
-		} finally {
-			if (listener instanceof RestListener) {
-				Thread.currentThread().setName(ctName);
-			}
 		}
 	}
 
-	public void registerServiceClient(ServiceClient listener, String uriPattern,
+	public void registerServiceClient(RestListener listener, String uriPattern,
 			String method, String etagSessionKey, String contentTypeSessionKey, boolean validateEtag) {
 		uriPattern = unifyUriPattern(uriPattern);
 		if (StringUtils.isEmpty(method)) {

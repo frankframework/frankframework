@@ -297,7 +297,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							// found a message, process it
 							int tasks = tasksStarted.incrementAndGet();
 							log.debug("{} started ListenTask [{}]", receiver::getLogPrefix, () -> tasks);
-							Thread.currentThread().setName(receiver.getName() + "-listener[" + tasks + "]");
+							Thread.currentThread().setName(receiver.getName() + "-listener[" + tasks + "]"); // Becomes `MyReceiverListener-listener[123]`
 						} finally {
 							// release pollToken after message has been moved to inProcess, so it is not seen as 'available' by the next thread
 							pollTokenReleased=true;

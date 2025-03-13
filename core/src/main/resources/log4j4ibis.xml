@@ -112,6 +112,7 @@
 		<Logger name="org.springframework.security.ldap" level="WARN" />
 		<Logger name="org.frankframework.management.gateway" level="INFO" />
 		<Logger name="com.hazelcast" level="WARN" />
+		<Logger name="snakeyaml.introspector" level="ERROR" />
 
 		<Logger name="liquibase.migrationLog" level="INFO">
 			<AppenderRef ref="application-log-appender"/>
