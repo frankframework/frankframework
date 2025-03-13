@@ -285,7 +285,7 @@ public class ReceiverTest {
 			configuration = new TestConfiguration(false);
 		}
 
-		log.info("!Configuration Context for [{}] has been created.", txManagerType);
+		log.info("Configuration Context for [{}] has been created.", txManagerType);
 		return configuration;
 	}
 
