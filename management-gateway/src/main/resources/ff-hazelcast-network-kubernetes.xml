@@ -7,7 +7,7 @@
 		<join>
 			<!-- when this is enabled, Hazelcast will automatically try and enable different connection methods such as multicast, k8s, aws or azure. -->
 			<auto-detection enabled="false"/>
-
+			
 			<kubernetes enabled="true">
 				<service-dns>SERVICE-NAME.NAMESPACE.svc.cluster.local</service-dns>
 				<service-port>5701</service-port>
@@ -15,7 +15,4 @@
 			</kubernetes>
 		</join>
 	</network>
-
-	<partition-group enabled="true" group-type="ZONE_AWARE" />
-
 </hazelcast>
