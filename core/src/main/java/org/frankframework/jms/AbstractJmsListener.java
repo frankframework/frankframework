@@ -31,6 +31,7 @@ import jakarta.jms.Session;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -51,6 +52,8 @@ import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.receivers.RawMessageWrapper;
+import org.frankframework.receivers.Receiver;
+import org.frankframework.receivers.ReceiverAware;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DateFormatUtils;
@@ -61,7 +64,7 @@ import org.frankframework.util.DateFormatUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class AbstractJmsListener extends JMSFacade implements HasSender, IWithParameters, IRedeliveringListener<jakarta.jms.Message> {
+public abstract class AbstractJmsListener extends JMSFacade implements HasSender, IWithParameters, IRedeliveringListener<jakarta.jms.Message>, ReceiverAware<jakarta.jms.Message> {
 
 	private @Getter long timeout = 1000; // Same default value as Spring: https://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/jms/listener/AbstractPollingMessageListenerContainer.html#setReceiveTimeout(long)
 	private @Getter boolean useReplyTo = true;
@@ -71,6 +74,7 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 	private @Getter int replyPriority = -1;
 	private @Getter DeliveryMode replyDeliveryMode = DeliveryMode.NON_PERSISTENT;
 	private @Getter ISender sender;
+	private @Getter @Setter Receiver<jakarta.jms.Message> receiver;
 
 	private @Getter Boolean forceMessageIdAsCorrelationId = null;
 
@@ -82,10 +86,13 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 
 	private SoapWrapper soapWrapper = null;
 
-	private @Nonnull ParameterList paramList = new ParameterList();
+	private final @Nonnull ParameterList paramList = new ParameterList();
 
 	@Override
 	public void configure() throws ConfigurationException {
+		if (getReceiver().isTransacted()) {
+			setTransacted(true);
+		}
 		super.configure();
 		if (isSoap()) {
 			soapWrapper = SoapWrapper.getInstance();

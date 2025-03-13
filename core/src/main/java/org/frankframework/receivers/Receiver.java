@@ -102,9 +102,7 @@ import org.frankframework.doc.Category;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Protected;
-import org.frankframework.jdbc.JdbcFacade;
 import org.frankframework.jdbc.MessageStoreListener;
-import org.frankframework.jms.JMSFacade;
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.monitoring.EventPublisher;
@@ -598,12 +596,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			}
 			if (getListener() instanceof IPullingListener) {
 				listenerContainer = createListenerContainer();
-			}
-			if (getListener() instanceof JdbcFacade) {
-				((JdbcFacade)getListener()).setTransacted(isTransacted());
-			}
-			if (getListener() instanceof JMSFacade) {
-				((JMSFacade)getListener()).setTransacted(isTransacted());
 			}
 			getListener().configure();
 			if (getListener() instanceof HasPhysicalDestination) {
