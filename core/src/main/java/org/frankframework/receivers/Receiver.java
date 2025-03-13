@@ -1829,7 +1829,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * Suspend the receiver for {@code delayTimeInSeconds} seconds
 	 * @param delayTimeInSeconds Number of seconds the receiver thread should be suspended from processing new messages.
 	 */
-	protected void suspendReceiverThread(int delayTimeInSeconds) {
+	public void suspendReceiverThread(int delayTimeInSeconds) {
 		int currentInterval = delayTimeInSeconds;
 		while (isInRunState(RunState.STARTED) && currentInterval-- > 0) {
 			try {
