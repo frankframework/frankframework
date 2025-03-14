@@ -68,13 +68,13 @@ public class CompressPipe extends FixedForwardPipe {
 
 	public enum FileFormat {
 		/**
-		 * Gzip format; also used when direction is compress and resultIsContent=<code>true</code>
-		 * or when direction is decompress and messageIsContent=<code>true</code>
+		 * Gzip format. It is also used when the direction is compress and resultIsContent=<code>true</code>
+		 * or when the direction is decompress and messageIsContent=<code>true</code>.
 		 */
 		GZ,
 		/**
-		 * Zip format; also used when direction is compress and resultIsContent={@code false}
-		 * or when direction is decompress and messageIsContent={@code false}
+		 * Zip format. It is also used when the direction is compress and resultIsContent={@code false}
+		 * or when the direction is decompress and messageIsContent={@code false}.
 		 */
 		ZIP
 	}
@@ -225,7 +225,7 @@ public class CompressPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * If {@code true} the pipe compresses, otherwise it decompress
+	 * If {@code true}, the pipe compresses; otherwise, it decompresses.
 	 * @ff.default false
 	 */
 	public void setCompress(boolean b) {
@@ -240,14 +240,14 @@ public class CompressPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * flag indicates whether the message is the content or the path to a file with the contents. for multiple files use ';' as delimiter
+	 * Flag indicates whether the message is the content or the path to a file with the contents. For multiple files, use ';' as a delimiter.
 	 * @ff.default false
 	 */
 	public void setMessageIsContent(boolean b) {
 		messageIsContent = b;
 	}
 
-	/** required if result is a file, the directory in which to store the result file */
+	/** Required if the result is a file. The directory in which to store the result file. */
 	@Deprecated(forRemoval = true, since = "8.1")
 	@ConfigurationWarning("Please use resultIsContent=true in combination with a LocalFileSystemPipe")
 	public void setOutputDirectory(String string) {
@@ -255,7 +255,7 @@ public class CompressPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * flag indicates whether the result must be written to the message or to a file (filename = message)
+	 * A flag that indicates whether the result must be written to the message or to a file (filename = message). 
 	 * @ff.default true when outputDirectory is not set.
 	 */
 	public void setResultIsContent(boolean b) {
@@ -265,7 +265,7 @@ public class CompressPipe extends FixedForwardPipe {
 		return resultIsContent != null && resultIsContent;
 	}
 
-	/** the pattern for the zipentry name in case a zipfile is read or written */
+	/** The pattern for the zip entry name in case a zip file is read or written. */
 	@Deprecated(forRemoval = true, since = "8.1")
 	@ConfigurationWarning("Please use parameter zipEntryPattern (in combination with the pattern attribute)")
 	public void setZipEntryPattern(String string) {

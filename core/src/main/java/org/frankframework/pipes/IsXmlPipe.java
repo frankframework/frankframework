@@ -28,7 +28,7 @@ import org.frankframework.doc.Forward;
 import org.frankframework.stream.Message;
 
 /**
- * Selects an exitState, based on if the input is a XML string.
+ * Selects an exitState, based on whether the input is an XML string.
  * The input is an XML string if it, after removing leading white-space characters, starts with '&lt;'.
  *
  *
@@ -87,8 +87,8 @@ public class IsXmlPipe extends AbstractPipe {
 	}
 
 	/**
-	 * forward returned when <code>true</code>
-	 * @ff.default then
+	 * Forward returned when <code>true</code>.
+	 * @ff.default then.
 	 */
 	public void setThenForwardName(String thenForwardName) {
 		this.thenForwardName = thenForwardName;
@@ -99,8 +99,8 @@ public class IsXmlPipe extends AbstractPipe {
 	}
 
 	/**
-	 * forward returned when 'false'
-	 * @ff.default else
+	 * Forward returned when 'false'.
+	 * @ff.default else.
 	 */
 	public void setElseForwardName(String elseForwardName) {
 		this.elseForwardName = elseForwardName;
@@ -115,7 +115,7 @@ public class IsXmlPipe extends AbstractPipe {
 	}
 
 	/**
-	 * return elseforward when input is empty (or thenforward)
+	 * Returns elseforward when the input is empty (or thenforward).
 	 * @ff.default true
 	 */
 	public void setElseForwardOnEmptyInput(boolean b) {
