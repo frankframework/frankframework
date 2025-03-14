@@ -25,19 +25,14 @@ export type SapSystem = {
   info: string;
 };
 
-export type JmsRealm = {
+export type Resource = {
   name: string;
-  info: string | null;
-  datasourceName?: string;
-  connectionPoolProperties?: string;
-  queueConnectionFactoryName?: string;
-  topicConnectionFactoryName?: string;
-};
-
-export type Datasource = {
-  datasourceName: string;
   info: string;
   connectionPoolProperties: string;
+};
+export type ResourceFactories = {
+  name: string;
+  resources: Resource[];
 };
 
 export type supportedConnectionOptions = {
@@ -47,9 +42,9 @@ export type supportedConnectionOptions = {
 
 export interface SecurityItems {
   securityRoles: SecurityRole[];
-  datasources: Datasource[];
+  resourceFactories: ResourceFactories[];
   authEntries: AuthEntry[];
-  jmsRealms: JmsRealm[];
+  jmsRealms: Record<string, string>;
   sapSystems: SapSystem[];
   xmlComponents: Record<string, string>;
   supportedConnectionOptions: supportedConnectionOptions;
