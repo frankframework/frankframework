@@ -6,18 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
-
-import jakarta.jms.BytesMessage;
-import jakarta.jms.TextMessage;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
-
-import com.mockrunner.mock.jms.MockQueue;
+import java.util.stream.Stream;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.statistics.MetricsInitializer;
@@ -27,6 +18,17 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.EnumUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import com.mockrunner.mock.jms.MockQueue;
+
+import jakarta.jms.BytesMessage;
+import jakarta.jms.TextMessage;
 
 class JmsSenderTest {
 	private TestConfiguration configuration;
@@ -94,11 +96,19 @@ class JmsSenderTest {
 		assertEquals("A Textual Message", textMessage.getText());
 	}
 
+	static Stream<Arguments> testSendMessageModeAutoWithBinaryMessage() {
+		return Stream.of(
+				Arguments.of(JmsSenderTest.class.getResource("/Documents/utf8-with-bom.txt")),
+				Arguments.of(JmsSenderTest.class.getResource("/Documents/iso-8859-1.txt")),
+				Arguments.of(JmsSenderTest.class.getResource("/Documents/doc001.pdf"))
+			);
+	}
+
 	@ParameterizedTest
-	@EnumSource(MessageTestUtils.MessageType.class)
-	void testSendMessageModeAutoWithBinaryMessage(MessageTestUtils.MessageType messageType) throws Exception {
+	@MethodSource
+	void testSendMessageModeAutoWithBinaryMessage(URL messageUrl) throws Exception {
 		// Arrange
-		Message message = MessageTestUtils.getMessage(messageType);
+		Message message = MessageTestUtils.getMessage(messageUrl);
 		jmsSender.setMessageClass(JMSFacade.MessageClass.AUTO);
 
 		// Act
@@ -112,8 +122,9 @@ class JmsSenderTest {
 		BytesMessage bytesMessage = (BytesMessage) jmsMessage;
 		byte[] data = new byte[(int) bytesMessage.getBodyLength()];
 		bytesMessage.readBytes(data);
-		Message result = new Message(data);
-		assertEquals(message.asString(), result.asString());
+		try (Message result = new Message(data)) {
+			assertEquals(message.asString(), result.asString());
+		}
 	}
 
 	@Test
