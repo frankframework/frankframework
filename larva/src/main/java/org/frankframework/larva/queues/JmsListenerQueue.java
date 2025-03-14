@@ -23,6 +23,7 @@ import org.apache.commons.lang3.NotImplementedException;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.jms.PullingJmsListener;
+import org.frankframework.stream.Message;
 
 public class JmsListenerQueue extends HashMap<String, Object> implements Queue {
 
@@ -45,12 +46,12 @@ public class JmsListenerQueue extends HashMap<String, Object> implements Queue {
 	}
 
 	@Override
-	public int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> xsltParameters) {
+	public int executeWrite(String stepDisplayName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
 		throw new NotImplementedException("executeWrite");
 	}
 
 	@Override
-	public String executeRead(String step, String stepDisplayName, Properties properties, String fileName, String fileContent) {
+	public Message executeRead(String step, String stepDisplayName, Properties properties, String fileName, Message fileContent) {
 		throw new NotImplementedException("executeRead");
 	}
 

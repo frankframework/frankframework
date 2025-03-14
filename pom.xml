@@ -22,7 +22,7 @@
 
 		<jackson.version>2.18.3</jackson.version>
 		<cxf.version>4.1.1</cxf.version>
-		<spring.version>6.2.3</spring.version>
+		<spring.version>6.2.4</spring.version>
 		<spring-security.version>6.4.3</spring-security.version>
 		<spring-integration.version>6.4.2</spring-integration.version>
 		<spring.boot.version>3.4.3</spring.boot.version>
@@ -160,7 +160,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.30.0</version>
+				<version>4.30.1</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
