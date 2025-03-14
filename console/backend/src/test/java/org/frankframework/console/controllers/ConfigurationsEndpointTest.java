@@ -13,6 +13,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.mock.web.MockPart;
@@ -21,7 +22,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import org.frankframework.console.ApiException;
 import org.frankframework.management.Action;
 import org.frankframework.management.bus.message.StringMessage;
 
@@ -208,10 +208,10 @@ public class ConfigurationsEndpointTest extends FrankApiTestBase {
 						.content(jsonInput)
 						.accept(MediaType.APPLICATION_JSON)
 						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.status().is5xxServerError())
+				.andExpect(MockMvcResultMatchers.status().is4xxClientError())
 				.andReturn();
 
-		assertInstanceOf(ApiException.class, mockResult.getResolvedException());
+		assertInstanceOf(HttpMessageNotReadableException.class, mockResult.getResolvedException());
 	}
 
 	@Test

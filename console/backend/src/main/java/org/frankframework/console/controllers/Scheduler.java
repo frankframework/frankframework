@@ -88,7 +88,7 @@ public class Scheduler {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
 	@PostMapping(value = "/schedules", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> createSchedule(ScheduleMultipartBody multipartBody) {
+	public ResponseEntity<?> createSchedule(ScheduleMultipartModel multipartBody) {
 		String jobGroupName = RequestUtils.resolveRequiredProperty("group", multipartBody.group(), null);
 		return createSchedule(jobGroupName, multipartBody);
 	}
@@ -96,23 +96,23 @@ public class Scheduler {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@PutMapping(value = "/schedules/{groupName}/jobs/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> updateSchedule(@PathVariable("groupName") String groupName, @PathVariable("jobName") String jobName,
-											ScheduleMultipartBody multipartBody) {
+											ScheduleMultipartModel multipartBody) {
 		return createSchedule(groupName, jobName, multipartBody, true);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
 	@PostMapping(value = "/schedules/{groupName}/jobs", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> createScheduleInJobGroup(@PathVariable("groupName") String groupName, ScheduleMultipartBody multipartBody) {
+	public ResponseEntity<?> createScheduleInJobGroup(@PathVariable("groupName") String groupName, ScheduleMultipartModel multipartBody) {
 		return createSchedule(groupName, multipartBody);
 	}
 
-	private ResponseEntity<?> createSchedule(String groupName, ScheduleMultipartBody input) {
+	private ResponseEntity<?> createSchedule(String groupName, ScheduleMultipartModel input) {
 		String jobName = RequestUtils.resolveRequiredProperty("name", input.name(), null);
 		return createSchedule(groupName, jobName, input, false);
 	}
 
-	protected ResponseEntity<?> createSchedule(String groupName, String jobName, ScheduleMultipartBody multipartBody, boolean overwrite) {
+	protected ResponseEntity<?> createSchedule(String groupName, String jobName, ScheduleMultipartModel multipartBody, boolean overwrite) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.UPLOAD);
 		builder.addHeader("job", jobName);
 		builder.addHeader("group", groupName);
@@ -149,7 +149,7 @@ public class Scheduler {
 		return frankApiService.callSyncGateway(builder);
 	}
 
-	public record ScheduleMultipartBody(
+	public record ScheduleMultipartModel(
 			String name,
 			String group,
 			String cron,

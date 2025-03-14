@@ -144,9 +144,9 @@ public class SendJmsMessage {
 	}
 
 	public record JmsMessageModel(
-			boolean persistent,
-			boolean synchronous,
-			boolean lookupDestination,
+			Boolean persistent,
+			Boolean synchronous,
+			Boolean lookupDestination,
 			String destination,
 			String replyTo,
 			String property,
