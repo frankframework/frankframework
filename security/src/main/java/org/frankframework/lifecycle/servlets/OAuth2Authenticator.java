@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -59,9 +59,10 @@ import org.frankframework.util.StringUtil;
  * 
  * The redirect url has been modified to match the servlet path and is deduced from the default
  * {@link OAuth2LoginAuthenticationFilter#DEFAULT_FILTER_PROCESSES_URI}.
- * Authentication base URL: -servlet-name- {@value OAuth2AuthorizationRequestRedirectFilter#DEFAULT_AUTHORIZATION_REQUEST_BASE_URI}
+ * Authentication base URL is: `-servlet-name-/oauth2/authorization`
  * 
  * See https://docs.spring.io/spring-security/reference/servlet/oauth2/client/authorization-grants.html#oauth2Client-auth-code-redirect-uri
+ * Default oauth2 path: `OAuth2AuthorizationRequestRedirectFilter#DEFAULT_AUTHORIZATION_REQUEST_BASE_URI`
  *
  * @author Niels Meijer
  *
