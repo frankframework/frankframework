@@ -33,7 +33,6 @@ public class ThreadNamingTaskDecorator implements TaskDecorator {
 				// Ensure the context-stack is empty before executing the new Thread to ensure a clean slate
 				ThreadContext.clearAll();
 
-				// Give thread some name when we start a task on it
 				runnable.run();
 			} finally {
 				// Ensure the context-stack is empty after executing the new Thread to prevent leaks
