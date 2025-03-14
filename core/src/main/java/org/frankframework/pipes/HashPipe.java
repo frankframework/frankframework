@@ -42,10 +42,10 @@ import org.frankframework.util.StreamUtil;
 
 /**
  *
- * This pipe can be used to generate a hash for the given message using an algorithm. With this, you can prove the integrity of the message.
- * If you use one of the Mac-based algorithms (starting with 'Hmac'), you need a secret as well. A Mac algorithm uses a secret, combined with the algorithm
- * to create a 'hash' of a message. Only sources which have this secret are able to generate the same hash for the given message.
- * With this, you can prove integrity and authenticity of a message.
+ * This pipe can be used to generate a hash for the given message using an algorithm. With this, you can prove the integrity of the message. 
+ * If you use one of the Mac-based algorithms (starting with 'Hmac'), you need a secret as well. A Mac algorithm uses a secret, combined with the algorithm 
+ * to create a 'hash' of a message. Only sources that have this secret are able to generate the same hash for the given message. 
+ * With this, you can prove the integrity and authenticity of a message.
  * <p>
  *
  * @see Algorithm
@@ -134,7 +134,7 @@ public class HashPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Hash Algorithm to use
+	 * Hash algorithm to use.
 	 *
 	 * @ff.default HmacSHA256
 	 */
@@ -143,7 +143,7 @@ public class HashPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Character set to use for converting the secret from String to bytes
+	 * Character set to use for converting the secret from String to bytes.
 	 *
 	 * @ff.default UTF-8
 	 */
@@ -152,7 +152,7 @@ public class HashPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Method to use for converting the hash from bytes to String
+	 * Method to use for converting the hash from bytes to String.
 	 *
 	 * @ff.default Base64
 	 */
@@ -160,7 +160,7 @@ public class HashPipe extends FixedForwardPipe {
 		this.hashEncoding = hashEncoding;
 	}
 
-	/** The secret to hash with. Only used if no parameter secret is configured. The secret is only used when there is no authAlias specified, by attribute or parameter */
+	/** The secret to hash with. Only used if no parameter secret is configured. The secret is only used when there is no authAlias specified, by attribute or parameter. */
 	public void setSecret(String secret) {
 		this.secret = secret;
 	}

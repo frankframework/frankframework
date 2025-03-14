@@ -33,9 +33,9 @@ import org.frankframework.stream.Message;
 
 /**
  * Pipe that increases the integer value of a session variable.
- * Can be used in combination with {@link CompareIntegerPipe} to construct loops.
+ * It can be used in combination with {@link CompareIntegerPipe} to construct loops.
  *
- * @ff.parameter increment integer value to be added to the session variable
+ * @ff.parameter increment Integer value to be added to the session variable.
  *
  * @author Richard Punt / Gerrit van Brakel
  */
@@ -87,7 +87,7 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 	}
 
 
-	/** Reference to the session variable whose value is to be increased
+	/** Reference to the session variable whose value is to be increased.
 	 * @ff.mandatory
 	 */
 	public void setSessionKey(String string) {
@@ -95,7 +95,7 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * amount to increment the value. Can be set from the attribute or the parameter 'increment'
+	 * Amount to increment the value. This can be set from the attribute or the parameter 'increment'.
 	 * @ff.default 1
 	 */
 	public void setIncrement(int i) {

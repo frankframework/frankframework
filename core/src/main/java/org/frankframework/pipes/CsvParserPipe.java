@@ -39,7 +39,7 @@ import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.SaxElementBuilder;
 
 /**
- * Reads a message in CSV format, and turns it into XML.
+ * Reads a message in CSV format and turns it into XML.
  *
  * @author Gerrit van Brakel
  *
@@ -130,39 +130,39 @@ public class CsvParserPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Specifies if the first line should be treated as header or as data
+	 * Specifies if the first line should be treated as a header or as data.
 	 * @ff.default true
 	 */
 	public void setFileContainsHeader(Boolean fileContainsHeader) {
 		this.fileContainsHeader = fileContainsHeader;
 	}
 
-	/** Comma separated list of header names. If set, then {@code fileContainsHeader} defaults to false. If not set, headers are taken from the first line */
+	/** Comma separated list of header names. If set, then {@code fileContainsHeader} defaults to false. If not set, headers are taken from the first line. */
 	public void setFieldNames(String fieldNames) {
 		this.fieldNames = fieldNames;
 	}
 
 	/**
-	 * Character that separates fields
+	 * Character that separates fields.
 	 * @ff.default ,
 	 */
 	public void setFieldSeparator(String fieldSeparator) {
 		this.fieldSeparator = fieldSeparator;
 	}
 
-	/** When set, character casing will be changed for the header */
+	/** When set, character casing will be changed for the header. */
 	public void setHeaderCase(HeaderCase headerCase) {
 		this.headerCase = headerCase;
 	}
 
-	/** Format the XML output in easy legible way */
+	/** Format the XML output in an easily legible way. */
 	public void setPrettyPrint(boolean prettyPrint) {
 		this.prettyPrint = prettyPrint;
 	}
 
 	/**
 	 * Enables the ASCII {@code (RS) Record Separator} and {@code (US) Unit Separator} Control Code field delimiters.
-	 * May not be used in combination with attribute {@code fieldSeparator}.
+	 * This may not be used in combination with attribute {@code fieldSeparator}.
 	 * See <a href="https://en.wikipedia.org/wiki/C0_and_C1_control_codes#Field_separators">WIKI Control Codes</a>.
 	 */
 	public void setUseControlCodes(boolean useControlCodes) {

@@ -37,7 +37,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.MessageUtils;
 
 /**
- * Pipe to manage RESTFUL etag caching
+ * Pipe to manage RESTful ETag caching.
  *
  * @author Niels Meijer
  *

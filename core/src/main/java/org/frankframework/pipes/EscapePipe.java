@@ -33,8 +33,8 @@ import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
 
 /**
- * Pipe that performs translations between special characters and their xml equivalents.
- * <p>When direction=cdata2text all cdata nodes are converted to text nodes without any other translations.</p>
+ * Pipe that performs translations between special characters and their XML equivalents.
+ * <p>When direction=cdata2text, all CDATA nodes are converted to text nodes without any other translations.</p>
  *
  * @author Peter Leeuwenburgh
  */
@@ -135,12 +135,12 @@ public class EscapePipe extends FixedForwardPipe {
 
 	// ESCAPE BETWEEN
 
-	/** substring to start translation */
+	/** Substring to start translation. */
 	public void setSubstringStart(String substringStart) {
 		this.substringStart = substringStart;
 	}
 
-	/** substring to end translation */
+	/** Substring to end translation. */
 	public void setSubstringEnd(String substringEnd) {
 		this.substringEnd = substringEnd;
 	}
@@ -154,7 +154,7 @@ public class EscapePipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * when set <code>true</code> special characters in <code>substringstart</code> and <code>substringend</code> are first translated to their xml equivalents
+	 * When set to <code>true</code>, special characters in <code>substringstart</code> and <code>substringend</code> are first translated to their XML equivalents.
 	 *
 	 * @ff.default false
 	 */
