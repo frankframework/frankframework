@@ -14,6 +14,8 @@
 		<j2v8.version>4.6.0</j2v8.version>
 		<graalvm.version>24.1.2</graalvm.version>
 		<saxon.version>10.9</saxon.version><!--From version 11, duplicate imported resources cause an exception. -->
+
+		<aspectj.version>1.9.2</aspectj.version>
 	</properties>
 
 	<dependencies>
@@ -238,6 +240,18 @@
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+			<version>${aspectj.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjtools</artifactId>
+			<version>${aspectj.version}</version>
 		</dependency>
 
 		<dependency>

@@ -19,6 +19,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
+import org.frankframework.parameters.ValueFromParameter;
 import org.frankframework.stream.Message;
 
 /**
@@ -33,7 +34,7 @@ public class DelayPipe extends FixedForwardPipe {
 	private long delayTime=5000;
 
 	@Override
-	public PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			log.info("starts waiting for {} ms.", getDelayTime());
 			Thread.sleep(getDelayTime());
@@ -52,9 +53,10 @@ public class DelayPipe extends FixedForwardPipe {
 	public void setDelayTime(long l) {
 		delayTime = l;
 	}
+
+	@ValueFromParameter
 	public long getDelayTime() {
 		return delayTime;
 	}
-
 
 }
