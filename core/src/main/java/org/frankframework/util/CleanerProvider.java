@@ -40,7 +40,7 @@ public class CleanerProvider {
 	private static final Cleaner CLEANER = Cleaner.create();
 
 	static {
-		 // Shutdown hook to generate report of leaks at end of process
+		// Shutdown hook to generate report of leaks at end of process
 		Runtime.getRuntime().addShutdownHook(new Thread(CleanerProvider::logLeakStatistics));
 	}
 
@@ -53,16 +53,23 @@ public class CleanerProvider {
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		}
-		// Write a log message with each stack-trace, for finding the traces where problems originate. Order by largest nr of leaks from origin, ascending.
-		LEAK_MAP.entrySet().stream()
-				.sorted(Comparator.comparingInt(entry -> entry.getValue().get()))
-				.forEachOrdered(entry -> LEAK_LOG.warn("Class [{}] has {} leaks recorded from instances created at:", entry.getKey().owningClassName, entry.getValue().get(), entry.getKey()));
 
-		// Count total leaks and write a log message with each stack-trace, for finding the traces where problems originate.
-		int totalLeaks = LEAK_MAP.values().stream()
-				.map(AtomicInteger::get)
-				.reduce(0, Integer::sum);
-		LEAK_LOG.warn("Total of {} leaks from {} locations", totalLeaks, LEAK_MAP.size());
+		try {
+			// Write a log message with each stack-trace, for finding the traces where problems originate. Order by largest nr of leaks from origin, ascending.
+			LEAK_MAP.entrySet().stream()
+					.sorted(Comparator.comparingInt(entry -> entry.getValue().get()))
+					.forEachOrdered(entry -> LEAK_LOG.warn("Class [{}] has {} leaks recorded from instances created at:", entry.getKey().owningClassName, entry.getValue().get(), entry.getKey()));
+
+			// Count total leaks and write a log message with each stack-trace, for finding the traces where problems originate.
+			int totalLeaks = LEAK_MAP.values().stream()
+					.map(AtomicInteger::get)
+					.reduce(0, Integer::sum);
+			LEAK_LOG.warn("Total of {} leaks from {} locations", totalLeaks, LEAK_MAP.size());
+		} catch (Throwable e) {
+			// Ignore log exceptions which may cause the application to not terminate properly. 
+			// Such as `Exception in thread "Thread-462" java.lang.NoClassDefFoundError: org/apache/logging/log4j/message/ParameterizedNoReferenceMessageFactory$StatusMessage`
+
+		}
 	}
 
 	/**

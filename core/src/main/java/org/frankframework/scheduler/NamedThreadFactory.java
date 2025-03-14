@@ -21,8 +21,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.util.ClassUtils;
-
 public class NamedThreadFactory implements ThreadFactory {
 	private @Setter int threadPriority = Thread.NORM_PRIORITY;
 	private @Getter @Setter ThreadGroup threadGroup;
@@ -39,10 +37,7 @@ public class NamedThreadFactory implements ThreadFactory {
 	}
 
 	private String getThreadName(Runnable runnable) {
-		String threadName = ClassUtils.nameOf(runnable);
-		threadName += "-"+this.threadCount.incrementAndGet();
-
-		return threadName;
+		return "FF-Worker-"+this.threadCount.incrementAndGet();
 	}
 
 	public void setThreadGroupName(String name) {
