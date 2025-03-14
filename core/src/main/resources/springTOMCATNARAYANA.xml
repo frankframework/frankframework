@@ -9,7 +9,6 @@
 	>
 
 	<import resource="springTOMCAT.xml"/>
-	<import resource="springJms.xml"/>
 
 	<bean
 		name="txManagerReal"
@@ -47,9 +46,6 @@
 	</bean>
 
 	<bean id="dataSourceFactory" class="org.frankframework.jta.narayana.NarayanaDataSourceFactory" depends-on="txManagerReal" autowire="byType" >
-		<property name="transactionManager" ref="txManagerReal"/>
-	</bean>
-	<bean id="connectionFactoryFactory" class="org.frankframework.jta.narayana.NarayanaConnectionFactoryFactory" depends-on="txManagerReal" autowire="byType" >
 		<property name="transactionManager" ref="txManagerReal"/>
 	</bean>
 </beans>

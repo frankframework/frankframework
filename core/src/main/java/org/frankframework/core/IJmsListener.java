@@ -13,22 +13,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.components;
+package org.frankframework.core;
 
-import java.util.List;
+/**
+ * Ugly hack to keep the WSDL generator working without changing any code.
+ */
+public interface IJmsListener<M> extends IListener<M> {
 
-import org.frankframework.lifecycle.servlets.ApplicationServerConfigurer;
-import org.frankframework.util.AppConstants;
+	String getQueueConnectionFactoryName();
 
-public class MessagingModule implements Module {
-
-	@Override
-	public List<String> getSpringConfigurationFiles() {
-		String customization = AppConstants.getInstance().getString(ApplicationServerConfigurer.APPLICATION_SERVER_CUSTOMIZATION_PROPERTY, null);
-		if ("narayana".equalsIgnoreCase(customization)) {
-			return List.of("springJmsNarayana.xml");
-		}
-
-		return List.of("springJms.xml");
-	}
+	String getDestinationName();
 }

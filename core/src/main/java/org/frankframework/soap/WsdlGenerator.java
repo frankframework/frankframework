@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,11 +35,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.IJmsListener;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IXmlValidator;
 import org.frankframework.core.PipeLine;
 import org.frankframework.http.WebServiceListener;
-import org.frankframework.jms.JmsListener;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
@@ -302,7 +302,7 @@ public class WsdlGenerator {
 		for (IListener<?> listener : WsdlGeneratorUtils.getListeners(pipeLine.getAdapter())) {
 			if (listener instanceof WebServiceListener) {
 				httpActive = true;
-			} else if (listener instanceof JmsListener) {
+			} else if (listener instanceof IJmsListener) {
 				jmsActive = true;
 			} else if (listener instanceof JavaListener jl) {
 				if (jl.isHttpWsdl()) httpActive = true;
@@ -512,7 +512,7 @@ public class WsdlGenerator {
 		w.writeStartElement(WSDL_NAMESPACE, "portType");
 		w.writeAttribute("name", "PortType_" + getName()); {
 			for (IListener<?> listener : WsdlGeneratorUtils.getListeners(pipeLine.getAdapter())) {
-				if (listener instanceof WebServiceListener || listener instanceof JmsListener) {
+				if (listener instanceof WebServiceListener || listener instanceof IJmsListener) {
 					w.writeStartElement(WSDL_NAMESPACE, "operation");
 					w.writeAttribute("name", "Operation_" + WsdlGeneratorUtils.getNCName(getSoapAction(listener))); {
 						if (StringUtils.isNotEmpty(inputRoot)) {
@@ -664,7 +664,7 @@ public class WsdlGenerator {
 		}
 		if (jmsActive) {
 			for (IListener<?> listener : WsdlGeneratorUtils.getListeners(pipeLine.getAdapter())) {
-				if (listener instanceof JmsListener jmsListener) {
+				if (listener instanceof IJmsListener jmsListener) {
 					jmsService(w, jmsListener, jmsPrefix);
 				}
 			}
@@ -685,7 +685,7 @@ public class WsdlGenerator {
 		w.writeEndElement();
 	}
 
-	protected void jmsService(XMLStreamWriter w, JmsListener listener, String namePrefix) throws XMLStreamException {
+	protected void jmsService(XMLStreamWriter w, IJmsListener listener, String namePrefix) throws XMLStreamException {
 		w.writeStartElement(WSDL_NAMESPACE, "service");
 		w.writeAttribute("name", "Service_" + WsdlGeneratorUtils.getNCName(getName())); {
 			if (extensionContext == null) {

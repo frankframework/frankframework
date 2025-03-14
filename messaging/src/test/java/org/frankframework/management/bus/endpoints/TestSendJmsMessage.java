@@ -11,6 +11,7 @@ import jakarta.jms.BytesMessage;
 import jakarta.jms.JMSException;
 import jakarta.jms.TextMessage;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -30,6 +31,14 @@ import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
 public class TestSendJmsMessage extends BusTestBase {
 
 	public static final String DUMMY_DESTINATION = "dummyDestination";
+
+	protected MockRunnerConnectionFactoryFactory mockConnectionFactoryFactory;
+
+	@BeforeEach
+	public void setUp() throws Exception {
+		super.setUp();
+		mockConnectionFactoryFactory = getParentContext().getBean(MockRunnerConnectionFactoryFactory.class);
+	}
 
 	@Test
 	public void noConnectionFactory() {

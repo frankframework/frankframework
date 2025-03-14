@@ -19,17 +19,15 @@ import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.testutil.QuerySenderPostProcessor;
 import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
 import org.frankframework.util.LogUtil;
 
 public class BusTestBase {
 
 	private Configuration configuration;
 	private ApplicationContext parentContext;
-	protected MockRunnerConnectionFactoryFactory mockConnectionFactoryFactory;
 	private final QuerySenderPostProcessor qsPostProcessor = new QuerySenderPostProcessor();
 
-	private ApplicationContext getParentContext() {
+	protected ApplicationContext getParentContext() {
 		if(parentContext == null) {
 			ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext();
 			applicationContext.setConfigLocation("testBusApplicationContext.xml");
@@ -73,7 +71,6 @@ public class BusTestBase {
 	@BeforeEach
 	public void setUp() throws Exception {
 		getConfiguration(); // Create configuration
-		mockConnectionFactoryFactory = getParentContext().getBean(MockRunnerConnectionFactoryFactory.class);
 	}
 
 	@AfterEach
