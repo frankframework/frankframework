@@ -3,8 +3,7 @@ import { AppService, Pipe } from 'src/app/app.service';
 import {
   AuthEntry,
   CertificateList,
-  Datasource,
-  JmsRealm,
+  ResourceFactories,
   Link,
   SapSystem,
   SecurityItemsService,
@@ -22,11 +21,11 @@ import { KeyValuePipe, NgClass } from '@angular/common';
 export class SecurityItemsComponent implements OnInit {
   protected sapSystems: SapSystem[] = [];
   protected authEntries: AuthEntry[] = [];
-  protected jmsRealms: JmsRealm[] = [];
+  protected jmsRealms: Record<string, string> = {};
   protected securityRoles: SecurityRole[] = [];
   protected certificates: CertificateList[] = [];
   protected xmlComponents: Record<string, string> = {};
-  protected datasources: Datasource[] = [];
+  protected resourceFactories: ResourceFactories[] = [];
   protected supportedConnectionOptions: supportedConnectionOptions = {
     protocols: [],
     cyphers: [],
@@ -55,7 +54,7 @@ export class SecurityItemsComponent implements OnInit {
 
     this.securityItemsService.getSecurityItems().subscribe((data) => {
       this.authEntries = data.authEntries;
-      this.datasources = data.datasources;
+      this.resourceFactories = data.resourceFactories;
       this.jmsRealms = data.jmsRealms;
       this.sapSystems = data.sapSystems;
       this.securityRoles = data.securityRoles;
