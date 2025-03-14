@@ -160,7 +160,7 @@ public class RestServiceDispatcher {
 			context.put("principal", principal.getName());
 		}
 
-		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("listener", listener.getName())) {
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_LISTENER_KEY, listener.getName())) {
 			boolean writeToSecLog = false;
 			if (listener.isRetrieveMultipart() && MultipartUtils.isMultipart(httpServletRequest)) {
 				try {

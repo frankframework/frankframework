@@ -844,8 +844,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			// Cannot use a closable ThreadContext as it's cleared in the Receiver STOP method.
 			@Override
 			public void run() {
-				Thread.currentThread().setName("stopping Adapter " +getName());
-				try {
+				try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_ADAPTER_KEY, getName())) {
 					log.trace("Adapter.stopRunning - stop adapter thread for [{}] starting", () -> getName());
 
 					// See also Receiver.stopRunning()
@@ -928,7 +927,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 */
 	@Override
 	public void stop() {
-		stop(() -> log.debug("stopped adapter [{}]", getName()));
+		stop(() -> log.info("stopped adapter [{}]", getName()));
 	}
 
 	@Override

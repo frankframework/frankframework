@@ -33,6 +33,9 @@ public class LogUtil {
 
 	public static final String MESSAGE_LOGGER = "MSG";
 
+	public static final String MDC_PIPE_KEY = "pipe";
+	public static final String MDC_SENDER_KEY = "sender";
+	public static final String MDC_LISTENER_KEY = "listener";
 	public static final String MDC_ADAPTER_KEY = "adapter";
 
 	public static final String MDC_EXIT_STATE_KEY = "exit.state";

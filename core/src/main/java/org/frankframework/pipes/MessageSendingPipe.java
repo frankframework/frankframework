@@ -647,7 +647,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				exitState = PRESUMED_TIMEOUT_FORWARD;
 				throw new TimeoutException(PRESUMED_TIMEOUT_FORWARD);
 			}
-			try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("sender", sender.getName())){
+			try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_SENDER_KEY, sender.getName())){
 				SenderResult senderResult = sender.sendMessage(input, session);
 				PipeForward forward = findForwardForResult(senderResult);
 				sendResult = new PipeRunResult(forward, senderResult.getResult());
