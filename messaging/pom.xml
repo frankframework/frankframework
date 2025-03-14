@@ -150,19 +150,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<archive>
-						<addMavenDescriptor>true</addMavenDescriptor>
-						<manifest>
-							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-							<mainClass>org.frankframework.cmdline.StartIbis</mainClass>
-						</manifest>
-						<manifestEntries>
-							<Add-Opens>java.base/java.lang java.base/java.io</Add-Opens>
-						</manifestEntries>
-					</archive>
-				</configuration>
 				<executions>
 					<execution>
 						<goals>
