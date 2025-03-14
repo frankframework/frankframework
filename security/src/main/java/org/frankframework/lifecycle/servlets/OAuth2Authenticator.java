@@ -33,7 +33,6 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequest
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Getter;
@@ -90,7 +89,10 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	/** eg. https://www.googleapis.com/oauth2/v3/userinfo */
 	private @Setter String userInfoUri;
 
-	/** eg. {@value IdTokenClaimNames#SUB} */
+	/**
+	 * The field name of the "claim" can be used to retrieve the username out of the JWT Token.
+	 * eg. {@code sub}.
+	 */
 	private @Setter String userNameAttributeName;
 
 	private @Setter String clientId = null;
