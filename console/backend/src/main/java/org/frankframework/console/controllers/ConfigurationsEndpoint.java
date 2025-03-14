@@ -21,7 +21,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
@@ -193,10 +192,10 @@ public class ConfigurationsEndpoint {
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader(BUS_HEADER_VERSION, HttpUtils.urlDecode(encodedVersion));
 
-		if (json.activate.isPresent()) {
-			builder.addHeader("activate", json.activate.get());
-		} else if (json.autoreload.isPresent()) {
-			builder.addHeader("autoreload", json.autoreload.get());
+		if (json.activate != null) {
+			builder.addHeader("activate", json.activate);
+		} else if (json.autoreload != null) {
+			builder.addHeader("autoreload", json.autoreload);
 		}
 
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasourceName);
@@ -278,8 +277,8 @@ public class ConfigurationsEndpoint {
 	public record UpdateConfigurationModel(String action) {}
 
 	public record ManageConfigurationModel(
-			Optional<Boolean> activate,
-			Optional<Boolean> autoreload
+			Boolean activate,
+			Boolean autoreload
 	) {}
 
 	public record UploadConfigurationModel(

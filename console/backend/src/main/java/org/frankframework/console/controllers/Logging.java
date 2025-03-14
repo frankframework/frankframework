@@ -28,6 +28,8 @@ import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
 
+import java.util.Map;
+
 @RestController
 public class Logging {
 
@@ -41,12 +43,10 @@ public class Logging {
 	@Relation("logging")
 	@Description("view files/folders inside the log directory")
 	@GetMapping(value = "/logging", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getLogDirectory(@RequestParam GetLogDirectoryParamsModel params) {
+	public ResponseEntity<?> getLogDirectory(@RequestParam Map<String, String> params) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.LOGGING, BusAction.GET);
-		builder.addHeader("directory", params.directory);
-		builder.addHeader("wildcard", params.wildcard);
+		builder.addHeader("directory", params.get("directory"));
+		builder.addHeader("wildcard", params.get("wildcard"));
 		return frankApiService.callSyncGateway(builder);
 	}
-
-	public record GetLogDirectoryParamsModel(String directory, String wildcard) {}
 }

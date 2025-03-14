@@ -1,0 +1,12 @@
+{
+    "filter": "NONE",
+    "type": "ALARM",
+    "severity": "HARMLESS",
+    "threshold": 1,
+    "period": 2,
+    "adapters": null,
+    "events": [
+        "Receiver Configured"
+    ],
+    "sources": null
+}

@@ -102,7 +102,7 @@ public class UpdateLoggingConfig {
 		if (level != null) {
 			request.addHeader("level", level.name());
 		}
-		request.addHeader("logger", json.logger);
+		request.addHeader("logPackage", json.logger);
 		request.addHeader("reconfigure", json.reconfigure);
 
 		return frankApiService.callSyncGateway(request);
