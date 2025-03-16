@@ -98,6 +98,7 @@ public class QueueCreator {
 					}
 
 					IConfigurable configurable = QueueUtils.createInstance(ibisContext, directoryClassLoader, className);
+					log.debug("created FrankElement [{}]", configurable);
 					if (configurable instanceof FrankSender frankSender) {
 						frankSender.setIbisManager(ibisContext.getIbisManager());
 					}

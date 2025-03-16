@@ -57,11 +57,11 @@ public class QueueUtils {
 			Class<?> clazz = ClassUtils.loadClass(className);
 			Object obj = ibisContext.createBeanAutowireByName(clazz);
 
-			if(obj instanceof NameAware object) { // Set the name
+			if (obj instanceof NameAware object) { // Set the name
 				object.setName("Test Tool "+clazz.getSimpleName());
 			}
 
-			if(obj instanceof AbstractHttpSender base) { // Disable SSL capabilities
+			if (obj instanceof AbstractHttpSender base) { // Disable SSL capabilities
 				base.setAllowSelfSignedCertificates(true);
 				base.setVerifyHostname(false);
 			}
