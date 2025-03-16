@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,12 +15,12 @@
  */
 package org.frankframework.larva.queues;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
+import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.NameAware;
 import org.frankframework.http.AbstractHttpSender;
@@ -39,11 +39,11 @@ import org.frankframework.util.StringUtil;
 public class QueueUtils {
 	private static final Logger LOG = LogUtil.getLogger(QueueUtils.class);
 
-	public static IConfigurable createInstance(ClassLoader classLoader, String className) {
+	public static IConfigurable createInstance(IbisContext ibisContext, ClassLoader classLoader, String className) {
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(classLoader);
 		try {
-			return createInstance(className);
+			return createInstance(ibisContext, className);
 		} finally {
 			if (originalClassLoader != null) {
 				Thread.currentThread().setContextClassLoader(originalClassLoader);
@@ -51,18 +51,17 @@ public class QueueUtils {
 		}
 	}
 
-	private static IConfigurable createInstance(String className) {
+	private static IConfigurable createInstance(IbisContext ibisContext, String className) {
 		LOG.debug("instantiating queue [{}]", className);
 		try {
 			Class<?> clazz = ClassUtils.loadClass(className);
-			Constructor<?> con = ClassUtils.getConstructorOnType(clazz, new Class[] {});
-			Object obj = con.newInstance();
+			Object obj = ibisContext.createBeanAutowireByName(clazz);
 
-			if(obj instanceof NameAware object) { //Set the name
+			if(obj instanceof NameAware object) { // Set the name
 				object.setName("Test Tool "+clazz.getSimpleName());
 			}
 
-			if(obj instanceof AbstractHttpSender base) { //Disable SSL capabilities
+			if(obj instanceof AbstractHttpSender base) { // Disable SSL capabilities
 				base.setAllowSelfSignedCertificates(true);
 				base.setVerifyHostname(false);
 			}
