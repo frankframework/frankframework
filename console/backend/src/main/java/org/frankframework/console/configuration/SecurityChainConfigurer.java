@@ -39,10 +39,8 @@ import org.springframework.security.config.annotation.web.configurers.FormLoginC
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import lombok.Setter;
 
@@ -55,10 +53,9 @@ import org.frankframework.util.ClassUtils;
 @Configuration
 @EnableWebSecurity // Enables Spring Security
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) // Enables JSR 250 (JAX-RS) annotations
-@Order(Ordered.HIGHEST_PRECEDENCE+100)
+@Order(Ordered.HIGHEST_PRECEDENCE + 100)
 public class SecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware {
 	private static final Logger APPLICATION_LOG = LogManager.getLogger("APPLICATION");
-	public static final String EXPRESSION_IS_LOCALHOST_OR_AUTHENTICATED = "hasIpAddress('127.0.0.1') or hasIpAddress('::1') or isAuthenticated()";
 	private @Setter ApplicationContext applicationContext;
 	private boolean csrfEnabled;
 	private String csrfCookiePath;
@@ -77,7 +74,7 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 		if (csrfEnabled) {
 			// HttpOnly needs to be false for Angular to read it
 			CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
-			if(!StringUtils.isEmpty(csrfCookiePath)) {
+			if (!StringUtils.isEmpty(csrfCookiePath)) {
 				csrfTokenRepository.setCookiePath(csrfCookiePath);
 			}
 
@@ -90,17 +87,12 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 		}
 		http.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
 
-		if(!corsEnabled) {
+		if (!corsEnabled) {
 			http.cors(CorsConfigurer::disable);
 		}
 
 		// logout automatically sets CookieClearingLogoutHandler, CsrfLogoutHandler and SecurityContextLogoutHandler.
 		http.logout(t -> t.logoutRequestMatcher(this::requestMatcher).logoutSuccessHandler(new RedirectToServletRoot()));
-
-		http.authorizeHttpRequests(authorize -> authorize
-						.requestMatchers(new AntPathRequestMatcher("/**/health"))
-						.access(new WebExpressionAuthorizationManager(EXPRESSION_IS_LOCALHOST_OR_AUTHENTICATED))
-		);
 
 		return authenticator.configureHttpSecurity(http);
 	}
@@ -108,22 +100,6 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 	// Match when the client matches '<servlet-path>/logout'.
 	private boolean requestMatcher(HttpServletRequest request) {
 		return ("GET".equals(request.getMethod()) && "/logout".equals(request.getPathInfo()));
-	}
-
-	private static class RedirectToServletRoot implements LogoutSuccessHandler {
-		// force a 401 status to clear any www-authenticate cache.
-		@Override
-		public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-			response.setStatus(HttpStatus.UNAUTHORIZED.value());
-			response.setHeader("Location", determineTargetUrl(request));
-		}
-
-		// redirect the client to the servlet root
-		private String determineTargetUrl(HttpServletRequest request) {
-			String path = request.getServletPath();
-			if (!path.endsWith("/")) path += "/";
-			return path;
-		}
 	}
 
 	@Bean
@@ -141,5 +117,21 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 		consoleAuthenticator.registerServlet(applicationContext.getBean("frontendServletBean", ServletRegistration.class).getServletConfiguration());
 
 		return configureHttpSecurity(consoleAuthenticator, http);
+	}
+
+	private static class RedirectToServletRoot implements LogoutSuccessHandler {
+		// force a 401 status to clear any www-authenticate cache.
+		@Override
+		public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+			response.setStatus(HttpStatus.UNAUTHORIZED.value());
+			response.setHeader("Location", determineTargetUrl(request));
+		}
+
+		// redirect the client to the servlet root
+		private String determineTargetUrl(HttpServletRequest request) {
+			String path = request.getServletPath();
+			if (!path.endsWith("/")) path += "/";
+			return path;
+		}
 	}
 }
