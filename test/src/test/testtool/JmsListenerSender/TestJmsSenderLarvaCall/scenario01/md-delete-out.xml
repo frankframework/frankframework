@@ -1,0 +1,17 @@
+<manageDatabaseRLY>
+	<completionInformation>
+		<returnCode>OK</returnCode>
+	</completionInformation>
+	<results>
+		<result item="1">
+			<result>
+				<rowsupdated>0</rowsupdated>
+			</result>
+		</result>
+		<result item="2">
+			<result>
+				<rowsupdated>0</rowsupdated>
+			</result>
+		</result>
+	</results>
+</manageDatabaseRLY>

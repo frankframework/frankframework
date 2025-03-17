@@ -117,7 +117,9 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 			addParameter(p);
 		}
 
-		sessionStatistics = configurationMetrics.createSubDistributionSummary(this, "createSession", FrankMeterType.PIPE_DURATION);
+		if (configurationMetrics != null) {
+			sessionStatistics = configurationMetrics.createSubDistributionSummary(this, "createSession", FrankMeterType.PIPE_DURATION);
+		}
 
 		paramList.configure();
 		super.configure();
