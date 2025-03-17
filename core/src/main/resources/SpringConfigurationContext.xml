@@ -6,6 +6,7 @@
  -->
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:aop="http://www.springframework.org/schema/aop"
 	default-autowire="byName"
 	xsi:schemaLocation="
@@ -16,9 +17,23 @@
 	<!-- AOP has to be enabled explicitly on a per Context basis. This allows us to programmatically enable and disable Ladybug 'point-cutting'. -->
 	<beans profile="aop">
 		<aop:config proxy-target-class="true" />
+
+		<bean id="myAspect" class="org.frankframework.parameters.RuntimeAttributeAdvice" />
+
+		<aop:aspectj-autoproxy>
+			<aop:include name="myAspect"/>
+		</aop:aspectj-autoproxy>
 	</beans>
 
 	<beans>
+		<aop:config proxy-target-class="true" />
+
+		<bean id="myAspect" class="org.frankframework.parameters.RuntimeAttributeAdvice" />
+
+		<aop:aspectj-autoproxy>
+			<aop:include name="myAspect"/>
+		</aop:aspectj-autoproxy>
+
 		<bean name="configurationDigester" class="org.frankframework.configuration.ConfigurationDigester" />
 
 		<bean name="lifecycleProcessor" class="org.frankframework.lifecycle.ConfiguringLifecycleProcessor" />
