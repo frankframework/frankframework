@@ -88,7 +88,7 @@ public class IsXmlPipe extends AbstractPipe {
 
 	/**
 	 * Forward returned when <code>true</code>.
-	 * @ff.default then.
+	 * @ff.default then
 	 */
 	public void setThenForwardName(String thenForwardName) {
 		this.thenForwardName = thenForwardName;
@@ -100,7 +100,7 @@ public class IsXmlPipe extends AbstractPipe {
 
 	/**
 	 * Forward returned when 'false'.
-	 * @ff.default else.
+	 * @ff.default else
 	 */
 	public void setElseForwardName(String elseForwardName) {
 		this.elseForwardName = elseForwardName;

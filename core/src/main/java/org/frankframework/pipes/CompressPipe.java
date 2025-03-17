@@ -68,13 +68,13 @@ public class CompressPipe extends FixedForwardPipe {
 
 	public enum FileFormat {
 		/**
-		 * Gzip format. It is also used when the direction is compress and resultIsContent=<code>true</code>
-		 * or when the direction is decompress and messageIsContent=<code>true</code>.
+		 * Gzip format. It is used when compressing ({@code compress="true"}) and {@code resultIsContent="true"},
+ * or when decompressing ({@code compress="false"}) and {@code messageIsContent="true"}.
 		 */
 		GZ,
 		/**
-		 * Zip format. It is also used when the direction is compress and resultIsContent={@code false}
-		 * or when the direction is decompress and messageIsContent={@code false}.
+		 * Zip format. It is also used when compressing ({@code compress="true"}) and {@code resultIsContent="false"},
+		 * or when decompressing ({@code compress="false"}) and {@code messageIsContent="false"}.
 		 */
 		ZIP
 	}
@@ -240,7 +240,7 @@ public class CompressPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Flag indicates whether the message is the content or the path to a file with the contents. For multiple files, use ';' as a delimiter.
+	 * A flag that indicates whether the message is the content or the path to a file with the contents. For multiple files, use ';' as a delimiter.
 	 * @ff.default false
 	 */
 	public void setMessageIsContent(boolean b) {

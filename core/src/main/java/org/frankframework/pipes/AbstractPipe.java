@@ -124,7 +124,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 * at the {@link Adapter Adapter}. The purpose of this method is to reduce
 	 * creating connections to databases, etc. in the {@link #doPipe(Message, PipeLineSession) doPipe()} method.
 	 * As much as possible, class instantiation should take place in the
-	 * <code>configure()</code> method to improve performance.
+	 * {@code configure()} method to improve performance.
 	 */
 	// For testing purposes the configure method should not require the PipeLine to be present.
 	@Override
@@ -196,7 +196,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	/**
-	 * Final method to ensure nobody overrides this.
+	 * The method has been made {@code final} to ensure nobody overrides this.
 	 */
 	@Override
 	public final void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
@@ -432,7 +432,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 
 
 	/**
-	 * Collects and aggregates message size statistics.
+	 * Toggle if message-size statistics should be collected and aggregated.
+	 * The default is controlled by the application property {@code statistics.size}.
 	 */
 	public void setSizeStatistics(boolean sizeStatistics) {
 		this.sizeStatistics = sizeStatistics;
