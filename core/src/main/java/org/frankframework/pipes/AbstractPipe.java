@@ -121,10 +121,10 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 
 	/**
 	 * <code>configure()</code> is called after the {@link PipeLine Pipeline} is registered
-	 * at the {@link Adapter Adapter}. Purpose of this method is to reduce
-	 * creating connections to databases etc. in the {@link #doPipe(Message, PipeLineSession) doPipe()} method.
-	 * As much as possible class-instantiating should take place in the
-	 * <code>configure()</code> method, to improve performance.
+	 * at the {@link Adapter Adapter}. The purpose of this method is to reduce
+	 * creating connections to databases, etc. in the {@link #doPipe(Message, PipeLineSession) doPipe()} method.
+	 * As much as possible, class instantiation should take place in the
+	 * {@code configure()} method to improve performance.
 	 */
 	// For testing purposes the configure method should not require the PipeLine to be present.
 	@Override
@@ -196,7 +196,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	/**
-	 * final method to ensure nobody overrides this...
+	 * The method has been made {@code final} to ensure nobody overrides this.
 	 */
 	@Override
 	public final void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
@@ -223,7 +223,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	/**
-	 * Add a parameter to the list of parameters
+	 * Adds a parameter to the list of parameters.
 	 */
 	@Override
 	public void addParameter(IParameter param) {
@@ -232,7 +232,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	/**
-	 * return the Parameters
+	 * Returns the parameters.
 	 */
 	@Override
 	public @Nonnull ParameterList getParameterList() {
@@ -244,7 +244,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		this.locker = locker;
 	}
 
-	/** Forwards are used to determine the next Pipe to execute in the Pipeline */
+	/** Forwards are used to determine the next Pipe to execute in the Pipeline. */
 	@Override
 	public void addForward(PipeForward forward) {
 		registeredForwards.add(forward);
@@ -264,10 +264,10 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 * <pre>{@code
 	 * return new PipeRunResult(findForward("success"), result);
 	 * }</pre>
-	 * findForward searches:<ul>
-	 * <li>All forwards defined in xml under the pipe element of this pipe</li>
-	 * <li>All global forwards defined in xml under the PipeLine element</li>
-	 * <li>All pipe names with their (identical) path</li>
+	 * findForward searches: <ul>
+	 * <li>All forwards defined in XML under the pipe element of this pipe.</li>
+	 * <li>All global forwards defined in XML under the PipeLine element.</li>
+	 * <li>All pipe names with their (identical) path.</li>
 	 * </ul>
 	 */
 	@Nullable
@@ -348,7 +348,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	/**
-	 * The functional name of this pipe. Can be referenced by the <code>path</code> attribute of a {@link PipeForward}.
+	 * The functional name of this pipe. It can be referenced by the <code>path</code> attribute of a {@link PipeForward}.
 	 */
 	@Override
 	@Mandatory
@@ -377,8 +377,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	/**
-	 * If set, the pipe result is copied to a session key that has the name defined by this attribute. The
-	 * pipe result is still written as the output message as usual.
+	 * If set, the pipe result is copied to a session key that has the name defined by this attribute. 
+	 * The pipe result is still written as the output message as usual.
 	 */
 	@Override
 	public void setStoreResultInSessionKey(String string) {
@@ -388,6 +388,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	/**
 	 * The maximum number of threads that may {@link #doPipe process messages} simultaneously.
 	 * A value of 0 indicates an unlimited number of threads.
+	 * 
 	 * @ff.default 0
 	 */
 	public void setMaxThreads(int newMaxThreads) {
@@ -431,7 +432,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 
 
 	/**
-	 * Collect and aggregate Message size statistics
+	 * Toggle if message-size statistics should be collected and aggregated.
+	 * The default is controlled by the application property {@code statistics.size}.
 	 */
 	public void setSizeStatistics(boolean sizeStatistics) {
 		this.sizeStatistics = sizeStatistics;
@@ -441,7 +443,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		return sizeStatistics;
 	}
 
-	/** If {@code true} a record is written to the security log when the pipe has finished successfully */
+	/** If {@code true}, a record is written to the security log when the pipe has finished successfully. */
 	@Override
 	public void setWriteToSecLog(boolean b) {
 		writeToSecLog = b;

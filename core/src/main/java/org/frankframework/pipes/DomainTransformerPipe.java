@@ -37,13 +37,13 @@ import org.frankframework.util.JdbcUtil;
 /**
  * Pipe that performs domain transforming on the basis of a database table.
  *
- * Every string which equals "%![DT{<code>label</code>,<code>valueIn</code>,<code>type</code>}]" will be replaced by <code>valueOut</code>.
+ * Every string that equals "%![DT{<code>label</code>,<code>valueIn</code>,<code>type</code>}]" will be replaced by <code>valueOut</code>.
  *
- * The field <code>type</code>, which is optional, indicates the format of <code>valueIn</code>. Currently the following types are supported:
+ * The field <code>type</code>, which is optional, indicates the format of <code>valueIn</code>. Currently, the following types are supported:
  *
  * <ul>
- *   <li><code>string</code> (default): the methode setString() is used</li>
- *   <li><code>number</code>: the method setDouble() is used </li>
+ *   <li><code>string</code> (default): the method setString() is used.</li>
+ *   <li><code>number</code>: the method setDouble() is used.</li>
  * </ul>
  *
  *
@@ -199,7 +199,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * the name of the table that contains the mapping
+	 * The name of the table that contains the mapping.
 	 * @ff.default mapping
 	 */
 	public void setTableName(String tableName) {
@@ -207,7 +207,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * the name of the column labels are stored in
+	 * The name of the column labels are stored in. 
 	 * @ff.default label
 	 */
 	public void setLabelField(String labelField) {
@@ -215,7 +215,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * the name of the column source values are stored in
+	 * The name of the column source values are stored in.
 	 * @ff.default valuein
 	 */
 	public void setValueInField(String valueInField) {
@@ -223,7 +223,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * the name of the column destination values are stored in
+	 * The name of the column destination values are stored in.
 	 * @ff.default valueout
 	 */
 	public void setValueOutField(String valueOutField) {

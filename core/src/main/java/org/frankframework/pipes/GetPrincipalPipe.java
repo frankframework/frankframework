@@ -82,7 +82,7 @@ public class GetPrincipalPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * name of forward returned if principal has not been found
+	 * Name of the forward returned if the principal has not been found.
 	 */
 	public void setNotFoundForwardName(String string) {
 		notFoundForwardName = string;

@@ -30,7 +30,7 @@ import org.frankframework.stream.Message;
 
 /**
  * Pipe that compares the two integer values.
- * If one of the parameters is missing then the input message will be used as the missing operand.
+ * If one of the parameters is missing, then the input message will be used as the missing operand.
  * This pipe can be used in combination with {@link IncreaseIntegerPipe} to construct loops.
  *
  * @ff.parameter operand1 The first operand, holds v1.

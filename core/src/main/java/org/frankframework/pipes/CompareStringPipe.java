@@ -34,11 +34,11 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.XmlUtils;
 
 /**
- * Pipe that lexicographically compares two strings, that must NOT be empty.
+ * Pipe that lexicographically compares two strings, which must NOT be empty.
  *
- * @ff.parameter operand1 The first operand, holds v1. Defaults to input message
- * @ff.parameter operand2 The second operand, holds v2. Defaults to input message
- * @ff.parameter ignorepatterns (optional) contains a xml table with references to substrings which have to be ignored during the comparison. This xml table has the following layout:
+ * @ff.parameter operand1 The first operand, which holds v1. Defaults to input message.
+ * @ff.parameter operand2 The second operand, which holds v2. Defaults to input message.
+ * @ff.parameter ignorepatterns (optional) Contains an XML table with references to substrings that have to be ignored during the comparison. This XML table has the following layout:
  * <br/>
  * <pre>{@code
  * <ignores>
@@ -53,7 +53,7 @@ import org.frankframework.util.XmlUtils;
  * </ignores>
  * }</pre>
  * <br/>
- * Substrings between "after" and "before" are ignored
+ * Substrings between "after" and "before" are ignored.
  *
  * @author Peter Leeuwenburgh
  */
@@ -225,7 +225,7 @@ public class CompareStringPipe extends AbstractPipe {
 	}
 
 	/**
-	 * If {@code true} the string values to compare are considered to be xml strings and before the actual compare both xml strings are transformed to a canonical form
+	 * If {@code true}, the string values to compare are considered to be XML strings, and before the actual comparison, both XML strings are transformed to a canonical form.
 	 * @ff.default false
 	 */
 	public void setXml(boolean b) {
