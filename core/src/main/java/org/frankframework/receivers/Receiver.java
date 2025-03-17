@@ -102,9 +102,7 @@ import org.frankframework.doc.Category;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Protected;
-import org.frankframework.jdbc.JdbcFacade;
 import org.frankframework.jdbc.MessageStoreListener;
-import org.frankframework.jms.JMSFacade;
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.monitoring.EventPublisher;
@@ -219,7 +217,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	public static final TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	private TransactionDefinition txNewWithTimeout;
 
-	public static final String THREAD_CONTEXT_KEY_NAME = "listener";
 	public static final String THREAD_CONTEXT_KEY_TYPE = "listener.type";
 
 	public static final String RCV_CONFIGURED_MONITOR_EVENT = "Receiver Configured";
@@ -599,12 +596,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			if (getListener() instanceof IPullingListener) {
 				listenerContainer = createListenerContainer();
 			}
-			if (getListener() instanceof JdbcFacade) {
-				((JdbcFacade)getListener()).setTransacted(isTransacted());
-			}
-			if (getListener() instanceof JMSFacade) {
-				((JMSFacade)getListener()).setTransacted(isTransacted());
-			}
 			getListener().configure();
 			if (getListener() instanceof HasPhysicalDestination) {
 				info("has listener on "+((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
@@ -804,11 +795,11 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			error("error occurred while starting", t);
 
 			runState.setRunState(RunState.EXCEPTION_STARTING);
-			closeAllResources(); //Close potential dangling resources, don't change state here..
+			closeAllResources(); // Close potential dangling resources, don't change state here..
 		}
 	}
 
-	//after successfully closing all resources the state should be set to stopped
+	// After successfully closing all resources the state should be set to stopped
 	@Override
 	public void stop() {
 		// See also Adapter.stopRunning() and PullingListenerContainer.ControllerTask
@@ -827,10 +818,9 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 					return;
 				case EXCEPTION_STARTING:
 					if (getListener() instanceof IPullingListener) {
-						runState.setRunState(RunState.STOPPING); //Nothing ever started, directly go to stopped
+						runState.setRunState(RunState.STOPPING); // Nothing ever started, directly go to stopped
 						closeAllResources();
-						ThreadContext.clearAll(); //Clean up receiver ThreadContext
-						return; //Prevent tellResourcesToStop from being called
+						return; // Prevent tellResourcesToStop from being called
 					}
 					runState.setRunState(RunState.STOPPING);
 					break;
@@ -838,7 +828,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 					runState.setRunState(RunState.STOPPING);
 					break;
 				case ERROR:
-					//Don't change the runstate when in ERROR
+					// Don't change the runstate when in ERROR
 					break;
 				default:
 					throw new IllegalStateException("Runstate [" + currentRunState + "] not handled in Stopping Receiver");
@@ -847,7 +837,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		log.trace("{} Receiver StopRunning - lock on Receiver runState[{}] released", this::getLogPrefix, runState::toString);
 
 		tellResourcesToStop();
-		ThreadContext.clearAll(); //Clean up receiver ThreadContext
 	}
 
 	@Override
@@ -1138,7 +1127,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 	private CloseableThreadContext.Instance getLoggingContext(@Nonnull IListener<M> listener, @Nonnull PipeLineSession session) {
 		CloseableThreadContext.Instance result = LogUtil.getThreadContext(adapter, session.getMessageId(), session);
-		result.put(THREAD_CONTEXT_KEY_NAME, listener.getName());
+		result.put(LogUtil.MDC_LISTENER_KEY, listener.getName());
 		result.put(THREAD_CONTEXT_KEY_TYPE, ClassUtils.classNameOf(listener));
 		return result;
 	}
@@ -1829,7 +1818,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * Suspend the receiver for {@code delayTimeInSeconds} seconds
 	 * @param delayTimeInSeconds Number of seconds the receiver thread should be suspended from processing new messages.
 	 */
-	protected void suspendReceiverThread(int delayTimeInSeconds) {
+	public void suspendReceiverThread(int delayTimeInSeconds) {
 		int currentInterval = delayTimeInSeconds;
 		while (isInRunState(RunState.STARTED) && currentInterval-- > 0) {
 			try {

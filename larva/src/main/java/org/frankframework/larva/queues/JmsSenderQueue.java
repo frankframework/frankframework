@@ -27,6 +27,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jms.JmsSender;
 import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.stream.Message;
 
 public class JmsSenderQueue extends HashMap<String, Object> implements Queue {
 
@@ -56,12 +57,12 @@ public class JmsSenderQueue extends HashMap<String, Object> implements Queue {
 	}
 
 	@Override
-	public int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException {
+	public int executeWrite(String stepDisplayName, Message fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException {
 		throw new NotImplementedException("executeWrite");
 	}
 
 	@Override
-	public String executeRead(String step, String stepDisplayName, Properties properties, String fileName, String fileContent) throws SenderException, IOException, TimeoutException {
+	public Message executeRead(String step, String stepDisplayName, Properties properties, String fileName, Message fileContent) throws SenderException, IOException, TimeoutException {
 		throw new NotImplementedException("executeRead");
 	}
 

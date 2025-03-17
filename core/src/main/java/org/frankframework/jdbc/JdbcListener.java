@@ -47,6 +47,8 @@ import org.frankframework.dbms.JdbcException;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
+import org.frankframework.receivers.Receiver;
+import org.frankframework.receivers.ReceiverAware;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.JdbcUtil;
@@ -59,7 +61,9 @@ import org.frankframework.util.JdbcUtil;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>, IHasProcessState<M> {
+public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>, IHasProcessState<M>, ReceiverAware<M> {
+
+	private @Getter @Setter Receiver<M> receiver;
 
 	private @Getter String selectQuery;
 	private @Getter String peekQuery;
@@ -94,6 +98,9 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	@Override
 	public void configure() throws ConfigurationException {
+		if (getReceiver().isTransacted()) {
+			setTransacted(true);
+		}
 		super.configure();
 		try {
 			String convertedSelectQuery = convertQuery(getSelectQuery());

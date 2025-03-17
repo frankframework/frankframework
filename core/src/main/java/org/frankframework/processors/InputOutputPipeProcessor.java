@@ -73,7 +73,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		Object preservedObject = message;
 		HasName owner = pipeLine.getOwner();
 
-		try (CloseableThreadContext.Instance ignored = CloseableThreadContext.put("pipe", pipe.getName())) {
+		try (CloseableThreadContext.Instance ignored = CloseableThreadContext.put(LogUtil.MDC_PIPE_KEY, pipe.getName())) {
 			if (StringUtils.isNotEmpty(pipe.getGetInputFromSessionKey())) {
 				log.debug("Pipeline of adapter [{}] replacing input for pipe [{}] with contents of sessionKey [{}]", owner::getName, pipe::getName, pipe::getGetInputFromSessionKey);
 				if (!Message.isNull(message)) message.closeOnCloseOf(pipeLineSession);

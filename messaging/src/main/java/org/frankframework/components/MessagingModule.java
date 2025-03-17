@@ -17,10 +17,18 @@ package org.frankframework.components;
 
 import java.util.List;
 
+import org.frankframework.lifecycle.servlets.ApplicationServerConfigurer;
+import org.frankframework.util.AppConstants;
+
 public class MessagingModule implements Module {
 
 	@Override
 	public List<String> getSpringConfigurationFiles() {
-		return List.of("springMessaging.xml");
+		String customization = AppConstants.getInstance().getString(ApplicationServerConfigurer.APPLICATION_SERVER_CUSTOMIZATION_PROPERTY, null);
+		if ("narayana".equalsIgnoreCase(customization)) {
+			return List.of("springJmsNarayana.xml");
+		}
+
+		return List.of("springJms.xml");
 	}
 }

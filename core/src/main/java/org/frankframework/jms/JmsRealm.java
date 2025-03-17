@@ -19,6 +19,7 @@ import java.util.Iterator;
 
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -55,7 +56,7 @@ public class JmsRealm {
 	private String jndiAuthAlias = null;
 	private String urlPkgPrefixes = null;
 	private String securityProtocol = null;
-	private String jndiContextPrefix = "";
+	private String jndiContextPrefix = null;
 	private String jndiProperties = null;
 
 	private String queueConnectionFactoryName;
@@ -125,13 +126,21 @@ public class JmsRealm {
 
 	/**
 	 * The <code>toString()</code> method retrieves its value by reflection.
+	 * Passwords are hidden, and the log field is excluded.
 	 *
 	 * @see org.apache.commons.lang3.builder.ToStringBuilder#reflectionToString
 	 *
 	 **/
 	@Override
 	public String toString() {
-		return StringUtil.reflectionToString(this);
+		try {
+			ReflectionToStringBuilder builder = new ReflectionToStringBuilder(this, StringUtil.OMIT_PASSWORD_FIELDS_STYLE);
+			builder.setExcludeNullValues(true);
+			builder.setExcludeFieldNames("log");
+			return builder.toString();
+		} catch (Exception e) {
+			return super.toString();
+		}
 	}
 
 	/**

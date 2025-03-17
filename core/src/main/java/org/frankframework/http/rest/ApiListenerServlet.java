@@ -40,6 +40,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.HttpEntity;
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.springframework.util.InvalidMimeTypeException;
@@ -269,7 +270,10 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		/*
 		 * Initiate and populate messageContext
 		 */
-		try (PipeLineSession pipelineSession = new PipeLineSession()) {
+
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_LISTENER_KEY, listener.getName());
+				final PipeLineSession pipelineSession = new PipeLineSession()) {
+
 			pipelineSession.put(PipeLineSession.HTTP_METHOD_KEY, method);
 			pipelineSession.put(PipeLineSession.HTTP_REQUEST_KEY, request);
 			pipelineSession.put(PipeLineSession.HTTP_RESPONSE_KEY, response);

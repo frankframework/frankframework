@@ -22,7 +22,7 @@
 
 		<jackson.version>2.18.3</jackson.version>
 		<cxf.version>4.1.1</cxf.version>
-		<spring.version>6.2.3</spring.version>
+		<spring.version>6.2.4</spring.version>
 		<spring-security.version>6.4.3</spring-security.version>
 		<spring-integration.version>6.4.2</spring-integration.version>
 		<spring.boot.version>3.4.3</spring.boot.version>
@@ -56,11 +56,11 @@
 		<rabbitmq.driver.version>5.25.0</rabbitmq.driver.version>
 		<rabbitmq.jms.version>3.4.0</rabbitmq.jms.version>
 
-		<aws.java.sdk.version>2.29.52</aws.java.sdk.version>
+		<aws.java.sdk.version>2.31.0</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
-		<mockito.version>5.16.0</mockito.version>
-		<junit.version>5.12.0</junit.version>
+		<mockito.version>5.16.1</mockito.version>
+		<junit.version>5.12.1</junit.version>
 	</properties>
 
 	<name>Frank!Framework parent</name>
@@ -160,7 +160,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.30.0</version>
+				<version>4.30.1</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
