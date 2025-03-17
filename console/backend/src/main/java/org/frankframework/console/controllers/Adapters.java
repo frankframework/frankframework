@@ -44,11 +44,11 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 
 @RestController
-public class ConfigurationStatus {
+public class Adapters {
 
 	private final FrankApiService frankApiService;
 
-	public ConfigurationStatus(FrankApiService frankApiService) {
+	public Adapters(FrankApiService frankApiService) {
 		this.frankApiService = frankApiService;
 	}
 
@@ -132,7 +132,8 @@ public class ConfigurationStatus {
 	@Relation("adapter")
 	@Description("start/stop an adapter")
 	@PutMapping(value = "/configurations/{configuration}/adapters/{adapter}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateAdapter(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter, @RequestBody UpdateAdapterOrReceiverModel json) {
+	public ResponseEntity<?> updateAdapter(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter,
+										   @RequestBody UpdateAdapterOrReceiverModel json) {
 		String value = json.action;
 		Action action = getActionOrThrow(value);
 
@@ -148,7 +149,8 @@ public class ConfigurationStatus {
 	@Description("start/stop an adapter receivers")
 	@PutMapping(value = "/configurations/{configuration}/adapters/{adapter}/receivers/{receiver}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateReceiver(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter,
-											@PathVariable("receiver") String receiver, @RequestBody UpdateAdapterOrReceiverModel json) {
+											@PathVariable("receiver") String receiver,
+											@RequestBody UpdateAdapterOrReceiverModel json) {
 
 		String value = json.action;
 		Action action = null;
@@ -185,6 +187,17 @@ public class ConfigurationStatus {
 	public ResponseEntity<?> getAdapterFlow(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.FLOW);
 		addConfigurationAndAdapterNameHeaders(configuration, adapter, builder);
+		return frankApiService.callSyncGateway(builder);
+	}
+
+	@AllowAllIbisUserRoles
+	@Relation("statistics")
+	@Description("view adapter processing statistics")
+	@GetMapping(value = "/configurations/{configuration}/adapters/{adapter}/statistics", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getAdapterStatistics(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.STATUS);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
 		return frankApiService.callSyncGateway(builder);
 	}
 

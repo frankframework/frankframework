@@ -25,8 +25,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.frankframework.management.Action;
 import org.frankframework.management.bus.message.StringMessage;
 
-@ContextConfiguration(classes = {WebTestConfiguration.class, ConfigurationsEndpoint.class})
-public class ConfigurationsEndpointTest extends FrankApiTestBase {
+@ContextConfiguration(classes = {WebTestConfiguration.class, Configurations.class})
+public class ConfigurationsTest extends FrankApiTestBase {
 
 	public static Stream<Arguments> manageConfigSource() {
 		return Stream.of(

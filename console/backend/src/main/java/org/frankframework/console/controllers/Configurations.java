@@ -52,7 +52,7 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.HttpUtils;
 
 @RestController
-public class ConfigurationsEndpoint {
+public class Configurations {
 
 	private final FrankApiService frankApiService;
 
@@ -60,7 +60,7 @@ public class ConfigurationsEndpoint {
 
 	private static final String BUS_HEADER_VERSION = "version";
 
-	public ConfigurationsEndpoint(FrankApiService frankApiService) {
+	public Configurations(FrankApiService frankApiService) {
 		this.frankApiService = frankApiService;
 	}
 

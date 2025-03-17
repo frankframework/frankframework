@@ -52,7 +52,7 @@ import org.frankframework.util.JacksonUtils;
  */
 @RestController
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
-public class ClusterMemberEndpoint implements ApplicationListener<ClusterMemberEvent> {
+public class ClusterMembers implements ApplicationListener<ClusterMemberEvent> {
 
 	private final ClientSession session;
 
@@ -61,7 +61,7 @@ public class ClusterMemberEndpoint implements ApplicationListener<ClusterMemberE
 
 	protected final SimpMessagingTemplate messagingTemplate;
 
-	public ClusterMemberEndpoint(ClientSession session, OutboundGateway outboundGateway, SimpMessagingTemplate messagingTemplate) {
+	public ClusterMembers(ClientSession session, OutboundGateway outboundGateway, SimpMessagingTemplate messagingTemplate) {
 		this.session = session;
 		this.outboundGateway = outboundGateway;
 		this.messagingTemplate = messagingTemplate;
