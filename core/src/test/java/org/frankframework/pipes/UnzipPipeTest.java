@@ -190,6 +190,29 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 	}
 
 	@Test
+	public void testUnzipToDirectory() throws Exception {
+		String path = folder.getRoot().getCanonicalPath();
+		log.debug("unzip folder [{}]", path);
+		session.put("UnzipFolderName", path);
+
+		pipe.setCollectResults(false);
+		pipe.setDirectorySessionKey("UnzipFolderName");
+		pipe.setKeepOriginalFileName(true);
+		pipe.setProcessFile(true);
+		configureAndStartPipe();
+
+		URL zip = TestFileUtils.getTestFileURL("/Unzip/folder.zip");
+		assertNotNull(zip);
+		doPipe(zip.getPath());
+
+		File toBePresent = new File(folder.getRoot()+"/innerFile.txt");
+		assertTrue(toBePresent.isFile());
+
+		File toBePresent2 = new File(folder.getRoot()+"/file.txt");
+		assertTrue(toBePresent2.isFile());
+	}
+
+	@Test
 	public void testCreateSubDirectoriesKeepFilenameDeleteOnExit() throws Exception {
 		pipe.setKeepOriginalFileName(true);
 		pipe.setKeepOriginalFilePath(true);
