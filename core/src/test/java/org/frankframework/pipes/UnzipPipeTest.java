@@ -4,6 +4,7 @@ import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -191,7 +192,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 
 	@Test
 	public void testUnzipToDirectory() throws Exception {
-		String path = folder.getRoot().getCanonicalPath();
+		String path = folder.getCanonicalPath();
 		log.debug("unzip folder [{}]", path);
 		session.put("UnzipFolderName", path);
 
@@ -205,10 +206,10 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		assertNotNull(zip);
 		doPipe(zip.getPath());
 
-		File toBePresent = new File(folder.getRoot()+"/innerFile.txt");
+		File toBePresent = new File(folder+"/innerFile.txt");
 		assertTrue(toBePresent.isFile());
 
-		File toBePresent2 = new File(folder.getRoot()+"/file.txt");
+		File toBePresent2 = new File(folder+"/file.txt");
 		assertTrue(toBePresent2.isFile());
 	}
 
