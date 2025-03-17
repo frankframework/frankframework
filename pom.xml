@@ -59,8 +59,8 @@
 		<aws.java.sdk.version>2.31.0</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
-		<mockito.version>5.16.0</mockito.version>
-		<junit.version>5.12.0</junit.version>
+		<mockito.version>5.16.1</mockito.version>
+		<junit.version>5.12.1</junit.version>
 	</properties>
 
 	<name>Frank!Framework parent</name>

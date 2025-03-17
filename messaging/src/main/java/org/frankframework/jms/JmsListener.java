@@ -15,6 +15,7 @@
 */
 package org.frankframework.jms;
 
+import org.frankframework.core.IJmsListener;
 import org.frankframework.core.IPullingListener;
 
 /**
@@ -51,6 +52,6 @@ import org.frankframework.core.IPullingListener;
  * @author Gerrit van Brakel
  * @since 4.0.1, since 4.8 as 'switch'-class
  */
-public class JmsListener extends PushingJmsListener {
+public class JmsListener extends PushingJmsListener implements IJmsListener<jakarta.jms.Message> {
 
 }

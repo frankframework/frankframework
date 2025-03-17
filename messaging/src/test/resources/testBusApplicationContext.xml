@@ -41,6 +41,7 @@
 	<bean name="applicationWarnings" class="org.frankframework.configuration.ApplicationWarnings"/>
 
 	<bean id="dataSourceFactory" class="org.frankframework.testutil.mock.DataSourceFactoryMock" />
+	<bean id="connectionFactoryFactory" class="org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory" />
 
 	<bean name="isolatedServiceCaller" class="org.frankframework.senders.IsolatedServiceCaller" autowire="byName" scope="singleton" />
 

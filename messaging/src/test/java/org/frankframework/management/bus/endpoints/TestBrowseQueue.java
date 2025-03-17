@@ -23,11 +23,13 @@ import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 @WithMockUser(roles = { "IbisTester" })
 public class TestBrowseQueue extends BusTestBase {
+	protected MockRunnerConnectionFactoryFactory mockConnectionFactoryFactory;
 
 	@Override
 	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
+		mockConnectionFactoryFactory = getParentContext().getBean(MockRunnerConnectionFactoryFactory.class);
 		JmsRealmFactory.getInstance().clear();
 		JmsRealm jmsRealm = new JmsRealm();
 		jmsRealm.setRealmName("dummyQCFAddedViaJmsRealm");
