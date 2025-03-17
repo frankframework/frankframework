@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.DelaySender;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.StringUtil;
@@ -66,12 +67,14 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	private QueueWrapper(IConfigurable configurable) {
 		super();
 
-		queueKey = StringUtil.lcFirst(configurable.getClass().getSimpleName());
+		queueKey = StringUtil.lcFirst(ClassUtils.classNameOf(configurable));
+		log.trace("registering FrankElement [{}] under key [{}]", configurable, queueKey);
 		put(queueKey, configurable);
 
 		if (configurable instanceof IPushingListener listener) {
 			ListenerMessageHandler<?> handler = new ListenerMessageHandler<>();
 			listener.setHandler(handler);
+			log.trace("registering PushingListener handler [{}] as [{}]", handler, MESSAGE_HANDLER_KEY);
 			put(MESSAGE_HANDLER_KEY, handler);
 		}
 	}

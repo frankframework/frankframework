@@ -39,16 +39,13 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.jdbc.AbstractJdbcQuerySender;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jms.JMSFacade;
-import org.frankframework.jms.JMSFacade.DeliveryMode;
 import org.frankframework.jms.JMSFacade.DestinationType;
-import org.frankframework.jms.JmsSender;
 import org.frankframework.jms.PullingJmsListener;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.TestConfig;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.senders.FrankSender;
 import org.frankframework.stream.Message;
-import org.frankframework.util.EnumUtils;
 
 @Log4j2
 public class QueueCreator {
@@ -66,7 +63,6 @@ public class QueueCreator {
 		Map<String, Queue> queues = new HashMap<>();
 		debugMessage("Get all queue names");
 
-		List<String> jmsSenders = new ArrayList<>();
 		List<String> jmsListeners = new ArrayList<>();
 		List<String> jdbcFixedQuerySenders = new ArrayList<>();
 
@@ -87,10 +83,7 @@ public class QueueCreator {
 			for (String queueName : queueNames) {
 				debugMessage("queuename openqueue: " + queueName);
 				String className = properties.getProperty(queueName + CLASS_NAME_PROPERTY_SUFFIX);
-				if ("org.frankframework.jms.JmsSender".equals(className) && !jmsSenders.contains(queueName)) {
-					debugMessage("Adding jmsSender queue: " + queueName);
-					jmsSenders.add(queueName);
-				} else if ("org.frankframework.jms.JmsListener".equals(className) && !jmsListeners.contains(queueName)) {
+				if ("org.frankframework.jms.JmsListener".equals(className) && !jmsListeners.contains(queueName)) {
 					debugMessage("Adding jmsListener queue: " + queueName);
 					jmsListeners.add(queueName);
 				} else if ("org.frankframework.jdbc.FixedQuerySender".equals(className) && !jdbcFixedQuerySenders.contains(queueName)) {
@@ -99,12 +92,13 @@ public class QueueCreator {
 				} else {
 					Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
 
-					//Deprecation warning
+					// Deprecation warning
 					if (queueProperties.containsValue("requestTimeOut") || queueProperties.containsValue("responseTimeOut")) {
 						errorMessage("properties " + queueName + ".requestTimeOut/" + queueName + ".responseTimeOut have been replaced with " + queueName + ".timeout");
 					}
 
-					IConfigurable configurable = QueueUtils.createInstance(directoryClassLoader, className);
+					IConfigurable configurable = QueueUtils.createInstance(ibisContext, directoryClassLoader, className);
+					log.debug("created FrankElement [{}]", configurable);
 					if (configurable instanceof FrankSender frankSender) {
 						frankSender.setIbisManager(ibisContext.getIbisManager());
 					}
@@ -117,7 +111,6 @@ public class QueueCreator {
 				}
 			}
 
-			createJmsSenders(queues, jmsSenders, properties, ibisContext, correlationId);
 			createJmsListeners(queues, jmsListeners, properties, ibisContext, correlationId, config.getTimeout());
 			createFixedQuerySenders(queues, jdbcFixedQuerySenders, properties, ibisContext, correlationId);
 		} catch (Exception e) {
@@ -128,55 +121,6 @@ public class QueueCreator {
 		}
 
 		return queues;
-	}
-
-	private void createJmsSenders(Map<String, Queue> queues, List<String> jmsSenders, Properties properties, IbisContext ibisContext, String correlationId) throws ConfigurationException {
-		debugMessage("Initialize jms senders");
-		Iterator<String> iterator = jmsSenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String queueName = iterator.next();
-			String queue = (String)properties.get(queueName + ".queue");
-			if (queue == null) {
-				closeQueues(queues, properties, correlationId);
-				queues = null;
-				errorMessage("Could not find property '" + queueName + ".queue'");
-			} else {
-				JmsSender jmsSender = ibisContext.createBeanAutowireByName(JmsSender.class);
-				jmsSender.setName("Test Tool JmsSender");
-				jmsSender.setDestinationName(queue);
-				jmsSender.setDestinationType(DestinationType.QUEUE);
-				jmsSender.setAcknowledgeMode(JMSFacade.AcknowledgeMode.AUTO_ACKNOWLEDGE);
-				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
-				if (jmsRealm!=null) {
-					jmsSender.setJmsRealm(jmsRealm);
-				} else {
-					jmsSender.setJmsRealm("default");
-				}
-				String deliveryMode = properties.getProperty(queueName + ".deliveryMode");
-				debugMessage("Property '" + queueName + ".deliveryMode': " + deliveryMode);
-				String persistent = properties.getProperty(queueName + ".persistent");
-				debugMessage("Property '" + queueName + ".persistent': " + persistent);
-				String useCorrelationIdFrom = properties.getProperty(queueName + ".useCorrelationIdFrom");
-				debugMessage("Property '" + queueName + ".useCorrelationIdFrom': " + useCorrelationIdFrom);
-				String replyToName = properties.getProperty(queueName + ".replyToName");
-				debugMessage("Property '" + queueName + ".replyToName': " + replyToName);
-				if (deliveryMode != null) {
-					debugMessage("Set deliveryMode to " + deliveryMode);
-					jmsSender.setDeliveryMode(EnumUtils.parse(DeliveryMode.class, deliveryMode));
-				}
-				jmsSender.setPersistent("true".equalsIgnoreCase(persistent));
-				debugMessage("Set persistent to " + jmsSender.isPersistent());
-				if (replyToName != null) {
-					debugMessage("Set replyToName to " + replyToName);
-					jmsSender.setReplyToName(replyToName);
-				}
-				Queue jmsSenderInfo = new JmsSenderQueue(jmsSender, useCorrelationIdFrom, properties.getProperty(queueName + ".jmsCorrelationId"));
-				jmsSenderInfo.configure();
-				//jmsSenderInfo.open(); // TODO: JmsSender was not opened here. Check if that should be done.
-				queues.put(queueName, jmsSenderInfo);
-				debugMessage("Opened jms sender '" + queueName + "'");
-			}
-		}
 	}
 
 	private void createJmsListeners(Map<String, Queue> queues, List<String> jmsListeners, Properties properties, IbisContext ibisContext, String correlationId, int defaultTimeout) throws ConfigurationException {

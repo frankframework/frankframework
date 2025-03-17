@@ -51,8 +51,8 @@ import org.frankframework.stream.Message;
  * <p>
  *
  * @author evandongen
- * @ff.info After completing the for loop, the sessionKey containing the for loop iteration state, will be removed.
- * @ff.info The default format for the session key is "pipeName-iteration"
+ * @ff.info After completing the for loop, the sessionKey containing the for loop iteration state will be removed.
+ * @ff.info The default format for the session key is "pipeName-iteration".
  */
 @Forward(name = "stop", description = "exit for loop")
 @Forward(name = "continue", description = "continue in for loop")

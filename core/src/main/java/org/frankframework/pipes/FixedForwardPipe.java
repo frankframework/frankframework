@@ -39,8 +39,8 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.MessageUtils;
 
 /**
- * Provides a base-class for a Pipe that always has the same forward.
- * Ancestor classes should call <code>super.configure()</code> in their <code>configure()</code>-methods.
+ * Provides a base class for a Pipe that always has the same forward.
+ * Subclasses should call <code>super.configure()</code> in their <code>configure()</code> methods.
  *
  * @author Gerrit van Brakel
  */
@@ -60,7 +60,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 	private IParameter ifParameter = null;
 
 	/**
-	 * checks for correct configuration of forward
+	 * Checks for correct configuration of forward.
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
@@ -78,7 +78,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 	}
 
 	/**
-	 * called by {@link InputOutputPipeProcessor} to check if the pipe needs to be skipped.
+	 * Called by {@link InputOutputPipeProcessor} to check if the pipe needs to be skipped.
 	 */
 	public boolean skipPipe(Message input, PipeLineSession session) throws PipeRunException {
 		if (isSkipOnEmptyInput() && Message.isEmpty(input)) {
@@ -127,14 +127,14 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 	}
 
 	/**
-	 * If {@code true}, the processing continues directly at the forward of this pipe, without executing the pipe itself, if the input is empty
+	 * If {@code true}, the processing continues directly at the forward of this pipe, without executing the pipe itself, if the input is empty.
 	 * @ff.default false
 	 */
 	public void setSkipOnEmptyInput(boolean b) {
 		skipOnEmptyInput = b;
 	}
 
-	/** If set, this pipe is only executed when the value of parameter with name <code>ifParam</code> equals <code>ifValue</code> (otherwise this pipe is skipped) */
+	/** If set, this pipe is only executed when the value of the parameter with the name <code>ifParam</code> equals <code>ifValue</code>. Otherwise, this pipe is skipped. */
 	public void setIfParam(String string) {
 		ifParam = string;
 	}
@@ -144,22 +144,22 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 		ifValue = string;
 	}
 
-	/** Key of session variable to check if action must be executed. The pipe is only executed if the session variable exists and is not null */
+	/** Key of the session variable to check if the action must be executed. The pipe is only executed if the session variable exists and is not null. */
 	public void setOnlyIfSessionKey(String onlyIfSessionKey) {
 		this.onlyIfSessionKey = onlyIfSessionKey;
 	}
 
-	/** Value of session variable 'onlyIfSessionKey' to check if action must be executed. The pipe is only executed if the session variable has the specified value */
+	/** Value of session variable 'onlyIfSessionKey' to check if the action must be executed. The pipe is only executed if the session variable has the specified value. */
 	public void setOnlyIfValue(String onlyIfValue) {
 		this.onlyIfValue = onlyIfValue;
 	}
 
-	/** Key of session variable to check if action must be executed. The pipe is not executed if the session variable exists and is not null */
+	/** Key of the session variable to check if the action must be executed. The pipe is not executed if the session variable exists and is not null. */
 	public void setUnlessSessionKey(String unlessSessionKey) {
 		this.unlessSessionKey = unlessSessionKey;
 	}
 
-	/** Value of session variable 'unlessSessionKey' to check if action must be executed. The pipe is not executed if the session variable has the specified value */
+	/** Value of session variable 'unlessSessionKey' to check if the action must be executed. The pipe is not executed if the session variable has the specified value. */
 	public void setUnlessValue(String unlessValue) {
 		this.unlessValue = unlessValue;
 	}

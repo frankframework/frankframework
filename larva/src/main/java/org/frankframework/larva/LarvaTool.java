@@ -1256,6 +1256,7 @@ public class LarvaTool {
 			return RESULT_ERROR;
 		}
 		JmsSender jmsSender = (JmsSender)jmsSenderInfo.get("jmsSender");
+		if (jmsSender == null) throw new IllegalStateException("jmsSender == null");
 		try {
 			String providedCorrelationId = null;
 			String useCorrelationIdFrom = (String)jmsSenderInfo.get("useCorrelationIdFrom");
