@@ -446,7 +446,7 @@ public abstract class AbstractMailSender extends AbstractSenderWithParameters {
 	}
 
 	/**
-	 * when messageType is not specified defaultMessageType will be used
+	 * When messageType is not specified defaultMessageType will be used
 	 * @ff.default text/plain
 	 */
 	public void setDefaultMessageType(String defaultMessageType) {
@@ -454,7 +454,7 @@ public abstract class AbstractMailSender extends AbstractSenderWithParameters {
 	}
 
 	/**
-	 * when messageBase64 is not specified defaultMessageBase64 will be used
+	 * When messageBase64 is not specified defaultMessageBase64 will be used
 	 * @ff.default false
 	 */
 	public void setDefaultMessageBase64(boolean defaultMessageBase64) {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { WebStorageService } from 'src/app/services/web-storage.service';
 import { JmsBrowseForm, JmsService, Message } from '../jms.service';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -31,10 +31,8 @@ export class JmsBrowseQueueComponent implements OnInit {
   protected error: string | null = null;
   protected connectionFactories: string[] = [];
 
-  constructor(
-    private jmsService: JmsService,
-    private webStorageService: WebStorageService,
-  ) {}
+  private jmsService: JmsService = inject(JmsService);
+  private webStorageService: WebStorageService = inject(WebStorageService);
 
   ngOnInit(): void {
     const browseJmsQueue = this.webStorageService.get<JmsBrowseForm>('browseJmsQueue');
@@ -75,6 +73,7 @@ export class JmsBrowseQueueComponent implements OnInit {
 
   reset(): void {
     this.error = null;
+    this.webStorageService.remove('browseJmsQueue');
     this.form = {
       destination: '',
       connectionFactory: '',

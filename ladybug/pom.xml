@@ -14,7 +14,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<ladybug.version>3.0-20250213.113242</ladybug.version>
+		<ladybug.version>3.0-20250310.181403</ladybug.version>
 	</properties>
 
 	<modules>

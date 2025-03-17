@@ -276,7 +276,7 @@ public class IfPipe extends AbstractPipe {
 					parameterValues = parameterList.getValues(message, session, namespaceAware).getValueMap();
 				}
 
-				String transform = transformerPool.transform(message.asString(), parameterValues, namespaceAware);
+				String transform = transformerPool.transformToString(message.asString(), parameterValues, namespaceAware);
 
 				return (StringUtils.isEmpty(transform)) ? null : transform;
 			} catch (Exception ioe) {
@@ -301,7 +301,7 @@ public class IfPipe extends AbstractPipe {
 	}
 
 	/**
-	 * When using expressions, jsonPath returns a JsonArray, even if there's only one match. make sure to get a String from it.
+	 * When using expressions, jsonPath returns a JsonArray, even if there's only one match. Make sure to get a String from it.
 	 */
 	private String getJsonPathResult(Object jsonPathResult) {
 		if (jsonPathResult instanceof String string) {
@@ -343,7 +343,7 @@ public class IfPipe extends AbstractPipe {
 	}
 
 	/**
-	 * forward returned when output is <code>true</code>
+	 * forward returned when output is {@code true}
 	 *
 	 * @ff.default then
 	 */
@@ -354,7 +354,7 @@ public class IfPipe extends AbstractPipe {
 	}
 
 	/**
-	 * forward returned when output is <code>false</code>
+	 * forward returned when output is {@code false}
 	 *
 	 * @ff.default else
 	 */
@@ -369,7 +369,7 @@ public class IfPipe extends AbstractPipe {
 		this.expressionValue = expressionValue;
 	}
 
-	/** xpath expression to be applied to the input-message. if not set, no transformation is done when the input message is mediatype XML */
+	/** xpath expression to be applied to the input-message. If not set, no transformation is done when the input message is mediatype XML */
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}
@@ -380,7 +380,7 @@ public class IfPipe extends AbstractPipe {
 	}
 
 	/**
-	 * If set to <code>2</code> or <code>3</code> a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan)
+	 * If set to {@code 2} or {@code 3} a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan)
 	 *
 	 * @ff.default 2
 	 */

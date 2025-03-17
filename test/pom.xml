@@ -25,6 +25,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-messaging</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-nn-specials</artifactId>
 		</dependency>
 		<dependency>
@@ -60,6 +64,7 @@
 		<dependency>
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-ladybug-debugger</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
@@ -87,21 +92,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-messaging</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-batch</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 
 		<!-- provided scoped dependencies -->
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-ladybug-debugger</artifactId>
-			<scope>provided</scope>
-		</dependency>
 		<dependency><!-- This dependency is here because of the CustomHighDeliveryCountEsbJmsListener -->
 			<groupId>jakarta.jms</groupId>
 			<artifactId>jakarta.jms-api</artifactId>
@@ -134,16 +129,58 @@
 			<artifactId>junit-jupiter-engine</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.github.wimdeblauwe</groupId>
+			<artifactId>testcontainers-cypress</artifactId>
+			<version>1.9.1</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.code.findbugs</groupId>
+					<artifactId>jsr305</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
+		<!-- Needed for IafTestInitializer -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>${h2.driver.version}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
 		<defaultGoal>package</defaultGoal>
+
 		<plugins>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.3.1</version>
 				<executions>
+					<execution>
+						<id>copy-files</id>
+						<phase>process-test-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
+							<resources>
+								<!-- Copy the Cypress tests and configuration to the test output directory -->
+								<resource>
+									<directory>${iaf.rootdir}/console/frontend/src/main/frontend</directory>
+									<filtering>false</filtering>
+									<targetPath>e2e</targetPath>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
 					<execution>
 						<id>copy-resources-and-configurations</id>
 						<phase>prepare-package</phase>

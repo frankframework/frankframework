@@ -21,10 +21,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.text.translate.AggregateTranslator;
-import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
-import org.apache.commons.lang3.text.translate.EntityArrays;
-import org.apache.commons.lang3.text.translate.LookupTranslator;
+import org.apache.commons.text.translate.AggregateTranslator;
+import org.apache.commons.text.translate.CharSequenceTranslator;
+import org.apache.commons.text.translate.EntityArrays;
+import org.apache.commons.text.translate.LookupTranslator;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
@@ -43,10 +43,10 @@ import org.frankframework.align.ScalarType;
  */
 @Log4j2
 public class JsonElementContainer {
-	public static final CharSequenceTranslator ESCAPE_JSON = new AggregateTranslator(new CharSequenceTranslator[] {
-			new LookupTranslator(new String[][] { { "\"", "\\\"" }, { "\\", "\\\\" } }),
-			new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE())
-	});
+	public static final CharSequenceTranslator ESCAPE_JSON = new AggregateTranslator(
+			new LookupTranslator(Map.of("\"", "\\\"", "\\", "\\\\")),
+			new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE)
+	);
 
 	@Getter private final String name;
 	@Getter private final boolean xmlArrayContainer;

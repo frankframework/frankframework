@@ -45,8 +45,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-import lombok.Setter;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -56,6 +54,8 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
+
+import lombok.Setter;
 
 /**
  * Utility class that wraps and unwraps messages from (and into) a SOAP Envelope.
@@ -170,21 +170,21 @@ public class SoapWrapper {
 		SoapVersion soapVersion = getSoapVersionFromSession(session);
 		String extractedMessage;
 		if (soapVersion == SoapVersion.SOAP12) {
-			extractedMessage = transformerS12.transform(message.asSource());
+			extractedMessage = transformerS12.transformToString(message);
 			// If session had the wrong SOAP version stored (e.g. multiple SoapWrappers), try SOAP 1.1 too. (#6032)
 			if (StringUtils.isEmpty(extractedMessage)) {
-				extractedMessage = transformerS11.transform(message.asSource());
+				extractedMessage = transformerS11.transformToString(message);
 				// TODO: previous SoapWrapper configurations can write the wrong SOAP version to the session (using the same name).
 				// Consider a solution to match the right saved SOAP version with the right SoapWrapper: e.g. cache SoapVersion inside Message.context
 			}
 		} else if (soapVersion == SoapVersion.NONE) {
 			return null;
 		} else {
-			extractedMessage = transformerS11.transform(message.asSource());
+			extractedMessage = transformerS11.transformToString(message);
 			if (StringUtils.isNotEmpty(extractedMessage)) {
 				soapVersion = SoapVersion.SOAP11;
 			} else {
-				extractedMessage = transformerS12.transform(message.asSource());
+				extractedMessage = transformerS12.transformToString(message);
 				if (StringUtils.isNotEmpty(extractedMessage)) {
 					soapVersion = SoapVersion.SOAP12;
 				}
@@ -223,9 +223,9 @@ public class SoapWrapper {
 			return 0;
 		}
 		// Do not optimize transformer with extractMessageWithTransformers() method, since the output is always "0", even though fault parts are not found at all.
-		String faultCount = extractFaultCount11.transform(message);
+		String faultCount = extractFaultCount11.transformToString(message);
 		if (StringUtils.isEmpty(faultCount) || "0".equals(faultCount)) {
-			faultCount = extractFaultCount12.transform(message);
+			faultCount = extractFaultCount12.transformToString(message);
 		}
 		if (StringUtils.isEmpty(faultCount)) {
 			log.warn("getFaultCount(): could not extract fault count, result is empty");

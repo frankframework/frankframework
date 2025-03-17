@@ -21,13 +21,14 @@ import java.io.Closeable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.components.ComponentLoader;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.SpringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -36,11 +37,6 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.ResourceUtils;
-
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.Environment;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.SpringUtils;
 
 /**
  * Creates and maintains the (Spring) Application Context. If the context is loaded through a {@link FrankApplicationInitializer servlet}
@@ -67,11 +63,10 @@ public class IbisApplicationContext implements Closeable {
 	private AbstractApplicationContext applicationContext;
 	private ApplicationContext parentContext = null;
 
-	protected static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final Logger LOG = LogUtil.getLogger(IbisApplicationContext.class);
+	protected static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 	private BootState state = BootState.FIRST_START;
-	private final Map<String, String> iafModules = new HashMap<>();
 
 
 	public void setParentContext(ApplicationContext parentContext) {
@@ -93,8 +88,6 @@ public class IbisApplicationContext implements Closeable {
 		}
 
 		long start = System.currentTimeMillis();
-
-		lookupApplicationModules();
 
 		try {
 			applicationContext = createClassPathApplicationContext();
@@ -122,12 +115,19 @@ public class IbisApplicationContext implements Closeable {
 	 */
 	protected String[] getSpringConfigurationFiles(ClassLoader classLoader) {
 		List<String> springConfigurationFiles = new ArrayList<>();
-		if (parentContext == null) { //When not running in a web container, populate top-level beans so they can be found throughout this/sub-contexts.
+		if (parentContext == null) { // When not running in a web container, populate top-level beans so they can be found throughout this/sub-contexts.
 			springConfigurationFiles.add(SpringContextScope.STANDALONE.getContextFile());
 		}
 		springConfigurationFiles.add(SpringContextScope.APPLICATION.getContextFile());
 		String configLocations = AppConstants.getInstance().getProperty("SPRING.CONFIG.LOCATIONS");
 		springConfigurationFiles.addAll(splitIntoConfigFiles(classLoader, configLocations));
+
+		List<String> additionalSpringConfigurationFiles = ComponentLoader.findAllModules().stream()
+			.flatMap(module -> module.getSpringConfigurationFiles().stream())
+			.filter(filename -> isSpringConfigFileOnClasspath(classLoader, filename))
+			.map(this::addClasspathPrefix)
+			.toList();
+		springConfigurationFiles.addAll(additionalSpringConfigurationFiles);
 
 		LOG.info("loading Spring configuration files {}", springConfigurationFiles);
 		return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
@@ -138,7 +138,7 @@ public class IbisApplicationContext implements Closeable {
 			.stream(fileList.split(","))
 			.filter(filename -> isSpringConfigFileOnClasspath(classLoader, filename))
 			.map(this::addClasspathPrefix)
-			.collect(Collectors.toList());
+			.toList();
 	}
 
 	private boolean isSpringConfigFileOnClasspath(ClassLoader classLoader, String filename) {
@@ -221,61 +221,5 @@ public class IbisApplicationContext implements Closeable {
 
 	public BootState getBootState() {
 		return state;
-	}
-
-	/**
-	 * Register all IBIS modules that can be found on the classpath
-	 * TODO: retrieve this (automatically/) through Spring
-	 */
-	private void lookupApplicationModules() {
-		if(!iafModules.isEmpty()) {
-			return;
-		}
-
-		List<String> modulesToScanFor = new ArrayList<>();
-
-		modulesToScanFor.add("frankframework-akamai");
-		modulesToScanFor.add("frankframework-aspose");
-		modulesToScanFor.add("frankframework-aws");
-		modulesToScanFor.add("frankframework-batch");
-		modulesToScanFor.add("frankframework-cmis");
-		modulesToScanFor.add("frankframework-commons");
-		modulesToScanFor.add("frankframework-console-frontend");
-		modulesToScanFor.add("frankframework-console-backend");
-		modulesToScanFor.add("frankframework-core");
-		modulesToScanFor.add("credentialprovider");
-		modulesToScanFor.add("frankframework-dbms");
-		modulesToScanFor.add("frankframework-filesystem");
-		modulesToScanFor.add("frankframework-idin");
-		modulesToScanFor.add("frankframework-ladybug-common");
-		modulesToScanFor.add("frankframework-ladybug-debugger");
-		modulesToScanFor.add("frankframework-larva");
-		modulesToScanFor.add("frankframework-management-gateway");
-		modulesToScanFor.add("frankframework-messaging");
-		modulesToScanFor.add("frankframework-kubernetes");
-		modulesToScanFor.add("frankframework-nn-specials");
-		modulesToScanFor.add("frankframework-sap");
-		modulesToScanFor.add("frankframework-security");
-		modulesToScanFor.add("frankframework-tibco");
-		modulesToScanFor.add("frankframework-webapp");
-
-		registerApplicationModules(modulesToScanFor);
-	}
-
-	/**
-	 * Register IBIS modules that can be found on the classpath
-	 *
-	 * @param modules list with modules to register
-	 */
-	private void registerApplicationModules(List<String> modules) {
-		for (String module : modules) {
-			String version = Environment.getModuleVersion(module);
-
-			if (version != null) {
-				iafModules.put(module, version);
-				APP_CONSTANTS.put(module + ".version", version);
-				APPLICATION_LOG.debug("Loading IAF module [{}] version [{}]", module, version);
-			}
-		}
 	}
 }

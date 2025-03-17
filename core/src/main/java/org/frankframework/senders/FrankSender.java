@@ -552,7 +552,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	/**
 	 * Synchronous or Asynchronous execution of the call to other adapter or system.
 	 * <br/>
-	 * Set to <code>false</code> to make the call asynchronously. This means that the current adapter
+	 * Set to {@code false} to make the call asynchronously. This means that the current adapter
 	 * continues with the next pipeline and the result of the sub-adapter that was called, or other system that was called,
 	 * is ignored. Instead, the input message will be returned as the result message.
 	 *
@@ -582,7 +582,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	 * <br/>
 	 * If a parameter with name {@value #TARGET_PARAM_NAME} exists but has no value, then the target configured
 	 * via the attribute will be used as a default.
-	 * 
+	 *
 	 * @param target Name of the target, adapter or registered service.
 	 */
 	public void setTarget(String target) {

@@ -16,7 +16,6 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -24,13 +23,14 @@ import java.util.Optional;
 
 import javax.xml.validation.ValidatorHandler;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.json.Json;
 import jakarta.json.JsonStructure;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
 import org.springframework.http.MediaType;
-import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.XMLFilterImpl;
@@ -72,6 +72,7 @@ import org.frankframework.xml.XmlWriter;
  */
 public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestination {
 
+	public static final int READ_AHEAD_LIMIT = 1024;
 	private final @Getter String domain = "XML Schema";
 	public static final String INPUT_FORMAT_SESSION_KEY_PREFIX = "Json2XmlValidator.inputFormat ";
 
@@ -157,8 +158,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 
 		Optional<String> value = StringUtil.splitToStream(acceptHeaderValue)
 				.filter(Json2XmlValidator::acceptableValues)
-				.sorted(Json2XmlValidator::sortByQualifier)
-				.findFirst();
+				.min(Json2XmlValidator::sortByQualifier);
 		return value.orElse(detectedFormat.name());
 	}
 
@@ -182,62 +182,124 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	/**
 	 * Validate the XML or JSON input, and align/convert it into JSON or XML according to a XML Schema.
 	 * The format of the input message (XML or JSON) is automatically detected.
-	 * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
+	 * @throws PipeRunException when {@code isThrowException} is true and a validationerror occurred.
 	 */
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
-		String messageToValidate;
-		try {
-			messageToValidate = Message.isNull(input) ? "{}" : input.asString();
-		} catch (IOException e) {
-			throw new PipeRunException(this, "cannot open stream", e);
-		}
-		int i=0;
-		while (i<messageToValidate.length() && Character.isWhitespace(messageToValidate.charAt(i))) i++; //Trim leading whitespaces
-		if (i>=messageToValidate.length()) { // if Message is empty
-			messageToValidate="{}";
-			storeInputFormat(getOutputFormat(), input, session, responseMode); //Message is empty, but could be either XML or JSON. Look at the accept header, and if not set fall back to the default OutputFormat.
-		} else {
-			char firstChar=messageToValidate.charAt(i);
-			if (firstChar=='<') {
-				// message is XML
-				if (isAcceptNamespacelessXml()) {
-					messageToValidate=addNamespace(messageToValidate); // TODO: do this via a filter
-					//log.debug("added namespace to message [{}]", messageToValidate);
-				}
-				storeInputFormat(DocumentFormat.XML, input, session, responseMode);
-				if (getOutputFormat(session,responseMode) != DocumentFormat.JSON) {
-					final Message xmlInputMessage = createResultMessage(messageToValidate, MediaType.APPLICATION_XML);
-					PipeRunResult result=super.doPipe(xmlInputMessage, session, responseMode, messageRoot);
-					if (isProduceNamespacelessXml()) {
-						try {
-							result.setResult(XmlUtils.removeNamespaces(result.getResult().asString()));
-						} catch (IOException | XmlException e) {
-							throw new PipeRunException(this, "Cannot remove namespaces",e);
-						}
-					}
-					return result;
-				}
-				try {
-					return alignXml2Json(messageToValidate, session, responseMode);
-				} catch (Exception e) {
-					throw new PipeRunException(this, "Alignment of XML to JSON failed",e);
-				}
-			}
+		DocumentFormat inputFormat = determineDocumentFormat(input);
+		if (inputFormat == DocumentFormat.XML) {
+			return validateXmlMessage(input, session, responseMode, messageRoot);
+		} else if (inputFormat == DocumentFormat.JSON) {
 			if (!isAllowJson() && !responseMode) {
-				return getErrorResult("message is not XML, because it starts with ["+firstChar+"] and not with '<'", session, responseMode);
+				return getErrorResult("message is not XML, because it starts with [" + findFirstCharacter(input) + "] and not with '<'", session, responseMode);
 			}
-			if (firstChar!='{' && firstChar!='[') {
-				return getErrorResult("message is not XML or JSON, because it starts with ["+firstChar+"] and not with '<', '{' or '['", session, responseMode);
-			}
-			storeInputFormat(DocumentFormat.JSON, input, session, responseMode);
+		} else if (!Message.isEmpty(input)) {
+			return getErrorResult("message is not XML or JSON, because it starts with [" + findFirstCharacter(input) + "] and not with '<', '{' or '['", session, responseMode);
 		}
 
+		return validateJsonMessage(input, session, responseMode, inputFormat);
+	}
+
+	private PipeRunResult validateJsonMessage(Message input, PipeLineSession session, boolean responseMode, DocumentFormat inputFormat) throws PipeRunException {
+		Message messageToValidate = determineJsonInputMessage(input, session, responseMode, inputFormat);
 		try {
 			return alignJson(messageToValidate, session, responseMode);
 		} catch (XmlValidatorException e) {
 			throw new PipeRunException(this, "Cannot align JSON", e);
 		}
+	}
+
+	@Nonnull
+	private Message determineJsonInputMessage(Message input, PipeLineSession session, boolean responseMode, DocumentFormat inputFormat) {
+		Message messageToValidate;
+		if (inputFormat == null) {
+			storeInputFormat(getOutputFormat(), input, session, responseMode); //Message is empty, but could be either XML or JSON. Look at the accept header, and if not set fall back to the default OutputFormat.
+
+			messageToValidate = new Message("{}");
+		} else {
+			storeInputFormat(DocumentFormat.JSON, input, session, responseMode);
+
+			if (Message.isNull(input)) {
+				messageToValidate = new Message("{}");
+			} else {
+				messageToValidate = input;
+			}
+		}
+		return messageToValidate;
+	}
+
+	private PipeRunResult validateXmlMessage(Message input, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
+		storeInputFormat(DocumentFormat.XML, input, session, responseMode);
+
+		Message xmlMessage;
+		if (isAcceptNamespacelessXml()) {
+			try {
+				xmlMessage = addNamespace(input);
+			} catch (IOException e) {
+				throw new PipeRunException(this, "Cannot read message", e);
+			}
+		} else {
+			xmlMessage = input;
+		}
+		if (getOutputFormat(session, responseMode) != DocumentFormat.JSON) {
+			xmlMessage.getContext().withMimeType(MediaType.APPLICATION_XML);
+			PipeRunResult result = super.doPipe(xmlMessage, session, responseMode, messageRoot);
+			if (isProduceNamespacelessXml()) {
+				try {
+					result.setResult(XmlUtils.removeNamespaces(result.getResult()));
+				} catch (XmlException e) {
+					throw new PipeRunException(this, "Cannot remove namespaces",e);
+				}
+			}
+			return result;
+		}
+		try {
+			return alignXml2Json(xmlMessage, session, responseMode);
+		} catch (Exception e) {
+			throw new PipeRunException(this, "Alignment of XML to JSON failed",e);
+		}
+	}
+
+	private char findFirstCharacter(Message input) throws PipeRunException {
+		String prefix;
+		try {
+			prefix = input.peek(READ_AHEAD_LIMIT);
+		} catch (IOException e) {
+			throw new PipeRunException(this, "unable to determine input format from request", e);
+		}
+		return StringUtils.isBlank(prefix) ? ' ' : prefix.trim().charAt(0);
+	}
+
+	/**
+	 * Peek into the message to find the first character, and from that determine the input format.
+	 * For reasons of backwards compatibility:
+	 * <ul>
+	 *     <li> If the message is a null-message ({@link Message#isNull()}, then the input format is determined to be JSON and the actual message parsed will be {@code "{}"}.</li>
+	 *     <li> If the message is an empty message ({@link Message#isEmpty()}, then the input format is {@code null}, but still the actual message parsed will be {@code "{}"}.</li>
+	 * </ul>
+	 * Otherwise, the determination of input format is as follows:
+	 * <ul>
+	 *     <li> If the first non-whitespace character is an {@code '<'} the input format is XML</li>
+	 *     <li> If the first non-whitespace character is a {@code '{'}} or {@code '['} then the input format is JSON</li>
+	 *     <li> If there was no non-whitespace character in the first 1KiB of the message, or the first non-whitespace character was a different character, return {@code null}.</li>
+	 * </ul>
+	 *
+	 * @param input Message from which to read.
+	 * @return DocumentFormat of the input message, if it was possible to determine, or null.
+	 */
+	private @Nullable DocumentFormat determineDocumentFormat(Message input) throws PipeRunException {
+		if (Message.isNull(input)) {
+			return DocumentFormat.JSON;
+		}
+		if (input.isEmpty()) {
+			return null;
+		}
+		char firstChar = findFirstCharacter(input);
+		return switch (firstChar) {
+			case '<' -> DocumentFormat.XML;
+			case '{', '[' -> DocumentFormat.JSON;
+			default -> null;
+		};
 	}
 
 	protected RootValidations getJsonRootValidations(boolean responseMode) {
@@ -251,7 +313,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		return getRootValidations(responseMode);
 	}
 
-	protected PipeRunResult alignXml2Json(String messageToValidate, PipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
+	protected PipeRunResult alignXml2Json(Message messageToValidate, PipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
 
 		AbstractValidationContext context = validator.createValidationContext(session, getJsonRootValidations(responseMode), getInvalidRootNamespaces());
 		ValidatorHandler validatorHandler = validator.getValidatorHandler(session,context);
@@ -261,7 +323,6 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		if (isIgnoreUndeclaredElements()) {
 			log.warn("cannot ignore undeclared elements when converting from XML");
 		}
-		//aligner.setIgnoreUndeclaredElements(isIgnoreUndeclaredElements()); // cannot ignore XML Schema Validation failure in this case, currently
 		Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
 
 		XMLFilterImpl handler = xml2json;
@@ -274,12 +335,17 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		aligner.setErrorHandler(context.getErrorHandler());
 
 		ValidationResult validationResult = validator.validate(messageToValidate, session, validatorHandler, xml2json, context);
-		final Message jsonMessage = createResultMessage(xml2json.toString(), MediaType.APPLICATION_JSON);
+		final Message jsonMessage;
+		try {
+			jsonMessage = xml2json.toMessage();
+		} catch (IOException e) {
+			throw new PipeRunException(this, "Cannot create message", e);
+		}
 		PipeForward forward = determineForward(validationResult, session, responseMode);
 		return new PipeRunResult(forward, jsonMessage);
 	}
 
-	protected PipeRunResult alignJson(String messageToValidate, PipeLineSession session, boolean responseMode) throws PipeRunException, XmlValidatorException {
+	protected PipeRunResult alignJson(Message messageToValidate, PipeLineSession session, boolean responseMode) throws PipeRunException, XmlValidatorException {
 		AbstractValidationContext context;
 		ValidatorHandler validatorHandler;
 		try {
@@ -300,11 +366,12 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			aligner.setFailOnWildcards(isFailOnWildcards());
 			aligner.setIgnoreUndeclaredElements(isIgnoreUndeclaredElements());
 			ParameterList parameterList = getParameterList();
-			Map<String, Object> parameterValues = parameterList.getValues(new Message(messageToValidate), session).getValueMap();
+			Map<String, Object> parameterValues = parameterList.getValues(messageToValidate, session).getValueMap();
 			// remove parameters with null values, to support optional request parameters
 			parameterValues.values().removeIf(Objects::isNull);
 			aligner.setOverrideValues(parameterValues);
-			JsonStructure jsonStructure = Json.createReader(new StringReader(messageToValidate)).read();
+			// TODO: This parses the full JSON into memory. This can use too much memory. Should be replaced with an incremental parser but... That means a full rewrite of Json2Xml.
+			JsonStructure jsonStructure = Json.createReader(messageToValidate.asReader()).read();
 
 			// cannot build filter chain as usual backwardly, because it ends differently.
 			// This will be fixed once an OutputStream can be provided to Xml2Json
@@ -319,7 +386,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
 				sourceFilter.setContentHandler(xml2json);
 				aligner.startParse(jsonStructure);
-				resultMessage = createResultMessage(xml2json.toString(), MediaType.APPLICATION_JSON);
+				resultMessage = xml2json.toMessage();
 			} else {
 				MessageBuilder messageBuilder = new MessageBuilder();
 				XmlWriter xmlWriter = messageBuilder.asXmlWriter();
@@ -341,12 +408,8 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		return new PipeRunResult(forward, resultMessage);
 	}
 
-	private Message createResultMessage(String content, MimeType mimeType) {
-		return new Message(content, new MessageContext().withMimeType(mimeType));
-	}
-
-	public String addNamespace(String xml) {
-		if (StringUtils.isEmpty(xml) || xml.indexOf("xmlns")>0) {
+	public Message addNamespace(Message xml) throws IOException {
+		if (Message.isNull(xml)) {
 			return xml;
 		}
 		String namespace;
@@ -355,21 +418,18 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		} else if (StringUtils.isNotEmpty(getSchemaLocation())) {
 			namespace = getSchemaLocation().split(" ")[0];
 		} else {
+			log.debug("Target namespace or schema location is empty, not changing namespace in input");
+			return xml;
+		}
+		xml.preserve();
+		String currentRootNamespace = XmlUtils.getRootNamespace(xml);
+		if (StringUtils.isNotEmpty(currentRootNamespace)) {
+			log.debug("Message already has namespace [{}]", currentRootNamespace);
 			return xml;
 		}
 		log.debug("setting namespace [{}]", namespace);
-		int startPos=0;
-		if (xml.trim().startsWith("<?")) {
-			startPos=xml.indexOf("?>")+2;
-		}
-		int elementEnd=xml.indexOf('>',startPos);
-		if (elementEnd<0) {
-			return xml;
-		}
-		if (xml.charAt(elementEnd-1)=='/') {
-			elementEnd--;
-		}
-		return xml.substring(0, elementEnd)+" xmlns=\""+namespace+"\""+xml.substring(elementEnd);
+		return XmlUtils.addRootNamespace(xml, namespace);
+
 	}
 
 	public JsonStructure createJsonSchema(String elementName) {
@@ -381,8 +441,6 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		return converter.createJsonSchema(elementName, namespace);
 	}
 
-
-
 	@Override
 	public String getPhysicalDestinationName() {
 		StringBuilder result = new StringBuilder();
@@ -392,7 +450,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 					.append("]");
 		}
 		if (StringUtils.isNotEmpty(getResponseRoot())) {
-			if (result.length() > 0) {
+			if (!result.isEmpty()) {
 				result.append("; ");
 			}
 			result.append("response message [")
@@ -433,7 +491,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * If true, the format on 'output' is set to the same as the format of the input message on 'input'. The format of the input message is stored in and retrieved from the session variable specified by outputFormatSessionKey
+	 * If {@code true}, the format on 'output' is set to the same as the format of the input message on 'input'. The format of the input message is stored in and retrieved from the session variable specified by outputFormatSessionKey
 	 * @ff.default true
 	 */
 	public void setAutoFormat(boolean autoFormat) {
@@ -441,7 +499,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * If true assume arrays in JSON do not have the element containers like in XML
+	 * If {@code true} assume arrays in JSON do not have the element containers like in XML
 	 * @ff.default true
 	 */
 	public void setCompactJsonArrays(boolean compactJsonArrays) {
@@ -449,7 +507,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * If true check that incoming JSON adheres to the specified syntax (compact or full), otherwise both types are accepted for conversion from JSON to XML
+	 * If {@code true} check that incoming JSON adheres to the specified syntax (compact or full), otherwise both types are accepted for conversion from JSON to XML
 	 * @ff.default false
 	 */
 	public void setStrictJsonArraySyntax(boolean strictJsonArraySyntax) {
@@ -457,7 +515,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * If true, assume that JSON contains/must contain a root element
+	 * If {@code true}, assume that JSON contains/must contain a root element
 	 * @ff.default false
 	 */
 	public void setJsonWithRootElements(boolean jsonWithRootElements) {
@@ -465,7 +523,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * If true, and converting from JSON to XML, parameter substitutions are searched for optional sub elements too. By default, only mandatory elements are searched for parameter substitutions. N.B. Currently this option might cause problems. Please try using more qualified parameters names (using '/') first
+	 * If {@code true}, and converting from JSON to XML, parameter substitutions are searched for optional sub elements too. By default, only mandatory elements are searched for parameter substitutions. N.B. Currently this option might cause problems. Please try using more qualified parameters names (using '/') first
 	 * @ff.default false
 	 */
 	public void setDeepSearch(boolean deepSearch) {
@@ -473,7 +531,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * If true, and converting from JSON to XML, elements in JSON that are not found in the XML Schema are ignored
+	 * If {@code true}, and converting from JSON to XML, elements in JSON that are not found in the XML Schema are ignored
 	 * @ff.default false
 	 */
 	public void setIgnoreUndeclaredElements(boolean ignoreUndeclaredElements) {
@@ -481,7 +539,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * If true, an exception is thrown when a wildcard is found in the XML Schema when parsing an object. This often indicates that an element is not properly typed in the XML Schema, and could lead to ambuigities.
+	 * If {@code true}, an exception is thrown when a wildcard is found in the XML Schema when parsing an object. This often indicates that an element is not properly typed in the XML Schema, and could lead to ambuigities.
 	 * @ff.default true
 	 */
 	public void setFailOnWildcards(boolean failOnWildcards) {
@@ -489,7 +547,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * If true, all XML is allowed to be without namespaces. If no namespaces are detected (by the presence of the string 'xmlns') in the XML, the root namespace is added to the XML
+	 * If {@code true}, all XML is allowed to be without namespaces. If no namespaces are detected (by the presence of the string 'xmlns') in the XML, the root namespace is added to the XML
 	 * @ff.default false
 	 */
 	public void setAcceptNamespacelessXml(boolean acceptNamespacelessXml) {
@@ -515,7 +573,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * If true, and converting to or from JSON, then the message root is the only rootValidation, ignoring root validations like for SOAP envelope and header set by descender classes like SoapValidator
+	 * If {@code true}, and converting to or from JSON, then the message root is the only rootValidation, ignoring root validations like for SOAP envelope and header set by descender classes like SoapValidator
 	 * @ff.default true
 	 */
 	public void setValidateJsonToRootElementOnly(boolean validateJsonToRootElementOnly) {

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Map;
 import java.util.stream.Stream;
@@ -26,6 +27,7 @@ import com.mockrunner.mock.jms.MockTextMessage;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListenerConnector;
+import org.frankframework.receivers.Receiver;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.testutil.mock.ConnectionFactoryFactoryMock;
 import org.frankframework.util.AppConstants;
@@ -52,6 +54,8 @@ class EsbJmsListenerTest {
 
 	@BeforeEach
 	void setUp() throws Exception {
+		Receiver<Message> receiver = mock(Receiver.class);
+		when(receiver.isTransacted()).thenReturn(false);
 		jmsListener = new EsbJmsListener();
 		jmsListener.setQueueConnectionFactoryName(ConnectionFactoryFactoryMock.MOCK_CONNECTION_FACTORY_NAME);
 		jmsListener.setConnectionFactoryFactory(new ConnectionFactoryFactoryMock());
@@ -59,6 +63,7 @@ class EsbJmsListenerTest {
 		jmsListener.setJmsConnector(jmsConnectorMock);
 		jmsListener.setDestinationName("jms/dest_fake");
 		jmsListener.setLookupDestination(false);
+		jmsListener.setReceiver(receiver);
 	}
 
 	@AfterEach

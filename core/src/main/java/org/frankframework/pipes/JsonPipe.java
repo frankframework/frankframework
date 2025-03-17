@@ -46,7 +46,6 @@ import org.frankframework.documentbuilder.DocumentUtils;
 import org.frankframework.documentbuilder.IDocumentBuilder;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
-import org.frankframework.stream.MessageContext;
 import org.frankframework.util.TransformerPool;
 
 /**
@@ -118,10 +117,8 @@ public class JsonPipe extends FixedForwardPipe {
 				}
 			case XML2JSON:
 				Map<String, Object> parameterValues = Collections.singletonMap("includeRootElement", addXmlRootElement);
-				String stringResult = tpXml2Json.transform(message.asSource(), parameterValues);
-				MessageContext context = new MessageContext();
-				context.withMimeType(MediaType.APPLICATION_JSON);
-				Message result = new Message(stringResult, context);
+				Message result = tpXml2Json.transform(message, parameterValues);
+				result.getContext().withMimeType(MediaType.APPLICATION_JSON);
 				return new PipeRunResult(getSuccessForward(), result);
 			default:
 				throw new IllegalStateException("unknown direction ["+getDirection()+"]");
@@ -170,7 +167,7 @@ public class JsonPipe extends FixedForwardPipe {
 	/**
 	 * When direction is JSON2XML, it wraps a root element around the converted message.
 	 * When direction is XML2JSON, it includes the name of the root element as a key in the converted message, thus preserving the structure of the original input message.
-	 * @ff.default TRUE when JSON2XML and FALSE when XML2JSON
+	 * @ff.default {@code true} when JSON2XML and {@code false} when XML2JSON
 	 */
 	public void setAddXmlRootElement(boolean addXmlRootElement) {
 		this.addXmlRootElement = addXmlRootElement;

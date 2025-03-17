@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import java.util.List;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.frankframework.core.IJmsListener;
 import org.frankframework.core.PipeLine;
-import org.frankframework.jms.JmsListener;
 
 public interface WsdlGeneratorExtensionContext {
 	List<String> getWarnings();
@@ -34,5 +34,5 @@ public interface WsdlGeneratorExtensionContext {
 	void setExtensionNamespacePrefixes(XMLStreamWriter w) throws XMLStreamException;
 	void addExtensionNamespaces(XMLStreamWriter w) throws XMLStreamException;
 	void addJmsBindingInfo(XMLStreamWriter w, WsdlGenerator wsdlGenerator, PipeLine pipeLine) throws XMLStreamException;
-	void addJmsServiceInfo(XMLStreamWriter w, JmsListener listener) throws XMLStreamException;
+	void addJmsServiceInfo(XMLStreamWriter w, IJmsListener listener) throws XMLStreamException;
 }

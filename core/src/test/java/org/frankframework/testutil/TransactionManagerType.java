@@ -24,7 +24,7 @@ import org.frankframework.jdbc.datasource.DataSourceFactory;
 
 @Log4j2
 public enum TransactionManagerType {
-	//Apparently we want to inject some XA commit-stopper as well as wrap the DS
+	// Apparently we want to inject some XA commit-stopper as well as wrap the DS
 	DATASOURCE(TestDataSourceFactory.class, "springTOMCAT.xml"),
 	NARAYANA(TestNarayanaDataSourceFactory.class, "springTOMCATNARAYANA.xml");
 
@@ -58,7 +58,7 @@ public enum TransactionManagerType {
 	 * @return New {@link TestConfiguration} instance.
 	 */
 	public TestConfiguration create(boolean autoConfigure) {
-		return create(autoConfigure, "H2"); //only used to satisfy Spring startup
+		return create(autoConfigure, "H2"); // Only used to satisfy Spring startup
 	}
 
 	private synchronized TestConfiguration create(boolean autoConfigure, String productKey) {

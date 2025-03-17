@@ -183,11 +183,11 @@ import org.frankframework.util.TransformerPool;
  * Please note that the plain value of attribute <code>replaceFrom</code> is matched, no <code>?{...}</code> here.</li>
  *
  * <li>The resulting string is substituted based on the parameters of this pipe. This step depends on attribute <code>replaceFixedParams</code>.
- * Assume that there is a parameter with name <code>xyz</code>. If <code>replaceFixedParams</code> is <code>false</code>, then
+ * Assume that there is a parameter with name <code>xyz</code>. If <code>replaceFixedParams</code> is {@code false}, then
  * each occurrence of <code>?{xyz}</code> is replaced by the parameter's value. Otherwise, the text <code>xyz</code>
  * is substituted. See {@link Parameter} to see how parameter values are determined.</li>
  *
- * <li>If attribute <code>substituteVars</code> is <code>true</code>, then expressions <code>${...}</code> are substituted using
+ * <li>If attribute <code>substituteVars</code> is {@code true}, then expressions <code>${...}</code> are substituted using
  * system properties, pipelinesession variables and application properties. Please note that
  * no <code>${...}</code> patterns are left if the initial string came from attribute <code>returnString</code>, because
  * any <code>${...}</code> pattern in attribute <code>returnString</code> is substituted when the configuration is loaded.</li>
@@ -323,7 +323,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 			if (transformerPool != null) {
 				try {
-					resultString = transformerPool.transform(resultString);
+					resultString = transformerPool.transformToString(resultString);
 				} catch (SAXException e) {
 					throw new PipeRunException(this, "got error converting string [" + resultString + "] to source", e);
 				} catch (IOException | TransformerException e) {
@@ -378,7 +378,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Should values between ${ and } be resolved. If true, the search order of replacement values is:
+	 * Should values between ${ and } be resolved. If {@code true}, the search order of replacement values is:
 	 * system properties (1), PipelineSession variables (2), application properties (3).
 	 *
 	 * @ff.default false
@@ -424,7 +424,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * See <code>replaceFrom</code>.
+	 * See {@code replaceFrom}.
 	 */
 	@Deprecated(since = "8.2", forRemoval = true)
 	@ConfigurationWarning("replaceTo is scheduled for removal. Please use the ReplacerPipe")
@@ -442,7 +442,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * When set <code>true</code>, parameter replacement matches <code>name-of-parameter</code>, not <code>?{name-of-parameter}</code>
+	 * If {@code true}, parameter replacement matches <code>name-of-parameter</code>, not <code>?{name-of-parameter}</code>
 	 *
 	 * @ff.default false
 	 */

@@ -245,22 +245,6 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		if (isConfigured) {
 			throw new LifecycleException("already configured");
 		}
-		log.debug("configuring adapter [{}]", name);
-
-		msgLog = LogUtil.getMsgLogger(this);
-		Configurator.setLevel(msgLog.getName(), msgLogLevel);
-
-		// Trigger a configure on all (Configurable) Lifecycle beans
-		LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
-		if (!(lifecycle instanceof ConfigurableLifecycle configurableLifecycle)) {
-			throw new ConfigurationException("wrong lifecycle processor found, unable to configure beans");
-		}
-		configurableLifecycle.configure();
-
-		numOfMessagesProcessed = configurationMetrics.createCounter(this, FrankMeterType.PIPELINE_PROCESSED);
-		numOfMessagesInError = configurationMetrics.createCounter(this, FrankMeterType.PIPELINE_IN_ERROR);
-		configurationMetrics.createGauge(this, FrankMeterType.PIPELINE_IN_PROCESS, () -> numOfMessagesInProcess);
-		statsMessageProcessingDuration = configurationMetrics.createDistributionSummary(this, FrankMeterType.PIPELINE_DURATION);
 
 		if (pipeline == null) {
 			String msg = "No pipeline configured for adapter [" + getName() + "]";
@@ -268,20 +252,40 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			throw new ConfigurationException(msg);
 		}
 
-		if(!pipeline.configurationSucceeded()) { // only reconfigure pipeline when it hasn't been configured yet!
-			try {
-				pipeline.configure();
-				getMessageKeeper().add("pipeline successfully configured");
-			}
-			catch (ConfigurationException e) {
-				getMessageKeeper().error("error initializing pipeline, " + e.getMessage());
-				throw e;
-			}
+		LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
+		if (!(lifecycle instanceof ConfigurableLifecycle configurableLifecycle)) {
+			throw new ConfigurationException("wrong lifecycle processor found, unable to configure beans");
 		}
 
-		// Receivers must be configured for the adapter to start up, but they don't need to start
-		for (Receiver<?> receiver: receivers) {
-			configureReceiver(receiver);
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_ADAPTER_KEY, getName())) {
+			log.debug("configuring adapter [{}]", name);
+
+			msgLog = LogUtil.getMsgLogger(this);
+			Configurator.setLevel(msgLog.getName(), msgLogLevel);
+
+			// Trigger a configure on all (Configurable) Lifecycle beans
+			configurableLifecycle.configure();
+
+			numOfMessagesProcessed = configurationMetrics.createCounter(this, FrankMeterType.PIPELINE_PROCESSED);
+			numOfMessagesInError = configurationMetrics.createCounter(this, FrankMeterType.PIPELINE_IN_ERROR);
+			configurationMetrics.createGauge(this, FrankMeterType.PIPELINE_IN_PROCESS, () -> numOfMessagesInProcess);
+			statsMessageProcessingDuration = configurationMetrics.createDistributionSummary(this, FrankMeterType.PIPELINE_DURATION);
+
+			if(!pipeline.configurationSucceeded()) { // only reconfigure pipeline when it hasn't been configured yet!
+				try {
+					pipeline.configure();
+					getMessageKeeper().add("pipeline successfully configured");
+				}
+				catch (ConfigurationException e) {
+					getMessageKeeper().error("error initializing pipeline, " + e.getMessage());
+					throw e;
+				}
+			}
+
+			// Receivers must be configured for the adapter to start up, but they don't need to start
+			for (Receiver<?> receiver: receivers) {
+				configureReceiver(receiver);
+			}
 		}
 
 		composedHideRegex = computeCombinedHideRegex();
@@ -382,12 +386,9 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * Decrease the number of messages in process
 	 */
 	private void decNumOfMessagesInProcess(long duration, boolean processingSuccess) {
-		log.trace("Decrease nr messages in processing, using synchronized statisticsLock [{}]", statisticsLock);
 		synchronized (statisticsLock) {
 			numOfMessagesInProcess--;
-			log.trace("Increase nr messages processed, synchronize (lock) on numOfMessagesInProcess[{}]", numOfMessagesProcessed);
 			numOfMessagesProcessed.increment();
-			log.trace("Nr messages processed increased, lock released on numOfMessagesProcessed[{}]", numOfMessagesProcessed);
 			statsMessageProcessingDuration.record(duration);
 			if (processingSuccess) {
 				lastMessageProcessingState = PROCESS_STATE_OK;
@@ -396,41 +397,29 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			}
 			statisticsLock.notifyAll();
 		}
-		log.trace("Messages in processing decreased, statisticsLock [{}] has been released", statisticsLock);
 	}
 	/**
 	 * The number of messages for which processing ended unsuccessfully.
 	 */
-	private void incNumOfMessagesInError() {
-		log.trace("Increase nr messages in error, using synchronized statisticsLock [{}]", statisticsLock);
+	public void incNumOfMessagesInError() {
 		synchronized (statisticsLock) {
-			log.trace("(nested) Increase nr messages in error, synchronize (lock) on numOfMessagesInError[{}]", numOfMessagesInError);
 			numOfMessagesInError.increment();
-			log.trace("(nested) Messages in error increased, lock released on numOfMessagesInError[{}]", numOfMessagesInError);
 		}
-		log.trace("Messages in error increased, statisticsLock [{}] has been released", statisticsLock);
 	}
 
 	public void setLastExitState(String pipeName, long lastExitStateDate, String lastExitState) {
-		log.trace("Set last exit state, synchronize (lock) on sendersLastExitState[{}]", sendersLastExitState);
 		synchronized (sendersLastExitState) {
 			sendersLastExitState.put(pipeName, new SenderLastExitState(lastExitStateDate, lastExitState));
 		}
-		log.trace("Last exit state set, lock released on sendersLastExitState[{}]", sendersLastExitState);
 	}
 
 	public long getLastExitIsTimeoutDate(String pipeName) {
-		log.trace("Get last exit state, synchronize (lock) on sendersLastExitState[{}]", sendersLastExitState);
-		try {
-			synchronized (sendersLastExitState) {
-				SenderLastExitState sles = sendersLastExitState.get(pipeName);
-				if (sles != null && "timeout".equals(sles.lastExitState)) {
-					return sles.lastExitStateDate;
-				}
-				return 0;
+		synchronized (sendersLastExitState) {
+			SenderLastExitState sles = sendersLastExitState.get(pipeName);
+			if (sles != null && "timeout".equals(sles.lastExitState)) {
+				return sles.lastExitStateDate;
 			}
-		} finally {
-			log.trace("Got last exit state, lock released on sendersLastExitState[{}]", sendersLastExitState);
+			return 0;
 		}
 	}
 
@@ -739,7 +728,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * of the IReceiver. The Adapter will be a new thread, as this interface
 	 * extends the <code>Runnable</code> interface. The actual starting is done
 	 * in the <code>run</code> method.
-	 * @see Receiver#startRunning()
+	 * @see Receiver#start()
 	 */
 	@Override
 	public void start() {
@@ -758,8 +747,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
-				Thread.currentThread().setName("starting Adapter "+getName());
-				try {
+				try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_ADAPTER_KEY, getName())) {
 					// See also Receiver.startRunning()
 					if (!isConfigured) {
 						log.error("configuration of adapter [{}] did not succeed, therefore starting the adapter is not possible", name);
@@ -808,11 +796,11 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 					for (Receiver<?> receiver: receivers) {
 						receiver.start();
 					}
+
+					log.trace("Start Adapter thread - finished and completed");
 				} catch (Throwable t) {
 					addErrorMessageToMessageKeeper("got error starting Adapter", t);
 					runState.setRunState(RunState.ERROR);
-				} finally {
-					log.debug("Adapter.start - start adapter thread for Adapter [{}] finished and completed", name);
 				}
 			}
 
@@ -844,7 +832,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * The adapter will call the <code>IReceiver</code> to <code>stopListening</code>
 	 * <p>Also the {@link PipeLine#stop} method will be called, closing all registered pipes. </p>
 	 *
-	 * @see Receiver#stopRunning
+	 * @see Receiver#stop()
 	 * @see PipeLine#stop
 	 */
 	@Override
@@ -853,11 +841,12 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 		log.info("Stopping Adapter named [{}] with {} receivers", this::getName, receivers::size);
 		Runnable runnable = new Runnable() {
+			// Cannot use a closable ThreadContext as it's cleared in the Receiver STOP method.
 			@Override
 			public void run() {
-				log.debug("Adapter.stopRunning - stop adapter thread for [{}] starting", () -> getName());
-				Thread.currentThread().setName("stopping Adapter " +getName());
-				try {
+				try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_ADAPTER_KEY, getName())) {
+					log.trace("Adapter.stopRunning - stop adapter thread for [{}] starting", () -> getName());
+
 					// See also Receiver.stopRunning()
 					switch(getRunState()) {
 						case STARTING:
@@ -916,7 +905,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 					runState.setRunState(RunState.ERROR);
 					log.warn("Adapter [{}] in state ERROR", name, t);
 				} finally {
-					log.debug("Adapter.stop - stop adapter thread for Adapter [{}] finished and completed", name);
+					log.trace("Adapter.stop - stop adapter thread for Adapter [{}] finished and completed", name);
 				}
 			}
 
@@ -938,7 +927,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 */
 	@Override
 	public void stop() {
-		stop(() -> log.debug("stopped adapter [{}]", getName()));
+		stop(() -> log.info("stopped adapter [{}]", getName()));
 	}
 
 	@Override

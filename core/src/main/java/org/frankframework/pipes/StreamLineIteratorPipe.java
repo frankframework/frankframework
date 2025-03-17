@@ -75,7 +75,7 @@ public class StreamLineIteratorPipe extends StringIteratorPipe {
 	public void setEndOfLineString(String string) {
 		endOfLineString = string;
 	}
-	/** Marks the start of a new record. If set, a new record is started when this line is read. */
+	/** Marks the start of a new record. If {@code true}, a new record is started when this line is read. */
 	public void setStartOfLineString(String string) {
 		startOfLineString = string;
 	}

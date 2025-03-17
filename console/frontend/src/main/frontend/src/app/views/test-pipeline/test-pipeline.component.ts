@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Adapter, AppService, Configuration } from 'src/app/app.service';
 import { InputFileUploadComponent } from 'src/app/components/input-file-upload/input-file-upload.component';
 import { Subscription } from 'rxjs';
@@ -11,6 +11,7 @@ import { QuickSubmitFormDirective } from '../../components/quick-submit-form.dir
 import { FormsModule } from '@angular/forms';
 import { MonacoEditorComponent } from '../../components/monaco-editor/monaco-editor.component';
 import { LaddaModule } from 'angular2-ladda';
+import { WebStorageService } from '../../services/web-storage.service';
 
 type FormSessionKey = {
   key: string;
@@ -26,6 +27,18 @@ type PipelineResult = {
   state: string;
   result: string;
   message: string;
+};
+
+type Form = {
+  adapter: string;
+  encoding: string;
+  message: string;
+};
+
+type TestPipelineSession = {
+  configuration: string;
+  form: Form;
+  sessionKeys: FormSessionKey[];
 };
 
 @Component({
@@ -55,7 +68,7 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
 
   protected formSessionKeys: FormSessionKey[] = [{ key: '', value: '' }];
 
-  protected form = {
+  protected form: Form = {
     adapter: '',
     encoding: '',
     message: '',
@@ -72,12 +85,12 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
   private file: File | null = null;
   private subscriptions: Subscription = new Subscription();
 
-  constructor(
-    private http: HttpClient,
-    private appService: AppService,
-  ) {}
+  private http: HttpClient = inject(HttpClient);
+  private appService: AppService = inject(AppService);
+  private webStorageService: WebStorageService = inject(WebStorageService);
 
   ngOnInit(): void {
+    this.setTestPipelineSession();
     this.setConfigurations();
     const configurationsSubscription = this.appService.configurations$.subscribe(() => {
       this.setConfigurations();
@@ -104,6 +117,18 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
 
   private setAdapters(): void {
     this.adapters = this.appService.adapters;
+    if (this.selectedConfiguration) {
+      this.setAdapterOptions(this.selectedConfiguration);
+    }
+  }
+
+  private setTestPipelineSession(): void {
+    const testPipelineSession = this.webStorageService.get<TestPipelineSession>('testPipeline');
+    if (testPipelineSession) {
+      this.selectedConfiguration = testPipelineSession.configuration;
+      this.form = testPipelineSession.form;
+      this.formSessionKeys = testPipelineSession.sessionKeys;
+    }
   }
 
   private setAdapterOptions(selectedConfiguration: string): void {
@@ -183,6 +208,11 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
     }
 
     this.processingMessage = true;
+    this.webStorageService.set<TestPipelineSession>('testPipeline', {
+      configuration: this.selectedConfiguration,
+      form: this.form,
+      sessionKeys: this.formSessionKeys,
+    });
     this.http.post<PipelineResult>(`${this.appService.absoluteApiPath}test-pipeline`, fd).subscribe({
       next: (returnData) => {
         let warnLevel = 'success';
@@ -203,6 +233,19 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
         this.processingMessage = false;
       },
     });
+  }
+
+  reset(): void {
+    this.webStorageService.remove('testPipeline');
+    this.selectedConfiguration = '';
+    this.form = {
+      adapter: '',
+      encoding: '',
+      message: '',
+    };
+    this.formSessionKeys = [{ key: '', value: '' }];
+    this.file = null;
+    this.formFile.reset();
   }
 
   protected setSelectedConfiguration(): void {

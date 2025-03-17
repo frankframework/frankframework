@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2016, 2020 Nationale-Nederlanden, 2021, 2024 WeAreFrank!
+   Copyright 2013-2016, 2020 Nationale-Nederlanden, 2021, 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -546,7 +546,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 			String ldapResult = message.asString();
 			if (ldapResult != null) {
 				Collection<String> c = XmlUtils.evaluateXPathNodeSet(ldapResult,"attributes/attribute[@name='description']/@value");
-				if (c != null && !c.isEmpty()) {
+				if (!c.isEmpty()) {
 					principalDescription = c.iterator().next();
 				}
 			}

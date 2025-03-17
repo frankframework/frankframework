@@ -31,7 +31,7 @@ public record DelineaClientSettings(String tenant,
 		String autoCommentValue) {
 	private static final String DEFAULT_TLD = "com";
 
-	private static final String DEFAULT_ROOT_URL_TEMPLATE = "https://%s.secretservercloud.%s/api/v1";
+	private static final String DEFAULT_ROOT_URL_TEMPLATE = "https://%s.secretservercloud.%s/api";
 
 	private static final String DEFAULT_TOKEN_URL_TEMPLATE = "https://%s.secretservercloud.%s/oauth2/token";
 

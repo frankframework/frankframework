@@ -110,30 +110,24 @@
             </div>
           </div>
         }
-        @if (jmsRealms.length > 0) {
+        @if (jmsRealms) {
           <div class="col-md-12 m-t-md table-responsive">
             <div class="ibox-title">
               <h4>Used JmsRealms</h4>
             </div>
             <div class="ibox-content">
-              <table class="table">
+              <table class="table resources">
                 <thead>
                   <tr>
-                    <th>Name</th>
-                    <th>Datasource</th>
-                    <th>QueueConnectionFactory</th>
-                    <th>TopicConnectionFactory</th>
+                    <th>Realm Name</th>
                     <th>Info</th>
                   </tr>
                 </thead>
                 <tbody>
-                  @for (realm of jmsRealms; track realm.name) {
+                  @for (item of jmsRealms | keyvalue; track item.key) {
                     <tr>
-                      <td>{{ realm.name }}</td>
-                      <td>{{ realm.datasourceName }}</td>
-                      <td>{{ realm.queueConnectionFactoryName }}</td>
-                      <td>{{ realm.topicConnectionFactoryName }}</td>
-                      <td>{{ realm.info }}</td>
+                      <td>{{ item.key }}</td>
+                      <td>{{ item.value }}</td>
                     </tr>
                   }
                 </tbody>
@@ -141,33 +135,35 @@
             </div>
           </div>
         }
-        @if (datasources.length > 0) {
-          <div class="col-md-12 m-t-md table-responsive">
-            <div class="ibox-title">
-              <h4>Used DataSources</h4>
-            </div>
-            <div class="ibox-content">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>Datasource</th>
-                    <th>Info</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (datasource of datasources; track datasource.datasourceName) {
+        @if (resourceFactories.length > 0) {
+          @for (resourceFactory of resourceFactories; track resourceFactory.name) {
+            <div class="col-md-12 m-t-md table-responsive">
+              <div class="ibox-title">
+                <h4>Used {{ resourceFactory.name }}</h4>
+              </div>
+              <div class="ibox-content">
+                <table class="table resources">
+                  <thead>
                     <tr>
-                      <td rowspan="2">{{ datasource.datasourceName }}</td>
-                      <td>{{ datasource.info }}</td>
+                      <th>Name</th>
+                      <th>Info</th>
                     </tr>
-                    <tr>
-                      <td>{{ datasource.connectionPoolProperties }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    @for (resource of resourceFactory.resources; track resource.name) {
+                      <tr>
+                        <td rowspan="2">{{ resource.name }}</td>
+                        <td>{{ resource.info }}</td>
+                      </tr>
+                      <tr>
+                        <td>{{ resource.connectionPoolProperties }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          }
         }
         <div class="col-md-12 m-t-md table-responsive">
           <div class="ibox-title">

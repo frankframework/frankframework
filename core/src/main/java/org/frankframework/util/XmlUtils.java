@@ -19,6 +19,7 @@ package org.frankframework.util;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -236,7 +237,7 @@ public class XmlUtils {
 
 	public static Map<String,String> getXsltConfig(Source source) throws TransformerException, IOException {
 		TransformerPool tp = getGetXsltConfigTransformerPool();
-		String metadataString = tp.transform(source);
+		String metadataString = tp.transformToString(source);
 		Map<String,String> result = new LinkedHashMap<>();
 		for (final String s : StringUtil.split(metadataString, ";")) {
 			List<String> kv = StringUtil.split(s, "=");
@@ -856,7 +857,7 @@ public class XmlUtils {
 	}
 
 	public static Source stringToSource(String xmlString) throws DomBuilderException {
-		return stringToSource(xmlString,isNamespaceAwareByDefault());
+		return stringToSource(xmlString, isNamespaceAwareByDefault());
 	}
 
 	public static Source stringToSourceForSingleUse(String xmlString) throws SAXException {
@@ -867,6 +868,7 @@ public class XmlUtils {
 		if (namespaceAware) {
 			StringReader reader = new StringReader(xmlString);
 			InputSource is = new InputSource(reader);
+			// TODO: This method does not seem to properly honour namespaceAware=false; once that is fixed we don't have to make switch here.
 			return inputSourceToSAXSource(is, namespaceAware, null);
 		}
 		try {
@@ -884,6 +886,9 @@ public class XmlUtils {
 		return inputSourceToSAXSource(is, true, null);
 	}
 
+	/**
+	 * TODO: This does not appear to always properly honour namespaceAware=false
+	 */
 	public static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware, Resource scopeProvider) throws SAXException {
 		try {
 			return new SAXSource(getXMLReader(namespaceAware, scopeProvider), is);
@@ -909,7 +914,7 @@ public class XmlUtils {
 	public static int detectXsltVersion(String xsltString) throws TransformerConfigurationException {
 		try {
 			TransformerPool tpVersion = XmlUtils.getDetectXsltVersionTransformerPool();
-			String version=tpVersion.transform(xsltString, null, true);
+			String version=tpVersion.transformToString(xsltString, null, true);
 			log.debug("detected version [{}] for xslt [{}]", version, xsltString);
 			return interpretXsltVersion(version);
 		} catch (Exception e) {
@@ -923,7 +928,7 @@ public class XmlUtils {
 			StreamSource stylesource = new StreamSource(xsltUrl.openStream());
 			stylesource.setSystemId(xsltUrl.toExternalForm());
 
-			return interpretXsltVersion(tpVersion.transform(stylesource));
+			return interpretXsltVersion(tpVersion.transformToString(stylesource));
 		} catch (Exception e) {
 			throw new TransformerConfigurationException(e);
 		}
@@ -1489,9 +1494,19 @@ public class XmlUtils {
 	public static String getRootNamespace(String input) {
 		try {
 			TransformerPool tp = getGetRootNamespaceTransformerPool();
-			return tp.transform(input,null);
+			return tp.transformToString(input,null);
 		} catch (Exception e) {
 			log.warn("unable to find root-namespace", e);
+			return null;
+		}
+	}
+
+	public static String getRootNamespace(Message input) {
+		try {
+			TransformerPool tp = getGetRootNamespaceTransformerPool();
+			return tp.transformToString(input);
+		} catch (Exception e) {
+			log.debug("unable to find root-namespace", e);
 			return null;
 		}
 	}
@@ -1499,17 +1514,27 @@ public class XmlUtils {
 	public static String addRootNamespace(String input, String namespace) {
 		try {
 			TransformerPool tp = getAddRootNamespaceTransformerPool(namespace,true,false);
-			return tp.transform(input,null);
+			return tp.transformToString(input,null);
 		} catch (Exception e) {
 			log.warn("unable to add root-namespace", e);
 			return null;
 		}
 	}
 
+	public static Message addRootNamespace(Message input, String namespace) {
+		try {
+			TransformerPool tp = getAddRootNamespaceTransformerPool(namespace,false,true);
+			return tp.transform(input);
+		} catch (Exception e) {
+			log.warn("unable to add root-namespace", e);
+			return Message.nullMessage();
+		}
+	}
+
 	public static String copyOfSelect(String input, String xpath) {
 		try {
 			TransformerPool tp = getCopyOfSelectTransformerPool(xpath, true,false);
-			return tp.transform(input,null);
+			return tp.transformToString(input,null);
 		} catch (Exception e) {
 			log.warn("unable to execute xpath expression [{}]", xpath, e);
 			return null;
@@ -1620,7 +1645,7 @@ public class XmlUtils {
 				&& Objects.equals(attribute1.getValue(), attribute2.getValue());
 	}
 
-	public static Collection<String> evaluateXPathNodeSet(String input, String xpathExpr) throws XmlException {
+	public static @Nonnull Collection<String> evaluateXPathNodeSet(String input, String xpathExpr) throws XmlException {
 		String msg = XmlUtils.removeNamespaces(input);
 
 		try {
@@ -1637,25 +1662,21 @@ public class XmlUtils {
 					c.add(nodes.item(i).getFirstChild().getNodeValue());
 				}
 			}
-			if (!c.isEmpty()) {
-				return c;
-			}
-			// TODO Don't return stupid null
-			return null;
+			return c;
 		} catch (DomBuilderException | XPathExpressionException e) {
 			throw new XmlException(e);
 		}
 	}
 
-	public static String evaluateXPathNodeSetFirstElement(String input, String xpathExpr) throws XmlException {
+	public static @Nullable String evaluateXPathNodeSetFirstElement(String input, String xpathExpr) throws XmlException {
 		Collection<String> c = evaluateXPathNodeSet(input, xpathExpr);
-		if (c != null && !c.isEmpty()) {
+		if (!c.isEmpty()) {
 			return c.iterator().next();
 		}
 		return null;
 	}
 
-	public static Double evaluateXPathNumber(String input, String xpathExpr) throws XmlException {
+	public static @Nullable Double evaluateXPathNumber(String input, String xpathExpr) throws XmlException {
 		String msg = XmlUtils.removeNamespaces(input);
 
 		try {
@@ -1669,7 +1690,7 @@ public class XmlUtils {
 		}
 	}
 
-	public static Map<String, String> evaluateXPathNodeSet(String input, String xpathExpr, String keyElement, String valueElement) throws XmlException {
+	public static @Nonnull Map<String, String> evaluateXPathNodeSet(String input, String xpathExpr, String keyElement, String valueElement) throws XmlException {
 		String msg = XmlUtils.removeNamespaces(input);
 
 		Map<String, String> m = new HashMap<>();
@@ -1691,14 +1712,10 @@ public class XmlUtils {
 		} catch (DomBuilderException | XPathExpressionException e) {
 			throw new XmlException(e);
 		}
-		if (!m.isEmpty()) {
-			return m;
-		}
-		// TODO Don't return stupid null
-		return null;
+		return m;
 	}
 
-	public static String toXhtml(Message message) throws IOException {
+	public static @Nonnull Message toXhtml(Message message) throws IOException {
 		if (!Message.isEmpty(message)) {
 			String messageCharset = message.getCharset();
 			String xhtmlString = message.peek(HTML_MAX_PREAMBLE_SIZE);
@@ -1710,10 +1727,14 @@ public class XmlUtils {
 				}
 				HtmlCleaner cleaner = new HtmlCleaner(props);
 				TagNode tagNode = cleaner.clean(message.asReader());
-				return new SimpleXmlSerializer(props).getAsString(tagNode);
+				MessageBuilder messageBuilder = new MessageBuilder();
+				OutputStream outputStream = messageBuilder.asOutputStream();
+				new SimpleXmlSerializer(props).writeToStream(tagNode, outputStream);
+				outputStream.close();
+				return messageBuilder.build();
 			}
 		}
-		return null;
+		return Message.nullMessage();
 	}
 
 	public static XPathFactory getXPathFactory() {

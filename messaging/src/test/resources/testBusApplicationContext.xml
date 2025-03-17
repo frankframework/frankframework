@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:integration="http://www.springframework.org/schema/integration"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-5.2.xsd
+		http://www.springframework.org/schema/security https://www.springframework.org/schema/security/spring-security-6.4.xsd
+		"
+	>
+<!-- 	<integration:control-bus dispatcher-pool-size="25" auto-create-channels="true"/> -->
+	<integration:publish-subscribe-channel id="frank-management-bus" />
+
+	<bean name="gateway" class="org.frankframework.management.bus.LocalGateway" scope="singleton">
+		<property name="requestChannel" ref="frank-management-bus" />
+	</bean>
+
+	<security:method-security jsr250-enabled="true" pre-post-enabled="false" proxy-target-class="true" secured-enabled="false" />
+
+	<context:property-placeholder />
+
+	<bean id="messageDispatcher" class="org.frankframework.management.bus.MessageDispatcher">
+		<property name="packageName" value="org.frankframework.management.bus" />
+	</bean>
+
+	<bean id="txManager" class="org.frankframework.testutil.mock.TransactionManagerMock" />
+
+	<bean id="servletManager" class="org.frankframework.testutil.mock.ServletManagerMock" />
+
+	<bean id="MessageEventListener" class="org.frankframework.lifecycle.MessageEventListener" scope="singleton" />
+	<bean primary="true" name="meterRegistry" class="org.frankframework.metrics.LocalStatisticsRegistry" autowire="byName" />
+
+	<!-- We're not importing the unmanagedDeployment because we don't want to use JMS/JDBC endpoints -->
+	<!-- <import resource="springUnmanagedDeployment.xml"/> -->
+	<bean name="ibisManager" class="org.frankframework.testutil.mock.MockIbisManager" />
+
+	<bean name="applicationWarnings" class="org.frankframework.configuration.ApplicationWarnings"/>
+
+	<bean id="dataSourceFactory" class="org.frankframework.testutil.mock.DataSourceFactoryMock" />
+	<bean id="connectionFactoryFactory" class="org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory" />
+
+	<bean name="isolatedServiceCaller" class="org.frankframework.senders.IsolatedServiceCaller" autowire="byName" scope="singleton" />
+
+	<bean id="schedulerHelper" class="org.frankframework.scheduler.SchedulerHelper" lazy-init="true" autowire="byName" />
+	<bean id="scheduler" class="org.frankframework.scheduler.SchedulerFactoryBean" lazy-init="true" >
+		<!-- Auto-wiring wires up bean named taskExecutor as threadpool implementation -->
+		<property name="configLocation" value="classpath:quartz.properties"/>
+		<property name="autoStartup" value="false"/>
+		<property name="schedulerName" value="TestScheduler"/>
+		<property name="waitForJobsToCompleteOnShutdown" value="true"/>
+	</bean>
+</beans>
