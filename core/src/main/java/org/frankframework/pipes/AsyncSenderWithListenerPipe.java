@@ -241,7 +241,7 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 		this.correlationIDNamespaceDefs = correlationIDNamespaceDefs;
 	}
 
-	/** Key of a PipelineSession variable. If specified, the value of the PipelineSession variable is used as input for the XPathExpression or stylesheet, instead of the current input message. */
+	/** Key of a pipeline session variable. If specified, the value of the PipelineSession variable is used as input for the XPathExpression or stylesheet, instead of the current input message. */
 	public void setCorrelationIDSessionKey(String string) {
 		correlationIDSessionKey = string;
 	}
@@ -271,7 +271,7 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 		this.auditTrailNamespaceDefs = auditTrailNamespaceDefs;
 	}
 
-	/** Key of a PipelineSession variable. If specified, the value of the PipelineSession variable is used as an audit trail (instead of the default 'no audit trail'). */
+	/** Key of a pipeline session variable. If specified, the value of the PipelineSession variable is used as an audit trail (instead of the default 'no audit trail'). */
 	public void setAuditTrailSessionKey(String string) {
 		auditTrailSessionKey = string;
 	}
