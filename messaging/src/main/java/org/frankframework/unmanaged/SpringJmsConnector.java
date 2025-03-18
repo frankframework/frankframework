@@ -112,10 +112,20 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		this.messageSelector = messageSelector;
 		this.receiveTimeout = receiveTimeout;
 		this.pollGuardInterval = pollGuardInterval;
+
 		configureEndpointConnection();
 	}
 
+	// When running via Larva there is no receiver
 	private void configureEndpointConnection() throws ConfigurationException {
+		if (getReceiver() != null) {
+			configureEndpointConnection(getReceiver().isTransacted(), getReceiver().getTransactionTimeout(), getReceiver().getNumThreads());
+		} else {
+			configureEndpointConnection(false, 0, 1);
+		}
+	}
+
+	private void configureEndpointConnection(boolean isTransacted, int txTimeout, int maxConcurrentConsumers) throws ConfigurationException {
 		// Create the Message Listener Container manually.
 		// This is needed, because otherwise the Spring Factory will
 		// call afterPropertiesSet() on the object which will validate
@@ -125,11 +135,11 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		IbisMessageListenerContainer ibisMessageListenerContainer = (IbisMessageListenerContainer)jmsContainer;
 		ibisMessageListenerContainer.setCredentialFactory(credentialFactory);
 
-		if (getReceiver().isTransacted()) {
+		if (isTransacted) {
 			log.debug("{} setting transaction manager to [{}]", this::getLogPrefix, ()->txManager);
 			jmsContainer.setTransactionManager(txManager);
-			if (getReceiver().getTransactionTimeout()>0) {
-				jmsContainer.setTransactionTimeout(getReceiver().getTransactionTimeout());
+			if (txTimeout > 0) {
+				jmsContainer.setTransactionTimeout(txTimeout);
 			}
 			txDefinition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 			if (receiveTimeout > txDefinition.getTimeout() && txDefinition.getTimeout() != -1) {
@@ -152,8 +162,8 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 		jmsContainer.setExceptionListener(this);
 
-		if (getReceiver().getNumThreads() > 0) {
-			jmsContainer.setMaxConcurrentConsumers(getReceiver().getNumThreads());
+		if (maxConcurrentConsumers > 0) {
+			jmsContainer.setMaxConcurrentConsumers(maxConcurrentConsumers);
 		} else {
 			jmsContainer.setMaxConcurrentConsumers(1);
 		}
@@ -162,7 +172,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		if (cacheMode!=null) {
 			jmsContainer.setCacheLevelName(cacheMode.name());
 		} else {
-			if (getReceiver().isTransacted()) {
+			if (isTransacted) {
 				jmsContainer.setCacheLevel(DEFAULT_CACHE_LEVEL_TRANSACTED);
 			} else {
 				jmsContainer.setCacheLevel(DEFAULT_CACHE_LEVEL_NON_TRANSACTED);
