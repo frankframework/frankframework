@@ -41,14 +41,6 @@ public class NoOpAuthenticator extends AbstractServletAuthenticator {
 		return AuthenticatedAuthorizationManager.anonymous();
 	}
 
-	/**
-	 * In case of this Authenticator implementation, authorization is not needed on health endpoints
-	 */
-	@Override
-	protected boolean authorizeHealthEndpoints() {
-		return false;
-	}
-
 	private List<GrantedAuthority> getAuthorities() {
 		Set<String> securityRoles = getSecurityRoles();
 		List<GrantedAuthority> grantedAuthorities = new ArrayList<>(securityRoles.size());

@@ -46,11 +46,9 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 
@@ -59,7 +57,6 @@ import lombok.Getter;
 public abstract class AbstractServletAuthenticator implements IAuthenticator, ApplicationContextAware {
 	public static final List<String> DEFAULT_IBIS_ROLES = List.of("IbisWebService", "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester");
 	public static final String ALLOW_OPTIONS_REQUESTS_KEY = "application.security.http.allowUnsecureOptionsRequests";
-	public static final String EXPRESSION_IS_LOCALHOST_OR_AUTHENTICATED = "hasIpAddress('127.0.0.1') or hasIpAddress('::1') or isAuthenticated()";
 
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
 	protected final Logger log = LogManager.getLogger(this);
@@ -195,13 +192,6 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 			http.anonymous(AnonymousConfigurer::disable); // Disable the default anonymous filter and thus disallow all anonymous access
 		}
 
-		if (authorizeHealthEndpoints()) {
-			http.authorizeHttpRequests(authorize -> authorize
-					.requestMatchers(new AntPathRequestMatcher("/**/health"))
-					.access(new WebExpressionAuthorizationManager(EXPRESSION_IS_LOCALHOST_OR_AUTHENTICATED))
-			);
-		}
-
 		// Enables security for all servlet endpoints
 		RequestMatcher authorizationRequestMatcher = new AndRequestMatcher(securityRequestMatcher, this::authorizationRequestMatcher);
 		http.authorizeHttpRequests(requests -> requests.requestMatchers(authorizationRequestMatcher).access(getAuthorizationManager()));
@@ -209,13 +199,6 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 		// This filter converts x-forwarded headers to their corresponding `normal` headers. Eg. `X-Forwarded-Proto` sets HttpServletRequest.isSecure to `true`.
 		http.addFilterBefore(new ForwardedHeaderFilter(), SecurityContextHolderFilter.class);
 		return configure(http);
-	}
-
-	/**
-	 * Allow health endpoint to be accessed by localhost or authenticated users
-	 */
-	protected boolean authorizeHealthEndpoints() {
-		return true;
 	}
 
 	/**
