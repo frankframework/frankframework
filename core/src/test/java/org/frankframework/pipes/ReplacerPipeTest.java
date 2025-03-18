@@ -204,7 +204,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 
 		Message result = res.getResult();
 		result.captureBinaryStream();
-		result.getMagic(10);
+		result.peek(10);
 
 		assertEquals("statuscodeselectable: [Exit201]", result.asString());
 	}

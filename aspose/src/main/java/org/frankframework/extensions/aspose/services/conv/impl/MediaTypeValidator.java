@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2022 WeAreFrank!
+   Copyright 2019, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,8 +36,7 @@ class MediaTypeValidator {
 	 */
 	public MediaTypeValidator() {
 		// Create only once. Tika seems to be thread safe
-		// (see
-		// http://stackoverflow.com/questions/10190980/spring-tika-integration-is-my-approach-thread-safe)
+		// (see http://stackoverflow.com/questions/10190980/spring-tika-integration-is-my-approach-thread-safe)
 		tika = new Tika();
 	}
 
@@ -45,7 +44,6 @@ class MediaTypeValidator {
 	 * Detects media type from input stream
 	 */
 	public MediaType getMediaType(Message message, String filename) throws IOException {
-		message.preserve();
 		try (TikaInputStream tis = TikaInputStream.get(message.asInputStream())) {
 			String type = tika.detect(tis, filename);
 			return MediaType.valueOf(type);
