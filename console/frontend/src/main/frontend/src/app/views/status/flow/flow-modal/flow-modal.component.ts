@@ -75,7 +75,6 @@ export class FlowModalComponent {
       setTimeout(() => {
         newTab.document.body.innerHTML = svg.outerHTML;
         newTab.document.title = `${this.flowName} Flow`;
-        debugger;
       }, 50);
     }
   }
