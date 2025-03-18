@@ -74,6 +74,10 @@ public class ConvertToLarvaAction implements CustomReportAction {
 
 	@Override
 	public String getButtonText() {
+		String stage = appConstants.getProperty("dtap.stage", "LOC");
+		if(!stage.equalsIgnoreCase("LOC")) {
+			return null;
+		}
 		return "Convert to Larva";
 	}
 
