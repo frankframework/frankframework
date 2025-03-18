@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild } from '@angular/core';
+import { Component, inject, Input, OnInit, ViewChild } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgMermaidComponent } from 'src/app/components/ng-mermaid/ng-mermaid.component';
 
@@ -8,15 +8,20 @@ import { NgMermaidComponent } from 'src/app/components/ng-mermaid/ng-mermaid.com
   styleUrls: ['./flow-modal.component.scss'],
   imports: [NgMermaidComponent],
 })
-export class FlowModalComponent {
+export class FlowModalComponent implements OnInit {
   @Input() flowName = '';
   @Input() flow = '';
   @ViewChild(NgMermaidComponent) ngMermaid!: NgMermaidComponent;
 
   protected showActionButtons = false;
   protected errorActionMessage: null | string = null;
+  protected isFirefox: boolean = false;
 
-  constructor(private activeModal: NgbActiveModal) {}
+  private activeModal: NgbActiveModal = inject(NgbActiveModal);
+
+  ngOnInit(): void {
+    this.isFirefox = navigator.userAgent.includes('Firefox');
+  }
 
   close(): void {
     this.activeModal.close();
