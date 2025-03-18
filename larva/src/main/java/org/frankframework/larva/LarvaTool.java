@@ -1555,16 +1555,16 @@ public class LarvaTool {
 			return RESULT_ERROR;
 		}
 		queueName = step.substring(i + 1, step.lastIndexOf("."));
+		Object queueCreatorClassname = properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX);
 		if (step.endsWith(".read") || (allowReadlineSteps && step.endsWith(".readline"))) {
-			if ("org.frankframework.jms.JmsListener".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
+			if ("org.frankframework.jms.JmsListener".equals(queueCreatorClassname)) {
 				stepPassed = executeJmsListenerRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
-			} else if ("org.frankframework.jdbc.FixedQuerySender".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
+			} else if ("org.frankframework.jdbc.FixedQuerySender".equals(queueCreatorClassname)) {
 				stepPassed = executeFixedQuerySenderRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, correlationId);
-			} else if ("org.frankframework.http.WebServiceListener".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
+			} else if ("org.frankframework.http.WebServiceListener".equals(queueCreatorClassname) ||
+					"org.frankframework.receivers.JavaListener".equals(queueCreatorClassname)) {
 				stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, config.getTimeout());
-			} else if ("org.frankframework.receivers.JavaListener".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
-				stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, config.getTimeout());
-			} else if ("org.frankframework.larva.XsltProviderListener".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
+			} else if ("org.frankframework.larva.XsltProviderListener".equals(queueCreatorClassname)) {
 				Map<String, Object> xsltParameters = createParametersMapFromParamProperties(properties, step);
 				stepPassed = executeQueueWrite(stepDisplayName, queues, queueName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
 			} else {
@@ -1582,9 +1582,9 @@ public class LarvaTool {
 				AppConstants appConstants = AppConstants.getInstance();
 				fileContent = new Message(StringResolver.substVars(fileData, appConstants), fileContent.copyContext());
 			}
-			if ("org.frankframework.jms.JmsSender".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
+			if ("org.frankframework.jms.JmsSender".equals(queueCreatorClassname)) {
 				stepPassed = executeJmsSenderWrite(stepDisplayName, queues, queueName, fileContent, correlationId);
-			} else if ("org.frankframework.larva.XsltProviderListener".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
+			} else if ("org.frankframework.larva.XsltProviderListener".equals(queueCreatorClassname)) {
 				stepPassed = executeQueueRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);  // XsltProviderListener has .read and .write reversed
 			} else {
 				stepPassed = executeQueueWrite(stepDisplayName, queues, queueName, fileContent, correlationId, null);
