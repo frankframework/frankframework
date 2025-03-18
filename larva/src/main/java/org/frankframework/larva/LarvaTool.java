@@ -76,6 +76,7 @@ import org.custommonkey.xmlunit.XMLUnit;
 
 import org.frankframework.configuration.ClassNameRewriter;
 import org.frankframework.configuration.IbisContext;
+import org.frankframework.core.IPullingListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -1074,31 +1075,8 @@ public class LarvaTool {
 		properties.putAll(absolutePathProperties);
 	}
 
-
-
 	public boolean closeQueues(Map<String, Queue> queues, Properties properties, String correlationId) {
 		boolean remainingMessagesFound = false;
-		debugMessage("Close jms senders");
-		for (Map.Entry<String, Queue> entry : queues.entrySet()) {
-			String queueName = entry.getKey();
-			if ("org.frankframework.jms.JmsSender".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
-				JmsSender jmsSender = (JmsSender)(entry.getValue()).get("jmsSender");
-				jmsSender.stop();
-				debugMessage("Closed jms sender '" + queueName + "'");
-			}
-		}
-		debugMessage("Close jms listeners");
-		for (Map.Entry<String, Queue> entry : queues.entrySet()) {
-			String queueName = entry.getKey();
-			if ("org.frankframework.jms.JmsListener".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
-				PullingJmsListener pullingJmsListener = (PullingJmsListener)(entry.getValue()).get("jmsListener");
-				if (jmsCleanUp(queueName, pullingJmsListener)) {
-					remainingMessagesFound = true;
-				}
-				pullingJmsListener.stop();
-				debugMessage("Closed jms listener '" + queueName + "'");
-			}
-		}
 		debugMessage("Close jdbc connections");
 		for (Map.Entry<String, Queue> entry : queues.entrySet()) {
 			String name = entry.getKey();
@@ -1201,52 +1179,6 @@ public class LarvaTool {
 		return remainingMessagesFound;
 	}
 
-	public boolean jmsCleanUp(String queueName, PullingJmsListener pullingJmsListener) {
-		boolean remainingMessagesFound = false;
-		debugMessage("Check for remaining messages on '" + queueName + "'");
-		long oldTimeout = pullingJmsListener.getTimeout();
-		pullingJmsListener.setTimeout(10);
-		boolean empty = false;
-		while (!empty) {
-			RawMessageWrapper<jakarta.jms.Message> rawMessage = null;
-			Message message;
-			Map<String, Object> threadContext = null;
-			try {
-				threadContext = pullingJmsListener.openThread();
-				rawMessage = pullingJmsListener.getRawMessage(threadContext);
-				if (rawMessage != null) {
-					message = pullingJmsListener.extractMessage(rawMessage, threadContext);
-					remainingMessagesFound = true;
-					if (message == null) {
-						errorMessage("Could not translate raw message from jms queue '" + queueName + "'");
-					} else {
-						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message);
-					}
-				}
-			} catch(ListenerException e) {
-				errorMessage("ListenerException on jms clean up '" + queueName + "': " + e.getMessage(), e);
-			} finally {
-				if (threadContext != null) {
-					try {
-						pullingJmsListener.closeThread(threadContext);
-					} catch(ListenerException e) {
-						errorMessage("Could not close thread on jms listener '" + queueName + "': " + e.getMessage(), e);
-					}
-				}
-			}
-			if (rawMessage == null) {
-				empty = true;
-			}
-		}
-
-		try {
-			pullingJmsListener.setTimeout(Math.toIntExact(oldTimeout));
-		} catch (ArithmeticException e) {
-			errorMessage("Could not set timeout on pullingJmsListener '" + queueName + "': " + e.getMessage(), e);
-		}
-		return remainingMessagesFound;
-	}
-
 	private int executeJmsSenderWrite(String stepDisplayName, Map<String, Queue> queues, String queueName, Message fileContent, String correlationId) {
 		int result = RESULT_ERROR;
 
@@ -1256,7 +1188,6 @@ public class LarvaTool {
 			return RESULT_ERROR;
 		}
 		JmsSender jmsSender = (JmsSender)jmsSenderInfo.get("jmsSender");
-		if (jmsSender == null) throw new IllegalStateException("jmsSender == null");
 		try {
 			String providedCorrelationId = null;
 			String useCorrelationIdFrom = (String)jmsSenderInfo.get("useCorrelationIdFrom");
@@ -1316,7 +1247,7 @@ public class LarvaTool {
 		return result;
 	}
 
-
+	// TODO instead of JMS this should be an IPullingListener implementation
 	private int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, Message fileContent) {
 		int result = RESULT_ERROR;
 
@@ -1325,12 +1256,12 @@ public class LarvaTool {
 			errorMessage("Property '" + queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
 			return RESULT_ERROR;
 		}
-		PullingJmsListener pullingJmsListener = (PullingJmsListener)jmsListenerInfo.get("jmsListener");
+		IPullingListener pullingJmsListener = (IPullingListener)jmsListenerInfo.get("pullingJmsListener");
 		Map<String, Object> threadContext = null;
 		Message message = null;
 		try {
 			threadContext = pullingJmsListener.openThread();
-			RawMessageWrapper<jakarta.jms.Message> rawMessage = pullingJmsListener.getRawMessage(threadContext);
+			RawMessageWrapper rawMessage = pullingJmsListener.getRawMessage(threadContext);
 			if (rawMessage != null) {
 				message = pullingJmsListener.extractMessage(rawMessage, threadContext);
 				String correlationId = rawMessage.getId(); // NB: Historically this code extracted message-ID then used that as correlation-ID.

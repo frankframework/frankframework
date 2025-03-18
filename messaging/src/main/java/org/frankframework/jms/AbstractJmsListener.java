@@ -90,7 +90,7 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (getReceiver().isTransacted()) {
+		if (getReceiver() != null && getReceiver().isTransacted()) {
 			setTransacted(true);
 		}
 		super.configure();
