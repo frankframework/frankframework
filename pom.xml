@@ -42,7 +42,7 @@
 		<db2.driver.version>11.5.9.0</db2.driver.version>
 		<oracle.driver.version>23.7.0.25.01</oracle.driver.version>
 		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
-		<mssql.driver.version>12.8.1.jre11</mssql.driver.version>
+		<mssql.driver.version>12.10.0.jre11</mssql.driver.version>
 		<mysql.driver.version>9.1.0</mysql.driver.version>
 		<!-- Should upgrade to new MariaDB driver 3.1.4, 3.2.0 or newer for JDK17 support but currently not working with XA transaction managers in the framework. -->
 		<mariadb.driver.version>3.5.2</mariadb.driver.version>
