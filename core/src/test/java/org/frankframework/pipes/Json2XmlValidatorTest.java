@@ -63,6 +63,98 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	}
 
 	@Test
+	public void testNullInputOmitXmlDeclaration() throws Exception {
+		// Arrange
+		pipe.setName("null_input");
+		pipe.setSchema("/Align/OptionalArray/hbp.xsd");
+		pipe.setRoot("Root");
+		pipe.setThrowException(true);
+		pipe.setOmitXmlDeclaration(true);
+		pipe.configure();
+		pipe.start();
+
+		// Act
+		PipeRunResult prr = doPipe(Message.nullMessage());
+
+		// Assert
+		assertEquals("<ns1:Root xmlns:ns1=\"urn:pim\"/>", prr.getResult().asString());
+	}
+
+	@Test
+	public void testSimpleJsonInputOmitXmlDeclaration() throws Exception {
+		// Arrange
+		pipe.setName("null_input");
+		pipe.setSchema("/Align/OptionalArray/hbp.xsd");
+		pipe.setRoot("Root");
+		pipe.setThrowException(true);
+		pipe.setOmitXmlDeclaration(true);
+		pipe.configure();
+		pipe.start();
+
+		// Act
+		PipeRunResult prr = doPipe("{\"Employee\": {}}}");
+
+		// Assert
+		assertEquals("<ns1:Root xmlns:ns1=\"urn:pim\"><ns1:Employee/></ns1:Root>", prr.getResult().asString());
+	}
+
+	@Test
+	public void testSimpleJsonInputRemoveNamespaceAndOmitXmlDeclaration() throws Exception {
+		// Arrange
+		pipe.setName("null_input");
+		pipe.setSchema("/Align/OptionalArray/hbp.xsd");
+		pipe.setRoot("Root");
+		pipe.setThrowException(true);
+		pipe.setProduceNamespacelessXml(true);
+		pipe.setOmitXmlDeclaration(true);
+		pipe.configure();
+		pipe.start();
+
+		// Act
+		PipeRunResult prr = doPipe("{\"Employee\": {}}}");
+
+		// Assert
+		assertEquals("<Root><Employee/></Root>", prr.getResult().asString());
+	}
+
+	@Test
+	public void testSimpleXmlInputOmitXmlDeclaration() throws Exception {
+		// Arrange
+		pipe.setName("null_input");
+		pipe.setSchema("/Align/OptionalArray/hbp.xsd");
+		pipe.setRoot("Root");
+		pipe.setThrowException(true);
+		pipe.setOmitXmlDeclaration(true);
+		pipe.configure();
+		pipe.start();
+
+		// Act
+		PipeRunResult prr = doPipe("<?xml version=\"1.0\" encoding=\"UTF-8\"?><ns1:Root xmlns:ns1=\"urn:pim\"><ns1:Employee/></ns1:Root>");
+
+		// Assert
+		assertEquals("<ns1:Root xmlns:ns1=\"urn:pim\"><ns1:Employee/></ns1:Root>", prr.getResult().asString());
+	}
+
+	@Test
+	public void testSimpleXmlInputRemoveNamespaceAndOmitXmlDeclaration() throws Exception {
+		// Arrange
+		pipe.setName("null_input");
+		pipe.setSchema("/Align/OptionalArray/hbp.xsd");
+		pipe.setRoot("Root");
+		pipe.setThrowException(true);
+		pipe.setProduceNamespacelessXml(true);
+		pipe.setOmitXmlDeclaration(true);
+		pipe.configure();
+		pipe.start();
+
+		// Act
+		PipeRunResult prr = doPipe("<?xml version=\"1.0\" encoding=\"UTF-8\"?><ns1:Root xmlns:ns1=\"urn:pim\"><ns1:Employee/></ns1:Root>");
+
+		// Assert
+		assertEquals("<Root><Employee/></Root>", prr.getResult().asString());
+	}
+
+	@Test
 	public void testEmptyInput() throws Exception {
 		// Arrange
 		pipe.setName("empty_input");
