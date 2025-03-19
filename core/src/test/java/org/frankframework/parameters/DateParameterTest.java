@@ -419,4 +419,88 @@ public class DateParameterTest {
 		assertEquals(date, result);
 	}
 
+	@Test
+	public void testTimeParameterWithTimePattern() throws Exception {
+
+		// Arrange
+		DateParameter parameter = new DateParameter();
+		parameter.setName("time");
+		parameter.setFormatType(DateFormatType.TIME);
+		parameter.setPattern("{now,time,HH:mm}");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertInstanceOf(String.class, result);
+		assertTrue(((String)result).matches("\\d{1,2}:\\d{2}"));
+	}
+
+	@Test
+	public void testDateParameterWithTimePattern() throws Exception {
+
+		// Arrange
+		DateParameter parameter = new DateParameter();
+		parameter.setName("time");
+		parameter.setFormatType(DateFormatType.DATE);
+		parameter.setPattern("{now,time,HH:mm}");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertTrue(((String)result).matches("\\d{1,2}:\\d{2}"));
+	}
+
+	@Test
+	public void testTimeParameterWithTimePatternWithoutFormat() throws Exception {
+
+		// Arrange
+		DateParameter parameter = new DateParameter();
+		parameter.setName("time");
+		parameter.setFormatType(DateFormatType.TIME);
+		parameter.setPattern("{now,time}");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertInstanceOf(Date.class, result);
+	}
+
+	@Test
+	public void testTimeParameterWithDatePattern() throws Exception {
+
+		// Arrange
+		DateParameter parameter = new DateParameter();
+		parameter.setName("time");
+		parameter.setFormatType(DateFormatType.TIME);
+		parameter.setPattern("{now,date,HH:mm}");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertTrue(((String)result).matches("\\d{1,2}:\\d{2}"));
+	}
 }
