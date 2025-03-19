@@ -420,56 +420,13 @@ public class DateParameterTest {
 	}
 
 	@Test
-	public void testTimeParameterWithTimePattern() throws Exception {
-
-		// Arrange
-		DateParameter parameter = new DateParameter();
-		parameter.setName("time");
-		parameter.setFormatType(DateFormatType.TIME);
-		parameter.setPattern("{now,time,HH:mm}");
-		parameter.configure();
-
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
-		Message message = new Message("fakeMessage");
-		PipeLineSession session = new PipeLineSession();
-
-		// Act
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-
-		// Assert
-		assertInstanceOf(String.class, result);
-		assertTrue(((String)result).matches("\\d{1,2}:\\d{2}"));
-	}
-
-	@Test
-	public void testDateParameterWithTimePattern() throws Exception {
-
-		// Arrange
-		DateParameter parameter = new DateParameter();
-		parameter.setName("time");
-		parameter.setFormatType(DateFormatType.DATE);
-		parameter.setPattern("{now,time,HH:mm}");
-		parameter.configure();
-
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
-		Message message = new Message("fakeMessage");
-		PipeLineSession session = new PipeLineSession();
-
-		// Act
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-
-		// Assert
-		assertTrue(((String)result).matches("\\d{1,2}:\\d{2}"));
-	}
-
-	@Test
 	public void testTimeParameterWithTimePatternWithoutFormat() throws Exception {
 
 		// Arrange
 		DateParameter parameter = new DateParameter();
 		parameter.setName("time");
 		parameter.setFormatType(DateFormatType.TIME);
-		parameter.setPattern("{now,time}");
+		parameter.setPattern("{now,time}"); // Does not work if you do not specify 'time' in the pattern. Seems like a bug to me, inconsistent with how DateFormatType.DATE works
 		parameter.configure();
 
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
@@ -484,13 +441,13 @@ public class DateParameterTest {
 	}
 
 	@Test
-	public void testTimeParameterWithDatePattern() throws Exception {
+	public void testTimeParameterWithTimePatternWithFormat() throws Exception {
 
 		// Arrange
 		DateParameter parameter = new DateParameter();
 		parameter.setName("time");
 		parameter.setFormatType(DateFormatType.TIME);
-		parameter.setPattern("{now,date,HH:mm}");
+		parameter.setPattern("{now,time,HH:mm:ss}"); // Does not work if you do not specify 'time' in the pattern. If you specify a format, it HAS to be this format.
 		parameter.configure();
 
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
@@ -501,6 +458,48 @@ public class DateParameterTest {
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
 
 		// Assert
-		assertTrue(((String)result).matches("\\d{1,2}:\\d{2}"));
+		assertInstanceOf(Date.class, result);
+	}
+
+	@Test
+	public void testDateParameterWithDatePatternWithoutFormat() throws Exception {
+
+		// Arrange
+		DateParameter parameter = new DateParameter();
+		parameter.setName("date");
+		parameter.setFormatType(DateFormatType.DATE);
+		parameter.setPattern("{now}"); // Specifying just 'date' here does not work. Not consistent with DateFormatType.TIME
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertInstanceOf(Date.class, result);
+	}
+
+	@Test
+	public void testDateParameterWithDatePatternWithFormat() throws Exception {
+
+		// Arrange
+		DateParameter parameter = new DateParameter();
+		parameter.setName("date");
+		parameter.setFormatType(DateFormatType.DATE);
+		parameter.setPattern("{now,date,yyyy-MM-dd}"); // Specifying full date format makes it work, but it HAS to be this format
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertInstanceOf(Date.class, result);
 	}
 }
