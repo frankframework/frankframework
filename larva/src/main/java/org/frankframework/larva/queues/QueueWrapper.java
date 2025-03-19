@@ -34,7 +34,6 @@ import org.frankframework.core.IWithParameters;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
-import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.http.WebServiceListener;
 import org.frankframework.larva.FileListener;
@@ -47,11 +46,9 @@ import org.frankframework.larva.XsltProviderListener;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
-import org.frankframework.senders.DelaySender;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
@@ -267,13 +264,6 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	public int executeWrite(String stepDisplayName, Message fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
 		if (get() instanceof FileSender fileSender) {
 			fileSender.sendMessage(fileContent);
-			return LarvaTool.RESULT_OK;
-		}
-		if (get() instanceof DelaySender delaySender) {
-			try (PipeLineSession session = new PipeLineSession(); Message message = fileContent; ) {
-				SenderResult senderResult = delaySender.sendMessage(message, session);
-				CloseUtils.closeSilently(senderResult.getResult());
-			}
 			return LarvaTool.RESULT_OK;
 		}
 		if (get() instanceof XsltProviderListener xsltProviderListener) {

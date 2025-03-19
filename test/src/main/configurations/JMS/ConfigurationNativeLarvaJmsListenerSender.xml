@@ -1,0 +1,64 @@
+<Module
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd">
+
+	<Adapter name="Larva-JmsRRSender" description="Test the functioning of the Larva JmsListener (RR)" active="${active.jms}">
+		<Receiver>
+			<JavaListener name="larva-JmsRRSender" serviceName="ibis4test-Larva-JmsRRSender" />
+		</Receiver>
+
+		<Pipeline>
+			<SenderPipe name="send-message-to-queue">
+				<JmsSender jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}" synchronous="true" linkMethod="CORRELATIONID">
+					<Param name="SOURCE" value="${hostname}_larva_rr_in" />
+				</JmsSender>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="Larva-JmsRRListener" description="Test the functioning of the Larva JmsSender (RR)" active="${active.jms}">
+		<Receiver>
+			<JmsListener destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf"
+				forceMessageIdAsCorrelationId="true" messageSelector="SOURCE='${hostname}_larva_rr_out'">
+			</JmsListener>
+		</Receiver>
+
+		<Pipeline>
+			<SenderPipe name="send-message-to-larva">
+				<IbisJavaSender serviceName="testtool-LarvaJmsSender" />
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="Larva-JmsFFSender" description="Test the functioning of the Larva JmsListener (FF)" active="${active.jms}">
+		<Receiver>
+			<JavaListener name="larva-JJmsFFSender" serviceName="ibis4test-Larva-JJmsFFSender" />
+		</Receiver>
+
+		<Pipeline transactionAttribute="Required">
+			<SenderPipe name="send2Jms">
+				<JdbcMessageLog slotId="${applicationId}/Larva-JmsFFSender" />
+
+				<JmsSender jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}">
+					<Param name="SOURCE" value="${hostname}_larva_ff_in" />
+				</JmsSender>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="Larva-JmsFFListener" description="Test the functioning of the Larva JmsSender (FF)" active="${active.jms}">
+		<Receiver name="JmsFFListener" transactionAttribute="Required" maxRetries="0">
+			<JmsListener destinationName="${jms.destination.i4testiaf_ff}" useReplyTo="false" jmsRealm="qcf"
+				messageSelector="SOURCE='${hostname}_larva_ff_out'" />
+
+			<JdbcErrorStorage slotId="${applicationId}/Larva-JmsFFListener" />
+			<JdbcMessageLog slotId="${applicationId}/Larva-JmsFFListener" />
+		</Receiver>
+
+		<Pipeline transactionAttribute="Required">
+			<SenderPipe name="send-message-to-larva">
+				<IbisJavaSender serviceName="testtool-LarvaJmsSender" />
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+</Module>
