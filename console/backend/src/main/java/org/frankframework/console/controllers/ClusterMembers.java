@@ -16,7 +16,6 @@
 package org.frankframework.console.controllers;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import jakarta.annotation.security.RolesAllowed;
@@ -32,7 +31,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.frankframework.console.ApiException;
@@ -71,9 +69,9 @@ public class ClusterMembers implements ApplicationListener<ClusterMemberEvent> {
 	@Relation("cluster")
 	@Description("view all available cluster members")
 	@GetMapping(value = "/cluster/members", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getClusterMembers(@RequestParam Map<String, String> params) {
-		String id = params.get("id");
-		String type = params.get("type");
+	public ResponseEntity<?> getClusterMembers(GetClusterMembersParams params) {
+		String id = params.id;
+		String type = params.type;
 
 		if(StringUtils.isNotEmpty(id)) {
 			setMemberTarget(id);
@@ -123,6 +121,8 @@ public class ClusterMembers implements ApplicationListener<ClusterMemberEvent> {
 		String jsonResponse = JacksonUtils.convertToJson(new EventWrapper(event.getType(), event.getMember()));
 		this.messagingTemplate.convertAndSend("/event/cluster", jsonResponse);
 	}
+
+	public record GetClusterMembersParams(String id, String type) {}
 
 	public record ClusterMemberTargetModel(
 			String id

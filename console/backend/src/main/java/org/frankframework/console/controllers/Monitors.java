@@ -22,7 +22,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -60,10 +59,10 @@ public class Monitors {
 	@Relation("monitoring")
 	@Description("view all available monitors")
 	@GetMapping(value = {"", "/"})
-	public ResponseEntity<?> getMonitors(@PathVariable("configuration") String configurationName,
+	public ResponseEntity<?> getMonitors(MonitorPathVariables path,
 										 @RequestParam(value = "xml", defaultValue = "false") boolean showConfigXml) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.GET);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
 		builder.addHeader("xml", showConfigXml);
 		return frankApiService.callSyncGateway(builder);
 	}
@@ -72,9 +71,9 @@ public class Monitors {
 	@Relation("monitoring")
 	@Description("add a new monitor")
 	@PostMapping(value = {"", "/"}, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> addMonitor(@PathVariable("configuration") String configurationName, @RequestBody CreateMonitorModel json) {
+	public ResponseEntity<?> addMonitor(MonitorPathVariables path, @RequestBody CreateMonitorModel json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.UPLOAD);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
 		builder.setJsonPayload(json);
 		return frankApiService.callSyncGateway(builder);
 	}
@@ -83,10 +82,10 @@ public class Monitors {
 	@Relation("monitoring")
 	@Description("get a specific monitor")
 	@GetMapping(value = "/{monitorName}")
-	public ResponseEntity<?> getMonitor(@PathVariable("configuration") String configurationName, @PathVariable("monitorName") String monitorName,
+	public ResponseEntity<?> getMonitor(MonitorPathVariables path,
 										@RequestParam(value = "xml", defaultValue = "false") boolean showConfigXml) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.GET);
-		addDefaultHeaders(configurationName, monitorName, builder);
+		addDefaultHeaders(path.configuration, path.monitorName, builder);
 		builder.addHeader("xml", showConfigXml);
 		return frankApiService.callSyncGateway(builder);
 	}
@@ -95,11 +94,10 @@ public class Monitors {
 	@Relation("monitoring")
 	@Description("update a specific monitor")
 	@PutMapping(value = "/{monitorName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateMonitor(@PathVariable("configuration") String configName,
-										   @PathVariable(value = "monitorName", required = false) String monitorName,
+	public ResponseEntity<?> updateMonitor(MonitorPathVariables path,
 										   @RequestBody UpdateMonitorRequestModel json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.MANAGE);
-		addDefaultHeaders(configName, monitorName, builder);
+		addDefaultHeaders(path.configuration, path.monitorName, builder);
 
 		if (json.action != null) {
 			builder.addHeader("state", json.action);
@@ -113,10 +111,9 @@ public class Monitors {
 	@Relation("monitoring")
 	@Description("delete a specific monitor")
 	@DeleteMapping(value = "/{monitorName}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> deleteMonitor(@PathVariable("configuration") String configurationName,
-										   @PathVariable(value = "monitorName", required = false) String monitorName) {
+	public ResponseEntity<?> deleteMonitor(MonitorPathVariables path) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.DELETE);
-		addDefaultHeaders(configurationName, monitorName, builder);
+		addDefaultHeaders(path.configuration, path.monitorName, builder);
 		return frankApiService.callSyncGateway(builder);
 	}
 
@@ -124,10 +121,9 @@ public class Monitors {
 	@Relation("monitoring")
 	@Description("view specific monitor")
 	@GetMapping(value = "/{monitorName}/triggers", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getTriggers(@PathVariable("configuration") String configurationName,
-										 @PathVariable(value = "monitorName", required = false) String monitorName) {
+	public ResponseEntity<?> getTriggers(MonitorPathVariables path) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.GET);
-		addDefaultHeaders(configurationName, monitorName, builder);
+		addDefaultHeaders(path.configuration, path.monitorName, builder);
 		return frankApiService.callSyncGateway(builder);
 	}
 
@@ -135,11 +131,10 @@ public class Monitors {
 	@Relation("monitoring")
 	@Description("update a specific monitors triggers")
 	@PostMapping(value = "/{monitorName}/triggers", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> addTrigger(@PathVariable("configuration") String configName,
-										@PathVariable(value = "monitorName", required = false) String monitorName,
+	public ResponseEntity<?> addTrigger(MonitorPathVariables path,
 										@RequestBody AddOrUpdateTriggerModel json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.UPLOAD);
-		addDefaultHeaders(configName, monitorName, builder);
+		addDefaultHeaders(path.configuration, path.monitorName, builder);
 		builder.setJsonPayload(json);
 
 		return frankApiService.callSyncGateway(builder);
@@ -149,12 +144,10 @@ public class Monitors {
 	@Relation("monitoring")
 	@Description("view all triggers for a specific monitor")
 	@GetMapping(value = "/{monitorName}/triggers/{trigger}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getTrigger(@PathVariable("configuration") String configurationName,
-										@PathVariable(value = "monitorName", required = false) String monitorName,
-										@PathVariable(value = "trigger", required = false) Integer id) {
+	public ResponseEntity<?> getTrigger(MonitorPathVariables path) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.GET);
-		addDefaultHeaders(configurationName, monitorName, builder);
-		builder.addHeader(TRIGGER_HEADER, id);
+		addDefaultHeaders(path.configuration, path.monitorName, builder);
+		builder.addHeader(TRIGGER_HEADER, path.trigger);
 		return frankApiService.callSyncGateway(builder);
 	}
 
@@ -162,12 +155,11 @@ public class Monitors {
 	@Relation("monitoring")
 	@Description("update a specific monitor triggers")
 	@PutMapping(value = "/{monitorName}/triggers/{trigger}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateTrigger(@PathVariable("configuration") String configName,
-										   @PathVariable("monitorName") String monitorName, @PathVariable("trigger") int index,
+	public ResponseEntity<?> updateTrigger(MonitorPathVariables path,
 										   @RequestBody AddOrUpdateTriggerModel json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.MANAGE);
-		addDefaultHeaders(configName, monitorName, builder);
-		builder.addHeader(TRIGGER_HEADER, index);
+		addDefaultHeaders(path.configuration, path.monitorName, builder);
+		builder.addHeader(TRIGGER_HEADER, path.trigger);
 		builder.setJsonPayload(json);
 
 		return frankApiService.callSyncGateway(builder);
@@ -177,13 +169,14 @@ public class Monitors {
 	@Relation("monitoring")
 	@Description("delete a specific monitor trigger")
 	@DeleteMapping(value = "/{monitorName}/triggers/{trigger}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> deleteTrigger(@PathVariable("configuration") String configurationName,
-										   @PathVariable("monitorName") String monitorName, @PathVariable("trigger") int id) {
+	public ResponseEntity<?> deleteTrigger(MonitorPathVariables path) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.DELETE);
-		addDefaultHeaders(configurationName, monitorName, builder);
-		builder.addHeader(TRIGGER_HEADER, id);
+		addDefaultHeaders(path.configuration, path.monitorName, builder);
+		builder.addHeader(TRIGGER_HEADER, path.trigger);
 		return frankApiService.callSyncGateway(builder);
 	}
+
+	public record MonitorPathVariables(String configuration, String monitorName, Integer trigger) {}
 
 	public record CreateMonitorModel(String name) {}
 

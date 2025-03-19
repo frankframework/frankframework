@@ -20,7 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -71,8 +70,7 @@ public class Webservices {
 	@Relation("webservices")
 	@Description("view WDSL specificiation")
 	@GetMapping(value = "/webservices/{configuration}/{resourceName}", produces = MediaType.APPLICATION_XML_VALUE)
-	public ResponseEntity<?> getWsdl(@PathVariable("configuration") String configuration,
-									 @PathVariable("resourceName") String resourceName,
+	public ResponseEntity<?> getWsdl(WsdlPathVariables path,
 									 @RequestParam Map<String, String> params) {
 		RequestMessageBuilder request = RequestMessageBuilder.create(BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
 
@@ -81,13 +79,13 @@ public class Webservices {
 		request.addHeader("type", "wsdl");
 
 		String adapterName;
-		int dotPos = resourceName.lastIndexOf('.');
+		int dotPos = path.resourceName.lastIndexOf('.');
 		if (dotPos >= 0) {
-			adapterName = resourceName.substring(0, dotPos);
-			boolean zip = ".zip".equals(resourceName.substring(dotPos));
+			adapterName = path.resourceName.substring(0, dotPos);
+			boolean zip = ".zip".equals(path.resourceName.substring(dotPos));
 			request.addHeader("zip", zip);
 		} else {
-			adapterName = resourceName;
+			adapterName = path.resourceName;
 		}
 
 		if (StringUtils.isEmpty(adapterName)) {
@@ -95,8 +93,10 @@ public class Webservices {
 		}
 
 		request.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
-		request.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		request.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
 
 		return frankApiService.callSyncGateway(request);
 	}
+
+	public record WsdlPathVariables(String configuration, String resourceName) {}
 }

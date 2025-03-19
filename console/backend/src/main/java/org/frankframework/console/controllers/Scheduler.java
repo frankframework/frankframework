@@ -15,7 +15,6 @@
 */
 package org.frankframework.console.controllers;
 
-import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
 
@@ -23,7 +22,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -56,30 +54,30 @@ public class Scheduler {
 	@AllowAllIbisUserRoles
 	@Relation("schedules")
 	@GetMapping(value = "/schedules/{groupName}/jobs/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getSchedule(@PathVariable("jobName") String jobName, @PathVariable("groupName") String groupName) {
+	public ResponseEntity<?> getSchedule(SchedulerPathVariables path) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.FIND);
-		builder.addHeader("job", jobName);
-		builder.addHeader("group", groupName);
+		builder.addHeader("job", path.jobName);
+		builder.addHeader("group", path.groupName);
 		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
 	@PutMapping(value = "/schedules", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateScheduler(@RequestBody Map<String, Object> json) {
+	public ResponseEntity<?> updateScheduler(@RequestBody SchedulerModel json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.MANAGE);
-		builder.addHeader("operation", RequestUtils.getValue(json, "action"));
+		builder.addHeader("operation", json.action);
 		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
 	@PutMapping(value = "/schedules/{groupName}/jobs/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> trigger(@PathVariable("jobName") String jobName, @PathVariable("groupName") String groupName, @RequestBody Map<String, Object> json) {
+	public ResponseEntity<?> trigger(SchedulerPathVariables path, SchedulerModel json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.MANAGE);
-		builder.addHeader("operation", RequestUtils.getValue(json, "action"));
-		builder.addHeader("job", jobName);
-		builder.addHeader("group", groupName);
+		builder.addHeader("operation", json.action);
+		builder.addHeader("job", path.jobName);
+		builder.addHeader("group", path.groupName);
 		return frankApiService.callSyncGateway(builder);
 	}
 
@@ -95,16 +93,16 @@ public class Scheduler {
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@PutMapping(value = "/schedules/{groupName}/jobs/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> updateSchedule(@PathVariable("groupName") String groupName, @PathVariable("jobName") String jobName,
+	public ResponseEntity<?> updateSchedule(SchedulerPathVariables path,
 											ScheduleMultipartModel multipartBody) {
-		return createSchedule(groupName, jobName, multipartBody, true);
+		return createSchedule(path.groupName, path.jobName, multipartBody, true);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
 	@PostMapping(value = "/schedules/{groupName}/jobs", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> createScheduleInJobGroup(@PathVariable("groupName") String groupName, ScheduleMultipartModel multipartBody) {
-		return createSchedule(groupName, multipartBody);
+	public ResponseEntity<?> createScheduleInJobGroup(SchedulerPathVariables path, ScheduleMultipartModel multipartBody) {
+		return createSchedule(path.groupName, multipartBody);
 	}
 
 	private ResponseEntity<?> createSchedule(String groupName, ScheduleMultipartModel input) {
@@ -142,12 +140,16 @@ public class Scheduler {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
 	@DeleteMapping(value = "/schedules/{groupName}/jobs/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> deleteSchedules(@PathVariable("jobName") String jobName, @PathVariable("groupName") String groupName) {
+	public ResponseEntity<?> deleteSchedules(SchedulerPathVariables path) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.DELETE);
-		builder.addHeader("job", jobName);
-		builder.addHeader("group", groupName);
+		builder.addHeader("job", path.jobName);
+		builder.addHeader("group", path.groupName);
 		return frankApiService.callSyncGateway(builder);
 	}
+
+	public record SchedulerPathVariables(String groupName, String jobName) {}
+
+	public record SchedulerModel(String action) {}
 
 	public record ScheduleMultipartModel(
 			String name,
