@@ -64,7 +64,7 @@ public class Configurations {
 	@Description("view all the loaded/original configurations")
 	@GetMapping(value = "/configurations", produces = MediaType.APPLICATION_XML_VALUE)
 	public ResponseEntity<?> getConfigurationXML(ConfigurationParameters params) throws ApiException {
-		boolean loaded = params.loadedConfiguration;
+		boolean loaded = Boolean.parseBoolean(params.loadedConfiguration);
 		String flow = params.flow;
 
 		if (StringUtils.isNotEmpty(flow)) {
@@ -121,7 +121,7 @@ public class Configurations {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.GET);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
 
-		if (params.loadedConfiguration) {
+		if (Boolean.parseBoolean(params.loadedConfiguration)) {
 			builder.addHeader("loaded", true);
 		}
 
@@ -268,7 +268,7 @@ public class Configurations {
 
 	public record ConfigurationPathVariables(String configuration, String version) {}
 
-	public record ConfigurationParameters(Boolean loadedConfiguration, String flow, String datasourceName) {}
+	public record ConfigurationParameters(String loadedConfiguration, String flow, String datasourceName) {}
 
 	public record ActionModel(String action, String[] configurations) {}
 

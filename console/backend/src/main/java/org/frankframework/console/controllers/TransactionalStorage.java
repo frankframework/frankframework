@@ -20,11 +20,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import jakarta.annotation.security.RolesAllowed;
+
+import lombok.Getter;
+
+import lombok.Setter;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -33,10 +36,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -66,11 +67,9 @@ public class TransactionalStorage {
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> browseMessage(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapterName,
-										   @PathVariable("storageSource") StorageSource storageSource, @PathVariable("storageSourceName") String storageSourceName,
-										   @PathVariable("processState") String processState, @PathVariable("messageId") String messageId) {
+	public ResponseEntity<?> browseMessage(TransactionStoragePathVariables path) {
 		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
-		return getMessageResponseEntity(configuration, adapterName, storageSource, storageSourceName, processState, decodeBase64(messageId),
+		return getMessageResponseEntity(path.configuration, path.adapterName, path.storageSource, path.storageSourceName, path.processState, decodeBase64(path.messageId),
 				RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.GET)
 		);
 	}
@@ -78,22 +77,18 @@ public class TransactionalStorage {
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-	public ResponseEntity<?> downloadMessage(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapterName,
-											 @PathVariable("storageSource") StorageSource storageSource, @PathVariable("storageSourceName") String storageSourceName,
-											 @PathVariable("processState") String processState, @PathVariable("messageId") String messageId) {
+	public ResponseEntity<?> downloadMessage(TransactionStoragePathVariables path) {
 		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
-		return getMessageResponseEntity(configuration, adapterName, storageSource, storageSourceName, processState, decodeBase64(messageId),
+		return getMessageResponseEntity(path.configuration, path.adapterName, path.storageSource, path.storageSourceName, path.processState, decodeBase64(path.messageId),
 				RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD)
 		);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@PostMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-	public ResponseEntity<StreamingResponseBody> downloadMessages(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapterName,
-																  @PathVariable("storageSource") StorageSource storageSource, @PathVariable("storageSourceName") String storageSourceName,
-																  @PathVariable("processState") String processState, @RequestPart("messageIds") String messageIdsPart) {
+	public ResponseEntity<StreamingResponseBody> downloadMessages(TransactionStoragePathVariables path, @RequestPart("messageIds") String messageIdsPart) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
-		addHeaders(configuration, adapterName, storageSource, storageSourceName, processState, builder);
+		addHeaders(path.configuration, path.adapterName, path.storageSource, path.storageSourceName, path.processState, builder);
 
 		String[] messageIdArray = getMessageIds(messageIdsPart);
 
@@ -134,62 +129,56 @@ public class TransactionalStorage {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> browseMessages(
-			@PathVariable("configuration") String configuration,
-			@PathVariable("adapterName") String adapterName,
-			@PathVariable("storageSource") StorageSource storageSource,
-			@PathVariable("storageSourceName") String storageSourceName,
-			@PathVariable("processState") String processState,
-			@RequestParam Map<String, String> params
+			TransactionStoragePathVariables path,
+			BrowseMessagesParams params
 	) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.FIND);
-		addHeaders(configuration, adapterName, storageSource, storageSourceName, processState, builder);
+		addHeaders(path.configuration, path.adapterName, path.storageSource, path.storageSourceName, path.processState, builder);
 
-		builder.addHeader("skip", Integer.parseInt(params.getOrDefault("skip", "0")));
-		builder.addHeader("max", Integer.parseInt(params.getOrDefault("max", "0")));
+		builder.addHeader("skip", params.skip);
+		builder.addHeader("max", params.max);
 
-		builder.addHeader("type", params.get("type"));
-		builder.addHeader("host", params.get("host"));
-		builder.addHeader("idMask", params.get("id"));
-		builder.addHeader("messageId", params.get("messageId"));
-		builder.addHeader("correlationId", params.get("correlationId"));
-		builder.addHeader("comment", params.get("comment"));
-		builder.addHeader("message", params.get("message"));
-		builder.addHeader("label", params.get("label"));
-		builder.addHeader("startDate", params.get("startDateStr"));
-		builder.addHeader("endDate", params.get("endDateStr"));
-		builder.addHeader("sort", params.get("sort"));
-		builder.addHeader("skip", params.get("skipMessages"));
-		builder.addHeader("max", params.get("maxMessages"));
+		builder.addHeader("type", params.type);
+		builder.addHeader("host", params.host);
+		builder.addHeader("idMask", params.id);
+		builder.addHeader("messageId", params.messageId);
+		builder.addHeader("correlationId", params.correlationId);
+		builder.addHeader("comment", params.comment);
+		builder.addHeader("message", params.message);
+		builder.addHeader("label", params.label);
+		builder.addHeader("startDate", params.startDateStr);
+		builder.addHeader("endDate", params.endDateStr);
+		builder.addHeader("sort", params.sort);
+		builder.addHeader("skip", params.skipMessages);
+		builder.addHeader("max", params.maxMessages);
 		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("pipeline")
 	@PutMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error/messages/{messageId}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> resendReceiverMessage(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapter,
-												   @PathVariable("receiverName") String receiver, @PathVariable("messageId") String messageId) {
+	public ResponseEntity<?> resendReceiverMessage(TransactionStoragePathVariables path) {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
-		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, path.adapterName);
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, path.receiverName);
 
 		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
-		builder.addHeader("messageId", decodeBase64(messageId));
+		builder.addHeader("messageId", decodeBase64(path.messageId));
 		return frankApiService.callAsyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("pipeline")
 	@PostMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> resendReceiverMessages(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapter,
-													@PathVariable("receiverName") String receiver,
+	public ResponseEntity<?> resendReceiverMessages(TransactionStoragePathVariables path,
 													@RequestPart("messageIds") String messageIdsPart) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
 
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
-		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, path.adapterName);
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, path.receiverName);
 
 		return getResponseForMessageIds(messageIdsPart, builder);
 	}
@@ -197,18 +186,16 @@ public class TransactionalStorage {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("pipeline")
 	@PostMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/{processState}/move/{targetState}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> changeMessagesProcessState(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapter,
-														@PathVariable("receiverName") String receiver, @PathVariable("processState") String processState,
-														@PathVariable("targetState") String targetState,
+	public ResponseEntity<?> changeMessagesProcessState(TransactionStoragePathVariables path,
 														@RequestPart("messageIds") String messageIdsPart) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.MANAGE);
 
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
-		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, path.adapterName);
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, path.receiverName);
 
-		builder.addHeader("processState", processState);
-		builder.addHeader("targetState", targetState);
+		builder.addHeader("processState", path.processState);
+		builder.addHeader("targetState", path.targetState);
 
 		return getResponseForMessageIds(messageIdsPart, builder);
 	}
@@ -216,16 +203,15 @@ public class TransactionalStorage {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("pipeline")
 	@DeleteMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error/messages/{messageId}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> deleteReceiverMessage(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapter,
-												   @PathVariable("receiverName") String receiver, @PathVariable("messageId") String messageId) {
+	public ResponseEntity<?> deleteReceiverMessage(TransactionStoragePathVariables path) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
 
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
-		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, path.adapterName);
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, path.receiverName);
 
 		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
-		messageId = decodeBase64(messageId);
+		String messageId = decodeBase64(path.messageId);
 
 		builder.addHeader("messageId", messageId);
 		return frankApiService.callAsyncGateway(builder);
@@ -234,16 +220,46 @@ public class TransactionalStorage {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("pipeline")
 	@DeleteMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> deleteReceiverMessages(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapter,
-													@PathVariable("receiverName") String receiver,
+	public ResponseEntity<?> deleteReceiverMessages(TransactionStoragePathVariables path,
 													@RequestPart("messageIds") String messageIdsPart) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
 
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
-		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, path.adapterName);
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, path.receiverName);
 
 		return getResponseForMessageIds(messageIdsPart, builder);
+	}
+
+	public record TransactionStoragePathVariables(
+			String configuration,
+			String adapterName,
+			String storageSourceName,
+			String receiverName,
+			String processState,
+			String targetState,
+			String messageId,
+			StorageSource storageSource
+	) {}
+
+	@Getter
+	@Setter
+	public static class BrowseMessagesParams {
+		private Integer skip = 0;
+		private Integer max = 0;
+		private String type;
+		private String host;
+		private String id;
+		private String messageId;
+		private String correlationId;
+		private String comment;
+		private String message;
+		private String label;
+		private String startDateStr;
+		private String endDateStr;
+		private String sort;
+		private String skipMessages;
+		private String maxMessages;
 	}
 
 	private ResponseEntity<?> getResponseForMessageIds(String messageIdsPart, RequestMessageBuilder builder) {

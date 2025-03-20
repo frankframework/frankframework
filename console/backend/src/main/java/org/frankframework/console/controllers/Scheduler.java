@@ -73,7 +73,7 @@ public class Scheduler {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
 	@PutMapping(value = "/schedules/{groupName}/jobs/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> trigger(SchedulerPathVariables path, SchedulerModel json) {
+	public ResponseEntity<?> trigger(SchedulerPathVariables path, @RequestBody SchedulerModel json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.MANAGE);
 		builder.addHeader("operation", json.action);
 		builder.addHeader("job", path.jobName);
