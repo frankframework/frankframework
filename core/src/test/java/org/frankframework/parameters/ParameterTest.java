@@ -1391,4 +1391,45 @@ public class ParameterTest {
 
 		assertEquals("hallo", p.getValue(alreadyResolvedParameters, input, session, false));
 	}
+
+	@Test
+	public void testParameterWithTimePattern() throws Exception {
+
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("time");
+		parameter.setPattern("{now,time,HH:mm}");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertInstanceOf(String.class, result);
+		assertTrue(((String)result).matches("\\d{1,2}:\\d{2}"));
+	}
+
+	@Test
+	public void testParameterWithDatePattern() throws Exception {
+
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("time");
+		parameter.setPattern("{now,date,HH:mm}");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertTrue(((String)result).matches("\\d{1,2}:\\d{2}"));
+	}
 }

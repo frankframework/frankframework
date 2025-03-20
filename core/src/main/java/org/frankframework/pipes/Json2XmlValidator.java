@@ -89,10 +89,11 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	private @Getter boolean failOnWildcards=true;
 	private @Getter boolean acceptNamespacelessXml=false;
 	private @Getter boolean produceNamespacelessXml=false;
+	private @Getter boolean omitXmlDeclaration=false;
 	private @Getter boolean validateJsonToRootElementOnly=true;
 	private @Getter boolean allowJson = true;
 
-	{
+	public Json2XmlValidator() {
 		setSoapNamespace("");
 	}
 
@@ -246,9 +247,15 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			PipeRunResult result = super.doPipe(xmlMessage, session, responseMode, messageRoot);
 			if (isProduceNamespacelessXml()) {
 				try {
-					result.setResult(XmlUtils.removeNamespaces(result.getResult()));
+					result.setResult(XmlUtils.removeNamespaces(result.getResult(), !isOmitXmlDeclaration()));
 				} catch (XmlException e) {
 					throw new PipeRunException(this, "Cannot remove namespaces",e);
+				}
+			} else if (isOmitXmlDeclaration()) {
+				try {
+					result.setResult(XmlUtils.removeXmlDeclaration(result.getResult()));
+				} catch (XmlException e) {
+					throw new PipeRunException(this, "Cannot remove XML declaration",e);
 				}
 			}
 			return result;
@@ -390,7 +397,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			} else {
 				MessageBuilder messageBuilder = new MessageBuilder();
 				XmlWriter xmlWriter = messageBuilder.asXmlWriter();
-				xmlWriter.setIncludeXmlDeclaration(true);
+				xmlWriter.setIncludeXmlDeclaration(!isOmitXmlDeclaration());
 				ContentHandler handler = xmlWriter;
 				if (isProduceNamespacelessXml()) {
 					handler = new NamespaceRemovingFilter(handler);
@@ -588,4 +595,12 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		this.allowJson = allowJson;
 	}
 
+	/**
+	 * Allow omitting the XML declaration from the output, if the output is in XML format. This can be useful when the output needs to be combined with other XML documents.
+	 *
+	 * @ff.default false
+	 */
+	public void setOmitXmlDeclaration(boolean omitXmlDeclaration) {
+		this.omitXmlDeclaration = omitXmlDeclaration;
+	}
 }

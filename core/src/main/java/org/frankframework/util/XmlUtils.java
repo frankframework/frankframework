@@ -1481,10 +1481,28 @@ public class XmlUtils {
 	}
 
 	public static Message removeNamespaces(Message input) throws XmlException {
+		return removeNamespaces(input, false);
+	}
+
+	public static Message removeNamespaces(Message input, boolean includeXmlDeclaration) throws XmlException {
 		try {
 			MessageBuilder messageBuilder = new MessageBuilder();
-			ContentHandler handler = new NamespaceRemovingFilter(messageBuilder.asXmlWriter());
+			XmlWriter xmlWriter = messageBuilder.asXmlWriter();
+			xmlWriter.setIncludeXmlDeclaration(includeXmlDeclaration);
+			ContentHandler handler = new NamespaceRemovingFilter(xmlWriter);
 			parseXml(input.asInputSource(), handler);
+			return messageBuilder.build();
+		} catch (Exception e) {
+			throw new XmlException(e);
+		}
+	}
+
+	public static Message removeXmlDeclaration(Message input) throws XmlException {
+		try {
+			MessageBuilder messageBuilder = new MessageBuilder();
+			XmlWriter xmlWriter = messageBuilder.asXmlWriter();
+			xmlWriter.setIncludeXmlDeclaration(false);
+			parseXml(input.asInputSource(), xmlWriter);
 			return messageBuilder.build();
 		} catch (Exception e) {
 			throw new XmlException(e);
