@@ -11,7 +11,9 @@
       @if (errorActionMessage) {
         <span class="error-message">{{ errorActionMessage }}</span>
       }
-      <button type="button" class="btn" (click)="openNewTab()">New tab</button>
+      @if (!isFirefox) {
+        <button type="button" class="btn" (click)="openNewTab()">New tab</button>
+      }
       <button type="button" class="btn" (click)="copyToClipboard($event)">Copy</button>
       <button type="button" class="btn" (click)="downloadAsPng($event)">Download</button>
     }
