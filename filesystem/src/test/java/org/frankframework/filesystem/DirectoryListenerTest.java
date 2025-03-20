@@ -21,9 +21,9 @@ public class DirectoryListenerTest extends WritableFileSystemListenerTest<Path, 
 
 	@Override
 	public AbstractFileSystemListener<Path, LocalFileSystem> createFileSystemListener() {
-		DirectoryListener result=new DirectoryListener();
+		DirectoryListener result = new DirectoryListener();
 		result.setInputFolder(folder.toAbsolutePath().toString());
-		fileAndFolderPrefix=folder.toAbsolutePath()+"/";
+		fileAndFolderPrefix = folder.toAbsolutePath() + "/";
 		return result;
 	}
 
@@ -35,8 +35,6 @@ public class DirectoryListenerTest extends WritableFileSystemListenerTest<Path, 
 	@Test
 	void testWildcard() throws Exception {
 		_createFolder("inputFolder");
-
-		waitForActionToFinish();
 
 		fileSystemListener.setInProcessFolder(fileAndFolderPrefix + "inputFolder");
 		fileSystemListener.setWildcard("*.csv");
@@ -50,6 +48,10 @@ public class DirectoryListenerTest extends WritableFileSystemListenerTest<Path, 
 
 		createFile(null, ".gitignore", "content");
 		createFile(null, "dinges.csv", "een,twee,drie");
+
+		// We need a sec or two here to let the listener pick up the file
+		setWaitMillis(2000);
+		waitForActionToFinish();
 
 		RawMessageWrapper<Path> rawMessageWithFiles = fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessageWithFiles, "raw message must be null when not available");
