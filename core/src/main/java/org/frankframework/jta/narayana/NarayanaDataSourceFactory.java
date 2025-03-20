@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ public class NarayanaDataSourceFactory extends AbstractXADataSourceFactory {
 
 	@Override
 	protected DataSource createXADataSource(XADataSource xaDataSource, String dataSourceName) {
-		XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper(xaDataSource);
+		XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper(xaDataSource, dataSourceName);
 		this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);
 
 		DataSource ds;

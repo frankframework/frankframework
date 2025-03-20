@@ -41,8 +41,6 @@
 				<prop key="CoordinatorEnvironmentBean.txReaperZombieMax">2</prop> <!-- default 8. how many stuck threads need to be present before things are logged -->
 				<prop key="CoordinatorEnvironmentBean.txReaperTraceGracePeriod">${transactionmanager.narayana.stuckTime}</prop>
 				<prop key="CoordinatorEnvironmentBean.txReaperTraceInterval">${transactionmanager.narayana.stuckTimerTime}</prop>
-
-				<prop key="RecoveryEnvironmentBean.periodicRecoveryPeriod">${transactionmanager.narayana.periodicRecoveryPeriod}</prop>
 			</props>
 		</property>
 	</bean>
