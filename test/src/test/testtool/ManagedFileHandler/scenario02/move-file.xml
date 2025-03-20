@@ -1,0 +1,8 @@
+<project default="copy.file">
+	<target name="copy.file">
+		<property name="root.dir" value="${testdata.dir}/mfh" />
+		<property name="target.dir" value="${root.dir}/in" />
+		<copy file="mfh-input.xml" todir="${target.dir}" preservelastmodified="true"/>
+		<copy file=".gitignore" todir="${target.dir}" preservelastmodified="true"/>
+	</target>
+</project>
