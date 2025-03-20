@@ -1,11 +1,14 @@
 package org.frankframework.util;
 
+import static org.frankframework.testutil.TestAssertions.assertEqualsIgnoreWhitespaces;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.junit.jupiter.params.provider.Arguments.of;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -324,11 +327,12 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	private static Stream<Arguments> xmlDateTimeData() {
-		return Stream.of(Arguments.of("2013-12-10", 1386633600000L),
-				Arguments.of("2013-12-10T12:41:43", 1386679303000L),
-				Arguments.of("2023-12-09", 1702080000000L),
-				Arguments.of("2024-02-29T00:00:00", 1709164800000L),
-				Arguments.of("2400-02-29T18:08:05", 13574628485000L)
+		return Stream.of(
+				of("2013-12-10", 1386633600000L),
+				of("2013-12-10T12:41:43", 1386679303000L),
+				of("2023-12-09", 1702080000000L),
+				of("2024-02-29T00:00:00", 1709164800000L),
+				of("2400-02-29T18:08:05", 13574628485000L)
 		);
 	}
 
@@ -433,5 +437,49 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		// Assert
 		assertTrue(handler.toString().contains("håndværkere"));
 		assertTrue(handler.toString().contains("værgeløn"));
+	}
+
+	static Stream<Arguments> testRemoveNamespaces() {
+		return Stream.of(
+				arguments("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?><root xmlns=\"xyz\"/>", true, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root/>"),
+				arguments("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?><root xmlns=\"xyz\"/>", false, "<root/>"),
+				arguments("<root xmlns=\"xyz\"/>", true, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root/>"),
+				arguments("<root xmlns=\"xyz\"/>", false, "<root/>"),
+				arguments("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?><root/>", true, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root/>"),
+				arguments("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?><root/>", false, "<root/>"),
+				arguments("<root/>", true, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root/>"),
+				arguments("<root/>", false, "<root/>")
+		);
+	}
+	@ParameterizedTest
+	@MethodSource
+	void testRemoveNamespaces(String input, boolean includeXmlDeclaration, String expected) throws XmlException, IOException {
+		// Arrange
+		Message message = new Message(input);
+
+		// Act
+		Message result = XmlUtils.removeNamespaces(message, includeXmlDeclaration);
+
+		// Assert
+		assertEqualsIgnoreWhitespaces(expected, result.asString());
+	}
+
+	static Stream<Arguments> testRemoveXmlDeclaration() {
+		return Stream.of(
+				arguments("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?><root/>", "<root/>"),
+				arguments("<root/>", "<root/>")
+		);
+	}
+	@ParameterizedTest
+	@MethodSource
+	void testRemoveXmlDeclaration(String input, String expected) throws XmlException, IOException {
+		// Arrange
+		Message message = new Message(input);
+
+		// Act
+		Message result = XmlUtils.removeXmlDeclaration(message);
+
+		// Assert
+		assertEqualsIgnoreWhitespaces(expected, result.asString());
 	}
 }

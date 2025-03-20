@@ -37,7 +37,7 @@ import org.frankframework.util.StringUtil;
  * Uses the PipeLineSessions methods.
  * <p>
  * If the role is not specified by the role attribute, the input of
- * the pipe is used as role.
+ * the pipe is used as the role.
  * <p>
  * N.B. The role itself must be specified by hand in the deployment descriptors web.xml and application.xml.
  * </p>
@@ -111,7 +111,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		return role;
 	}
 
-	/** the j2ee role(s) to check, if the user in multiple roles, the first specified role will be matched. */
+	/** The J2EE role(s) to check. If the user is in multiple roles, the first specified role will be matched. */
 	public void setRole(String string) {
 		role = string;
 	}

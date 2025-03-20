@@ -488,8 +488,8 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		PoolingHttpClientConnectionManager connectionManager = configureAndGetConnectionManager();
 		httpClientBuilder.setConnectionManager(connectionManager);
 
-		if (getApplicationContext() == null) {
-			// If there's no applicationContext, this is probably a sender created in Larva, we're missing the spring context here
+		if (configurationMetrics == null) {
+			// If there's no configurationMetrics, this is probably a sender created in Larva, we're missing the spring context here
 			// and we can't construct the interceptor. Besides that, it's probably not worth instrumenting either.
 			httpClient = httpClientBuilder.build();
 		} else {

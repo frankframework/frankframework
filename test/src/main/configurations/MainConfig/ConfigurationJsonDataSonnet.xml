@@ -1,0 +1,15 @@
+<Module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd">
+
+	<Adapter name="JsonDataSonnetTest">
+		<Receiver>
+			<FrankListener name="JsonDataSonnetTrigger"/>
+		</Receiver>
+		<Pipeline>
+			<SenderPipe name="Fetch Data From Larva">
+				<IbisLocalSender javaListener="testtool-DataSonnetTest"/>
+			</SenderPipe>
+			<DataSonnetPipe name="JSON Transform" styleSheetName="JSON/example.jsonnet" computeMimeType="true"/>
+		</Pipeline>
+	</Adapter>
+</Module>

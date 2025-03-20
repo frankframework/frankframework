@@ -12,7 +12,7 @@
 
 	<properties>
 		<j2v8.version>4.6.0</j2v8.version>
-		<graalvm.version>24.1.2</graalvm.version>
+		<graalvm.version>24.2.0</graalvm.version>
 		<saxon.version>10.9</saxon.version><!--From version 11, duplicate imported resources cause an exception. -->
 	</properties>
 
@@ -160,7 +160,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
-			<version>1.13.0</version>
+			<version>1.14.0</version>
 		</dependency>
 
 		<dependency>
