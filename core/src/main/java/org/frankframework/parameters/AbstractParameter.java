@@ -590,7 +590,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			String namelc=name.toLowerCase();
 			switch (namelc) {
 				case "now":
-					if ("date".equals(formatType)) {
+					if ("date".equalsIgnoreCase(formatType) || "time".equalsIgnoreCase(formatType)) {
 						substitutionValue = new Date();
 					} else{
 						substitutionValue = formatDateToString(new Date(), formatString);
