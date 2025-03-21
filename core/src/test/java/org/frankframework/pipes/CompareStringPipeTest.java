@@ -2,8 +2,14 @@ package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
+
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
@@ -69,7 +75,7 @@ class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 	}
 
 	@Test
-	void testgreaterThan() throws Exception {
+	void testGreaterThan() throws Exception {
 		pipe.addParameter(new Parameter(CompareStringPipe.OPERAND2, "a"));
 
 		pipe.configure();
@@ -79,43 +85,40 @@ class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 		assertEquals(GREATER_THAN, prr.getPipeForward().getName());
 	}
 
-	@Test
-	void textXmlCompareWithNewlines() throws Exception {
-		pipe.addParameter(new Parameter(CompareStringPipe.OPERAND1, "<test>\n<a>9</a>\n<b>2</b>\n<c>7</c>\n</test>\n"));
-		pipe.addParameter(new Parameter(CompareStringPipe.OPERAND2, "<test>\n<a>9</a>\n<b>2</b>\n<c>7</c>\n</test>\n"));
-
-		pipe.setXml(true);
-		pipe.configure();
-		pipe.start();
-
-		PipeRunResult prr = doPipe("<ignored/>");
-		assertEquals(EQUALS, prr.getPipeForward().getName());
+	static Stream<Arguments> testXmlCompare() {
+		return Stream.of(
+				arguments("Should ignore newlines",
+						"<test>\n<a>9</a><b>2</b><c>7</c>\n</test>\n",
+						"<test>\n<a>9</a>\n<b>2</b>\n<c>7</c>\n</test>"),
+				arguments("Should ignore different namespace prefixes",
+						"<?xml version=\"1.0\" encoding=\"UTF-8\"?><ns1:Root xmlns:ns1=\"urn:pim\"><ns1:Employee/></ns1:Root>",
+						"<?xml version=\"1.0\" encoding=\"UTF-8\"?><ns2:Root xmlns:ns2=\"urn:pim\"><ns2:Employee/></ns2:Root>"),
+				arguments("Should ignore namespaces",
+						"<?xml version=\"1.0\" encoding=\"UTF-8\"?><ns1:Root xmlns:ns1=\"urn:pim\"><ns1:Employee/></ns1:Root>",
+						"<?xml version=\"1.0\" encoding=\"UTF-8\"?><Root><Employee/></Root>"),
+				arguments("Should ignore XML declaration",
+						"<Root><Employee/></Root>",
+						"<?xml version=\"1.0\" encoding=\"UTF-8\"?><Root><Employee/></Root>"),
+				arguments("Should ignore attribute order",
+						"<test><a a=\"1\" b=\"2\">9</a><b>2</b><c>7</c></test>\n",
+						"<test><a b=\"2\" a=\"1\">9</a><b>2</b><c>7</c></test>"),
+				arguments("Should ignore spaces",
+						"<test><a>9</a><b>2</b><c>7</c>    </test>\n",
+						"<test><a>9</a>    <b>2</b><c>7</c></test>")
+		);
 	}
-
-	@Test
-	void textXmlCompareWithAttributes() throws Exception {
-		pipe.addParameter(new Parameter(CompareStringPipe.OPERAND1, "<test><a a=\"1\" b=\"2\">9</a><b>2</b><c>7</c></test>\n"));
-		pipe.addParameter(new Parameter(CompareStringPipe.OPERAND2, "<test><a b=\"2\" a=\"1\">9</a><b>2</b><c>7</c></test>"));
-
-		pipe.setXml(true);
-		pipe.configure();
-		pipe.start();
-
-		PipeRunResult prr = doPipe("<ignored/>");
-		assertEquals(EQUALS, prr.getPipeForward().getName());
-	}
-
-	@Test
-	void textXmlCompareWithSpaces() throws Exception {
-		pipe.addParameter(new Parameter(CompareStringPipe.OPERAND1, "<test><a>9</a><b>2</b><c>7</c>    </test>\n"));
-		pipe.addParameter(new Parameter(CompareStringPipe.OPERAND2, "<test><a>9</a>    <b>2</b><c>7</c></test>"));
+	@ParameterizedTest(name = "[{index}] {0}")
+	@MethodSource
+	void testXmlCompare(String description, String operand1, String operand2) throws Exception {
+		pipe.addParameter(new Parameter(CompareStringPipe.OPERAND1, operand1));
+		pipe.addParameter(new Parameter(CompareStringPipe.OPERAND2, operand2));
 
 		pipe.setXml(true);
 		pipe.configure();
 		pipe.start();
 
 		PipeRunResult prr = doPipe("<ignored/>");
-		assertEquals(EQUALS, prr.getPipeForward().getName());
+		assertEquals(EQUALS, prr.getPipeForward().getName(), description);
 	}
 
 	@Test

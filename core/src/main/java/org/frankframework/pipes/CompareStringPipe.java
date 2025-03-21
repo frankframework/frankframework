@@ -117,8 +117,8 @@ public class CompareStringPipe extends AbstractPipe {
 		}
 		if (isXml()) {
 			try {
-				operand1 = XmlUtils.canonicalize(operand1);
-				operand2 = XmlUtils.canonicalize(operand2);
+				operand1 = XmlUtils.canonicalize(operand1, true);
+				operand2 = XmlUtils.canonicalize(operand2, true);
 			} catch (Exception e) {
 				throw new PipeRunException(this, "Exception on pretty printing input", e);
 			}
