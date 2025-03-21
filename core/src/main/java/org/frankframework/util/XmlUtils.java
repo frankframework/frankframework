@@ -1560,9 +1560,16 @@ public class XmlUtils {
 	}
 
 	public static String canonicalize(String input) throws IOException {
+		return canonicalize(input, false);
+	}
+
+	public static String canonicalize(String input, boolean removeNamespaces) throws IOException {
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setIncludeComments(false);
 		ContentHandler handler = new PrettyPrintFilter(xmlWriter, true);
+		if (removeNamespaces) {
+			handler = new NamespaceRemovingFilter(handler);
+		}
 		handler = new CanonicalizeFilter(handler);
 		try {
 			XmlUtils.parseXml(input, handler);
