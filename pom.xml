@@ -22,9 +22,9 @@
 
 		<jackson.version>2.18.3</jackson.version>
 		<cxf.version>4.1.1</cxf.version>
-		<spring.version>6.2.4</spring.version>
+		<spring.version>6.2.5</spring.version>
 		<spring-security.version>6.4.4</spring-security.version>
-		<spring-integration.version>6.4.2</spring-integration.version>
+		<spring-integration.version>6.4.3</spring-integration.version>
 		<spring.boot.version>3.4.3</spring.boot.version>
 		<tomcat.version>10.1.39</tomcat.version>
 		<bouncycastle.version>1.80</bouncycastle.version>
@@ -47,7 +47,7 @@
 		<!-- Should upgrade to new MariaDB driver 3.1.4, 3.2.0 or newer for JDK17 support but currently not working with XA transaction managers in the framework. -->
 		<mariadb.driver.version>3.5.2</mariadb.driver.version>
 		<postgresql.driver.version>42.7.5</postgresql.driver.version>
-		<mongodb.driver.version>5.3.1</mongodb.driver.version>
+		<mongodb.driver.version>5.4.0</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>6.1.6</activemq.driver.version>
@@ -165,7 +165,7 @@
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>33.4.0-jre</version>
+				<version>33.4.5-jre</version>
 			</dependency>
 			<dependency><!-- needed for io.fabric8:kubernetes-client transitive deps -->
 				<groupId>com.squareup.okhttp3</groupId>

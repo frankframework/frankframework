@@ -222,7 +222,6 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Could not validate", e);
 		}
-
 	}
 
 	@Override
