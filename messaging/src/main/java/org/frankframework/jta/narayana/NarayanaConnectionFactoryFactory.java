@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import jakarta.jms.ConnectionFactory;
 import jakarta.jms.XAConnectionFactory;
 
 import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
-import org.jboss.narayana.jta.jms.JmsXAResourceRecoveryHelper;
 import org.jboss.narayana.jta.jms.TransactionHelper;
 import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.messaginghub.pooled.jms.JmsPoolXAConnectionFactory;
@@ -46,7 +45,7 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 	@Override
 	protected ConnectionFactory augmentConnectionFactory(ConnectionFactory connectionFactory, String connectionFactoryName) {
 		if (connectionFactory instanceof XAConnectionFactory factory) {
-			XAResourceRecoveryHelper recoveryHelper = new JmsXAResourceRecoveryHelper(factory);
+			XAResourceRecoveryHelper recoveryHelper = new JmsXAResourceRecoveryHelper(factory, connectionFactoryName);
 			this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);
 
 			if(maxPoolSize > 1) {

@@ -126,6 +126,7 @@ public class NarayanaJtaTransactionManager extends AbstractStatusRecordingTransa
 
 
 	public void registerXAResourceRecoveryHelper(XAResourceRecoveryHelper xaResourceRecoveryHelper) {
+		log.info("registering XAResourceRecoveryHelper {}", xaResourceRecoveryHelper);
 		getXARecoveryModule().addXAResourceRecoveryHelper(xaResourceRecoveryHelper);
 	}
 

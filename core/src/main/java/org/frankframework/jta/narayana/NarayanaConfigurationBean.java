@@ -53,13 +53,13 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 		public Properties getPropertiesFromFile(String propertyFileName, ClassLoader classLoader) {
 			Properties localProperties;
 			try {
-				localProperties = super.getPropertiesFromFile(propertyFileName, classLoader); //Loads the default narayana-jta.jar/jbossts-properties.xml properties.
+				localProperties = super.getPropertiesFromFile(propertyFileName, classLoader); // Loads the default narayana-jta.jar/jbossts-properties.xml properties.
 			} catch (Throwable t) {
 				log.warn("unable to load properties file, manually trying to set default values", t);
 				localProperties = readXmlFile(propertyFileName);
 			}
-			localProperties.putAll(AppConstants.getInstance()); //Override with properties set in the Ibis
-			localProperties.putAll(properties); //Override with spring configured properties
+			localProperties.putAll(AppConstants.getInstance()); // Override with properties set in the Ibis
+			localProperties.putAll(properties); // Override with spring configured properties
 			return localProperties;
 		}
 
