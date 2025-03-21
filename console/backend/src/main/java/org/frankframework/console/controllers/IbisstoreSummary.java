@@ -15,8 +15,6 @@
 */
 package org.frankframework.console.controllers;
 
-import java.util.Map;
-
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,7 +25,6 @@ import org.frankframework.console.AllowAllIbisUserRoles;
 import org.frankframework.console.Description;
 import org.frankframework.console.Relation;
 import org.frankframework.console.util.RequestMessageBuilder;
-import org.frankframework.console.util.RequestUtils;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 
@@ -44,14 +41,16 @@ public class IbisstoreSummary {
 	@Relation("jdbc")
 	@Description("view database dump of the IbisStore table")
 	@PostMapping(value = "/jdbc/summary", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getIbisStoreSummary(@RequestBody Map<String, Object> json) {
-		String query = RequestUtils.getValue(json, "query");
-		String datasource = RequestUtils.getValue(json, "datasource");
+	public ResponseEntity<?> getIbisStoreSummary(@RequestBody IbisStoreSummaryModel model) {
+		String query = model.query;
+		String datasource = model.datasource;
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISSTORE_SUMMARY);
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
 		builder.addHeader("query", query);
 		return frankApiService.callSyncGateway(builder);
 	}
+
+	public record IbisStoreSummaryModel(String query, String datasource) {}
 
 }

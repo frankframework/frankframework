@@ -18,8 +18,6 @@ package org.frankframework.console.controllers;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.frankframework.console.AllowAllIbisUserRoles;
@@ -42,10 +40,13 @@ public class ClassInfo {
 	@GetMapping(value = "/classinfo/{className}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("debug")
 	@Description("view a specific class introspection")
-	public ResponseEntity<?> getClassInfo(@PathVariable("className") String className, @RequestParam(value = "base", required = false) String baseClassName) {
+	public ResponseEntity<?> getClassInfo(PathVariableModel pathVariables, ParametersModel params) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.DEBUG, BusAction.GET);
-		builder.addHeader("className", className);
-		builder.addHeader("baseClassName", baseClassName);
+		builder.addHeader("className", pathVariables.className);
+		builder.addHeader("baseClassName", params.base);
 		return frankApiService.callSyncGateway(builder);
 	}
+
+	public record PathVariableModel(String className) {}
+	public record ParametersModel(String base) {}
 }

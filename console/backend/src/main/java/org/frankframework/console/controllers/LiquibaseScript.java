@@ -59,9 +59,9 @@ public class LiquibaseScript {
 
 	@AllowAllIbisUserRoles
 	@PostMapping(value = "/jdbc/liquibase", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> generateSQL(LiquibaseMultipartBody multipartBody) throws ApiException {
-		String configuration = RequestUtils.resolveRequiredProperty("configuration", multipartBody.configuration(), null);
-		MultipartFile filePart = RequestUtils.resolveRequiredProperty("file", multipartBody.file(), null);
+	public ResponseEntity<?> generateSQL(GenerateSQLModel model) throws ApiException {
+		String configuration = RequestUtils.resolveRequiredProperty("configuration", model.configuration(), null);
+		MultipartFile filePart = RequestUtils.resolveRequiredProperty("file", model.file(), null);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.JDBC_MIGRATION, BusAction.UPLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
@@ -93,7 +93,7 @@ public class LiquibaseScript {
 		return ResponseEntity.status(HttpStatus.CREATED).body(resultMap);
 	}
 
-	public record LiquibaseMultipartBody(
+	public record GenerateSQLModel(
 			String configuration,
 			MultipartFile file) {
 	}
