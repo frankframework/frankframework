@@ -301,28 +301,14 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		}
 	}
 
-	protected String getKeyFromRawMessage(RawMessageWrapper<M> rawMessage) throws ListenerException {
+	protected String getKeyFromRawMessage(RawMessageWrapper<M> rawMessage) {
 
 		Map<String, Object> mwContext = rawMessage.getContext();
 		String key = (String) mwContext.get(PipeLineSession.STORAGE_ID_KEY);
 		if (StringUtils.isNotEmpty(key)) {
 			return key;
 		}
-
-		// TESTCOVERAGE: TODO: Below code appears untouched in our unit tests and IAF-Test but might be needed for some stored messages?
-		if (rawMessage.getId() != null) {
-			return rawMessage.getId();
-		} else if (rawMessage instanceof MessageWrapper) {
-			try {
-				return ((MessageWrapper<M>) rawMessage).getMessage().asString();
-			} catch (IOException e) {
-				throw new ListenerException(e);
-			}
-		} else if (rawMessage.getRawMessage() != null) {
-			return rawMessage.getRawMessage().toString();
-		} else {
-			throw new IllegalArgumentException("Cannot extract JDBC message key from raw message [" + rawMessage + "]");
-		}
+		throw new IllegalArgumentException("Cannot extract JDBC message key from raw message [" + rawMessage + "]");
 	}
 
 	@Override
