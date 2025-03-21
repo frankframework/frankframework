@@ -41,9 +41,9 @@ public class IbisstoreSummary {
 	@Relation("jdbc")
 	@Description("view database dump of the IbisStore table")
 	@PostMapping(value = "/jdbc/summary", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getIbisStoreSummary(@RequestBody IbisStoreSummaryModel json) {
-		String query = json.query;
-		String datasource = json.datasource;
+	public ResponseEntity<?> getIbisStoreSummary(@RequestBody IbisStoreSummaryModel model) {
+		String query = model.query;
+		String datasource = model.datasource;
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISSTORE_SUMMARY);
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);

@@ -15,6 +15,10 @@
 */
 package org.frankframework.console.controllers;
 
+import lombok.Getter;
+
+import lombok.Setter;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,8 +35,6 @@ import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-
-import java.util.Map;
 
 @RestController
 public class Webservices {
@@ -71,11 +73,11 @@ public class Webservices {
 	@Description("view WDSL specificiation")
 	@GetMapping(value = "/webservices/{configuration}/{resourceName}", produces = MediaType.APPLICATION_XML_VALUE)
 	public ResponseEntity<?> getWsdl(WsdlPathVariables path,
-									 @RequestParam Map<String, String> params) {
+									 WsdlParameters params) {
 		RequestMessageBuilder request = RequestMessageBuilder.create(BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
 
-		request.addHeader("indent", params.getOrDefault("indent", "true"));
-		request.addHeader("useIncludes", params.getOrDefault("useIncludes", "false"));
+		request.addHeader("indent", params.indent);
+		request.addHeader("useIncludes", params.useIncludes);
 		request.addHeader("type", "wsdl");
 
 		String adapterName;
@@ -99,4 +101,11 @@ public class Webservices {
 	}
 
 	public record WsdlPathVariables(String configuration, String resourceName) {}
+
+	@Getter
+	@Setter
+	public static class WsdlParameters {
+		private String indent = "true";
+		private String useIncludes =  "false";
+	}
 }

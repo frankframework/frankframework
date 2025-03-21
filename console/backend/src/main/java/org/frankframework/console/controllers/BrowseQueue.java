@@ -53,24 +53,24 @@ public class BrowseQueue {
 	@PostMapping(value = "/jms/browse", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("queuebrowser")
 	@Description("view a list of messages on a specific JMS queue")
-	public ResponseEntity<?> browseQueue(@RequestBody BrowseQueueModel json) {
-		if (StringUtils.isEmpty(json.destination))
+	public ResponseEntity<?> browseQueue(@RequestBody BrowseQueueModel model) {
+		if (StringUtils.isEmpty(model.destination))
 			throw new ApiException("No destination provided");
-		if (StringUtils.isEmpty(json.type))
+		if (StringUtils.isEmpty(model.type))
 			throw new ApiException("No type provided");
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.QUEUE, BusAction.FIND);
-		builder.addHeader(BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY, json.connectionFactory);
-		builder.addHeader("destination", json.destination);
-		builder.addHeader("type", json.type);
-		if (json.rowNumbersOnly != null) {
-			builder.addHeader("rowNumbersOnly", json.rowNumbersOnly);
+		builder.addHeader(BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY, model.connectionFactory);
+		builder.addHeader("destination", model.destination);
+		builder.addHeader("type", model.type);
+		if (model.rowNumbersOnly != null) {
+			builder.addHeader("rowNumbersOnly", model.rowNumbersOnly);
 		}
-		if (json.payload != null) {
-			builder.addHeader("showPayload", json.payload);
+		if (model.payload != null) {
+			builder.addHeader("showPayload", model.payload);
 		}
-		if (json.lookupDestination != null) {
-			builder.addHeader("lookupDestination", json.lookupDestination);
+		if (model.lookupDestination != null) {
+			builder.addHeader("lookupDestination", model.lookupDestination);
 		}
 		return frankApiService.callSyncGateway(builder);
 	}

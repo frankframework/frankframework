@@ -69,9 +69,7 @@ public class TransactionalStorage {
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> browseMessage(TransactionStoragePathVariables path) {
 		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
-		return getMessageResponseEntity(path.configuration, path.adapterName, path.storageSource, path.storageSourceName, path.processState, decodeBase64(path.messageId),
-				RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.GET)
-		);
+		return getMessageResponseEntity(path, decodeBase64(path.messageId), RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.GET));
 	}
 
 
@@ -79,16 +77,14 @@ public class TransactionalStorage {
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<?> downloadMessage(TransactionStoragePathVariables path) {
 		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
-		return getMessageResponseEntity(path.configuration, path.adapterName, path.storageSource, path.storageSourceName, path.processState, decodeBase64(path.messageId),
-				RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD)
-		);
+		return getMessageResponseEntity(path, decodeBase64(path.messageId),	RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD));
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@PostMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<StreamingResponseBody> downloadMessages(TransactionStoragePathVariables path, @RequestPart("messageIds") String messageIdsPart) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
-		addHeaders(path.configuration, path.adapterName, path.storageSource, path.storageSourceName, path.processState, builder);
+		addHeaders(path, builder);
 
 		String[] messageIdArray = getMessageIds(messageIdsPart);
 
@@ -133,7 +129,7 @@ public class TransactionalStorage {
 			BrowseMessagesParams params
 	) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.FIND);
-		addHeaders(path.configuration, path.adapterName, path.storageSource, path.storageSourceName, path.processState, builder);
+		addHeaders(path, builder);
 
 		builder.addHeader("skip", params.skip);
 		builder.addHeader("max", params.max);
@@ -289,24 +285,22 @@ public class TransactionalStorage {
 		return messageIds.split(",");
 	}
 
-	private ResponseEntity<?> getMessageResponseEntity(String configuration, String adapterName,
-													   StorageSource storageSource, String storageSourceName,
-													   String processState, String messageId, RequestMessageBuilder builder) {
-		addHeaders(configuration, adapterName, storageSource, storageSourceName, processState, builder);
+	private ResponseEntity<?> getMessageResponseEntity(TransactionStoragePathVariables model, String messageId, RequestMessageBuilder builder) {
+		addHeaders(model, builder);
 		builder.addHeader("messageId", messageId);
 
 		return frankApiService.callSyncGateway(builder);
 	}
 
-	private void addHeaders(String configuration, String adapterName, StorageSource storageSource, String storageSourceName, String processState, RequestMessageBuilder builder) {
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
+	private void addHeaders(TransactionStoragePathVariables model, RequestMessageBuilder builder) {
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, model.configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, model.adapterName);
 
-		if (storageSource == StorageSource.PIPES) {
-			builder.addHeader("pipe", storageSourceName);
+		if (model.storageSource == StorageSource.PIPES) {
+			builder.addHeader("pipe", model.storageSourceName);
 		} else {
-			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, storageSourceName);
-			builder.addHeader("processState", processState);
+			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, model.storageSourceName);
+			builder.addHeader("processState", model.processState);
 		}
 	}
 

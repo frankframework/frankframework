@@ -64,18 +64,18 @@ public class Scheduler {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
 	@PutMapping(value = "/schedules", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateScheduler(@RequestBody SchedulerModel json) {
+	public ResponseEntity<?> updateScheduler(@RequestBody SchedulerModel model) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.MANAGE);
-		builder.addHeader("operation", json.action);
+		builder.addHeader("operation", model.action);
 		return frankApiService.callSyncGateway(builder);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
 	@PutMapping(value = "/schedules/{groupName}/jobs/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> trigger(SchedulerPathVariables path, @RequestBody SchedulerModel json) {
+	public ResponseEntity<?> trigger(SchedulerPathVariables path, @RequestBody SchedulerModel model) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.MANAGE);
-		builder.addHeader("operation", json.action);
+		builder.addHeader("operation", model.action);
 		builder.addHeader("job", path.jobName);
 		builder.addHeader("group", path.groupName);
 		return frankApiService.callSyncGateway(builder);
@@ -86,49 +86,49 @@ public class Scheduler {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
 	@PostMapping(value = "/schedules", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> createSchedule(ScheduleMultipartModel multipartBody) {
-		String jobGroupName = RequestUtils.resolveRequiredProperty("group", multipartBody.group(), null);
-		return createSchedule(jobGroupName, multipartBody);
+	public ResponseEntity<?> createSchedule(ScheduleMultipartModel model) {
+		String jobGroupName = RequestUtils.resolveRequiredProperty("group", model.group, null);
+		return createSchedule(jobGroupName, model);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@PutMapping(value = "/schedules/{groupName}/jobs/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> updateSchedule(SchedulerPathVariables path,
-											ScheduleMultipartModel multipartBody) {
-		return createSchedule(path.groupName, path.jobName, multipartBody, true);
+											ScheduleMultipartModel model) {
+		return createSchedule(path.groupName, path.jobName, model, true);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
 	@PostMapping(value = "/schedules/{groupName}/jobs", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> createScheduleInJobGroup(SchedulerPathVariables path, ScheduleMultipartModel multipartBody) {
-		return createSchedule(path.groupName, multipartBody);
+	public ResponseEntity<?> createScheduleInJobGroup(SchedulerPathVariables path, ScheduleMultipartModel model) {
+		return createSchedule(path.groupName, model);
 	}
 
-	private ResponseEntity<?> createSchedule(String groupName, ScheduleMultipartModel input) {
-		String jobName = RequestUtils.resolveRequiredProperty("name", input.name(), null);
-		return createSchedule(groupName, jobName, input, false);
+	private ResponseEntity<?> createSchedule(String groupName, ScheduleMultipartModel model) {
+		String jobName = RequestUtils.resolveRequiredProperty("name", model.name(), null);
+		return createSchedule(groupName, jobName, model, false);
 	}
 
-	protected ResponseEntity<?> createSchedule(String groupName, String jobName, ScheduleMultipartModel multipartBody, boolean overwrite) {
+	protected ResponseEntity<?> createSchedule(String groupName, String jobName, ScheduleMultipartModel model, boolean overwrite) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.UPLOAD);
 		builder.addHeader("job", jobName);
 		builder.addHeader("group", groupName);
 
-		builder.addHeader("cron", RequestUtils.resolveRequiredProperty("cron", multipartBody.cron(), ""));
-		builder.addHeader("interval", RequestUtils.resolveRequiredProperty("interval", multipartBody.interval(), -1));
+		builder.addHeader("cron", RequestUtils.resolveRequiredProperty("cron", model.cron(), ""));
+		builder.addHeader("interval", RequestUtils.resolveRequiredProperty("interval", model.interval(), -1));
 
-		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, RequestUtils.resolveRequiredProperty("adapter", multipartBody.adapter(), null));
-		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, RequestUtils.resolveRequiredProperty("receiver", multipartBody.receiver(), ""));
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, RequestUtils.resolveRequiredProperty(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, multipartBody.configuration(), ""));
-		builder.addHeader("listener", RequestUtils.resolveRequiredProperty("listener", multipartBody.listener(), ""));
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, RequestUtils.resolveRequiredProperty("adapter", model.adapter(), null));
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, RequestUtils.resolveRequiredProperty("receiver", model.receiver(), ""));
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, RequestUtils.resolveRequiredProperty(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, model.configuration(), ""));
+		builder.addHeader("listener", RequestUtils.resolveRequiredProperty("listener", model.listener(), ""));
 
-		builder.addHeader("persistent", RequestUtils.resolveRequiredProperty("persistent", multipartBody.persistent(), false));
-		builder.addHeader("locker", RequestUtils.resolveRequiredProperty("locker", multipartBody.locker(), false));
-		builder.addHeader("lockkey", RequestUtils.resolveRequiredProperty("lockkey", multipartBody.lockkey(), "lock4[" + jobName + "]"));
+		builder.addHeader("persistent", RequestUtils.resolveRequiredProperty("persistent", model.persistent(), false));
+		builder.addHeader("locker", RequestUtils.resolveRequiredProperty("locker", model.locker(), false));
+		builder.addHeader("lockkey", RequestUtils.resolveRequiredProperty("lockkey", model.lockkey(), "lock4[" + jobName + "]"));
 
-		builder.addHeader("message", RequestUtils.resolveRequiredProperty("message", multipartBody.message(), null));
-		builder.addHeader("description", RequestUtils.resolveRequiredProperty("description", multipartBody.description(), null));
+		builder.addHeader("message", RequestUtils.resolveRequiredProperty("message", model.message(), null));
+		builder.addHeader("description", RequestUtils.resolveRequiredProperty("description", model.description(), null));
 
 		if (overwrite) {
 			builder.addHeader("overwrite", overwrite);

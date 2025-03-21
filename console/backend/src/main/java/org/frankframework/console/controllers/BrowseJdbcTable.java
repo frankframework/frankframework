@@ -44,21 +44,21 @@ public class BrowseJdbcTable {
 	@PostMapping(value = "/jdbc/browse", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("jdbc")
 	@Description("view a specific JDBC table")
-	public ResponseEntity<?> browseJdbcTable(@RequestBody BrowseJdbcModel json) {
-		if (json.table == null) {
+	public ResponseEntity<?> browseJdbcTable(@RequestBody BrowseJdbcModel model) {
+		if (model.table == null) {
 			throw new ApiException("tableName not defined.", 400);
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.JDBC, BusAction.FIND);
-		if (StringUtils.isNotEmpty(json.datasource)) {
-			builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, json.datasource);
+		if (StringUtils.isNotEmpty(model.datasource)) {
+			builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, model.datasource);
 		}
-		builder.addHeader("table", json.table);
-		builder.addHeader("where", json.where);
-		builder.addHeader("order", json.order);
-		builder.addHeader("numberOfRowsOnly", json.numberOfRowsOnly);
-		builder.addHeader("minRow", json.minRow);
-		builder.addHeader("maxRow", json.maxRow);
+		builder.addHeader("table", model.table);
+		builder.addHeader("where", model.where);
+		builder.addHeader("order", model.order);
+		builder.addHeader("numberOfRowsOnly", model.numberOfRowsOnly);
+		builder.addHeader("minRow", model.minRow);
+		builder.addHeader("maxRow", model.maxRow);
 		return frankApiService.callSyncGateway(builder);
 	}
 

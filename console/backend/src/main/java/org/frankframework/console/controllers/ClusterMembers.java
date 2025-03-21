@@ -111,8 +111,8 @@ public class ClusterMembers implements ApplicationListener<ClusterMemberEvent> {
 	@Relation("cluster")
 	@Description("select a specific cluster member to retrieve data from")
 	@PostMapping(value = "/cluster/members", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> setClusterMemberTarget(@RequestBody ClusterMemberTargetModel json) {
-		setMemberTarget(json.id);
+	public ResponseEntity<?> setClusterMemberTarget(@RequestBody ClusterMemberTargetModel model) {
+		setMemberTarget(model.id);
 		return ResponseEntity.accepted().build();
 	}
 

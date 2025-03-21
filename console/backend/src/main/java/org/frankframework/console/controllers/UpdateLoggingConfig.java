@@ -56,14 +56,14 @@ public class UpdateLoggingConfig {
 	@Relation("logging")
 	@Description("update the application log configuration")
 	@PutMapping(value = "/server/logging", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateLogConfiguration(@RequestBody UpdateLogConfigurationModel json) {
-		Level loglevel = Level.toLevel(json.loglevel, null);
+	public ResponseEntity<?> updateLogConfiguration(@RequestBody UpdateLogConfigurationModel model) {
+		Level loglevel = Level.toLevel(model.loglevel, null);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.LOG_CONFIGURATION, BusAction.MANAGE);
 		builder.addHeader("logLevel", loglevel == null ? null : loglevel.name());
-		builder.addHeader("logIntermediaryResults", json.logIntermediaryResults);
-		builder.addHeader("maxMessageLength", json.maxMessageLength);
-		builder.addHeader("enableDebugger", json.enableDebugger);
+		builder.addHeader("logIntermediaryResults", model.logIntermediaryResults);
+		builder.addHeader("maxMessageLength", model.maxMessageLength);
+		builder.addHeader("enableDebugger", model.enableDebugger);
 		return frankApiService.callAsyncGateway(builder);
 	}
 
@@ -81,9 +81,9 @@ public class UpdateLoggingConfig {
 	@Relation("logging")
 	@Description("create a new logger definition")
 	@PostMapping(value = "/server/logging/settings", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> createLogDefinition(CreateLogDefinitionMultipartModel multipartBody) {
-		String logger = RequestUtils.resolveRequiredProperty("logger", multipartBody.logger(), null);
-		String level = RequestUtils.resolveRequiredProperty("level", multipartBody.level(), null);
+	public ResponseEntity<?> createLogDefinition(CreateLogDefinitionMultipartModel model) {
+		String logger = RequestUtils.resolveRequiredProperty("logger", model.logger(), null);
+		String level = RequestUtils.resolveRequiredProperty("level", model.level(), null);
 
 		RequestMessageBuilder request = RequestMessageBuilder.create(BusTopic.LOG_DEFINITIONS, BusAction.UPLOAD);
 		request.addHeader("logPackage", logger);
@@ -95,15 +95,15 @@ public class UpdateLoggingConfig {
 	@Relation("logging")
 	@Description("update the loglevel of a specific logger")
 	@PutMapping(value = "/server/logging/settings", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateLogDefinition(@RequestBody UpdateLogDefinitionModel json) {
+	public ResponseEntity<?> updateLogDefinition(@RequestBody UpdateLogDefinitionModel model) {
 		RequestMessageBuilder request = RequestMessageBuilder.create(BusTopic.LOG_DEFINITIONS, BusAction.MANAGE);
 
-		Level level = Level.toLevel(json.level, null);
+		Level level = Level.toLevel(model.level, null);
 		if (level != null) {
 			request.addHeader("level", level.name());
 		}
-		request.addHeader("logPackage", json.logger);
-		request.addHeader("reconfigure", json.reconfigure);
+		request.addHeader("logPackage", model.logger);
+		request.addHeader("reconfigure", model.reconfigure);
 
 		return frankApiService.callSyncGateway(request);
 	}

@@ -62,6 +62,10 @@ public class Init {
 	public static class ParametersModel {
 		boolean allowedRoles;
 		String hateoas = "default";
+
+		public boolean hateoasSupport() {
+			return "hal".equalsIgnoreCase(hateoas);
+		}
 	}
 
 	@GetMapping(value = {"", "/"}, produces = "application/json")
@@ -71,7 +75,7 @@ public class Init {
 		List<Object> JSONresources = new ArrayList<>();
 		Map<String, Object> HALresources = new HashMap<>();
 		Map<String, Object> resources = new HashMap<>(1);
-		boolean hateoasSupport = "hal".equalsIgnoreCase(params.hateoas);
+		boolean hateoasSupport = params.hateoasSupport();
 
 		String requestPath = servletRequest.getRequestURL().toString();
 		if (requestPath.endsWith("/")) {

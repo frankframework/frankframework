@@ -56,11 +56,11 @@ public class ExecuteJdbcQuery {
 	@PostMapping(value = "/jdbc/query", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("jdbc")
 	@Description("execute a JDBC query on a datasource")
-	public ResponseEntity<?> executeJdbcQuery(@RequestBody ExecuteJdbcQueryModel json) {
+	public ResponseEntity<?> executeJdbcQuery(@RequestBody ExecuteJdbcQueryModel model) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.JDBC, BusAction.MANAGE);
-		String datasource = json.datasource;
-		String query = json.query;
-		String resultType = json.resultType;
+		String datasource = model.datasource;
+		String query = model.query;
+		String resultType = model.resultType;
 
 		if (resultType == null || query == null) {
 			throw new ApiException("Missing data, datasource, resultType and query are expected.", 400);
@@ -68,10 +68,10 @@ public class ExecuteJdbcQuery {
 		builder.addHeader("query", query);
 		builder.addHeader("resultType", resultType);
 
-		builder.addHeader("avoidLocking", json.avoidLocking);
-		builder.addHeader("trimSpaces", json.trimSpaces);
+		builder.addHeader("avoidLocking", model.avoidLocking);
+		builder.addHeader("trimSpaces", model.trimSpaces);
 
-		String queryType = json.queryType;
+		String queryType = model.queryType;
 		if ("AUTO".equals(queryType)) {
 			queryType = "other"; // defaults to other
 

@@ -71,10 +71,10 @@ public class Monitors {
 	@Relation("monitoring")
 	@Description("add a new monitor")
 	@PostMapping(value = {"", "/"}, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> addMonitor(MonitorPathVariables path, @RequestBody CreateMonitorModel json) {
+	public ResponseEntity<?> addMonitor(MonitorPathVariables path, @RequestBody CreateMonitorModel model) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.UPLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
-		builder.setJsonPayload(json);
+		builder.setJsonPayload(model);
 		return frankApiService.callSyncGateway(builder);
 	}
 
@@ -95,14 +95,14 @@ public class Monitors {
 	@Description("update a specific monitor")
 	@PutMapping(value = "/{monitorName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateMonitor(MonitorPathVariables path,
-										   @RequestBody UpdateMonitorRequestModel json) {
+										   @RequestBody UpdateMonitorRequestModel model) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.MANAGE);
 		addDefaultHeaders(path.configuration, path.monitorName, builder);
 
-		if (json.action != null) {
-			builder.addHeader("state", json.action);
+		if (model.action != null) {
+			builder.addHeader("state", model.action);
 		}
-		builder.setJsonPayload(new UpdateMonitorModel(json.name, json.type, json.destinations));
+		builder.setJsonPayload(new UpdateMonitorModel(model.name, model.type, model.destinations));
 
 		return frankApiService.callSyncGateway(builder);
 	}
@@ -132,10 +132,10 @@ public class Monitors {
 	@Description("update a specific monitors triggers")
 	@PostMapping(value = "/{monitorName}/triggers", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> addTrigger(MonitorPathVariables path,
-										@RequestBody AddOrUpdateTriggerModel json) {
+										@RequestBody AddOrUpdateTriggerModel model) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.UPLOAD);
 		addDefaultHeaders(path.configuration, path.monitorName, builder);
-		builder.setJsonPayload(json);
+		builder.setJsonPayload(model);
 
 		return frankApiService.callSyncGateway(builder);
 	}
@@ -156,11 +156,11 @@ public class Monitors {
 	@Description("update a specific monitor triggers")
 	@PutMapping(value = "/{monitorName}/triggers/{trigger}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateTrigger(MonitorPathVariables path,
-										   @RequestBody AddOrUpdateTriggerModel json) {
+										   @RequestBody AddOrUpdateTriggerModel model) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.MANAGE);
 		addDefaultHeaders(path.configuration, path.monitorName, builder);
 		builder.addHeader(TRIGGER_HEADER, path.trigger);
-		builder.setJsonPayload(json);
+		builder.setJsonPayload(model);
 
 		return frankApiService.callSyncGateway(builder);
 	}

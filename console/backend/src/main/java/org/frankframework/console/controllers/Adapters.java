@@ -67,7 +67,7 @@ public class Adapters {
 	public ResponseEntity<?> getAdapter(AdapterPathVariables path,
 										GetAdapterParams params) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.FIND);
-		addConfigurationAndAdapterNameHeaders(path.configuration, path.adapter, builder);
+		addConfigurationAndAdapterNameHeaders(path, builder);
 
 		builder.addHeader("showPendingMsgCount", params.showPendingMsgCount);
 		builder.addHeader("expanded", params.expanded);
@@ -80,7 +80,7 @@ public class Adapters {
 	@GetMapping(value = "/configurations/{configuration}/adapters/{name}/health", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getAdapterHealth(AdapterPathVariables path) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.HEALTH);
-		addConfigurationAndAdapterNameHeaders(path.configuration, path.adapter, builder);
+		addConfigurationAndAdapterNameHeaders(path, builder);
 
 		return frankApiService.callSyncGateway(builder);
 	}
@@ -91,14 +91,14 @@ public class Adapters {
 	@Relation("adapter")
 	@Description("start/stop multiple adapters")
 	@PutMapping(value = "/adapters", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateAdapters(@RequestBody UpdateAdaptersModel json) {
+	public ResponseEntity<?> updateAdapters(@RequestBody UpdateAdaptersModel model) {
 		ArrayList<String> adapters = new ArrayList<>();
 
-		String value = json.action;
+		String value = model.action;
 		Action action = getActionOrThrow(value);
 
-		if (json.adapters != null) {
-			adapters.addAll(json.adapters);
+		if (model.adapters != null) {
+			adapters.addAll(model.adapters);
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
@@ -130,8 +130,8 @@ public class Adapters {
 	@Description("start/stop an adapter")
 	@PutMapping(value = "/configurations/{configuration}/adapters/{adapter}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateAdapter(AdapterPathVariables path,
-										   @RequestBody UpdateAdapterOrReceiverModel json) {
-		String value = json.action;
+										   @RequestBody UpdateAdapterOrReceiverModel model) {
+		String value = model.action;
 		Action action = getActionOrThrow(value);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
@@ -182,7 +182,7 @@ public class Adapters {
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapter}/flow")
 	public ResponseEntity<?> getAdapterFlow(AdapterPathVariables path) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.FLOW);
-		addConfigurationAndAdapterNameHeaders(path.configuration, path.adapter, builder);
+		addConfigurationAndAdapterNameHeaders(path, builder);
 		return frankApiService.callSyncGateway(builder);
 	}
 
@@ -224,6 +224,10 @@ public class Adapters {
 		}
 
 		throw new ApiException("no or unknown action provided", HttpStatus.BAD_REQUEST);
+	}
+
+	private void addConfigurationAndAdapterNameHeaders(AdapterPathVariables path, RequestMessageBuilder builder) {
+		addConfigurationAndAdapterNameHeaders(path.configuration, path.adapter, builder);
 	}
 
 	private void addConfigurationAndAdapterNameHeaders(String configuration, String name, RequestMessageBuilder builder) {

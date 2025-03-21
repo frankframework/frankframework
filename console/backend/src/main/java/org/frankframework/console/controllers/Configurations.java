@@ -83,11 +83,11 @@ public class Configurations {
 	@Relation("application")
 	@Description("update the entire application using an action")
 	@PutMapping(value = "/configurations", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> fullAction(@RequestBody ActionModel json) throws ApiException {
+	public ResponseEntity<?> fullAction(@RequestBody ActionModel model) throws ApiException {
 		List<String> configurations = new ArrayList<>();
-		Action action = getActionOrThrow(json.action, true);
+		Action action = getActionOrThrow(model.action, true);
 
-		String[] configurationsList = json.configurations;
+		String[] configurationsList = model.configurations;
 		if (configurationsList != null) {
 			try {
 				configurations.addAll(List.of(configurationsList));
@@ -152,8 +152,8 @@ public class Configurations {
 	@Relation("configuration")
 	@Description("update a specific configuration using an action")
 	@PutMapping(value = "/configurations/{configuration}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateConfiguration(ConfigurationPathVariables path, @RequestBody UpdateConfigurationModel json) throws ApiException {
-		Action action = getActionOrThrow(json.action, false);
+	public ResponseEntity<?> updateConfiguration(ConfigurationPathVariables path, @RequestBody UpdateConfigurationModel model) throws ApiException {
+		Action action = getActionOrThrow(model.action, false);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
 		builder.addHeader("action", action.name());
@@ -180,16 +180,16 @@ public class Configurations {
 	@PutMapping(value = "/configurations/{configuration}/versions/{version}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> manageConfiguration(ConfigurationPathVariables path,
 												 ConfigurationParameters params,
-												 @RequestBody ManageConfigurationModel json) throws ApiException {
+												 @RequestBody ManageConfigurationModel model) throws ApiException {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.MANAGE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
 		builder.addHeader(BUS_HEADER_VERSION, HttpUtils.urlDecode(path.version));
 
-		if (json.activate != null) {
-			builder.addHeader("activate", json.activate);
-		} else if (json.autoreload != null) {
-			builder.addHeader("autoreload", json.autoreload);
+		if (model.activate != null) {
+			builder.addHeader("activate", model.activate);
+		} else if (model.autoreload != null) {
+			builder.addHeader("autoreload", model.autoreload);
 		}
 
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, params.datasourceName);
@@ -201,13 +201,13 @@ public class Configurations {
 	@Relation("configuration")
 	@Description("upload a new configuration versions")
 	@PostMapping(value = "/configurations", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> uploadConfiguration(UploadConfigurationModel multipartBody) throws ApiException {
-		String datasource = RequestUtils.resolveRequiredProperty("datasource", multipartBody.datasource, "");
-		boolean multipleConfigs = RequestUtils.resolveRequiredProperty("multiple_configs", multipartBody.multiple_configs, false);
-		boolean activateConfig = RequestUtils.resolveRequiredProperty("activate_config", multipartBody.activate_config, true);
-		boolean automaticReload = RequestUtils.resolveRequiredProperty("automatic_reload", multipartBody.automatic_reload, false);
+	public ResponseEntity<?> uploadConfiguration(UploadConfigurationModel model) throws ApiException {
+		String datasource = RequestUtils.resolveRequiredProperty("datasource", model.datasource, "");
+		boolean multipleConfigs = RequestUtils.resolveRequiredProperty("multiple_configs", model.multiple_configs, false);
+		boolean activateConfig = RequestUtils.resolveRequiredProperty("activate_config", model.activate_config, true);
+		boolean automaticReload = RequestUtils.resolveRequiredProperty("automatic_reload", model.automatic_reload, false);
 
-		MultipartFile filePart = multipartBody.file;
+		MultipartFile filePart = model.file;
 		InputStream file;
 		try {
 			file = filePart.getInputStream();
@@ -215,7 +215,7 @@ public class Configurations {
 			throw new ApiException(e);
 		}
 
-		String user = RequestUtils.resolveRequiredProperty("user", multipartBody.user, "");
+		String user = RequestUtils.resolveRequiredProperty("user", model.user, "");
 		if (StringUtils.isEmpty(user)) {
 			user = BusMessageUtils.getUserPrincipalName();
 		}
