@@ -74,10 +74,10 @@ import org.frankframework.util.StringUtil;
 public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> implements ISenderWithParameters {
 	public static final String PARAM_MESSAGEID = "messageId";
 
-	private @Nonnull ParameterList paramList = new ParameterList();
+	private final @Nonnull ParameterList paramList = new ParameterList();
 	private @Getter String sessionKeys = null;
 
-	{
+	public MessageStoreSender() {
 		setOnlyStoreWhenMessageIdUnique(true);
 	}
 

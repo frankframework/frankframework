@@ -46,7 +46,6 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.IMessageBrowser.SortOrder;
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
 import org.frankframework.dbms.Dbms;
@@ -55,6 +54,7 @@ import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.jdbc.dbms.ConcurrentJdbcActionTester;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
+import org.frankframework.stream.Message;
 import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
@@ -77,6 +77,7 @@ public class JdbcTableListenerTest {
 	 */
 	private final boolean testNegativePeekWhileGet = false;
 
+	@SuppressWarnings("unchecked")
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) {
 		Receiver<String> receiver = mock(Receiver.class);
@@ -100,14 +101,14 @@ public class JdbcTableListenerTest {
 		}
 	}
 
-	private JdbcTableMessageBrowser<?> getMessageBrowser(ProcessState state) throws ConfigurationException {
-		JdbcTableMessageBrowser<?> browser = (JdbcTableMessageBrowser<?>)listener.getMessageBrowser(state);
+	private JdbcTableMessageBrowser<String> getMessageBrowser(ProcessState state) throws ConfigurationException {
+		JdbcTableMessageBrowser<String> browser = (JdbcTableMessageBrowser<String>)listener.getMessageBrowser(state);
 		browser.configure();
 		return browser;
 	}
 
 	@DatabaseTest
-	public void testSetup() throws ConfigurationException, ListenerException {
+	public void testSetup() throws ConfigurationException {
 		listener.configure();
 		listener.start();
 	}
@@ -213,7 +214,7 @@ public class JdbcTableListenerTest {
 		assumeTrue(env.getDbmsSupport().getDbms() == Dbms.H2);
 		listener.configure();
 
-		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+		JdbcTableMessageBrowser<String> browser = getMessageBrowser(ProcessState.AVAILABLE);
 
 		String expected = "SELECT COUNT(*) FROM " + TEST_TABLE + " t WHERE (TINT='1')";
 
@@ -225,7 +226,7 @@ public class JdbcTableListenerTest {
 		assumeTrue(env.getDbmsSupport().getDbms() == Dbms.H2);
 		listener.configure();
 
-		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.ERROR);
+		JdbcTableMessageBrowser<String> browser = getMessageBrowser(ProcessState.ERROR);
 
 		String expected = "SELECT COUNT(*) FROM " + TEST_TABLE + " t WHERE (TINT='3')";
 
@@ -238,7 +239,7 @@ public class JdbcTableListenerTest {
 		listener.setSelectCondition("t.VARCHAR='A'");
 		listener.configure();
 
-		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+		JdbcTableMessageBrowser<String> browser = getMessageBrowser(ProcessState.AVAILABLE);
 
 		String expected = "SELECT COUNT(*) FROM " + TEST_TABLE + " t WHERE (TINT='1' AND (t.VARCHAR='A'))";
 
@@ -251,7 +252,7 @@ public class JdbcTableListenerTest {
 		listener.setSelectCondition("t.VARCHAR='A'");
 		listener.configure();
 
-		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.ERROR);
+		JdbcTableMessageBrowser<String> browser = getMessageBrowser(ProcessState.ERROR);
 
 		String expected = "SELECT COUNT(*) FROM " + TEST_TABLE + " t WHERE (TINT='3' AND (t.VARCHAR='A'))";
 
@@ -266,7 +267,7 @@ public class JdbcTableListenerTest {
 			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10," + status + ")", null, new PipeLineSession());
 		}
 
-		RawMessageWrapper<?> rawMessage = listener.getRawMessage(new HashMap<>());
+		RawMessageWrapper<String> rawMessage = listener.getRawMessage(new HashMap<>());
 		if (expectMessage) {
 			assertEquals("10",rawMessage.getRawMessage());
 		} else {
@@ -317,6 +318,56 @@ public class JdbcTableListenerTest {
 		testGetRawMessage("1", true);
 	}
 
+	@DatabaseTest
+	public void testGetRawMessageWithMessageFieldIsClob() throws Exception {
+		listener.setMessageField("TCLOB");
+		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
+		listener.configure();
+		listener.start();
+
+		try(Connection connection = env.getConnection()) {
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TCLOB) VALUES (10,1,'TEST')", null, new PipeLineSession());
+		}
+
+		RawMessageWrapper<String> rawMessage = listener.getRawMessage(new HashMap<>());
+		Message message = listener.extractMessage(rawMessage, new PipeLineSession());
+		assertEquals("TEST",message.asString());
+	}
+
+	@DatabaseTest
+	public void testGetRawMessageWithMessageFieldIsBlob() throws Exception {
+		listener.setMessageField("TBLOB");
+		listener.setMessageFieldType(JdbcListener.MessageFieldType.BLOB);
+		listener.setBlobSmartGet(false);
+		listener.setBlobsCompressed(false);
+		listener.configure();
+		listener.start();
+
+		try(Connection connection = env.getConnection()) {
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,'TEST')", null, new PipeLineSession());
+		}
+
+		RawMessageWrapper<String> rawMessage = listener.getRawMessage(new HashMap<>());
+		Message message = listener.extractMessage(rawMessage, new PipeLineSession());
+		assertEquals("TEST",message.asString());
+	}
+
+	@DatabaseTest
+	public void testGetRawMessageWithMessageFieldIsVarchar() throws Exception {
+		listener.setMessageField("TVARCHAR");
+		listener.setMessageFieldType(JdbcListener.MessageFieldType.STRING);
+		listener.configure();
+		listener.start();
+
+		try(Connection connection = env.getConnection()) {
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (10,1,'TEST')", null, new PipeLineSession());
+		}
+
+		RawMessageWrapper<String> rawMessage = listener.getRawMessage(new HashMap<>());
+		Message message = listener.extractMessage(rawMessage, new PipeLineSession());
+		assertEquals("TEST",message.asString());
+	}
+
 
 	@DatabaseTest
 	public void testCreateQueryTexts() throws Exception {
@@ -325,7 +376,7 @@ public class JdbcTableListenerTest {
 		listener.setSelectCondition("fakeSelectCondition");
 		listener.configure();
 
-		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+		JdbcTableMessageBrowser<String> browser = getMessageBrowser(ProcessState.AVAILABLE);
 		browser.setCorrelationIdField("CIDFLD");
 		browser.setIdField("IDFLD");
 
@@ -348,7 +399,7 @@ public class JdbcTableListenerTest {
 		listener.setCommentField("CMTFLD");
 		listener.configure();
 
-		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+		JdbcTableMessageBrowser<String> browser = getMessageBrowser(ProcessState.AVAILABLE);
 		browser.setCorrelationIdField("CIDFLD");
 		browser.setIdField("IDFLD");
 
@@ -392,7 +443,7 @@ public class JdbcTableListenerTest {
 			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (10," + status + ",'A')", null, new PipeLineSession());
 		}
 
-		JdbcTableMessageBrowser browser = getMessageBrowser(state);
+		JdbcTableMessageBrowser<String> browser = getMessageBrowser(state);
 
 		assertEquals(expectedCount, browser.getMessageCount());
 	}
@@ -482,7 +533,7 @@ public class JdbcTableListenerTest {
 			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB) VALUES (10,1,'fakeMid','fakeCid')", null, new PipeLineSession());
 		}
 
-		RawMessageWrapper<?> rawMessage = listener.getRawMessage(new HashMap<>());
+		RawMessageWrapper<String> rawMessage = listener.getRawMessage(new HashMap<>());
 
 		String mid = rawMessage.getId();
 		String cid = rawMessage.getCorrelationId();
@@ -516,7 +567,7 @@ public class JdbcTableListenerTest {
 			try(Connection connection = env.getConnection()) {
 				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (11,1)", null, new PipeLineSession());
 			}
-			RawMessageWrapper<?> rawMessage2 = listener.getRawMessage(new HashMap<>());
+			RawMessageWrapper<String> rawMessage2 = listener.getRawMessage(new HashMap<>());
 			assertEquals("11",rawMessage2.getRawMessage());
 
 		}
@@ -532,7 +583,7 @@ public class JdbcTableListenerTest {
 		}
 
 		ChangeProcessStateTester changeProcessStateTester = new ChangeProcessStateTester(env::getConnection);
-		RawMessageWrapper rawMessage1;
+		RawMessageWrapper<String> rawMessage1;
 		Semaphore waitBeforeUpdate = new Semaphore(0);
 		Semaphore updateDone = new Semaphore(0);
 		Semaphore waitBeforeCommit = new Semaphore(0);
@@ -668,7 +719,7 @@ public class JdbcTableListenerTest {
 		listener.configure();
 		listener.start();
 		boolean useStatusInProcess;
-		RawMessageWrapper rawMessage;
+		RawMessageWrapper<String> rawMessage;
 
 		try(Connection connection = env.getConnection()) {
 			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
@@ -677,7 +728,8 @@ public class JdbcTableListenerTest {
 			connection1.setAutoCommit(false);
 			rawMessage = listener.getRawMessage(connection1,null);
 			assertEquals("10",rawMessage.getRawMessage());
-			if (useStatusInProcess=listener.changeProcessState(connection1, rawMessage, ProcessState.INPROCESS, "test")!=null) {
+			useStatusInProcess = listener.changeProcessState(connection1, rawMessage, ProcessState.INPROCESS, "test") != null;
+			if (useStatusInProcess) {
 				connection1.commit();
 			} else {
 				connection1.rollback();
@@ -699,11 +751,11 @@ public class JdbcTableListenerTest {
 		// execute peek, the result does not matter, but it should not throw an exception;
 		listener.hasRawMessageAvailable();
 		// execute read, return the result, it should not return an exception
-		RawMessageWrapper<?> rawMessage = listener.getRawMessage(new HashMap<>());
+		RawMessageWrapper<String> rawMessage = listener.getRawMessage(new HashMap<>());
 		if (rawMessage==null) {
 			return false;
 		}
-		String key = (String) rawMessage.getRawMessage();
+		String key = rawMessage.getRawMessage();
 		assertEquals("10", key);
 		try (Connection connection = env.getConnection()) {
 			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "UPDATE " + TEST_TABLE + " SET TINT=4 WHERE TKEY=10", null, new PipeLineSession());

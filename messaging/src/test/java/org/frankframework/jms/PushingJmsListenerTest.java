@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import jakarta.annotation.Nonnull;
 import jakarta.jms.Destination;
 import jakarta.jms.Message;
 import jakarta.jms.TextMessage;
@@ -237,13 +238,8 @@ public class PushingJmsListenerTest {
 		// Assert
 		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState());
 
-		List<String> errors = new ArrayList<>(adapter.getMessageKeeper())
-				.stream()
-				.filter(msg -> msg != null && "ERROR".equals(msg.getMessageLevel()))
-				.map(Object::toString)
-				.toList();
-
-		assertThat(errors, hasItem(containsString("Failed to restart receiver")));
+		await().atMost(5, TimeUnit.SECONDS)
+				.until(()-> getAdapterMessages(adapter, "ERROR"), hasItem(containsString("Failed to restart receiver")));
 
 		// After
 		configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
@@ -253,6 +249,15 @@ public class PushingJmsListenerTest {
 		log.info("Receiver RunState: {}", receiver.getRunState());
 
 		assertEquals(RunState.STOPPED, receiver.getRunState());
+	}
+
+	private @Nonnull List<String> getAdapterMessages(@Nonnull Adapter adapter, @Nonnull String messageLogLevel) {
+		log.info("Collecting {} messages from Adapter MessageKeeper", messageLogLevel);
+		return new ArrayList<>(adapter.getMessageKeeper())
+				.stream()
+				.filter(msg -> msg != null && messageLogLevel.equals(msg.getMessageLevel()))
+				.map(Object::toString)
+				.toList();
 	}
 
 	@Test
@@ -301,6 +306,9 @@ public class PushingJmsListenerTest {
 
 		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
 
+		await().atMost(5, TimeUnit.SECONDS)
+				.until(()-> getAdapterMessages(adapter, "WARN"), everyItem(containsString("JMS poll timeout")));
+		
 		List<String> warnings = new ArrayList<>(adapter.getMessageKeeper())
 				.stream()
 				.filter(msg -> msg != null && "WARN".equals(msg.getMessageLevel()))

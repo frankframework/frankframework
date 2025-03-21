@@ -246,7 +246,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 	}
 
 	protected PipeForward determineForward(ValidationResult validationResult, PipeLineSession session, boolean responseMode) throws PipeRunException {
-		return determineForward(validationResult, session, responseMode, ()-> {
+		return determineForward(validationResult, responseMode, ()-> {
 			String errorMessage=session.get(getReasonSessionKey(), null);
 			if (StringUtils.isEmpty(errorMessage)) {
 				errorMessage = session.get(getXmlReasonSessionKey(), "unknown error");

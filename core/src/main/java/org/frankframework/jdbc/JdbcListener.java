@@ -263,21 +263,18 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	 * @throws JdbcException If loading the message resulted in a database exception.
 	 */
 	protected RawMessageWrapper<M> extractRawMessage(ResultSet rs) throws JdbcException {
-		// TODO: This needs to be reviewed, if all complications are needed. Some branches are never touched in tests.
 		try {
 			String key = rs.getString(getKeyField());
 			Message message;
 			if (StringUtils.isNotEmpty(getMessageField())) {
 				switch (getMessageFieldType()) {
 					case CLOB:
-						// TESTCOVERAGE: Untested branch
 						message = new Message(getDbmsSupport().getClobReader(rs, getMessageField()));
 						break;
 					case BLOB:
 						if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) { // in this case blob contains a String
 							message = new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(), getBlobCharset(), isBlobsCompressed(), isBlobSmartGet(),false));
 						} else {
-							// TESTCOVERAGE: Untested branch
 							try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed())) {
 								message = new Message(blobStream);
 								message.preserve();
@@ -304,28 +301,14 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		}
 	}
 
-	protected String getKeyFromRawMessage(RawMessageWrapper<M> rawMessage) throws ListenerException {
+	protected String getKeyFromRawMessage(RawMessageWrapper<M> rawMessage) {
 
 		Map<String, Object> mwContext = rawMessage.getContext();
 		String key = (String) mwContext.get(PipeLineSession.STORAGE_ID_KEY);
 		if (StringUtils.isNotEmpty(key)) {
 			return key;
 		}
-
-		// TESTCOVERAGE: TODO: Below code appears untouched in our unit tests and IAF-Test but might be needed for some stored messages?
-		if (rawMessage.getId() != null) {
-			return rawMessage.getId();
-		} else if (rawMessage instanceof MessageWrapper) {
-			try {
-				return ((MessageWrapper<M>) rawMessage).getMessage().asString();
-			} catch (IOException e) {
-				throw new ListenerException(e);
-			}
-		} else if (rawMessage.getRawMessage() != null) {
-			return rawMessage.getRawMessage().toString();
-		} else {
-			throw new IllegalArgumentException("Cannot extract JDBC message key from raw message [" + rawMessage + "]");
-		}
+		throw new IllegalArgumentException("Cannot extract JDBC message key from raw message [" + rawMessage + "]");
 	}
 
 	@Override

@@ -17,7 +17,8 @@
 			<column name="TDATE" type="DATE"/>
 			<column name="TDATETIME" type="DATETIME"/>
 			<column name="TBOOLEAN" type="java.sql.Types.BOOLEAN"/>
-			<column name="TCLOB" type="CLOB"/> <!-- LONGBLOB required for MySQL and MariaDB, compatible with BLOB for other dbmses -->
+			<column name="TCLOB" type="CLOB"/>
+			<!-- LONGBLOB required for MySQL and MariaDB, compatible with BLOB for other dbmses -->
 			<column name="TBLOB" type="LONGBLOB"/>
 		</createTable>
 <!--		<createIndex tableName="${tableName}" indexName="IX_${tableName}">-->

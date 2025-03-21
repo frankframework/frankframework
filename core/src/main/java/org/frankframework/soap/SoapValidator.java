@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.doc.Protected;
 import org.frankframework.pipes.Json2XmlValidator;
 import org.frankframework.validation.RootValidations;
 
@@ -101,13 +102,14 @@ public class SoapValidator extends Json2XmlValidator {
 		return StringUtils.isNotEmpty(getOutputSoapBody());
 	}
 
-	@Deprecated
+	@Protected
 	@Override
 	public void setSchema(String schema) {
 		throw new IllegalArgumentException("The schema attribute isn't supported");
 	}
 
 	@Override
+	@Protected
 	public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
 		throw new IllegalArgumentException("The noNamespaceSchemaLocation attribute isn't supported");
 	}
@@ -132,7 +134,7 @@ public class SoapValidator extends Json2XmlValidator {
 	 * @ff.default envelope
 	 */
 	@Override
-	@Deprecated
+	@Protected
 	public void setRoot(String r) {
 		throw new IllegalArgumentException("The root element of a soap envelope is always " + getRoot());
 	}
