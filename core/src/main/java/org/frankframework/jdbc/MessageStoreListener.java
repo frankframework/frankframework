@@ -41,6 +41,7 @@ import org.frankframework.core.ProcessState;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.doc.Default;
 import org.frankframework.doc.Optional;
+import org.frankframework.doc.Protected;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
@@ -286,7 +287,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 	}
 
 	@Override
-	@Deprecated
+	@Protected
 	public void setMessageFieldType(MessageFieldType fieldtype) {
 		throw new UnsupportedOperationException("MessageFieldType is always BLOB for the MessageStoreListener, use a JdbcTableListener instead if you need CLOB of VARCHAR support");
 	}
