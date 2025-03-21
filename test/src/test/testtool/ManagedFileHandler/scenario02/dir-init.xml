@@ -1,0 +1,17 @@
+<project default="copy.file">
+	<target name="copy.file">
+		<property name="root.dir" value="${testdata.dir}/mfh" />
+		<property name="target.dir" value="${root.dir}/in" />
+		<property name="inprocess.dir" value="${root.dir}/inProcess" />
+		<property name="processed.dir" value="${root.dir}/processed" />
+		<property name="error.dir" value="${root.dir}/error" />
+		<delete dir="${target.dir}"/>
+		<delete dir="${inprocess.dir}"/>
+		<delete dir="${processed.dir}"/>
+		<delete dir="${error.dir}"/>
+		<mkdir dir="${target.dir}"/>
+		<mkdir dir="${inprocess.dir}"/>
+		<mkdir dir="${processed.dir}"/>
+		<mkdir dir="${error.dir}"/>
+	</target>
+</project>
