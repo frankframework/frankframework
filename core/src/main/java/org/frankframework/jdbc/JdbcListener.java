@@ -263,21 +263,18 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	 * @throws JdbcException If loading the message resulted in a database exception.
 	 */
 	protected RawMessageWrapper<M> extractRawMessage(ResultSet rs) throws JdbcException {
-		// TODO: This needs to be reviewed, if all complications are needed. Some branches are never touched in tests.
 		try {
 			String key = rs.getString(getKeyField());
 			Message message;
 			if (StringUtils.isNotEmpty(getMessageField())) {
 				switch (getMessageFieldType()) {
 					case CLOB:
-						// TESTCOVERAGE: Untested branch
 						message = new Message(getDbmsSupport().getClobReader(rs, getMessageField()));
 						break;
 					case BLOB:
 						if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) { // in this case blob contains a String
 							message = new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(), getBlobCharset(), isBlobsCompressed(), isBlobSmartGet(),false));
 						} else {
-							// TESTCOVERAGE: Untested branch
 							try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed())) {
 								message = new Message(blobStream);
 								message.preserve();
