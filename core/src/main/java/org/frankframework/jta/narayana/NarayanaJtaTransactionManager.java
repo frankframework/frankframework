@@ -36,8 +36,11 @@ import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 import lombok.Getter;
 
 import org.frankframework.jta.AbstractStatusRecordingTransactionManager;
+import org.frankframework.util.AppConstants;
 
 public class NarayanaJtaTransactionManager extends AbstractStatusRecordingTransactionManager {
+
+	private boolean heuristicDetectorEnabled = AppConstants.getInstance().getBoolean("transactionmanager.narayana.detectStuckTransactions", false);
 
 	private static final long serialVersionUID = 1L;
 
@@ -74,7 +77,9 @@ public class NarayanaJtaTransactionManager extends AbstractStatusRecordingTransa
 
 			recoveryManager = RecoveryManager.manager();
 
-			recoveryManager.addModule(new HeuristicDetectingRecoveryModule());
+			if (heuristicDetectorEnabled) {
+				recoveryManager.addModule(new HeuristicDetectingRecoveryModule());
+			}
 
 			recoveryManager.initialize();
 			recoveryManager.startRecoveryManagerThread();
