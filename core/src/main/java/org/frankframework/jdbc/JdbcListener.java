@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
@@ -27,12 +28,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+import lombok.Lombok;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -52,6 +56,7 @@ import org.frankframework.receivers.ReceiverAware;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.JdbcUtil;
+import org.frankframework.util.StringUtil;
 
 /**
  * JdbcListener base class.
@@ -63,6 +68,8 @@ import org.frankframework.util.JdbcUtil;
  */
 public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>, IHasProcessState<M>, ReceiverAware<M> {
 
+	public static final String ADDITIONAL_QUERY_FIELDS_KEY = "ADDITIONAL_QUERY_FIELDS";
+
 	private @Getter @Setter Receiver<M> receiver;
 
 	private @Getter String selectQuery;
@@ -72,6 +79,8 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	private @Getter String messageField;
 	private @Getter String messageIdField;
 	private @Getter String correlationIdField;
+	private @Getter String additionalFields;
+	private @Getter @Nonnull List<String> additionalFieldsList = List.of();
 	private @Getter MessageFieldType messageFieldType=MessageFieldType.STRING;
 	private @Getter String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
 
@@ -270,6 +279,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 				switch (getMessageFieldType()) {
 					case CLOB:
 						message = new Message(getDbmsSupport().getClobReader(rs, getMessageField()));
+						message.preserve(); // Prevent problems with stream closed after ResultSet is closed. Needed for MS SQL, Oracle
 						break;
 					case BLOB:
 						if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) { // in this case blob contains a String
@@ -295,9 +305,30 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			String correlationId = getColumnValueOrDefault(rs, getCorrelationIdField(), messageId);
 			MessageWrapper<M> mw = new MessageWrapper<>(message, messageId, correlationId);
 			mw.getContext().put(PipeLineSession.STORAGE_ID_KEY, key);
+			addAdditionalValuesToMessageWrapper(rs, mw);
 			return mw;
 		} catch (SQLException | IOException e) {
 			throw new JdbcException(e);
+		}
+	}
+
+	protected void addAdditionalValuesToMessageWrapper(ResultSet rs, RawMessageWrapper<M> mw) throws SQLException {
+		ResultSetMetaData metaData = rs.getMetaData();
+		Function<String, Map.Entry<String, String>> extractFieldValue = fieldName -> {
+			try {
+				int colNum = rs.findColumn(fieldName);
+				String value = JdbcUtil.getValue(getDbmsSupport(), rs, colNum, metaData, getBlobCharset(), isBlobsCompressed(), null, false, isBlobSmartGet(), false);
+				return Map.entry(fieldName, value);
+			} catch (Exception e) {
+				throw Lombok.sneakyThrow(e);
+			}
+		};
+		Map<String, String> additionalValues = getAdditionalFieldsList().stream()
+				.map(extractFieldValue)
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+		if (!additionalValues.isEmpty()) {
+			mw.getContext().put(ADDITIONAL_QUERY_FIELDS_KEY, additionalValues);
 		}
 	}
 
@@ -313,10 +344,18 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	@Override
 	public Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+		addAdditionalQueryFieldsToSession(rawMessage, context);
 		if (rawMessage.getRawMessage() instanceof MessageWrapper<?> messageWrapper) {
 			return messageWrapper.getMessage();
 		}
 		return Message.asMessage(rawMessage.getRawMessage());
+	}
+
+	protected  <M> void addAdditionalQueryFieldsToSession(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) {
+		if (rawMessage.getContext().containsKey(ADDITIONAL_QUERY_FIELDS_KEY)) {
+			//noinspection unchecked
+			context.putAll((Map<String, String>) rawMessage.getContext().get(ADDITIONAL_QUERY_FIELDS_KEY));
+		}
 	}
 
 	@Override
@@ -482,4 +521,12 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		blobSmartGet = b;
 	}
 
+	/**
+	 * Comma-separated list of additional fields to be loaded from the table, besides Message, Key, MessageID and CorrelationID. Any fields listed here will
+	 * be added to the session as session-variables.
+	 */
+	public void setAdditionalFields(String fieldNames) {
+		this.additionalFields = fieldNames;
+		this.additionalFieldsList = StringUtil.split(getAdditionalFields());
+	}
 }

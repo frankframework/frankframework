@@ -344,7 +344,13 @@ public class JdbcTableListenerTest {
 		listener.start();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,'TEST')", null, new PipeLineSession());
+			if (env.getDbmsSupport().getDbms() == Dbms.MSSQL) {
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,CONVERT(VARBINARY,'TEST'))", null, new PipeLineSession());
+			} else if (env.getDbmsSupport().getDbms() == Dbms.ORACLE) {
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,utl_raw.cast_to_raw('TEST'))", null, new PipeLineSession());
+			} else {
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,'TEST')", null, new PipeLineSession());
+			}
 		}
 
 		RawMessageWrapper<String> rawMessage = listener.getRawMessage(new HashMap<>());
@@ -872,4 +878,52 @@ public class JdbcTableListenerTest {
 	public void testForRaceConditionHandlingOnParallelGet7() throws Exception {
 		testForRaceConditionHandlingOnParallelGet(7);
 	}
+
+	@DatabaseTest
+	public void testSelectQueryWithAdditionalFields() throws ConfigurationException {
+		listener.setOrderField("ORDRFLD");
+		listener.setMessageIdField("tINT");
+		listener.setMessageField("tCLOB");
+		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
+		listener.setAdditionalFields("tBLOB, tVARCHAR");
+		listener.configure();
+
+		String expected = "SELECT TKEY,tINT,tCLOB,tBLOB,tVARCHAR FROM " + TEST_TABLE + " t WHERE TINT='1' ORDER BY ORDRFLD";
+
+		assertEquals(expected, listener.getSelectQuery());
+	}
+
+	@DatabaseTest
+	public void testGetExtraValues() throws Exception {
+		listener.setMessageIdField("tINT");
+		listener.setMessageField("tCLOB");
+		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
+		listener.setAdditionalFields("tBLOB, tVARCHAR");
+		listener.setBlobsCompressed(false);
+		listener.setBlobSmartGet(false);
+		listener.configure();
+		listener.start();
+
+		try(Connection connection = env.getConnection()) {
+			if (env.getDbmsSupport().getDbms() == Dbms.MSSQL) {
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',convert(varbinary, 'fBLOB'))", null, new PipeLineSession());
+			} else if (env.getDbmsSupport().getDbms() == Dbms.ORACLE) {
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',utl_raw.cast_to_raw('fBLOB'))", null, new PipeLineSession());
+			} else {
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message','fBLOB')", null, new PipeLineSession());
+			}
+		}
+
+		PipeLineSession session = new PipeLineSession();
+		RawMessageWrapper<String> rawMessage = listener.getRawMessage(session);
+		Message message = listener.extractMessage(rawMessage, session);
+
+		// Assert
+		assertEquals("message", message.asString());
+		assertTrue(session.containsKey("tBLOB"), "Session should contain tBLOB");
+		assertTrue(session.containsKey("tVARCHAR"), "Session should contain tVARCHAR");
+		assertEquals("fVC", session.get("tVARCHAR"));
+		assertEquals("fBLOB", session.get("tBLOB"));
+	}
+
 }
