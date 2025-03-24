@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -46,6 +48,16 @@ import org.frankframework.util.ClassUtils;
 
 public class ValidateAttributeRuleTest {
 	private TestConfiguration configuration;
+
+	@BeforeAll
+	public static void beforeAll() {
+		AppConstants.getInstance().put(SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY.getKey(), "false");
+	}
+
+	@AfterAll
+	public static void afterAll() {
+		AppConstants.getInstance().put(SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY.getKey(), "true");
+	}
 
 	// Convenience method to create an Attribute list to be parsed
 	private Attributes copyMapToAttrs(Map<String, String> map) {
