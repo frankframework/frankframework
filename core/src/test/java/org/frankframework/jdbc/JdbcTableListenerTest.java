@@ -34,6 +34,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import org.junit.jupiter.api.AfterEach;
@@ -374,7 +375,6 @@ public class JdbcTableListenerTest {
 		assertEquals("TEST",message.asString());
 	}
 
-
 	@DatabaseTest
 	public void testCreateQueryTexts() throws Exception {
 		assumeTrue(env.getDbmsSupport().getDbms() == Dbms.H2);
@@ -547,7 +547,6 @@ public class JdbcTableListenerTest {
 		assertEquals("fakeMid", mid);
 		assertEquals("fakeCid", cid);
 	}
-
 
 	@DatabaseTest
 	public void testParallelGet() throws Exception {
@@ -885,12 +884,13 @@ public class JdbcTableListenerTest {
 		listener.setMessageIdField("tINT");
 		listener.setMessageField("tCLOB");
 		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
-		listener.setAdditionalFields("tBLOB, tVARCHAR");
+		listener.setAdditionalFields(", tBLOB, tVARCHAR,  ");
 		listener.configure();
 
 		String expected = "SELECT TKEY,tINT,tCLOB,tBLOB,tVARCHAR FROM " + TEST_TABLE + " t WHERE TINT='1' ORDER BY ORDRFLD";
 
 		assertEquals(expected, listener.getSelectQuery());
+		assertEquals(List.of("tBLOB", "tVARCHAR"), listener.getAdditionalFieldsList());
 	}
 
 	@DatabaseTest
@@ -925,5 +925,4 @@ public class JdbcTableListenerTest {
 		assertEquals("fVC", session.get("tVARCHAR"));
 		assertEquals("fBLOB", session.get("tBLOB"));
 	}
-
 }
