@@ -127,6 +127,13 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		} catch (JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		}
+		// Check that the SELECT query contains the fields wanted
+		List<String> fieldsNotInQuery = getAdditionalFieldsList().stream()
+				.filter(f -> !selectQuery.matches(".*\\W" + f + "\\W.*"))
+				.toList();
+		if (!fieldsNotInQuery.isEmpty()) {
+			throw new ConfigurationException("additionalFields contains fields not in the select query: " + fieldsNotInQuery);
+		}
 	}
 
 	@Override

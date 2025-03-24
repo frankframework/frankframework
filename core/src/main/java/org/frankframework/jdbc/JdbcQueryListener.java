@@ -15,8 +15,6 @@
 */
 package org.frankframework.jdbc;
 
-import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -52,12 +50,6 @@ public class JdbcQueryListener extends JdbcListener {
 		super.configure();
 		if (!knownProcessStates().contains(ProcessState.INPROCESS) && !getDbmsSupport().hasSkipLockedFunctionality()) {
 			ConfigurationWarnings.add(this, log, "Database ["+getDbmsSupport().getDbmsName()+"] needs updateStatusToInProcessQuery to run in multiple threads");
-		}
-		List<String> fieldsNotInQuery = getAdditionalFieldsList().stream()
-				.filter(f -> !selectQuery.matches(".*\\W" + f + "\\W.*"))
-				.toList();
-		if (!fieldsNotInQuery.isEmpty()) {
-			throw new ConfigurationException("additionalFields contains fields not in the select query: " + fieldsNotInQuery);
 		}
 	}
 
