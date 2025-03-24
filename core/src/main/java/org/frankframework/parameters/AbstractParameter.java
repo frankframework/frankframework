@@ -561,7 +561,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 	private DateTimeFormatter getDateTimeFormatter(String patternFormatString) {
 		if (StringUtils.isNotEmpty(patternFormatString)) {
-			return DateFormatUtils.getDateTimeFormatterWithOptionalTimeComponent(patternFormatString);
+			return DateFormatUtils.getDateTimeFormatterWithOptionalComponents(patternFormatString);
 		}
 
 		return DateFormatUtils.FULL_GENERIC_FORMATTER;

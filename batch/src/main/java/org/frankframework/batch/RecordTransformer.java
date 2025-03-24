@@ -520,7 +520,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 				return DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM);
 			}
 
-			return DateFormatUtils.getDateTimeFormatterWithOptionalTimeComponent(format);
+			return DateFormatUtils.getDateTimeFormatterWithOptionalComponents(format);
 		}
 	}
 

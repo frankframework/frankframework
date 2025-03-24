@@ -313,7 +313,7 @@ public class CmisUtils {
 						formatStringAttr = CmisUtils.FORMATSTRING_BY_DEFAULT;
 					}
 
-					DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalTimeComponent(formatStringAttr);
+					DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(formatStringAttr);
 					try {
 						TemporalAccessor parse = formatter.parse(propertyValue);
 

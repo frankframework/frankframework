@@ -525,7 +525,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 					if(AppConstants.getInstance().getBoolean("cmissender.processproperties.legacydateformat", false)) {
 						formatStringAttr = "yyyy-MM-dd HH:mm:ss";
 					}
-					DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalTimeComponent(formatStringAttr);
+					DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(formatStringAttr);
 					GregorianCalendar calendar = new GregorianCalendar();
 
 					try {

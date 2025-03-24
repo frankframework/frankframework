@@ -164,7 +164,7 @@ public class XmlQuerySender extends DirectQuerySender {
 					parameter = n.intValue();
 				}
 			} else if (type.equalsIgnoreCase(TYPE_DATETIME)) {
-				DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalTimeComponent(formatString);
+				DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(formatString);
 
 				try {
 					TemporalAccessor parsed = formatter.parse(value);

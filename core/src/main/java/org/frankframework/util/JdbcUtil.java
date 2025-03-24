@@ -225,10 +225,10 @@ public class JdbcUtil {
 			case Types.DATE: {
 				try {
 					if (columnType == Types.TIMESTAMP && !TIMESTAMPFORMAT.isEmpty()) {
-						return DateFormatUtils.getDateTimeFormatterWithOptionalTimeComponent(TIMESTAMPFORMAT).format(rs.getTimestamp(colNum).toLocalDateTime());
+						return DateFormatUtils.getDateTimeFormatterWithOptionalComponents(TIMESTAMPFORMAT).format(rs.getTimestamp(colNum).toLocalDateTime());
 
 					} else if (columnType == Types.DATE && !DATEFORMAT.isEmpty()) {
-						return DateFormatUtils.getDateTimeFormatterWithOptionalTimeComponent(DATEFORMAT).format(rs.getDate(colNum).toLocalDate());
+						return DateFormatUtils.getDateTimeFormatterWithOptionalComponents(DATEFORMAT).format(rs.getDate(colNum).toLocalDate());
 					}
 				} catch (Exception e) {
 					// Do nothing, the default: will handle it

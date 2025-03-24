@@ -90,7 +90,7 @@ public class DateParameter extends AbstractParameter {
 		}
 
 		log.debug("Parameter [{}] converting result [{}] to Date using formatString [{}]", this::getName, () -> request, this::getFormatString);
-		DateTimeFormatter dateTimeFormatter = DateFormatUtils.getDateTimeFormatterWithOptionalTimeComponent(getFormatString());
+		DateTimeFormatter dateTimeFormatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(getFormatString());
 
 		try {
 			return Date.from(Instant.from(dateTimeFormatter.parse(request.asString())));

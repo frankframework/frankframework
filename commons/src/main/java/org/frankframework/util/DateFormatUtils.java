@@ -195,11 +195,11 @@ public class DateFormatUtils {
 	}
 
 	/**
-	 * Java time API is more strict compared to the old Date API. This method allows for parsing dates with optional time components.
+	 * Java time API is more strict compared to the old Date API. This method allows for parsing dates with optional components.
 	 *
 	 * @param format
 	 */
-	public static DateTimeFormatter getDateTimeFormatterWithOptionalTimeComponent(String format) {
+	public static DateTimeFormatter getDateTimeFormatterWithOptionalComponents(String format) {
 		return new DateTimeFormatterBuilder()
 				.appendPattern(format)
 				.parseDefaulting(ChronoField.YEAR_OF_ERA, LocalDate.MIN.getYear())
