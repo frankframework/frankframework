@@ -17,7 +17,10 @@ package org.frankframework.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -25,6 +28,7 @@ import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageBrowser;
+import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
@@ -213,4 +217,21 @@ public class JdbcTableMessageBrowser<M> extends AbstractJdbcMessageBrowser<M> {
 		indexName = string;
 	}
 
+	@Override
+	public List<String> getStorageFields() {
+		return Stream.of(
+			getKeyField(),
+			getIdField(),
+			getCorrelationIdField(),
+			getDateField(),
+			getCommentField(),
+			getMessageField(),
+			getSlotIdField(),
+			getExpiryDateField(),
+			getLabelField(),
+			getTypeField(),
+			getHostField()
+		).filter(StringUtils::isNotEmpty).toList();
+	}
 }
+
