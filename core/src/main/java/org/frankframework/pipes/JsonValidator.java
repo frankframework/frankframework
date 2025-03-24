@@ -112,7 +112,7 @@ public class JsonValidator extends AbstractValidator {
 			if (StringUtils.isNotEmpty(getReasonSessionKey())) {
 				session.put(getReasonSessionKey(), problems.toString());
 			}
-			return determineForward(resultEvent, session, responseMode, problems::toString);
+			return determineForward(resultEvent, responseMode, problems::toString);
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot validate", e);
 		}
