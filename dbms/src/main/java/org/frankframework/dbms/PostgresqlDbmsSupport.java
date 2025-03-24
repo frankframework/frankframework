@@ -30,7 +30,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -68,9 +67,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getDatetimeLiteral(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String formattedDate = formatter.format(date);
-		return "timestamp '" + formattedDate + "'";
+		return "timestamp '" + getFormattedDate(date) + "'";
 	}
 
 	@Override

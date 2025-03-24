@@ -27,7 +27,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -41,6 +40,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.StringUtil;
 
 
@@ -122,9 +122,11 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	// method is used in JobDef.cleanupDatabase
 	@Override
 	public String getDatetimeLiteral(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String formattedDate = formatter.format(date);
-		return "TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
+		return "TO_TIMESTAMP('" + getFormattedDate(date) + "', 'YYYY-MM-DD HH24:MI:SS')";
+	}
+
+	protected String getFormattedDate(Date date) {
+		return DateFormatUtils.GENERIC_DATETIME_FORMATTER.format(date.toInstant());
 	}
 
 	@Override
@@ -150,7 +152,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public Writer getClobWriter(ResultSet rs, int column, Object clobHandle) throws SQLException, DbmsException {
+	public Writer getClobWriter(ResultSet rs, int column, Object clobHandle) throws SQLException {
 		return ((Clob) clobHandle).setCharacterStream(1L);
 	}
 
@@ -171,17 +173,17 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public Writer getClobWriter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException, DbmsException {
+	public Writer getClobWriter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException {
 		return ((Clob) clobHandle).setCharacterStream(1L);
 	}
 
 	@Override
-	public void applyClobParameter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException, DbmsException {
+	public void applyClobParameter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException {
 		stmt.setClob(column, (Clob) clobHandle);
 	}
 
 	@Override
-	public Reader getClobReader(ResultSet rs, int column) throws SQLException, DbmsException {
+	public Reader getClobReader(ResultSet rs, int column) throws SQLException {
 		Clob clob = rs.getClob(column);
 		if (clob == null) {
 			return null;
@@ -190,7 +192,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public Reader getClobReader(ResultSet rs, String column) throws SQLException, DbmsException {
+	public Reader getClobReader(ResultSet rs, String column) throws SQLException {
 		Clob clob = rs.getClob(column);
 		if (clob == null) {
 			return null;

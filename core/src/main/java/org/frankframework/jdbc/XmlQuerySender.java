@@ -21,11 +21,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,6 +46,7 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.stream.Message;
+import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.StringUtil;
@@ -161,14 +164,14 @@ public class XmlQuerySender extends DirectQuerySender {
 					parameter = n.intValue();
 				}
 			} else if (type.equalsIgnoreCase(TYPE_DATETIME)) {
-				DateFormat df = new SimpleDateFormat(formatString);
-				java.util.Date nDate;
+				DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalTimeComponent(formatString);
+
 				try {
-					nDate = df.parse(value);
-				} catch (ParseException e) {
+					TemporalAccessor parsed = formatter.parse(value);
+					parameter = Timestamp.from(Instant.from(parsed));
+				} catch (DateTimeParseException e) {
 					throw new SenderException("got exception parsing value [" + value + "] to Date using formatString [" + formatString + "]", e);
 				}
-				parameter = new Timestamp(nDate.getTime());
 			} else if (type.equalsIgnoreCase(TYPE_XMLDATETIME)) {
 				java.util.Date nDate;
 				try {

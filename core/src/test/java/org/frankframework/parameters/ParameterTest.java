@@ -16,8 +16,9 @@ import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -1010,8 +1011,8 @@ public class ParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
 			assertTrue(result instanceof String);
 
-			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
-			String expectedDate = sdf.format(new Date()); // dit gaat echt meestal wel goed
+			DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DateFormatUtils.FORMAT_FULL_GENERIC);
+			String expectedDate = dateTimeFormatter.format(LocalDateTime.now()); // dit gaat echt meestal wel goed
 			assertEquals(expectedDate.substring(0, 10), ((String) result).substring(0, 10));
 
 		} finally {
@@ -1035,8 +1036,8 @@ public class ParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
 			assertInstanceOf(String.class, result);
 
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-			String expectedDate = sdf.format(new Date()); // dit gaat echt meestal wel goed
+			DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+			String expectedDate = dateTimeFormatter.format(LocalDateTime.now()); // dit gaat echt meestal wel goed
 			assertEquals(expectedDate.substring(0, 10), ((String) result).substring(0, 10));
 
 		} finally {
@@ -1125,9 +1126,10 @@ public class ParameterTest {
 			p.configure();
 			PipeLineSession session = new PipeLineSession();
 
-			Date expectedDate = new Date();
-			DateFormat df = new SimpleDateFormat(patternFormatString);
-			String expectedDateAsString = df.format(expectedDate);
+			LocalDateTime now = LocalDateTime.now();
+			DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(patternFormatString);
+			String expectedDateAsString = dateTimeFormatter.format(now);
+			Date expectedDate = Date.from(now.atZone(ZoneId.systemDefault()).toInstant());
 
 			session.put(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY, expectedDate);
 
@@ -1156,9 +1158,9 @@ public class ParameterTest {
 			p.configure();
 			PipeLineSession session = new PipeLineSession();
 
-			Date expectedDate = new Date();
-			DateFormat df = new SimpleDateFormat(patternFormatString);
-			String expectedDateAsString = df.format(expectedDate);
+			LocalDateTime now = LocalDateTime.now();
+			DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(patternFormatString);
+			String expectedDateAsString = dateTimeFormatter.format(now);
 
 			session.put(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY, expectedDateAsString);
 

@@ -21,9 +21,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -85,7 +85,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	private @Getter LockType type = LockType.T;
 	private @Getter String dateFormatSuffix;
 	private @Getter int retention = -1;
-	private SimpleDateFormat formatter;
+	private DateTimeFormatter formatter;
 	private @Getter int numRetries = 0;
 	private @Getter int firstDelay = 0;
 	private @Getter int retryDelay = 10000;
@@ -114,7 +114,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 		}
 		if (StringUtils.isNotEmpty(getDateFormatSuffix())) {
 			try {
-				formatter = new SimpleDateFormat(getDateFormatSuffix());
+				formatter = DateTimeFormatter.ofPattern(getDateFormatSuffix());
 			} catch (IllegalArgumentException ex){
 				throw new ConfigurationException(getLogPrefix()+"has an illegal value for dateFormat", ex);
 			}
@@ -163,10 +163,11 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 			}
 			IbisTransaction itx = new IbisTransaction(getTxManager(), getTxDef(), "locker [" + getName() + "]");
 			try {
-				Date date = new Date();
+				Instant instant = Instant.now();
+
 				objectIdWithSuffix = getObjectId();
 				if (StringUtils.isNotEmpty(getDateFormatSuffix())) {
-					String formattedDate = formatter.format(date);
+					String formattedDate = formatter.format(instant);
 					objectIdWithSuffix = objectIdWithSuffix.concat(formattedDate);
 				}
 
@@ -177,15 +178,15 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 					stmt.setString(1,objectIdWithSuffix);
 					stmt.setString(2,getType().name());
 					stmt.setString(3,Misc.getHostname());
-					stmt.setTimestamp(4, new Timestamp(date.getTime()));
-					Calendar cal = Calendar.getInstance();
-					cal.setTime(date);
-					if (getType()==LockType.T) {
-						cal.add(Calendar.HOUR_OF_DAY, getRetention());
+					stmt.setTimestamp(4, Timestamp.from(instant));
+
+					if (getType() == LockType.T) {
+						instant.plus(getRetention(), ChronoUnit.HOURS);
 					} else {
-						cal.add(Calendar.DAY_OF_MONTH, getRetention());
+						instant.plus(getRetention(), ChronoUnit.DAYS);
 					}
-					stmt.setTimestamp(5, new Timestamp(cal.getTime().getTime()));
+
+					stmt.setTimestamp(5, Timestamp.from(instant));
 					TimeoutGuard timeoutGuard = null;
 					if (lockWaitTimeout > 0) {
 						timeoutGuard = new TimeoutGuard(lockWaitTimeout, "lockWaitTimeout") {

@@ -17,7 +17,7 @@ package org.frankframework.filesystem;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
@@ -69,7 +69,7 @@ public class MailFileSystemUtils {
 		}
 		String value;
 		if (property instanceof Date date) {
-			value = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(date);
+			value = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(date.toInstant());
 		} else {
 			value = property.toString();
 		}

@@ -8,9 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import org.junit.jupiter.api.Test;
@@ -20,13 +20,13 @@ import org.frankframework.configuration.ConfigurationException;
 public class ParameterValueTest {
 
 	private void testDateParameterToString(DateParameter.DateFormatType type, String pattern, String input, String expectedOutput) throws ParseException, ConfigurationException {
-		DateFormat df = new SimpleDateFormat(pattern);
-		Date date = df.parse(input);
-
 		DateParameter parameter = new DateParameter();
 		parameter.setName("InputMessage");
 		parameter.setFormatType(type);
 		parameter.configure();
+
+		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(pattern);
+		Date date = Date.from(Instant.from(dateTimeFormatter.parse(input)));
 
 		ParameterValue pv = new ParameterValue(parameter, date);
 

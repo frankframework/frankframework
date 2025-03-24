@@ -29,8 +29,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.Collectors;
@@ -776,66 +776,58 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		}
 		int ix  = 1;
 		String element=null;
-		try {
-			if (packageInput.lastIndexOf(',') > 0) {
-				while ((packageInput.charAt(packageInput.length() - ix) != ',')	&& (ix < packageInput.length())) {
-					ix++;
-				}
-				int endInputs = beginOutput - ix;
-				packageInput = message.substring(openingBracePosition + 1, endInputs);
-				if (idx != 1) {
-					Iterator<String> iter = StringUtil.splitToStream(packageInput).iterator();
-					while (iter.hasNext()) {
-						element = iter.next();
-						if (element.startsWith("'")) {
-							int x = element.indexOf('\'');
-							int y = element.lastIndexOf('\'');
-							paramArray[idx] = element.substring(x + 1, y);
-						} else {
-							if (element.contains("-")){
-								if (element.length() > 10) {
-									String pattern = "yyyy-MM-dd HH:mm:ss";
-									SimpleDateFormat sdf = new SimpleDateFormat(pattern);
-									java.util.Date nDate = (java.util.Date)sdf.parseObject(element);
-									Timestamp sqlTimestamp = new Timestamp(nDate.getTime());
-									paramArray[idx] = sqlTimestamp;
 
-								} else {
-									String pattern = "yyyy-MM-dd";
-									SimpleDateFormat sdf = new SimpleDateFormat(pattern);
-									java.util.Date nDate;
-									nDate = sdf.parse(element);
-									java.sql.Date sDate = new java.sql.Date(nDate.getTime());
-									paramArray[idx] = sDate;
-								}
+		if (packageInput.lastIndexOf(',') > 0) {
+			while ((packageInput.charAt(packageInput.length() - ix) != ',')	&& (ix < packageInput.length())) {
+				ix++;
+			}
+			int endInputs = beginOutput - ix;
+			packageInput = message.substring(openingBracePosition + 1, endInputs);
+			if (idx != 1) {
+				Iterator<String> iter = StringUtil.splitToStream(packageInput).iterator();
+				while (iter.hasNext()) {
+					element = iter.next();
+					if (element.startsWith("'")) {
+						int x = element.indexOf('\'');
+						int y = element.lastIndexOf('\'');
+						paramArray[idx] = element.substring(x + 1, y);
+					} else {
+						if (element.contains("-")){
+							if (element.length() > 10) {
+								// ISO_LOCAL_DATE_TIME is "yyyy-MM-ddTHH:mm:ss" and we don't expect the 'T' as a separator
+								Instant instant = Instant.from(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").parse(element));
+								Timestamp sqlTimestamp = Timestamp.from(instant);
+								paramArray[idx] = sqlTimestamp;
+
 							} else {
-								if (element.contains(".")) {
-									paramArray[idx] = Float.parseFloat(element);
-								} else {
-									paramArray[idx] = Integer.parseInt(element);
-								}
+								// ISO_LOCAL_DATE == "yyyy-MM-dd";
+								Instant instant = Instant.from(DateTimeFormatter.ISO_LOCAL_DATE.parse(element));
+								java.sql.Date sDate = new java.sql.Date(instant.getEpochSecond());
+								paramArray[idx] = sDate;
+							}
+						} else {
+							if (element.contains(".")) {
+								paramArray[idx] = Float.parseFloat(element);
+							} else {
+								paramArray[idx] = Integer.parseInt(element);
 							}
 						}
-						idx++;
 					}
+					idx++;
 				}
 			}
-			StringBuilder newMessage = new StringBuilder(message.substring(0, openingBracePosition + 1));
-			if (idx >= 0) {
-				//check if output parameter exists is expected in original message and append an ending ?(out-parameter)
-				int parameterCount = idx + (message.contains("?") ? 1 : 0);
-				if (parameterCount > 0) {
-					newMessage.append("?");
-					for (int i = 1; i < parameterCount; i++) {
-						newMessage.append(",?");
-					}
-				}
-				newMessage.append(message, closingBracePosition, lengthMessage);
-			}
-			return newMessage.toString();
-		} catch (ParseException e) {
-			throw new SenderException("got exception parsing a date string from element ["+element+"]", e);
 		}
+		StringBuilder newMessage = new StringBuilder(message.substring(0, openingBracePosition + 1));
+		if (idx >= 0) {
+			//check if output parameter exists is expected in original message and append an ending ?(out-parameter)
+			int parameterCount = idx + (message.contains("?") ? 1 : 0);
+			if (parameterCount > 0) {
+				newMessage.append("?");
+				newMessage.append(",?".repeat(parameterCount - 1));
+			}
+			newMessage.append(message, closingBracePosition, lengthMessage);
+		}
+		return newMessage.toString();
 	}
 
 	/**

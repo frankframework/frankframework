@@ -20,7 +20,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -116,7 +116,7 @@ class MailConvertor extends AbstractConvertor {
 		result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(eml.getSubject()));
 
 		File tempMHtmlFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), null);
-		String date = new SimpleDateFormat(MAIL_HEADER_DATEFORMAT).format(eml.getDate());
+		String date = DateTimeFormatter.ofPattern(MAIL_HEADER_DATEFORMAT).format(eml.getDate().toInstant());
 		eml.getHeaders().set_Item("Date", date);
 		eml.save(tempMHtmlFile.getAbsolutePath(), options);
 

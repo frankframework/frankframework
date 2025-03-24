@@ -16,8 +16,8 @@
 package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
@@ -30,7 +30,7 @@ class UniqueFileGenerator {
 	private static final AtomicInteger atomicCount = new AtomicInteger(1);
 
 	private UniqueFileGenerator() {
-
+		// Do not construct utility class
 	}
 
 	/**
@@ -39,8 +39,8 @@ class UniqueFileGenerator {
 	 * @param extension  is allowed to be null.
 	 */
 	public static File getUniqueFile(String directory, String prefix, String extension) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
-		SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 		int count = atomicCount.addAndGet(1);
 		String fileType;
 		if (StringUtils.isEmpty(extension)) {
@@ -50,9 +50,8 @@ class UniqueFileGenerator {
 		}
 
 		// Save to disc
-		String fileNamePdf = "%s_%s_%05d%s".formatted(prefix, format.format(new Date()), count, fileType);
+		String fileNamePdf = "%s_%s_%05d%s".formatted(prefix, formatter.format(LocalDateTime.now()), count, fileType);
+
 		return new File(directory, fileNamePdf);
-
 	}
-
 }

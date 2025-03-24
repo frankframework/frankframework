@@ -16,9 +16,9 @@
 package org.frankframework.parameters;
 
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 
 import jakarta.annotation.Nonnull;
@@ -84,16 +84,17 @@ public class DateParameter extends AbstractParameter {
 			return date;
 		}
 
-		if(formatType == DateFormatType.XMLDATETIME) {
+		if (formatType == DateFormatType.XMLDATETIME) {
 			log.debug("Parameter [{}] converting result [{}] from XML dateTime to Date", this::getName, () -> request);
 			return XmlUtils.parseXmlDateTime(request.asString());
 		}
 
 		log.debug("Parameter [{}] converting result [{}] to Date using formatString [{}]", this::getName, () -> request, this::getFormatString);
-		DateFormat df = new SimpleDateFormat(getFormatString());
+		DateTimeFormatter dateTimeFormatter = DateFormatUtils.getDateTimeFormatterWithOptionalTimeComponent(getFormatString());
+
 		try {
-			return df.parse(request.asString());
-		} catch (ParseException e) {
+			return Date.from(Instant.from(dateTimeFormatter.parse(request.asString())));
+		} catch (DateTimeParseException e) {
 			throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + request + "] to Date using formatString [" + getFormatString() + "]", e);
 		}
 	}

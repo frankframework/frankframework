@@ -18,10 +18,10 @@ package org.frankframework.extensions.cmis;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.TemporalAccessor;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -82,6 +82,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.XmlBuilder;
@@ -524,12 +525,13 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 					if(AppConstants.getInstance().getBoolean("cmissender.processproperties.legacydateformat", false)) {
 						formatStringAttr = "yyyy-MM-dd HH:mm:ss";
 					}
-					DateFormat df = new SimpleDateFormat(formatStringAttr);
+					DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalTimeComponent(formatStringAttr);
 					GregorianCalendar calendar = new GregorianCalendar();
+
 					try {
-						Date date = df.parse(property);
-						calendar.setTime(date);
-					} catch (ParseException e) {
+						TemporalAccessor parse = formatter.parse(property);
+						calendar.setTimeInMillis(Instant.from(parse).getEpochSecond());
+					} catch (DateTimeParseException e) {
 						throw new SenderException("exception parsing date [" + property + "] using formatString [" + formatStringAttr + "]", e);
 					}
 					props.put(nameAttr, calendar);

@@ -16,11 +16,12 @@
 package org.frankframework.batch;
 
 import java.lang.reflect.Constructor;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.StringUtil;
 
 /**
@@ -471,40 +473,54 @@ public class RecordTransformer extends AbstractRecordHandler {
 	 * @author John Dekker
 	 */
 	static class FixedDateOutput implements IOutputField {
+		private final String outFormatPattern;
+		private final String inFormatPattern;
 		private int inputFieldIndex = -1;
-		private final SimpleDateFormat outFormatter;
-		private final SimpleDateFormat inFormatter;
 
 		FixedDateOutput(String outFormatPattern, String inFormatPattern, int inputFieldIndex) {
+			this.outFormatPattern = outFormatPattern;
+			this.inFormatPattern = inFormatPattern;
 			this.inputFieldIndex = inputFieldIndex;
-			if (StringUtils.isEmpty(outFormatPattern)) {
-				this.outFormatter = new SimpleDateFormat();
-			}
-			else {
-				this.outFormatter = new SimpleDateFormat(outFormatPattern);
-			}
-			if (StringUtils.isEmpty(inFormatPattern)) {
-				this.inFormatter = new SimpleDateFormat();
-			}
-			else {
-				this.inFormatter = new SimpleDateFormat(inFormatPattern);
-			}
 		}
 
 		@Override
-		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ParseException, ConfigurationException {
-			Date date ;
+		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ConfigurationException {
+			Instant timestamp = getInstant(inputFields);
 
+			result.append(getOutputFormatter().format(timestamp));
+
+			return null;
+		}
+
+		private Instant getInstant(List<String> inputFields) throws ConfigurationException {
 			if (inputFieldIndex < 0) {
-				date = new Date();
+				return Instant.now();
+
 			} else {
 				if (inputFieldIndex >= inputFields.size()) {
 					throw new ConfigurationException("Function refers to a non-existing inputfield [" + inputFieldIndex + "]");
 				}
-				date = inFormatter.parse(inputFields.get(inputFieldIndex));
+				// check if we have parsed a time
+				TemporalAccessor parsed = getInputFormatter().parse(inputFields.get(inputFieldIndex));
+
+				return Instant.from(parsed);
 			}
-			result.append(outFormatter.format(date));
-			return null;
+		}
+
+		private DateTimeFormatter getOutputFormatter() {
+			return getDateTimeFormatter(outFormatPattern);
+		}
+
+		private DateTimeFormatter getInputFormatter() {
+			return getDateTimeFormatter(inFormatPattern);
+		}
+
+		private DateTimeFormatter getDateTimeFormatter(String format) {
+			if (StringUtils.isEmpty(format)) {
+				return DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM);
+			}
+
+			return DateFormatUtils.getDateTimeFormatterWithOptionalTimeComponent(format);
 		}
 	}
 
