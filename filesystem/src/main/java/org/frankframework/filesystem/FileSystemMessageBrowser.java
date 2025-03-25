@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
@@ -138,6 +139,11 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 			throw new ListenerException(e);
 		}
 		return count;
+	}
+
+	@Override
+	public List<String> getStorageFields() {
+		return List.of(); // TODO
 	}
 
 }

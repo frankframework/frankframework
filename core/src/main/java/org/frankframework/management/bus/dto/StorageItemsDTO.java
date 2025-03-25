@@ -47,6 +47,7 @@ public class StorageItemsDTO {
 	private final @Getter int messageCount;
 	private final @Getter int recordsFiltered;
 	private final @Getter List<StorageItemDTO> messages;
+	private final @Getter List<String> fields;
 
 	@JsonInclude(Include.NON_EMPTY)
 	private @Getter @Setter Map<ProcessState, ProcessStateDTO> targetStates = new EnumMap<>(ProcessState.class);
@@ -63,6 +64,7 @@ public class StorageItemsDTO {
 		this.totalMessages = total;
 		this.skipMessages = filter.getSkipMessages();
 		this.messageCount = total - skipMessages;
+		this.fields = transactionalStorage.getStorageFields();
 
 		Date startDate = filter.getStartDate();
 		Date endDate = filter.getEndDate();

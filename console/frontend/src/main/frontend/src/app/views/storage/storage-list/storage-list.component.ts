@@ -267,6 +267,11 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
                   delete this.storageService.selectedMessages[messageId];
                 }
               }
+              console.log(
+                'Table properties:',
+                this.displayedColumns.map((column) => column.property),
+              );
+              console.log('MessageBrowser Fields:', response.fields);
             },
             error: (error: unknown) => {
               this.searching = false;

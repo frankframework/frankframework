@@ -6,6 +6,7 @@ import { MiscService } from 'src/app/services/misc.service';
 import { Base64Service } from '../../services/base64.service';
 
 export type MessageStore = {
+  fields: string[];
   totalMessages: number;
   skipMessages: number;
   messageCount: number;

@@ -18,6 +18,7 @@ package org.frankframework.jms;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import jakarta.jms.JMSException;
@@ -165,7 +166,6 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 		return (J)doBrowse("JMSMessageID", messageId);
 	}
 
-
 	protected jakarta.jms.Message doBrowse(Map<String,String> selectors) throws ListenerException {
 		QueueSession session=null;
 		QueueBrowser queueBrowser=null;
@@ -218,6 +218,11 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 			}
 			closeSession(session);
 		}
+	}
+
+	@Override
+	public List<String> getStorageFields() {
+		return List.of(); // TODO
 	}
 
 	protected String getCombinedSelector(String messageId) {
