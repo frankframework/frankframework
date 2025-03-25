@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.StringUtil;
 
 /**
  * {@link DataSource} implementation wrapping {@link XADataSource} because Narayana doesn't provide their own DataSource.
@@ -53,7 +54,7 @@ import org.frankframework.util.LogUtil;
 public class NarayanaDataSource implements DataSource {
 	private final Logger log = LogUtil.getLogger(NarayanaDataSource.class);
 
-	private @Setter boolean connectionPooling = true;
+	private @Setter boolean connectionPooling = false;
 	private @Setter int maxConnections = 20;
 
 	private final @Getter XADataSource targetDataSource;
@@ -141,5 +142,10 @@ public class NarayanaDataSource implements DataSource {
 			return (T) this;
 		}
 		return ((Wrapper)targetDataSource).unwrap(iface);
+	}
+
+	@Override
+	public String toString() {
+		return StringUtil.reflectionToString(this);
 	}
 }
