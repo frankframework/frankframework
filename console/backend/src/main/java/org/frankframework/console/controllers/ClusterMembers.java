@@ -21,7 +21,6 @@ import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -54,7 +53,6 @@ public class ClusterMembers implements ApplicationListener<ClusterMemberEvent> {
 
 	private final ClientSession session;
 
-	@Qualifier("outboundGateway")
 	private final OutboundGateway outboundGateway;
 
 	protected final SimpMessagingTemplate messagingTemplate;

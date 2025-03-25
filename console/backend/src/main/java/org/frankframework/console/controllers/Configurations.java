@@ -64,17 +64,14 @@ public class Configurations {
 	@Description("view all the loaded/original configurations")
 	@GetMapping(value = "/configurations", produces = MediaType.APPLICATION_XML_VALUE)
 	public ResponseEntity<?> getConfigurationXML(ConfigurationParameters params) throws ApiException {
-		boolean loaded = Boolean.parseBoolean(params.loadedConfiguration);
-		String flow = params.flow;
-
-		if (StringUtils.isNotEmpty(flow)) {
+		if (StringUtils.isNotEmpty(params.flow)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.FLOW);
 			return frankApiService.callSyncGateway(builder);
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.GET);
-		if (loaded) {
-			builder.addHeader("loaded", true);
+		if (params.loadedConfiguration != null) {
+			builder.addHeader("loaded", params.loadedConfiguration);
 		}
 		return frankApiService.callSyncGateway(builder);
 	}
@@ -121,8 +118,8 @@ public class Configurations {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.GET);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
 
-		if (Boolean.parseBoolean(params.loadedConfiguration)) {
-			builder.addHeader("loaded", true);
+		if (params.loadedConfiguration != null) {
+			builder.addHeader("loaded", params.loadedConfiguration);
 		}
 
 		return frankApiService.callSyncGateway(builder);
@@ -268,7 +265,7 @@ public class Configurations {
 
 	public record ConfigurationPathVariables(String configuration, String version) {}
 
-	public record ConfigurationParameters(String loadedConfiguration, String flow, String datasourceName) {}
+	public record ConfigurationParameters(Boolean loadedConfiguration, String flow, String datasourceName) {}
 
 	public record ActionModel(String action, String[] configurations) {}
 
