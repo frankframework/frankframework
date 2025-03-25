@@ -237,7 +237,7 @@ public class CmisUtils {
 				break;
 			case DATETIME:
 				GregorianCalendar gregorianCalendar = (GregorianCalendar) value;
-				String formattedDate = DateTimeFormatter.ofPattern(FORMATSTRING_BY_DEFAULT).format(Instant.ofEpochMilli(gregorianCalendar.getTimeInMillis()));
+				String formattedDate = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(FORMATSTRING_BY_DEFAULT).format(Instant.ofEpochMilli(gregorianCalendar.getTimeInMillis()));
 
 				propertyXml.setValue(formattedDate);
 				break;
