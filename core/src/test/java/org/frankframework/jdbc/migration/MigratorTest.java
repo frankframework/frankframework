@@ -87,10 +87,24 @@ public class MigratorTest {
 
 		MessageKeeper messageKeeper = env.getConfiguration().getMessageKeeper();
 		assertNotNull(messageKeeper, "no message logged to the messageKeeper");
-		System.err.println(messageKeeper.toString()); // == empty?
+		System.err.println(messageKeeper); // == empty?
 		assertEquals(1, messageKeeper.size());
-		assertEquals("Configuration ["+env.getName()+"] LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]", messageKeeper.getMessage(0).getMessageText());
-		assertFalse(isTablePresent(tableName), "table ["+tableName+"] should not exist");
+		assertEquals("Configuration ["+env.getName()+"] LiquiBase applied [3] change(s) and added tag [three:Niels Meijer]", messageKeeper.getMessage(0).getMessageText());
+		assertTrue(isTablePresent(tableName), "table ["+tableName+"] should exist");
+		assertFalse(isTablePresent("TABLETWO"), "table [TABLETWO] should not exist");
+	}
+
+	@TxManagerTest
+	public void testCreateTableChangelogFile(DatabaseTestEnvironment env) throws Exception {
+		AppConstants.getInstance(env.getConfiguration().getClassLoader()).setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelogCreate.xml");
+		migrator.update();
+
+		MessageKeeper messageKeeper = env.getConfiguration().getMessageKeeper();
+		assertNotNull(messageKeeper, "no message logged to the messageKeeper");
+		System.err.println(messageKeeper); // == empty?
+		assertEquals(1, messageKeeper.size());
+		assertEquals("Configuration ["+env.getName()+"] LiquiBase applying change [one:Niels Meijer] description [createTable tableName=DUMMYTABLE] tag [one:Niels Meijer]", messageKeeper.getMessage(0).getMessageText());
+		assertTrue(isTablePresent(tableName), "table ["+tableName+"] should exist");
 	}
 
 	@TxManagerTest
@@ -102,9 +116,9 @@ public class MigratorTest {
 		assertEquals(1, warnings.size());
 
 		String warning = warnings.get(0);
-		assertThat(warning, containsString("LiquibaseMigrator Error running LiquiBase update. Failed to execute [3] change(s)")); //Test ObjectName + Error
-		assertThat(warning, containsString("Migration failed for changeset Migrator/DatabaseChangelogError.xml::error::Niels Meijer")); //Test liquibase exception
-		//H2 logs 'Table \"DUMMYTABLE\" already exists' Oracle throws 'ORA-00955: name is already used by an existing object'
+		assertThat(warning, containsString("LiquibaseMigrator Error running LiquiBase update. Failed to execute [3] change(s)")); // Test ObjectName + Error
+		assertThat(warning, containsString("Migration failed for changeset Migrator/DatabaseChangelogError.xml::error::Niels Meijer")); // Test liquibase exception
+		// H2 logs 'Table \"DUMMYTABLE\" already exists' Oracle throws 'ORA-00955: name is already used by an existing object'
 		assertTrue(isTablePresent(tableName), "table ["+tableName+"] should exist");
 	}
 
@@ -200,7 +214,7 @@ public class MigratorTest {
 
 			migrator.update();
 
-			String msg = "LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]";
+			String msg = "LiquiBase applied [3] change(s) and added tag [three:Niels Meijer]";
 			assertFalse(appender.contains(msg), "expected message not to be logged but found ["+appender.getLogLines()+"]"); //Validate Liquibase doesn't log
 
 			ConfigurationMessageEventListener configurationMessages = env.getConfiguration().getBean("ConfigurationMessageListener", ConfigurationMessageEventListener.class);
