@@ -27,7 +27,7 @@ import org.frankframework.util.CloseUtils;
 @WithLiquibase(tableName = MessageStoreSenderAndListenerTest.TEST_TABLE_NAME)
 public class MessageStoreSenderAndListenerTest {
 
-	static final String TEST_TABLE_NAME = "MESSAGE_STORE_SENDER_AND_LISTENER_TEST";
+	static final String TEST_TABLE_NAME = "MSSALT";
 	private static final String SLOT_ID = "mssalt";
 	private static final String TEST_DATA = "test content";
 
