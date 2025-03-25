@@ -41,6 +41,7 @@ import org.frankframework.core.ProcessState;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.doc.Default;
 import org.frankframework.doc.Optional;
+import org.frankframework.doc.Protected;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
@@ -102,13 +103,13 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 
 	private List<String> sessionKeysList;
 
-	{
+	public MessageStoreListener() {
 		setTableName(DEFAULT_TABLE_NAME);
 		setKeyField(DEFAULT_KEY_FIELD);
 		setMessageField(DEFAULT_MESSAGE_FIELD);
 		setMessageIdField(DEFAULT_MESSAGEID_FIELD);
 		setCorrelationIdField(DEFAULT_CORRELATIONID_FIELD);
-		setMessageFieldType(MessageFieldType.BLOB);
+		super.setMessageFieldType(MessageFieldType.BLOB);
 		setBlobSmartGet(true);
 		setStatusField(DEFAULT_STATUS_FIELD);
 		setTimestampField(DEFAULT_TIMESTAMP_FIELD);
@@ -161,7 +162,6 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 		} catch (Exception e) {
 			throw new JdbcException(e);
 		}
-
 	}
 
 	private String getStringFieldOrNull(ResultSet rs, String columnLabel) throws SQLException {
@@ -287,9 +287,9 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 	}
 
 	@Override
-	@Default ("BLOB")
+	@Protected
 	public void setMessageFieldType(MessageFieldType fieldtype) {
-		super.setMessageFieldType(fieldtype);
+		throw new UnsupportedOperationException("MessageFieldType is always BLOB for the MessageStoreListener, use a JdbcTableListener instead if you need CLOB of VARCHAR support");
 	}
 
 	@Override
