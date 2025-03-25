@@ -66,7 +66,7 @@ public class HeuristicDetectingRecoveryModule implements RecoveryModule {
 
 	private static class UidCacheItem {
 		private int count = 1;
-		private Instant age = Instant.now();
+		private final Instant age = Instant.now();
 
 		public UidCacheItem(Uid ignored) {
 			// Required for computeIfAbsent
@@ -178,6 +178,10 @@ public class HeuristicDetectingRecoveryModule implements RecoveryModule {
 		return theStatus == ActionStatus.H_HAZARD;
 	}
 
+	/**
+	 * Calls the 'test' method doForget, which afaik is the only way to trigger `#forgetHeuristics` without wrapping the transactions (like JMX does).
+	 */
+	@SuppressWarnings("deprecation")
 	private void doForgetTransaction(Uid uid) {
 		try {
 			SubordinateAtomicAction atomicAction = new SubordinateAtomicAction(uid);
