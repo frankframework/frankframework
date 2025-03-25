@@ -18,12 +18,10 @@ package org.frankframework.parameters;
 import static org.frankframework.util.StringUtil.hide;
 
 import java.io.IOException;
+import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -549,22 +547,15 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 	private Object preFormatDateType(String rawValue, String formatType, String patternFormatString) throws ParameterException {
 		if ("date".equalsIgnoreCase(formatType) || "time".equalsIgnoreCase(formatType)) {
+			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_DATETIME_GENERIC);
 			try {
-				return getDateTimeFormatter(patternFormatString).parse(rawValue);
-			} catch (DateTimeParseException e) {
+				return df.parse(rawValue);
+			} catch (ParseException e) {
 				throw new ParameterException(getName(), "Cannot parse [" + rawValue + "] as date", e);
 			}
 		}
 
 		return rawValue;
-	}
-
-	private DateTimeFormatter getDateTimeFormatter(String patternFormatString) {
-		if (StringUtils.isNotEmpty(patternFormatString)) {
-			return DateFormatUtils.getDateTimeFormatterWithOptionalComponents(patternFormatString);
-		}
-
-		return DateFormatUtils.FULL_GENERIC_FORMATTER;
 	}
 
 	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, String targetPattern) throws ParameterException {
@@ -596,7 +587,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 					if ("date".equalsIgnoreCase(formatType) || "time".equalsIgnoreCase(formatType)) {
 						substitutionValue = new Date();
 					} else{
-						substitutionValue = formatLocalDateTimeToString(LocalDateTime.now(), formatString);
+						substitutionValue = formatDateToString(new Date(), formatString);
 					}
 
 					break;
@@ -664,17 +655,15 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	 * as a String with the default format.
 	 */
 	private Object getSubstitutionValueForDate(Date date, String formatType) {
-		LocalDateTime localDate = date.toInstant()
-				.atZone(ZoneId.systemDefault())
-				.toLocalDateTime();
-		return (formatType != null) ? date : formatLocalDateTimeToString(localDate, null);
+		return (formatType != null) ? date : formatDateToString(date, null);
 	}
 
 	/**
 	 * @return the given date formatted by the given patternFormatString or the DateFormatUtils.FORMAT_DATETIME_GENERIC pattern if empty
 	 */
-	private String formatLocalDateTimeToString(LocalDateTime date, String patternFormatString) {
-		return date.format(getDateTimeFormatter(patternFormatString));
+	private String formatDateToString(Date date, String patternFormatString) {
+		DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_DATETIME_GENERIC);
+		return df.format(date);
 	}
 
 	@Override

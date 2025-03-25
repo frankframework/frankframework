@@ -6,9 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.junit.jupiter.api.Test;
@@ -156,7 +154,9 @@ public class DateParameterTest {
 			assertTrue(result instanceof Date);
 
 			Date resultDate = (Date) result;
-			assertEquals("2001-12-17", getFormattedDate(TYPE_DATE_PATTERN, resultDate));
+			SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
+			String formattedDate = sdf.format(resultDate);
+			assertEquals("2001-12-17", formattedDate);
 
 		} finally {
 			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
@@ -181,7 +181,9 @@ public class DateParameterTest {
 		assertTrue(result instanceof Date);
 
 		Date resultDate = (Date) result;
-		assertEquals("1995-01-23", getFormattedDate(TYPE_DATE_PATTERN, resultDate));
+		SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
+		String formattedDate = sdf.format(resultDate);
+		assertEquals("1995-01-23", formattedDate);
 
 		assertFalse(p.requiresInputValueForResolution());
 	}
@@ -204,8 +206,9 @@ public class DateParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
 			assertTrue(result instanceof Date);
 			Date resultDate = (Date) result;
-
-			assertEquals("1996-02-24", getFormattedDate(TYPE_DATE_PATTERN, resultDate));
+			SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
+			String formattedDate = sdf.format(resultDate);
+			assertEquals("1996-02-24", formattedDate);
 		} finally {
 			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
@@ -229,10 +232,10 @@ public class DateParameterTest {
 			System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
 			assertTrue(result instanceof Date);
-
 			Date resultDate = (Date) result;
-			String formattedDate = getFormattedDate(TYPE_DATE_PATTERN, resultDate);
-			String formattedExpected = getFormattedDate(TYPE_DATE_PATTERN, date);
+			SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
+			String formattedDate = sdf.format(resultDate);
+			String formattedExpected = sdf.format(date);
 			assertEquals(formattedExpected, formattedDate);
 		} finally {
 			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
@@ -247,9 +250,8 @@ public class DateParameterTest {
 		p.setFormatType(DateFormatType.DATE);
 		p.configure();
 		PipeLineSession session = new PipeLineSession();
-
-		TemporalAccessor parsedDate = DateTimeFormatter.ofPattern(TYPE_DATE_PATTERN).parse("1995-01-23");
-		session.put("fixedDate", Date.from(Instant.from(parsedDate)));
+		SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
+		session.put("fixedDate", sdf.parse("1995-01-23"));
 
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
@@ -258,7 +260,8 @@ public class DateParameterTest {
 		assertTrue(result instanceof Date);
 
 		Date resultDate = (Date) result;
-		assertEquals("1995-01-23", getFormattedDate(TYPE_DATE_PATTERN, resultDate));
+		String formattedDate = sdf.format(resultDate);
+		assertEquals("1995-01-23", formattedDate);
 	}
 
 	@Test
@@ -279,8 +282,9 @@ public class DateParameterTest {
 			assertTrue(result instanceof Date);
 
 			Date resultDate = (Date) result;
-			String formattedDate = getFormattedDate(TYPE_DATE_PATTERN, resultDate);
-			String expectedDate = getFormattedDate(TYPE_DATE_PATTERN, new Date()); // dit gaat echt meestal wel goed
+			SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
+			String formattedDate = sdf.format(resultDate);
+			String expectedDate = sdf.format(new Date()); // dit gaat echt meestal wel goed
 			assertEquals(expectedDate, formattedDate);
 
 		} finally {
@@ -307,8 +311,8 @@ public class DateParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
 			assertTrue(result instanceof Date);
 
-			String formattedDate = getFormattedDate(DateFormatUtils.FORMAT_FULL_GENERIC, (Date) result);
-			assertEquals(expectedDate, formattedDate);
+			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
+			assertEquals(expectedDate, sdf.format(result));
 
 		} finally {
 			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
@@ -333,8 +337,8 @@ public class DateParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
 			assertTrue(result instanceof Date);
 
-			String formattedDate = getFormattedDate(DateFormatUtils.FORMAT_FULL_GENERIC, (Date) result);
-			assertEquals(expectedDate, formattedDate);
+			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
+			assertEquals(expectedDate, sdf.format(result));
 
 		} finally {
 			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
@@ -360,8 +364,9 @@ public class DateParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
 			assertTrue(result instanceof Date);
 
-			String formattedDate = getFormattedDate(DateFormatUtils.FORMAT_FULL_GENERIC, (Date) result);
-			assertEquals(expectedDate, formattedDate);
+			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
+			assertEquals(expectedDate, sdf.format(result));
+
 		} finally {
 			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
@@ -385,8 +390,9 @@ public class DateParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
 			assertTrue(result instanceof Date);
 
-			String formattedDate = getFormattedDate(DateFormatUtils.FORMAT_FULL_GENERIC, (Date) result);
-			assertEquals(expectedDate, formattedDate);
+			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
+			assertEquals(expectedDate, sdf.format(result));
+
 		} finally {
 			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
@@ -495,9 +501,5 @@ public class DateParameterTest {
 
 		// Assert
 		assertInstanceOf(Date.class, result);
-	}
-
-	private String getFormattedDate(String formatString, Date dateToFormat) {
-		return DateTimeFormatter.ofPattern(formatString).format(dateToFormat.toInstant());
 	}
 }

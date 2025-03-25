@@ -202,7 +202,7 @@ public class DateFormatUtils {
 	public static DateTimeFormatter getDateTimeFormatterWithOptionalComponents(String format) {
 		return new DateTimeFormatterBuilder()
 				.appendPattern(format)
-				.parseDefaulting(ChronoField.YEAR_OF_ERA, LocalDate.MIN.getYear())
+				.parseDefaulting(ChronoField.YEAR_OF_ERA, 1970)
 				.parseDefaulting(ChronoField.MONTH_OF_YEAR, LocalDate.MIN.getMonthValue())
 				.parseDefaulting(ChronoField.DAY_OF_MONTH, LocalDate.MIN.getDayOfMonth())
 				.parseDefaulting(ChronoField.HOUR_OF_DAY, LocalTime.MIN.getHour())
