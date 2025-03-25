@@ -15,20 +15,4 @@
 			<column name="TMESSAGE" type="java.sql.Types.VARCHAR(100)"/>
 		</createTable>
 	</changeSet>
-
-	<changeSet id="two" author="Niels Meijer">
-		<comment>Create TABLETWO</comment>
-		<createTable tableName="TABLETWO">
-			<column name="TKEY" type="BIGINT" autoIncrement="true">
-				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_TABLETWO"/>
-			</column>
-			<column name="TCHAR" type="java.sql.Types.CHAR(1)"/>
-			<column name="TMESSAGE" type="java.sql.Types.VARCHAR(100)"/>
-		</createTable>
-	</changeSet>
-
-	<changeSet id="three" author="Niels Meijer">
-		<comment>Drop TABLETWO</comment>
-		<dropTable tableName="TABLETWO" cascadeConstraints="true"/>
-	</changeSet>
 </databaseChangeLog>
