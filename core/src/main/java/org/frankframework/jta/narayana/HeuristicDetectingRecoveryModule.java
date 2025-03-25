@@ -89,7 +89,7 @@ public class HeuristicDetectingRecoveryModule implements RecoveryModule {
 		}
 
 		/**
-		 * When it's been 'seen' more then 3 times, assume the transaction is stuck and will never be committed/rolled back automatically.
+		 * When it's been 'seen' more than 3 times, assume the transaction is stuck and will never be committed/rolled back automatically.
 		 */
 		public boolean isStuck() {
 			return count >= HEURISTIC_FAILURE_ATTEMPTS;
@@ -123,7 +123,7 @@ public class HeuristicDetectingRecoveryModule implements RecoveryModule {
 
 		Duration minimumDuration = Duration.ofSeconds( (defaultTxTimeout * heuristicFailuresAttempts) + 10); // Add 10 seconds
 
-		// If the providedDuration is `0` or lower then the minimum expected duration, return minimumDuration.
+		// If the providedDuration is `0` or lower than the minimum expected duration, return minimumDuration.
 		if (providedDuration.compareTo(minimumDuration) < 0) {
 			log.info("minimum heuristicFailuresBackoffDuration requirements not met, defaulting to [{}]", minimumDuration::toSeconds);
 			return minimumDuration;
