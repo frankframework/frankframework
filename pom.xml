@@ -867,7 +867,7 @@
 					<configuration>
 						<excludeFile>${iaf.rootdir}/copyrightExcludeFile.txt</excludeFile>
 						<exclude>
-							DataSourceXAResourceRecoveryHelper.java,NarayanaRecoveryManager.java,PasswordHash.java,FrankJ2V8LibraryLoader.java,ReplacingVariablesInputStream.java,ReplacingInputStream.java
+							DataSourceXAResourceRecoveryHelper.java,JmsXAResourceRecoveryHelper.java,NarayanaRecoveryManager.java,PasswordHash.java,FrankJ2V8LibraryLoader.java,ReplacingVariablesInputStream.java,ReplacingInputStream.java
 						</exclude>
 						<ignoreYear>true</ignoreYear>
 						<useDash>true</useDash>
