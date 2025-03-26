@@ -20,8 +20,6 @@ import java.io.IOException;
 import jakarta.transaction.TransactionManager;
 import jakarta.transaction.UserTransaction;
 
-import org.springframework.transaction.TransactionSystemException;
-
 import com.arjuna.ats.arjuna.AtomicAction;
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBeanException;
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
@@ -32,12 +30,11 @@ import com.arjuna.ats.arjuna.recovery.RecoveryManager;
 import com.arjuna.ats.arjuna.state.InputObjectState;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.XARecoveryModule;
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
-
-import jakarta.transaction.TransactionManager;
-import jakarta.transaction.UserTransaction;
 import lombok.Getter;
-import org.frankframework.jta.StatusRecordingTransactionManager;
 import org.springframework.transaction.TransactionSystemException;
+
+import org.frankframework.jta.StatusRecordingTransactionManager;
+import org.frankframework.util.AppConstants;
 
 public class NarayanaJtaTransactionManager extends StatusRecordingTransactionManager {
 
