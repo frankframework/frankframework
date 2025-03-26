@@ -30,6 +30,7 @@ import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
+import org.frankframework.core.MessageBrowserField;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -142,7 +143,7 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 	}
 
 	@Override
-	public List<String> getStorageFields() {
+	public List<MessageBrowserField> getStorageFields() {
 		return List.of(); // TODO
 	}
 

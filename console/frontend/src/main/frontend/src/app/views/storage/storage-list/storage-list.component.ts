@@ -94,7 +94,15 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   };
 
   protected datasource: DataTableDataSource<MessageData> = new DataTableDataSource<MessageData>();
-  protected displayedColumns: DataTableColumn<MessageData>[] = [
+  protected displayedColumns: DataTableColumn<MessageData>[] = [];
+
+  private webStorageService: WebStorageService = inject(WebStorageService);
+  private Session: SessionService = inject(SessionService);
+  private SweetAlert: SweetalertService = inject(SweetalertService);
+  private appService: AppService = inject(AppService);
+
+  private subscriptions: Subscription = new Subscription();
+  private initialDisplayedColumns: DataTableColumn<MessageData>[] = [
     {
       name: 'actions',
       property: null,
@@ -107,40 +115,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
       property: 'position',
       displayName: 'No.',
     },
-    { name: 'id', property: 'id', displayName: 'Storage ID' },
-    {
-      name: 'insertDate',
-      property: 'insertDate',
-      displayName: 'Timestamp',
-      className: 'date',
-    },
-    { name: 'host', property: 'host', displayName: 'Host' },
-    {
-      name: 'originalId',
-      property: 'originalId',
-      displayName: 'Original ID',
-    },
-    {
-      name: 'correlationId',
-      property: 'correlationId',
-      displayName: 'Correlation ID',
-    },
-    { name: 'comment', property: 'comment', displayName: 'Comment' },
-    {
-      name: 'expiryDate',
-      property: 'expiryDate',
-      displayName: 'Expires',
-      className: 'date',
-    },
-    { name: 'label', property: 'label', displayName: 'Label' },
   ];
-
-  private webStorageService: WebStorageService = inject(WebStorageService);
-  private Session: SessionService = inject(SessionService);
-  private SweetAlert: SweetalertService = inject(SweetalertService);
-  private appService: AppService = inject(AppService);
-
-  private subscriptions: Subscription = new Subscription();
 
   ngOnInit(): void {
     this.storageService.closeNotes();
@@ -156,6 +131,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
       serverSide: true,
     };
 
+    this.getDisplayedColumns();
     this.setupMessagesRequest();
 
     const searchSession = this.Session.get<Record<string, string>>('search');
@@ -228,7 +204,21 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  setupMessagesRequest(): void {
+  protected getDisplayedColumns(): void {
+    this.storageService.getStorageList('?max=1&skip=0').subscribe((response) => {
+      this.displayedColumns = [
+        ...this.initialDisplayedColumns,
+        ...response.fields.map<DataTableColumn<MessageData>>((field) => ({
+          name: field.fieldName,
+          property: field.property,
+          displayName: field.displayName,
+          className: field.type === 'date' ? 'date' : undefined,
+        })),
+      ];
+    });
+  }
+
+  protected setupMessagesRequest(): void {
     this.datasource.setServerRequest(
       (requestInfo) =>
         new Promise((resolve, reject) => {
@@ -267,11 +257,6 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
                   delete this.storageService.selectedMessages[messageId];
                 }
               }
-              console.log(
-                'Table properties:',
-                this.displayedColumns.map((column) => column.property),
-              );
-              console.log('MessageBrowser Fields:', response.fields);
             },
             error: (error: unknown) => {
               this.searching = false;

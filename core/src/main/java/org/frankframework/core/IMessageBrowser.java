@@ -108,6 +108,6 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 	/**
 	 * Retrieves the field names of the storage
 	 */
-	List<String> getStorageFields();
+	List<MessageBrowserField> getStorageFields();
 
 }

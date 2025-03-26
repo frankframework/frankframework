@@ -34,6 +34,7 @@ import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
+import org.frankframework.core.MessageBrowserField;
 import org.frankframework.core.ProcessState;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.util.LogUtil;
@@ -47,7 +48,7 @@ public class StorageItemsDTO {
 	private final @Getter int messageCount;
 	private final @Getter int recordsFiltered;
 	private final @Getter List<StorageItemDTO> messages;
-	private final @Getter List<String> fields;
+	private final @Getter List<MessageBrowserField> fields;
 
 	@JsonInclude(Include.NON_EMPTY)
 	private @Getter @Setter Map<ProcessState, ProcessStateDTO> targetStates = new EnumMap<>(ProcessState.class);

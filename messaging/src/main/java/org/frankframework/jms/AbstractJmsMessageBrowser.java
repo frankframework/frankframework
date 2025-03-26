@@ -38,6 +38,7 @@ import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
+import org.frankframework.core.MessageBrowserField;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.StringUtil;
 
@@ -221,7 +222,7 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 	}
 
 	@Override
-	public List<String> getStorageFields() {
+	public List<MessageBrowserField> getStorageFields() {
 		return List.of(); // TODO
 	}
 
