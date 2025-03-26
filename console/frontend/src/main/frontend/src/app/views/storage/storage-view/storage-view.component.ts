@@ -23,15 +23,8 @@ export class StorageViewComponent implements OnInit {
     id: '0', //this.$state.params["messageId"],
     processing: false,
   };
-  protected metadata?: Message = {
-    id: '',
-    originalId: '',
-    correlationId: '',
-    type: '',
-    host: '',
-    insertDate: 0,
-    comment: 'Loading...',
-    message: 'Loading...',
+  protected data: Message = {
+    id: 'Loading...',
   };
 
   private readonly storageService: StorageService = inject(StorageService);
@@ -69,7 +62,7 @@ export class StorageViewComponent implements OnInit {
 
     this.storageService.getMessage(this.base64Service.encode(this.storageParams.messageId)).subscribe({
       next: (data) => {
-        this.metadata = data;
+        this.data = data;
       },
       error: (errorData: HttpErrorResponse) => {
         const error = errorData.error ? errorData.error.error : errorData.message;
