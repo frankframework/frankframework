@@ -348,6 +348,8 @@ public class JdbcTableListenerTest {
 				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,CONVERT(VARBINARY,'TEST'))", null, new PipeLineSession());
 			} else if (env.getDbmsSupport().getDbms() == Dbms.ORACLE) {
 				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,utl_raw.cast_to_raw('TEST'))", null, new PipeLineSession());
+			} else if (env.getDbmsSupport().getDbms() == Dbms.DB2) {
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,CAST('TEST' AS BLOB))", null, new PipeLineSession());
 			} else {
 				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,'TEST')", null, new PipeLineSession());
 			}
