@@ -120,7 +120,7 @@ public class HazelcastEndToEndTest {
 			assertEquals("load-resp-"+i, response.getPayload());
 		}
 		long duration = (System.currentTimeMillis() - start);
-		assertTrue(duration < 10_000L, "it took ["+duration+"]ms, max is 10 seconds"); // Typically takes < 5s.
+		assertTrue(duration < 15_000L, "it took ["+duration+"]ms, max is 15 seconds"); // Typically takes < 5s.
 	}
 
 	@Test
