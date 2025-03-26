@@ -74,6 +74,11 @@ jdbc:
   - name: "DB2"
     type: "com.ibm.db2.jcc.DB2SimpleDataSource"
     url: "jdbc:db2://${jdbc.hostname:-localhost}:50000/testiaf"
+    properties:
+      serverName: "${jdbc.hostname:-localhost}"
+      portNumber: 50000
+      databaseName: "testiaf"
+      driverType: 4
     authalias: "${db.authalias}"
     username: "testiaf_user"
     password: "testiaf_user00"
@@ -81,6 +86,11 @@ jdbc:
   - name: "DB2-xa"
     type: "com.ibm.db2.jcc.DB2XADataSource"
     url: "jdbc:db2://${jdbc.hostname:-localhost}:50000/testiaf"
+    properties:
+      serverName: "${jdbc.hostname:-localhost}"
+      portNumber: 50000
+      databaseName: "testiaf"
+      driverType: 4
     authalias: "${db.authalias}"
     username: "testiaf_user"
     password: "testiaf_user00"
