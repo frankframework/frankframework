@@ -320,6 +320,8 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testParameterTypeLobStream() throws Exception {
+		assumeFalse(Dbms.DB2 == databaseUnderTest, "This test does not work with DB2, same problems as with TestBlobs");
+
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tCLOB, tBLOB) VALUES ('1', ?, ?)");
 		fixedQuerySender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob").withType(ParameterType.CHARACTER));
 		fixedQuerySender.addParameter(ParameterBuilder.create().withName("blob").withSessionKey("blob").withType(ParameterType.BINARY));
