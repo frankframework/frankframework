@@ -17,6 +17,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.commons.io.input.ReaderInputStream;
+import org.junit.jupiter.api.Timeout;
 
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
@@ -40,7 +41,7 @@ public class TestBlobs {
 	}
 
 	public static int readStream(InputStream inputStream) throws IOException {
-		byte[] buffer = new byte[1000];
+		byte[] buffer = new byte[100_000];
 		int result = 0;
 		int bytesRead=0;
 		while (bytesRead>=0) {
@@ -55,7 +56,7 @@ public class TestBlobs {
 		String insertQuery = "INSERT INTO " + TABLE_NAME + " (TKEY,TBLOB) VALUES (20,?)";
 		String selectQuery = "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=20";
 		try (Connection conn = databaseTestEnvironment.getConnection(); PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
-			stmt.setBinaryStream(1, new ByteArrayInputStream(blobContents.getBytes("UTF-8")));
+			stmt.setBinaryStream(1, new ByteArrayInputStream(blobContents.getBytes(StandardCharsets.UTF_8)));
 			stmt.execute();
 		}
 
@@ -186,6 +187,7 @@ public class TestBlobs {
 	}
 
 	@DatabaseTest
+	@Timeout(60)
 	public void testWriteAndReadClobUsingDbmsSupport15MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		testWriteAndReadClobUsingDbmsSupport(10000, 1500, databaseTestEnvironment);
 	}
