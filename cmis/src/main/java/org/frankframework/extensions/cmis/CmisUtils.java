@@ -142,6 +142,7 @@ import org.frankframework.util.XmlUtils;
 public class CmisUtils {
 
 	public static final String FORMATSTRING_BY_DEFAULT = AppConstants.getInstance().getString("cmis.datetime.formatstring", "yyyy-MM-dd'T'HH:mm:ss");
+	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(FORMATSTRING_BY_DEFAULT);
 	public static final String ORIGINAL_OBJECT_KEY = "originalObject";
 	public static final String CMIS_VERSION_KEY = "cmisVersion";
 	public static final String CMIS_BINDING_KEY = "cmisBinding";
@@ -174,7 +175,6 @@ public class CmisUtils {
 		} else {
 			log.debug("BindingSession for {} does not have instance of CmisHttpInvoker: {}", owner.getClass().getSimpleName(), invoker);
 		}
-
 	}
 
 	public static XmlBuilder buildXml(String name, Object value) {
@@ -237,11 +237,10 @@ public class CmisUtils {
 				break;
 			case DATETIME:
 				GregorianCalendar gregorianCalendar = (GregorianCalendar) value;
-				String formattedDate = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(FORMATSTRING_BY_DEFAULT).format(Instant.ofEpochMilli(gregorianCalendar.getTimeInMillis()));
+				String formattedDate = DATE_TIME_FORMATTER.format(Instant.ofEpochMilli(gregorianCalendar.getTimeInMillis()));
 
 				propertyXml.setValue(formattedDate);
 				break;
-
 			default: // String/ID/HTML/URI
 				propertyXml.setValue((String) value);
 				break;
@@ -310,7 +309,7 @@ public class CmisUtils {
 					String formatStringAttr = propertyElement.getAttribute("formatString");
 					String timezoneAttr = propertyElement.getAttribute("timezone");
 					if (StringUtils.isEmpty(formatStringAttr)) {
-						formatStringAttr = CmisUtils.FORMATSTRING_BY_DEFAULT;
+						formatStringAttr = FORMATSTRING_BY_DEFAULT;
 					}
 
 					DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(formatStringAttr);

@@ -68,6 +68,7 @@ import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DB2DocumentWriter;
 import org.frankframework.util.DB2XMLWriter;
+import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
@@ -797,7 +798,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 							if (element.contains("-")) {
 								if (element.length() > 10) {
 									// ISO_LOCAL_DATE_TIME is "yyyy-MM-ddTHH:mm:ss" and we don't expect the 'T' as a separator
-									Instant instant = Instant.from(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").parse(element));
+									Instant instant = Instant.from(DateFormatUtils.GENERIC_DATETIME_FORMATTER.parse(element));
 									Timestamp sqlTimestamp = Timestamp.from(instant);
 									paramArray[idx] = sqlTimestamp;
 

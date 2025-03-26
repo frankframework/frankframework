@@ -26,7 +26,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author Gerard van der Hoorn
  */
 class UniqueFileGenerator {
-
+	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 	private static final AtomicInteger atomicCount = new AtomicInteger(1);
 
 	private UniqueFileGenerator() {
@@ -39,7 +39,6 @@ class UniqueFileGenerator {
 	 * @param extension  is allowed to be null.
 	 */
 	public static File getUniqueFile(String directory, String prefix, String extension) {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
 		int count = atomicCount.addAndGet(1);
 		String fileType;
@@ -50,7 +49,7 @@ class UniqueFileGenerator {
 		}
 
 		// Save to disc
-		String fileNamePdf = "%s_%s_%05d%s".formatted(prefix, formatter.format(LocalDateTime.now()), count, fileType);
+		String fileNamePdf = "%s_%s_%05d%s".formatted(prefix, DATE_TIME_FORMATTER.format(LocalDateTime.now()), count, fileType);
 
 		return new File(directory, fileNamePdf);
 	}

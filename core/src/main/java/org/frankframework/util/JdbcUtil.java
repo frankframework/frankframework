@@ -37,6 +37,7 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.zip.DeflaterOutputStream;
@@ -79,7 +80,9 @@ import org.frankframework.xml.SaxElementBuilder;
 public class JdbcUtil {
 
 	private static final String DATEFORMAT = AppConstants.getInstance().getString("jdbc.dateFormat", "yyyy-MM-dd");
+	public static final DateTimeFormatter DATEFORMAT_DATE_TIME_FORMATTER = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(DATEFORMAT);
 	private static final String TIMESTAMPFORMAT = AppConstants.getInstance().getString("jdbc.timestampFormat", "yyyy-MM-dd HH:mm:ss");
+	public static final DateTimeFormatter TIMESTAMP_DATE_TIME_FORMATTER = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(TIMESTAMPFORMAT);
 
 	@Deprecated
 	public static String warningsToString(SQLWarning warnings) {
@@ -225,10 +228,10 @@ public class JdbcUtil {
 			case Types.DATE: {
 				try {
 					if (columnType == Types.TIMESTAMP && !TIMESTAMPFORMAT.isEmpty()) {
-						return DateFormatUtils.getDateTimeFormatterWithOptionalComponents(TIMESTAMPFORMAT).format(rs.getTimestamp(colNum).toLocalDateTime());
+						return TIMESTAMP_DATE_TIME_FORMATTER.format(rs.getTimestamp(colNum).toLocalDateTime());
 
 					} else if (columnType == Types.DATE && !DATEFORMAT.isEmpty()) {
-						return DateFormatUtils.getDateTimeFormatterWithOptionalComponents(DATEFORMAT).format(rs.getDate(colNum).toLocalDate());
+						return DATEFORMAT_DATE_TIME_FORMATTER.format(rs.getDate(colNum).toLocalDate());
 					}
 				} catch (Exception e) {
 					// Do nothing, the default: will handle it

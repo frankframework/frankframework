@@ -473,21 +473,19 @@ public class RecordTransformer extends AbstractRecordHandler {
 	 * @author John Dekker
 	 */
 	static class FixedDateOutput implements IOutputField {
-		private final String outFormatPattern;
-		private final String inFormatPattern;
-		private int inputFieldIndex = -1;
+		private final int inputFieldIndex;
+		private final DateTimeFormatter inputFormatter;
+		private final DateTimeFormatter outputFormatter;
 
 		FixedDateOutput(String outFormatPattern, String inFormatPattern, int inputFieldIndex) {
-			this.outFormatPattern = outFormatPattern;
-			this.inFormatPattern = inFormatPattern;
 			this.inputFieldIndex = inputFieldIndex;
+			this.inputFormatter = getDateTimeFormatter(inFormatPattern);
+			this.outputFormatter = getDateTimeFormatter(outFormatPattern);
 		}
 
 		@Override
 		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ConfigurationException {
-			Instant timestamp = getInstant(inputFields);
-
-			result.append(getOutputFormatter().format(timestamp));
+			result.append(outputFormatter.format(getInstant(inputFields)));
 
 			return null;
 		}
@@ -501,18 +499,10 @@ public class RecordTransformer extends AbstractRecordHandler {
 					throw new ConfigurationException("Function refers to a non-existing inputfield [" + inputFieldIndex + "]");
 				}
 				// check if we have parsed a time
-				TemporalAccessor parsed = getInputFormatter().parse(inputFields.get(inputFieldIndex));
+				TemporalAccessor parsed = inputFormatter.parse(inputFields.get(inputFieldIndex));
 
 				return Instant.from(parsed);
 			}
-		}
-
-		private DateTimeFormatter getOutputFormatter() {
-			return getDateTimeFormatter(outFormatPattern);
-		}
-
-		private DateTimeFormatter getInputFormatter() {
-			return getDateTimeFormatter(inFormatPattern);
 		}
 
 		private DateTimeFormatter getDateTimeFormatter(String format) {
