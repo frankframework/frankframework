@@ -223,7 +223,9 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 
 	@Override
 	public List<MessageBrowserField> getStorageFields() {
-		return List.of(); // TODO
+		return List.of(
+			// TODO get IMessageBrowsingIteratorItem field info here somehow
+		);
 	}
 
 	protected String getCombinedSelector(String messageId) {
