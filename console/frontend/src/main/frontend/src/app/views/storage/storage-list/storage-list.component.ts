@@ -205,7 +205,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   protected getDisplayedColumns(): void {
-    this.storageService.getStorageList('?max=1&skip=0').subscribe((response) => {
+    this.storageService.getStorageFields().subscribe((response) => {
       this.displayedColumns = [
         ...this.initialDisplayedColumns,
         ...response.fields.map<DataTableColumn<MessageData>>((field) => ({

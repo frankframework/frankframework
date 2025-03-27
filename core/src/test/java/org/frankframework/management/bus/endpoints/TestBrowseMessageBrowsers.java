@@ -291,6 +291,20 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		}
 	}
 
+	@Test
+	public void getBrowserFields() {
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		try {
+			callSyncGateway(request);
+		} catch (Exception e) {
+			assertInstanceOf(BusException.class, e.getCause());
+			BusException be = (BusException) e.getCause();
+			assertEquals("no StorageSource provided", be.getMessage());
+		}
+	}
+
 	/**
 	 * Method: cleanseMessage(String inputString, String hideRegex, String
 	 * hideMethod)

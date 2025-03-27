@@ -74,6 +74,15 @@ public class TransactionalStorage {
 		);
 	}
 
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/fields", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getFields(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapterName,
+										   @PathVariable("storageSource") StorageSource storageSource, @PathVariable("storageSourceName") String storageSourceName,
+										   @PathVariable("processState") String processState) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
+		addHeaders(configuration, adapterName, storageSource, storageSourceName, processState, builder);
+		return frankApiService.callSyncGateway(builder);
+	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -192,7 +201,7 @@ public class TransactionalStorage {
 	@PostMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> resendReceiverMessages(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapter,
 													@PathVariable("receiverName") String receiver, @RequestPart("messageIds") String messageIdsPart) {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.UPLOAD);
 
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);

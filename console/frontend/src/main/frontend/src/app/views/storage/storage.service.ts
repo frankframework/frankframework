@@ -32,6 +32,10 @@ export type MessageField = {
   type: string;
 };
 
+export type StorageMetadata = {
+  fields: MessageField[];
+};
+
 export type StorageParams = {
   adapterName: string;
   configuration: string;
@@ -165,6 +169,10 @@ export class StorageService {
 
   getStorageList(queryParameters: string): Observable<MessageStore> {
     return this.http.get<MessageStore>(this.baseUrl + queryParameters);
+  }
+
+  getStorageFields(): Observable<StorageMetadata> {
+    return this.http.get<StorageMetadata>(`${this.baseUrl}/fields`);
   }
 
   getMessage(messageId: string): Observable<Message> {
