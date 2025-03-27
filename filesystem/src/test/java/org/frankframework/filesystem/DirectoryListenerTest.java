@@ -46,7 +46,7 @@ public class DirectoryListenerTest extends WritableFileSystemListenerTest<Path, 
 		RawMessageWrapper<Path> rawMessage = fileSystemListener.getRawMessage(threadContext);
 		assertNull(rawMessage, "raw message must be null when not available");
 
-		createFile(null, ".gitignore", "content");
+		createFile(null, ".ignore", "content");
 		createFile(null, "dinges.csv", "een,twee,drie");
 
 		// We need a sec or two here to let the listener pick up the file
