@@ -1,0 +1,1 @@
+<result><fielddefinition><field name="COUNT" type="BIGINT" columnDisplaySize="20" precision="19" scale="0" isCurrency="false" columnTypeName="BIGINT" columnClassName="java.lang.Long"/></fielddefinition><rowset><row number="0"><field name="COUNT">1</field></row></rowset></result>
