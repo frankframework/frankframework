@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,6 +81,17 @@ public class MessageStoreListenerTest {
 		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM "+TEST_TABLE_NAME+" t WHERE TYPE='M' AND (SLOTID='slot')";
 
 		assertEquals(expected, listener.getSelectQuery());
+	}
+
+	@DatabaseTest
+	public void testSelectQueryWithAdditionalFields() throws ConfigurationException {
+		listener.setAdditionalFields(" ,tCLOB,tBLOB,  tVARCHAR,  ");
+		listener.configure();
+
+		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE,tCLOB,tBLOB,tVARCHAR FROM "+TEST_TABLE_NAME+" t WHERE TYPE='M' AND (SLOTID='slot')";
+
+		assertEquals(expected, listener.getSelectQuery());
+		assertEquals(List.of("tCLOB", "tBLOB", "tVARCHAR"), listener.getAdditionalFieldsList());
 	}
 
 	@DatabaseTest

@@ -79,6 +79,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		setSelectQuery("SELECT " + getKeyField() +
 								(StringUtils.isNotEmpty(getMessageIdField()) ? "," + getMessageIdField() : "") + (StringUtils.isNotEmpty(getCorrelationIdField()) ? "," + getCorrelationIdField() : "") +
 								(StringUtils.isNotEmpty(getMessageField()) ? "," + getMessageField() : "") +
+								(!getAdditionalFieldsList().isEmpty() ? "," + String.join(",", getAdditionalFieldsList()) : "") +
 						" FROM " + getTableName() + (StringUtils.isNotBlank(tableAlias) ? " " + tableAlias.trim() : "") +
 						" WHERE " + getStatusField() +
 						(StringUtils.isNotEmpty(getStatusValue(ProcessState.AVAILABLE)) ?
