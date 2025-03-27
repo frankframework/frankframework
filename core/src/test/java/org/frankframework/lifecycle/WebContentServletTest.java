@@ -21,6 +21,7 @@ public class WebContentServletTest {
 		config.setClassLoader(new AbstractClassLoader() {
 			@Override
 			public URL getLocalResource(String name) {
+				// By using getClassLoader() instead of getClass(), we can access the test classpath
 				return this.getClass().getClassLoader().getResource(name);
 			}
 		});
@@ -36,11 +37,11 @@ public class WebContentServletTest {
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		WebContentServlet webContentServlet = new WebContentServlet();
 
-		// TODO get a configuration
 		TestConfiguration config = new TestConfiguration(TestConfiguration.TEST_CONFIGURATION_FILE);
 		config.setClassLoader(new AbstractClassLoader() {
 			@Override
 			public URL getLocalResource(String name) {
+				// By using getResource() on getClass(), the test classpath is restricted to 'lifecycle' package
 				return this.getClass().getResource(name);
 			}
 		});
