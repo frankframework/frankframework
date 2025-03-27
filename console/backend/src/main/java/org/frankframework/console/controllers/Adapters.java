@@ -131,8 +131,7 @@ public class Adapters {
 	@PutMapping(value = "/configurations/{configuration}/adapters/{adapter}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateAdapter(AdapterPathVariables path,
 										   @RequestBody UpdateAdapterOrReceiverModel model) {
-		String value = model.action;
-		Action action = getActionOrThrow(value);
+		Action action = getActionOrThrow(model.action);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
 		addHeaders(builder, path.configuration, path.adapter, action);
