@@ -35,6 +35,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 import org.junit.jupiter.api.AfterEach;
@@ -948,9 +949,13 @@ public class JdbcTableListenerTest {
 				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message','fBLOB')", null, new PipeLineSession());
 			}
 		}
+		Map<String, Object> threadContext = listener.openThread();
+		RawMessageWrapper<String> rawMessage = listener.getRawMessage(threadContext);
 
 		PipeLineSession session = new PipeLineSession();
-		RawMessageWrapper<String> rawMessage = listener.getRawMessage(session);
+		assertTrue(rawMessage.getContext().containsKey(JdbcListener.ADDITIONAL_QUERY_FIELDS_KEY), "RawMessage Context should contain map of additional fields");
+
+		// Extract message, then the additional fields should be copied to the session.
 		Message message = listener.extractMessage(rawMessage, session);
 
 		// Assert

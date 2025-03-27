@@ -30,6 +30,7 @@ import org.frankframework.core.IListener;
 import org.frankframework.core.IPullingListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.LogUtil;
 
 /**
@@ -44,6 +45,8 @@ public abstract class ListenerTestBase<M extends Object, S extends IListener<M>>
 	@Mock
 	protected Map<String,Object> threadContext;
 
+	protected PipeLineSession session;
+
 	public abstract S createListener() throws Exception;
 
 	@BeforeEach
@@ -56,6 +59,7 @@ public abstract class ListenerTestBase<M extends Object, S extends IListener<M>>
 		}
 
 		PipeLineSession.updateListenerParameters(threadContext, ConfiguredTestBase.testMessageId, ConfiguredTestBase.testCorrelationId);
+		session = new PipeLineSession(threadContext);
 		listener = createListener();
 	}
 
@@ -75,6 +79,7 @@ public abstract class ListenerTestBase<M extends Object, S extends IListener<M>>
 			listener.stop();
 			listener = null;
 		}
+		CloseUtils.closeSilently(session);
 	}
 
 }
