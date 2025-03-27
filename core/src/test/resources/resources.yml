@@ -79,6 +79,7 @@ jdbc:
       portNumber: 50000
       databaseName: "testiaf"
       driverType: 4
+      defaultIsolationLevel: 4
     authalias: "${db.authalias}"
     username: "testiaf_user"
     password: "testiaf_user00"
@@ -91,6 +92,7 @@ jdbc:
       portNumber: 50000
       databaseName: "testiaf"
       driverType: 4
+      defaultIsolationLevel: 4
     authalias: "${db.authalias}"
     username: "testiaf_user"
     password: "testiaf_user00"
