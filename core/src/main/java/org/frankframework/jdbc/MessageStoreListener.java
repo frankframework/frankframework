@@ -158,6 +158,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 			if (key != null) {
 				rawMessageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, key);
 			}
+			addAdditionalValuesToMessageWrapper(rs, rawMessageWrapper);
 			return rawMessageWrapper;
 		} catch (Exception e) {
 			throw new JdbcException(e);
@@ -181,6 +182,8 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 		// If not, then the RawMessageWrapper context still contains some info we want to retain, such as MID, CID and Storage Key.
 		// So copying it here to thread context is always the right thing.
 		context.putAll(rawMessageWrapper.getContext());
+		context.remove(JdbcListener.ADDITIONAL_QUERY_FIELDS_KEY);
+		addAdditionalQueryFieldsToSession(rawMessageWrapper, context);
 
 		// Now get or create the Message
 		if (rawMessageWrapper instanceof MessageWrapper<?> messageWrapper) {

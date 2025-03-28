@@ -44,8 +44,7 @@
 		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
 		<mssql.driver.version>12.10.0.jre11</mssql.driver.version>
 		<mysql.driver.version>9.1.0</mysql.driver.version>
-		<!-- Should upgrade to new MariaDB driver 3.1.4, 3.2.0 or newer for JDK17 support but currently not working with XA transaction managers in the framework. -->
-		<mariadb.driver.version>3.5.2</mariadb.driver.version>
+		<mariadb.driver.version>3.5.3</mariadb.driver.version>
 		<postgresql.driver.version>42.7.5</postgresql.driver.version>
 		<mongodb.driver.version>5.4.0</mongodb.driver.version>
 
@@ -160,12 +159,12 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.30.1</version>
+				<version>4.30.2</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>33.4.5-jre</version>
+				<version>33.4.6-jre</version>
 			</dependency>
 			<dependency><!-- needed for io.fabric8:kubernetes-client transitive deps -->
 				<groupId>com.squareup.okhttp3</groupId>

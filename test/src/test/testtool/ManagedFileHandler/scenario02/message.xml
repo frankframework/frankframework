@@ -1,0 +1,15 @@
+<Message>
+	<Filename>input.xml-2021-10-06 13_12_40.035</Filename>
+	<OriginalFilename>input.xml</OriginalFilename>
+	<MFHFlowId>NNX12345</MFHFlowId>
+	<CanonicalName>C:\Temp\testdata\mfh\inProcess\input.xml-2021-10-06 13_12_40.035</CanonicalName>
+	<LegacyMessage>
+		<OnCompletedTransferNotify_Action>
+			<TransferFlowId>NNX12345</TransferFlowId>
+			<UserData>input.xml-2021-10-06 13_12_40.035</UserData>
+			<ClientFilename>C:\Temp\testdata\mfh\inProcess\input.xml-2021-10-06 13_12_40.035</ClientFilename>
+			<ServerFilename>C:\Temp\testdata\mfh\inProcess\input.xml-2021-10-06 13_12_40.035</ServerFilename>
+			<LocalTransactionID>input.xml-2021-10-06 13:12:40.035</LocalTransactionID>
+		</OnCompletedTransferNotify_Action>
+	</LegacyMessage>
+</Message>

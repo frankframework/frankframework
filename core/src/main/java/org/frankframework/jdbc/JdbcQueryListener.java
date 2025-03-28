@@ -33,7 +33,8 @@ public class JdbcQueryListener extends JdbcListener {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isEmpty(getSelectQuery())) {
+		String selectQuery = getSelectQuery();
+		if (StringUtils.isEmpty(selectQuery)) {
 			throw new ConfigurationException("selectQuery must be specified");
 		}
 		if (!knownProcessStates().contains(ProcessState.DONE)) {
@@ -92,5 +93,4 @@ public class JdbcQueryListener extends JdbcListener {
 	public void setRevertInProcessStatusQuery(String query) {
 		setUpdateStatusQuery(ProcessState.AVAILABLE, query);
 	}
-
 }
