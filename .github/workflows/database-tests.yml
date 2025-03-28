@@ -62,11 +62,16 @@ jobs:
   run-database-tests:
     name: Run Maven Tests with Database
     runs-on: ubuntu-latest
-#    container: gchr.io/frankframework/build/jdk21:latest
+    container:
+      image: gchr.io/frankframework/build/jdk21:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+
     strategy:
       fail-fast: false
       matrix:
-        db: [ 'postgres', 'mariadb', 'mysql', 'mssql', 'oracle', 'db2' ]
+        db: [ 'postgresql', 'mariadb', 'mysql', 'mssqlserver', 'oracle', 'db2' ]
 
     services:
       database:
