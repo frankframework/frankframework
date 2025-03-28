@@ -63,7 +63,7 @@ jobs:
     name: Run Maven Tests with Database
     runs-on: ubuntu-latest
     container:
-      image: gchr.io/frankframework/build/jdk21:latest
+      image: ghcr.io/frankframework/build/jdk21:latest
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.github_token }}
