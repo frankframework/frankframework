@@ -253,7 +253,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 	@Test
 	public void resendMessageById() {
-		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.UPLOAD);
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
 		request.setHeader("receiver", "ReceiverName");
