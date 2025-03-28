@@ -16,13 +16,10 @@ limitations under the License.
 package org.frankframework.dbms;
 
 import java.sql.Connection;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-
-import org.frankframework.util.DateFormatUtils;
 
 
 /**
@@ -47,9 +44,7 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getDatetimeLiteral(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat(DateFormatUtils.FORMAT_DATETIME_GENERIC);
-		String formattedDate = formatter.format(date);
-		return "TIMESTAMP('" + formattedDate + "')";
+		return "TIMESTAMP('" + getFormattedDate(date) + "')";
 	}
 
 	@Override

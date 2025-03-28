@@ -29,8 +29,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.Collectors;
@@ -67,6 +68,7 @@ import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DB2DocumentWriter;
 import org.frankframework.util.DB2XMLWriter;
+import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
@@ -776,9 +778,10 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		}
 		int ix  = 1;
 		String element=null;
+
 		try {
 			if (packageInput.lastIndexOf(',') > 0) {
-				while ((packageInput.charAt(packageInput.length() - ix) != ',')	&& (ix < packageInput.length())) {
+				while ((packageInput.charAt(packageInput.length() - ix) != ',') && (ix < packageInput.length())) {
 					ix++;
 				}
 				int endInputs = beginOutput - ix;
@@ -792,20 +795,17 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 							int y = element.lastIndexOf('\'');
 							paramArray[idx] = element.substring(x + 1, y);
 						} else {
-							if (element.contains("-")){
+							if (element.contains("-")) {
 								if (element.length() > 10) {
-									String pattern = "yyyy-MM-dd HH:mm:ss";
-									SimpleDateFormat sdf = new SimpleDateFormat(pattern);
-									java.util.Date nDate = (java.util.Date)sdf.parseObject(element);
-									Timestamp sqlTimestamp = new Timestamp(nDate.getTime());
+									// ISO_LOCAL_DATE_TIME is "yyyy-MM-ddTHH:mm:ss" and we don't expect the 'T' as a separator
+									Instant instant = Instant.from(DateFormatUtils.GENERIC_DATETIME_FORMATTER.parse(element));
+									Timestamp sqlTimestamp = Timestamp.from(instant);
 									paramArray[idx] = sqlTimestamp;
 
 								} else {
-									String pattern = "yyyy-MM-dd";
-									SimpleDateFormat sdf = new SimpleDateFormat(pattern);
-									java.util.Date nDate;
-									nDate = sdf.parse(element);
-									java.sql.Date sDate = new java.sql.Date(nDate.getTime());
+									// ISO_LOCAL_DATE == "yyyy-MM-dd";
+									Instant instant = Instant.from(DateTimeFormatter.ISO_LOCAL_DATE.parse(element));
+									java.sql.Date sDate = new java.sql.Date(instant.getEpochSecond());
 									paramArray[idx] = sDate;
 								}
 							} else {
@@ -826,14 +826,12 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 				int parameterCount = idx + (message.contains("?") ? 1 : 0);
 				if (parameterCount > 0) {
 					newMessage.append("?");
-					for (int i = 1; i < parameterCount; i++) {
-						newMessage.append(",?");
-					}
+					newMessage.append(",?".repeat(parameterCount - 1));
 				}
 				newMessage.append(message, closingBracePosition, lengthMessage);
 			}
 			return newMessage.toString();
-		} catch (ParseException e) {
+		} catch (DateTimeParseException e) {
 			throw new SenderException("got exception parsing a date string from element ["+element+"]", e);
 		}
 	}
