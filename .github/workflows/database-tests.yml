@@ -69,13 +69,13 @@ jobs:
 
     services:
       database:
-        image: ghcr.io/frankframework/dbms/${{ matrix.db }}
+        image: ghcr.io/frankframework/dbms/${{ matrix.db }}:latest
         credentials:
           username: ${{ github.actor }}
           password: ${{ secrets.github_token }}
 
     container:
-      image: gchr.io/frankframework/build/jdk21
+      image: gchr.io/frankframework/build/jdk21:latest
 
     steps:
     - name: Checkout repository
