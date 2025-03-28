@@ -62,6 +62,7 @@ jobs:
   run-database-tests:
     name: Run Maven Tests with Database
     runs-on: ubuntu-latest
+#    container: gchr.io/frankframework/build/jdk21:latest
     strategy:
       fail-fast: false
       matrix:
@@ -73,9 +74,6 @@ jobs:
         credentials:
           username: ${{ github.actor }}
           password: ${{ secrets.github_token }}
-
-    container:
-      image: gchr.io/frankframework/build/jdk21:latest
 
     steps:
     - name: Checkout repository
