@@ -12,15 +12,9 @@
               <span> Back</span>
             </button>
           </div>
-          <h4>View message: {{ message.id }}</h4>
+          <h4>View message with ID {{ message.id }}</h4>
         </div>
         <div class="ibox-content">
-          @if (data['comment']) {
-            <span>
-              <p>Comment:</p>
-              <pre>{{ data['comment'] }}</pre>
-            </span>
-          }
           <p>
             Message
             @if (data['correlationId']) {
@@ -31,7 +25,7 @@
             @if (data['insertDate']) {
               <span>
                 issued at:
-                <!--<strong><span appToDate [time]="data['insertDate']! ?? 0"></span></strong>-->
+                <strong><span appToDate [time]="data['insertDate']"></span></strong>
               </span>
             }
             @if (storageParams.processState === 'Error') {
@@ -69,6 +63,22 @@
             </button>
           </p>
           <pre>{{ data['message'] ?? '' }}</pre>
+          @if (data['comment']) {
+            <span>
+              <p>Comment:</p>
+              <pre>{{ data['comment'] }}</pre>
+            </span>
+          }
+          <div class="extra-properties">
+            <p>Other properties:</p>
+            <ul>
+              @for (key of extraProperties; track key) {
+                <li>
+                  <strong>{{ key }}:</strong> {{ data[key] }}
+                </li>
+              }
+            </ul>
+          </div>
         </div>
       </div>
     </div>

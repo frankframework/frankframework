@@ -17,6 +17,7 @@ export type MessageStore = {
 
 export type Message = {
   id: string; //StorageId
+  insertDate?: number;
   [key: string]: unknown;
 };
 
