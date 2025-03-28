@@ -67,6 +67,36 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	private JwtKeyGenerator jwtGenerator;
 
 	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		hzInstance = HazelcastConfig.newHazelcastInstance(InstanceType.CONTROLLER, Collections.emptyMap());
+		SpringUtils.registerSingleton(applicationContext, "hazelcastOutboundInstance", hzInstance);
+
+		IMap<String, String> config = hzInstance.getMap(HazelcastConfig.FRANK_APPLICATION_CONFIG);
+		config.set(HazelcastConfig.FRANK_APPLICATION_KEYSET, jwtGenerator.getPublicJwkSet());
+
+		requestTopic = hzInstance.getTopic(requestTopicName);
+
+		hzInstance.getCluster().addMembershipListener(new MembershipListener() {
+
+			@Override
+			public void memberAdded(MembershipEvent e) {
+				applicationContext.publishEvent(new ClusterMemberEvent(applicationContext, EventType.ADD_MEMBER, mapMember(e.getMember())));
+			}
+
+			@Override
+			public void memberRemoved(MembershipEvent e) {
+				applicationContext.publishEvent(new ClusterMemberEvent(applicationContext, EventType.REMOVE_MEMBER, mapMember(e.getMember())));
+			}
+
+		});
+	}
+
+	@Override
 	@Nonnull
 	public <I, O> Message<O> sendSyncMessage(Message<I> in) {
 		String tempReplyChannelName = "__tmp."+ NUMBER_GENERATOR.nextAlphanumeric(32);
@@ -167,35 +197,5 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 				.build();
 
 		requestTopic.publishAsync(requestMessage);
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
-	}
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		hzInstance = HazelcastConfig.newHazelcastInstance(InstanceType.CONTROLLER, Collections.emptyMap());
-		SpringUtils.registerSingleton(applicationContext, "hazelcastOutboundInstance", hzInstance);
-
-		IMap<String, String> config = hzInstance.getMap(HazelcastConfig.FRANK_APPLICATION_CONFIG);
-		config.set(HazelcastConfig.FRANK_APPLICATION_KEYSET, jwtGenerator.getPublicJwkSet());
-
-		requestTopic = hzInstance.getTopic(requestTopicName);
-
-		hzInstance.getCluster().addMembershipListener(new MembershipListener() {
-
-			@Override
-			public void memberAdded(MembershipEvent e) {
-				applicationContext.publishEvent(new ClusterMemberEvent(applicationContext, EventType.ADD_MEMBER, mapMember(e.getMember())));
-			}
-
-			@Override
-			public void memberRemoved(MembershipEvent e) {
-				applicationContext.publishEvent(new ClusterMemberEvent(applicationContext, EventType.REMOVE_MEMBER, mapMember(e.getMember())));
-			}
-
-		});
 	}
 }
