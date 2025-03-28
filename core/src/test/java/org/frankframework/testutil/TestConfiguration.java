@@ -100,7 +100,7 @@ public class TestConfiguration extends Configuration {
 	}
 
 	/**
-	 * Performs full initialization of the bean, including all applicable BeanPostProcessors. This is effectively a supersetof what autowire provides, adding initializeBean behavior.
+	 * Performs full initialization of the bean, including all applicable BeanPostProcessors. This is effectively a superset of what autowire provides, adding initializeBean behavior.
 	 */
 	public <T> T createBean(Class<T> beanClass) {
 		return SpringUtils.createBean(this, beanClass);
