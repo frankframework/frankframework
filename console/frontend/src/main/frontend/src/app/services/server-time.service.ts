@@ -1,6 +1,6 @@
 import { Inject, inject, Injectable, LOCALE_ID } from '@angular/core';
 import { formatDate } from '@angular/common';
-import { AppConstants, AppService } from '../app.service';
+import { AppService } from '../app.service';
 
 @Injectable({
   providedIn: 'root',
@@ -11,14 +11,14 @@ export class ServerTimeService {
   private appService = inject(AppService);
   @Inject(LOCALE_ID) private locale: string = inject(LOCALE_ID);
 
-  private appConstants: AppConstants = this.appService.APP_CONSTANTS;
   private baseTime: Date = new Date();
   private currentTime: Date = new Date();
   private timeUpdateIntervalId = -1;
   private previousLocalTime: number = Date.now();
+  private dateFormat: string = 'yyyy-MM-dd HH:mm:ss';
 
   getIntialTime(): string {
-    return formatDate(this.baseTime, this.appConstants['console.dateFormat'] as string, this.locale, this.timezone);
+    return formatDate(this.baseTime, this.dateFormat, this.locale, this.timezone);
   }
 
   getCurrentTime(): number {
@@ -27,12 +27,12 @@ export class ServerTimeService {
 
   getCurrentTimeFormatted(): string {
     const zonedTime = this.currentTime.toLocaleString(this.locale, { timeZone: this.timezone });
-    return formatDate(zonedTime, this.appConstants['console.dateFormat'] as string, this.locale, this.timezone);
+    return formatDate(zonedTime, this.dateFormat, this.locale, this.timezone);
   }
 
   toServerTime(value: number | Date): string {
     const zonedTime = new Date(value).toLocaleString(this.locale, { timeZone: this.timezone });
-    return formatDate(zonedTime, this.appConstants['console.dateFormat'] as string, this.locale, this.timezone);
+    return formatDate(zonedTime, this.dateFormat, this.locale, this.timezone);
   }
 
   setServerTime(serverTime: number, timezone: string): void {
