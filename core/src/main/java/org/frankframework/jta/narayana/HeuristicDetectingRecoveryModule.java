@@ -81,7 +81,7 @@ public class HeuristicDetectingRecoveryModule implements RecoveryModule {
 				count++;
 
 				if (isStuck()) {
-					log.warn("marking uid as stuck, count has reached threshold [{}] within [10] minutes", count);
+					log.warn("marking uid as stuck, count has reached threshold [{}] within [{}] seconds", () -> count, HEURISTIC_FAILURE_BACKOFF_DURATION::toSeconds);
 				}
 			} else {
 				count = 1;

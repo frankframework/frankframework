@@ -102,7 +102,7 @@ public class RequestMessageBuilder {
 			String headers = customHeaders.entrySet().stream()
 					.map(this::mapHeaderForLog)
 					.collect(Collectors.joining(", "));
-			SEC_LOG.info("created bus request [{}:{}] with headers [{}] payload [{}]", action, topic, headers, payload);
+			SEC_LOG.info("created bus request [{}:{}] with headers [{}] payload [{}]", topic, action, headers, payload);
 		}
 
 		MessageBuilder<?> builder = MessageBuilder.withPayload(payload);
