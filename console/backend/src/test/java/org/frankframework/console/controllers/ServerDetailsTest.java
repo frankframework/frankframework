@@ -3,8 +3,8 @@ package org.frankframework.console.controllers;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
 
-@ContextConfiguration(classes = {WebTestConfiguration.class, ServerStatistics.class})
-public class ServerStatisticsTest extends FrankApiTestBase {
+@ContextConfiguration(classes = {WebTestConfiguration.class, ServerDetails.class})
+public class ServerDetailsTest extends FrankApiTestBase {
 
 	@Test
 	public void testServerInformation() throws Exception {

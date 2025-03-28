@@ -34,11 +34,11 @@ import org.frankframework.management.bus.BusTopic;
 
 @RestController
 @RequestMapping("/server")
-public class ServerStatistics {
+public class ServerDetails {
 
 	private final FrankApiService frankApiService;
 
-	public ServerStatistics(FrankApiService frankApiService) {
+	public ServerDetails(FrankApiService frankApiService) {
 		this.frankApiService = frankApiService;
 	}
 

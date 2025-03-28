@@ -20,11 +20,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.frankframework.console.controllers.ServerStatistics;
+import org.frankframework.console.controllers.ServerDetails;
 import org.frankframework.console.controllers.WebTestConfiguration;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = { SecurityChainTestConfiguration.class, SecurityChainConfigurer.class, WebTestConfiguration.class, ServerStatistics.class })
+@ContextConfiguration(classes = { SecurityChainTestConfiguration.class, SecurityChainConfigurer.class, WebTestConfiguration.class, ServerDetails.class })
 @WebAppConfiguration
 public class SecurityChainConfigurerTest {
 
