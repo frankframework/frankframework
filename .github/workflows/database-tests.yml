@@ -69,7 +69,13 @@ jobs:
 
     services:
       database:
-        image: dbms/${{ matrix.db }}
+        image: ghcr.io/frankframework/dbms/${{ matrix.db }}
+        credentials:
+          username: ${{ github.actor }}
+          password: ${{ secrets.github_token }}
+
+    container:
+      image: gchr.io/frankframework/build/jdk21
 
     steps:
     - name: Checkout repository
@@ -124,13 +130,13 @@ jobs:
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SonarCloud
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud
-      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -Djunit.includedTags=database
+      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -Djunit.includedTags=database -Djdbc.hostname=database
 
     - name: Store Test Results
       if: failure()
       uses: actions/upload-artifact@v4
       with:
-        name: java${{ matrix.java }}_Surefire
+        name: database-${{ matrix.db }}_Surefire
         path: ${{ github.workspace }}/*/target/surefire-reports/*
 
     - name: Print commit sha
