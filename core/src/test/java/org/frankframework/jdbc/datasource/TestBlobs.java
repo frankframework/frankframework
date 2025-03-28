@@ -17,6 +17,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.commons.io.input.ReaderInputStream;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Timeout;
 
 import org.frankframework.dbms.Dbms;
@@ -34,6 +35,12 @@ public class TestBlobs {
 
 	protected static final String TABLE_NAME = "testBlobs_TABLE";
 	boolean testBigBlobs = false;
+
+	@BeforeEach
+	public void setup(DatabaseTestEnvironment env) {
+		// These tests have never worked with DB2, so now skip them with DB2
+		assumeFalse(env.getDbmsSupport().getDbms() == Dbms.DB2, "These tests have never worked with DB2 so skip them");
+	}
 
 	public static String getBigString(int numBlocks, int blockSize) {
 		String tenChars="0123456789";

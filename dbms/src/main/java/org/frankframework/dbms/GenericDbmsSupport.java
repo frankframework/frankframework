@@ -51,11 +51,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	protected Logger log = LogManager.getLogger(this.getClass());
 
 	protected static final String KEYWORD_SELECT = "select";
-
-	protected static final String TYPE_BLOB = "blob";
-	protected static final String TYPE_CLOB = "clob";
-	protected static final String TYPE_FUNCTION = "function";
-
 	protected static Map<String, ISqlTranslator> sqlTranslators = new HashMap<>();
 
 	@Override
@@ -163,7 +158,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	public void updateClob(ResultSet rs, String column, Object clobHandle) throws SQLException, DbmsException {
 		rs.updateClob(column, (Clob) clobHandle);
 	}
-
 
 	@Override
 	public Object getClobHandle(PreparedStatement stmt, int column) throws SQLException, DbmsException {

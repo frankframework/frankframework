@@ -350,6 +350,8 @@ public class JdbcTableListenerTest {
 				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,CONVERT(VARBINARY,'TEST'))", null, new PipeLineSession());
 			} else if (env.getDbmsSupport().getDbms() == Dbms.ORACLE) {
 				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,utl_raw.cast_to_raw('TEST'))", null, new PipeLineSession());
+			} else if (env.getDbmsSupport().getDbms() == Dbms.DB2) {
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,CAST('TEST' AS BLOB))", null, new PipeLineSession());
 			} else {
 				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,'TEST')", null, new PipeLineSession());
 			}
@@ -554,28 +556,38 @@ public class JdbcTableListenerTest {
 		if (!env.getDbmsSupport().hasSkipLockedFunctionality()) {
 			listener.setStatusValueInProcess("4");
 		}
+		listener.setMessageField("tVARCHAR");
 		listener.configure();
 		listener.start();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (10,1,'Message 1')", null, new PipeLineSession());
 		}
 
 		try (Connection connection1 = env.getConnection()) {
 			connection1.setAutoCommit(false);
+			boolean shouldStillCommitBeforeClose;
 			RawMessageWrapper<String> rawMessage1 = listener.getRawMessage(connection1,null);
-			assertEquals("10",rawMessage1.getRawMessage());
-			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test")!=null) {
+			assertEquals("Message 1", rawMessage1.getRawMessage());
+			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test") != null) {
 				connection1.commit();
+				shouldStillCommitBeforeClose = false;
+			} else {
+				shouldStillCommitBeforeClose = true;
 			}
-
 
 			try(Connection connection = env.getConnection()) {
-				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (11,1)", null, new PipeLineSession());
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (11,1,'Message 2')", null, new PipeLineSession());
 			}
 			RawMessageWrapper<String> rawMessage2 = listener.getRawMessage(new HashMap<>());
-			assertEquals("11",rawMessage2.getRawMessage());
 
+			// Clean connection status before we assert
+			if (shouldStillCommitBeforeClose) {
+				connection1.rollback(); // Make sure connection has no unfinished connection on it before closing. Required for DB2.
+			}
+			connection1.setAutoCommit(true);
+
+			assertEquals("Message 2", rawMessage2.getRawMessage());
 		}
 	}
 
@@ -704,15 +716,25 @@ public class JdbcTableListenerTest {
 		}
 		try (Connection connection1 = env.getConnection()) {
 			connection1.setAutoCommit(false);
+			boolean shouldStillCommitBeforeClose;
 			RawMessageWrapper<String> rawMessage1 = listener.getRawMessage(connection1, null);
-			assertEquals("10",rawMessage1.getRawMessage());
-			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test")!=null) {
+			assertEquals("10", rawMessage1.getRawMessage());
+			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test") != null) {
 				connection1.commit();
+				shouldStillCommitBeforeClose = false;
+			} else {
+				shouldStillCommitBeforeClose = true;
 			}
 
-			try(Connection connection = env.getConnection()) {
+			try (Connection connection = env.getConnection()) {
 				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (11,1)", null, new PipeLineSession());
 			}
+			// Clean connection status before we assert
+			if (shouldStillCommitBeforeClose) {
+				connection1.rollback(); // Make sure connection has no unfinished connection on it before closing. Required for DB2.
+			}
+			connection1.setAutoCommit(true);
+
 			assertTrue(listener.hasRawMessageAvailable(), "Should peek message when there is one");
 		}
 	}
