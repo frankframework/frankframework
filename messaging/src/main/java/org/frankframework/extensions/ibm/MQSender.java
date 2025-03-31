@@ -40,9 +40,10 @@ import org.frankframework.util.ClassUtils;
  *
  * <p>See {@link JmsSender} for configuration</p>
  *
+ * {@inheritDoc}
+ *
  * @author Jaco de Groot
  */
-
 public class MQSender extends JmsSender {
 
 	@Override

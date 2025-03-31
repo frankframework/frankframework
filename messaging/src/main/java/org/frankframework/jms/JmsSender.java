@@ -70,6 +70,8 @@ import org.frankframework.util.XmlException;
  * @ff.parameters All parameters present are set as message-properties.
  * @ff.parameter SoapAction Automatically filled from attribute <code>soapAction</code>
  *
+ * {@inheritDoc}
+ *
  * @author Gerrit van Brakel
  */
 public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorrelatedSender {

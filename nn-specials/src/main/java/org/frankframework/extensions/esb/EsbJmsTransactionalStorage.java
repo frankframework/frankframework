@@ -65,6 +65,8 @@ import org.frankframework.util.UUIDUtil;
  * </table>
  * </p>
  *
+ * {@inheritDoc}
+ *
  * @author Peter Leeuwenburgh
  */
 @Category(Category.Type.NN_SPECIAL)
