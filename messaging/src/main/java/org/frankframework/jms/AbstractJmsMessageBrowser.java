@@ -224,7 +224,15 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 	@Override
 	public List<MessageBrowserField> getStorageFields() {
 		return List.of(
-			// TODO get IMessageBrowsingIteratorItem field info here somehow
+			new MessageBrowserField(null, "id", "Storage ID", "string"),
+			new MessageBrowserField(null, "originalId", "Original ID", "string"),
+			new MessageBrowserField(null, "correlationId", "Correlation ID", "string"),
+			new MessageBrowserField(null, "type", "Type", "string"),
+			new MessageBrowserField(null, "host", "Host", "string"),
+			new MessageBrowserField(null, "insertDate", "Timestamp", "date"),
+			new MessageBrowserField(null, "expiryDate", "Expires", "date"),
+			new MessageBrowserField(null, "comment", "Comment", "string"),
+			new MessageBrowserField(null, "label", "Label", "string")
 		);
 	}
 

@@ -144,7 +144,11 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 
 	@Override
 	public List<MessageBrowserField> getStorageFields() {
-		return List.of(); // TODO
+		return List.of(
+			new MessageBrowserField(null, "id", "Storage ID", "string"),
+			new MessageBrowserField(null, "originalId", "Original ID", "string"),
+			new MessageBrowserField(null, "insertDate", "Timestamp", "date")
+		);
 	}
 
 }
