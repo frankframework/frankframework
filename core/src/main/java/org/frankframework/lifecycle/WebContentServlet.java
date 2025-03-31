@@ -63,7 +63,7 @@ import org.frankframework.util.LogUtil;
 @IbisInitializer
 public class WebContentServlet extends AbstractHttpServlet {
 
-	@Serial 
+	@Serial
 	private static final long serialVersionUID = 1L;
 	public static final String WEBCONTENT = "webcontent";
 	private final transient Logger log = LogUtil.getLogger(this);
@@ -234,7 +234,7 @@ public class WebContentServlet extends AbstractHttpServlet {
 
 	void getWebContentForConfiguration(HttpServletResponse response, Configuration configuration) throws IOException {
 		AbstractClassLoader classLoader = (AbstractClassLoader) configuration.getClassLoader();
-		boolean isWebContentFolderPresent = classLoader != null && classLoader.getLocalResource(WEBCONTENT) != null;
+		boolean isWebContentFolderPresent = classLoader != null && classLoader.getResource(WEBCONTENT, false) != null;
 		if(isWebContentFolderPresent) {
 			log.info("found configuration [{}] with [{}}] folder", configuration, WEBCONTENT);
 			response.getWriter().append("<a href=\""+ configuration.getName()+"\">"+ configuration.getName()+"</a>");
