@@ -103,6 +103,7 @@ jobs:
           console/frontend/src/main/frontend/node_modules
         key: project-cache-
 
+    # TODO: This step might not be necessary as we already take a JDK21 image?
     - name: Set up JDK 21
       uses: actions/setup-java@v3
       with:
@@ -133,7 +134,7 @@ jobs:
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SonarCloud
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud
-      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -Djunit.includedTags=database -Djdbc.hostname=database
+      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -pl core -am -Djunit.includedTags=database -Djdbc.hostname=database
 
     - name: Store Test Results
       if: failure()
