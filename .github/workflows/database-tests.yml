@@ -64,9 +64,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/frankframework/build/jdk21:latest
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.github_token }}
 
     strategy:
       fail-fast: false
@@ -76,9 +73,6 @@ jobs:
     services:
       database:
         image: ghcr.io/frankframework/dbms/${{ matrix.db }}:latest
-        credentials:
-          username: ${{ github.actor }}
-          password: ${{ secrets.github_token }}
 
     steps:
     - name: Checkout repository
