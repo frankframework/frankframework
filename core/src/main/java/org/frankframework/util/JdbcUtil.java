@@ -651,10 +651,14 @@ public class JdbcUtil {
 		}
 	}
 
+	/** Set a parameter in a prepared statement. Optimised for single-parameter statements */
 	public static void setParameter(PreparedStatement statement, int parameterIndex, String value, boolean parameterTypeMatchRequired) throws SQLException {
 		setParameter(statement, parameterIndex, value, parameterTypeMatchRequired, parameterTypeMatchRequired ? statement.getParameterMetaData() : null);
 	}
 
+	/** Set a parameter in a prepared statement. If {@code parameterTypeMatchRequired = true} then you should also pass {@code ParameterMetaData}. Intended
+	 * for use when multiple parameters need to be set in the prepared statement, so that ParameterMetaData is fetched only once. (For some databases
+	 * every time this is accessed from the statement can mean another network-access and fetching it once for all parameters reduces the network overhead for those). */
 	public static void setParameter(PreparedStatement statement, int parameterIndex, String value, boolean parameterTypeMatchRequired, ParameterMetaData parameterMetaData) throws SQLException {
 		if (!parameterTypeMatchRequired) {
 			statement.setString(parameterIndex, value);
