@@ -28,6 +28,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.sql.Connection;
 import java.sql.JDBCType;
+import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -651,12 +652,15 @@ public class JdbcUtil {
 	}
 
 	public static void setParameter(PreparedStatement statement, int parameterIndex, String value, boolean parameterTypeMatchRequired) throws SQLException {
+		setParameter(statement, parameterIndex, value, parameterTypeMatchRequired, parameterTypeMatchRequired ? statement.getParameterMetaData() : null);
+	}
+
+	public static void setParameter(PreparedStatement statement, int parameterIndex, String value, boolean parameterTypeMatchRequired, ParameterMetaData parameterMetaData) throws SQLException {
 		if (!parameterTypeMatchRequired) {
 			statement.setString(parameterIndex, value);
 			return;
 		}
-		// TODO: Some databases appear to re-fetch this for every parameter, can this be cached?
-		int sqlTYpe = statement.getParameterMetaData().getParameterType(parameterIndex);
+		int sqlTYpe = parameterMetaData.getParameterType(parameterIndex);
 		try {
 			switch (sqlTYpe) {
 				case Types.INTEGER:

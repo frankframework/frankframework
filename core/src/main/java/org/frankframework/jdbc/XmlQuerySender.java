@@ -18,6 +18,7 @@ package org.frankframework.jdbc;
 import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -415,6 +416,7 @@ public class XmlQuerySender extends DirectQuerySender {
 
 	private void applyParameters(PreparedStatement statement, List<Column> columns) throws SQLException {
 		int var = 1;
+		ParameterMetaData parameterMetaData = null;
 		for (Column column : columns) {
 			if (column.getParameter() != null) {
 				if (column.getParameter() instanceof Integer) {
@@ -443,8 +445,11 @@ public class XmlQuerySender extends DirectQuerySender {
 					var++;
 				} else {
 					//if (column.getParameter() instanceof String)
+					if (parameterMetaData == null && getDbmsSupport().isParameterTypeMatchRequired()) {
+						parameterMetaData = statement.getParameterMetaData();
+					}
 					log.debug("parm [{}] is a String with value [{}]", var, column.getParameter());
-					JdbcUtil.setParameter(statement, var, (String) column.getParameter(), getDbmsSupport().isParameterTypeMatchRequired());
+					JdbcUtil.setParameter(statement, var, (String) column.getParameter(), getDbmsSupport().isParameterTypeMatchRequired(), parameterMetaData);
 					var++;
 				}
 			}

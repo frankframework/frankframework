@@ -18,6 +18,7 @@ package org.frankframework.jdbc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
+import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -408,10 +409,11 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			if (trace && log.isDebugEnabled()) log.debug("executing statement [{}]", query);
 			try (PreparedStatement stmt=conn.prepareStatement(query)) {
 				stmt.clearParameters();
+				ParameterMetaData parameterMetaData = stmt.getParameterMetaData();
 				int i = 1;
 				for (String parameter : parameters) {
 					log.debug("setting parameter {} to [{}]", i, parameter);
-					JdbcUtil.setParameter(stmt, i++, parameter, getDbmsSupport().isParameterTypeMatchRequired());
+					JdbcUtil.setParameter(stmt, i++, parameter, getDbmsSupport().isParameterTypeMatchRequired(), parameterMetaData);
 				}
 
 				return stmt.executeUpdate() > 0;
