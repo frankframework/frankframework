@@ -27,12 +27,15 @@ import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.servlet.http.HttpServletRequest;
 
+import lombok.Getter;
+
+import lombok.Setter;
+
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
@@ -54,15 +57,25 @@ public class Init {
 		this.handlerMapping = handlerMapping;
 	}
 
+	@Getter
+	@Setter
+	public static class ParametersModel {
+		boolean allowedRoles;
+		String hateoas = "default";
+
+		public boolean hateoasSupport() {
+			return "hal".equalsIgnoreCase(hateoas);
+		}
+	}
+
 	@GetMapping(value = {"", "/"}, produces = "application/json")
 	@PermitAll
 	public ResponseEntity<?> getAllResources(HttpServletRequest servletRequest,
-											@RequestParam(value = "allowedRoles", required = false) boolean displayAllowedRoles,
-											@RequestParam(value = "hateoas", defaultValue = "default") String hateoasImpl) {
+											 ParametersModel params) {
 		List<Object> JSONresources = new ArrayList<>();
 		Map<String, Object> HALresources = new HashMap<>();
 		Map<String, Object> resources = new HashMap<>(1);
-		boolean hateoasSupport = "hal".equalsIgnoreCase(hateoasImpl);
+		boolean hateoasSupport = params.hateoasSupport();
 
 		String requestPath = servletRequest.getRequestURL().toString();
 		if (requestPath.endsWith("/")) {
@@ -103,7 +116,7 @@ public class Init {
 				if (deprecated) {
 					resource.put("deprecated", true);
 				}
-				if (displayAllowedRoles) {
+				if (params.allowedRoles) {
 					List<String> roles = getAllowedRoles(method);
 					if(!roles.isEmpty()) {
 						resource.put("roles", roles);

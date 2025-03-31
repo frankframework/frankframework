@@ -95,7 +95,7 @@ public abstract class AbstractValidator extends FixedForwardPipe implements IDua
 	protected abstract PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException, XmlValidatorException, ConfigurationException;
 
 
-	protected final PipeForward determineForward(ValidationResult validationResult, PipeLineSession session, boolean responseMode, Supplier<String> errorMessageProvider) throws PipeRunException {
+	protected final PipeForward determineForward(ValidationResult validationResult, boolean responseMode, Supplier<String> errorMessageProvider) throws PipeRunException {
 		throwEvent(validationResult.getEvent());
 		PipeForward forward = null;
 		switch(validationResult) {

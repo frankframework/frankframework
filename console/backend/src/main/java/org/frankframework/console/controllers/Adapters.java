@@ -16,7 +16,7 @@
 package org.frankframework.console.controllers;
 
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.List;
 
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
@@ -26,10 +26,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.frankframework.console.AllowAllIbisUserRoles;
@@ -37,18 +35,17 @@ import org.frankframework.console.ApiException;
 import org.frankframework.console.Description;
 import org.frankframework.console.Relation;
 import org.frankframework.console.util.RequestMessageBuilder;
-import org.frankframework.console.util.RequestUtils;
 import org.frankframework.management.Action;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 
 @RestController
-public class ConfigurationStatus {
+public class Adapters {
 
 	private final FrankApiService frankApiService;
 
-	public ConfigurationStatus(FrankApiService frankApiService) {
+	public Adapters(FrankApiService frankApiService) {
 		this.frankApiService = frankApiService;
 	}
 
@@ -56,10 +53,10 @@ public class ConfigurationStatus {
 	@Relation("adapter")
 	@Description("view a list of all adapters, prefixed with the configuration name")
 	@GetMapping(value = "/adapters", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getAdapters(@RequestParam(value = "expanded", required = false) String expanded, @RequestParam(value = "showPendingMsgCount", required = false) boolean showPendingMsgCount) {
+	public ResponseEntity<?> getAdapters(GetAdapterParams params) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.GET);
-		builder.addHeader("showPendingMsgCount", showPendingMsgCount);
-		builder.addHeader("expanded", expanded);
+		builder.addHeader("showPendingMsgCount", params.showPendingMsgCount);
+		builder.addHeader("expanded", params.expanded);
 		return frankApiService.callSyncGateway(builder);
 	}
 
@@ -67,14 +64,13 @@ public class ConfigurationStatus {
 	@Relation("adapter")
 	@Description("view an adapter receivers/pipes/messages")
 	@GetMapping(value = "/configurations/{configuration}/adapters/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getAdapter(@PathVariable("configuration") String configuration, @PathVariable("name") String name,
-										@RequestParam(value = "expanded", required = false) String expanded,
-										@RequestParam(value = "showPendingMsgCount", required = false) boolean showPendingMsgCount) {
+	public ResponseEntity<?> getAdapter(AdapterPathVariables path,
+										GetAdapterParams params) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.FIND);
-		addConfigurationAndAdapterNameHeaders(configuration, name, builder);
+		addConfigurationAndAdapterNameHeaders(path, builder);
 
-		builder.addHeader("showPendingMsgCount", showPendingMsgCount);
-		builder.addHeader("expanded", expanded);
+		builder.addHeader("showPendingMsgCount", params.showPendingMsgCount);
+		builder.addHeader("expanded", params.expanded);
 		return frankApiService.callSyncGateway(builder);
 	}
 
@@ -82,9 +78,9 @@ public class ConfigurationStatus {
 	@Relation("adapter")
 	@Description("view an adapter health")
 	@GetMapping(value = "/configurations/{configuration}/adapters/{name}/health", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getAdapterHealth(@PathVariable("configuration") String configuration, @PathVariable("name") String name) {
+	public ResponseEntity<?> getAdapterHealth(AdapterPathVariables path) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.HEALTH);
-		addConfigurationAndAdapterNameHeaders(configuration, name, builder);
+		addConfigurationAndAdapterNameHeaders(path, builder);
 
 		return frankApiService.callSyncGateway(builder);
 	}
@@ -95,19 +91,14 @@ public class ConfigurationStatus {
 	@Relation("adapter")
 	@Description("start/stop multiple adapters")
 	@PutMapping(value = "/adapters", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateAdapters(@RequestBody Map<String, Object> json) {
+	public ResponseEntity<?> updateAdapters(@RequestBody UpdateAdaptersModel model) {
 		ArrayList<String> adapters = new ArrayList<>();
 
-		String value = RequestUtils.getValue(json, "action");
+		String value = model.action;
 		Action action = getActionOrThrow(value);
 
-		Object adapterList = json.get("adapters");
-		if (adapterList != null) {
-			try {
-				adapters.addAll((ArrayList<String>) adapterList);
-			} catch (Exception e) {
-				throw new ApiException(e);
-			}
+		if (model.adapters != null) {
+			adapters.addAll(model.adapters);
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
@@ -138,12 +129,12 @@ public class ConfigurationStatus {
 	@Relation("adapter")
 	@Description("start/stop an adapter")
 	@PutMapping(value = "/configurations/{configuration}/adapters/{adapter}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateAdapter(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter, @RequestBody Map<String, Object> json) {
-		String value = RequestUtils.getValue(json, "action");
-		Action action = getActionOrThrow(value);
+	public ResponseEntity<?> updateAdapter(AdapterPathVariables path,
+										   @RequestBody UpdateAdapterOrReceiverModel model) {
+		Action action = getActionOrThrow(model.action);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
-		addHeaders(builder, configuration, adapter, action);
+		addHeaders(builder, path.configuration, path.adapter, action);
 		frankApiService.callAsyncGateway(builder);
 
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");
@@ -153,10 +144,10 @@ public class ConfigurationStatus {
 	@Relation("adapter")
 	@Description("start/stop an adapter receivers")
 	@PutMapping(value = "/configurations/{configuration}/adapters/{adapter}/receivers/{receiver}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateReceiver(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter,
-											@PathVariable("receiver") String receiver, @RequestBody Map<String, Object> json) {
+	public ResponseEntity<?> updateReceiver(AdapterPathVariables path,
+											@RequestBody UpdateAdapterOrReceiverModel json) {
 
-		String value = RequestUtils.getValue(json, "action");
+		String value = json.action;
 		Action action = null;
 
 		if (StringUtils.isNotEmpty(value)) {
@@ -176,8 +167,8 @@ public class ConfigurationStatus {
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
-		addHeaders(builder, configuration, adapter, action);
-		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
+		addHeaders(builder, path.configuration, path.adapter, action);
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, path.receiver);
 
 		frankApiService.callAsyncGateway(builder);
 
@@ -188,11 +179,30 @@ public class ConfigurationStatus {
 	@Relation("adapter")
 	@Description("view an adapter flow")
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapter}/flow")
-	public ResponseEntity<?> getAdapterFlow(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter) throws ApiException {
+	public ResponseEntity<?> getAdapterFlow(AdapterPathVariables path) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.FLOW);
-		addConfigurationAndAdapterNameHeaders(configuration, adapter, builder);
+		addConfigurationAndAdapterNameHeaders(path, builder);
 		return frankApiService.callSyncGateway(builder);
 	}
+
+	@AllowAllIbisUserRoles
+	@Relation("statistics")
+	@Description("view adapter processing statistics")
+	@GetMapping(value = "/configurations/{configuration}/adapters/{adapter}/statistics", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getAdapterStatistics(AdapterPathVariables path) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.STATUS);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, path.adapter);
+		return frankApiService.callSyncGateway(builder);
+	}
+
+	public record GetAdapterParams(Boolean showPendingMsgCount, String expanded) {}
+
+	public record AdapterPathVariables(String configuration, String adapter, String receiver) {}
+
+	public record UpdateAdapterOrReceiverModel(String action) {}
+
+	public record UpdateAdaptersModel(String action, List<String> adapters) {}
 
 	private void addHeaders(RequestMessageBuilder builder, String configuration, String adapter, Action action) {
 		if (action == null) {
@@ -213,6 +223,10 @@ public class ConfigurationStatus {
 		}
 
 		throw new ApiException("no or unknown action provided", HttpStatus.BAD_REQUEST);
+	}
+
+	private void addConfigurationAndAdapterNameHeaders(AdapterPathVariables path, RequestMessageBuilder builder) {
+		addConfigurationAndAdapterNameHeaders(path.configuration, path.adapter, builder);
 	}
 
 	private void addConfigurationAndAdapterNameHeaders(String configuration, String name, RequestMessageBuilder builder) {

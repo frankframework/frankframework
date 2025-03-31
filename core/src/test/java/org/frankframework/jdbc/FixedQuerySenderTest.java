@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayInputStream;
@@ -131,6 +132,8 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testUseNamedParametersStringValueContains_unp_start_resolveParam() throws Exception {
+		assumeFalse(databaseUnderTest == Dbms.MARIADB, "MariaDB JDBC driver appears to allow setting parameters with index higher than parameter count in the prepared statement so the test fails");
+
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', '?{param}')");
 
 		fixedQuerySender.addParameter(new Parameter("param", "value"));
@@ -138,7 +141,8 @@ public class FixedQuerySenderTest {
 		fixedQuerySender.configure();
 		fixedQuerySender.start();
 
-		assertThrows(SenderException.class, () -> fixedQuerySender.sendMessage(new Message("dummy"), session));
+		SenderException senderException = assertThrows(SenderException.class, () -> fixedQuerySender.sendMessage(new Message("dummy"), session));
+		assertThat(senderException.getMessage(), containsString("Could not set parameter [param] with type [STRING] at position 0, exception"));
 	}
 
 	@DatabaseTest
@@ -316,6 +320,8 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testParameterTypeLobStream() throws Exception {
+		assumeFalse(Dbms.DB2 == databaseUnderTest, "This test does not work with DB2, same problems as with TestBlobs");
+
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tCLOB, tBLOB) VALUES ('1', ?, ?)");
 		fixedQuerySender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob").withType(ParameterType.CHARACTER));
 		fixedQuerySender.addParameter(ParameterBuilder.create().withName("blob").withSessionKey("blob").withType(ParameterType.BINARY));

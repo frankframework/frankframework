@@ -27,7 +27,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(JUnitLiquibaseExtension.class)
 public @interface WithLiquibase {
 
-	public static final String TEST_CHANGESET_PATH = "Migrator/Ibisstore_4_unittests_changeset.xml";
+	String TEST_CHANGESET_PATH = "Migrator/Ibisstore_4_unittests_changeset.xml";
 
 	String file() default TEST_CHANGESET_PATH;
 	String tableName() default "IBISSTORE";

@@ -54,6 +54,7 @@
 	<Include ref="ConfigurationWsdlXmlValidator.xml"/>
 	<Include ref="ConfigurationText2Xml.xml"/>
 	<Include ref="ConfigurationJsonPipe.xml"/>
+	<Include ref="ConfigurationJsonDataSonnet.xml"/>
 	<Include ref="ConfigurationMultipleSessionKeys.xml"/>
 	<Include ref="ConfigurationCreateLargeFile.xml"/>
 	<Include ref="ConfigurationMemoryLeak.xml"/>

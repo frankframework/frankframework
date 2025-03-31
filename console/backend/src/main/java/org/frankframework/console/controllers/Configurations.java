@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
@@ -31,11 +30,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -52,15 +49,13 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.HttpUtils;
 
 @RestController
-public class ConfigurationsEndpoint {
+public class Configurations {
 
 	private final FrankApiService frankApiService;
 
-	private static final String PATH_VARIABLE_VERSION = "version";
-
 	private static final String BUS_HEADER_VERSION = "version";
 
-	public ConfigurationsEndpoint(FrankApiService frankApiService) {
+	public Configurations(FrankApiService frankApiService) {
 		this.frankApiService = frankApiService;
 	}
 
@@ -68,16 +63,15 @@ public class ConfigurationsEndpoint {
 	@Relation("application")
 	@Description("view all the loaded/original configurations")
 	@GetMapping(value = "/configurations", produces = MediaType.APPLICATION_XML_VALUE)
-	public ResponseEntity<?> getConfigurationXML(@RequestParam(value = "loadedConfiguration", required = false) boolean loaded,
-												 @RequestParam(value = "flow", required = false) String flow) throws ApiException {
-		if (StringUtils.isNotEmpty(flow)) {
+	public ResponseEntity<?> getConfigurationXML(ConfigurationParameters params) throws ApiException {
+		if (StringUtils.isNotEmpty(params.flow)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.FLOW);
 			return frankApiService.callSyncGateway(builder);
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.GET);
-		if (loaded) {
-			builder.addHeader("loaded", true);
+		if (params.loadedConfiguration != null) {
+			builder.addHeader("loaded", params.loadedConfiguration);
 		}
 		return frankApiService.callSyncGateway(builder);
 	}
@@ -86,16 +80,14 @@ public class ConfigurationsEndpoint {
 	@Relation("application")
 	@Description("update the entire application using an action")
 	@PutMapping(value = "/configurations", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> fullAction(@RequestBody Map<String, Object> json) throws ApiException {
+	public ResponseEntity<?> fullAction(@RequestBody ActionModel model) throws ApiException {
 		List<String> configurations = new ArrayList<>();
+		Action action = getActionOrThrow(model.action, true);
 
-		String value = RequestUtils.getValue(json, "action");
-		Action action = getActionOrThrow(value, true);
-
-		Object configurationsList = json.get("configurations");
+		String[] configurationsList = model.configurations;
 		if (configurationsList != null) {
 			try {
-				configurations.addAll((ArrayList<String>) configurationsList);
+				configurations.addAll(List.of(configurationsList));
 			} catch (Exception e) {
 				throw new ApiException(e);
 			}
@@ -121,13 +113,13 @@ public class ConfigurationsEndpoint {
 	@Relation("configuration")
 	@Description("view individual loaded/original configuration")
 	@GetMapping(value = "/configurations/{configuration}", produces = MediaType.APPLICATION_XML_VALUE)
-	public ResponseEntity<?> getConfigurationByName(@PathVariable("configuration") String configurationName,
-													@RequestParam(value = "loadedConfiguration", required = false) boolean loaded) throws ApiException {
+	public ResponseEntity<?> getConfigurationByName(ConfigurationPathVariables path,
+													ConfigurationParameters params) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.GET);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
 
-		if (loaded) {
-			builder.addHeader("loaded", true);
+		if (params.loadedConfiguration != null) {
+			builder.addHeader("loaded", params.loadedConfiguration);
 		}
 
 		return frankApiService.callSyncGateway(builder);
@@ -137,9 +129,9 @@ public class ConfigurationsEndpoint {
 	@Relation("configuration")
 	@Description("view configuration health")
 	@GetMapping(value = "/configurations/{configuration}/health", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getConfigurationHealth(@PathVariable("configuration") String configurationName) throws ApiException {
+	public ResponseEntity<?> getConfigurationHealth(ConfigurationPathVariables path) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.HEALTH);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
 		return frankApiService.callSyncGateway(builder);
 	}
 
@@ -147,9 +139,9 @@ public class ConfigurationsEndpoint {
 	@Relation("configuration")
 	@Description("view configuration flow diagram")
 	@GetMapping(value = "/configurations/{configuration}/flow")
-	public ResponseEntity<?> getConfigurationFlow(@PathVariable("configuration") String configurationName) throws ApiException {
+	public ResponseEntity<?> getConfigurationFlow(ConfigurationPathVariables path) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.FLOW);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
 		return frankApiService.callSyncGateway(builder);
 	}
 
@@ -157,13 +149,12 @@ public class ConfigurationsEndpoint {
 	@Relation("configuration")
 	@Description("update a specific configuration using an action")
 	@PutMapping(value = "/configurations/{configuration}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateConfiguration(@PathVariable("configuration") String configurationName, @RequestBody Map<String, Object> json) throws ApiException {
-		String value = RequestUtils.getValue(json, "action");
-		Action action = getActionOrThrow(value, false);
+	public ResponseEntity<?> updateConfiguration(ConfigurationPathVariables path, @RequestBody UpdateConfigurationModel model) throws ApiException {
+		Action action = getActionOrThrow(model.action, false);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);
 		builder.addHeader("action", action.name());
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
 		frankApiService.callAsyncGateway(builder);
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body("{\"status\":\"ok\"}");
 	}
@@ -172,11 +163,11 @@ public class ConfigurationsEndpoint {
 	@Relation("configuration")
 	@Description("view a list of all known configuration versions")
 	@GetMapping(value = "/configurations/{configuration}/versions", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getConfigurationDetailsByName(@PathVariable("configuration") String configurationName,
-														   @RequestParam(value = "datasourceName", required = false) String datasourceName) throws ApiException {
+	public ResponseEntity<?> getConfigurationDetailsByName(ConfigurationPathVariables path,
+														   ConfigurationParameters params) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.FIND);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasourceName);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
+		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, params.datasourceName);
 		return frankApiService.callSyncGateway(builder);
 	}
 
@@ -184,32 +175,21 @@ public class ConfigurationsEndpoint {
 	@Relation("configuration")
 	@Description("change the active configuration version, and optionally schedule or load it directly")
 	@PutMapping(value = "/configurations/{configuration}/versions/{version}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> manageConfiguration(@PathVariable("configuration") String configurationName,
-												 @PathVariable(PATH_VARIABLE_VERSION) String encodedVersion,
-												 @RequestParam(value = "datasourceName", required = false) String datasourceName,
-												 @RequestBody Map<String, Object> json) throws ApiException {
+	public ResponseEntity<?> manageConfiguration(ConfigurationPathVariables path,
+												 ConfigurationParameters params,
+												 @RequestBody ManageConfigurationModel model) throws ApiException {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.MANAGE);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		builder.addHeader(BUS_HEADER_VERSION, HttpUtils.urlDecode(encodedVersion));
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
+		builder.addHeader(BUS_HEADER_VERSION, HttpUtils.urlDecode(path.version));
 
-		if (json.containsKey("activate")) {
-			Object obj = json.get("activate");
-			if (obj instanceof Boolean) {
-				builder.addHeader("activate", (Boolean) json.get("activate"));
-			} else {
-				throw new ApiException("activate must be of type boolean");
-			}
-		} else if (json.containsKey("autoreload")) {
-			Object obj = json.get("autoreload");
-			if (obj instanceof Boolean) {
-				builder.addHeader("autoreload", (Boolean) json.get("autoreload"));
-			} else {
-				throw new ApiException("autoreload must be of type boolean");
-			}
+		if (model.activate != null) {
+			builder.addHeader("activate", model.activate);
+		} else if (model.autoreload != null) {
+			builder.addHeader("autoreload", model.autoreload);
 		}
 
-		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasourceName);
+		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, params.datasourceName);
 
 		return frankApiService.callSyncGateway(builder);
 	}
@@ -218,13 +198,13 @@ public class ConfigurationsEndpoint {
 	@Relation("configuration")
 	@Description("upload a new configuration versions")
 	@PostMapping(value = "/configurations", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> uploadConfiguration(ConfigurationMultipartBody multipartBody) throws ApiException {
-		String datasource = RequestUtils.resolveRequiredProperty("datasource", multipartBody.datasource, "");
-		boolean multipleConfigs = RequestUtils.resolveRequiredProperty("multiple_configs", multipartBody.multiple_configs, false);
-		boolean activateConfig = RequestUtils.resolveRequiredProperty("activate_config", multipartBody.activate_config, true);
-		boolean automaticReload = RequestUtils.resolveRequiredProperty("automatic_reload", multipartBody.automatic_reload, false);
+	public ResponseEntity<?> uploadConfiguration(UploadConfigurationModel model) throws ApiException {
+		String datasource = RequestUtils.resolveRequiredProperty("datasource", model.datasource, "");
+		boolean multipleConfigs = RequestUtils.resolveRequiredProperty("multiple_configs", model.multiple_configs, false);
+		boolean activateConfig = RequestUtils.resolveRequiredProperty("activate_config", model.activate_config, true);
+		boolean automaticReload = RequestUtils.resolveRequiredProperty("automatic_reload", model.automatic_reload, false);
 
-		MultipartFile filePart = multipartBody.file;
+		MultipartFile filePart = model.file;
 		InputStream file;
 		try {
 			file = filePart.getInputStream();
@@ -232,7 +212,7 @@ public class ConfigurationsEndpoint {
 			throw new ApiException(e);
 		}
 
-		String user = RequestUtils.resolveRequiredProperty("user", multipartBody.user, "");
+		String user = RequestUtils.resolveRequiredProperty("user", model.user, "");
 		if (StringUtils.isEmpty(user)) {
 			user = BusMessageUtils.getUserPrincipalName();
 		}
@@ -259,12 +239,12 @@ public class ConfigurationsEndpoint {
 	@Relation("configuration")
 	@Description("download a specific configuration version")
 	@GetMapping(value = "/configurations/{configuration}/versions/{version}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-	public ResponseEntity<?> downloadConfiguration(@PathVariable("configuration") String configurationName, @PathVariable(PATH_VARIABLE_VERSION) String version,
-												   @RequestParam(value = "dataSourceName", required = false) String dataSourceName) throws ApiException {
+	public ResponseEntity<?> downloadConfiguration(ConfigurationPathVariables path,
+												   ConfigurationParameters params) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.DOWNLOAD);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		builder.addHeader(BUS_HEADER_VERSION, version);
-		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, dataSourceName);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
+		builder.addHeader(BUS_HEADER_VERSION, path.version);
+		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, params.datasourceName);
 
 		return frankApiService.callSyncGateway(builder);
 	}
@@ -273,17 +253,30 @@ public class ConfigurationsEndpoint {
 	@Relation("configuration")
 	@Description("delete a specific configuration")
 	@DeleteMapping(value = "/configurations/{configuration}/versions/{version}")
-	public ResponseEntity<?> deleteConfiguration(@PathVariable("configuration") String configurationName, @PathVariable(PATH_VARIABLE_VERSION) String version,
-												 @RequestParam(value = "datasourceName", required = false) String datasourceName) throws ApiException {
+	public ResponseEntity<?> deleteConfiguration(ConfigurationPathVariables path,
+												 ConfigurationParameters params) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.DELETE);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		builder.addHeader(BUS_HEADER_VERSION, version);
-		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasourceName);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
+		builder.addHeader(BUS_HEADER_VERSION, path.version);
+		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, params.datasourceName);
 
 		return frankApiService.callAsyncGateway(builder);
 	}
 
-	public record ConfigurationMultipartBody(
+	public record ConfigurationPathVariables(String configuration, String version) {}
+
+	public record ConfigurationParameters(Boolean loadedConfiguration, String flow, String datasourceName) {}
+
+	public record ActionModel(String action, String[] configurations) {}
+
+	public record UpdateConfigurationModel(String action) {}
+
+	public record ManageConfigurationModel(
+			Boolean activate,
+			Boolean autoreload
+	) {}
+
+	public record UploadConfigurationModel(
 			String datasource,
 			String user,
 			boolean multiple_configs,

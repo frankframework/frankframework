@@ -15,8 +15,9 @@
 */
 package org.frankframework.unmanaged;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import static org.frankframework.util.DateFormatUtils.FULL_GENERIC_FORMATTER;
+
+import java.time.Instant;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -26,14 +27,12 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Setter;
 
-import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.RunState;
 
 public class PollGuard extends TimerTask {
 	private final Logger log = LogUtil.getLogger(this);
-	private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
 	private @Setter SpringJmsConnector springJmsConnector;
 	private long lastCheck;
 	private long previousLastPollFinishedTime;
@@ -49,7 +48,7 @@ public class PollGuard extends TimerTask {
 	public void run() {
 		long lastPollFinishedTime = springJmsConnector.getLastPollFinishedTime();
 		if (log.isTraceEnabled()) {
-			log.trace("{} check last poll finished time {}", springJmsConnector::getLogPrefix, ()-> simpleDateFormat.format(new Date(lastPollFinishedTime)));
+			log.trace("{} check last poll finished time {}", springJmsConnector::getLogPrefix, ()-> FULL_GENERIC_FORMATTER.format(Instant.ofEpochMilli(lastPollFinishedTime)));
 		}
 		long currentCheck = System.currentTimeMillis();
 		if (lastPollFinishedTime < lastCheck) {												// if the last poll finished more than the pollGuardInterval seconds ago

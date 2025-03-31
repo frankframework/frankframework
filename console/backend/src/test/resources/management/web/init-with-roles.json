@@ -81,6 +81,19 @@
 				"IbisAdmin",
 				"IbisTester"
 			]
-		}
-	]
+		},
+        {
+            "name": "getAdapterStatistics",
+            "rel": "statistics",
+            "description": "view adapter processing statistics",
+            "href": "http://localhost/configurations/{configuration}/adapters/{adapter}/statistics",
+            "type": "GET",
+            "roles": [
+                "IbisObserver",
+                "IbisDataAdmin",
+                "IbisAdmin",
+                "IbisTester"
+            ]
+        }
+    ]
 }

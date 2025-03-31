@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,12 +40,14 @@ import org.frankframework.util.AppConstants;
 public class NarayanaDataSourceFactory extends AbstractXADataSourceFactory {
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
+	private boolean useNativePoolingMechanism = false;
 
 	public NarayanaDataSourceFactory() {
 		// For backwards compatibility, apply these configuration constants if they're found.
 		AppConstants appConstants = AppConstants.getInstance();
 		minIdle = appConstants.getInt("transactionmanager.narayana.jdbc.connection.minIdle", minIdle);
 		maxPoolSize = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxPoolSize", maxPoolSize);
+		useNativePoolingMechanism = appConstants.getBoolean("transactionmanager.narayana.jdbc.nativePoolingMechanism", false);
 		maxIdle = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxIdle", maxIdle);
 		maxLifeTime = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxLifeTime", maxLifeTime);
 		testQuery = appConstants.getString("transactionmanager.narayana.jdbc.connection.testQuery", testQuery);
@@ -53,11 +55,11 @@ public class NarayanaDataSourceFactory extends AbstractXADataSourceFactory {
 
 	@Override
 	protected DataSource createXADataSource(XADataSource xaDataSource, String dataSourceName) {
-		XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper(xaDataSource);
+		XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper(xaDataSource, dataSourceName);
 		this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);
 
 		DataSource ds;
-		if (maxPoolSize > 1) {
+		if (!useNativePoolingMechanism && maxPoolSize > 1) {
 			XAConnectionFactory cf = new DataSourceXAConnectionFactory(requireNonNull(transactionManager.getTransactionManager()), xaDataSource);
 			PoolableConnectionFactory poolableConnectionFactory = new PoolableManagedConnectionFactory(cf, null);
 
@@ -66,8 +68,11 @@ public class NarayanaDataSourceFactory extends AbstractXADataSourceFactory {
 			ds = new OpenManagedDataSource<>(connectionPool, cf.getTransactionRegistry());
 			log.info("created XA-enabled PoolingDataSource [{}]", ds);
 		} else {
-			ds = new NarayanaDataSource(xaDataSource, dataSourceName);
-			log.info("created non XA-enabled PoolingDataSource [{}]", ds);
+			NarayanaDataSource nds = new NarayanaDataSource(xaDataSource, dataSourceName);
+			nds.setConnectionPooling(useNativePoolingMechanism);
+			nds.setMaxConnections(maxPoolSize);
+			ds = nds;
+			log.info("created XA-enabled NarayanaDataSource [{}]", ds);
 		}
 		log.info("registered Narayana DataSource [{}] with Transaction Manager", ds);
 		return ds;

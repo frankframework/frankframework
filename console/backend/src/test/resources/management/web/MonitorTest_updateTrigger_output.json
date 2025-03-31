@@ -1,0 +1,16 @@
+{
+    "filter": "ADAPTER",
+    "type": "ALARM",
+    "severity": "CRITICAL",
+    "threshold": 1,
+    "period": 3600,
+    "adapters": [
+        "adapter1",
+        "adapter2"
+    ],
+    "events": [
+        "Pipe Exception1",
+        "Pipe Exception2"
+    ],
+    "sources": null
+}

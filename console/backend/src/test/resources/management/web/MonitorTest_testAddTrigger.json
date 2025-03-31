@@ -1,0 +1,10 @@
+{
+    "type": "ALARM",
+    "filter": "NONE",
+    "events": [
+        "Receiver Configured"
+    ],
+    "severity": "HARMLESS",
+    "threshold": 1,
+    "period": 2
+}

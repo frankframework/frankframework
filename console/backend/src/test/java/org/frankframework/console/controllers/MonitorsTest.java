@@ -146,16 +146,24 @@ public class MonitorsTest extends FrankApiTestBase {
 			);
 			return mockResponseMessage(in, in::getPayload, 200, MediaType.APPLICATION_JSON);
 		});
-		String jsonInput = "{\"type\":\"ALARM\",\"filter\":\"NONE\",\"events\":[\"Receiver Configured\"],\"severity\":\"HARMLESS\",\"threshold\":1,\"period\":2}";
 
-		mockMvc.perform(MockMvcRequestBuilders
+		URL jsonInputURL = MonitorsTest.class.getResource("/management/web/MonitorTest_testAddTrigger.json");
+		assertNotNull(jsonInputURL, "unable to find input JSON");
+		String jsonInput = StreamUtil.streamToString(jsonInputURL.openStream());
+		URL jsonOutputURL = MonitorsTest.class.getResource("/management/web/MonitorTest_testAddTrigger_output.json");
+		assertNotNull(jsonOutputURL, "unable to find output JSON");
+		String jsonOutput = StreamUtil.streamToString(jsonOutputURL.openStream());
+
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
 						.post("/configurations/{configuration}/monitors/{monitorName}/triggers", "TestConfiguration", "monitorName")
 						.content(jsonInput)
 						.accept(MediaType.APPLICATION_JSON)
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.content().string(jsonInput));
+				.andReturn();
+
+		assertEquals(jsonPretty(jsonOutput), jsonPretty(result.getResponse().getContentAsString()));
 	}
 
 	@Test
@@ -172,6 +180,9 @@ public class MonitorsTest extends FrankApiTestBase {
 		URL jsonInputURL = MonitorsTest.class.getResource("/management/web/MonitorTest_updateTrigger.json");
 		assertNotNull(jsonInputURL, "unable to find input JSON"); // Check if the file exists to avoid NPE's
 		String jsonInput = StreamUtil.streamToString(jsonInputURL.openStream());
+		URL jsonOutputURL = MonitorsTest.class.getResource("/management/web/MonitorTest_updateTrigger_output.json");
+		assertNotNull(jsonOutputURL, "unable to find output JSON");
+		String jsonOutput = StreamUtil.streamToString(jsonOutputURL.openStream());
 
 		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
 						.put("/configurations/{configuration}/monitors/{monitorName}/triggers/1", "TestConfiguration", "monitorName")
@@ -182,7 +193,7 @@ public class MonitorsTest extends FrankApiTestBase {
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andReturn();
 
-		assertEquals(jsonPretty(jsonInput), jsonPretty(result.getResponse().getContentAsString()));
+		assertEquals(jsonPretty(jsonOutput), jsonPretty(result.getResponse().getContentAsString()));
 	}
 
 	private static String jsonPretty(String json) {

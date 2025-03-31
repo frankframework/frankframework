@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import jakarta.transaction.UserTransaction;
 
 import org.springframework.transaction.TransactionSystemException;
 
+import com.arjuna.ats.arjuna.AtomicAction;
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBeanException;
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import com.arjuna.ats.arjuna.exceptions.ObjectStoreException;
@@ -35,14 +36,17 @@ import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 import lombok.Getter;
 
 import org.frankframework.jta.AbstractStatusRecordingTransactionManager;
+import org.frankframework.util.AppConstants;
 
 public class NarayanaJtaTransactionManager extends AbstractStatusRecordingTransactionManager {
+
+	private boolean heuristicDetectorEnabled = AppConstants.getInstance().getBoolean("transactionmanager.narayana.detectStuckTransactions", false);
 
 	private static final long serialVersionUID = 1L;
 
 	private @Getter RecoveryManager recoveryManager;
 
-	private boolean initialized=false;
+	private boolean initialized = false;
 
 
 	@Override
@@ -59,8 +63,9 @@ public class NarayanaJtaTransactionManager extends AbstractStatusRecordingTransa
 
 	private void initialize() throws TransactionSystemException {
 		if (!initialized) {
-			initialized=true;
+			initialized = true;
 			determineTmUid();
+
 			try {
 				arjPropertyManager.getCoreEnvironmentBean().setNodeIdentifier(getUid());
 			} catch (CoreEnvironmentBeanException e) {
@@ -69,7 +74,13 @@ public class NarayanaJtaTransactionManager extends AbstractStatusRecordingTransa
 
 			log.debug("TMUID [{}]", arjPropertyManager.getCoreEnvironmentBean().getNodeIdentifier());
 			log.debug("ObjectStoreDir [{}]", arjPropertyManager.getObjectStoreEnvironmentBean().getObjectStoreDir());
+
 			recoveryManager = RecoveryManager.manager();
+
+			if (heuristicDetectorEnabled) {
+				recoveryManager.addModule(new HeuristicDetectingRecoveryModule());
+			}
+
 			recoveryManager.initialize();
 			recoveryManager.startRecoveryManagerThread();
 		}
@@ -101,10 +112,15 @@ public class NarayanaJtaTransactionManager extends AbstractStatusRecordingTransa
 		}
 	}
 
+	/**
+	 * See {@link com.arjuna.ats.arjuna.AtomicAction#type() AtomicAction#type}.
+	 */
 	private boolean recoveryStoreEmpty() throws ObjectStoreException, IOException {
 		RecoveryStore store = StoreManager.getRecoveryStore();
 		InputObjectState buff = new InputObjectState();
-		if (!store.allObjUids("StateManager/BasicAction/TwoPhaseCoordinator/AtomicAction", buff)) {
+
+		String transactionType = new AtomicAction().type(); // StateManager/BasicAction/TwoPhaseCoordinator/AtomicAction
+		if (!store.allObjUids(transactionType, buff)) {
 			return false; // if an error occurred, consider the recovery store not completed
 		}
 		if (!buff.notempty()) {
@@ -113,7 +129,6 @@ public class NarayanaJtaTransactionManager extends AbstractStatusRecordingTransa
 		byte[] objUid=buff.unpackBytes();
 		return !isNotBlankArray(objUid);
 	}
-
 
 	private boolean isNotBlankArray(byte[] arr) {
 		for(int i=0; i<arr.length; i++) {
@@ -126,6 +141,7 @@ public class NarayanaJtaTransactionManager extends AbstractStatusRecordingTransa
 
 
 	public void registerXAResourceRecoveryHelper(XAResourceRecoveryHelper xaResourceRecoveryHelper) {
+		log.info("registering XAResourceRecoveryHelper {}", xaResourceRecoveryHelper);
 		getXARecoveryModule().addXAResourceRecoveryHelper(xaResourceRecoveryHelper);
 	}
 

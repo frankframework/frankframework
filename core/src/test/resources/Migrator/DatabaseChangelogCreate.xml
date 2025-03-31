@@ -1,0 +1,18 @@
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd"
+	objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+
+	<changeSet id="one" author="Niels Meijer">
+		<comment>Create DUMMYTABLE</comment>
+		<createTable tableName="DUMMYTABLE">
+			<column name="TKEY" type="BIGINT" autoIncrement="true">
+				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_DUMMYTABLE"/>
+			</column>
+			<column name="TCHAR" type="java.sql.Types.CHAR(1)"/>
+			<column name="TMESSAGE" type="java.sql.Types.VARCHAR(100)"/>
+		</createTable>
+	</changeSet>
+</databaseChangeLog>
