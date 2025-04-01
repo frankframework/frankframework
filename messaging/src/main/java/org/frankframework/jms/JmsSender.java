@@ -65,12 +65,10 @@ import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlException;
 
 /**
- * This class sends messages with JMS.
+ * {@inheritDoc}
  *
  * @ff.parameters All parameters present are set as message-properties.
  * @ff.parameter SoapAction Automatically filled from attribute <code>soapAction</code>
- *
- * {@inheritDoc}
  *
  * @author Gerrit van Brakel
  */

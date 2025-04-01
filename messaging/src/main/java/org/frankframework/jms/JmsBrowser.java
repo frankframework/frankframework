@@ -19,7 +19,8 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.receivers.RawMessageWrapper;
 
 /**
- * Basic browser of JMS Messages.
+ * @{inheritDoc}
+ *
  * @author  Gerrit van Brakel
  */
 public class JmsBrowser<M extends jakarta.jms.Message> extends AbstractJmsMessageBrowser<M,M> {

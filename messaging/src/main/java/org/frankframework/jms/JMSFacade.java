@@ -79,8 +79,7 @@ import org.frankframework.util.XmlException;
  * Provides functions for jms connections, queues and topics and acts as a facade
  * to hide for clients whether a <code>Queue</code> or <code>Topic</code> is used.
  * <br/>
- * The <code>destinationType</code> field specifies which
- * type should be used.<br/>
+ * The <code>destinationType</code> field specifies which type should be used.<br/>
  * This class sends messages with JMS.
  *
  * @author 	Gerrit van Brakel

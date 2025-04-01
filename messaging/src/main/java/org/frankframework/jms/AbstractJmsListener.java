@@ -59,8 +59,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.DateFormatUtils;
 
 /**
- * Common baseclass for Pulling and Pushing JMS Listeners.
- *
  * {@inheritDoc}
  *
  * @author  Gerrit van Brakel
