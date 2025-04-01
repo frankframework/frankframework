@@ -1,1 +1,0 @@
-git won't persist empty directories, so we need to add a file to the directory to make sure it gets persisted.
