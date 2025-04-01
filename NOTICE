@@ -221,6 +221,7 @@ Jakarta Dependency Injection - using: The Apache Software License, Version 2.0
 Jakarta Enterprise Beans - using: EPL 2.0 or GPL2 w/ CPE
 Jakarta Expression Language 3.0 API - using: EPL 2.0 or GPL2 w/ CPE
 Jakarta Interceptors - using: EPL 2.0 or GPL2 w/ CPE
+Jakarta JMS 3.1.0 - using: EPL 2.0 or GPL2 w/ CPE
 Jakarta JSON Processing API - using: Eclipse Public License 2.0 or GNU General Public License, version 2 with the GNU Classpath Exception
 Jakarta Mail API dsn support - using: EPL 2.0 or GPL2 w/ CPE or EDL 1.0
 Jakarta SOAP with Attachments API - using: Eclipse Distribution License - v 1.0
@@ -272,7 +273,6 @@ JDOM - using: Similar to Apache License but with the acknowledgment clause remov
 jfileserver-enterprise - using: JFileServer Enterprise End User Licence 1.0
 JMatIO - using: BSD
 JMES Path Query library - using: Apache License, Version 2.0
-JMS 1.1 - using: The Apache Software License, Version 2.0
 Joda-Time - using: Apache License, Version 2.0
 JOGL - using: BSD-2 License or BSD-3 License or SGI Free Software License B or Apache License Version 2.0 or Apache License Version 1.1 or Ubuntu Font Licence 1.0
 JSch - using: Revised BSD or Revised BSD or ISC
@@ -469,4 +469,3 @@ XMLUnit for Java - using: BSD License
 XMP Library for Java - using: The BSD License
 XMPCore Shaded - using: Apache License, Version 2.0
 XNIO NIO Implementation - using: Public Domain
-

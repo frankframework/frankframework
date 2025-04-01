@@ -24,11 +24,22 @@ The application may be managed and monitored through a web interface or REST API
 See it in action: https://frank2example.frankframework.org
 
 ## Running the Frank-Framework 
-The Frank!Framework can run on any java runtime, so you have your choice of application server. In our CI we test every PR and Release against Tomcat, Wildfly and JBoss, all these application servers may be used in production environments.
+The Frank!Framework can run on any java runtime version 17 and up, either as a standalone Spring Boot application or as a WAR file deployed inside an application server.
+
+### Application Server Support
+The Frank!Framework can be deployed as a WAR file in any application server supporting WAR file deployment. In our CI we test every PR and Release against Tomcat, Wildfly and JBoss, all these application servers are supported by us for use in production environments.
+Other application servers should work but are untested by us.
 You may [create containers](/docker/README.md) to run the framework using the beforementioned application servers. Please note that they are for development use only, more info about using and creating them can be found in [Docker.md](Docker.md).
 
 All production-ready containers will be pushed to our [Nexus Repository Manager](https://nexus.frankframework.org/) `frankframework-docker` repository. Helm charts are available [in the charts repository](https://github.com/frankframework/charts).
 
+### JDBC and Database support
+The Frank!Framework is built using the features of JDBC4.2 and has built-in support for MS SQL Server, Oracle, Postgresql, MariaDB and MySQL. Every PR and Release is tested against these databases.
+Support for DB2 is provided on an as-is basis.
+
+### JMS support
+The Frank!Framework is built using the JMS 3.1 API and should be compatible with JMS client implementations that fully implement this specification. In our CI we test each PR and each Release against Apache ActiveMQ and Apache ActiveMQ Artemis client and server.
+If you need JMS support in your Frank!Framework deployment, make sure that the Messaging module is included in your deployment, or your project dependencies.
 
 ## Rebranding
 The Ibis Adapter Framework has been renamed to "Frank!Framework". The migration is a work in progress, which is why you may encounter some old(er) names throughout our source code. Don't worry, everything will remain fully backwards compatible!
