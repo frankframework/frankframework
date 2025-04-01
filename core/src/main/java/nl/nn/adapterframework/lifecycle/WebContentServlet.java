@@ -17,7 +17,6 @@ package nl.nn.adapterframework.lifecycle;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serial;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -63,7 +62,6 @@ import nl.nn.adapterframework.util.LogUtil;
 @IbisInitializer
 public class WebContentServlet extends HttpServletBase {
 
-	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public static final String WEBCONTENT = "webcontent";
@@ -235,7 +233,7 @@ public class WebContentServlet extends HttpServletBase {
 	}
 
 	void getWebContentForConfiguration(HttpServletResponse response, Configuration configuration) throws IOException {
-		AbstractClassLoader classLoader = (AbstractClassLoader) configuration.getClassLoader();
+		ClassLoaderBase classLoader = (ClassLoaderBase) configuration.getClassLoader();
 		boolean isWebContentFolderPresent = classLoader != null && classLoader.getLocalResource(WEBCONTENT) != null;
 		if (isWebContentFolderPresent) {
 			log.info("found configuration [{}] with [{}}] folder", configuration, WEBCONTENT);
