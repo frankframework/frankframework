@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.ContentType;
@@ -50,10 +51,11 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 		this.contentLength = computeContentLength();
 
 		String charset = message.getCharset();
-		if(contentType != null) {
+		if (contentType != null) {
 			Charset contentTypeCharset = contentType.getCharset();
-			if(contentTypeCharset != null) {
-				if(!contentTypeCharset.name().equalsIgnoreCase(charset)) {
+			if (contentTypeCharset != null) {
+				if (StringUtils.isNotEmpty(charset) && !contentTypeCharset.name().equalsIgnoreCase(charset)) {
+					// Only log warning when message charset has explicitly been set and is not equals to the ContentType.
 					log.warn("overriding Message [{}] charset with value supplied from content-type [{}]", message::getCharset, contentTypeCharset::name);
 				}
 				charset = contentTypeCharset.name();
@@ -65,7 +67,7 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 		setContentEncoding(charset);
 	}
 
-	@Override //overridden because we don't want to set empty values
+	@Override // Overridden because we don't want to set empty values
 	public void setContentEncoding(String charset) {
 		if(charset == null || !charset.isEmpty()) {
 			super.setContentEncoding(charset);
