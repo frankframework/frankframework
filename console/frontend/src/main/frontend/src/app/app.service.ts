@@ -309,9 +309,6 @@ export class AppService {
 
     //After x minutes the user will be forcefully logged out
     'console.idle.timeout': 0,
-
-    //Time format in which to display the time and date.
-    'console.dateFormat': 'yyyy-MM-dd HH:mm:ss',
   };
 
   CONSOLE_STATE: ConsoleState = {
