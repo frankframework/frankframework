@@ -1,5 +1,6 @@
 package org.frankframework.logging;
 
+import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringContains.containsString;
@@ -54,7 +55,10 @@ public class IbisThrowablePatternConverterTest {
 		converter.format(event, sb);
 		final String result = sb.toString();
 		assertThat(result, startsWith("org.frankframework.core.PipeRunException: Pipe [null] CompareIntegerPipe: Pipe [null] XsltPipe: Pipe [null] XmlSwitch: Pipe [null] UnzipPipe"));
-		assertThat(result, containsString(") ~[junit")); // stacktrace must contain package information
+		assertThat(result, anyOf(
+				containsString(") ~[junit"), // JDK23 and older print stacktraces looking like this
+				containsString(") [junit") // JDK24 prints stacktraces looking like this
+		)); // stacktrace must contain package information
 
 		int firstCausedBy = result.indexOf("Caused by");
 		assertThat("cannot find first 'Caused By'", firstCausedBy, greaterThan(0));
