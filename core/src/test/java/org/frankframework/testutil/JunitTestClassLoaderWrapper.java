@@ -1,9 +1,12 @@
 package org.frankframework.testutil;
 
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import org.apache.commons.io.FilenameUtils;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -15,7 +18,7 @@ import org.frankframework.configuration.classloaders.AbstractClassLoader;
 @Log4j2
 public class JunitTestClassLoaderWrapper extends AbstractClassLoader {
 
-	private static final String TEST_CLASSPATH;
+	private static final Path TEST_CLASSPATH;
 
 	static {
 		TEST_CLASSPATH = computeTestClassPath();
@@ -23,7 +26,10 @@ public class JunitTestClassLoaderWrapper extends AbstractClassLoader {
 
 	@Override
 	public URL getLocalResource(String name) {
-		Path resource = Path.of(TEST_CLASSPATH).resolve(name);
+		if (name.startsWith("/")) {
+			throw new IllegalArgumentException("file names should be relative, and not absolute (starting with a slash)");
+		}
+		Path resource = TEST_CLASSPATH.resolve(name);
 		if (!Files.exists(resource)) {
 			return null;
 		}
@@ -40,18 +46,20 @@ public class JunitTestClassLoaderWrapper extends AbstractClassLoader {
 	 * In order to test the DirectoryClassloader we need the absolute path of where it can find it's configuration(s)
 	 * @return the path to the mvn generated test-classes folder
 	 */
-	private static String computeTestClassPath() {
+	private static Path computeTestClassPath() {
 		String file = "test1.xml";
-		String testPath = JunitTestClassLoaderWrapper.class.getResource("/"+file).getPath();
-		int start = 0;
-		if (testPath.startsWith("/")) {
-			start++;
+		URL testPath = JunitTestClassLoaderWrapper.class.getResource("/"+file);
+		try {
+			return Path.of(testPath.toURI()).getParent();
+		} catch (URISyntaxException e) {
+			throw new IllegalStateException("unable to determine test-classes directory", e);
 		}
-		testPath = testPath.substring(start, testPath.indexOf(file));
-		return testPath;
 	}
 
+	/**
+	 * Returns the normalized `test-classes` path using Unix path separators.
+	 */
 	public static String getTestClassesLocation() {
-		return TEST_CLASSPATH;
+		return FilenameUtils.normalize(TEST_CLASSPATH.toString() + "/", true);
 	}
 }
