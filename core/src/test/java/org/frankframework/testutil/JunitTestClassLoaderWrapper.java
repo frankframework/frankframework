@@ -52,7 +52,7 @@ public class JunitTestClassLoaderWrapper extends AbstractClassLoader {
 			throw new IllegalStateException("unable to locate test-classes directory");
 		}
 		try {
-			return Path.of(testPath.toURI()).getParent();
+			return Path.of(testPath.toURI());
 		} catch (URISyntaxException e) {
 			throw new IllegalStateException("unable to resolve test-classes directory to path", e);
 		}
