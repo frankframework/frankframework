@@ -17,6 +17,7 @@ package org.frankframework.lifecycle;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,7 +63,9 @@ import org.frankframework.util.LogUtil;
 @IbisInitializer
 public class WebContentServlet extends AbstractHttpServlet {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
+	public static final String WEBCONTENT = "webcontent";
 	private final transient Logger log = LogUtil.getLogger(this);
 	private static final String SERVLET_PATH = "/webcontent/";
 	private static final String WELCOME_FILE = "index.html";
@@ -216,28 +219,32 @@ public class WebContentServlet extends AbstractHttpServlet {
 			log.warn("configuration [{}] has no ClassLoader", configuration);
 			return null;
 		}
-		return classLoader.getResource("webcontent/" + resource, false);
+		return classLoader.getResource(WEBCONTENT + "/" + resource, false);
 	}
 
 	private Configuration findConfiguration(String configurationName) {
 		return getIbisManager().getConfiguration(configurationName);
 	}
 
-	private void listDirectory(HttpServletResponse resp) throws IOException {
+	private void listDirectory(HttpServletResponse response) throws IOException {
 		for(Configuration configuration : getIbisManager().getConfigurations()) {
-			AbstractClassLoader classLoader = (AbstractClassLoader) configuration.getClassLoader();
-			boolean isWebContentFolderPresent = classLoader != null && classLoader.getLocalResource("WebContent") != null;
-			if(isWebContentFolderPresent) {
-				log.info("found configuration [{}] with [WebContent] folder", configuration);
-				resp.getWriter().append("<a href=\""+configuration.getName()+"\">"+configuration.getName()+"</a>");
-			}
+			getWebContentForConfiguration(response, configuration);
+		}
+	}
+
+	void getWebContentForConfiguration(HttpServletResponse response, Configuration configuration) throws IOException {
+		AbstractClassLoader classLoader = (AbstractClassLoader) configuration.getClassLoader();
+		boolean isWebContentFolderPresent = classLoader != null && classLoader.getResource(WEBCONTENT, false) != null;
+		if(isWebContentFolderPresent) {
+			log.info("found configuration [{}] with [{}}] folder", configuration, WEBCONTENT);
+			response.getWriter().append("<a href=\""+ configuration.getName()+"\">"+ configuration.getName()+"</a>");
 		}
 	}
 
 	/**
 	 * Should be fetched runtime, the IbisContext is not available until after the FrankApplicationInitializer has initialized
 	 */
-	private IbisManager getIbisManager() {
+	IbisManager getIbisManager() {
 		IbisContext ibisContext = FrankApplicationInitializer.getIbisContext(getServletContext());
 		return ibisContext.getIbisManager();
 	}

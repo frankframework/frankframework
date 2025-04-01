@@ -6,9 +6,13 @@ import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.AbstractClassLoader;
 
-public class TestClassLoader extends AbstractClassLoader {
+public class NullClassLoader extends AbstractClassLoader {
 
-	public TestClassLoader(ClassLoader parent) {
+	public NullClassLoader() {
+		// NO OP
+	}
+
+	public NullClassLoader(ClassLoader parent) {
 		super(parent);
 	}
 

@@ -72,7 +72,7 @@ public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 
 		ClassLoader classLoader = getConfigurationClassLoader();
 		if (classLoader instanceof AbstractClassLoader base) {
-			URL url = base.getLocalResource(changeLogFile);
+			URL url = base.getResource(changeLogFile, false);
 			if (url==null) {
 				log.debug("database changelog file [{}] not found as local resource of classLoader [{}]", changeLogFile, classLoader);
 				return null;

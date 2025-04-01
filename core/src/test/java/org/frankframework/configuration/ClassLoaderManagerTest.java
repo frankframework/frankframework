@@ -25,6 +25,7 @@ import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
+import org.frankframework.testutil.JunitTestClassLoaderWrapper;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StreamUtil;
@@ -82,7 +83,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		this.configurationName = configurationName;
 
 		if(type.endsWith("DirectoryClassLoader")) {
-			String directory = getTestClassesLocation()+"ClassLoader/DirectoryClassLoaderRoot/";
+			String directory = JunitTestClassLoaderWrapper.getTestClassesLocation()+"ClassLoader/DirectoryClassLoaderRoot/";
 			setLocalProperty("configurations."+configurationName+".directory", directory);
 			setLocalProperty("configurations."+configurationName+".basePath", ".");
 		}
@@ -91,17 +92,6 @@ public class ClassLoaderManagerTest extends Mockito {
 			URL file = this.getClass().getResource(JAR_FILE);
 			setLocalProperty("configurations."+configurationName+".jar", file.getFile());
 		}
-	}
-
-	/**
-	 * In order to test the DirectoryClassloader we need the absolute path of where it can find it's configuration(s)
-	 * @return the path to the mvn generated test-classes folder
-	 */
-	private String getTestClassesLocation() {
-		String file = "test1.xml";
-		String testPath = this.getClass().getResource("/"+file).getPath();
-		testPath = testPath.substring(0, testPath.indexOf(file));
-		return testPath;
 	}
 
 	@BeforeEach
@@ -236,7 +226,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		setLocalProperty("configurations."+testConfiguration+".classLoaderType", "DirectoryClassLoader");
 		setLocalProperty("configurations."+testConfiguration+".basePath", ".");
 		setLocalProperty("configurations."+configurationName+".parentConfig", testConfiguration);
-		String directory = getTestClassesLocation()+"ClassLoader/";
+		String directory = JunitTestClassLoaderWrapper.getTestClassesLocation()+"ClassLoader/";
 		setLocalProperty("configurations."+testConfiguration+".directory", directory);
 		setLocalProperty("configurations.names", appConstants.get("configurations.names") + ","+testConfiguration);
 
