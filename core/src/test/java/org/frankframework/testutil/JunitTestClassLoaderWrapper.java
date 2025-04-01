@@ -47,12 +47,14 @@ public class JunitTestClassLoaderWrapper extends AbstractClassLoader {
 	 * @return the path to the mvn generated test-classes folder
 	 */
 	private static Path computeTestClassPath() {
-		String file = "test1.xml";
-		URL testPath = JunitTestClassLoaderWrapper.class.getResource("/"+file);
+		URL testPath = JunitTestClassLoaderWrapper.class.getResource("/");
+		if (testPath == null) {
+			throw new IllegalStateException("unable to locate test-classes directory");
+		}
 		try {
 			return Path.of(testPath.toURI()).getParent();
 		} catch (URISyntaxException e) {
-			throw new IllegalStateException("unable to determine test-classes directory", e);
+			throw new IllegalStateException("unable to resolve test-classes directory to path", e);
 		}
 	}
 
