@@ -28,7 +28,7 @@ public enum FrankMeterType {
 	PIPE_WAIT_TIME("frank.pipe.wait", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT),
 
 	PIPELINE_DURATION("frank.pipeline.duration", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT),
-	PIPELINE_SIZE("frank.pipeline.size", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.SIZE_UNIT), //"- pipeline in"
+	PIPELINE_SIZE("frank.pipeline.size", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.SIZE_UNIT), // "- pipeline in"
 	PIPELINE_WAIT_TIME("frank.pipeline.wait", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT),
 	PIPELINE_IN_ERROR("frank.pipeline.messagesInError", Meter.Type.COUNTER),
 	PIPELINE_PROCESSED("frank.pipeline.messagesProcessed", Meter.Type.COUNTER),
