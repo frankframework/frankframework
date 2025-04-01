@@ -1,0 +1,35 @@
+/*
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+package org.frankframework.eureka;
+
+import org.springframework.web.client.RestClient;
+
+public class EurekaSingleton {
+    private static final EurekaSingleton INSTANCE = new EurekaSingleton();
+    private final RestClient restClient;
+
+    private EurekaSingleton() {
+        this.restClient = RestClient.builder().baseUrl("http://localhost:8761/").build();
+    }
+
+    public static EurekaSingleton getInstance() {
+        return INSTANCE;
+    }
+    
+    public RestClient getRestClient(){
+        return restClient;
+    }
+}
