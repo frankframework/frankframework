@@ -56,7 +56,7 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 			if (contentTypeCharset != null) {
 				if (StringUtils.isNotEmpty(charset) && !contentTypeCharset.name().equalsIgnoreCase(charset)) {
 					// Only log warning when message charset has explicitly been set and is not equals to the ContentType.
-					log.warn("overriding Message [{}] charset with value supplied from content-type [{}]", message::getCharset, contentTypeCharset::name);
+					log.warn("overriding Message charset [{}] with value supplied from content-type [{}]", message::getCharset, contentTypeCharset::name);
 				}
 				charset = contentTypeCharset.name();
 			} else {
