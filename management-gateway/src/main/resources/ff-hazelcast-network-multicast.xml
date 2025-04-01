@@ -5,45 +5,9 @@
 	xsi:schemaLocation="http://www.hazelcast.com/schema/config http://www.hazelcast.com/schema/config/hazelcast-config-5.4.xsd">
 
 	<network>
-		<!--
-			The preferred port number where the Hazelcast instance will listen. The convention is
-			to use 5701 and it is the default both here and in various tools connecting to
-			Hazelcast. This configuration has the following attributes:
-			- port-count:
-				The default value is 100, meaning that Hazelcast will try to bind 100 ports.
-				If you set the value of port as 5701, as members join the cluster, Hazelcast tries
-				to find ports between 5701 and 5801. You can change the port count in cases like
-				having large instances on a single machine or you are willing to have only a few
-				ports assigned.
-			- auto-increment:
-				Default value is true. If port is set to 5701, Hazelcast will try to find free
-				ports between 5701 and 5801. Normally, you will not need to change this value, but
-				it comes in handy when needed. You may also want to choose to use only one port.
-				In that case, you can disable the auto-increment feature of port by setting its
-				value as false.
-		-->
-		<port auto-increment="true" port-count="100">5701</port>
-		<outbound-ports>
-			<!--
-			Allowed port range when connecting to other nodes.
-			0 or * means use system provided port.
-			-->
-			<ports>0</ports>
-		</outbound-ports>
-
-		<!--
-			This configuration lets you choose a discovery mechanism that Hazelcast will use to
-			form a cluster. Hazelcast can find members by multicast, TCP/IP lists and by various
-			discovery mechanisms provided by different cloud APIs.
-		-->
 		<join>
-			<!--
-				Configuration for the Discovery Strategy Auto Detection. When it's enabled, it will
-				walk through all available discovery strategies and detect the correct one for the
-				current runtime environment.
-			-->
 			<auto-detection enabled="false"/>
-			<!-- Enables/disables the multicast discovery mechanism. The default value is disabled. -->
+
 			<multicast enabled="true">
 				<!--
 					Specifies the multicast group IP address when you want to create clusters
@@ -56,50 +20,6 @@
 				-->
 				<multicast-port>54327</multicast-port>
 			</multicast>
-
-			<!-- Specifies whether the TCP/IP discovery is enabled or not. Default value is false. -->
-			<tcp-ip enabled="false">
-				<interface>127.0.0.1</interface>
-				<member-list>
-					<member>127.0.0.1</member>
-				</member-list>
-			</tcp-ip>
-
-			<aws enabled="false" />
-			<gcp enabled="false" />
-			<azure enabled="false" />
-			<kubernetes enabled="false" />
-			<eureka enabled="false">
-				<self-registration>true</self-registration>
-				<namespace>hazelcast</namespace>
-			</eureka>
-			<discovery-strategies>
-				<discovery-strategy enabled="false" class="com.hazelcast.aws.AwsDiscoveryStrategy"/>
-				<discovery-strategy enabled="false" class="com.hazelcast.azure.AzureDiscoveryStrategy"/>
-				<discovery-strategy enabled="false" class="com.hazelcast.gcp.GcpDiscoveryStrategy"/>
-				<discovery-strategy enabled="false" class="com.hazelcast.kubernetes.HazelcastKubernetesDiscoveryStrategy"/>
-				<discovery-strategy enabled="false" class="com.hazelcast.spi.discovery.multicast.MulticastDiscoveryStrategy"/>
-			</discovery-strategies>
 		</join>
-
-		<!--
-			Specifies which network interfaces Hazelcast should use. You need to set its "enabled"
-			attribute to true to be able to use your defined interfaces. You can define multiple
-			interfaces using its <interface> sub-element. By default, it is disabled.
-		-->
-		<interfaces enabled="false">
-			<interface>10.10.1.*</interface>
-		</interfaces>
-		<!--
-			Lets you configure SSL using the SSL context factory. This feature is available
-			only in Hazelcast Enterprise. To be able to use it, encryption should NOT be enabled
-			and you should first implement your SSLContextFactory class. Its configuration contains
-			the factory class and SSL properties. By default, it is disabled.
-		-->
-		<ssl enabled="false"/>
-
-		<failure-detector>
-			<icmp enabled="false"/>
-		</failure-detector>
 	</network>
 </hazelcast>

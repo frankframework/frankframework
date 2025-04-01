@@ -15,8 +15,6 @@
 */
 package org.frankframework.console.controllers;
 
-import java.util.Map;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +27,6 @@ import org.frankframework.console.ApiException;
 import org.frankframework.console.Description;
 import org.frankframework.console.Relation;
 import org.frankframework.console.util.RequestMessageBuilder;
-import org.frankframework.console.util.RequestUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
@@ -47,30 +44,31 @@ public class BrowseJdbcTable {
 	@PostMapping(value = "/jdbc/browse", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("jdbc")
 	@Description("view a specific JDBC table")
-	public ResponseEntity<?> browseJdbcTable(@RequestBody Map<String, Object> json) {
-		String datasource = RequestUtils.getValue(json, "datasource");
-		String tableName = RequestUtils.getValue(json, "table");
-		String where = RequestUtils.getValue(json, "where");
-		String order = RequestUtils.getValue(json, "order");
-		Boolean numberOfRowsOnly = RequestUtils.getBooleanValue(json, "numberOfRowsOnly");
-
-		Integer minRow = RequestUtils.getIntegerValue(json, "minRow");
-		Integer maxRow = RequestUtils.getIntegerValue(json, "maxRow");
-
-		if (tableName == null) {
+	public ResponseEntity<?> browseJdbcTable(@RequestBody BrowseJdbcModel model) {
+		if (model.table == null) {
 			throw new ApiException("tableName not defined.", 400);
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.JDBC, BusAction.FIND);
-		if (StringUtils.isNotEmpty(datasource)) {
-			builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
+		if (StringUtils.isNotEmpty(model.datasource)) {
+			builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, model.datasource);
 		}
-		builder.addHeader("table", tableName);
-		builder.addHeader("where", where);
-		builder.addHeader("order", order);
-		builder.addHeader("numberOfRowsOnly", numberOfRowsOnly);
-		builder.addHeader("minRow", minRow);
-		builder.addHeader("maxRow", maxRow);
+		builder.addHeader("table", model.table);
+		builder.addHeader("where", model.where);
+		builder.addHeader("order", model.order);
+		builder.addHeader("numberOfRowsOnly", model.numberOfRowsOnly);
+		builder.addHeader("minRow", model.minRow);
+		builder.addHeader("maxRow", model.maxRow);
 		return frankApiService.callSyncGateway(builder);
 	}
+
+	public record BrowseJdbcModel(
+			String datasource,
+			String table,
+			String where,
+			String order,
+			Boolean numberOfRowsOnly,
+			Integer minRow,
+			Integer maxRow
+	) { }
 }

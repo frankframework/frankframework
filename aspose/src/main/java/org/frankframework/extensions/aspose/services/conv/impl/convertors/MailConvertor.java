@@ -20,7 +20,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -56,6 +56,7 @@ import org.frankframework.extensions.aspose.services.conv.CisConversionService;
 import org.frankframework.extensions.aspose.services.util.ConvertorUtil;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.DateFormatUtils;
 
 @Log4j2
 class MailConvertor extends AbstractConvertor {
@@ -63,6 +64,7 @@ class MailConvertor extends AbstractConvertor {
 	private static final float MAX_IMAGE_WIDTH_IN_POINTS = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - 2 * 1.1f);
 	private static final float MAX_IMAGE_HEIGHT_IN_POINTS = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - 2 * 1.1f);
 	private static final String MAIL_HEADER_DATEFORMAT = "dd-MM-yyyy HH:mm:ss";
+	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(MAIL_HEADER_DATEFORMAT);
 	private final CisConversionService cisConversionService;
 
 	// contains mapping from MediaType to the LoadOption for the Aspose Word conversion.
@@ -116,7 +118,7 @@ class MailConvertor extends AbstractConvertor {
 		result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(eml.getSubject()));
 
 		File tempMHtmlFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), null);
-		String date = new SimpleDateFormat(MAIL_HEADER_DATEFORMAT).format(eml.getDate());
+		String date = DATE_TIME_FORMATTER.format(eml.getDate().toInstant());
 		eml.getHeaders().set_Item("Date", date);
 		eml.save(tempMHtmlFile.getAbsolutePath(), options);
 

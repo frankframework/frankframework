@@ -16,11 +16,15 @@
 package org.frankframework.receivers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -28,6 +32,7 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.GenericDbmsSupport;
+import org.frankframework.jdbc.JdbcListener;
 import org.frankframework.jdbc.MessageStoreListener;
 import org.frankframework.jdbc.datasource.DataSourceFactory;
 import org.frankframework.stream.Message;
@@ -40,11 +45,19 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 		MessageStoreListener listener = spy(new MessageStoreListener() {
 			@Override
 			protected RawMessageWrapper<Serializable> getRawMessage(Connection conn, Map<String, Object> threadContext) {
+				RawMessageWrapper<Serializable> result;
 				Serializable o = (Serializable) threadContext.get(STUB_RESULT_KEY);
 				if (o instanceof MessageWrapper<?>) {
-					return (RawMessageWrapper<Serializable>) o;
+					result = (RawMessageWrapper<Serializable>) o;
+				} else {
+					result = new RawMessageWrapper<>(o, String.valueOf(threadContext.get(PipeLineSession.MESSAGE_ID_KEY)), null);
 				}
-				return new RawMessageWrapper<>(o, String.valueOf(threadContext.get(PipeLineSession.MESSAGE_ID_KEY)), null);
+				if (!getAdditionalFieldsList().isEmpty()) {
+					Map<String, String> additionalFields = getAdditionalFieldsList().stream()
+							.collect(Collectors.toMap(Function.identity(), Function.identity()));
+					result.getContext().put(JdbcListener.ADDITIONAL_QUERY_FIELDS_KEY, additionalFields);
+				}
+				return result;
 			}
 		});
 		DatabaseMetaData md = mock(DatabaseMetaData.class);
@@ -78,8 +91,28 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 		RawMessageWrapper<Serializable> rawMessage = getRawMessage(input);
 		assertEquals(input, rawMessage.getRawMessage().toString(), "MessageStoreListener should not manipulate the rawMessage");
 
-		Message message = listener.extractMessage(rawMessage, threadContext);
+		Message message = listener.extractMessage(rawMessage, session);
+		assertFalse(session.containsKey(JdbcListener.ADDITIONAL_QUERY_FIELDS_KEY));
 		assertEquals(input, message.asString());
+	}
+
+	@Test
+	void withAdditionalFields() throws Exception {
+		listener.setAdditionalFields("timestamp");
+		listener.configure();
+		listener.start();
+
+		String input = "test-message";
+		RawMessageWrapper<Serializable> rawMessage = getRawMessage(input);
+		assertTrue(rawMessage.getContext().containsKey(JdbcListener.ADDITIONAL_QUERY_FIELDS_KEY), "RawMessage Context should contain additional fields");
+		assertEquals(input, rawMessage.getRawMessage().toString(), "MessageStoreListener should not manipulate the rawMessage");
+
+		Message message = listener.extractMessage(rawMessage, session);
+		assertEquals(input, message.asString());
+		assertFalse(session.containsKey(JdbcListener.ADDITIONAL_QUERY_FIELDS_KEY));
+		assertTrue(session.containsKey("timestamp"));
+		assertEquals("timestamp", session.get("timestamp"));
+
 	}
 
 	@Test
@@ -96,12 +129,12 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 		wrapper.getContext().put("sessionKey3", "value3");
 
 		RawMessageWrapper<Serializable> rawMessage = getRawMessage(wrapper);
-		Message message = listener.extractMessage(rawMessage, threadContext);
+		Message message = listener.extractMessage(rawMessage, session);
 		assertEquals(input, message.asString());
 
-		assertEquals("value1", threadContext.get("sessionKey1"));
-		assertEquals("value2", threadContext.get("sessionKey2"));
-		assertEquals("value3", threadContext.get("sessionKey3"));
+		assertEquals("value1", session.get("sessionKey1"));
+		assertEquals("value2", session.get("sessionKey2"));
+		assertEquals("value3", session.get("sessionKey3"));
 	}
 
 	@Test
@@ -113,11 +146,11 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 		String input = "test-message,\"value1\",value2,value3";
 
 		RawMessageWrapper<Serializable> rawMessage = getRawMessage(input);
-		Message message = listener.extractMessage(rawMessage, threadContext);
+		Message message = listener.extractMessage(rawMessage, session);
 		assertEquals("test-message", message.asString());
 
-		assertEquals("value1", threadContext.get("sessionKey1"));
-		assertEquals("value2", threadContext.get("sessionKey2"));
-		assertEquals("value3", threadContext.get("sessionKey3"));
+		assertEquals("value1", session.get("sessionKey1"));
+		assertEquals("value2", session.get("sessionKey2"));
+		assertEquals("value3", session.get("sessionKey3"));
 	}
 }

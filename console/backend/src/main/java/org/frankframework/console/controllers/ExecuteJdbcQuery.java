@@ -16,8 +16,6 @@
 
 package org.frankframework.console.controllers;
 
-import java.util.Map;
-
 import jakarta.annotation.security.RolesAllowed;
 
 import org.springframework.http.MediaType;
@@ -32,7 +30,6 @@ import org.frankframework.console.ApiException;
 import org.frankframework.console.Description;
 import org.frankframework.console.Relation;
 import org.frankframework.console.util.RequestMessageBuilder;
-import org.frankframework.console.util.RequestUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
@@ -59,11 +56,11 @@ public class ExecuteJdbcQuery {
 	@PostMapping(value = "/jdbc/query", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("jdbc")
 	@Description("execute a JDBC query on a datasource")
-	public ResponseEntity<?> executeJdbcQuery(@RequestBody Map<String, Object> json) {
+	public ResponseEntity<?> executeJdbcQuery(@RequestBody ExecuteJdbcQueryModel model) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.JDBC, BusAction.MANAGE);
-		String datasource = RequestUtils.getValue(json, "datasource");
-		String query = RequestUtils.getValue(json, "query");
-		String resultType = RequestUtils.getValue(json, "resultType");
+		String datasource = model.datasource;
+		String query = model.query;
+		String resultType = model.resultType;
 
 		if (resultType == null || query == null) {
 			throw new ApiException("Missing data, datasource, resultType and query are expected.", 400);
@@ -71,10 +68,10 @@ public class ExecuteJdbcQuery {
 		builder.addHeader("query", query);
 		builder.addHeader("resultType", resultType);
 
-		builder.addHeader("avoidLocking", RequestUtils.getBooleanValue(json, "avoidLocking"));
-		builder.addHeader("trimSpaces", RequestUtils.getBooleanValue(json, "trimSpaces"));
+		builder.addHeader("avoidLocking", model.avoidLocking);
+		builder.addHeader("trimSpaces", model.trimSpaces);
 
-		String queryType = RequestUtils.getValue(json, "queryType");
+		String queryType = model.queryType;
 		if ("AUTO".equals(queryType)) {
 			queryType = "other"; // defaults to other
 
@@ -91,4 +88,13 @@ public class ExecuteJdbcQuery {
 		builder.addHeader("queryType", queryType);
 		return frankApiService.callSyncGateway(builder);
 	}
+
+	public record ExecuteJdbcQueryModel(
+			String datasource,
+			String query,
+			String resultType,
+			String queryType,
+			boolean avoidLocking,
+			boolean trimSpaces
+	) {}
 }

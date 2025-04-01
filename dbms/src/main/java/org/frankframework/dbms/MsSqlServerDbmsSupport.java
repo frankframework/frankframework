@@ -19,13 +19,10 @@ import java.sql.Connection;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-
-import org.frankframework.util.DateFormatUtils;
 
 
 /**
@@ -67,9 +64,7 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getDatetimeLiteral(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat(DateFormatUtils.FORMAT_DATETIME_GENERIC);
-		String formattedDate = formatter.format(date);
-		return "CONVERT(datetime, '" + formattedDate + "', 120)";
+		return "CONVERT(datetime, '" + getFormattedDate(date) + "', 120)";
 	}
 
 	@Override

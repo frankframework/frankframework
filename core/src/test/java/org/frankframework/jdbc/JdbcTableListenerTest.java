@@ -34,6 +34,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 import org.junit.jupiter.api.AfterEach;
@@ -348,6 +350,8 @@ public class JdbcTableListenerTest {
 				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,CONVERT(VARBINARY,'TEST'))", null, new PipeLineSession());
 			} else if (env.getDbmsSupport().getDbms() == Dbms.ORACLE) {
 				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,utl_raw.cast_to_raw('TEST'))", null, new PipeLineSession());
+			} else if (env.getDbmsSupport().getDbms() == Dbms.DB2) {
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,CAST('TEST' AS BLOB))", null, new PipeLineSession());
 			} else {
 				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,'TEST')", null, new PipeLineSession());
 			}
@@ -373,7 +377,6 @@ public class JdbcTableListenerTest {
 		Message message = listener.extractMessage(rawMessage, new PipeLineSession());
 		assertEquals("TEST",message.asString());
 	}
-
 
 	@DatabaseTest
 	public void testCreateQueryTexts() throws Exception {
@@ -548,34 +551,43 @@ public class JdbcTableListenerTest {
 		assertEquals("fakeCid", cid);
 	}
 
-
 	@DatabaseTest
 	public void testParallelGet() throws Exception {
 		if (!env.getDbmsSupport().hasSkipLockedFunctionality()) {
 			listener.setStatusValueInProcess("4");
 		}
+		listener.setMessageField("tVARCHAR");
 		listener.configure();
 		listener.start();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (10,1,'Message 1')", null, new PipeLineSession());
 		}
 
 		try (Connection connection1 = env.getConnection()) {
 			connection1.setAutoCommit(false);
+			boolean shouldStillCommitBeforeClose;
 			RawMessageWrapper<String> rawMessage1 = listener.getRawMessage(connection1,null);
-			assertEquals("10",rawMessage1.getRawMessage());
-			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test")!=null) {
+			assertEquals("Message 1", rawMessage1.getRawMessage());
+			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test") != null) {
 				connection1.commit();
+				shouldStillCommitBeforeClose = false;
+			} else {
+				shouldStillCommitBeforeClose = true;
 			}
-
 
 			try(Connection connection = env.getConnection()) {
-				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (11,1)", null, new PipeLineSession());
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (11,1,'Message 2')", null, new PipeLineSession());
 			}
 			RawMessageWrapper<String> rawMessage2 = listener.getRawMessage(new HashMap<>());
-			assertEquals("11",rawMessage2.getRawMessage());
 
+			// Clean connection status before we assert
+			if (shouldStillCommitBeforeClose) {
+				connection1.rollback(); // Make sure connection has no unfinished connection on it before closing. Required for DB2.
+			}
+			connection1.setAutoCommit(true);
+
+			assertEquals("Message 2", rawMessage2.getRawMessage());
 		}
 	}
 
@@ -704,15 +716,25 @@ public class JdbcTableListenerTest {
 		}
 		try (Connection connection1 = env.getConnection()) {
 			connection1.setAutoCommit(false);
+			boolean shouldStillCommitBeforeClose;
 			RawMessageWrapper<String> rawMessage1 = listener.getRawMessage(connection1, null);
-			assertEquals("10",rawMessage1.getRawMessage());
-			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test")!=null) {
+			assertEquals("10", rawMessage1.getRawMessage());
+			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test") != null) {
 				connection1.commit();
+				shouldStillCommitBeforeClose = false;
+			} else {
+				shouldStillCommitBeforeClose = true;
 			}
 
-			try(Connection connection = env.getConnection()) {
+			try (Connection connection = env.getConnection()) {
 				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (11,1)", null, new PipeLineSession());
 			}
+			// Clean connection status before we assert
+			if (shouldStillCommitBeforeClose) {
+				connection1.rollback(); // Make sure connection has no unfinished connection on it before closing. Required for DB2.
+			}
+			connection1.setAutoCommit(true);
+
 			assertTrue(listener.hasRawMessageAvailable(), "Should peek message when there is one");
 		}
 	}
@@ -877,5 +899,96 @@ public class JdbcTableListenerTest {
 	@DatabaseTest
 	public void testForRaceConditionHandlingOnParallelGet7() throws Exception {
 		testForRaceConditionHandlingOnParallelGet(7);
+	}
+
+	@DatabaseTest
+	public void testSelectQueryWithAdditionalFields() throws ConfigurationException {
+		listener.setOrderField("ORDRFLD");
+		listener.setMessageIdField("tINT");
+		listener.setMessageField("tCLOB");
+		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
+		listener.setAdditionalFields(", tBLOB, tVARCHAR,  ");
+		listener.configure();
+
+		String expected = "SELECT TKEY,tINT,tCLOB,tBLOB,tVARCHAR FROM " + TEST_TABLE + " t WHERE TINT='1' ORDER BY ORDRFLD";
+
+		assertEquals(expected, listener.getSelectQuery());
+		assertEquals(List.of("tBLOB", "tVARCHAR"), listener.getAdditionalFieldsList());
+	}
+
+	@DatabaseTest
+	public void testGetExtraValues() throws Exception {
+		listener.setMessageIdField("tINT");
+		listener.setMessageField("tCLOB");
+		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
+		listener.setAdditionalFields("tBLOB, tVARCHAR");
+		listener.setBlobsCompressed(false);
+		listener.setBlobSmartGet(false);
+		listener.configure();
+		listener.start();
+
+		try(Connection connection = env.getConnection()) {
+			if (env.getDbmsSupport().getDbms() == Dbms.MSSQL) {
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',convert(varbinary, 'fBLOB'))", null, new PipeLineSession());
+			} else if (env.getDbmsSupport().getDbms() == Dbms.ORACLE) {
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',utl_raw.cast_to_raw('fBLOB'))", null, new PipeLineSession());
+			} else {
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message','fBLOB')", null, new PipeLineSession());
+			}
+		}
+
+		PipeLineSession session = new PipeLineSession();
+		RawMessageWrapper<String> rawMessage = listener.getRawMessage(session);
+		Message message = listener.extractMessage(rawMessage, session);
+
+		// Assert
+		assertEquals("message", message.asString());
+		assertTrue(session.containsKey("tBLOB"), "Session should contain tBLOB");
+		assertTrue(session.containsKey("tVARCHAR"), "Session should contain tVARCHAR");
+		assertEquals("fVC", session.get("tVARCHAR"));
+		assertEquals("fBLOB", session.get("tBLOB"));
+	}
+
+	@DatabaseTest
+	public void testGetExtraValuesSameAsOtherFields() throws Exception {
+		listener.setMessageIdField("tINT");
+		listener.setMessageField("tCLOB");
+		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
+		listener.setAdditionalFields("tBLOB, tVARCHAR, tCLOB, tINT");
+		listener.setBlobsCompressed(false);
+		listener.setBlobSmartGet(false);
+		listener.configure();
+		listener.start();
+
+		try(Connection connection = env.getConnection()) {
+			if (env.getDbmsSupport().getDbms() == Dbms.MSSQL) {
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',convert(varbinary, 'fBLOB'))", null, new PipeLineSession());
+			} else if (env.getDbmsSupport().getDbms() == Dbms.ORACLE) {
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',utl_raw.cast_to_raw('fBLOB'))", null, new PipeLineSession());
+			} else if (env.getDbmsSupport().getDbms() == Dbms.DB2) {
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',CAST('fBLOB' AS BLOB))", null, new PipeLineSession());
+			} else {
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message','fBLOB')", null, new PipeLineSession());
+			}
+		}
+		Map<String, Object> threadContext = listener.openThread();
+		RawMessageWrapper<String> rawMessage = listener.getRawMessage(threadContext);
+
+		PipeLineSession session = new PipeLineSession();
+		assertTrue(rawMessage.getContext().containsKey(JdbcListener.ADDITIONAL_QUERY_FIELDS_KEY), "RawMessage Context should contain map of additional fields");
+
+		// Extract message, then the additional fields should be copied to the session.
+		Message message = listener.extractMessage(rawMessage, session);
+
+		// Assert
+		assertEquals("message", message.asString());
+		assertTrue(session.containsKey("tINT"), "Session should contain tINT");
+		assertTrue(session.containsKey("tBLOB"), "Session should contain tBLOB");
+		assertTrue(session.containsKey("tCLOB"), "Session should contain tCLOB");
+		assertTrue(session.containsKey("tVARCHAR"), "Session should contain tVARCHAR");
+		assertEquals("1", session.get("tINT"));
+		assertEquals("fVC", session.get("tVARCHAR"));
+		assertEquals("fBLOB", session.get("tBLOB"));
+		assertEquals("message", session.get("tCLOB"));
 	}
 }

@@ -24,8 +24,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import org.frankframework.management.Action;
 
-@ContextConfiguration(classes = {WebTestConfiguration.class, ConfigurationStatus.class})
-public class ConfigurationStatusTest extends FrankApiTestBase {
+@ContextConfiguration(classes = {WebTestConfiguration.class, Adapters.class})
+public class AdaptersTest extends FrankApiTestBase {
 	public static Stream<Arguments> updateReceiverOptions() {
 		return Stream.of(
 				Arguments.of("{\"action\":\"stop\"}", Action.STOPRECEIVER),
@@ -204,5 +204,10 @@ public class ConfigurationStatusTest extends FrankApiTestBase {
 	@Test
 	public void getAdapterFlow() throws Exception {
 		testActionAndTopicHeaders("/configurations/configuration/adapters/adapter/flow", "FLOW", null);
+	}
+
+	@Test
+	public void getAdapterStatisticsReturnsCorrectResponse() throws Exception {
+		testActionAndTopicHeaders("/configurations/{configuration}/adapters/{adapter}/statistics", "ADAPTER", "STATUS", "TestConfiguration", "TestAdapter");
 	}
 }
