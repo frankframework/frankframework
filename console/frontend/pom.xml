@@ -52,7 +52,7 @@
 						<goals>
 							<goal>exec</goal>
 						</goals>
-						<phase>generate-resources</phase>
+						<phase>prepare-package</phase>
 						<configuration>
 							<executable>npm</executable>
 							<arguments>
@@ -65,7 +65,7 @@
 						<goals>
 							<goal>exec</goal>
 						</goals>
-						<phase>generate-resources</phase>
+						<phase>prepare-package</phase>
 						<configuration>
 							<executable>npm</executable>
 							<arguments>

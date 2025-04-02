@@ -230,7 +230,7 @@ jobs:
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SonarCloud
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud
-      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -Dsonar.projectKey=ibissource_iaf -Djunit.excludedTags=slow,database,integration
+      run: ./mvnw -B -V -T1 test -P${{env.PROFILES}} -Dsonar.projectKey=ibissource_iaf -Djunit.excludedTags=slow,database,integration
 
     - name: Store Test Results
       if: failure()
