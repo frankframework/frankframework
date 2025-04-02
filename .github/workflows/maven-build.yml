@@ -93,7 +93,7 @@ jobs:
       run: |
         echo "PROFILES=${{ env.PROFILES }},proprietary" >> $GITHUB_ENV
 
-    - name: FrankDoc only on Java 17 Full Build
+    - name: FrankDoc only on Java ${{ env.JDK_VERSION }} Full Build
       run: |
         echo "PROFILES=${{ env.PROFILES }},attachFrankDoc" >> $GITHUB_ENV
 
@@ -226,6 +226,7 @@ jobs:
       # Use Maven Wrapper, so we can build with an older version of Maven, see PR #4579.
     - name: Build with Maven
       env:
+        TZ: Europe/Amsterdam
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SonarCloud
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud
