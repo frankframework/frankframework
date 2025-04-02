@@ -14,7 +14,7 @@
 		<comment>Create SP_TESTDATA for Tests</comment>
 		<createTable tableName="SP_TESTDATA">
 			<column name="TKEY" type="BIGINT" autoIncrement="true">
-				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_DUMMYTABLE"/>
+				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_SP_TESTDATA"/>
 			</column>
 			<column name="TCHAR" type="java.sql.Types.CHAR(1)"/>
 			<column name="TMESSAGE" type="java.sql.Types.VARCHAR(100)"/>
