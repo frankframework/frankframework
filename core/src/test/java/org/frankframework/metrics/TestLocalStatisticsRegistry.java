@@ -29,6 +29,7 @@ import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.SpringUtils;
 
 public class TestLocalStatisticsRegistry {
 	private TestConfiguration configuration;
