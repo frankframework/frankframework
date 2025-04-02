@@ -277,6 +277,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 
 	public static final String TARGET_PARAM_NAME = "target";
 	public static final String SCOPE_PARAM_NAME = "scope";
+	public static final String TEST_TOOL_LISTENER_PREFIX = "testtool";
 
 	/**
 	 * Scope for {@link FrankSender} call: Another Frank!Framework Adapter, or another Java application running in the same JVM.
@@ -490,21 +491,27 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 		};
 	}
 
-	protected ServiceClient getFrankListener(String target) throws SenderException {
-		String fullFrankListenerName;
-		int configNameSeparator = target.indexOf('/');
-		if (configNameSeparator > 0) {
-			fullFrankListenerName = target;
-		} else if (configNameSeparator == 0) {
-			fullFrankListenerName = configuration.getName() + target;
-		} else {
-			fullFrankListenerName = configuration.getName() + "/" + target;
-		}
+	protected @Nonnull ServiceClient getFrankListener(@Nonnull String target) throws SenderException {
+		String fullFrankListenerName = getFullFrankListenerName(target);
 		ServiceClient result = FrankListener.getListener(fullFrankListenerName);
 		if (result == null) {
 			throw new SenderException(getLogPrefix() + "Listener [" + target + "] not found");
 		}
 		return result;
+	}
+
+	private @Nonnull String getFullFrankListenerName(@Nonnull String target) {
+		if (configuration == null || target.substring(0, TEST_TOOL_LISTENER_PREFIX.length()).equalsIgnoreCase(TEST_TOOL_LISTENER_PREFIX)) {
+			return target;
+		}
+		int configNameSeparator = target.indexOf('/');
+		if (configNameSeparator > 0) {
+			return target;
+		} else if (configNameSeparator == 0) {
+			return configuration.getName() + target;
+		} else {
+			return configuration.getName() + "/" + target;
+		}
 	}
 
 	@Nonnull
