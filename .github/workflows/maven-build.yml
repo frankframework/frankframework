@@ -226,6 +226,7 @@ jobs:
       # Use Maven Wrapper, so we can build with an older version of Maven, see PR #4579.
     - name: Build with Maven
       env:
+        CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SonarCloud

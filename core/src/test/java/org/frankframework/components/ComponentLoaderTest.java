@@ -9,11 +9,13 @@ import java.util.List;
 import java.util.jar.Manifest;
 
 import org.frankframework.util.Environment;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
+@Tag("integration") // This test fails when running just 'mvn test'. Tagged as integration to work around that in the Github Smoketest workflow
 public class ComponentLoaderTest {
 
 	@Test
