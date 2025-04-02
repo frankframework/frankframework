@@ -161,10 +161,11 @@
 
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>copy-files</id>
+						<id>copy-frontend-to-TestClasses</id>
 						<phase>process-test-resources</phase>
 						<goals>
 							<goal>copy-resources</goal>
@@ -179,6 +180,7 @@
 									<targetPath>e2e</targetPath>
 								</resource>
 							</resources>
+							<skip>${maven.test.skip}</skip> <!-- A bit hacky way to prevent this execution from running when tests are skipped. -->
 						</configuration>
 					</execution>
 					<execution>
