@@ -16,6 +16,7 @@
 package org.frankframework.components;
 
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -66,8 +67,10 @@ public class ComponentLoader {
 
 			APP_CONSTANTS.put(moduleInfo.getArtifactId() + ".version", moduleInfo.getVersion());
 			APPLICATION_LOG.debug("Loading {}", moduleInfo);
+		} catch (NoSuchFileException e) {
+			log.info("unable to find module manifest file", e);
 		} catch (IOException e) {
-			log.warn("unable to find or open module manifest file", e);
+			log.warn("unable to open module manifest file", e);
 		}
 	}
 

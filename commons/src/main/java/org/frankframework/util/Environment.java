@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.NoSuchFileException;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.jar.JarFile;
@@ -150,12 +151,12 @@ public class Environment {
 		try (JarFile file = new JarFile(jarFileLocation.getFile())) {
 			Manifest manifest = file.getManifest();
 			if (manifest == null) {
-				throw new IOException("unable to find manifest file");
+				throw new NoSuchFileException("unable to find manifest file");
 			}
-			log.info("found {} in {}", JarFile.MANIFEST_NAME, jarFileLocation);
+			log.debug("found {} in {}", JarFile.MANIFEST_NAME, jarFileLocation);
 			return manifest;
 		} catch (IOException e) {
-			log.warn("unable to read " + JarFile.MANIFEST_NAME, e);
+			log.info("unable to read " + JarFile.MANIFEST_NAME, e);
 			throw e;
 		}
 	}

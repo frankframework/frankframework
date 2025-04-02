@@ -19,14 +19,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import org.frankframework.util.Environment;
-
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.util.Environment;
 
 /**
  * Old style of finding Modules, instead of self-registering, the code attempts to locate the module on the classpath.
@@ -99,7 +100,14 @@ public class LegacyLoader {
 		int bangSlash = fullUrl.indexOf("!/");
 		if (bangSlash > 0) { // We found a bang-slash, assume it's file
 			String jarFile = fullUrl.substring(fullUrl.indexOf("file:"), bangSlash);
-			return Environment.getManifest(new URL(jarFile));
+			try {
+				return Environment.getManifest(new URL(jarFile));
+			} catch (NoSuchFileException e) {
+				// A bit of a strange situation when you end up here, typically caused by missing permissions.
+				// Log a warning but no stacktrace, this is logged (on debug level) by the caller.
+				log.warn("{}. File [{}] is present but we're unable to open it, do we have the required permissions?", e.getMessage(), jarFile);
+				throw e;
+			}
 		} else {
 			int metaInfFolder = fullUrl.indexOf("/META-INF/");
 			if (metaInfFolder > 0) { // We found the meta-inf folder, it could be a shared classpath. Attempt to locate the MANIFEST file.
