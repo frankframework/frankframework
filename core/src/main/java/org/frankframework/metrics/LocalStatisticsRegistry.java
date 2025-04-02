@@ -49,7 +49,7 @@ import io.micrometer.core.instrument.simple.SimpleConfig;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 import org.frankframework.core.Adapter;
-import org.frankframework.core.HasName;
+import org.frankframework.core.INamedObject;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.http.AbstractHttpSender;
@@ -173,7 +173,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 			.map(MessageSendingPipe.class::cast)
 			.map(MessageSendingPipe::getSender)
 			.filter(AbstractHttpSender.class::isInstance)
-			.map(HasName::getName)
+			.map(INamedObject::getName)
 			.toList();
 	}
 
