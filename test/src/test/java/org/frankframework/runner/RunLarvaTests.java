@@ -66,7 +66,11 @@ public class RunLarvaTests {
 		// Invoke Larva tests
 		MessageBuilder messageBuilder = new MessageBuilder();
 		Writer writer = messageBuilder.asWriter();
+		log.info("Starting Scenarios");
+		long start = System.currentTimeMillis();
 		int result = LarvaTool.runScenarios(servletContext, request, writer);
+		long end = System.currentTimeMillis();
+		log.info("Scenarios executed; duration: " + (end - start) + "ms");
 		writer.close();
 		larvaOutput = messageBuilder.build();
 
@@ -74,6 +78,10 @@ public class RunLarvaTests {
 
 		if (result > 0) {
 			log.warn("{} Larva tests failed; needs investigation but currently not yet failing the build on this. Larva output:\n\n{}", ()->result, ()->messageAsStringSafe(larvaOutput));
+			System.err.println(result + " Larva tests failed duration: " + (end - start)+ "ms; \n\n" + messageAsStringSafe(larvaOutput));
+		} else {
+			log.info("All Larva tests succeeded");
+			System.err.println("All Larva tests succeeded in " + (end - start) + "ms");
 		}
 	}
 
