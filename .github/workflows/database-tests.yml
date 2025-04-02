@@ -60,7 +60,7 @@ on:
 
 jobs:
   run-database-tests:
-    name: Maven
+    name: Database Tests
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/frankframework/build/jdk21:latest
