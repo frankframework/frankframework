@@ -49,6 +49,8 @@ import org.frankframework.receivers.RawMessageWrapper;
  * a key based on the sent or received message. Messages with the same key are considered to
  * be the same.
  *
+ * @{inheritDoc}
+ *
  * @author  Gerrit van Brakel
  * @since   4.1
  */

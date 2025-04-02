@@ -40,7 +40,6 @@ import org.frankframework.stream.Message;
 
 public class IMSSenderTest extends SenderTestBase<IMSSender> {
 
-
 	@Override
 	public IMSSender createSender() {
 		return new IMSSender() {
