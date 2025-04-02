@@ -19,7 +19,9 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLine;
+import org.frankframework.http.HttpSender;
 import org.frankframework.pipes.EchoPipe;
+import org.frankframework.pipes.SenderPipe;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
@@ -27,6 +29,7 @@ import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.SpringUtils;
 
 public class TestLocalStatisticsRegistry {
 	private TestConfiguration configuration;
@@ -57,10 +60,21 @@ public class TestLocalStatisticsRegistry {
 	private <M> void createAndRegisterAdapter() throws ConfigurationException {
 		adapter = configuration.createBean(Adapter.class);
 		adapter.setName("myAdapter");
-		PipeLine pipeline = configuration.createBean(PipeLine.class);
-		EchoPipe echoPipe = configuration.createBean(EchoPipe.class);
+
+		PipeLine pipeline = SpringUtils.createBean(configuration, PipeLine.class);
+
+		EchoPipe echoPipe = SpringUtils.createBean(configuration, EchoPipe.class);
 		echoPipe.setName("echoPipe");
 		pipeline.addPipe(echoPipe);
+
+		SenderPipe senderPipe = SpringUtils.createBean(configuration, SenderPipe.class);
+		HttpSender httpSender = SpringUtils.createBean(configuration, HttpSender.class);
+		senderPipe.setSender(httpSender);
+		httpSender.setUrl("http://dummy.url");
+		httpSender.setName("httpSender");
+		senderPipe.setName("senderPipe");
+		pipeline.addPipe(senderPipe);
+
 		adapter.setPipeLine(pipeline);
 
 		Receiver<M> receiver = configuration.createBean(Receiver.class);

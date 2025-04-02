@@ -49,8 +49,10 @@ import io.micrometer.core.instrument.simple.SimpleConfig;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 import org.frankframework.core.Adapter;
+import org.frankframework.core.INamedObject;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
+import org.frankframework.http.AbstractHttpSender;
 import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
@@ -137,7 +139,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		root.add("receivers", getReceivers(adapter, adapterScopedMeters));
 		root.add("hourly", getHourlyStatistics(adapter));
 
-		root.add("http", getHttpStatistics(adapterScopedMeters));
+		root.add("http", getAllHttpStatistics(adapter.getPipeLine(), adapterScopedMeters));
 
 		JsonObjectBuilder totalMessageProcessingTime = getDistributionSummary(adapterScopedMeters, FrankMeterType.PIPELINE_DURATION);
 		if(totalMessageProcessingTime != null) {
@@ -147,19 +149,50 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		return root.build();
 	}
 
-	private JsonObjectBuilder getHttpStatistics(Collection<Meter> adapterScopedMeters) {
+	/**
+	 * Finds all HttpSenders in the given adapter, and collects 
+	 */
+	private JsonObjectBuilder getAllHttpStatistics(PipeLine pipeline, Collection<Meter> adapterScopedMeters) {
+		List<String> httpSenderNames = getPotentialHttpMeters(pipeline);
+		JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+
+		for (String httpSender : httpSenderNames) {
+			Collection<Meter> httpSenderScopedMeters = adapterScopedMeters.stream()
+					.filter(meter -> extractNameFromTag(meter, "name").equals(httpSender))
+					.toList();
+
+			objectBuilder.add(httpSender, getHttpStatistics(httpSenderScopedMeters));
+		}
+
+		return objectBuilder;
+	}
+
+	private List<String> getPotentialHttpMeters(PipeLine pipeline) {
+		return pipeline.getPipes().stream()
+			.filter(MessageSendingPipe.class::isInstance)
+			.map(MessageSendingPipe.class::cast)
+			.map(MessageSendingPipe::getSender)
+			.filter(AbstractHttpSender.class::isInstance)
+			.map(INamedObject::getName)
+			.toList();
+	}
+
+	/**
+	 * Assume the meters collection is already scoped on the required HTTP session or sender.
+	 */
+	private JsonObjectBuilder getHttpStatistics(Collection<Meter> meters) {
 		JsonObjectBuilder httpObjectBuilder = Json.createObjectBuilder();
 
 		// get http gauges
 		JsonObjectBuilder connections = Json.createObjectBuilder();
-		connections.add("max", getGauge(adapterScopedMeters, FrankMeterType.SENDER_HTTP_POOL_MAX));
-		connections.add("available", getGauge(adapterScopedMeters, FrankMeterType.SENDER_HTTP_POOL_AVAILABLE));
-		connections.add("leased", getGauge(adapterScopedMeters, FrankMeterType.SENDER_HTTP_POOL_LEASED));
-		connections.add("pending", getGauge(adapterScopedMeters, FrankMeterType.SENDER_HTTP_POOL_PENDING));
+		connections.add("max", getGauge(meters, FrankMeterType.SENDER_HTTP_POOL_MAX));
+		connections.add("available", getGauge(meters, FrankMeterType.SENDER_HTTP_POOL_AVAILABLE));
+		connections.add("leased", getGauge(meters, FrankMeterType.SENDER_HTTP_POOL_LEASED));
+		connections.add("pending", getGauge(meters, FrankMeterType.SENDER_HTTP_POOL_PENDING));
 		httpObjectBuilder.add("connections", connections);
 
 		// get url scoped http statistics
-		httpObjectBuilder.add("requests", getHttpTimers(adapterScopedMeters, FrankMeterType.SENDER_HTTP));
+		httpObjectBuilder.add("requests", getHttpTimers(meters, FrankMeterType.SENDER_HTTP));
 
 		return httpObjectBuilder;
 	}

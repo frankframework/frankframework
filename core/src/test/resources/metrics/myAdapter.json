@@ -141,14 +141,16 @@
         }
     ],
     "http": {
-        "connections": {
-            "max": 0.0,
-            "available": 0.0,
-            "leased": 0.0,
-            "pending": 0.0
-        },
-        "requests": [
-        ]
+        "httpSender": {
+            "connections": {
+                "max": 0.0,
+                "available": 0.0,
+                "leased": 0.0,
+                "pending": 0.0
+            },
+            "requests": [
+            ]
+        }
     },
     "totalMessageProccessingTime": {
         "name": "myAdapter",
