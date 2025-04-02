@@ -16,6 +16,8 @@
 
 package org.frankframework.runner;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,8 +75,8 @@ public class RunCypressE2eTest {
 		run = springApplication.run();
 		container.start();
 
-		Assertions.assertTrue(run.isRunning());
-		Assertions.assertTrue(container.isRunning());
+		assertTrue(run.isRunning());
+		assertTrue(container.isRunning());
 	}
 
 	@AfterAll
@@ -108,12 +110,10 @@ public class RunCypressE2eTest {
 				if (!test.isSuccess()) {
 					log.error("{}:\n{}", test.getErrorMessage(), test.getStackTrace());
 				}
-				Assertions.assertTrue(test.isSuccess());
+				assertTrue(test.isSuccess());
 			}));
 		}
 
 		return DynamicContainer.dynamicContainer(suite.getTitle(), dynamicTests);
 	}
 }
-
-

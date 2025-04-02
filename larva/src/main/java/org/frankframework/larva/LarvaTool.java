@@ -143,12 +143,12 @@ public class LarvaTool {
 	}
 
 	// Invoked by LarvaServlet
-	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
-		runScenarios(getIbisContext(application), request, out, false);
+	public static int runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
+		return runScenarios(getIbisContext(application), request, out, false);
 	}
 
 	// Invoked by the IbisTester class
-	public static void runScenarios(IbisContext ibisContext, HttpServletRequest request, Writer out, boolean silent) {
+	public static int runScenarios(IbisContext ibisContext, HttpServletRequest request, Writer out, boolean silent) {
 		String paramLogLevel = request.getParameter("loglevel");
 		String paramAutoScroll = request.getParameter("autoscroll");
 		String paramMultiThreaded = request.getParameter("multithreaded");
@@ -165,7 +165,7 @@ public class LarvaTool {
 		}
 		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
 		LarvaTool larvaTool = new LarvaTool();
-		larvaTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, paramMultiThreaded, paramExecute, paramWaitBeforeCleanUp, timeout,
+		return larvaTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, paramMultiThreaded, paramExecute, paramWaitBeforeCleanUp, timeout,
 				paramScenariosRootDirectory, out, silent);
 	}
 
