@@ -515,9 +515,13 @@ public class ConvertToLarvaAction implements CustomReportAction {
 		}
 
 		private String determineFileExtension(String message) {
-			if(XmlUtils.isWellFormed(message)) {
+			if (StringUtils.isBlank(message)) {
+				return "txt";
+			}
+
+			if (XmlUtils.isWellFormed(message)) {
 				return "xml";
-			} else if(message.trim().startsWith("{")) {
+			} else if (message.trim().startsWith("{")) {
 				return "json";
 			} else {
 				return "txt";
