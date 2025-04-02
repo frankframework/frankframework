@@ -15,7 +15,7 @@
 			<pipe name="send"
 				className="org.frankframework.pipes.SenderPipe">
 				<sender className="org.frankframework.senders.FrankSender"
-					target="testtool-JsonPipe" scope="LISTENER" />
+					target="TestTool/JsonPipe" scope="LISTENER" />
 				<forward name="success" path="json2xml" />
 			</pipe>
 			<pipe name="json2xml" className="org.frankframework.pipes.JsonPipe" prettyPrint="true"

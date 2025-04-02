@@ -501,11 +501,8 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	}
 
 	private @Nonnull String getFullFrankListenerName(@Nonnull String target) {
-		if (configuration == null || target.substring(0, TEST_TOOL_LISTENER_PREFIX.length()).equalsIgnoreCase(TEST_TOOL_LISTENER_PREFIX)) {
-			return target;
-		}
 		int configNameSeparator = target.indexOf('/');
-		if (configNameSeparator > 0) {
+		if (configuration == null || configNameSeparator > 0) {
 			return target;
 		} else if (configNameSeparator == 0) {
 			return configuration.getName() + target;
