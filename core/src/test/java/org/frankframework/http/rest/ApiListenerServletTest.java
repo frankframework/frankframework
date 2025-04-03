@@ -39,6 +39,7 @@ import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -830,6 +831,28 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
+	public void listenerMultipartContentNoBodyPart() throws ServletException, IOException, ListenerException, ConfigurationException {
+
+		// Arrange
+		String uri="/listenerMultipartContentNoBodyPart";
+		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.JSON, null, "body-part-name").build();
+
+		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+		builder.addTextBody("string1", "<request/>", ContentType.create("text/xml"));
+		HttpServletRequest request = createRequest(uri, Methods.POST, builder.build());
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEquals("", result.getContentAsString());
+		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
+		assertNull(result.getContentType());
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
 	public void getRequestWithQueryParameters() throws IOException, ConfigurationException {
 		String uri="/queryParamTest";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.GET)).build();
@@ -976,7 +999,7 @@ public class ApiListenerServletTest {
 	public void apiListenerWithRepeatableMessageAndGloballyDisabled() throws Exception {
 		// Arrange
 		String uri="/etag2";
-		Message repeatableMessage = new Message("{\"tralalalallala\":true}".getBytes());
+		Message repeatableMessage = new Message("{\"tralalalallala\":true}".getBytes(StandardCharsets.UTF_8));
 		new ApiListenerBuilder(uri, List.of(HttpMethod.GET))
 			.withResponseContent(repeatableMessage)
 			.build();
@@ -2327,6 +2350,8 @@ public class ApiListenerServletTest {
 
 		@Override
 		public Message processRequest(IListener<Message> origin, RawMessageWrapper<Message> rawMessage, Message message, PipeLineSession context) throws ListenerException {
+			assertNotNull(message, "input message may not be null");
+
 			handlerInvoked = true;
 			context.mergeToParentSession("*", session);
 			requestMessage = message;
