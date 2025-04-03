@@ -835,11 +835,11 @@ public class ApiListenerServletTest {
 
 		// Arrange
 		String uri="/listenerMultipartContentNoBodyPart";
-		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.JSON, null, "body-part-name").build();
+		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), MediaTypes.MULTIPART, MediaTypes.JSON, null, "body-part-name").build();
 
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.addTextBody("string1", "<request/>", ContentType.create("text/xml"));
-		HttpServletRequest request = createRequest(uri, Methods.POST, builder.build());
+		HttpServletRequest request = createRequest(uri, HttpMethod.POST, builder.build());
 
 		// Act
 		Response result = service(request);
