@@ -7,7 +7,7 @@
 		</Receiver>
 		<Pipeline>
 			<SenderPipe name="Fetch Data From Larva">
-				<IbisLocalSender javaListener="testtool-DataSonnetTest"/>
+				<FrankSender target="TestTool/DataSonnetTest" scope="LISTENER"/>
 			</SenderPipe>
 			<DataSonnetPipe name="JSON Transform" styleSheetName="JSON/example.jsonnet" computeMimeType="true"/>
 		</Pipeline>

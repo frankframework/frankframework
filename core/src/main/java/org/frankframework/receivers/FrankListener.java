@@ -94,8 +94,16 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 			setName(adapter.getName());
 			log.debug("name was not configured, defaulting to adapter name [{}]", this::getName);
 		}
-		fullName = configuration.getName() + "/" + getName();
+		fullName = getNamePrefix() + getName();
 		log.debug("FrankListener instance will be registered under full name [{}]", fullName);
+	}
+
+	private String getNamePrefix() {
+		if (configuration != null) {
+			return configuration.getName() + "/";
+		}
+		log.debug("FrankListener without Configuration, will assume it is running Larva test-tool. No prefix will be used, given name should be unique.");
+		return "";
 	}
 
 	// TODO this should be the applicationcontext...?

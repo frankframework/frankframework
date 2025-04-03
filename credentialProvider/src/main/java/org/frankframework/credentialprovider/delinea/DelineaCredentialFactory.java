@@ -34,12 +34,12 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  * <p>To set up Delinea in the Framework, you need to set the following properties in {@code credentialproperties.properties}:
  *
  * <pre>{@code
- *   credentialFactory.class=org.frankframework.credentialprovider.delinea.DelineaCredentialFactory
- *   credentialFactory.delinea.autoComment.value=Use this comment
- *   credentialFactory.delinea.tenant=waf
- *   credentialFactory.delinea.tld=eu
- *   credentialFactory.delinea.oauth.username=username
- *   credentialFactory.delinea.oauth.password=password
+ * credentialFactory.class=org.frankframework.credentialprovider.delinea.DelineaCredentialFactory
+ * credentialFactory.delinea.autoComment.value=Use this comment
+ * credentialFactory.delinea.tenant=waf
+ * credentialFactory.delinea.tld=eu
+ * credentialFactory.delinea.oauth.username=username
+ * credentialFactory.delinea.oauth.password=password
  * }</pre>
  *
  * If you use these settings, the default URLs will  be used with the given properties from the code block above:
@@ -59,13 +59,13 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  * <p>Ideally you'd use the above, but you can also use a different url template, or specify the complete url by using one of the following properties
  * (eg: use {@code apiRootUrl} or {@code apiRootUrlTemplate}, not both. Same for the {@code tokenUrl} and {@code tokenUrlTemplate}):
  * <pre>{@code
- *   # define a complete url
- *   credentialFactory.delinea.apiRootUrl
- *   credentialFactory.delinea.oauth.tokenUrl
+ * # define a complete url
+ * credentialFactory.delinea.apiRootUrl
+ * credentialFactory.delinea.oauth.tokenUrl
  *
- *   # define a custom template (make sure to use %s twice for the tenant and tld placeholders)
- *   credentialFactory.delinea.apiRootUrlTemplate=https://%s.secretservercloud.%s/api/v1
- *   credentialFactory.delinea.oauth.tokenUrlTemplate=https://%s.secretservercloud.%s/oauth2/token
+ * # define a custom template (make sure to use %s twice for the tenant and tld placeholders)
+ * credentialFactory.delinea.apiRootUrlTemplate=https://%s.secretservercloud.%s/api/v1
+ * credentialFactory.delinea.oauth.tokenUrlTemplate=https://%s.secretservercloud.%s/oauth2/token
  * }</pre>
  * </p>
  *
