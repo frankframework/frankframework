@@ -32,6 +32,7 @@ import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -765,6 +766,28 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
+	public void listenerMultipartContentNoBodyPart() throws ServletException, IOException, ListenerException, ConfigurationException {
+
+		// Arrange
+		String uri="/listenerMultipartContentNoBodyPart";
+		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.JSON, null, "body-part-name").build();
+
+		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+		builder.addTextBody("string1", "<request/>", ContentType.create("text/xml"));
+		HttpServletRequest request = createRequest(uri, Methods.POST, builder.build());
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEquals("", result.getContentAsString());
+		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
+		assertNull(result.getContentType());
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
 	public void getRequestWithQueryParameters() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/queryParamTest";
 		new ApiListenerBuilder(uri, Methods.GET).build();
@@ -879,7 +902,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void apiListenerWithRepeatableMessageAndGloballyDisabled() throws Exception {
 		// Arrange
 		String uri="/etag2";
-		Message repeatableMessage = Message.asMessage(new Message("{\"tralalalallala\":true}").asByteArray());
+		Message repeatableMessage = Message.asMessage("{\"tralalalallala\":true}".getBytes(StandardCharsets.UTF_8));
 		new ApiListenerBuilder(uri, Methods.GET)
 			.withResponseContent(repeatableMessage)
 			.build();
@@ -1842,6 +1865,8 @@ public class ApiListenerServletTest extends Mockito {
 
 		@Override
 		public Message processRequest(IListener<Message> origin, RawMessageWrapper<Message> rawMessage, Message message, PipeLineSession context) throws ListenerException {
+			assertNotNull(message, "input message may not be null");
+
 			handlerInvoked = true;
 			if(session != null) {
 				context.putAll(session);
