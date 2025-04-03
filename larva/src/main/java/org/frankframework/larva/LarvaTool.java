@@ -1444,6 +1444,7 @@ public class LarvaTool {
 			} else if ("org.frankframework.jdbc.FixedQuerySender".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
 				stepPassed = executeFixedQuerySenderRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, correlationId);
 			} else if ("org.frankframework.http.WebServiceListener".equals(queueCreatorClassname) ||
+					"org.frankframework.receivers.FrankListener".equals(queueCreatorClassname) ||
 					"org.frankframework.receivers.JavaListener".equals(queueCreatorClassname)) {
 				stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, config.getTimeout());
 			} else if ("org.frankframework.larva.XsltProviderListener".equals(queueCreatorClassname)) {

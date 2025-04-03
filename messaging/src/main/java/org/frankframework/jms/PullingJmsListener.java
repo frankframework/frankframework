@@ -72,6 +72,9 @@ import org.frankframework.util.RunStateEnquiring;
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
  * <code>jakarta.jms.TextMessage</code>s <br/><br/>
  * </p>
+ *
+ * {@inheritDoc}
+ *
  * @author Gerrit van Brakel
  * @since 4.0.1
  */

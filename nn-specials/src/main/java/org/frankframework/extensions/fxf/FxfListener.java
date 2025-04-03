@@ -49,6 +49,8 @@ import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
  * </ul></td><td>"FF"</td></tr>
  * </table></p>
  *
+ * {@inheritDoc}
+ *
  * @author Peter Leeuwenburgh
  */
 public class FxfListener extends EsbJmsListener {

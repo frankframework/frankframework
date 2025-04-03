@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,56 @@ import org.frankframework.credentialprovider.ICredentialFactory;
 import org.frankframework.credentialprovider.ICredentials;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
+/**
+ * <p>CredentialFactory that reads its credentials from Delinea (formerly Thycotic) Secret Server.</p>
+ *
+ * <p>To set up Delinea in the Framework, you need to set the following properties in {@code credentialproperties.properties}:
+ *
+ * <pre>{@code
+ * credentialFactory.class=org.frankframework.credentialprovider.delinea.DelineaCredentialFactory
+ * credentialFactory.delinea.autoComment.value=Use this comment
+ * credentialFactory.delinea.tenant=waf
+ * credentialFactory.delinea.tld=eu
+ * credentialFactory.delinea.oauth.username=username
+ * credentialFactory.delinea.oauth.password=password
+ * }</pre>
+ *
+ * If you use these settings, the default URLs will  be used with the given properties from the code block above:
+ * <ul>
+ *     <li>{@code https://<tenant>.secretservercloud.<tld>/api/v1} which will translate to {@code https://waf.secretservercloud.eu/api/v1}
+ *     based on these settings</li>
+ *     <li>{@code https://<tenant>.secretservercloud.<tld>/oauth2/token} which will translate to {@code https://waf.secretservercloud.eu/oauth2/token}
+ *     based on these settings</li>
+ * </ul>
+ * </p>
+ *
+ * <p>Please note that using the {@code credentialFactory.delinea.autoComment.value} is optional. If not set, the feature to comment before getting a secret will
+ * not be used. If set, this value will be used as a comment when getting the secret. See
+ * <a href="https://updates.thycotic.net/secretserver/restapiguide/TokenAuth/#tag/SecretAccessRequests/operation/SecretAccessRequestsService_CreateViewComment">
+*  Delinea API documentation</a> for more information.</p>
+ *
+ * <p>Ideally you'd use the above, but you can also use a different url template, or specify the complete url by using one of the following properties
+ * (eg: use {@code apiRootUrl} or {@code apiRootUrlTemplate}, not both. Same for the {@code tokenUrl} and {@code tokenUrlTemplate}):
+ * <pre>{@code
+ * # define a complete url
+ * credentialFactory.delinea.apiRootUrl
+ * credentialFactory.delinea.oauth.tokenUrl
+ *
+ * # define a custom template (make sure to use %s twice for the tenant and tld placeholders)
+ * credentialFactory.delinea.apiRootUrlTemplate=https://%s.secretservercloud.%s/api/v1
+ * credentialFactory.delinea.oauth.tokenUrlTemplate=https://%s.secretservercloud.%s/oauth2/token
+ * }</pre>
+ * </p>
+ *
+ * <p>Delinea secrets are referenced by <b>ID</b> in an authAlias, because they are retrieved from the Secret Server by id. See the <a
+ * href="https://updates.thycotic.net/secretserver/restapiguide/TokenAuth/#tag/Secrets/operation/SecretsService_GetSecretV2">Get Secret</a> API.</p>
+ *
+ * <p>To use this CredentialFactory, you will have to set up a Delinea Secret Server within the Delinea Platform. In the documentation above we assume this is
+ * already done and that username and password properties reference an active 'local user'</p>
+ *
+ * @see <a href="https://github.com/DelineaXPM/tss-sdk-java">tss-sdk-java</a> for the reference java implementation
+ * @see <a href="https://updates.thycotic.net/secretserver/restapiguide/">Delinea API documentation</a>
+ */
 @Log4j2
 public class DelineaCredentialFactory implements ICredentialFactory {
 

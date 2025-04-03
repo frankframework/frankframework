@@ -3,8 +3,8 @@ import { AppService, Pipe } from 'src/app/app.service';
 import {
   AuthEntry,
   CertificateList,
-  ResourceFactories,
   Link,
+  ResourceFactories,
   SapSystem,
   SecurityItemsService,
   SecurityRole,
@@ -66,4 +66,6 @@ export class SecurityItemsComponent implements OnInit {
       this.links = links;
     });
   }
+
+  protected readonly Object = Object;
 }

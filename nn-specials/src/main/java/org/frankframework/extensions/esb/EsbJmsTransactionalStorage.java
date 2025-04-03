@@ -41,7 +41,7 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.UUIDUtil;
 
 /**
- * ESB (Enterprise Service Bus) extension of JmsTransactionalStorage.
+ * ESB (Enterprise Service Bus) extension of {@code JmsTransactionalStorage}.
  *
  * <p>
  * Depending on the <code>type</code> of the <code>TransactionalStorage</code>
@@ -53,17 +53,8 @@ import org.frankframework.util.UUIDUtil;
  * ESB.Infrastructure.US.Log.BusinessLog.2.AuditLog.1.Action</li>
  * </ul>
  * </p>
- * <p>
- * <b>Configuration </b><i>(where deviating from
- * JmsTransactionalStorage)</i><b>:</b>
- * <table border="1">
- * <tr>
- * <th>attributes</th>
- * <th>description</th>
- * <th>default</th>
- * </tr>
- * </table>
- * </p>
+ *
+ * {@inheritDoc}
  *
  * @author Peter Leeuwenburgh
  */

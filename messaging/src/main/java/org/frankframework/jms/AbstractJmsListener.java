@@ -23,6 +23,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.Session;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -53,13 +58,8 @@ import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DateFormatUtils;
 
-import jakarta.annotation.Nonnull;
-import jakarta.jms.Destination;
-import jakarta.jms.JMSException;
-import jakarta.jms.Session;
-
 /**
- * Common baseclass for Pulling and Pushing JMS Listeners.
+ * {@inheritDoc}
  *
  * @author  Gerrit van Brakel
  * @since   4.9

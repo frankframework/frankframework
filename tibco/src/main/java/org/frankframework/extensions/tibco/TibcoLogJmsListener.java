@@ -36,6 +36,9 @@ import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DateFormatUtils;
 
+/**
+ * {@inheritDoc}
+ */
 public class TibcoLogJmsListener extends JmsListener {
 
 	private static final int[] LOGLEVELS = { 5, 10, 30, 50, 70, 90 };
