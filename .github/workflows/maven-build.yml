@@ -153,7 +153,7 @@ jobs:
 
     - name: Call [Compare Frank!Doc] workflow
       uses: benc-uk/workflow-dispatch@v1
-      if: ${{ matrix.java == '8' && github.event_name == 'pull_request_disabled'}}
+      if: ${{ github.event_name == 'pull_request_disabled'}}
       with:
         workflow: Compare FrankDoc
         token: ${{ secrets.PAT }}
@@ -170,6 +170,7 @@ jobs:
           ~/.sonar/cache
           console/frontend/src/main/frontend/node_modules
         key: project-cache-${{ github.run_id }}-${{ github.run_attempt }}
+
   smoketest-build:
     name: Smoketest
     runs-on: ubuntu-latest
