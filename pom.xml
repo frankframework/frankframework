@@ -901,7 +901,7 @@
 				<plugin>
 					<groupId>org.jacoco</groupId>
 					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>0.8.12</version>
+					<version>0.8.13</version>
 					<executions>
 						<execution>
 							<id>prepare-jacoco</id>
@@ -1010,7 +1010,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>10.22.0</version>
+							<version>10.23.0</version>
 						</dependency>
 					</dependencies>
 				</plugin>
