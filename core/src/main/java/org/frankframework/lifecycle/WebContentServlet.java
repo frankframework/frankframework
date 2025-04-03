@@ -227,9 +227,18 @@ public class WebContentServlet extends AbstractHttpServlet {
 	}
 
 	private void listDirectory(HttpServletResponse response) throws IOException {
+		// Make sure we serve text/html
+		response.setContentType("text/html");
+
+		// Wrap the output with correct tags
+		response.getWriter().append("<html><body>");
+
 		for(Configuration configuration : getIbisManager().getConfigurations()) {
 			getWebContentForConfiguration(response, configuration);
 		}
+
+		// And close the tags again.
+		response.getWriter().append("</body></html>");
 	}
 
 	void getWebContentForConfiguration(HttpServletResponse response, Configuration configuration) throws IOException {
