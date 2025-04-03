@@ -471,7 +471,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				 * Process the request through the pipeline.
 				 * If applicable, map multipart parts into messageContext
 				 */
-				Message body = Message.nullMessage();
+				Message body = null;
 				//TODO fix HttpSender#handleMultipartResponse(..)
 				if(MultipartUtils.isMultipart(request)) {
 					final String multipartBodyName = listener.getMultipartBodyName();
@@ -500,6 +500,11 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 						LOG.warn("{} Could not read mime multipart request: {}", () -> createAbortMessage(remoteUser, 400), e::getMessage);
 						return;
 					}
+
+					// If no multipartBodyName was found, but the value was provided. Body has to be set to something...
+					if (body == null) {
+						body = Message.nullMessage();
+					}
 				} else {
 					body = MessageUtils.parseContentAsMessage(request);
 				}
@@ -514,7 +519,8 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				PipeLineSession.updateListenerParameters(pipelineSession, messageId, correlationId);
 
 				/*
-				 * Do the actual request processing by the ApiListener
+				 * Do the actual request processing by the ApiListener.
+				 * Body may not be null!
 				 */
 				Message result = listener.processRequest(body, pipelineSession);
 
