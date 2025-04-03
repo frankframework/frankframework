@@ -63,6 +63,9 @@ import nl.nn.adapterframework.util.LogUtil;
 public class WebContentServlet extends HttpServletBase {
 
 	private static final long serialVersionUID = 1L;
+
+	public static final String WEBCONTENT = "webcontent";
+
 	private final transient Logger log = LogUtil.getLogger(this);
 	private static final String SERVLET_PATH = "/webcontent/";
 	private static final String WELCOME_FILE = "index.html";
@@ -216,21 +219,25 @@ public class WebContentServlet extends HttpServletBase {
 			log.warn("configuration [{}] has no ClassLoader", configuration);
 			return null;
 		}
-		return classLoader.getResource("webcontent/" + resource, false);
+		return classLoader.getResource(WEBCONTENT + "/" + resource, false);
 	}
 
 	private Configuration findConfiguration(String configurationName) {
 		return getIbisManager().getConfiguration(configurationName);
 	}
 
-	private void listDirectory(HttpServletResponse resp) throws IOException {
+	private void listDirectory(HttpServletResponse response) throws IOException {
 		for(Configuration configuration : getIbisManager().getConfigurations()) {
-			ClassLoaderBase classLoader = (ClassLoaderBase) configuration.getClassLoader();
-			boolean isWebContentFolderPresent = classLoader != null && classLoader.getLocalResource("WebContent") != null;
-			if(isWebContentFolderPresent) {
-				log.info("found configuration [{}] with [WebContent] folder", configuration);
-				resp.getWriter().append("<a href=\""+configuration.getName()+"\">"+configuration.getName()+"</a>");
-			}
+			getWebContentForConfiguration(response, configuration);
+		}
+	}
+
+	void getWebContentForConfiguration(HttpServletResponse response, Configuration configuration) throws IOException {
+		ClassLoaderBase classLoader = (ClassLoaderBase) configuration.getClassLoader();
+		boolean isWebContentFolderPresent = classLoader != null && classLoader.getLocalResource(WEBCONTENT) != null;
+		if (isWebContentFolderPresent) {
+			log.info("found configuration [{}] with [{}}] folder", configuration, WEBCONTENT);
+			response.getWriter().append("<a href=\"" + configuration.getName() + "\">" + configuration.getName() + "</a>");
 		}
 	}
 
