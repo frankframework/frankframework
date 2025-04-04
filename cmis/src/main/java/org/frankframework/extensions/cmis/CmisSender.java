@@ -178,6 +178,7 @@ import org.frankframework.util.XmlUtils;
  *       <property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz">2014-11-27T16:43:01.268+0100</property>
  *       <property name="ArrivedBy">HDN</property>
  *       <property name="DocumentType">Geldlening</property>
+ *       <property name="DocumentDetail" isNull="true" />
  *    </properties>
  * </cmis>
  * }</pre>
