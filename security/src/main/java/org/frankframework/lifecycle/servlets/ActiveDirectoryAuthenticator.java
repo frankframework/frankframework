@@ -44,7 +44,7 @@ public class ActiveDirectoryAuthenticator extends AbstractServletAuthenticator {
 	private @Setter String baseDn;
 	private @Setter boolean followReferrals = true;
 
-	/** defaults to (&(objectClass=user)(userPrincipalName={0})) */
+	/** defaults to {@code (&(objectClass=user)(userPrincipalName={0}))} */
 	private @Setter String searchFilter = null;
 
 	private @Setter String roleMappingFile = "ldap-role-mapping.properties";

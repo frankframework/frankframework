@@ -35,12 +35,12 @@ import org.frankframework.util.LogUtil;
  *
  * When a {@link WebServiceListener} is registered without the `address` attribute, the listener uses
  * the `serviceNamespaceURI` or `name` attribute to register the service in the {@link ServiceDispatcher}.
- * </br/>
+ * <br/>
  * Requests that come in on this endpoint, will be dispatched to the appropriate {@link WebServiceListener} based
  * on their default namespace.
- * </br/>
+ * <br/>
  * Example: request with xmlns="urn:ws", will be dispatched to the {@link WebServiceListener} with serviceNamespaceURI="urn:ws"
- * </br/>
+ * <br/>
  * See {@link NamespaceUriProvider} for more information.
  *
  * @author Niels Meijer

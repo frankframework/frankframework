@@ -59,7 +59,7 @@ import org.frankframework.util.StringUtil;
  * <br/>
  * To make use of oauth authentication:
  * <ol>
- *     	<li>Create an application in Azure AD -> App Registrations. For more information please read {@link "https://learn.microsoft.com/en-us/exchange/client-developer/exchange-web-services/how-to-authenticate-an-ews-application-by-using-oauth"}</li>
+ *     	<li>Create an application in Azure AD -> App Registrations. For more information please read <a href="https://learn.microsoft.com/en-us/exchange/client-developer/exchange-web-services/how-to-authenticate-an-ews-application-by-using-oauth">how-to-authenticate-an-ews-application-by-using-oauth</a></li>
  *     	<li>Request the required API permissions within desired scope <code>https://outlook.office365.com/</code> in Azure AD -> App Registrations -> MyApp -> API Permissions.</li>
  *     	<li>Create a secret for your application in Azure AD -> App Registrations -> MyApp -> Certificates and Secrets</li>
  *     	<li>Configure the clientSecret directly as password or as the password of a JAAS entry referred to by authAlias. Only available upon creation of your secret in the previous step.</li>

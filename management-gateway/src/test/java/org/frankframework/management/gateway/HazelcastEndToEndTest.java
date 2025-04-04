@@ -84,6 +84,7 @@ public class HazelcastEndToEndTest {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	@WithMockUser(authorities = { "ROLE_IbisTester" })
 	public void testSynchronousHazelcastMessage() {
 		//Arrange
@@ -124,6 +125,7 @@ public class HazelcastEndToEndTest {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	@WithMockUser(authorities = { "ROLE_IbisTester" })
 	public void testAsynchronousHazelcastMessage() {
 		//Arrange

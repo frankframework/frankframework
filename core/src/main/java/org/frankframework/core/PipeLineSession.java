@@ -125,7 +125,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 *     If that parameter is {@code null} then all keys will be copied, if it is an
 	 *     empty string then no keys will be copied.
 	 * </p>
-	 * @param keysToCopy Keys to be copied, separated by {@value ,} or {@value ;}.
+	 * @param keysToCopy Keys to be copied, separated by {@literal ,} or {@literal ;}.
 	 *                   If {@code null} then all keys will be copied.
 	 *                   If an empty string then no keys will be copied.
 	 * @param parentSession Parent {@link PipeLineSession}.
