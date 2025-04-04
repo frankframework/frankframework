@@ -12,26 +12,20 @@
               <span> Back</span>
             </button>
           </div>
-          <h4>View message: {{ message.id }}</h4>
+          <h4>View message with ID {{ message.id }}</h4>
         </div>
         <div class="ibox-content">
-          @if (metadata?.comment) {
-            <span>
-              <p>Comment:</p>
-              <pre>{{ metadata?.comment ?? '' }}</pre>
-            </span>
-          }
           <p>
             Message
-            @if (metadata?.correlationId) {
+            @if (data['correlationId']) {
               <span
-                >with correlationId: <strong>{{ metadata?.correlationId ?? '' }}</strong></span
+                >with correlationId: <strong>{{ data['correlationId'] }}</strong></span
               >
             }
-            @if (metadata?.insertDate) {
+            @if (data['insertDate']) {
               <span>
                 issued at:
-                <strong><span appToDate [time]="metadata?.insertDate ?? 0"></span></strong>
+                <strong><span appToDate [time]="data['insertDate']"></span></strong>
               </span>
             }
             @if (storageParams.processState === 'Error') {
@@ -68,7 +62,23 @@
               <i class="fa fa-arrow-circle-o-down"></i> Download
             </button>
           </p>
-          <pre>{{ metadata?.message ?? '' }}</pre>
+          <pre>{{ data['message'] ?? '' }}</pre>
+          @if (data['comment']) {
+            <span>
+              <p>Comment:</p>
+              <pre>{{ data['comment'] }}</pre>
+            </span>
+          }
+          <div class="extra-properties">
+            <p>Other properties:</p>
+            <ul>
+              @for (key of extraProperties; track key) {
+                <li>
+                  <strong>{{ key }}:</strong> {{ data[key] }}
+                </li>
+              }
+            </ul>
+          </div>
         </div>
       </div>
     </div>
