@@ -75,14 +75,14 @@ import org.frankframework.util.XmlUtils;
  *
  * <p><b>Expected message format:</b></p>
  * <p>GET methods expect a message looking like this:
- * <pre>
- *    param_name=param_value&another_param_name=another_param_value
- * </pre>
+ * <pre>{@code
+ *   param_name=param_value&another_param_name=another_param_value
+ * }</pre>
  * <p>POST AND PUT methods expect a message similar as GET, or looking like this:
- * <pre>
+ * <pre>{@code
  *   param_name=param_value
  *   another_param_name=another_param_value
- * </pre>
+ * }</pre>
  *
  * @ff.info When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
  * This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.

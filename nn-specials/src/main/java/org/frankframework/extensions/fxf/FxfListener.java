@@ -44,7 +44,7 @@ import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>"qcf_tibco_p2p_ff"</td></tr>
  * <tr><td>{@link #setMessageProtocol(MessageProtocol) messageProtocol}</td><td>protocol of ESB service to be called. Possible values
  * <ul>
- *   <li>"FF": Fire & Forget protocol</li>
+ *   <li>"FF": Fire {@literal &} Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td>"FF"</td></tr>
  * </table></p>

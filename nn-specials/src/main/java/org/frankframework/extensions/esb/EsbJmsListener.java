@@ -79,7 +79,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	private final Map<String, String> xPathLogMap = new HashMap<>();
 
 	public enum MessageProtocol {
-		/** Fire & Forget protocol */
+		/** Fire {@literal &} Forget protocol */
 		FF,
 		/** Request-Reply protocol */
 		RR

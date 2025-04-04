@@ -71,11 +71,13 @@ public enum ParameterType {
 
 	/** Only applicable as a JDBC parameter, the method setBinaryStream() is used */
 	@ConfigurationWarning("use type [BINARY] instead")
-	@Deprecated INPUTSTREAM,
+	@Deprecated
+	INPUTSTREAM,
 
 	/** Only applicable as a JDBC parameter, the method setBytes() is used */
 	@ConfigurationWarning("use type [BINARY] instead")
-	@Deprecated BYTES,
+	@Deprecated
+	BYTES,
 
 	/** Forces the parameter value to be treated as binary data (e.g. when using a SQL BLOB field).
 	 * When applied as a JDBC parameter, the method setBinaryStream() or setBytes() is used */
@@ -93,7 +95,8 @@ public enum ParameterType {
 	LIST,
 
 	/** (Used in larva only) Converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;) */
-	@Deprecated MAP;
+	@Deprecated
+	MAP;
 
 	private final @Getter Class<? extends IParameter> typeClass;
 	public final boolean requiresTypeConversion;
