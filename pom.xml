@@ -728,12 +728,36 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.5.3</version>
 				<configuration>
+					<skip>true</skip> <!-- Skip by default to prevent running all tests twice -->
 					<redirectTestOutputToFile>true</redirectTestOutputToFile>
-					<excludedGroups>${junit.excludedTags}</excludedGroups>
-					<groups>${junit.includedTags}</groups>
 					<reuseForks>true</reuseForks>
 					<argLine>@{argLine} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI</argLine>
 				</configuration>
+				<executions>
+					<execution>
+						<id>junit-tests</id>
+						<phase>test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<skip>false</skip> <!-- Do not skip this configuration in phase test -->
+							<excludedGroups>integration,${junit.excludedTags}</excludedGroups>
+							<groups>${junit.includedTags}</groups>
+						</configuration>
+					</execution>
+					<execution>
+						<id>integration-tests</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<skip>false</skip> <!-- Do not skip this configuration in phase integration-test -->
+							<groups>integration</groups>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

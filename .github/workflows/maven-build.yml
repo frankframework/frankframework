@@ -43,7 +43,7 @@ on:
 
 jobs:
   build-maven-artifacts:
-    name: Build and Test Maven Artifacts
+    name: Build and Test Maven Artifacts on JDK ${{ env.JDK_VERSION }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -232,7 +232,7 @@ jobs:
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SonarCloud
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud
-      run: ./mvnw -B -V -T1 test -P${{env.PROFILES}} -Dsonar.projectKey=ibissource_iaf -Djunit.excludedTags=slow,database,integration
+      run: ./mvnw -B -V -T1 test -P${{env.PROFILES}} -Dsonar.projectKey=ibissource_iaf -Djunit.excludedTags=slow,database
 
     - name: Store Test Results
       if: failure()
