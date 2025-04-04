@@ -3,6 +3,7 @@ package org.frankframework.runner;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -13,6 +14,8 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.ServletContext;
@@ -20,6 +23,7 @@ import jakarta.servlet.ServletContext;
 import org.apache.commons.text.StringEscapeUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -76,19 +80,39 @@ public class RunLarvaTests {
 	}
 
 	@TestFactory
-	List<DynamicTest> larvaTests() {
+	Stream<DynamicContainer> larvaTests() {
 		List<File> allScenarioFiles = larvaTool.readScenarioFiles(appConstants, scenarioRootDir);
+		Map<String, List<File>> scenariosByFolder = ScenarioRunner.groupFilesByFolder(allScenarioFiles, scenarioRootDir);
 
-		return allScenarioFiles.stream()
-				.map(this::convertLarvaScenarioToTest)
-				.toList();
+		return scenariosByFolder.entrySet()
+				.stream()
+				.sorted(Map.Entry.comparingByKey())
+				.map(this::createScenarioContainer);
+
+	}
+
+	private DynamicContainer createScenarioContainer(Map.Entry<String, List<File>> scenarioFolder) {
+		String scenarioFolderName = scenarioFolder.getKey();
+		String scenarioGroupName = scenarioFolderName.startsWith(scenarioRootDir) ? scenarioFolderName.substring(scenarioRootDir.length()) : scenarioFolderName;
+		return DynamicContainer.dynamicContainer(scenarioGroupName, new File(scenarioFolderName).toURI(), createScenarios(scenarioFolder.getValue()));
+	}
+
+	private Stream<DynamicTest> createScenarios(List<File> scenarioFiles) {
+		return scenarioFiles.stream()
+				.map(this::convertLarvaScenarioToTest);
 	}
 
 	private DynamicTest convertLarvaScenarioToTest(File scenarioFile) {
 		String scenarioName = scenarioFile.getAbsolutePath().substring(scenarioRootDir.length());
 		return DynamicTest.dynamicTest(
 				scenarioName, scenarioFile.toURI(), () -> {
-					int scenarioPassed = scenarioRunner.runOneFile(scenarioFile, scenarioRootDir, true);
+					int scenarioPassed = 0;
+					try {
+						scenarioPassed = scenarioRunner.runOneFile(scenarioFile, scenarioRootDir, true);
+					} catch (Exception e) {
+						e.printStackTrace();
+						fail("Exception in scenario execution: " + e.getMessage());
+					}
 
 					assertEquals(LarvaTool.RESULT_OK, scenarioPassed);
 				}
@@ -105,9 +129,6 @@ public class RunLarvaTests {
 
 		// Wait until all adapters running
 		ServletContext servletContext = applicationContext.getBean(ServletContext.class);
-
-		LarvaTool larvaTool = new LarvaTool();
-		String scenarioRootDir = larvaTool.initScenariosRootDirectories(null, new ArrayList<>(), new ArrayList<>());
 
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.setParameter("execute", scenarioRootDir);
@@ -132,13 +153,9 @@ public class RunLarvaTests {
 		}
 	}
 
-	private @Nonnull String stripLarvaOutput(String input) {
+	private @Nonnull String stripLarvaOutput(@Nonnull String input) {
 
-		String cleaned = input
-				.replaceAll("(?s)<form.*?</form>\n*", "") // Strip out the huge forms
-				.replaceAll("<div class='(odd|even)'></div>\n", "") // Strip out the div tags
-				.replaceAll("</div>\n", "")
-				;
+		String cleaned = input.replaceAll("(?s)<form.*?</form>", ""); // Strip out the huge forms
 		try {
 			// Now try to strip out remaining HTML tags while preserving the text data
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -164,7 +181,7 @@ public class RunLarvaTests {
 		 * @param out a Writer object to provide the underlying stream.
 		 * @throws NullPointerException if {@code out} is {@code null}
 		 */
-		protected HtmlTagStrippingWriter(OutputStream out) {
+		protected HtmlTagStrippingWriter(@Nonnull OutputStream out) {
 			this.out = out;
 		}
 
@@ -203,7 +220,7 @@ public class RunLarvaTests {
 		}
 
 		@Override
-		public void write(char[] cbuf, int off, int len) throws IOException {
+		public void write(@Nonnull char[] cbuf, int off, int len) throws IOException {
 			for (int i = off; i < off + len; i++) {
 				write(cbuf[i]);
 			}
@@ -224,7 +241,7 @@ public class RunLarvaTests {
 		}
 
 		@Override
-		public void write(String str, int off, int len) throws IOException {
+		public void write(@Nonnull String str, int off, int len) throws IOException {
 			for (int i = off; i < off + len; i++) {
 				write(str.charAt(i));
 			}

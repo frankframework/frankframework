@@ -139,7 +139,6 @@ public class ScenarioRunner {
 		}
 		try {
 			Writer out = (config.isSilent()) ? config.getSilentOut() : config.getOut();
-
 			out.write("<br/><h2>Starting " + singleThreadedScenarios.size() + " Single threaded Scenarios </h2>");
 		} catch (IOException ignored) {
 			// ignore exception
