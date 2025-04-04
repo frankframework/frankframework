@@ -74,6 +74,8 @@ import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 
+import lombok.Getter;
+
 import org.frankframework.configuration.ClassNameRewriter;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.IPullingListener;
@@ -119,7 +121,7 @@ public class LarvaTool {
 	// dirty solution by Marco de Reus:
 	private String stepOutputFilename = "";
 	private static boolean autoSaveDiffs = false;
-	private final TestConfig config = new TestConfig();
+	private final @Getter TestConfig config = new TestConfig();
 
 	/*
 	 * if allowReadlineSteps is set to true, actual results can be compared in line by using .readline steps.
@@ -260,15 +262,17 @@ public class LarvaTool {
 				debugMessage("Read one scenario");
 				scenarioFiles = new ArrayList<>();
 				scenarioFiles.add(new File(paramExecute));
+			} else if (paramExecute.equals(currentScenariosRootDirectory)) {
+				debugMessage("Executing all scenario files from root directory '" + currentScenariosRootDirectory + "'");
+				scenarioFiles = allScenarioFiles;
 			} else {
 				debugMessage("Read all scenarios from directory '" + paramExecute + "'");
 				scenarioFiles = readScenarioFiles(appConstants, paramExecute);
 			}
-			boolean evenStep = false;
 			debugMessage("Initialize statistics variables");
 			long startTime = System.currentTimeMillis();
 			debugMessage("Execute scenario('s)");
-			ScenarioRunner scenarioRunner = new ScenarioRunner(this, ibisContext, config, appConstants, evenStep, waitBeforeCleanUp, logLevel);
+			ScenarioRunner scenarioRunner = new ScenarioRunner(this, ibisContext, config, appConstants, waitBeforeCleanUp, logLevel);
 			// If only one scenario is executed, do not use multithreading, because they mostly use the same resources
 			if (paramScenariosRootDirectory != null && !paramScenariosRootDirectory.equals(paramExecute)) {
 				scenarioRunner.setMultipleThreads(false);

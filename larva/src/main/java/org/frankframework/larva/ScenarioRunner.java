@@ -70,12 +70,12 @@ public class ScenarioRunner {
 	private @Setter boolean multipleThreads;
 	private final int threads;
 
-	public ScenarioRunner(LarvaTool larvaTool, IbisContext ibisContext, TestConfig config, AppConstants appConstants, boolean evenStep, int waitBeforeCleanUp, LarvaLogLevel logLevel) {
+	public ScenarioRunner(LarvaTool larvaTool, IbisContext ibisContext, TestConfig config, AppConstants appConstants, int waitBeforeCleanUp, LarvaLogLevel logLevel) {
 		this.larvaTool = larvaTool;
 		this.ibisContext = ibisContext;
 		this.config = config;
 		this.appConstants = appConstants;
-		this.evenStep = evenStep;
+		this.evenStep = false;
 		this.waitBeforeCleanUp = waitBeforeCleanUp;
 		this.logLevel = logLevel;
 		this.multipleThreads = config.isMultiThreaded();
@@ -170,7 +170,7 @@ public class ScenarioRunner {
 		return parentFolder.getName();
 	}
 
-	private void runOneFile(File file, String currentScenariosRootDirectory, boolean flushLogsForEveryScenarioStep) {
+	public int runOneFile(File file, String currentScenariosRootDirectory, boolean flushLogsForEveryScenarioStep) {
 		// increment suffix for each scenario
 		String correlationId = TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
 		int scenarioPassed = RESULT_ERROR;
@@ -277,6 +277,7 @@ public class ScenarioRunner {
 		output.append("</div>");
 		larvaTool.writeHtml(output.toString(), true);
 		config.flushWriters();
+		return scenarioPassed;
 	}
 
 	private List<String> getSteps(Properties properties) {
