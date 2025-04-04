@@ -23,7 +23,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import org.frankframework.functional.ThrowingRunnable;
 import org.frankframework.functional.ThrowingSupplier;
-import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.util.LogUtil;
 
 public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
