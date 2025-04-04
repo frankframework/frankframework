@@ -22,11 +22,11 @@
 		<jackson.version>2.18.2</jackson.version>
 		<cxf.version>4.1.0</cxf.version>
 		<spring.version>6.2.2</spring.version>
-		<spring-security.version>6.4.2</spring-security.version>
-		<spring-integration.version>6.4.1</spring-integration.version>
-		<spring.boot.version>3.4.2</spring.boot.version>
-		<tomcat.version>10.1.34</tomcat.version>
-		<bouncycastle.version>1.79</bouncycastle.version>
+		<spring-security.version>6.4.4</spring-security.version>
+		<spring-integration.version>6.4.3</spring-integration.version>
+		<spring.boot.version>3.4.4</spring.boot.version>
+		<tomcat.version>10.1.39</tomcat.version>
+		<bouncycastle.version>1.80</bouncycastle.version>
 
 		<narayana.version>7.1.0.Final</narayana.version>
 		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
@@ -52,7 +52,7 @@
 		<activemq.driver.version>6.1.5</activemq.driver.version>
 		<artemis.driver.version>2.39.0</artemis.driver.version>
 
-		<aws.java.sdk.version>2.29.1</aws.java.sdk.version>
+		<aws.java.sdk.version>2.31.0</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.14.2</mockito.version>
