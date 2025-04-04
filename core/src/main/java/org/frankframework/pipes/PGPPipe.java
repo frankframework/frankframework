@@ -53,11 +53,11 @@ public class PGPPipe extends FixedForwardPipe {
 	public enum Action {
 		/** Encrypts the given input. Requires the publicKey to be set to recipients public key, and recipients to be set to recipients email addresses. */
 		ENCRYPT,
-		/** Encrypts and then signs the given input. On top of the requirements for Encrypt action, signing requires senders to bet set for user's email; and secretKey & secretPassword to be set to private key's path and it's password (password is optional, if private key does not have protection). */
+		/** Encrypts and then signs the given input. On top of the requirements for the {@code Encrypt} action, signing requires senders to be set for user's email; and secretKey {@literal &} secretPassword to be set to private key's path and it's password (password is optional, if private key does not have protection). */
 		SIGN,
 		/** Decrypts the given input. Requires secretKey and secretPassword to bet set to private key's path and it's password. Just like signing, password is not required, if private key does not have protection. */
 		DECRYPT,
-		/** Decrypts and verifies the given input. On top of the requirements for Decrypt action, verification expects list of senders' email's and corresponding public keys. However, sender emails does not have to be set, and in that case, this pipe will only validate that someone signed the input. */
+		/** Decrypts and verifies the given input. On top of the requirements for the {@code Decrypt} action, verification expects list of senders' email's and corresponding public keys. However, sender emails does not have to be set, and in that case, this pipe will only validate that someone signed the input. */
 		VERIFY,
 	}
 	private Action action;

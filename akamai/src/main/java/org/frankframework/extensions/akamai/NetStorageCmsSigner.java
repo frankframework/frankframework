@@ -36,7 +36,7 @@ import org.frankframework.util.UUIDUtil;
  * @author Niels Meijer
  */
 public class NetStorageCmsSigner {
-	//Main headers used for communication to the API
+	// Main headers used for communication to the API
 	protected static final String ACTION_HEADER = "X-Akamai-ACS-Action";
 	protected static final String AUTH_DATA_HEADER = "X-Akamai-ACS-Auth-Data";
 	protected static final String AUTH_SIGN_HEADER = "X-Akamai-ACS-Auth-Sign";
@@ -107,7 +107,7 @@ public class NetStorageCmsSigner {
 
 	/**
 	 * Computes the value for the the X-Akamai-ACS-Action: header. This is an url query-string encoded separated
-	 * list of parameters in the form of name=value&name2=value2.
+	 * list of parameters in the form of {@code name=value&name2=value2}.
 	 * @param action the set of action parameters to be sent in the API request
 	 * @return an url encoded query string of name-value pairs from the {@link NetStorageRequest}
 	 */

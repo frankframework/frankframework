@@ -23,7 +23,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import org.frankframework.functional.ThrowingRunnable;
 import org.frankframework.functional.ThrowingSupplier;
-import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.util.LogUtil;
 
 public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
@@ -77,7 +76,6 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 	/**
 	 * Execute an action with the thread prepared for enlisting transactional resources.
 	 * To be called for obtaining transactional resources (like JDBC connections) if a TransactionConnector might already have been created on the thread.
-	 * @see FixedQuerySender#provideOutputStream
 	 */
 	public static <T, R, E extends Exception> T doInUnsuspendedTransationContext(ThrowingSupplier<T, E> action) throws E {
 		TransactionConnectorCoordinator<T,R> coordinator = (TransactionConnectorCoordinator<T,R>)coordinators.get();
@@ -96,7 +94,6 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 
 	/**
 	 * Execute an action when the thread ends, if it is guarded by a TransactionConnector
-	 * @see FixedQuerySender#provideOutputStream
 	 */
 	public static <T, R, E extends Exception> boolean onEndChildThread(ThrowingRunnable<E> action) {
 		TransactionConnectorCoordinator<T,R> coordinator = (TransactionConnectorCoordinator<T,R>)coordinators.get();

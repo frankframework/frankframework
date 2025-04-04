@@ -31,14 +31,12 @@ import org.frankframework.util.StringUtil;
 
 /**
  * A JmsRealm is a definition of a JMS provider, and is kind of a utility
- * class to prevent the tedeous work of repeatedly defining all parameters
+ * class to prevent the tedious work of repeatedly defining all parameters
  * to connect to a queue or topic.
  * <br/>
  * This class is not an extension of JNDIBase, which would be logical, because
  * in the JMSBase class the function PropertyUtils.copyProperties is used, which cannot
  * handle this.
- * @see JMSFacade#setJmsRealm
- * @author Johan Verrips IOS
  */
 @FrankDocGroup(FrankDocGroupValue.OTHER)
 public class JmsRealm {

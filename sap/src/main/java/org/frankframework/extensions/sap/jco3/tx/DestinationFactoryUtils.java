@@ -29,7 +29,7 @@ import org.frankframework.extensions.sap.jco3.SapSystemImpl;
  * Helper class for managing a JCo destinations, in particular
  * for obtaining transactional resources.
  *
- * <p>based on {@link org.springframework.jms.connection.ConnectionFactoryUtils}
+ * <p>based on {@code org.springframework.jms.connection.ConnectionFactoryUtils}.
  *
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
