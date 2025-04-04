@@ -43,7 +43,7 @@ on:
 
 jobs:
   build-maven-artifacts:
-    name: Build and Test Maven Artifacts on JDK ${{ env.JDK_VERSION }}
+    name: Build and Test Maven Artifacts on JDK
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
