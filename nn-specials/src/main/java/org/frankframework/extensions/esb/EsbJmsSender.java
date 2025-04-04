@@ -37,7 +37,7 @@ import org.frankframework.util.SpringUtils;
 public class EsbJmsSender extends JmsSender {
 
 	public enum MessageProtocol {
-		/** Fire {@literal &} Forget protocol */
+		/** Fire &amp; Forget protocol */
 		FF,
 		/** Request-Reply protocol */
 		RR

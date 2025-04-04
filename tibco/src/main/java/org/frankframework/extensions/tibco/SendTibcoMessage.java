@@ -86,7 +86,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 	public enum MessageProtocol implements DocumentedEnum {
 		/** Request-Reply */
 		@EnumLabel("RR") REQUEST_REPLY,
-		/** Fire {@literal &} Forget */
+		/** Fire &amp; Forget */
 		@EnumLabel("FF") FIRE_AND_FORGET
 	}
 

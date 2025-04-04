@@ -75,9 +75,7 @@ import org.frankframework.util.XmlUtils;
  *
  * <p><b>Expected message format:</b></p>
  * <p>GET methods expect a message looking like this:
- * <pre>{@code
- *   param_name=param_value&another_param_name=another_param_value
- * }</pre>
+ * <pre>{@code param_name=param_value&another_param_name=another_param_value}</pre>
  * <p>POST AND PUT methods expect a message similar as GET, or looking like this:
  * <pre>{@code
  *   param_name=param_value
