@@ -89,29 +89,28 @@ public class ScenarioRunner {
 
 	public void runScenario(List<File> scenarioFiles, String currentScenariosRootDirectory) {
 		scenariosTotal = scenarioFiles.size();
-		Map<String, List<File>> sameFolderFiles = getSameFolderFiles(scenarioFiles, currentScenariosRootDirectory);
-		log.debug("Found: {} folders", sameFolderFiles.size());
+		Map<String, List<File>> filesByFolder = groupFilesByFolder(scenarioFiles, currentScenariosRootDirectory);
+		log.debug("Found: {} folders", filesByFolder.size());
 
 		List<File> singleThreadedScenarios;
 		if (multipleThreads) {
-			singleThreadedScenarios = runScenariosMultithreaded(currentScenariosRootDirectory, sameFolderFiles);
+			singleThreadedScenarios = runScenariosMultithreaded(currentScenariosRootDirectory, filesByFolder);
 		} else {
-			singleThreadedScenarios = new ArrayList<>(scenarioFiles);
+			singleThreadedScenarios = scenarioFiles;
 		}
 
 		runScenariosSingleThreaded(singleThreadedScenarios, currentScenariosRootDirectory);
 		log.info("Summary Larva run Scenario's: {} passed, {} failed. Total: {}", scenariosPassed, scenariosFailed, scenarioFiles.size());
 	}
 
-	private List<File> runScenariosMultithreaded(String currentScenariosRootDirectory, Map<String, List<File>> sameFolderFiles) {
+	private List<File> runScenariosMultithreaded(String currentScenariosRootDirectory, Map<String, List<File>> filesByFolder) {
 		List<File> singleThreadedScenarios = new ArrayList<>(); // Collect scenarios that should be run single threaded
 
 		// Run each scenario folder in a separate thread
 		// Not using a try-with-resources because the default awaitTermination is set on 1 day
 		ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
 		try {
-			sameFolderFiles.keySet().forEach(folder -> {
-				List<File> files = sameFolderFiles.get(folder);
+			filesByFolder.forEach((folder, files) -> {
 				log.debug("Starting FOLDER: {} - found: {} files", folder, files.size());
 				if (parallelBlacklistDirs.contains(folder)) {
 					log.debug("Skipping folder because found in parallel blacklist: {}", folder);
@@ -150,12 +149,12 @@ public class ScenarioRunner {
 	}
 
 	// Sort property files by folder
-	private Map<String, List<File>> getSameFolderFiles(List<File> scenarioFiles, String currentScenariosRootDirectory) {
+	public static Map<String, List<File>> groupFilesByFolder(List<File> scenarioFiles, String currentScenariosRootDirectory) {
 		return scenarioFiles.stream()
 				.collect(Collectors.groupingBy(scenarioFile -> getScenarioFolder(scenarioFile, currentScenariosRootDirectory)));
 	}
 
-	private String getScenarioFolder(File file, String currentScenariosRootDirectory) {
+	private static String getScenarioFolder(File file, String currentScenariosRootDirectory) {
 		if (currentScenariosRootDirectory.endsWith(File.separator)) {
 			currentScenariosRootDirectory = currentScenariosRootDirectory.substring(0, currentScenariosRootDirectory.length() - 1);
 		}
