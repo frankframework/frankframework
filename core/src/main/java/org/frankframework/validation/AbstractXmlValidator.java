@@ -103,7 +103,7 @@ public abstract class AbstractXmlValidator implements FrankElement, Lifecycle {
 	 * @throws ConfigurationException when:
 	 * <ul>
 	 *     <li>the schema cannot be found</li>
-	 *     <li><{@link #isThrowException()} is false and there is no forward defined for "failure"</li>
+	 *     <li>{@link #isThrowException()} is false and there is no forward defined for "failure"</li>
 	 *     <li>when the parser does not accept setting the properties for validating</li>
 	 * </ul>
 	 */
@@ -117,6 +117,7 @@ public abstract class AbstractXmlValidator implements FrankElement, Lifecycle {
 		return logPrefix;
 	}
 
+	@Override
 	public void start() {
 		if (isStarted()) {
 			log.info("already started {}", ClassUtils.nameOf(this));
@@ -324,7 +325,7 @@ public abstract class AbstractXmlValidator implements FrankElement, Lifecycle {
 
 	/**
 	 * If set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s).
-	 * Alternatively, warnings can be switched off using suppression properties {@value SuppressKeys#XSD_VALIDATION_WARNINGS_SUPPRESS_KEY}, {@value SuppressKeys#XSD_VALIDATION_ERROR_SUPPRESS_KEY} and {@value SuppressKeys#XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY}
+	 * Alternatively, warnings can be switched off using suppression properties {@link SuppressKeys#XSD_VALIDATION_WARNINGS_SUPPRESS_KEY}, {@link SuppressKeys#XSD_VALIDATION_ERROR_SUPPRESS_KEY} and {@link SuppressKeys#XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY}
 	 * @ff.default true
 	 */
 	public void setWarn(boolean warn) {

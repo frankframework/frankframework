@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
 /**
  * Connection holder, wrapping a Jco destination.
  *
- * <p>based on {@link org.springframework.jms.connection.JmsResourceHolder}
+ * <p>based on {@code org.springframework.jms.connection.JmsResourceHolder}
  *
  * <p>Note: This is an SPI class, not intended to be used by applications.
  *
@@ -40,7 +40,6 @@ import org.springframework.util.Assert;
  * @since   5.0
  */
 public class JcoResourceHolder extends ResourceHolderSupport {
-//	private static final Logger logger = LogUtil.getLogger(JcoResourceHolder.class);
 
 	private boolean frozen = false;
 

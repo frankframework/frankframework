@@ -992,8 +992,8 @@
 					</configuration>
 					<executions>
 						<execution>
-							<id>attach-javadoc</id>
-							<phase>generate-sources</phase>
+							<id>create-module-documentation</id>
+							<phase>process-sources</phase>
 							<goals>
 								<goal>jar</goal>
 							</goals>
@@ -1007,6 +1007,9 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-site-plugin</artifactId>
 					<version>3.21.0</version>
+					<configuration>
+						<generateProjectInfo>false</generateProjectInfo>
+					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
