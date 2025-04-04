@@ -1,6 +1,7 @@
 package org.frankframework.filesystem.smb;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.filesystem.LocalFileSystemTestHelper;
@@ -11,6 +12,7 @@ import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileServer.FileSystemType;
 import org.frankframework.testutil.junit.LocalFileSystemMock;
 
+@Tag("slow")
 public class Samba2SenderTest extends WritableFileSystemSenderTest<Samba2Sender, SmbFileRef, Samba2FileSystem> {
 
 	private final String username = "frankframework";

@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.filesystem.LocalFileSystemTestHelper;
@@ -13,6 +14,7 @@ import org.frankframework.receivers.FtpFileSystemListener;
 import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileSystemMock;
 
+@Tag("slow")
 public class FtpFileSystemListenerTest extends WritableFileSystemListenerTest<FTPFileRef, FtpFileSystem> {
 
 	private static final String username = "frankframework";

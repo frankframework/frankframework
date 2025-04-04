@@ -5,12 +5,14 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 
 import org.frankframework.filesystem.BasicFileSystemListenerTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.receivers.ExchangeMailListener;
 import org.frankframework.testutil.TestAssertions;
 
+@Tag("slow")
 public class ExchangeFileSystemListenerTest extends BasicFileSystemListenerTest<MailItemId, ExchangeFileSystem> {
 
 	@BeforeAll

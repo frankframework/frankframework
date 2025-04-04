@@ -6,6 +6,7 @@ import org.apache.sshd.server.SshServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import lombok.extern.log4j.Log4j2;
@@ -15,6 +16,7 @@ import org.frankframework.filesystem.WritableFileSystemListenerTest;
 import org.frankframework.receivers.SftpFileSystemListener;
 
 @Log4j2
+@Tag("slow")
 public class SftpFileSystemListenerTest extends WritableFileSystemListenerTest<SftpFileRef, SftpFileSystem> {
 
 	private static final String username = "demo";

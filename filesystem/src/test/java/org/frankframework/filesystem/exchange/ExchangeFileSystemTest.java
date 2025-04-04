@@ -11,6 +11,7 @@ import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.filesystem.HelperedBasicFileSystemTest;
@@ -20,6 +21,7 @@ import org.frankframework.util.JacksonUtils;
 /**
  * @author Niels Meijer
  */
+@Tag("slow")
 public class ExchangeFileSystemTest extends HelperedBasicFileSystemTest<MailItemId, ExchangeFileSystem> {
 
 	@BeforeAll

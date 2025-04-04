@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apache.sshd.server.SshServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import lombok.extern.log4j.Log4j2;
@@ -21,6 +22,7 @@ import org.frankframework.filesystem.IFileSystemTestHelper;
  *
  */
 @Log4j2
+@Tag("slow")
 class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 
 	private static final String username = "demo";

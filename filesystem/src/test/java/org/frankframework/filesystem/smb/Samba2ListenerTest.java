@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.filesystem.IFileSystemTestHelper;
@@ -13,6 +14,7 @@ import org.frankframework.receivers.Samba2Listener;
 import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileSystemMock;
 
+@Tag("slow")
 public class Samba2ListenerTest extends WritableFileSystemListenerTest<SmbFileRef, Samba2FileSystem> {
 	private static final boolean runWithDocker = false;
 	private final String username = "frankframework";

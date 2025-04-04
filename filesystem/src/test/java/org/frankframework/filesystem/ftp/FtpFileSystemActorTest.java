@@ -2,6 +2,7 @@ package org.frankframework.filesystem.ftp;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.filesystem.WritableFileSystemActorTest;
@@ -13,6 +14,7 @@ import org.frankframework.testutil.junit.LocalFileSystemMock;
  *
  * @author Jacobjob Koster
  */
+@Tag("slow")
 class FtpFileSystemActorTest extends WritableFileSystemActorTest<FTPFileRef, FtpFileSystem> {
 
 	private final String username = "frankframework";
