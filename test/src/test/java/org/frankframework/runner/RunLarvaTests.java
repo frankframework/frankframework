@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
@@ -88,9 +89,12 @@ public class RunLarvaTests {
 		return createScenarios(scenarioRootDir, "", allScenarioFiles);
 	}
 
-	private @Nonnull DynamicContainer createScenarioContainer(@Nonnull String baseFolder, @Nonnull Map.Entry<String, List<File>> scenarioFolder) {
+	private @Nonnull Stream<DynamicNode> createScenarioContainer(@Nonnull String baseFolder, @Nonnull Map.Entry<String, List<File>> scenarioFolder) {
 		String scenarioFolderName = scenarioFolder.getKey();
-		return DynamicContainer.dynamicContainer(scenarioFolderName, new File(scenarioFolderName).toURI(), createScenarios(baseFolder, scenarioFolderName, scenarioFolder.getValue()));
+		if (StringUtils.isBlank(scenarioFolderName)) {
+			return createScenarios(baseFolder, scenarioFolderName, scenarioFolder.getValue());
+		}
+		return Stream.of(DynamicContainer.dynamicContainer(scenarioFolderName, new File(baseFolder, scenarioFolderName).toURI(), createScenarios(baseFolder, scenarioFolderName, scenarioFolder.getValue())));
 	}
 
 	private @Nonnull Stream<DynamicNode> createScenarios(@Nonnull String baseFolder, @Nonnull String subFolder, @Nonnull List<File> scenarioFiles) {
@@ -104,11 +108,12 @@ public class RunLarvaTests {
 			return scenariosByFolder.entrySet()
 					.stream()
 					.sorted(Map.Entry.comparingByKey())
-					.map((Map.Entry<String, List<File>> nestedSubFolder) -> createScenarioContainer(commonFolder, nestedSubFolder));
+					.flatMap((Map.Entry<String, List<File>> nestedSubFolder) -> createScenarioContainer(commonFolder, nestedSubFolder));
 		}
 	}
 
 	private DynamicTest convertLarvaScenarioToTest(File scenarioFile) {
+		// Scenario name always computed from the scenario root dir to be understandable without context of immediate parent
 		String scenarioName = scenarioFile.getAbsolutePath().substring(scenarioRootDir.length());
 		return DynamicTest.dynamicTest(
 				scenarioName, scenarioFile.toURI(), () -> {
@@ -130,7 +135,7 @@ public class RunLarvaTests {
 	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually configure the application
 	 */
 	@Test
-//	@Disabled("This version fails only 15 scenarios, figure out why the other fails half the scenarios")
+	@Disabled("This version fails only 15 scenarios, figure out why the other fails half the scenarios")
 	void runLarvaTests() throws IOException {
 		assertTrue(applicationContext.isRunning());
 

@@ -158,7 +158,7 @@ public class ScenarioRunner {
 			currentScenariosDirectory = currentScenariosDirectory.substring(0, currentScenariosDirectory.length() - 1);
 		}
 		if (currentScenariosDirectory.equals(file.getParent())) {
-			return currentScenariosDirectory;
+			return "";
 		}
 
 		File parentFolder = file.getParentFile();
