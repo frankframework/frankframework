@@ -5,6 +5,7 @@ services:
     environment:
       jdbc.dbms.default: oracle-xa
       jdbc.hostname: oracle
+      active.storedProcedureTests: true
 
   oracle:
     image: private.docker.nexus.frankframework.org/ff-test/dbms/oracle

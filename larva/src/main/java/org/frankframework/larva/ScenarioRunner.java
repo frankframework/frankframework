@@ -70,12 +70,12 @@ public class ScenarioRunner {
 	private @Setter boolean multipleThreads;
 	private final int threads;
 
-	public ScenarioRunner(LarvaTool larvaTool, IbisContext ibisContext, TestConfig config, AppConstants appConstants, boolean evenStep, int waitBeforeCleanUp, LarvaLogLevel logLevel) {
+	public ScenarioRunner(LarvaTool larvaTool, IbisContext ibisContext, TestConfig config, AppConstants appConstants, int waitBeforeCleanUp, LarvaLogLevel logLevel) {
 		this.larvaTool = larvaTool;
 		this.ibisContext = ibisContext;
 		this.config = config;
 		this.appConstants = appConstants;
-		this.evenStep = evenStep;
+		this.evenStep = false;
 		this.waitBeforeCleanUp = waitBeforeCleanUp;
 		this.logLevel = logLevel;
 		this.multipleThreads = config.isMultiThreaded();
@@ -89,29 +89,28 @@ public class ScenarioRunner {
 
 	public void runScenario(List<File> scenarioFiles, String currentScenariosRootDirectory) {
 		scenariosTotal = scenarioFiles.size();
-		Map<String, List<File>> sameFolderFiles = getSameFolderFiles(scenarioFiles, currentScenariosRootDirectory);
-		log.debug("Found: {} folders", sameFolderFiles.size());
+		Map<String, List<File>> filesByFolder = groupFilesByFolder(scenarioFiles, currentScenariosRootDirectory);
+		log.debug("Found: {} folders", filesByFolder.size());
 
 		List<File> singleThreadedScenarios;
 		if (multipleThreads) {
-			singleThreadedScenarios = runScenariosMultithreaded(currentScenariosRootDirectory, sameFolderFiles);
+			singleThreadedScenarios = runScenariosMultithreaded(currentScenariosRootDirectory, filesByFolder);
 		} else {
-			singleThreadedScenarios = new ArrayList<>(scenarioFiles);
+			singleThreadedScenarios = scenarioFiles;
 		}
 
 		runScenariosSingleThreaded(singleThreadedScenarios, currentScenariosRootDirectory);
 		log.info("Summary Larva run Scenario's: {} passed, {} failed. Total: {}", scenariosPassed, scenariosFailed, scenarioFiles.size());
 	}
 
-	private List<File> runScenariosMultithreaded(String currentScenariosRootDirectory, Map<String, List<File>> sameFolderFiles) {
+	private List<File> runScenariosMultithreaded(String currentScenariosRootDirectory, Map<String, List<File>> filesByFolder) {
 		List<File> singleThreadedScenarios = new ArrayList<>(); // Collect scenarios that should be run single threaded
 
 		// Run each scenario folder in a separate thread
 		// Not using a try-with-resources because the default awaitTermination is set on 1 day
 		ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
 		try {
-			sameFolderFiles.keySet().forEach(folder -> {
-				List<File> files = sameFolderFiles.get(folder);
+			filesByFolder.forEach((folder, files) -> {
 				log.debug("Starting FOLDER: {} - found: {} files", folder, files.size());
 				if (parallelBlacklistDirs.contains(folder)) {
 					log.debug("Skipping folder because found in parallel blacklist: {}", folder);
@@ -134,34 +133,36 @@ public class ScenarioRunner {
 		return singleThreadedScenarios;
 	}
 
-	private void runScenariosSingleThreaded(List<File> singleThreadedScenarios, String currentScenariosRootDirectory) {
+	private void runScenariosSingleThreaded(List<File> singleThreadedScenarios, String currentScenariosDirectory) {
 		if (singleThreadedScenarios.isEmpty()) {
 			return;
 		}
 		try {
 			Writer out = (config.isSilent()) ? config.getSilentOut() : config.getOut();
-
 			out.write("<br/><h2>Starting " + singleThreadedScenarios.size() + " Single threaded Scenarios </h2>");
 		} catch (IOException ignored) {
 			// ignore exception
 		}
 
-		singleThreadedScenarios.forEach(file -> runOneFile(file, currentScenariosRootDirectory, true));
+		singleThreadedScenarios.forEach(file -> runOneFile(file, currentScenariosDirectory, true));
 	}
 
 	// Sort property files by folder
-	private Map<String, List<File>> getSameFolderFiles(List<File> scenarioFiles, String currentScenariosRootDirectory) {
+	public static Map<String, List<File>> groupFilesByFolder(List<File> scenarioFiles, String currentScenariosRootDirectory) {
 		return scenarioFiles.stream()
 				.collect(Collectors.groupingBy(scenarioFile -> getScenarioFolder(scenarioFile, currentScenariosRootDirectory)));
 	}
 
-	private String getScenarioFolder(File file, String currentScenariosRootDirectory) {
-		if (currentScenariosRootDirectory.endsWith(File.separator)) {
-			currentScenariosRootDirectory = currentScenariosRootDirectory.substring(0, currentScenariosRootDirectory.length() - 1);
+	private static String getScenarioFolder(File file, String currentScenariosDirectory) {
+		if (currentScenariosDirectory.endsWith(File.separator)) {
+			currentScenariosDirectory = currentScenariosDirectory.substring(0, currentScenariosDirectory.length() - 1);
+		}
+		if (currentScenariosDirectory.equals(file.getParent())) {
+			return currentScenariosDirectory;
 		}
 
 		File parentFolder = file.getParentFile();
-		while (parentFolder != null && !parentFolder.getParent().equals(currentScenariosRootDirectory)) {
+		while (parentFolder != null && !currentScenariosDirectory.equals(parentFolder.getParent())) {
 			parentFolder = parentFolder.getParentFile();
 		}
 		if (parentFolder == null) {
@@ -170,7 +171,7 @@ public class ScenarioRunner {
 		return parentFolder.getName();
 	}
 
-	private void runOneFile(File file, String currentScenariosRootDirectory, boolean flushLogsForEveryScenarioStep) {
+	public int runOneFile(File file, String currentScenariosRootDirectory, boolean flushLogsForEveryScenarioStep) {
 		// increment suffix for each scenario
 		String correlationId = TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
 		int scenarioPassed = RESULT_ERROR;
@@ -277,6 +278,7 @@ public class ScenarioRunner {
 		output.append("</div>");
 		larvaTool.writeHtml(output.toString(), true);
 		config.flushWriters();
+		return scenarioPassed;
 	}
 
 	private List<String> getSteps(Properties properties) {

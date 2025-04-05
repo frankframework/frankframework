@@ -5,6 +5,7 @@ services:
     environment:
       jdbc.dbms.default: postgres
       jdbc.hostname: postgres
+      active.storedProcedureTests: true
 
   postgres:
     image: private.docker.nexus.frankframework.org/ff-test/dbms/postgresql

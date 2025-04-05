@@ -1,5 +1,6 @@
 <module>
-	<Adapter name="StoredProcedureQuerySender Test Adapter">
+	<Adapter name="StoredProcedureQuerySender Test Adapter"
+			active="${active.storedProcedureTests}">
 		<Receiver>
 			<JavaListener name="StoredProcedureQuerySenderTest"
 						  serviceName="ibis4test-StoredProcedureQuerySender"/>
