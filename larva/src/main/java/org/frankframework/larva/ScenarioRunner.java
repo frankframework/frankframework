@@ -133,7 +133,7 @@ public class ScenarioRunner {
 		return singleThreadedScenarios;
 	}
 
-	private void runScenariosSingleThreaded(List<File> singleThreadedScenarios, String currentScenariosRootDirectory) {
+	private void runScenariosSingleThreaded(List<File> singleThreadedScenarios, String currentScenariosDirectory) {
 		if (singleThreadedScenarios.isEmpty()) {
 			return;
 		}
@@ -144,7 +144,7 @@ public class ScenarioRunner {
 			// ignore exception
 		}
 
-		singleThreadedScenarios.forEach(file -> runOneFile(file, currentScenariosRootDirectory, true));
+		singleThreadedScenarios.forEach(file -> runOneFile(file, currentScenariosDirectory, true));
 	}
 
 	// Sort property files by folder
@@ -153,13 +153,16 @@ public class ScenarioRunner {
 				.collect(Collectors.groupingBy(scenarioFile -> getScenarioFolder(scenarioFile, currentScenariosRootDirectory)));
 	}
 
-	private static String getScenarioFolder(File file, String currentScenariosRootDirectory) {
-		if (currentScenariosRootDirectory.endsWith(File.separator)) {
-			currentScenariosRootDirectory = currentScenariosRootDirectory.substring(0, currentScenariosRootDirectory.length() - 1);
+	private static String getScenarioFolder(File file, String currentScenariosDirectory) {
+		if (currentScenariosDirectory.endsWith(File.separator)) {
+			currentScenariosDirectory = currentScenariosDirectory.substring(0, currentScenariosDirectory.length() - 1);
+		}
+		if (currentScenariosDirectory.equals(file.getParent())) {
+			return currentScenariosDirectory;
 		}
 
 		File parentFolder = file.getParentFile();
-		while (parentFolder != null && !parentFolder.getParent().equals(currentScenariosRootDirectory)) {
+		while (parentFolder != null && !currentScenariosDirectory.equals(parentFolder.getParent())) {
 			parentFolder = parentFolder.getParentFile();
 		}
 		if (parentFolder == null) {

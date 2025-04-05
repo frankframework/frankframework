@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,10 +21,12 @@ import java.util.stream.Stream;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.ServletContext;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DynamicContainer;
+import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -41,7 +44,6 @@ import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CloseUtils;
 
-@Tag("slow")
 @Tag("integration")
 public class RunLarvaTests {
 
@@ -80,37 +82,42 @@ public class RunLarvaTests {
 	}
 
 	@TestFactory
-	Stream<DynamicContainer> larvaTests() {
+	Stream<DynamicNode> larvaTests() {
 		List<File> allScenarioFiles = larvaTool.readScenarioFiles(appConstants, scenarioRootDir);
-		Map<String, List<File>> scenariosByFolder = ScenarioRunner.groupFilesByFolder(allScenarioFiles, scenarioRootDir);
 
-		return scenariosByFolder.entrySet()
-				.stream()
-				.sorted(Map.Entry.comparingByKey())
-				.map(this::createScenarioContainer);
-
+		return createScenarios(scenarioRootDir, "", allScenarioFiles);
 	}
 
-	private DynamicContainer createScenarioContainer(Map.Entry<String, List<File>> scenarioFolder) {
+	private @Nonnull DynamicContainer createScenarioContainer(@Nonnull String baseFolder, @Nonnull Map.Entry<String, List<File>> scenarioFolder) {
 		String scenarioFolderName = scenarioFolder.getKey();
-		String scenarioGroupName = scenarioFolderName.startsWith(scenarioRootDir) ? scenarioFolderName.substring(scenarioRootDir.length()) : scenarioFolderName;
-		return DynamicContainer.dynamicContainer(scenarioGroupName, new File(scenarioFolderName).toURI(), createScenarios(scenarioFolder.getValue()));
+		return DynamicContainer.dynamicContainer(scenarioFolderName, new File(scenarioFolderName).toURI(), createScenarios(baseFolder, scenarioFolderName, scenarioFolder.getValue()));
 	}
 
-	private Stream<DynamicTest> createScenarios(List<File> scenarioFiles) {
-		return scenarioFiles.stream()
-				.map(this::convertLarvaScenarioToTest);
+	private @Nonnull Stream<DynamicNode> createScenarios(@Nonnull String baseFolder, @Nonnull String subFolder, @Nonnull List<File> scenarioFiles) {
+		String commonFolder = StringUtils.isBlank(subFolder) ? baseFolder : Paths.get(baseFolder, subFolder).toString();
+		Map<String, List<File>> scenariosByFolder = ScenarioRunner.groupFilesByFolder(scenarioFiles, commonFolder);
+
+		if (scenariosByFolder.size() == 1) {
+			return scenarioFiles.stream()
+					.map(this::convertLarvaScenarioToTest);
+		} else {
+			return scenariosByFolder.entrySet()
+					.stream()
+					.sorted(Map.Entry.comparingByKey())
+					.map((Map.Entry<String, List<File>> nestedSubFolder) -> createScenarioContainer(commonFolder, nestedSubFolder));
+		}
 	}
 
 	private DynamicTest convertLarvaScenarioToTest(File scenarioFile) {
 		String scenarioName = scenarioFile.getAbsolutePath().substring(scenarioRootDir.length());
 		return DynamicTest.dynamicTest(
 				scenarioName, scenarioFile.toURI(), () -> {
+					System.out.println("Running scenario: [" + scenarioName + "]");
 					int scenarioPassed = 0;
 					try {
 						scenarioPassed = scenarioRunner.runOneFile(scenarioFile, scenarioRootDir, true);
 					} catch (Exception e) {
-						e.printStackTrace();
+						e.printStackTrace(System.out);
 						fail("Exception in scenario execution: " + e.getMessage());
 					}
 
