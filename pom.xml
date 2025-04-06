@@ -961,13 +961,9 @@
 								<name>ff.forward</name>
 								<placement>X</placement>
 							</tag>
-							<tag>
-								<name>ff.noAttribute</name>
-								<placement>X</placement>
-							</tag>
 						</tags>
 						<useStandardDocletOptions>true</useStandardDocletOptions>
-						<skippedModules>frankframework-test,frankframework-example,frankframework-webapp,frankframework-console-frontend</skippedModules>
+						<failOnError>false</failOnError>
 					</configuration>
 					<executions>
 						<execution>
@@ -976,9 +972,6 @@
 							<goals>
 								<goal>jar</goal>
 							</goals>
-							<configuration>
-								<failOnError>false</failOnError>
-							</configuration>
 						</execution>
 					</executions>
 				</plugin>
