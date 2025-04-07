@@ -484,6 +484,14 @@
 			<build>
 				<plugins>
 					<plugin>
+						<!--
+							JaCoCo aggregation of cross-module coverage.
+							Only needs to be done once in module running at end of the build.
+
+							The test module depends on all other Java code so seems a good place to stick this.
+
+							See also: https://www.baeldung.com/maven-jacoco-multi-module-project
+						-->
 						<groupId>org.jacoco</groupId>
 						<artifactId>jacoco-maven-plugin</artifactId>
 						<executions>
