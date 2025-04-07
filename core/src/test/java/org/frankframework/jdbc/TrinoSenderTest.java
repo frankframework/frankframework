@@ -100,7 +100,8 @@ public class TrinoSenderTest {
 
             // Try to connect to Trino
             try (Connection conn = createTrinoDataSource(TRINO_HOST, TRINO_PORT, TEST_CATALOG).getConnection()) {
-                try (ResultSet rs = conn.createStatement().executeQuery("SELECT 1")) {
+            	try (PreparedStatement stmt = conn.prepareStatement("SELECT 1");
+            		     ResultSet rs = stmt.executeQuery()) {
                     if (rs.next() && rs.getInt(1) == 1) {
                         isTrinoAvailable = true;
                         return true;
@@ -525,8 +526,9 @@ public class TrinoSenderTest {
 
                     // Verify the insert worked
                     try (Connection conn = dataSource.getConnection()) {
-                        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + TEST_CATALOG + "."
-                                + TEST_SCHEMA + "." + batchTestTable + " WHERE id = 6")) {
+                    	try (PreparedStatement stmt = conn.prepareStatement(
+                    	        "SELECT * FROM " + TEST_CATALOG + "." + TEST_SCHEMA + "." + batchTestTable + " WHERE id = ?")) {
+                    	    stmt.setInt(1, 6);  // Set the parameter safely
                             try (ResultSet rs = stmt.executeQuery()) {
                                 assertTrue(rs.next(), "Should find record with id=6");
                                 assertEquals("Test6", rs.getString("name"), "Name should be 'Test6'");
@@ -898,15 +900,19 @@ public class TrinoSenderTest {
         }
     }
 
-    /**
-     * Executes a SQL update statement.
-     * <p>
-     * This utility method executes a SQL update statement using a prepared statement.
-     * 
-     * @param conn the database connection to use
-     * @param sql the SQL statement to execute
-     * @throws SQLException if an error occurs during execution
-     */
+	/**
+	 * Executes a SQL update statement.
+	 * <p>
+	 * This utility method executes a SQL update statement using a prepared
+	 * statement. 
+	 * SECURITY WARNING: This method directly executes SQL strings and
+	 * should only be used for testing. Never use this with user-provided input in
+	 * production code.
+	 * 
+	 * @param conn the database connection to use
+	 * @param sql  the SQL statement to execute
+	 * @throws SQLException if an error occurs during execution
+	 */
     private static void executeUpdate(Connection conn, String sql) throws SQLException {
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.execute();
