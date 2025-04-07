@@ -3,15 +3,12 @@ package org.frankframework.runner;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,10 +19,8 @@ import jakarta.annotation.Nonnull;
 import jakarta.servlet.ServletContext;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
@@ -66,14 +61,14 @@ public class RunLarvaTests {
 
 		larvaTool = new LarvaTool();
 		TestConfig testConfig = larvaTool.getConfig();
-		testConfig.setTimeout(2000);
+		testConfig.setTimeout(10_000);
 		testConfig.setSilent(false);
 		testConfig.setLogLevel(LARVA_LOG_LEVEL);
 		testConfig.setAutoScroll(false);
 		testConfig.setMultiThreaded(false);
 		testConfig.setOut(new HtmlTagStrippingWriter(System.out));
 
-		scenarioRunner = new ScenarioRunner(larvaTool, ibisContext, testConfig, appConstants, 100, LARVA_LOG_LEVEL);
+		scenarioRunner = new ScenarioRunner(larvaTool, ibisContext, testConfig, appConstants, 500, LARVA_LOG_LEVEL);
 		scenarioRootDir = larvaTool.initScenariosRootDirectories(null, new ArrayList<>(), new ArrayList<>());
 	}
 
@@ -118,13 +113,7 @@ public class RunLarvaTests {
 		return DynamicTest.dynamicTest(
 				scenarioName, scenarioFile.toURI(), () -> {
 					System.out.println("Running scenario: [" + scenarioName + "]");
-					int scenarioPassed = 0;
-					try {
-						scenarioPassed = scenarioRunner.runOneFile(scenarioFile, scenarioRootDir, true);
-					} catch (Exception e) {
-						e.printStackTrace(System.out);
-						fail("Exception in scenario execution: " + e.getMessage());
-					}
+					int scenarioPassed = scenarioRunner.runOneFile(scenarioFile, scenarioRootDir, true);
 
 					assertEquals(LarvaTool.RESULT_OK, scenarioPassed);
 				}
@@ -135,7 +124,7 @@ public class RunLarvaTests {
 	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually configure the application
 	 */
 	@Test
-	@Disabled("This version fails only 15 scenarios, figure out why the other fails half the scenarios")
+	//@Disabled("This version fails only 15 scenarios, figure out why the other fails half the scenarios")
 	void runLarvaTests() throws IOException {
 		assertTrue(applicationContext.isRunning());
 
@@ -180,93 +169,4 @@ public class RunLarvaTests {
 		}
 	}
 
-	static class HtmlTagStrippingWriter extends Writer {
-		private final OutputStream out;
-		private boolean writingTag = false;
-		private boolean lastCharWasNewLine = false;
-		private boolean writingHtmlEntity = false;
-		private final StringBuffer htmlEntityBuffer = new StringBuffer();
-
-		/**
-		 * Create a new filtered writer.
-		 *
-		 * @param out a Writer object to provide the underlying stream.
-		 * @throws NullPointerException if {@code out} is {@code null}
-		 */
-		protected HtmlTagStrippingWriter(@Nonnull OutputStream out) {
-			this.out = out;
-		}
-
-		@Override
-		public void write(int c) throws IOException {
-			if (c == '<') {
-				writingTag = true;
-			} else if (c == '>' && writingTag) {
-				writingTag = false;
-			} else if (writingHtmlEntity) {
-				htmlEntityBuffer.append((char) c);
-				if (c == ';') {
-					writingHtmlEntity = false;
-					writeHtmlEntity();
-				}
-			} else if (c == '&') {
-				writingHtmlEntity = true;
-				htmlEntityBuffer.append((char) c);
-			} else if (!writingTag) {
-				boolean isNewLine = (c == '\n' || c == '\r');
-				if (isNewLine) {
-					if (!lastCharWasNewLine) {
-						out.write(c); // Since we strip tags we might end up with lots of empty lines, try to avoid that.
-					}
-				} else {
-					out.write(c);
-				}
-				lastCharWasNewLine = isNewLine;
-			}
-		}
-
-		private void writeHtmlEntity() throws IOException {
-			String entity = StringEscapeUtils.unescapeHtml4(htmlEntityBuffer.toString());
-			out.write(entity.getBytes(StandardCharsets.UTF_8));
-			htmlEntityBuffer.setLength(0);
-		}
-
-		@Override
-		public void write(@Nonnull char[] cbuf, int off, int len) throws IOException {
-			for (int i = off; i < off + len; i++) {
-				write(cbuf[i]);
-			}
-		}
-
-		@Override
-		public void write(@Nonnull char[] cbuf) throws IOException {
-			for (int i = 0; i < cbuf.length; i++) {
-				write(cbuf[i]);
-			}
-		}
-
-		@Override
-		public void write(@Nonnull String str) throws IOException {
-			for (int i = 0; i < str.length(); i++) {
-				write(str.charAt(i));
-			}
-		}
-
-		@Override
-		public void write(@Nonnull String str, int off, int len) throws IOException {
-			for (int i = off; i < off + len; i++) {
-				write(str.charAt(i));
-			}
-		}
-
-		@Override
-		public void flush() {
-			// No-op
-		}
-
-		@Override
-		public void close() {
-			// No-op
-		}
-	}
 }

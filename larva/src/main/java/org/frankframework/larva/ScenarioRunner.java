@@ -186,18 +186,17 @@ public class ScenarioRunner {
 		larvaTool.debugMessage("Read property file " + file.getName());
 		Properties properties = larvaTool.readProperties(appConstants, file);
 		String scenarioDescription = properties.getProperty("scenario.description");
-		List<String> steps;
 
 		larvaTool.debugMessage("Read steps from property file");
-		steps = getSteps(properties);
+		List<String> stepList = getSteps(properties);
 		larvaTool.debugMessage("Open queues");
 		Map<String, Queue> queues = new QueueCreator(config, larvaTool).openQueues(scenarioDirectory, properties, ibisContext, correlationId);
 		if (queues != null) {
 			larvaTool.debugMessage("Execute steps");
 			boolean allStepsPassed = true;
 			boolean autoSaved = false;
-			Iterator<String> iterator = steps.iterator();
-			while (allStepsPassed && iterator.hasNext()) {
+			Iterator<String> steps = stepList.iterator();
+			while (allStepsPassed && steps.hasNext()) {
 				if (evenStep) {
 					output.append("<div class='even'>");
 					evenStep = false;
@@ -205,7 +204,7 @@ public class ScenarioRunner {
 					output.append("<div class='odd'>");
 					evenStep = true;
 				}
-				String step = iterator.next();
+				String step = steps.next();
 				String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
 				larvaTool.debugMessage("Execute step '" + stepDisplayName + "'");
 				LocalTime start = LocalTime.now();
