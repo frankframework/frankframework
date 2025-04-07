@@ -17,6 +17,12 @@ jdbc:
     username: "testiaf_user"
     password: "testiaf_user00"
 
+  - name: "trino"
+    type: "io.trino.jdbc.TrinoDataSource"
+    url: "jdbc:trino://localhost:8090"
+    username: "trino"  # Add if needed
+    password: ""
+
   - name: "MS_SQL"
     type: "com.microsoft.sqlserver.jdbc.SQLServerXADataSource"
     url: "jdbc:sqlserver://${jdbc.hostname:-localhost}:1433;database=testiaf"

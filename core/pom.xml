@@ -756,6 +756,11 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>io.trino</groupId>
+			<artifactId>trino-jdbc</artifactId>
+			<version>474</version>
+		</dependency>
+		<dependency>
 			<groupId>org.mariadb.jdbc</groupId>
 			<artifactId>mariadb-java-client</artifactId>
 			<version>${mariadb.driver.version}</version>
