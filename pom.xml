@@ -594,6 +594,23 @@
 				<scope>provided</scope>
 			</dependency>
 
+			<!-- Define Liquibase once with all exclusions -->
+			<dependency>
+				<groupId>org.liquibase</groupId>
+				<artifactId>liquibase-core</artifactId>
+				<version>4.29.2</version>
+				<exclusions>
+					<exclusion>
+						<groupId>javax.xml.bind</groupId>
+						<artifactId>jaxb-api</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>javax.activation</groupId>
+						<artifactId>javax.activation-api</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+
 			<!-- test scoped dependencies -->
 			<dependency>
 				<groupId>org.junit.jupiter</groupId>
