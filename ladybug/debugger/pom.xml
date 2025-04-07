@@ -12,6 +12,19 @@
 	<artifactId>frankframework-ladybug-debugger</artifactId>
 	<name>Frank!Framework Ladybug Debugger</name>
 
+	<!-- Update the transitive CXF dependency by importing the cxf BOM of the correct version -->
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-bom</artifactId>
+				<version>4.0.6</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>
