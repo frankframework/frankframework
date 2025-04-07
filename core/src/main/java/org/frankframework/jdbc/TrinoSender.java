@@ -198,11 +198,11 @@ public class TrinoSender extends AbstractJdbcQuerySender<QueryExecutionContext> 
         if (StringUtils.isNotEmpty(getSessionProperties())) {
             applySessionProperties(con);
         }
-        
-        // Trino doesn't support updatable result sets, always use read-only
-        return con.prepareStatement(convertQuery(optimizedQuery), 
-                                   java.sql.ResultSet.TYPE_FORWARD_ONLY, 
-                                   java.sql.ResultSet.CONCUR_READ_ONLY);
+        String convertedQuery = convertQuery(optimizedQuery);
+        PreparedStatement stmt = con.prepareStatement(convertedQuery,java.sql.ResultSet.TYPE_FORWARD_ONLY, 
+                java.sql.ResultSet.CONCUR_READ_ONLY);
+        return stmt;
+
     }
     
     /**
@@ -224,13 +224,13 @@ public class TrinoSender extends AbstractJdbcQuerySender<QueryExecutionContext> 
         
         // Handle different query types
         if (SELECT_PATTERN.matcher(trimmedQuery).lookingAt()) {
-            return handleSelectQuery(query);
+            return handleSelectOrDeleteQuery(query);
         } else if (INSERT_PATTERN.matcher(trimmedQuery).lookingAt()) {
             return handleInsertQuery(query);
         } else if (UPDATE_PATTERN.matcher(trimmedQuery).lookingAt()) {
             return handleUpdateQuery(query);
         } else if (DELETE_PATTERN.matcher(trimmedQuery).lookingAt()) {
-            return handleDeleteQuery(query);
+            return handleSelectOrDeleteQuery(query);
         }
         
         // For unrecognized query types, return as is
@@ -246,7 +246,7 @@ public class TrinoSender extends AbstractJdbcQuerySender<QueryExecutionContext> 
      * @param query The original SELECT query
      * @return The modified query with catalog.schema prefixes added where needed
      */
-    private String handleSelectQuery(String query) {
+    private String handleSelectOrDeleteQuery(String query) {
         String lowerQuery = query.toLowerCase();
         int fromIndex = lowerQuery.indexOf(" from ");
         
@@ -295,26 +295,6 @@ public class TrinoSender extends AbstractJdbcQuerySender<QueryExecutionContext> 
         }
         
         return addCatalogSchemaToTableReference(query, updateIndex + 7);
-    }
-    
-    /**
-     * Handles catalog/schema prefixing specifically for DELETE queries.
-     * <p>
-     * Locates the FROM clause and adds catalog.schema prefixes to table references
-     * that appear after the FROM keyword.
-     *
-     * @param query The original DELETE query
-     * @return The modified query with catalog.schema prefixes added where needed
-     */
-    private String handleDeleteQuery(String query) {
-        String lowerQuery = query.toLowerCase();
-        int fromIndex = lowerQuery.indexOf(" from ");
-        
-        if (fromIndex < 0) {
-            return query;
-        }
-        
-        return addCatalogSchemaToTableReference(query, fromIndex + 6);
     }
     
     /**
