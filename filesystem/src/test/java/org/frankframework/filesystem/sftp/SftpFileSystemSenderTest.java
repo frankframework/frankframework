@@ -3,6 +3,7 @@ package org.frankframework.filesystem.sftp;
 import org.apache.sshd.server.SshServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -11,6 +12,7 @@ import org.frankframework.filesystem.WritableFileSystemSenderTest;
 import org.frankframework.senders.SftpFileSystemSender;
 
 @Log4j2
+@Tag("slow")
 public class SftpFileSystemSenderTest extends WritableFileSystemSenderTest<SftpFileSystemSender, SftpFileRef, SftpFileSystem> {
 
 	private static final String username = "frankframework";

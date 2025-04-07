@@ -15,6 +15,7 @@ import jakarta.annotation.security.RolesAllowed;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,6 +112,7 @@ public class HazelcastEndToEndTest {
 
 	@Test
 	@WithMockUser(authorities = { "ROLE_IbisTester" })
+	@Tag("slow")
 	public void testMultipleSynchronousHazelcastMessage() {
 		assumeTrue(isTestRunningOnWindows() || isTestRunningOnGitHub());
 

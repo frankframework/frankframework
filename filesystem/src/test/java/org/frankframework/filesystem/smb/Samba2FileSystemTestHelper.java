@@ -29,11 +29,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.filesystem.FileSystemException;
-import org.frankframework.filesystem.FolderNotFoundException;
-import org.frankframework.filesystem.IFileSystemTestHelper;
-import org.frankframework.util.CloseUtils;
-import org.frankframework.util.LogUtil;
+import org.junit.jupiter.api.Tag;
 
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;
@@ -55,11 +51,18 @@ import com.hierynomus.smbj.session.Session;
 import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
+import org.frankframework.filesystem.FileSystemException;
+import org.frankframework.filesystem.FolderNotFoundException;
+import org.frankframework.filesystem.IFileSystemTestHelper;
+import org.frankframework.util.CloseUtils;
+import org.frankframework.util.LogUtil;
+
 /**
  *
  * @author alisihab
  *
  */
+@Tag("slow")
 public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 
 	protected Logger log = LogUtil.getLogger(this);
