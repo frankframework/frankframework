@@ -50,7 +50,7 @@ import org.frankframework.core.IPullingListener;
  * {@link jakarta.jms.TextMessage}s and {@link jakarta.jms.BytesMessage}<br/><br/>
  * </p>
  *
- * {@inheritDoc}
+ * {@inheritClassDoc}
  *
  * @author Gerrit van Brakel
  * @since 4.0.1, since 4.8 as 'switch'-class
