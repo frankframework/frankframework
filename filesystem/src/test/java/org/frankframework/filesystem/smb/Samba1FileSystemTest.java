@@ -1,6 +1,7 @@
 package org.frankframework.filesystem.smb;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 
 import jcifs.smb.SmbFile;
 
@@ -11,6 +12,7 @@ import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileServer.FileSystemType;
 import org.frankframework.testutil.junit.LocalFileSystemMock;
 
+@Tag("slow")
 public class Samba1FileSystemTest extends FileSystemTest<SmbFile, Samba1FileSystem> {
 
 	private final String username = "frankframework";

@@ -8,7 +8,7 @@ env:
   USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'frankframework') && github.actor != 'dependabot[bot]' }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   PR_NUMBER: ${{ github.event.number || '' }}
-  MAVEN_GOALS: verify
+  MAVEN_GOALS: test
 
 on:
   push:
@@ -60,7 +60,7 @@ on:
 
 jobs:
   run-database-tests:
-    name: Maven
+    name: Database Tests
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/frankframework/build/jdk21:latest

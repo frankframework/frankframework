@@ -72,7 +72,7 @@ public class TestAssertions extends org.junit.jupiter.api.Assertions {
 		StringBuilder buffer = new StringBuilder();
 
 		BufferedReader bufReader = new BufferedReader(new StringReader(str));
-		String line = null;
+		String line;
 		while((line = bufReader.readLine()) != null) {
 			buffer.append(line.trim());
 			buffer.append("\n");
