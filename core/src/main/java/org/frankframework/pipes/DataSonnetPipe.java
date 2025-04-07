@@ -54,12 +54,12 @@ import org.frankframework.util.StreamUtil;
 
 /**
  * <p>
- * Using {@code .jsonnet} transformation files, the DataSonnetPipe uses JSonnet at it's core to transform files
+ * Using {@code .jsonnet} transformation files, the DataSonnetPipe uses JSonnet at its core to transform files
  * from and to different file formats specified by supported {@link DataSonnetOutputType outputTypes}.
  * </p>
  * <p>
  * The pipe input message will be set to the JSON object called {@code payload}.
- * It's required for the input message to have a correct MimeType, else the text will be interpreted as a String.
+ * It is required for the input message to have a correct MimeType; otherwise, the text will be interpreted as a String.
  * </p>
  * <p>
  * Input message (JSON) format:
@@ -86,7 +86,7 @@ import org.frankframework.util.StreamUtil;
  * }</pre>
  * </p>
  * 
- * @ff.parameters All parameters are added to the {@code .jsonnet} stylesheet, parameter names must be unique.
+ * @ff.parameters All parameters are added to the {@code .jsonnet} stylesheet. Parameter names must be unique.
  * 
  * @see <a href="https://jsonnet.org/">https://jsonnet.org/</a> for live examples.
  * @see <a href="https://datasonnet.github.io/datasonnet-mapper/datasonnet/latest/cookbook.html">DataSonnet cookbook</a>.
@@ -165,9 +165,9 @@ public class DataSonnetPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * In order to maintain the date format, see {@link DateParameter#getFormatString()} use asString explicitly.
-	 * Messages may contain a context (with specific MimeType) and should be parsed as-is.
-	 * Whatever remains may be parsed as `raw` value.
+	 * In order to maintain the date format, see {@link DateParameter#getFormatString()}. Use asString explicitly.
+	 * Messages may contain a context (with a specific MimeType) and should be parsed as-is.
+	 * Whatever remains may be parsed as a `raw` value.
 	 */
 	private Document<?> toDocument(ParameterValue pv) {
 		if(pv.getDefinition() instanceof DateParameter) {
@@ -179,20 +179,20 @@ public class DataSonnetPipe extends FixedForwardPipe {
 		return new DefaultDocument<>(pv.getValue(), MediaTypes.APPLICATION_JAVA);
 	}
 
-	/** Location of stylesheet to apply to the input message */
+	/** Location of the stylesheet to apply to the input message. */
 	public void setStyleSheetName(String stylesheetName) {
 		this.styleSheetName = stylesheetName;
 	}
 
 	/**
-	 * Output file format, DataSonnet is semi-capable of converting the converted JSON to a different format.
+	 * Output file format. DataSonnet is semi-capable of converting the converted JSON to a different format.
 	 */
 	public void setOutputType(DataSonnetOutputType outputType) {
 		this.outputType = outputType;
 	}
 
 	/**
-	 * Compute mimetype when unknown. Requires more compute
+	 * Computes the mimetype when it is unknown. It requires more computation.
 	 */
 	public void setComputeMimeType(boolean computeMimeType) {
 		this.computeMimeType = computeMimeType;

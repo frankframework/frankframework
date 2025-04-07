@@ -30,9 +30,9 @@ import org.frankframework.doc.Forward;
 import org.frankframework.stream.Message;
 
 /**
- * Pipe that throws an exception, based on the input message.
+ * Pipe that throws an exception based on the input message.
  * <br/>
- * The {@literal success} forward is only used when the (deprecated) attribute {@literal throwException} has been set to {@literal false}, otherwise the (default) {@literal exception} forward will be used.
+ * The {@literal success} forward is only used when the (deprecated) attribute {@literal throwException} has been set to {@literal false}. Otherwise, the (default) {@literal exception} forward will be used.
  *
  * @ff.warning The attribute {@literal throwException} has been deprecated and thus the {@literal success} forward will be removed along with the {@literal throwException} attribute.
  */
@@ -71,7 +71,7 @@ public class ExceptionPipe extends AbstractPipe {
 
 
 	/**
-	 * When <code>true</code>, a PipeRunException is thrown. Otherwise, the output is only logged as an error (and no rollback is performed).
+	 * If {@code true}, a PipeRunException is thrown. Otherwise, the output is only logged as an error, and no rollback is performed.
 	 * @ff.default true
 	 */
 	@Deprecated(forRemoval = true, since = "9.0")

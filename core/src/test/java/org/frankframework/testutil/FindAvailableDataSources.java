@@ -20,6 +20,8 @@ public class FindAvailableDataSources {
 	private static List<String> availableDataSources = null;
 	private static final ResourceObjectLocator objectLocator = new ResourceObjectLocator();
 
+	public static final String JDBC_RESOURCE_PREFIX = "jdbc/";
+
 	public enum TestDatasource {
 		H2,
 		DB2("DB2-xa"),
@@ -27,7 +29,8 @@ public class FindAvailableDataSources {
 		MS_SQL,
 		MySQL,
 		MariaDB,
-		PostgreSQL("PostgreSQL-xa");
+		PostgreSQL("PostgreSQL-xa"),
+		trino;
 
 		private final String dataSourceName;
 		TestDatasource() {
@@ -38,11 +41,11 @@ public class FindAvailableDataSources {
 		}
 
 		public String getDataSourceName() {
-			return "jdbc/" + this.name();
+			return JDBC_RESOURCE_PREFIX + this.name();
 		}
 
 		public String getXaDataSourceName() {
-			return "jdbc/" + (dataSourceName != null ? dataSourceName : this.name());
+			return JDBC_RESOURCE_PREFIX + (dataSourceName != null ? dataSourceName : this.name());
 		}
 	}
 
@@ -71,7 +74,7 @@ public class FindAvailableDataSources {
 			String product = dsName.name();
 
 			try { //Attempt to add the DataSource and skip it if it cannot be instantiated
-				CommonDataSource cds = objectLocator.lookup("jdbc/"+product, null, CommonDataSource.class); // do not use createDataSource here, as it has side effects in descender classes
+				CommonDataSource cds = objectLocator.lookup(JDBC_RESOURCE_PREFIX+product, null, CommonDataSource.class); // do not use createDataSource here, as it has side effects in descender classes
 				// Check if we can make a connection
 				if(cds instanceof DataSource ds && validateConnection(product, ds)) {
 					availableDatasources.add(product);

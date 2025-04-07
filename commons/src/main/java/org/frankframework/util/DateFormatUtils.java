@@ -194,6 +194,25 @@ public class DateFormatUtils {
 		}
 	}
 
+	/**
+	 * Java time API is more strict compared to the old Date API. This method allows for parsing dates with optional components.
+	 *
+	 * @param format
+	 */
+	public static DateTimeFormatter getDateTimeFormatterWithOptionalComponents(String format) {
+		return new DateTimeFormatterBuilder()
+				.appendPattern(format)
+				.parseDefaulting(ChronoField.YEAR_OF_ERA, 1970)
+				.parseDefaulting(ChronoField.MONTH_OF_YEAR, LocalDate.MIN.getMonthValue())
+				.parseDefaulting(ChronoField.DAY_OF_MONTH, LocalDate.MIN.getDayOfMonth())
+				.parseDefaulting(ChronoField.HOUR_OF_DAY, LocalTime.MIN.getHour())
+				.parseDefaulting(ChronoField.MINUTE_OF_HOUR, LocalTime.MIN.getMinute())
+				.parseDefaulting(ChronoField.SECOND_OF_MINUTE, LocalTime.MIN.getSecond())
+				.parseDefaulting(ChronoField.NANO_OF_SECOND, LocalTime.MIN.getNano())
+				.toFormatter()
+				.withZone(ZoneId.systemDefault());
+	}
+
 	@Nullable
 	private static DateTimeFormatter determineDateFormat(String dateString) {
 		for (Map.Entry<Pattern, DateTimeFormatter> entry : DATE_EXPRESSION_PARSER_MAP.entrySet()) {

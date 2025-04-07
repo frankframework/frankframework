@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package org.frankframework.larva.queues;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,7 +34,6 @@ import org.frankframework.core.IWithParameters;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
-import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.http.WebServiceListener;
 import org.frankframework.larva.FileListener;
@@ -48,10 +46,9 @@ import org.frankframework.larva.XsltProviderListener;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
-import org.frankframework.senders.DelaySender;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
-import org.frankframework.util.CloseUtils;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
@@ -67,12 +64,14 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	private QueueWrapper(IConfigurable configurable) {
 		super();
 
-		queueKey = StringUtil.lcFirst(configurable.getClass().getSimpleName());
+		queueKey = StringUtil.lcFirst(ClassUtils.classNameOf(configurable));
+		log.trace("registering FrankElement [{}] under key [{}]", configurable, queueKey);
 		put(queueKey, configurable);
 
 		if (configurable instanceof IPushingListener listener) {
 			ListenerMessageHandler<?> handler = new ListenerMessageHandler<>();
 			listener.setHandler(handler);
+			log.trace("registering PushingListener handler [{}] as [{}]", handler, MESSAGE_HANDLER_KEY);
 			put(MESSAGE_HANDLER_KEY, handler);
 		}
 	}
@@ -262,16 +261,9 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	}
 
 	@Override
-	public int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
+	public int executeWrite(String stepDisplayName, Message fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
 		if (get() instanceof FileSender fileSender) {
 			fileSender.sendMessage(fileContent);
-			return LarvaTool.RESULT_OK;
-		}
-		if (get() instanceof DelaySender delaySender) {
-			try (PipeLineSession session = new PipeLineSession(); Message message = new Message(fileContent); ) {
-				SenderResult senderResult = delaySender.sendMessage(message, session);
-				CloseUtils.closeSilently(senderResult.getResult());
-			}
 			return LarvaTool.RESULT_OK;
 		}
 		if (get() instanceof XsltProviderListener xsltProviderListener) {
@@ -308,7 +300,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 
 
 	@Override
-	public String executeRead(String step, String stepDisplayName, Properties properties, String fileName, String fileContent) throws SenderException, IOException, TimeoutException, ListenerException {
+	public Message executeRead(String step, String stepDisplayName, Properties properties, String fileName, Message fileContent) throws SenderException, TimeoutException, ListenerException {
 		if (get() instanceof FileSender fileSender) {
 			return fileSender.getMessage();
 		}
@@ -327,10 +319,6 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			SenderException senderException = senderThread.getSenderException();
 			if (senderException != null) {
 				throw senderException;
-			}
-			IOException ioException = senderThread.getIOException();
-			if (ioException != null) {
-				throw ioException;
 			}
 			TimeoutException timeoutException = senderThread.getTimeoutException();
 			if (timeoutException != null) {

@@ -110,13 +110,13 @@ public class Base64Pipe extends FixedForwardPipe {
 		this.direction = direction;
 	}
 
-	/** Character encoding to be used to when reading input from strings for direction=encode or writing data for direction=decode. */
+	/** Character encoding to be used when reading input from strings for direction = encode or writing data for direction = decode. */
 	public void setCharset(String string) {
 		charset = string;
 	}
 
 	/**
-	 *  (Only used when direction=encode) Defines separator between lines. Special values: <code>auto</code>: platform default, <code>dos</code>: crlf, <code>unix</code>: lf
+	 *  (Only used when direction=encode) Defines the separator between lines. Special values: <code>auto</code>: platform default, <code>dos</code>: crlf, <code>unix</code>: lf.
 	 * @ff.default auto
 	 */
 	public void setLineSeparator(String lineSeparator) {
@@ -124,7 +124,7 @@ public class Base64Pipe extends FixedForwardPipe {
 	}
 
 	/**
-	 *  (Only used when direction=encode) Each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). If linelength &lt;= 0, then the output will not be divided into lines
+	 *  (Only used when direction=encode) Each line of encoded data will be at most the given length (rounded down to the nearest multiple of 4). If linelength &lt;= 0, then the output will not be divided into lines.
 	 * @ff.default 76
 	 */
 	public void setLineLength(int lineLength) {

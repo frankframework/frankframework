@@ -3,10 +3,12 @@
 	<Include ref="ConfigurationEsbJmsListenerSender.xml"/>
 	<Include ref="ConfigurationFxF3.xml"/>
 	<Include ref="ConfigurationJmsListenerSender.xml"/>
+	<Include ref="ConfigurationNativeLarvaJmsListenerSender.xml"/>
 	<Include ref="ConfigurationJmsBytesMessage.xml"/>
 	<Include ref="ConfigurationWsdlGenerator.xml"/>
 	<Include ref="ConfigurationJmsHeaders.xml"/>
 	<Include ref="TestHighDeliveryCountWithEsbJmsListener.xml"/>
 	<Include ref="ConfigurationAwsSqsJmsListenerSender.xml"/>
 	<Include ref="ConfigurationPubSub.xml"/>
+	<Include ref="ConfigurationMessageStoreListeners.xml"/>
 </Configuration>

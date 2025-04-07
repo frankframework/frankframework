@@ -19,7 +19,7 @@ import org.xml.sax.SAXException;
 
 public interface IDocumentBuilder extends INodeBuilder {
 
-	public ObjectBuilder asObjectBuilder() throws SAXException;
-	public ArrayBuilder asArrayBuilder(String elementName) throws SAXException;
+	ObjectBuilder asObjectBuilder() throws SAXException;
+	ArrayBuilder asArrayBuilder(String elementName) throws SAXException;
 
 }

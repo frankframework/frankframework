@@ -1,0 +1,8 @@
+<result>
+	<rowset>
+		<row>
+			<NAME>John Doe</NAME>
+			<USER_COUNT>1</USER_COUNT>
+		</row>
+	</rowset>
+</result>

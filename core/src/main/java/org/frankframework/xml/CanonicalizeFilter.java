@@ -19,6 +19,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+/**
+ * Filter to canonicalize an XML by sorting the attributes on elements
+ */
 public class CanonicalizeFilter extends FullXmlFilter {
 
 	public CanonicalizeFilter(ContentHandler handler) {

@@ -27,11 +27,11 @@ import org.frankframework.pipes.hash.Algorithm;
 import org.frankframework.stream.Message;
 
 /**
- * This pipe can be used to generate a hash for the given message using an algorithm. With this, you can prove integrity of the message. If you
+ * This pipe can be used to generate a hash for the given message using an algorithm. With this, you can prove the integrity of the message. If you
  * need to prove the authenticity of the message as well, please use the {@link HashPipe} which uses an algorithm and a secret to prove both
  * integrity and authenticity.
  * <p>
- * The hash is generated based on the bytes of the given input message or on the bytes read from the file path if @{code inputIsFile} is @{code true}
+ * The hash is generated based on the bytes of the given input message or on the bytes read from the file path if {@code inputIsFile} is {@code true}.
  * <p>
  * The supported algorithms are:
  * <ul>
@@ -46,7 +46,7 @@ import org.frankframework.stream.Message;
  *
  * @author Gerrit van Brakel
  * @since 4.9
- * @deprecated please use the {@link HashPipe}
+ * @deprecated Please use the {@link HashPipe}.
  */
 @Deprecated(forRemoval = true, since = "8.3.0")
 @ConfigurationWarning("Use the HashPipe")
@@ -77,7 +77,7 @@ public class ChecksumPipe extends HashPipe {
 	}
 
 	/**
-	 * Type of checksum to be calculated
+	 * Type of checksum to be calculated.
 	 * @ff.default MD5
 	 */
 	@Deprecated(forRemoval = true, since = "8.3.0")

@@ -1,7 +1,7 @@
 jdbc:
   - name: "H2"
     type: "org.h2.jdbcx.JdbcDataSource"
-    url: "jdbc:h2:mem:test;NON_KEYWORDS=VALUE;TRACE_LEVEL_FILE=0;"
+    url: "jdbc:h2:mem:test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=0;"
 
   - name: "Oracle"
     type: "oracle.jdbc.datasource.impl.OracleDataSource"
@@ -16,6 +16,12 @@ jdbc:
     authalias: "${db.authalias}"
     username: "testiaf_user"
     password: "testiaf_user00"
+
+  - name: "trino"
+    type: "io.trino.jdbc.TrinoDataSource"
+    url: "jdbc:trino://localhost:8090"
+    username: "trino"  # Add if needed
+    password: ""
 
   - name: "MS_SQL"
     type: "com.microsoft.sqlserver.jdbc.SQLServerXADataSource"
@@ -74,6 +80,12 @@ jdbc:
   - name: "DB2"
     type: "com.ibm.db2.jcc.DB2SimpleDataSource"
     url: "jdbc:db2://${jdbc.hostname:-localhost}:50000/testiaf"
+    properties:
+      serverName: "${jdbc.hostname:-localhost}"
+      portNumber: 50000
+      databaseName: "testiaf"
+      driverType: 4
+      defaultIsolationLevel: 4
     authalias: "${db.authalias}"
     username: "testiaf_user"
     password: "testiaf_user00"
@@ -81,6 +93,12 @@ jdbc:
   - name: "DB2-xa"
     type: "com.ibm.db2.jcc.DB2XADataSource"
     url: "jdbc:db2://${jdbc.hostname:-localhost}:50000/testiaf"
+    properties:
+      serverName: "${jdbc.hostname:-localhost}"
+      portNumber: 50000
+      databaseName: "testiaf"
+      driverType: 4
+      defaultIsolationLevel: 4
     authalias: "${db.authalias}"
     username: "testiaf_user"
     password: "testiaf_user00"

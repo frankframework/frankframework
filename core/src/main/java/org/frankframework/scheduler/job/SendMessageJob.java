@@ -15,8 +15,6 @@
 */
 package org.frankframework.scheduler.job;
 
-import java.io.IOException;
-
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -74,10 +72,13 @@ public class SendMessageJob extends AbstractJobDef {
 
 			localSender.start();
 			try (Message result = localSender.sendMessageOrThrow(toSendMessage, session)) {
-				// The result needs to be read, to make sure the StreamCaptureUtils sees this stream as read and will display the return value in Ladybug.
-				result.asString();
+				// NB for the Ladybug:
+				// The Message `result` needs to be read, so it's displayed as the return value in Ladybug.
+				// This is part of the close method of StreamCaptureUtils#captureReader() and StreamCaptureUtils#captureInputStream() which is only active when the Ladybug is present.
+				// We therefor do not need to read the stream here!
+				log.debug("SendMessageJob [{}] executed succesfully with result [{}]", this::getName, result::toString);
 			}
-		} catch (LifecycleException | SenderException | IOException e) {
+		} catch (LifecycleException | SenderException e) {
 			throw new JobExecutionException("unable to send message to javaListener [" + javaListener + "]", e);
 		} finally {
 			try {

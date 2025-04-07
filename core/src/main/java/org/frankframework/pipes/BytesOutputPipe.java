@@ -42,8 +42,8 @@ import org.frankframework.util.XmlUtils;
  * for every field tag. Currently, two types of conversion are supported:
  *
  * <ul>
- *   <li><code>GetBytesFromString</code>, a conversion from string to bytes as specified by java.lang.String.getBytes(String charsetName)</li>
- *   <li><code>PackedDecimal</code>, a conversion from string to Packed-decimal</li>
+ *   <li><code>GetBytesFromString</code>, a conversion from string to bytes as specified by java.lang.String.getBytes(String charsetName).</li>
+ *   <li><code>PackedDecimal</code>, a conversion from string to Packed-decimal.</li>
  * </ul>
  *
  * An additional charset attribute is needed for a GetBytesFromString
@@ -60,17 +60,17 @@ import org.frankframework.util.XmlUtils;
  * found in the following resources:
  *
  * <ul>
- *   <li>A description as found at <a href="http://www.simotime.com/datapk01.htm">http://www.simotime.com/datapk01.htm</a></li>
- *   <li>AS400PackedDecimal.java from jtopen_6_1_source.zip downloaded at <a href="http://jt400.sourceforge.net/">http://jt400.sourceforge.net/</a></li>
+ *   <li>A description as found at <a href="http://www.simotime.com/datapk01.htm">http://www.simotime.com/datapk01.htm</a>.</li>
+ *   <li>AS400PackedDecimal.java from jtopen_6_1_source.zip downloaded at <a href="http://jt400.sourceforge.net/">http://jt400.sourceforge.net/</a>.</li>
  * </ul>
  *
  * Some examples:
  *
  * <ul>
- *   <li>The string +12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5C</li>
- *   <li>The string -12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5D</li>
- *   <li>The string 12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5F</li>
- *   <li>The string 1234 will be translated to three bytes with the following hexadecimal representation: 01 23 4F</li>
+ *   <li>The string +12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5C.</li>
+ *   <li>The string -12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5D.</li>
+ *   <li>The string 12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5F.</li>
+ *   <li>The string 1234 will be translated to three bytes with the following hexadecimal representation: 01 23 4F.</li>
  * </ul>
  *
  * The Packed-decimal is prefixed with zeroes when the specified size is bigger

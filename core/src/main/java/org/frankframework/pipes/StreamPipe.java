@@ -294,7 +294,7 @@ public class StreamPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * (only used for parameter <code>httprequest</code>) when true the first part is not put in a session key but returned to the pipeline (as the result of this pipe)
+	 * (only used for parameter <code>httprequest</code>) If {@code true} the first part is not put in a session key but returned to the pipeline (as the result of this pipe)
 	 * @ff.default false
 	 */
 	public void setExtractFirstStringPart(boolean b) {
@@ -318,7 +318,7 @@ public class StreamPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * (only used for parameter <code>httprequest</code>) when true parts are checked for antivirus scan returncode. these antivirus scan parts have been added by another application (so the antivirus scan is not performed in this pipe). for each file part an antivirus scan part have been added by this other application (directly after this file part)
+	 * (only used for parameter <code>httprequest</code>) If {@code true} parts are checked for antivirus scan returncode. these antivirus scan parts have been added by another application (so the antivirus scan is not performed in this pipe). for each file part an antivirus scan part have been added by this other application (directly after this file part)
 	 * @ff.default false
 	 */
 	public void setCheckAntiVirus(boolean b) {
@@ -334,7 +334,7 @@ public class StreamPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * (only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) name of antivirus scan status parts
+	 * (only used for parameter <code>httprequest</code> and when {@code true}) name of antivirus scan status parts
 	 * @ff.default <code>antivirus_rc</code>
 	 */
 	public void setAntiVirusPartName(String antiVirusPartName) {
@@ -346,7 +346,7 @@ public class StreamPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * (only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) name of antivirus scan message parts
+	 * (only used for parameter <code>httprequest</code> and when {@code true} <code>checkantivirus=true</code>) name of antivirus scan message parts
 	 * @ff.default <code>antivirus_msg</code>
 	 */
 	public void setAntiVirusMessagePartName(String antiVirusMessagePartName) {
@@ -358,7 +358,7 @@ public class StreamPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * (only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) message of antivirus scan parts which indicates the antivirus scan passed
+	 * (only used for parameter <code>httprequest</code> and when {@code checkantivirus=true}) message of antivirus scan parts which indicates the antivirus scan passed
 	 * @ff.default <code>pass</code>
 	 */
 	public void setAntiVirusPassedMessage(String antiVirusPassedMessage) {
@@ -366,7 +366,7 @@ public class StreamPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * (only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) when true and the antivirusfailed forward is specified and the antivirus scan did not pass, a soap fault is returned instead of only a plain error message
+	 * (only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) If {@code true} and the antivirusfailed forward is specified and the antivirus scan did not pass, a soap fault is returned instead of only a plain error message
 	 * @ff.default false
 	 */
 	public void setAntiVirusFailureAsSoapFault(boolean b) {

@@ -91,7 +91,7 @@ public class RemoveFromSession extends FixedForwardPipe {
 		return sessionKey;
 	}
 
-	/** name of the key of the entry in the <code>pipelinesession</code> to remove. if this key is empty the input message is interpretted as key. for multiple keys use ',' as delimiter */
+	/** name of the key of the entry in the <code>pipelinesession</code> to remove. If this key is empty the input message is interpretted as key. for multiple keys use ',' as delimiter */
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}

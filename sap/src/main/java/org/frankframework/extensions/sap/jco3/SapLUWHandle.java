@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2022, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,15 +15,17 @@
 */
 package org.frankframework.extensions.sap.jco3;
 
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.extensions.sap.jco3.tx.RollbackException;
-import org.frankframework.util.LogUtil;
-
-import org.apache.logging.log4j.Logger;
-
 import com.sap.conn.jco.JCoContext;
 import com.sap.conn.jco.JCoDestination;
 import com.sap.conn.jco.JCoException;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunException;
+import org.frankframework.extensions.sap.jco3.tx.RollbackException;
 
 /**
  * Wrapper for SAP sessions, used to control Logical Units of Work (LUWs).
@@ -32,12 +34,12 @@ import com.sap.conn.jco.JCoException;
  * @author  Jaco de Groot
  * @since   5.0
  */
-public class SapLUWHandle {
-	protected static Logger log = LogUtil.getLogger(SapLUWHandle.class);
-
-	private final JCoDestination destination;
-	private String tid;
-	private boolean useTid=false;
+@Log4j2
+public class SapLUWHandle implements AutoCloseable {
+	private final @Getter JCoDestination destination;
+	private @Getter String tid;
+	private @Getter @Setter boolean useTid=false;
+	private boolean released = false;
 
 	private SapLUWHandle(SapSystemImpl sapSystem) throws JCoException {
 		super();
@@ -56,8 +58,7 @@ public class SapLUWHandle {
 	}
 
 	public static SapLUWHandle retrieveHandle(PipeLineSession session, String sessionKey) {
-		SapLUWHandle result=(SapLUWHandle)session.get(sessionKey);
-		return result;
+		return (SapLUWHandle)session.get(sessionKey);
 	}
 
 	public static SapLUWHandle retrieveHandle(PipeLineSession session, String sessionKey, boolean create, SapSystemImpl sapSystem, boolean useTid) throws JCoException {
@@ -77,8 +78,6 @@ public class SapLUWHandle {
 			session.remove(sessionKey);
 		}
 	}
-
-
 
 	public void begin() throws JCoException {
 		if (isUseTid()) {
@@ -110,25 +109,21 @@ public class SapLUWHandle {
 
 	public void release() throws JCoException {
 		if (!isUseTid()) {
-			// End the stateful connection
-			JCoContext.end(destination);
-			log.debug("release: stateful connection");
+			if (!released) {
+				// End the stateful connection
+				JCoContext.end(destination);
+				released = true;
+				log.debug("release: stateful connection");
+			}
 		}
 	}
 
-	public JCoDestination getDestination() {
-		return destination;
+	@Override
+	public void close() throws PipeRunException {
+		try {
+			release();
+		} catch (JCoException e) {
+			throw new PipeRunException(null, "could not release handle", e);
+		}
 	}
-	public String getTid() {
-		return tid;
-	}
-
-	public void setUseTid(boolean b) {
-		useTid = b;
-	}
-	public boolean isUseTid() {
-		return useTid;
-	}
-
-
 }

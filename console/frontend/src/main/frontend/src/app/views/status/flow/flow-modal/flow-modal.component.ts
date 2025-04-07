@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild } from '@angular/core';
+import { Component, inject, Input, OnInit, ViewChild } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgMermaidComponent } from 'src/app/components/ng-mermaid/ng-mermaid.component';
 
@@ -15,8 +15,9 @@ export class FlowModalComponent {
 
   protected showActionButtons = false;
   protected errorActionMessage: null | string = null;
+  protected isFirefox: boolean = false;
 
-  constructor(private activeModal: NgbActiveModal) {}
+  private activeModal: NgbActiveModal = inject(NgbActiveModal);
 
   close(): void {
     this.activeModal.close();
@@ -74,7 +75,7 @@ export class FlowModalComponent {
       setTimeout(() => {
         newTab.document.body.innerHTML = svg.outerHTML;
         newTab.document.title = `${this.flowName} Flow`;
-      });
+      }, 50);
     }
   }
 
@@ -104,6 +105,7 @@ export class FlowModalComponent {
   private svgToImage(): Promise<HTMLCanvasElement> {
     return new Promise<HTMLCanvasElement>((resolve, reject) => {
       const canvas = document.createElement('canvas');
+      canvas.addEventListener('error', (event) => reject(event));
       const svg = this.ngMermaid.getMermaidSvgElement();
 
       if (!svg) {
@@ -122,14 +124,32 @@ export class FlowModalComponent {
       context.fillRect(0, 0, canvas.width, canvas.height);
       context.imageSmoothingQuality = 'high';
 
+      const base64Svg = this.svgToBase64(svg, canvas.width, canvas.height);
+      const base64SvgLength = base64Svg.length;
+
+      if (base64SvgLength > 1e6) {
+        reject('Image is too big');
+      }
+
       const image = new Image();
       image.addEventListener('load', () => {
-        context.drawImage(image, 0, 0, canvas.width, canvas.height);
-        resolve(canvas);
+        try {
+          context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+          setTimeout(() => {
+            resolve(canvas);
+          });
+        } catch (error) {
+          if ((error as DOMException).name === 'InvalidStateError') {
+            reject("Couldn't recreate image (browser gives no reason)");
+            return;
+          }
+          reject(error);
+        }
       });
       // eslint-disable-next-line unicorn/prefer-add-event-listener
-      image.onerror = reject;
-      image.src = `data:image/svg+xml;base64,${this.svgToBase64(svg, canvas.width, canvas.height)}`;
+      image.onerror = (event): void => reject(event);
+      image.src = `data:image/svg+xml;base64,${base64Svg}`;
     });
   }
 }

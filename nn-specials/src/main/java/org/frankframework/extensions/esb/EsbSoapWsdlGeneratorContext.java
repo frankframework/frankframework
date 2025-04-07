@@ -26,7 +26,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.lang3.StringUtils;
-
+import org.frankframework.core.IJmsListener;
 import org.frankframework.core.IListener;
 import org.frankframework.core.PipeLine;
 import org.frankframework.jms.JmsListener;
@@ -122,6 +122,12 @@ public class EsbSoapWsdlGeneratorContext implements WsdlGeneratorExtensionContex
 	}
 
 	@Override
+	public void addJmsServiceInfo(XMLStreamWriter w, IJmsListener listener) throws XMLStreamException {
+		if (listener instanceof JmsListener jmsListener) {
+			addJmsServiceInfo(w, jmsListener);
+		}
+	}
+
 	public void addJmsServiceInfo(XMLStreamWriter w, JmsListener listener) throws XMLStreamException {
 		writeEsbSoapJndiContext(w, listener);
 		w.writeStartElement(ESB_SOAP_JMS_NAMESPACE, "connectionFactory"); {

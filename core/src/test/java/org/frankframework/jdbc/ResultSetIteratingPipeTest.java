@@ -3,6 +3,7 @@ package org.frankframework.jdbc;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,12 +22,18 @@ import java.util.zip.DeflaterInputStream;
 import jakarta.annotation.Nonnull;
 
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.EchoSender;
@@ -120,7 +127,8 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 	}
 
 	@DatabaseTest
-	public void testWithStylesheetNoCollectResultsAndIgnoreExceptionsWithUpdateInSameTable() throws Exception {
+	public void testWithStylesheetNoCollectResultsAndIgnoreExceptionsWithUpdateInSameTableNoTransaction() throws Exception {
+		assumeFalse(env.getDbmsSupport().getDbms() == Dbms.DB2, "This test could work with DB2 if transactionIsolation would not be set to 4: Repeatable Read. But that breaks another test. With DB2 this test now needs transactions.");
 		preFillDatabaseTable();
 
 		pipe.setQuery("SELECT TKEY, TVARCHAR FROM "+TEST_TABLE+" ORDER BY TKEY");
@@ -141,6 +149,44 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		pipe.start();
 
 		PipeRunResult result = doPipe("since query attribute is set, this should be ignored");
+		assertEquals("<results count=\"10\"/>", result.getResult().asString());
+		try(Connection connection = env.getConnection()) {
+			String jdbcResult = JdbcTestUtil.executeStringQuery(connection, "SELECT COUNT('TKEY') FROM "+TEST_TABLE+" WHERE TINT = '4'");
+			assertEquals("10", jdbcResult);
+		}
+	}
+
+	@DatabaseTest
+	public void testWithStylesheetNoCollectResultsAndIgnoreExceptionsWithUpdateInSameTableWithTransaction() throws Exception {
+		preFillDatabaseTable();
+
+		pipe.setQuery("SELECT TKEY, TVARCHAR FROM "+TEST_TABLE+" ORDER BY TKEY");
+		pipe.setStyleSheetName("Pipes/ResultSetIteratingPipe/CreateMessage.xsl");
+		pipe.setCollectResults(false);
+		pipe.setIgnoreExceptions(true);
+		pipe.setDatasourceName(getDataSourceName());
+
+		FixedQuerySender sender = env.createBean(FixedQuerySender.class);
+		sender.setQuery("UPDATE "+TEST_TABLE+" SET TINT = '4', TDATE = CURRENT_TIMESTAMP WHERE TKEY = ?");
+		Parameter param = new Parameter();
+		param.setName("ID");
+		param.setXpathExpression("result/id");
+		sender.addParameter(param);
+		pipe.setSender(sender);
+
+		configurePipe();
+		pipe.start();
+
+		PlatformTransactionManager txManager = env.getTxManager();
+
+		TransactionStatus txStatus = txManager.getTransaction(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED));
+		PipeRunResult result = null;
+		try {
+			result = doPipe("since query attribute is set, this should be ignored");
+			txManager.commit(txStatus);
+		} catch (PipeRunException e) {
+			txManager.rollback(txStatus);
+		}
 		assertEquals("<results count=\"10\"/>", result.getResult().asString());
 		try(Connection connection = env.getConnection()) {
 			String jdbcResult = JdbcTestUtil.executeStringQuery(connection, "SELECT COUNT('TKEY') FROM "+TEST_TABLE+" WHERE TINT = '4'");

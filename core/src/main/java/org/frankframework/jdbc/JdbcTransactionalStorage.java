@@ -138,7 +138,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	protected String selectKeyForMessageQuery;
 
 	// the following for Oracle
-	private @Getter String sequenceName="seq_ibisstore";
+	private @Getter String sequenceName;
 
 	private static final String PROPERTY_CHECK_TABLE=CONTROL_PROPERTY_PREFIX+"checkTable";
 	private static final String PROPERTY_CHECK_INDICES=CONTROL_PROPERTY_PREFIX+"checkIndices";
@@ -328,6 +328,9 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
+		if (getSequenceName() == null) {
+			setSequenceName("SEQ_" + getTableName());
+		}
 		if (useIndexHint && StringUtils.isEmpty(getIndexName())) {
 			throw new ConfigurationException("Attribute [indexName] is not set and useIndexHint=true");
 		}

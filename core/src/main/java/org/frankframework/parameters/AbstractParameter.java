@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
@@ -209,7 +210,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	private Document transformToDocument(Source xmlSource, ParameterValueList pvl) throws TransformerException, IOException {
 		TransformerPool pool = getTransformerPool();
 		DOMResult transformResult = new DOMResult();
-		pool.deprecatedParameterTransformAction(xmlSource, transformResult, pvl);
+		pool.transform(xmlSource, (Result) transformResult, pvl ==null? null : pvl.getValueMap());
 		return (Document) transformResult.getNode();
 	}
 
@@ -248,7 +249,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		String requestedSessionKey;
 		if (tpDynamicSessionKey != null) {
 			try {
-				requestedSessionKey = tpDynamicSessionKey.transform(message.asSource());
+				requestedSessionKey = tpDynamicSessionKey.transformToString(message);
 			} catch (Exception e) {
 				throw new ParameterException(getName(), "SessionKey for parameter ["+getName()+"] exception on transformation to get name", e);
 			}
@@ -337,7 +338,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 						case DOMDOC:
 							return transformToDocument(source, pvl);
 						default:
-							String transformResult = transformerPool.deprecatedParameterTransformAction(source, null, pvl);
+							String transformResult = transformerPool.transformToString(source, pvl.getValueMap());
 							if (StringUtils.isNotEmpty(transformResult)) {
 								result = transformResult;
 							}
@@ -526,13 +527,21 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 			// get value
 			Object substitutionValue = getValueForFormatting(alreadyResolvedParameters, session, substitutionPattern);
-			params.add(substitutionValue);
+			if (substitutionValue instanceof Message substitutionMessage) {
+				try {
+					params.add(substitutionMessage.asString());
+				} catch (IOException e) {
+					throw new ParameterException(getName(), "Cannot convert substitution pattern ["+ substitutionPattern +"] from message to string", e);
+				}
+			} else {
+				params.add(substitutionValue);
+			}
 			formatPattern.append('{').append(paramPosition++);
 		}
 		try {
 			return MessageFormat.format(formatPattern.toString(), params.toArray());
 		} catch (Exception e) {
-			throw new ParameterException(getName(), "Cannot parse ["+formatPattern.toString()+"]", e);
+			throw new ParameterException(getName(), "Cannot parse ["+ formatPattern +"]", e);
 		}
 	}
 
@@ -575,7 +584,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			String namelc=name.toLowerCase();
 			switch (namelc) {
 				case "now":
-					if ("date".equals(formatType)) {
+					if ("date".equalsIgnoreCase(formatType) || "time".equalsIgnoreCase(formatType)) {
 						substitutionValue = new Date();
 					} else{
 						substitutionValue = formatDateToString(new Date(), formatString);

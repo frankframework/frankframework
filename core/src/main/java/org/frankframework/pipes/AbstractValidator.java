@@ -37,7 +37,7 @@ import org.frankframework.validation.XmlValidatorException;
 
 
 /**
- * Pipe that validates the input message against a Schema.
+ * Pipe that validates the input message against a schema.
  *
  * @author Gerrit van Brakel
  */
@@ -95,7 +95,7 @@ public abstract class AbstractValidator extends FixedForwardPipe implements IDua
 	protected abstract PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException, XmlValidatorException, ConfigurationException;
 
 
-	protected final PipeForward determineForward(ValidationResult validationResult, PipeLineSession session, boolean responseMode, Supplier<String> errorMessageProvider) throws PipeRunException {
+	protected final PipeForward determineForward(ValidationResult validationResult, boolean responseMode, Supplier<String> errorMessageProvider) throws PipeRunException {
 		throwEvent(validationResult.getEvent());
 		PipeForward forward = null;
 		switch(validationResult) {
@@ -164,21 +164,21 @@ public abstract class AbstractValidator extends FixedForwardPipe implements IDua
 		}
 	}
 
-	/** Session key for retrieving a schema */
+	/** Session key for retrieving a schema. */
 	public void setSchemaSessionKey(String schemaSessionKey) {
 		this.schemaSessionKey = schemaSessionKey;
 	}
 
-	/** Name of the root element */
+	/** Name of the root element. */
 	public void setRoot(String root) {
 		this.root = root;
 	}
-	/** Name of the response root element */
+	/** Name of the response root element. */
 	public void setResponseRoot(String responseRoot) {
 		this.responseRoot = responseRoot;
 	}
 
-	/** If set <code>true</code>, the failure forward is replaced by the success forward (like a warning mode) */
+	/** If {@code true}, the failure forward is replaced by the success forward (like a warning mode). */
 	@Deprecated
 	@ConfigurationWarning("please specify a forward with name=failure instead")
 	public void setForwardFailureToSuccess(boolean b) {

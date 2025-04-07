@@ -29,10 +29,13 @@ import com.hazelcast.instance.impl.DefaultNodeContext;
 import com.hazelcast.instance.impl.HazelcastInstanceFactory;
 import com.hazelcast.instance.impl.MobyNames;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.util.Environment;
 import org.frankframework.util.PropertyLoader;
 
+@Log4j2
 public class HazelcastConfig {
 	private static final AtomicInteger FACTORY_ID_GEN = new AtomicInteger();
 
@@ -53,6 +56,13 @@ public class HazelcastConfig {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		String resource = "ff-hazelcast.xml";
 		PropertyLoader properties = new PropertyLoader(classLoader, "hazelcast.properties");
+
+		String hazelcastNetworkConfig = properties.getString("hazelcast.network.file", null);
+		if (StringUtils.isBlank(hazelcastNetworkConfig)) {
+			throw new IllegalStateException("property [hazelcast.network.file] not specified");
+		}
+		log.info("Starting Hazelcast with network configuration: {}", hazelcastNetworkConfig);
+
 		Config config = Config.loadFromClasspath(classLoader, resource, properties);
 
 		if (properties.getBoolean("hazelcast.liteMember", false)) {

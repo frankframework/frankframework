@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService, ServerErrorResponse } from 'src/app/app.service';
 import { JdbcBrowseForm, JdbcService } from '../jdbc.service';
@@ -8,6 +8,7 @@ import { LaddaModule } from 'angular2-ladda';
 
 import { OrderByPipe } from '../../../pipes/orderby.pipe';
 import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
+import { WebStorageService } from '../../../services/web-storage.service';
 
 interface ColumnName {
   id: number;
@@ -40,12 +41,10 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
   protected query: string = '';
 
   private _subscriptions = new Subscription();
+  private appService: AppService = inject(AppService);
+  private jdbcService: JdbcService = inject(JdbcService);
+  private webStorageService: WebStorageService = inject(WebStorageService);
   private appConstants: AppConstants = this.appService.APP_CONSTANTS;
-
-  constructor(
-    private appService: AppService,
-    private jdbcService: JdbcService,
-  ) {}
 
   ngOnInit(): void {
     const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
@@ -54,14 +53,21 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
     });
     this._subscriptions.add(appConstantsSubscription);
 
+    const browseTablesSession = this.webStorageService.get<JdbcBrowseForm>('browseTables');
+
     this.jdbcService.getJdbc().subscribe((data) => {
-      this.form.datasource =
-        this.appConstants['jdbc.datasource.default'] == undefined
-          ? data.datasources[0]
-          : (this.appConstants['jdbc.datasource.default'] as string);
       this.datasources = data.datasources;
-      this.form.datasource = data.datasources[0] ?? '';
-      this.form.resultType = data.resultTypes[0] ?? '';
+
+      if (browseTablesSession) {
+        this.form = browseTablesSession;
+      } else {
+        this.form.datasource =
+          this.appConstants['jdbc.datasource.default'] == undefined
+            ? data.datasources[0]
+            : (this.appConstants['jdbc.datasource.default'] as string);
+        this.form.datasource = data.datasources[0] ?? '';
+        this.form.resultType = data.resultTypes[0] ?? '';
+      }
     });
   }
 
@@ -80,6 +86,8 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
       this.processingMessage = false;
       return;
     }
+
+    this.webStorageService.set('browseTables', formData);
 
     this.jdbcService.postJdbcBrowse(formData).subscribe({
       next: (returnData) => {
@@ -130,6 +138,7 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
   reset(): void {
     this.query = '';
     this.error = null;
+    this.webStorageService.remove('browseTables');
     this.form = {
       datasource: this.form.datasource,
       resultType: '',

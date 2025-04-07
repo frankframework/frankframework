@@ -27,29 +27,4 @@
 		>
 	</bean>
 
-	<bean
-		name="jmsConnector"
-		class="org.frankframework.unmanaged.SpringJmsConnector"
-		autowire="byName"
-		scope="prototype"
-		>
-	</bean>
-
-	<!--
-	SpringJmsConnector depends on bean definition for proto-jmsContainer below;
-	this bean is not needed in the EJB deployment mode.
-
-	Please note that this definition is intentionally incomplete and can not be
-	instantiated as-is: Runtime-magic will take care of proper & complete
-	instantiation.
-	-->
-	<bean
-		name="proto-jmsContainer"
-		class="org.springframework.jms.listener.DefaultMessageListenerContainer"
-		autowire="byName"
-		scope="prototype"
-		>
-		<property name="autoStartup" value="false"/>
-	</bean>
-
 </beans>

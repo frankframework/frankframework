@@ -33,9 +33,13 @@ public interface JsonEventHandler {
 
 	void endArray() throws SAXException;
 
-	// Must be able to handle String, long, BigDecimal, boolean, Date and null
+	/**
+	 * Must be able to handle String, long, BigDecimal, boolean, Date and null
+	 */
 	void primitive(Object value) throws SAXException;
 
-	// handles a string value as numeric (i.e without quotes in JSON)
+	/**
+	 * handles a string value as numeric (i.e without quotes in JSON)
+	 */
 	void number(String value) throws SAXException;
 }

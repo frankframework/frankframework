@@ -31,7 +31,6 @@ import java.util.regex.Pattern;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import jakarta.jms.JMSException;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -259,12 +258,12 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 			callableStatement.setQueryTimeout(getTimeout());
 			boolean alsoGetResultSets = callableStatement.execute();
 			return getResult(callableStatement, alsoGetResultSets, resultQuery, resStmt);
-		} catch (JdbcException | JMSException | IOException | SQLException e) {
+		} catch (JdbcException | IOException | SQLException e) {
 			throw new SenderException(e);
 		}
 	}
 
-	private Message getResult(CallableStatement callableStatement, boolean alsoGetResultSets, String resultQuery, PreparedStatement resStmt) throws SQLException, JMSException, IOException, JdbcException {
+	private Message getResult(CallableStatement callableStatement, boolean alsoGetResultSets, String resultQuery, PreparedStatement resStmt) throws SQLException, IOException, JdbcException {
 		int updateCount = callableStatement.getUpdateCount();
 		if (resStmt != null || outputParameters.isEmpty() && (!alsoGetResultSets || updateCount != -1)) {
 			return getUpdateStatementResult(callableStatement, resultQuery, resStmt, updateCount);

@@ -35,6 +35,7 @@ import org.frankframework.core.FrankElement;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.Dir2Xml;
@@ -80,7 +81,7 @@ public class FileSender implements IConfigurable, FrankElement {
 	 *
 	 * @param message  the message to write to file
 	 */
-	public void sendMessage(String message) throws TimeoutException, SenderException {
+	public void sendMessage(Message message) throws TimeoutException, SenderException {
 		if (runAnt) {
 			runAntScript();
 		} else {
@@ -105,7 +106,7 @@ public class FileSender implements IConfigurable, FrankElement {
 					}
 
 					try(FileOutputStream fileOutputStream = new FileOutputStream(file)) {
-						fileOutputStream.write(message.getBytes(encoding));
+						fileOutputStream.write(message.asByteArray(encoding));
 					} catch(Exception e) {
 						throw new SenderException("Exception writing file '" + filename + "': " + e.getMessage(), e);
 					}
@@ -125,10 +126,10 @@ public class FileSender implements IConfigurable, FrankElement {
 		}
 	}
 
-	public String getMessage() {
+	public Message getMessage() {
 		Dir2Xml dx=new Dir2Xml();
 		dx.setPath(file.getAbsolutePath());
-		return dx.getRecursiveDirList();
+		return new Message(dx.getRecursiveDirList());
 	}
 
 	private void runAntScript() {

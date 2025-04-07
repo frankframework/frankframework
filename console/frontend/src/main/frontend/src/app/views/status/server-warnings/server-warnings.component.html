@@ -6,29 +6,31 @@
       total disk size ({{ serverInfo.fileSystem.totalSpace | humanFileSize }})
     </li>
   }
-  @if (messageLog[selectedConfiguration].errorStoreCount === 1) {
-    <li class="list-group-item alert-danger">
-      <i class="m-r-md fa fa-info-circle"></i>
-      <span
-        >Errorlog contains 1 record. Service management should check whether this record has to be resent or
-        deleted</span
-      >
-    </li>
-  }
-  @if (messageLog[selectedConfiguration].errorStoreCount > 1) {
-    <li class="list-group-item alert-danger">
-      <i class="m-r-md fa fa-info-circle"></i>
-      <span
-        >Errorlog contains {{ messageLog[selectedConfiguration].errorStoreCount }} records. Service management should
-        check whether this record has to be resent or deleted</span
-      >
-    </li>
-  }
-  @if (messageLog[selectedConfiguration].errorStoreCount === -1) {
-    <li class="list-group-item alert-warning">
-      <i class="m-r-md fa fa-info-circle"></i>
-      <span>Errorlog might contain records. This is unknown because errorStore.count.show is not set to true</span>
-    </li>
+  @if (messageLog[selectedConfiguration]) {
+    @if (messageLog[selectedConfiguration].errorStoreCount === 1) {
+      <li class="list-group-item alert-danger">
+        <i class="m-r-md fa fa-info-circle"></i>
+        <span
+          >Errorlog contains 1 record. Service management should check whether this record has to be resent or
+          deleted</span
+        >
+      </li>
+    }
+    @if (messageLog[selectedConfiguration].errorStoreCount > 1) {
+      <li class="list-group-item alert-danger">
+        <i class="m-r-md fa fa-info-circle"></i>
+        <span
+          >Errorlog contains {{ messageLog[selectedConfiguration].errorStoreCount }} records. Service management should
+          check whether this record has to be resent or deleted</span
+        >
+      </li>
+    }
+    @if (messageLog[selectedConfiguration].errorStoreCount === -1) {
+      <li class="list-group-item alert-warning">
+        <i class="m-r-md fa fa-info-circle"></i>
+        <span>Errorlog might contain records. This is unknown because errorStore.count.show is not set to true</span>
+      </li>
+    }
   }
   @for (alert of alerts; track alert) {
     @if (

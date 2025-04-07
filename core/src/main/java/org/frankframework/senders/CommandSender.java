@@ -40,8 +40,8 @@ import org.frankframework.util.ProcessUtil;
  *
  * @ff.parameters All parameters present are appended as arguments to the command.
  *
- * @since   4.8
- * @author  Gerrit van Brakel
+ * @since 4.8
+ * @author Gerrit van Brakel
  */
 public class CommandSender extends AbstractSenderWithParameters {
 
@@ -107,7 +107,7 @@ public class CommandSender extends AbstractSenderWithParameters {
 	}
 
 	/**
-	 * In case the command that will be executed contains arguments then this flag should be set to true
+	 * In case the command that will be executed contains arguments then this flag should be set to {@code true}
 	 * @ff.default false
 	 */
 	public void setCommandWithArguments(boolean commandWithArguments) {

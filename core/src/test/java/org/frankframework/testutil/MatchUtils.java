@@ -121,7 +121,7 @@ public class MatchUtils {
 			if(!diff.similar()) {
 				LOG.debug("expected: \n"+ expectedCanonalized);
 				LOG.debug("actual: \n"+ actualCanonalized);
-				assertEquals("xml not similar: " + diff.toString(), expectedCanonalized, actualCanonalized);
+				assertEquals("xml not similar: " + diff, expectedCanonalized, actualCanonalized);
 			}
 		} catch (Exception e) {
 			fail(e.getMessage());
@@ -152,7 +152,7 @@ public class MatchUtils {
 
 	public static void assertTestFileEquals(String file1, String file2) throws IOException {
 		String testFile = TestFileUtils.getTestFile(file1);
-		assertNotNull("testFile ["+file1+"] is null",testFile);
+		assertNotNull("testFile ["+file1+"] is null", testFile);
 
 		TestAssertions.assertEqualsIgnoreWhitespaces(testFile.trim(), file2.trim());
 	}

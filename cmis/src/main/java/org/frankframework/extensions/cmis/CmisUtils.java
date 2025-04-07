@@ -19,12 +19,12 @@ import static org.apache.chemistry.opencmis.client.bindings.impl.CmisBindingsHel
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.EnumSet;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -133,6 +133,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.extensions.cmis.server.CmisSecurityHandler;
 import org.frankframework.http.HttpSecurityHandler;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlBuilder;
@@ -141,6 +142,7 @@ import org.frankframework.util.XmlUtils;
 public class CmisUtils {
 
 	public static final String FORMATSTRING_BY_DEFAULT = AppConstants.getInstance().getString("cmis.datetime.formatstring", "yyyy-MM-dd'T'HH:mm:ss");
+	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(FORMATSTRING_BY_DEFAULT);
 	public static final String ORIGINAL_OBJECT_KEY = "originalObject";
 	public static final String CMIS_VERSION_KEY = "cmisVersion";
 	public static final String CMIS_BINDING_KEY = "cmisBinding";
@@ -173,7 +175,6 @@ public class CmisUtils {
 		} else {
 			log.debug("BindingSession for {} does not have instance of CmisHttpInvoker: {}", owner.getClass().getSimpleName(), invoker);
 		}
-
 	}
 
 	public static XmlBuilder buildXml(String name, Object value) {
@@ -216,7 +217,7 @@ public class CmisUtils {
 				propertyType = PropertyType.DATETIME;
 			}
 		}
-		//If it's not a property, what would it be? assume its a string...
+		//If it's not a property, what would it be? assume it's a string...
 
 		propertyXml.addAttribute("type", propertyType.value());
 
@@ -235,11 +236,11 @@ public class CmisUtils {
 				propertyXml.setValue(String.valueOf(b));
 				break;
 			case DATETIME:
-				GregorianCalendar gc = (GregorianCalendar) value;
-				SimpleDateFormat sdf = new SimpleDateFormat(FORMATSTRING_BY_DEFAULT);
-				propertyXml.setValue(sdf.format(gc.getTime()));
-				break;
+				GregorianCalendar gregorianCalendar = (GregorianCalendar) value;
+				String formattedDate = DATE_TIME_FORMATTER.format(Instant.ofEpochMilli(gregorianCalendar.getTimeInMillis()));
 
+				propertyXml.setValue(formattedDate);
+				break;
 			default: // String/ID/HTML/URI
 				propertyXml.setValue((String) value);
 				break;
@@ -303,26 +304,29 @@ public class CmisUtils {
 				properties.addProperty(new PropertyIntegerImpl(addStandardDefinitions(new PropertyIntegerDefinitionImpl(), propertyElement, propertyType), bigInt));
 				break;
 			case DATETIME:
-				GregorianCalendar gregorian = null;
+				GregorianCalendar gregorianCalendar = null;
 				if(StringUtils.isNotEmpty(propertyValue)) {
 					String formatStringAttr = propertyElement.getAttribute("formatString");
 					String timezoneAttr = propertyElement.getAttribute("timezone");
 					if (StringUtils.isEmpty(formatStringAttr)) {
-						formatStringAttr = CmisUtils.FORMATSTRING_BY_DEFAULT;
+						formatStringAttr = FORMATSTRING_BY_DEFAULT;
 					}
-					DateFormat df = new SimpleDateFormat(formatStringAttr);
+
+					DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(formatStringAttr);
 					try {
-						Date date = df.parse(propertyValue);
-						gregorian = new GregorianCalendar();
-						gregorian.setTime(date);
-						if(StringUtils.isNotEmpty(timezoneAttr)) {
-							gregorian.setTimeZone(TimeZone.getTimeZone(timezoneAttr));
+						TemporalAccessor parse = formatter.parse(propertyValue);
+
+						gregorianCalendar = new GregorianCalendar();
+						gregorianCalendar.setTimeInMillis(Instant.from(parse).getEpochSecond());
+
+						if (StringUtils.isNotEmpty(timezoneAttr)) {
+							gregorianCalendar.setTimeZone(TimeZone.getTimeZone(timezoneAttr));
 						}
-					} catch (ParseException e) {
+					} catch (DateTimeParseException e) {
 						log.warn("exception parsing date [{}] using formatString [{}]", propertyValue, formatStringAttr, e);
 					}
 				}
-				properties.addProperty(new PropertyDateTimeImpl(addStandardDefinitions(new PropertyDateTimeDefinitionImpl(), propertyElement, propertyType), gregorian));
+				properties.addProperty(new PropertyDateTimeImpl(addStandardDefinitions(new PropertyDateTimeDefinitionImpl(), propertyElement, propertyType), gregorianCalendar));
 				break;
 			case BOOLEAN:
 				Boolean bool = null;

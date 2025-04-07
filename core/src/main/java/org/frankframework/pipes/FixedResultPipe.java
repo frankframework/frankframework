@@ -131,7 +131,7 @@ import org.frankframework.util.TransformerPool;
  * </FixedResultPipe>
  *
  * <pipe name="displayKeys" className="org.frankframework.pipes.FixedResultPipe"
- *     returnString="branch [BRANCH] Orignal Id [MID] cid [CID] id=cid [SAME]" replaceFixedParams="true">
+ *     returnString="branch [BRANCH] Original Id [MID] cid [CID] id=cid [SAME]" replaceFixedParams="true">
  *     <param name="BRANCH" sessionKey="originalMessage" xpathExpression="*&#47;@branch" />
  *     <param name="MID" sessionKey="id" />
  *     <param name="CID" sessionKey="cid" />
@@ -183,12 +183,12 @@ import org.frankframework.util.TransformerPool;
  * Please note that the plain value of attribute <code>replaceFrom</code> is matched, no <code>?{...}</code> here.</li>
  *
  * <li>The resulting string is substituted based on the parameters of this pipe. This step depends on attribute <code>replaceFixedParams</code>.
- * Assume that there is a parameter with name <code>xyz</code>. If <code>replaceFixedParams</code> is <code>false</code>, then
+ * Assume that there is a parameter with name <code>xyz</code>. If <code>replaceFixedParams</code> is {@code false}, then
  * each occurrence of <code>?{xyz}</code> is replaced by the parameter's value. Otherwise, the text <code>xyz</code>
  * is substituted. See {@link Parameter} to see how parameter values are determined.</li>
  *
- * <li>If attribute <code>substituteVars</code> is <code>true</code>, then expressions <code>${...}</code> are substituted using
- * system properties, pipelinesession variables and application properties. Please note that
+ * <li>If attribute <code>substituteVars</code> is {@code true}, then expressions <code>${...}</code> are substituted using
+ * system properties, pipeline session variables and application properties. Please note that
  * no <code>${...}</code> patterns are left if the initial string came from attribute <code>returnString</code>, because
  * any <code>${...}</code> pattern in attribute <code>returnString</code> is substituted when the configuration is loaded.</li>
  * <li>If attribute <code>styleSheetName</code> is set, then the referenced XSLT stylesheet is applied to the resulting string.</li>
@@ -224,9 +224,9 @@ public class FixedResultPipe extends FixedForwardPipe {
 	private @Getter boolean replaceFixedParams;
 
 	/**
-	 * checks for correct configuration, and translates the filename to
-	 * a file, to check existence.
-	 * If a filename or filenameSessionKey was specified, the contents of the file is put in the
+	 * Checks for correct configuration and translates the filename to
+	 * a file to check existence.
+	 * If a filename or filenameSessionKey was specified, the contents of the file are put in the
 	 * <code>returnString</code>, so that the <code>returnString</code>
 	 * may always be returned.
 	 *
@@ -323,7 +323,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 			if (transformerPool != null) {
 				try {
-					resultString = transformerPool.transform(resultString);
+					resultString = transformerPool.transformToString(resultString);
 				} catch (SAXException e) {
 					throw new PipeRunException(this, "got error converting string [" + resultString + "] to source", e);
 				} catch (IOException | TransformerException e) {
@@ -339,7 +339,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * @return whether a string based operation is needed to determine if can return a binary file or not
+	 * @return Whether a string-based operation is needed to determine if it can return a binary file or not.
 	 */
 	private boolean stringBasedOperationNeeded() {
 		return getReturnString() != null
@@ -378,8 +378,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Should values between ${ and } be resolved. If true, the search order of replacement values is:
-	 * system properties (1), PipelineSession variables (2), application properties (3).
+	 * Should values between ${ and } be resolved. If {@code true}, the search order of replacement values is:
+	 * system properties (1), PipelineSession variables (2), and application properties (3).
 	 *
 	 * @ff.default false
 	 */
@@ -397,7 +397,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Name of the session key containing the file name of the file containing the result message.
+	 * Name of the session key containing the file name of the file that contains the result message.
 	 */
 	@Deprecated(since = "8.2", forRemoval = true)
 	@ConfigurationWarning("fileNameSessionKey is scheduled for removal. Please use a <param> if you need a session value")
@@ -424,7 +424,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * See <code>replaceFrom</code>.
+	 * See {@code replaceFrom}.
 	 */
 	@Deprecated(since = "8.2", forRemoval = true)
 	@ConfigurationWarning("replaceTo is scheduled for removal. Please use the ReplacerPipe")
@@ -433,7 +433,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * File name of XSLT stylesheet to apply.
+	 * File name of the XSLT stylesheet to apply.
 	 */
 	@Deprecated(since = "8.2", forRemoval = true)
 	@ConfigurationWarning("styleSheetName is scheduled for removal. Please use the XsltPipe")
@@ -442,7 +442,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * When set <code>true</code>, parameter replacement matches <code>name-of-parameter</code>, not <code>?{name-of-parameter}</code>
+	 * If {@code true}, parameter replacement matches <code>name-of-parameter</code>, not <code>?{name-of-parameter}</code>.
 	 *
 	 * @ff.default false
 	 */

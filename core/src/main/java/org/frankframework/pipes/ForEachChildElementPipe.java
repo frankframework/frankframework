@@ -61,9 +61,9 @@ import org.frankframework.xml.XmlWriter;
 
 /**
  * Sends a message to a Sender for each child element of the input XML.
- * Input can be a String containing XML, a filename (set processFile true), an InputStream or a Reader.
+ * The input can be a String containing XML, a filename (set processFile true), an InputStream, or a Reader.
  *
- * @ff.parameters all parameters will be applied to the xslt if an elementXPathExpression is specified
+ * @ff.parameters All parameters will be applied to the XSLT if an elementXPathExpression is specified.
  *
  * @author Gerrit van Brakel
  * @since 4.6.1
@@ -419,23 +419,23 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	}
 
 	/**
-	 * Element name (not an XPath-expression), qualified via attribute <code>namespaceDefs</code>, used to determine the 'root' of elements to be iterated over, i.e. the root of the set of child elements.
-	 * When empty, the pipe will iterate over each direct child element of the root
+	 * Element name (not an XPath expression), qualified via attribute <code>namespaceDefs</code>, used to determine the 'root' of elements to be iterated over, i.e., the root of the set of child elements.
+	 * When empty, the pipe will iterate over each direct child element of the root.
 	 */
 	public void setContainerElement(String containerElement) {
 		this.containerElement = containerElement;
 	}
 
 	/**
-	 * Element name (not an XPath-expression), qualified via attribute <code>namespaceDefs</code>, used to determine the type of elements to be iterated over, i.e. the element name of each of the child elements.
-	 * When empty, the pipe will iterate over any direct child element of the root or specified containerElement
+	 * Element name (not an XPath expression), qualified via attribute <code>namespaceDefs</code>, used to determine the type of elements to be iterated over, i.e. the element name of each of the child elements.
+	 * When empty, the pipe will iterate over any direct child element of the root or specified <code>containerElement</code>.
 	 */
 	public void setTargetElement(String targetElement) {
 		this.targetElement = targetElement;
 	}
 
 	/**
-	 * XPath-expression used to determine the set of elements to be iterated over, i.e. the set of child elements. When empty, the effective value is \/*\/*, i.e. the pipe will iterate over each direct child element of the root.
+	 * XPath expression used to determine the set of elements to be iterated over, i.e., the set of child elements. When empty, the effective value is \/*\/*, i.e., the pipe will iterate over each direct child element of the root.
 	 * Be aware that memory consumption appears to increase with file size when this attribute is used. When possible, use containerElement and/or targetElement instead.
 	 */
 	public void setElementXPathExpression(String string) {
@@ -443,14 +443,14 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	}
 
 	/**
-	 * If set to <code>2</code> or <code>3</code> a Saxon (net.sf.saxon) XSLT processor 2.0 or 3.0 will be used, supporting XPath 2.0 or 3.0 respectively, otherwise an XSLT processor 1.0 (org.apache.xalan), supporting XPath 1.0. N.B. Be aware that setting this other than 1 might cause the input file being read as a whole in to memory, as XSLT Streaming is currently only supported by the XSLT Processor that is used for xsltVersion=1
+	 * If set to <code>2</code> or <code>3</code>, a Saxon (net.sf.saxon) XSLT processor 2.0 or 3.0 will be used, supporting XPath 2.0 or 3.0 respectively. Otherwise, an XSLT processor 1.0 (org.apache.xalan), supporting XPath 1.0, will be used. N.B. Be aware that setting this to a value other than 1 might cause the input file to be read in its entirety into memory, as XSLT Streaming is currently only supported by the XSLT Processor that is used for xsltVersion=1.
 	 * @ff.default 1
 	 */
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
 	}
 
-	/** If set <code>true</code> namespaces (and prefixes) are removed from the items just before forwarding them to the sender. N.B. This takes place <strong>after</strong> the transformation for <code>elementXPathExpression</code> if that is specified */
+	/** If {@code true}, namespaces (and prefixes) are removed from the items just before forwarding them to the sender. N.B. This takes place <strong>after</strong> the transformation for <code>elementXPathExpression</code> if that is specified. */
 	public void setRemoveNamespaces(boolean b) {
 		removeNamespaces = b;
 	}

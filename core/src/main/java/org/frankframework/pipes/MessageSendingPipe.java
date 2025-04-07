@@ -428,7 +428,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			try {
 				sendResult = sendMessage(input, session, getSender(), threadContext);
 				if (retryTp != null) {
-					String retry = retryTp.transform(sendResult.getResult().asString(),null);
+					String retry = retryTp.transformToString(sendResult.getResult());
 					if ("true".equalsIgnoreCase(retry)) {
 						if (retriesLeft >= 1) {
 							retryInterval = increaseRetryIntervalAndWait(session, retryInterval, "xpathRetry result ["+retry+"], retries left [" + retriesLeft + "]");
@@ -647,7 +647,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				exitState = PRESUMED_TIMEOUT_FORWARD;
 				throw new TimeoutException(PRESUMED_TIMEOUT_FORWARD);
 			}
-			try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("sender", sender.getName())){
+			try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_SENDER_KEY, sender.getName())){
 				SenderResult senderResult = sender.sendMessage(input, session);
 				PipeForward forward = findForwardForResult(senderResult);
 				sendResult = new PipeRunResult(forward, senderResult.getResult());
@@ -928,7 +928,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 
 
 	/**
-	 * If set <code>true</code>, the XML Well-Formedness of the result is checked
+	 * If {@code true}, the XML Well-Formedness of the result is checked
 	 * @ff.default false
 	 */
 	public void setCheckXmlWellFormed(boolean b) {
@@ -974,7 +974,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		retryMaxInterval = i;
 	}
 
-	/** XPath expression evaluated on each technical successful reply. Retry is done if condition returns true */
+	/** XPath expression evaluated on each technical successful reply. Retry is done if condition returns {@code true} */
 	public void setRetryXPath(String string) {
 		retryXPath = string;
 	}

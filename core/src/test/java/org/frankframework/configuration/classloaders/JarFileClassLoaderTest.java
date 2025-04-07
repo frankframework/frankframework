@@ -69,7 +69,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 	public void checkFilePathWithoutBasePath() throws Exception {
 		String filename = "fileOnlyOnZipClassPath.xml";
 
-		createAndConfigure("ClassLoader"); //Create a ClassLoader with BasePath
+		createAndConfigure("ClassLoader"); // Create a ClassLoader with BasePath
 
 		URL url = getResource(filename);
 		assertEquals(filename, url.getPath(), "Path of resource invalid");
@@ -79,7 +79,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 	public void checkFilePathWithBasePath() {
 		String fileNameWithBasePath = "ClassLoader/fileOnlyOnZipClassPath.xml";
 
-		URL url = getResource(fileNameWithBasePath); //This ClassLoader doesn't have a BasePath so we need to append it
+		URL url = getResource(fileNameWithBasePath); // This ClassLoader doesn't have a BasePath so we need to append it
 		assertEquals(fileNameWithBasePath, url.getPath(), "Path of resource invalid");
 	}
 
@@ -95,7 +95,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 			URL configurationURL = classLoader.getResource("Configuration.xml");
 			assertNotNull(configurationURL, "unable to locate test file [Configuration.xml]");
 
-			assertEquals(8, logEvents.size(), "Should find 8 log messages");
+			assertEquals(9, logEvents.size(), "Should find 9 log messages");
 			long warnMsgs = logEvents.stream().filter(k -> k.startsWith("WARN")).count();
 			assertEquals(1, warnMsgs, "Should find one warning message");
 		}
@@ -108,8 +108,8 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 		classLoader.configure(ibisContext, "myConfig");
 
 		classLoader.setAllowCustomClasses(true);
-		//native classloading
-		Class<?> clazz = Class.forName("org.frankframework.pipes.LargeBlockTester", true, classLoader); //With inner-class
+		// native classloading
+		Class<?> clazz = Class.forName("org.frankframework.pipes.LargeBlockTester", true, classLoader); // With inner-class
 		ClassUtils.newInstance(clazz);
 
 		Field loadedClassesField = AbstractClassLoader.class.getDeclaredField("loadedCustomClasses");
@@ -126,8 +126,8 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 		classLoader.configure(ibisContext, "myConfig");
 
 		classLoader.setAllowCustomClasses(true);
-		//native classloading
-		Class<?> clazz = classLoader.loadClass("org.frankframework.pipes.LargeBlockTester"); //With inner-class
+		// native classloading
+		Class<?> clazz = classLoader.loadClass("org.frankframework.pipes.LargeBlockTester"); // With inner-class
 		ClassUtils.newInstance(clazz);
 
 		Field loadedClassesField = AbstractClassLoader.class.getDeclaredField("loadedCustomClasses");

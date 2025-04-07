@@ -118,7 +118,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 	 * Configure the XmlValidator
 	 * @throws ConfigurationException when:
 	 * <ul><li>the schema cannot be found</li>
-	 * <ul><li><{@link #isThrowException()} is false and there is no forward defined
+	 * <ul><li>{@link #isThrowException()} is {@code false} and there is no forward defined
 	 * for "failure"</li>
 	 * <li>when the parser does not accept setting the properties for validating</li>
 	 * </ul>
@@ -222,7 +222,6 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Could not validate", e);
 		}
-
 	}
 
 	@Override
@@ -247,7 +246,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 	}
 
 	protected PipeForward determineForward(ValidationResult validationResult, PipeLineSession session, boolean responseMode) throws PipeRunException {
-		return determineForward(validationResult, session, responseMode, ()-> {
+		return determineForward(validationResult, responseMode, ()-> {
 			String errorMessage=session.get(getReasonSessionKey(), null);
 			if (StringUtils.isEmpty(errorMessage)) {
 				errorMessage = session.get(getXmlReasonSessionKey(), "unknown error");
@@ -268,7 +267,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 		if (XmlUtils.isWellFormed(message, "Envelope")) {
 			String inputRootNs;
 			try {
-				inputRootNs = transformerPoolGetRootNamespace.transform(message);
+				inputRootNs = transformerPoolGetRootNamespace.transformToString(message);
 			} catch (Exception e) {
 				throw new PipeRunException(this, "cannot extract root namespace", e);
 			}
@@ -289,12 +288,12 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 
 					try {
 						SAXSource source = XmlUtils.inputSourceToSAXSource(message.asInputSource(), true, null);
-						input = transformerPoolExtractSoapBody.transform(source);
+						input = transformerPoolExtractSoapBody.transformToString(source);
 					} catch (Exception e) {
 						throw new PipeRunException(this, "cannot extract SOAP body", e);
 					}
 					try {
-						inputRootNs = transformerPoolGetRootNamespace.transform(input, null);
+						inputRootNs = transformerPoolGetRootNamespace.transformToString(input, null);
 					} catch (Exception e) {
 						throw new PipeRunException(this, "cannot extract root namespace", e);
 					}
@@ -586,7 +585,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 		this.schemaLocation = schemaLocation;
 	}
 
-	/** A uri reference as a hint as to the location of a schema document with no target namespace. */
+	/** A URI reference as a hint as to the location of a schema document with no target namespace. */
 	public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
 		this.noNamespaceSchemaLocation = noNamespaceSchemaLocation;
 	}
@@ -677,7 +676,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 	}
 
 	/**
-	 * If set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path
+	 * If {@code true}, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path
 	 * @ff.default false
 	 */
 	public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {

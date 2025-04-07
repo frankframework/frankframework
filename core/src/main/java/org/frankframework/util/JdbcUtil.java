@@ -37,16 +37,13 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipException;
 
-import jakarta.jms.BytesMessage;
-import jakarta.jms.JMSException;
-import jakarta.jms.TextMessage;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64InputStream;
@@ -63,7 +60,6 @@ import org.frankframework.dbms.JdbcException;
 import org.frankframework.documentbuilder.ArrayBuilder;
 import org.frankframework.documentbuilder.INodeBuilder;
 import org.frankframework.documentbuilder.ObjectBuilder;
-import org.frankframework.jms.BytesMessageInputStream;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterType;
@@ -84,7 +80,9 @@ import org.frankframework.xml.SaxElementBuilder;
 public class JdbcUtil {
 
 	private static final String DATEFORMAT = AppConstants.getInstance().getString("jdbc.dateFormat", "yyyy-MM-dd");
+	public static final DateTimeFormatter DATEFORMAT_DATE_TIME_FORMATTER = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(DATEFORMAT);
 	private static final String TIMESTAMPFORMAT = AppConstants.getInstance().getString("jdbc.timestampFormat", "yyyy-MM-dd HH:mm:ss");
+	public static final DateTimeFormatter TIMESTAMP_DATE_TIME_FORMATTER = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(TIMESTAMPFORMAT);
 
 	@Deprecated
 	public static String warningsToString(SQLWarning warnings) {
@@ -229,10 +227,12 @@ public class JdbcUtil {
 			case Types.TIMESTAMP:
 			case Types.DATE: {
 				try {
-					if (columnType == Types.TIMESTAMP && !TIMESTAMPFORMAT.isEmpty())
-						return new SimpleDateFormat(TIMESTAMPFORMAT).format(rs.getTimestamp(colNum));
-					else if (columnType == Types.DATE && !DATEFORMAT.isEmpty())
-						return new SimpleDateFormat(DATEFORMAT).format(rs.getDate(colNum));
+					if (columnType == Types.TIMESTAMP && !TIMESTAMPFORMAT.isEmpty()) {
+						return TIMESTAMP_DATE_TIME_FORMATTER.format(rs.getTimestamp(colNum).toLocalDateTime());
+
+					} else if (columnType == Types.DATE && !DATEFORMAT.isEmpty()) {
+						return DATEFORMAT_DATE_TIME_FORMATTER.format(rs.getDate(colNum).toLocalDate());
+					}
 				} catch (Exception e) {
 					// Do nothing, the default: will handle it
 				}
@@ -411,22 +411,8 @@ public class JdbcUtil {
 			}
 			String rawMessage;
 			if (objectOK) {
-				// TODO: Direct handling of JMS messages in here should be removed. I do not expect any current instances to actually store unwrapped JMS Messages?
 				if (result instanceof MessageWrapper<?> wrapper) {
 					rawMessage = wrapper.getMessage().asString();
-				} else if (result instanceof TextMessage message) {
-					try {
-						rawMessage = message.getText();
-					} catch (JMSException e) {
-						throw new JdbcException(e);
-					}
-				} else if (result instanceof BytesMessage bytesMessage) {
-					try {
-						InputStream input = new BytesMessageInputStream(bytesMessage);
-						rawMessage = StreamUtil.streamToString(input);
-					} catch (IOException e) {
-						throw new JdbcException(e);
-					}
 				} else {
 					rawMessage = MessageUtils.asString(result);
 				}

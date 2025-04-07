@@ -39,13 +39,16 @@ import org.springframework.security.config.annotation.web.configurers.FormLoginC
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import lombok.Setter;
 
 import org.frankframework.lifecycle.servlets.AuthenticatorUtils;
 import org.frankframework.lifecycle.servlets.IAuthenticator;
+import org.frankframework.lifecycle.servlets.NoOpAuthenticator;
 import org.frankframework.lifecycle.servlets.SpaCsrfTokenRequestHandler;
 import org.frankframework.security.config.ServletRegistration;
 import org.frankframework.util.ClassUtils;
@@ -56,6 +59,8 @@ import org.frankframework.util.ClassUtils;
 @Order(Ordered.HIGHEST_PRECEDENCE+100)
 public class SecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware {
 	private static final Logger APPLICATION_LOG = LogManager.getLogger("APPLICATION");
+	private static final String EXPRESSION_IS_LOCALHOST_OR_AUTHENTICATED = "hasIpAddress('127.0.0.1') or hasIpAddress('::1') or isAuthenticated()";
+
 	private @Setter ApplicationContext applicationContext;
 	private boolean csrfEnabled;
 	private String csrfCookiePath;
@@ -94,6 +99,14 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 		// logout automatically sets CookieClearingLogoutHandler, CsrfLogoutHandler and SecurityContextLogoutHandler.
 		http.logout(t -> t.logoutRequestMatcher(this::requestMatcher).logoutSuccessHandler(new RedirectToServletRoot()));
 
+		// If the authenticator is NoOpAuthenticator, we can skip the authorization manager.
+		if (!(authenticator instanceof NoOpAuthenticator)) {
+			http.authorizeHttpRequests(authorize -> authorize
+					.requestMatchers(new AntPathRequestMatcher("/**/health"))
+					.access(new WebExpressionAuthorizationManager(EXPRESSION_IS_LOCALHOST_OR_AUTHENTICATED))
+			);
+		}
+
 		return authenticator.configureHttpSecurity(http);
 	}
 
@@ -120,8 +133,8 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 
 	@Bean
 	public IAuthenticator consoleAuthenticator() {
-		String properyPrefix = "application.security.console.authentication.";
-		IAuthenticator authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, properyPrefix);
+		String propertyPrefix = "application.security.console.authentication.";
+		IAuthenticator authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, propertyPrefix);
 
 		APPLICATION_LOG.info("Securing Frank!Framework Console using {}", ClassUtils.classNameOf(authenticator));
 		return authenticator;

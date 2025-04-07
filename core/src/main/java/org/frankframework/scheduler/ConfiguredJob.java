@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package org.frankframework.scheduler;
 
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -54,31 +55,15 @@ public class ConfiguredJob implements Job {
 
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
-		String ctName = Thread.currentThread().getName();
-		try {
+		String instName = context.getJobDetail().getKey().getName();
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("job", instName)) {
 			JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-			IJob jobDef = (IJob)dataMap.get(JOBDEF_KEY);
-			Thread.currentThread().setName(jobDef.getName() + "["+ctName+"]");
-			if (log.isTraceEnabled()) log.trace("{}executing", getLogPrefix(jobDef));
+			IJob jobDef = (IJob) dataMap.get(JOBDEF_KEY);
 			jobDef.executeJob();
-			if (log.isTraceEnabled()) log.trace("{}completed", getLogPrefix(jobDef));
 		}
 		catch (Exception e) {
-			log.error("JobExecutionException while running {}", getLogPrefix(context), e);
+			log.error("JobExecutionException while running job ["+instName+"]", e);
 			throw new JobExecutionException(e, false);
 		}
-		finally {
-			Thread.currentThread().setName(ctName);
-		}
-	}
-
-	private String getLogPrefix(JobExecutionContext context) {
-		String instName = context.getJobDetail().getKey().getName();
-		return "Job [" + instName + "] ";
-	}
-
-	private String getLogPrefix(IJob jobDef) {
-		String instName = jobDef.getName();
-		return "Job [" + instName + "] ";
 	}
 }

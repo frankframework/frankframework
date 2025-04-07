@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { AppService } from 'src/app/app.service';
 import { ComboboxComponent, Option } from '../../components/combobox/combobox.component';
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
@@ -9,6 +9,7 @@ import { InputFileUploadComponent } from '../../components/input-file-upload/inp
 import { FormsModule } from '@angular/forms';
 import { MonacoEditorComponent } from '../../components/monaco-editor/monaco-editor.component';
 import { LaddaModule } from 'angular2-ladda';
+import { WebStorageService } from '../../services/web-storage.service';
 
 type AlertState = {
   type: string;
@@ -18,6 +19,12 @@ type AlertState = {
 type ServiceListenerResult = {
   state: string;
   result: string;
+};
+
+type Form = {
+  service: string;
+  encoding: string;
+  message: string;
 };
 
 @Component({
@@ -40,7 +47,7 @@ export class TestServiceListenerComponent implements OnInit {
   protected processingMessage = false;
   protected result = '';
 
-  protected form = {
+  protected form: Form = {
     service: '',
     encoding: '',
     message: '',
@@ -56,10 +63,9 @@ export class TestServiceListenerComponent implements OnInit {
 
   private file: File | null = null;
 
-  constructor(
-    private http: HttpClient,
-    private appService: AppService,
-  ) {}
+  private http: HttpClient = inject(HttpClient);
+  private appService: AppService = inject(AppService);
+  private webStorageService: WebStorageService = inject(WebStorageService);
 
   ngOnInit(): void {
     this.http
@@ -68,6 +74,9 @@ export class TestServiceListenerComponent implements OnInit {
       }>(`${this.appService.absoluteApiPath}test-servicelistener`)
       .subscribe((data) => {
         this.services = data.services.map((service) => ({ label: service }));
+
+        const testServiceListenerSession = this.webStorageService.get<Form>('testServiceListener');
+        if (testServiceListenerSession) this.form = testServiceListenerSession;
       });
   }
 
@@ -103,6 +112,7 @@ export class TestServiceListenerComponent implements OnInit {
     }
 
     this.processingMessage = true;
+    this.webStorageService.set<Form>('testServiceListener', this.form);
     this.http.post<ServiceListenerResult>(`${this.appService.absoluteApiPath}test-servicelistener`, fd).subscribe({
       next: (returnData) => {
         let warnLevel = 'success';
@@ -116,5 +126,15 @@ export class TestServiceListenerComponent implements OnInit {
         this.processingMessage = false;
       },
     });
+  }
+
+  reset(): void {
+    this.webStorageService.remove('testServiceListener');
+    this.form = {
+      service: '',
+      encoding: '',
+      message: '',
+    };
+    this.file = null;
   }
 }

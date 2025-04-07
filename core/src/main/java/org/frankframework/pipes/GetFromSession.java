@@ -81,19 +81,19 @@ public class GetFromSession  extends FixedForwardPipe {
 	}
 
 	/**
-	 * Returns the name of the key in the {@link PipeLineSession pipeLineSession} to retrieve the input from
+	 * Returns the name of the key in the {@link PipeLineSession pipeLineSession} to retrieve the input from.
 	 */
 	public String getSessionKey() {
 		return sessionKey;
 	}
 
-	/** Key of the session variable to retrieve the output message from. When left unspecified, the input message is used as the key of the session variable */
+	/** Key of the session variable to retrieve the output message from. When left unspecified, the input message is used as the key of the session variable. */
 	public void setSessionKey(String sessionKey) {
 		this.sessionKey = sessionKey;
 	}
 
 	/**
-	 * <ul><li><code>string</code>: renders the contents</li><li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;)</li></ul>
+	 * <ul><li><code>string</code>: Renders the contents.</li><li><code>map</code>: Converts a Map&lt;String, String&gt; object to an XML string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;).</li></ul>
 	 * @ff.default string
 	 */
 	public void setType(ParameterType type) {

@@ -15,17 +15,15 @@
 */
 package org.frankframework.receivers;
 
-import jakarta.jms.Message;
-
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
 import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.core.PipeLineSession;
 
-public class SlowPushingListener extends SlowListenerBase implements IPushingListener<Message> {
+public class SlowPushingListener extends SlowListenerBase implements IPushingListener<String> {
 
 	@Override
-	public void setHandler(IMessageHandler<Message> handler) {
+	public void setHandler(IMessageHandler<String> handler) {
 		// No-op
 	}
 
@@ -35,7 +33,7 @@ public class SlowPushingListener extends SlowListenerBase implements IPushingLis
 	}
 
 	@Override
-	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) {
+	public RawMessageWrapper<String> wrapRawMessage(String rawMessage, PipeLineSession session) {
 		return null;
 	}
 }
