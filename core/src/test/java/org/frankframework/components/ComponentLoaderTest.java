@@ -3,7 +3,6 @@ package org.frankframework.components;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.IOException;
 import java.net.URL;
@@ -15,23 +14,16 @@ import org.junit.jupiter.api.Test;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.testutil.TestAssertions;
 import org.frankframework.util.Environment;
 
 @Log4j2
-@Tag("integration") // This test fails when running just 'mvn test'. Tagged as integration to work around that in the Github Smoketest workflow
 public class ComponentLoaderTest {
 
 	@Test
+	@Tag("integration") // This test fails when running just 'mvn test'. Tagged as integration to work around that in the Github Smoketest workflow
 	public void locateCommonsModule() {
 		List<Module> modules = ComponentLoader.findAllModules();
-
-		// When running as a Maven build, this test should find modules.
-		if (TestAssertions.isTestRunningWithSurefire()) {
-			assertFalse(modules.isEmpty(), "no modules found, failing!");
-		} else { // When running in an IDE (IntelliJ) this may be an empty list, if so skip the test.
-			assumeFalse(modules.isEmpty(), "no modules found, skipping!");
-		}
+		assertFalse(modules.isEmpty(), "no modules found, failing!");
 
 		long foundCoreModule = modules.stream().filter(module -> {
 			try {

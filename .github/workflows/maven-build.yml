@@ -4,7 +4,7 @@
 name: Java CI with Maven
 
 env:
-  JDK_VERSION: 21
+  JDK_VERSION: 17
   PROFILES: frankframework,codecoverage,ci
   USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'frankframework') && github.actor != 'dependabot[bot]' }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
