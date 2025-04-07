@@ -58,7 +58,7 @@
 		<aws.java.sdk.version>2.31.0</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
-		<mockito.version>5.16.1</mockito.version>
+		<mockito.version>5.17.0</mockito.version>
 		<junit.version>5.12.1</junit.version>
 	</properties>
 
@@ -961,13 +961,9 @@
 								<name>ff.forward</name>
 								<placement>X</placement>
 							</tag>
-							<tag>
-								<name>ff.noAttribute</name>
-								<placement>X</placement>
-							</tag>
 						</tags>
 						<useStandardDocletOptions>true</useStandardDocletOptions>
-						<skippedModules>frankframework-test,frankframework-example,frankframework-webapp,frankframework-console-frontend</skippedModules>
+						<failOnError>false</failOnError>
 					</configuration>
 					<executions>
 						<execution>
@@ -976,9 +972,6 @@
 							<goals>
 								<goal>jar</goal>
 							</goals>
-							<configuration>
-								<failOnError>false</failOnError>
-							</configuration>
 						</execution>
 					</executions>
 				</plugin>

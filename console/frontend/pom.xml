@@ -78,7 +78,6 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.3.1</version>
 				<executions>
 					<execution>
 						<id>copy NPM dist to Maven build folder</id>
@@ -183,6 +182,19 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>${javadoc-plugin.version}</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+		</plugins>
+	</reporting>
 
 	<developers>
 		<developer>
