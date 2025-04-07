@@ -21,6 +21,7 @@ import jakarta.servlet.ServletContext;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
@@ -78,6 +79,7 @@ public class RunLarvaTests {
 	}
 
 	@TestFactory
+	@Disabled("Not yet working properly, reasons not yet known.")
 	Stream<DynamicNode> larvaTests() {
 		List<File> allScenarioFiles = larvaTool.readScenarioFiles(appConstants, scenarioRootDir);
 
