@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2024 WeAreFrank!
+   Copyright 2019-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ import org.frankframework.xml.XmlWriter;
  * {@link IPullingListener listener} that looks in a {@link IBasicFileSystem FileSystem} for files.
  * When a file is found, it is moved to an in-process folder, so that it isn't found more than once.
  * <br/>
- * The information specified by {@link #setMessageType(IMessageType)} is then passed to the pipeline.
+ * The information specified by {@code messageType} is then passed to the pipeline.
  *
  * @ff.info To avoid problems with duplicate filenames in folders like the {@code errorFolder} or {@code processedFolder},
  * you should configure either {@code overwrite="true"}, configure {@code numberOfBackups} to a value larger than 0, or
@@ -117,7 +117,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 	private @Getter boolean overwrite = false;
 	private @Getter int numberOfBackups=0;
 	private @Getter boolean fileTimeSensitive=false;
-	private @Getter @Setter IMessageType messageType = MessageType.PATH;
+	private @Getter IMessageType messageType = MessageType.PATH;
 	private @Getter String messageIdPropertyKey = null;
 	private @Getter String storeMetadataInSessionKey;
 
@@ -629,6 +629,14 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 	/** Charset to be used for extracting the contents */
 	public void setCharset(String charset) {
 		this.charset = charset;
+	}
+
+	/**
+	 * Determines the contents of the message that is sent to the pipeline. The value of the attribute matching the searchKey is returned when using <code>ATTRIBUTE</code>
+	 * @ff.default PATH
+	 */
+	protected void setMessageType(IMessageType type) {
+		messageType = type;
 	}
 
 	/**
