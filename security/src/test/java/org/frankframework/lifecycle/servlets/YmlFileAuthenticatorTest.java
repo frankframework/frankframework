@@ -6,10 +6,10 @@ import java.io.FileNotFoundException;
 
 import org.junit.jupiter.api.Test;
 
-class YmlFileAuthenticatorTest extends ServletAuthenticatorTest {
+class YmlFileAuthenticatorTest extends ServletAuthenticatorTest<YmlFileAuthenticator> {
 
 	@Override
-	protected AbstractServletAuthenticator createAuthenticator() {
+	protected YmlFileAuthenticator createAuthenticator() {
 		YmlFileAuthenticator auth = new YmlFileAuthenticator();
 		auth.setFile("localUsers.yml");
 		return auth;

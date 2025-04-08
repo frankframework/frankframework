@@ -71,7 +71,7 @@ public enum HashAlgorithm {
 
 			return digest.digest(srcBytes);
 		} catch (NoSuchAlgorithmException e) {
-			//no-op. This will never happen since we are using an enum to limit the hash algorithms
+			// NO OP. This will never happen since we are using an enum to limit the hash algorithms
 			throw new IllegalArgumentException("This should never happen! We are using an enum!", e);
 		}
 	}

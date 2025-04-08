@@ -29,11 +29,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-public class ResponseUtils {
+import lombok.NoArgsConstructor;
 
-	private ResponseUtils() {
-		// don't construct utility class
-	}
+
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
+public class ResponseUtils {
 
 	public static ResponseEntity<?> convertToSpringResponse(Message<?> message) {
 		return convertToSpringResponse(message, null);
