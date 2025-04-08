@@ -37,8 +37,7 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
 /**
  * <p>CredentialFactory for Kubernetes Credentials. Fetches credentials from Kubernetes secrets.</p>
  *
- * <p>The credentials are stored in Kubernetes secrets, which are base64 encoded. The keys used for the secrets are {@value "username"}
- * and {@value "password"}.</p>
+ * <p>The credentials are stored in Kubernetes secrets, which are base64 encoded. The keys used for the secrets are "username" and "password".</p>
  *
  * <p>The `KubernetesCredentialFactory` class uses several properties to configure its behavior. These properties are set in the
  * {@code credentialproperties.properties} file and are used to customize the connection to the Kubernetes cluster and the namespace from which secrets are
