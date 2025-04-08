@@ -102,7 +102,7 @@ public class RunLarvaTests {
 //	@Disabled("Not yet working properly, reasons not yet known.")
 	Stream<DynamicNode> larvaTests() {
 		List<File> allScenarioFiles = larvaTool.readScenarioFiles(appConstants, scenarioRootDir);
-		assertFalse(allScenarioFiles.isEmpty(), "Did not find any scenario-files!");
+		assertFalse(allScenarioFiles.isEmpty(), "Did not find any scenario-files in scenarioRootDir [" + scenarioRootDir + "]!");
 		return createScenarios(scenarioRootDir, "", allScenarioFiles);
 	}
 
@@ -147,7 +147,7 @@ public class RunLarvaTests {
 	void runLarvaTests() throws IOException {
 		assertTrue(applicationContext.isRunning());
 		List<File> allScenarioFiles = larvaTool.readScenarioFiles(appConstants, scenarioRootDir);
-		assertFalse(allScenarioFiles.isEmpty(), "Did not find any scenario-files!");
+		assertFalse(allScenarioFiles.isEmpty(), "Did not find any scenario-files in scenarioRootDir [" + scenarioRootDir + "]!");
 
 		ServletContext servletContext = applicationContext.getBean(ServletContext.class);
 
@@ -157,7 +157,7 @@ public class RunLarvaTests {
 
 		// Invoke Larva tests
 		Writer writer = new StringWriter();
-		System.err.println("Starting Scenarios, should have " + allScenarioFiles.size() + " scenarios to run.");
+		System.err.println("Starting Scenarios, should have " + allScenarioFiles.size() + " scenarios to run loaded from directory [" + scenarioRootDir + "].");
 		long start = System.currentTimeMillis();
 		int result = LarvaTool.runScenarios(servletContext, request, writer);
 		long end = System.currentTimeMillis();
