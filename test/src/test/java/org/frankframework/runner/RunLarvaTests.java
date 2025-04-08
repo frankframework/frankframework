@@ -71,6 +71,11 @@ public class RunLarvaTests {
 		ServletContext servletContext = applicationContext.getBean(ServletContext.class);
 		IbisContext ibisContext = FrankApplicationInitializer.getIbisContext(servletContext);
 		appConstants = AppConstants.getInstance();
+		if (org.frankframework.testutil.TestAssertions.isTestRunningOnWindows()) {
+			appConstants.put("log.dir", "C:\\temp");
+		} else {
+			appConstants.put("log.dir", "/tmp");
+		}
 
 		larvaTool = new LarvaTool();
 		TestConfig testConfig = larvaTool.getConfig();
