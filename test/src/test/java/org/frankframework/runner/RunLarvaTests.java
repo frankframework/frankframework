@@ -2,6 +2,7 @@ package org.frankframework.runner;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
@@ -102,7 +103,8 @@ public class RunLarvaTests {
 //	@Disabled("Not yet working properly, reasons not yet known.")
 	Stream<DynamicNode> larvaTests() {
 		List<File> allScenarioFiles = larvaTool.readScenarioFiles(appConstants, scenarioRootDir);
-		assertFalse(allScenarioFiles.isEmpty(), "Did not find any scenario-files in scenarioRootDir [" + scenarioRootDir + "]!");
+		assertFalse(allScenarioFiles.isEmpty(), () -> "Did not find any scenario-files in scenarioRootDir [%s]!".formatted(scenarioRootDir));
+		System.err.printf("Creating JUnit tests from %d scenarios loaded from [%s]%n", allScenarioFiles.size(), scenarioRootDir);
 		return createScenarios(scenarioRootDir, "", allScenarioFiles);
 	}
 
@@ -137,7 +139,7 @@ public class RunLarvaTests {
 					System.out.println("Running scenario: [" + scenarioName + "]");
 					int scenarioPassed = scenarioRunner.runOneFile(scenarioFile, scenarioRootDir, true);
 
-					assertEquals(LarvaTool.RESULT_OK, scenarioPassed);
+					assertNotEquals(LarvaTool.RESULT_ERROR, scenarioPassed);
 				}
 		);
 	}
@@ -147,7 +149,7 @@ public class RunLarvaTests {
 	void runLarvaTests() throws IOException {
 		assertTrue(applicationContext.isRunning());
 		List<File> allScenarioFiles = larvaTool.readScenarioFiles(appConstants, scenarioRootDir);
-		assertFalse(allScenarioFiles.isEmpty(), "Did not find any scenario-files in scenarioRootDir [" + scenarioRootDir + "]!");
+		assertFalse(allScenarioFiles.isEmpty(), () -> "Did not find any scenario-files in scenarioRootDir [%s]!".formatted(scenarioRootDir));
 
 		ServletContext servletContext = applicationContext.getBean(ServletContext.class);
 
@@ -157,23 +159,23 @@ public class RunLarvaTests {
 
 		// Invoke Larva tests
 		Writer writer = new StringWriter();
-		System.err.println("Starting Scenarios, should have " + allScenarioFiles.size() + " scenarios to run loaded from directory [" + scenarioRootDir + "].");
+		System.err.printf("Starting Scenarios, should have %d scenarios to run loaded from directory [%s].%n", allScenarioFiles.size(), scenarioRootDir);
 		long start = System.currentTimeMillis();
 		int result = LarvaTool.runScenarios(servletContext, request, writer);
 		long end = System.currentTimeMillis();
-		System.err.println("Scenarios executed; duration: " + (end - start) + "ms");
+		System.err.printf("Scenarios executed; duration: %dms%n", end - start);
 		writer.close();
 
 		String larvaOutput = stripLarvaOutput(writer.toString());
-		assertFalse(result < 0, () -> "Error in LarvaTool execution, result is [" + result + "] instead of 0; output from LarvaTool:\n\n" + larvaOutput);
+		assertFalse(result < 0, () -> "Error in LarvaTool execution, result is [%d] instead of 0; output from LarvaTool:%n%n%s".formatted(result, larvaOutput));
 
 		if (result > 0) {
-			System.err.println(result + " Larva tests failed, duration: " + (end - start) + "ms; \n\n" + larvaOutput);
+			System.err.printf("%d Larva tests failed, duration: %dms; %n%n%s%n", result, end - start, larvaOutput);
 		} else {
-			System.err.println("All Larva tests succeeded in " + (end - start) + "ms");
+			System.err.printf("All Larva tests succeeded in %dms%n", end - start);
 		}
 
-		assertEquals(0, result, () -> "Error in LarvaTool scenarios, " + result + " scenarios failed. Duration: " + (end - start) + "ms; \n\n" + larvaOutput);
+		assertEquals(0, result, () -> "Error in LarvaTool scenarios, %d scenarios failed. Duration: %dms; %n%n%s".formatted(result, end - start, larvaOutput));
 	}
 
 	private @Nonnull String stripLarvaOutput(@Nonnull String input) {

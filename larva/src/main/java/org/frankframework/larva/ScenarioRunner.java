@@ -289,7 +289,7 @@ public class ScenarioRunner {
 			Enumeration<?> enumeration = properties.propertyNames();
 			while (enumeration.hasMoreElements()) {
 				String key = (String) enumeration.nextElement();
-				if (key.startsWith("step" + i + ".") && (key.endsWith(".read") || key.endsWith(".write") || (LarvaTool.allowReadlineSteps && key.endsWith(".readline")) || key.endsWith(".writeline"))) {
+				if (key.startsWith("step" + i + ".") && (key.endsWith(".read") || key.endsWith(".write") || (larvaTool.allowReadlineSteps && key.endsWith(".readline")) || key.endsWith(".writeline"))) {
 					if (!stepFound) {
 						steps.add(key);
 						stepFound = true;

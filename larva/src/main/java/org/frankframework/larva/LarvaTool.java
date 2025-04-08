@@ -127,7 +127,8 @@ public class LarvaTool {
 	 * if allowReadlineSteps is set to true, actual results can be compared in line by using .readline steps.
 	 * Those results cannot be saved to the inline expected value, however.
 	 */
-	protected static final boolean allowReadlineSteps = false;
+	protected final boolean allowReadlineSteps = false;
+
 	protected static int globalTimeoutMillis = AppConstants.getInstance().getInt("larva.timeout", 10_000);
 
 	private static final String TR_STARTING_TAG="<tr>";
