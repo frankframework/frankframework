@@ -21,7 +21,6 @@ import jakarta.servlet.ServletContext;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
@@ -53,7 +52,7 @@ import org.frankframework.util.CloseUtils;
 @Tag("integration")
 public class RunLarvaTests {
 
-	public static final LarvaLogLevel LARVA_LOG_LEVEL = LarvaLogLevel.STEP_PASSED_FAILED;
+	public static final LarvaLogLevel LARVA_LOG_LEVEL = LarvaLogLevel.WRONG_PIPELINE_MESSAGES;
 
 	private static ConfigurableApplicationContext applicationContext;
 	private static LarvaTool larvaTool;
@@ -100,10 +99,10 @@ public class RunLarvaTests {
 	 *
 	 */
 	@TestFactory
-	@Disabled("Not yet working properly, reasons not yet known.")
+//	@Disabled("Not yet working properly, reasons not yet known.")
 	Stream<DynamicNode> larvaTests() {
 		List<File> allScenarioFiles = larvaTool.readScenarioFiles(appConstants, scenarioRootDir);
-
+		assertFalse(allScenarioFiles.isEmpty(), "Did not find any scenario-files!");
 		return createScenarios(scenarioRootDir, "", allScenarioFiles);
 	}
 
@@ -147,6 +146,8 @@ public class RunLarvaTests {
 	//@Disabled("This version fails only 15 scenarios, figure out why the other fails half the scenarios")
 	void runLarvaTests() throws IOException {
 		assertTrue(applicationContext.isRunning());
+		List<File> allScenarioFiles = larvaTool.readScenarioFiles(appConstants, scenarioRootDir);
+		assertFalse(allScenarioFiles.isEmpty(), "Did not find any scenario-files!");
 
 		ServletContext servletContext = applicationContext.getBean(ServletContext.class);
 
@@ -156,7 +157,7 @@ public class RunLarvaTests {
 
 		// Invoke Larva tests
 		Writer writer = new StringWriter();
-		System.err.println("Starting Scenarios");
+		System.err.println("Starting Scenarios, should have " + allScenarioFiles.size() + " scenarios to run.");
 		long start = System.currentTimeMillis();
 		int result = LarvaTool.runScenarios(servletContext, request, writer);
 		long end = System.currentTimeMillis();
