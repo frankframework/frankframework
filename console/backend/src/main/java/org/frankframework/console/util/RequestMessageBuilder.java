@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,13 +33,17 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class RequestMessageBuilder {
 	private final Map<String, Object> customHeaders = new HashMap<>();
 
 	private final @Getter BusTopic topic;
 	private final @Getter BusAction action;
-	private Object payload = "NONE";
+
+	private static final String DEFAULT_PAYLOAD = "NONE";
+	private Object payload = DEFAULT_PAYLOAD;
 
 	private static final Logger SEC_LOG = LogManager.getLogger("SEC");
 
@@ -97,12 +101,31 @@ public class RequestMessageBuilder {
 		return new RequestMessageBuilder(topic, action);
 	}
 
+	/**
+	 * Log relevant information to the Security-log.
+	 * GET requests, and requests without payload, are logged on debug level.
+	 * 
+	 * When a GET request contains a payload we're doing something wrong...
+	 * Ideally only the `upload` TOPIC should use a payload.
+	 */
+	private void addLogLines() {
+		String headers = customHeaders.entrySet().stream()
+				.map(this::mapHeaderForLog)
+				.collect(Collectors.joining(", "));
+		if (action == BusAction.GET || DEFAULT_PAYLOAD.equals(payload)) {
+			if(action == BusAction.GET && !DEFAULT_PAYLOAD.equals(payload)) {
+				log.warn("created bus request [GET:{}] with payload [{}]", topic, payload);
+			}
+
+			SEC_LOG.debug("created bus request [{}:{}] with headers [{}]", topic, action, headers);
+		} else {
+			SEC_LOG.info("created bus request [{}:{}] with headers [{}] payload [{}]", topic, action, headers, payload);
+		}
+	}
+
 	public Message<?> build(@Nullable UUID uuid) {
 		if (SEC_LOG.isInfoEnabled()) {
-			String headers = customHeaders.entrySet().stream()
-					.map(this::mapHeaderForLog)
-					.collect(Collectors.joining(", "));
-			SEC_LOG.info("created bus request [{}:{}] with headers [{}] payload [{}]", topic, action, headers, payload);
+			addLogLines();
 		}
 
 		MessageBuilder<?> builder = MessageBuilder.withPayload(payload);

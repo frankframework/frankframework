@@ -44,7 +44,7 @@ public class RequestUtils {
 			return null;
 		}
 		if(clazz.isAssignableFrom(boolean.class) || clazz.isAssignableFrom(Boolean.class)) {
-			return (T) Boolean.valueOf(str); //At the moment we allow null/empty -> FALSE
+			return (T) Boolean.valueOf(str); // At the moment we allow null/empty -> FALSE
 		}
 		return ClassUtils.convertToType(clazz, str);
 	}
