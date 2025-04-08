@@ -53,61 +53,162 @@ import org.frankframework.util.StringUtil;
  * <pre>{@code
  * {baseUrl}/-servlet-name-/oauth2/code/{registrationId}
  * }</pre>
+ * </p>
  * <p>
  * {baseUrl} resolves to {baseScheme}://{baseHost}{basePort}{basePath}.
- * 
+ * <br>
  * The redirect url has been modified to match the servlet path and is deduced from the default
  * {@link OAuth2LoginAuthenticationFilter#DEFAULT_FILTER_PROCESSES_URI}.
- * Authentication base URL is: `-servlet-name-/oauth2/authorization`
- * 
- * See https://docs.spring.io/spring-security/reference/servlet/oauth2/client/authorization-grants.html#oauth2Client-auth-code-redirect-uri
- * Default oauth2 path: `OAuth2AuthorizationRequestRedirectFilter#DEFAULT_AUTHORIZATION_REQUEST_BASE_URI`
+ * Authentication base URL is: {@code -servlet-name-/oauth2/authorization}
+ * </p>
+ * <p>
+ * This authenticator should be configured by setting its type to 'OAUTH2', for example:
+ * <pre>
+ * application.security.console.authentication.type=OAUTH2
+ * application.security.console.authentication.provider=google
+ * application.security.console.authentication.clientId=my-client-id
+ * application.security.console.authentication.clientSecret=my-client-secret
+ * </pre>
+ * </p>
  *
  * @author Niels Meijer
- *
+ * @see <a href="https://docs.spring.io/spring-security/reference/servlet/oauth2/client/authorization-grants.html#oauth2Client-auth-code-redirect-uri">Spring Security OAuth2 Authorization Grants</a>
+ * @see OAuth2AuthorizationRequestRedirectFilter#DEFAULT_AUTHORIZATION_REQUEST_BASE_URI
  */
 public class OAuth2Authenticator extends AbstractServletAuthenticator {
 
-	/** eg. openid, profile, email */
+	/**
+	 * The scopes to request from the OAuth2 provider.
+	 * <p>
+	 * Multiple scopes should be comma-separated, e.g. {@code "openid,profile,email"}
+	 * </p>
+	 */
 	private @Setter String scopes;
 
-	/** eg. https://accounts.google.com/o/oauth2/v2/auth */
+	/**
+	 * The authorization endpoint URI used to authenticate users.
+	 * This is the endpoint where users are redirected to begin the authentication process.
+	 * <p>
+	 * e.g. {@code https://accounts.google.com/o/oauth2/v2/auth}
+	 * </p>
+	 */
 	private @Setter String authorizationUri;
 
-	/** eg. https://www.googleapis.com/oauth2/v4/token */
+	/**
+	 * The token endpoint URI used to exchange authorization codes for access tokens.
+	 * <p>
+	 * e.g. {@code https://www.googleapis.com/oauth2/v4/token}
+	 * </p>
+	 */
 	private @Setter String tokenUri;
 
-	/** eg. https://www.googleapis.com/oauth2/v3/certs */
+	/**
+	 * The URI of the JSON Web Key (JWK) set containing the public keys used to verify any JWT token issued by the authorization server.
+	 * <p>
+	 * e.g. {@code https://www.googleapis.com/oauth2/v3/certs}
+	 * </p>
+	 */
 	private @Setter String jwkSetUri;
 
-	/** eg. https://accounts.google.com */
+	/**
+	 * The issuer identifier URI of the authorization server. This is used to validate the issuer claim in ID tokens.
+	 * <p>
+	 * e.g. {@code https://accounts.google.com}
+	 * </p>
+	 */
 	private @Setter String issuerUri;
 
-	/** eg. external absolute URL (must start with `http(s)://`) */
+	/**
+	 * The base URL used to build the complete redirect URI. Must be an absolute URL for proper OAuth2 flow.
+	 * <p>
+	 * e.g. external absolute URL (must start with {@code http(s)://})
+	 * </p>
+	 */
 	private @Setter String baseUrl;
 
-	/** eg. https://www.googleapis.com/oauth2/v3/userinfo */
+	/**
+	 * The URI of the user info endpoint used to retrieve information about the authenticated user.
+	 * <p>
+	 * e.g. {@code https://www.googleapis.com/oauth2/v3/userinfo}
+	 * </p>
+	 */
 	private @Setter String userInfoUri;
 
 	/**
-	 * The field name of the "claim" can be used to retrieve the username out of the JWT Token.
-	 * eg. {@code sub}.
+	 * The attribute name used to extract the username from the OAuth2 user information or JWT token.
+	 * Different OAuth2 providers may use different attribute names to identify the user.
+	 * <p>
+	 * Common values include:
+	 * <ul>
+	 *   <li>{@code sub} - The subject identifier</li>
+	 *   <li>{@code email} - The user's email address</li>
+	 *   <li>{@code preferred_username} - The user's preferred username</li>
+	 * </ul>
+	 * </p>
 	 */
 	private @Setter String userNameAttributeName;
 
+	/**
+	 * The client ID to use for the OAuth2 provider.
+	 * <p>
+	 * This is required when using the OAuth2 provider.
+	 * </p>
+	 */
 	private @Setter String clientId = null;
+
+	/**
+	 * The client secret to use for the OAuth2 provider.
+	 * <p>
+	 * This is required when using the OAuth2 provider.
+	 * </p>
+	 */
 	private @Setter String clientSecret = null;
 
-	/** Only used in combination with Azure */
+	/**
+	 * The tenant ID to use for the Azure provider.
+	 * <p>
+	 * This is required when using the Azure provider.
+	 * </p>
+	 */
 	private @Setter String tenantId = null;
 
-	/** Google, GitHub, Facebook, Okta, Azure, Custom */
+	/**
+	 * The OAuth2 provider to use.
+	 * <p>
+	 * Supported providers are:
+	 * <ul>
+	 *   <li>google - Google OAuth2</li>
+	 *   <li>github - GitHub OAuth2</li>
+	 *   <li>facebook - Facebook OAuth2</li>
+	 *   <li>okta - Okta OAuth2</li>
+	 *   <li>azure - Microsoft Azure OAuth2</li>
+	 *   <li>custom - Custom OAuth2 provider (requires additional configuration)</li>
+	 * </ul>
+	 * </p>
+	 */
 	private @Setter String provider;
 
 	private ClientRegistrationRepository clientRepository;
 	private String servletPath;
+
+	/**
+	 * The redirect URI to use for the OAuth2 provider.
+	 * <p>
+	 * This URI is used to redirect the user back to the application after authentication.
+	 * </p>
+	 */
 	private @Getter String redirectUri;
 
+	/**
+	 * The role-mapping file, defaults to `oauth-role-mapping.properties` in the classpath.
+	 * This file is used to map OAuth2 roles to Frank roles.
+	 * For example:
+	 * <pre>{@code
+	 * IbisAdmin=admin
+	 * IbisObserver=viewer
+	 * IbisTester=tester
+	 * }</pre>
+	 */
 	private @Setter String roleMappingFile = "oauth-role-mapping.properties";
 	private URL roleMappingURL = null;
 
@@ -235,8 +336,9 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	/**
 	 * When no base URL, spring uses {baseUrl} which resolves to: {baseScheme}://{baseHost}{basePort}{contextPath}.
 	 * And when no base URL we must add the servlet-path our selves: "{baseUrl}" + servletPath;
-	 * 
+	 * <p>
 	 * When a base URL has been set, use that instead!
+	 * </p>
 	 */
 	@Nonnull
 	private String computeRedirectUri() {

@@ -27,6 +27,21 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 
+/**
+ * NoOp authenticator, all requests are allowed.
+ * <p>
+ * This authenticator is used to allow all requests without authentication.
+ * </p>
+ * <p>
+ * This is useful for testing purposes or when no authentication is required.
+ * </p>
+ * <p>
+ * This authenticator should be configured by setting its type to 'NONE', for example:
+ * <pre>
+ * application.security.console.authentication.type=NONE
+ * </pre>
+ * </p>
+ */
 public class NoOpAuthenticator extends AbstractServletAuthenticator {
 	private static final String ROLE_PREFIX = "ROLE_"; // See AuthorityAuthorizationManager#ROLE_PREFIX
 
