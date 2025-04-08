@@ -23,6 +23,7 @@ import lombok.Getter;
 
 import org.frankframework.management.bus.OutboundGateway.ClusterMember;
 
+@SuppressWarnings("serial")
 public class ClusterMemberEvent extends AbstractGatewayEvent {
 
 	public enum EventType {

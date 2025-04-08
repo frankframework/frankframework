@@ -18,10 +18,6 @@ package org.frankframework.console.util;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.frankframework.console.ApiException;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.message.MessageBase;
-import org.frankframework.util.StreamUtil;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -29,11 +25,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-public class ResponseUtils {
+import lombok.NoArgsConstructor;
 
-	private ResponseUtils() {
-		// don't construct utility class
-	}
+import org.frankframework.console.ApiException;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.util.StreamUtil;
+
+
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
+public class ResponseUtils {
 
 	public static ResponseEntity<?> convertToSpringResponse(Message<?> message) {
 		return convertToSpringResponse(message, null);

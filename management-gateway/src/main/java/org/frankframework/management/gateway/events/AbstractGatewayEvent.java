@@ -18,6 +18,7 @@ package org.frankframework.management.gateway.events;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 
+@SuppressWarnings("serial")
 public abstract class AbstractGatewayEvent extends ApplicationEvent {
 
 	public AbstractGatewayEvent(ApplicationContext source) {
