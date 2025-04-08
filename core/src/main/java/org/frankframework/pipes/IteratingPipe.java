@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Phaser;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -207,7 +206,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		private boolean blockOpen=false;
 		private Object blockHandle;
 		private final List<I> inputItems = Collections.synchronizedList(new ArrayList<>());
-		private Phaser guard;
 		private List<ParallelSenderExecutor> executorList;
 
 		public ItemCallback(PipeLineSession session, ISender sender, Writer out) {
@@ -215,7 +213,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			this.sender=sender;
 			this.results=out;
 			if (isParallel() && isCollectResults()) {
-				guard = new Phaser(1);
 				executorList = new ArrayList<>();
 			}
 		}
@@ -303,14 +300,9 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				try {
 					DistributionSummary senderStatistics = getStatisticsKeeper(sender.getName());
 					if (isParallel()) {
-						if (isCollectResults() && guard != null) {
-							guard.register();
-						}
-
 						ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, childSession, senderStatistics);
 						pse.setShouldCloseSession(true);
 						pse.setThreadLimiter(childLimiter);
-						pse.setGuard(guard);
 						if (isCollectResults()) {
 							executorList.add(pse);
 						}
@@ -424,7 +416,12 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 		public void waitForResults() throws SenderException, IOException {
 			if (isParallel()) {
-				guard.arriveAndAwaitAdvance();
+				try {
+					childLimiter.waitUntilAllResourcesAvailable();
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+					throw new SenderException("interrupted while waiting for results", e);
+				}
 				collectResultsOrThrowExceptions();
 			}
 		}

@@ -14,10 +14,15 @@ import java.util.Map;
 
 import jakarta.annotation.Nonnull;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
 import lombok.extern.log4j.Log4j2;
@@ -33,6 +38,7 @@ import org.frankframework.pipes.IteratingPipe.StopReason;
 import org.frankframework.senders.EchoSender;
 import org.frankframework.senders.XsltSender;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.LargeStructuredMockData;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.AppConstants;
@@ -966,6 +972,31 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void testVeryLargeInput() throws Exception {
+		Logger logger = LogManager.getLogger("org.frankframework");
+		Level originalLevel = logger.getLevel();
+		Configurator.setLevel("org.frankframework", Level.INFO);
+		try {
+			pipe.setSender(new EchoSender());
+			pipe.setTargetElement("error");
+			pipe.setBlockSize(1);
+			pipe.setRemoveNamespaces(false);
+			pipe.setParallel(true);
+			pipe.setTaskExecutor(new SimpleAsyncTaskExecutor());
+			pipe.setMaxChildThreads(4);
+			configurePipe();
+			pipe.start();
+
+			Message input = Message.asMessage(LargeStructuredMockData.getLargeXmlDataReader(20_000_000));
+			PipeRunResult prr = doPipe(pipe, input, session);
+			String actual = prr.getResult().asString();
+		} finally {
+			Configurator.setLevel("org.frankframework", originalLevel);
+		}
+
 	}
 
 	@Test

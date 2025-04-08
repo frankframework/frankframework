@@ -44,4 +44,8 @@ public class ResourceLimiter extends java.util.concurrent.Semaphore {
 		return maxResourceLimit;
 	}
 
+	public void waitUntilAllResourcesAvailable() throws InterruptedException {
+		acquire(maxResourceLimit);
+		release(maxResourceLimit);
+	}
 }
