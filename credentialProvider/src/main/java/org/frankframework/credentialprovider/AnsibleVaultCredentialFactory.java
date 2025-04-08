@@ -19,9 +19,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import net.wedjaa.ansible.vault.crypto.data.Util;
 import net.wedjaa.ansible.vault.crypto.data.VaultInfo;
@@ -29,12 +29,31 @@ import net.wedjaa.ansible.vault.crypto.data.VaultInfo;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.util.StreamUtil;
 
+/**
+ * <p>CredentialFactory implementation that uses an Ansible Vault to read secrets from.</p>
+ *
+ * <p>Ansible Vault is a feature of Ansible that allows you to securely store and manage sensitive data, such as passwords, API keys, or other secrets, in
+ * encrypted files. It is particularly useful for protecting sensitive information in automation scripts or configuration files.</p>
+ *
+ * <p>To set up Ansible Vault in the Framework, you need to set the following properties in {@code credentialproperties.properties}:</p>
+ *
+ * <pre>{@code
+ * credentialFactory.class=org.frankframework.credentialprovider.AnsibleVaultCredentialFactory
+ * credentialFactory.ansibleVault.vaultFile=catalina-secure-store.vault
+ * credentialFactory.ansibleVault.keyFile=.secure-vault-keyfile
+ * }</pre>
+ *
+ * <p>Note that the default values for the vault file and key file are {@code catalina-secure-store.vault} and {@code .secure-vault-keyfile} respectively.</p>
+ *
+ * <p>Note that the vault file and key file are read from the classpath. If you want to use a different location, you can specify the full path to the file.</p>
+ *
+ * @see <a href="https://docs.ansible.com/ansible/latest/vault_guide/index.html">Ansible Vault Documentation</a>
+ */
 public class AnsibleVaultCredentialFactory extends AbstractMapCredentialFactory {
+	private static final String PROPERTY_BASE = "credentialFactory.ansibleVault";
 
-	public static final String PROPERTY_BASE = "credentialFactory.ansibleVault";
-
-	public static final String VAULT_PROPERTY = PROPERTY_BASE + ".vaultFile";
-	public static final String VAULT_KEY_PROPERTY = PROPERTY_BASE + ".keyFile";
+	private static final String VAULT_PROPERTY = PROPERTY_BASE + ".vaultFile";
+	private static final String VAULT_KEY_PROPERTY = PROPERTY_BASE + ".keyFile";
 
 	private static final String DEFAULT_VAULT_FILE = "catalina-secure-store.vault";
 	private static final String DEFAULT_VAULT_KEY_FILE = ".secure-vault-keyfile";
@@ -68,9 +87,11 @@ public class AnsibleVaultCredentialFactory extends AbstractMapCredentialFactory 
 				properties.load(reader);
 			}
 
-			Map<String, String> result = new HashMap<>();
-			properties.forEach((k, v) -> result.put((String) k, (String) v));
-			return result;
+			return properties.entrySet().stream()
+			    .collect(Collectors.toMap(
+			        entry -> (String) entry.getKey(),
+			        entry -> (String) entry.getValue()
+			    ));
 		}
 	}
 }
