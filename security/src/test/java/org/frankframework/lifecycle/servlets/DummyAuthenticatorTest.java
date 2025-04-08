@@ -5,19 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.DefaultSecurityFilterChain;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-public class DummyAuthenticatorTest extends ServletAuthenticatorTest {
-
-	public static class DummyAuthenticator extends AbstractServletAuthenticator {
-		@Override
-		protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
-			return http.build();
-		}
-	}
+public class DummyAuthenticatorTest extends ServletAuthenticatorTest<DummyAuthenticator> {
 
 	@Override
 	protected DummyAuthenticator createAuthenticator() {

@@ -112,6 +112,7 @@ public class RequestMessageBuilder {
 		String headers = customHeaders.entrySet().stream()
 				.map(this::mapHeaderForLog)
 				.collect(Collectors.joining(", "));
+
 		if (action == BusAction.GET || DEFAULT_PAYLOAD.equals(payload)) {
 			if(action == BusAction.GET && !DEFAULT_PAYLOAD.equals(payload)) {
 				log.warn("created bus request [GET:{}] with payload [{}]", topic, payload);
