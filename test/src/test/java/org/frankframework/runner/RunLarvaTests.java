@@ -41,6 +41,15 @@ import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CloseUtils;
 
+/**
+ * Attempt to run Larva tests in the Maven build.
+ *
+ * There are some issues -- some tests fail unexpectedly, whereas they do not fail when running
+ * in a normal AppServer environment.
+ *
+ * Therefore it will not fail the build and run only to provide extra coverage-reporting.
+ *
+ */
 @Tag("integration")
 public class RunLarvaTests {
 
@@ -52,6 +61,9 @@ public class RunLarvaTests {
 	private static AppConstants appConstants;
 	private static String scenarioRootDir;
 
+	/**
+	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually configure the application
+	 */
 	@BeforeAll
 	static void setup() throws IOException {
 		SpringApplication springApplication = IafTestInitializer.configureApplication();
@@ -78,6 +90,15 @@ public class RunLarvaTests {
 		CloseUtils.closeSilently(applicationContext);
 	}
 
+	/**
+	 * This should create Dynamic tests for JUnit to run. However the dynamic tests are not properly
+	 * reported on by Surefire, although Surefire does execute them.
+	 *
+	 * Another issue is that over half the Larva scenarios fails even though I see no reason why they
+	 * would fail. Running all scenarios at once by passing the scenario-directoy to the LarvaTool, most
+	 * scenarios do run. I don't yet see the principle difference in environment that makes them fail here.
+	 *
+	 */
 	@TestFactory
 	@Disabled("Not yet working properly, reasons not yet known.")
 	Stream<DynamicNode> larvaTests() {
@@ -122,15 +143,11 @@ public class RunLarvaTests {
 		);
 	}
 
-	/**
-	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually configure the application
-	 */
 	@Test
 	//@Disabled("This version fails only 15 scenarios, figure out why the other fails half the scenarios")
 	void runLarvaTests() throws IOException {
 		assertTrue(applicationContext.isRunning());
 
-		// Wait until all adapters running
 		ServletContext servletContext = applicationContext.getBean(ServletContext.class);
 
 		MockHttpServletRequest request = new MockHttpServletRequest();
@@ -150,10 +167,12 @@ public class RunLarvaTests {
 		assertFalse(result < 0, () -> "Error in LarvaTool execution, result is [" + result + "] instead of 0; output from LarvaTool:\n\n" + larvaOutput);
 
 		if (result > 0) {
-			System.err.println(result + " Larva tests failed duration: " + (end - start) + "ms; \n\n" + larvaOutput);
+			System.err.println(result + " Larva tests failed, duration: " + (end - start) + "ms; \n\n" + larvaOutput);
 		} else {
 			System.err.println("All Larva tests succeeded in " + (end - start) + "ms");
 		}
+
+		assertEquals(0, result, () -> "Error in LarvaTool scenarios, " + result + " scenarios failed. Duration: " + (end - start) + "ms; \n\n" + larvaOutput);
 	}
 
 	private @Nonnull String stripLarvaOutput(@Nonnull String input) {
