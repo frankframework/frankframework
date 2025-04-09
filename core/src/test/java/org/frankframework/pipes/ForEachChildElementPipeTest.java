@@ -983,13 +983,13 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		Level originalLevel = logger.getLevel();
 		// Set the loglevel to INFO because otherwise this produces too much logging of every small sub-message.
 		Configurator.setLevel("org.frankframework", Level.INFO);
-		try {
+		try (SimpleAsyncTaskExecutor taskExecutor = new SimpleAsyncTaskExecutor()) {
 			pipe.setSender(new EchoSender());
 			pipe.setTargetElement("error");
 			pipe.setBlockSize(1);
 			pipe.setRemoveNamespaces(false);
 			pipe.setParallel(true);
-			pipe.setTaskExecutor(new SimpleAsyncTaskExecutor());
+			pipe.setTaskExecutor(taskExecutor);
 			pipe.setMaxChildThreads(4);
 			configurePipe();
 			pipe.start();
