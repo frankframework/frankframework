@@ -26,7 +26,7 @@
 		<spring-security.version>6.4.4</spring-security.version>
 		<spring-integration.version>6.4.3</spring-integration.version>
 		<spring.boot.version>3.4.4</spring.boot.version>
-		<tomcat.version>10.1.39</tomcat.version>
+		<tomcat.version>10.1.40</tomcat.version>
 		<bouncycastle.version>1.80</bouncycastle.version>
 
 		<narayana.version>7.2.1.Final</narayana.version>
@@ -164,7 +164,7 @@
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>33.4.6-jre</version>
+				<version>33.4.7-jre</version>
 			</dependency>
 			<dependency><!-- needed for io.fabric8:kubernetes-client transitive deps -->
 				<groupId>com.squareup.okhttp3</groupId>

@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Phaser;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -38,6 +37,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.IBlockEnabledSender;
 import org.frankframework.core.IDataIterator;
 import org.frankframework.core.ISender;
@@ -146,8 +146,14 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("Cannot compile stylesheet from stopConditionXPathExpression ["+getStopConditionXPathExpression()+"]", e);
 		}
-		if (getMaxChildThreads()>0) {
-			childLimiter = new ResourceLimiter(getMaxChildThreads());
+		if (getMaxChildThreads() == 0 && isParallel()) {
+			setMaxChildThreads(20);
+			ConfigurationWarnings.add(this, log, "\"parallel\" is set to \"true\" but \"maxChildThreads\" is not set. Defaulting \"maxChildThreads\" to 20");
+		}
+		if (getMaxChildThreads() > 0) {
+			// Create semaphore with "fair" policy, meaning first-come-first-serve. If a child thread asks for a resource but doesn't get it before the
+			// parent thread tries to wait until all tasks are done, the child gets the semaphore before parent is signalled it can continue.
+			childLimiter = new ResourceLimiter(getMaxChildThreads(), true);
 		}
 	}
 
@@ -207,7 +213,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		private boolean blockOpen=false;
 		private Object blockHandle;
 		private final List<I> inputItems = Collections.synchronizedList(new ArrayList<>());
-		private Phaser guard;
 		private List<ParallelSenderExecutor> executorList;
 
 		public ItemCallback(PipeLineSession session, ISender sender, Writer out) {
@@ -215,7 +220,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			this.sender=sender;
 			this.results=out;
 			if (isParallel() && isCollectResults()) {
-				guard = new Phaser(1);
 				executorList = new ArrayList<>();
 			}
 		}
@@ -303,14 +307,9 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				try {
 					DistributionSummary senderStatistics = getStatisticsKeeper(sender.getName());
 					if (isParallel()) {
-						if (isCollectResults() && guard != null) {
-							guard.register();
-						}
-
 						ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, childSession, senderStatistics);
 						pse.setShouldCloseSession(true);
 						pse.setThreadLimiter(childLimiter);
-						pse.setGuard(guard);
 						if (isCollectResults()) {
 							executorList.add(pse);
 						}
@@ -424,7 +423,14 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 		public void waitForResults() throws SenderException, IOException {
 			if (isParallel()) {
-				guard.arriveAndAwaitAdvance();
+				try {
+					// ChildLimiter is an extended semaphore that is used to track created threads when running in parallel.
+					// Here we wait until all child threads have finished.
+					childLimiter.waitUntilAllResourcesAvailable();
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+					throw new SenderException("interrupted while waiting for results", e);
+				}
 				collectResultsOrThrowExceptions();
 			}
 		}

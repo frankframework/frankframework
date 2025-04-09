@@ -15,13 +15,15 @@
 */
 package org.frankframework.xml;
 
+import java.io.Serial;
+
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
 public class SaxException extends SAXException {
 
-	private static final long serialVersionUID = -3772313635358961207L;
+	@Serial private static final long serialVersionUID = -3772313635358961207L;
 
 	public SaxException() {
 		super();
@@ -32,11 +34,12 @@ public class SaxException extends SAXException {
 	}
 
 	public SaxException(String message, Exception e) {
-		super(message, e);
+		super(message);
 		try {
-			initCause(e); // this fixes stacktrace under IBM JDK, does nothing under standard JDK
-		} catch (Exception e2) { // Jboss throws 'IllegalStateException: Can't overwrite cause'
-			addSuppressed(e2);
+			initCause(e); // this fixes stacktrace under IBM JDK, likely to throw under standard JDK
+		} catch (Exception e2) { // Default JDK throws 'IllegalStateException: Can't overwrite cause'
+			// Ignore exception
+			// Do not add it to suppressed exceptions as that will cause a stackOverflow from IbisException#getMessages
 		}
 	}
 
