@@ -36,7 +36,7 @@ public class SaxException extends SAXException {
 		try {
 			initCause(e); // this fixes stacktrace under IBM JDK, does nothing under standard JDK
 		} catch (Exception e2) { // Jboss throws 'IllegalStateException: Can't overwrite cause'
-			addSuppressed(e2);
+			addSuppressed(e);
 		}
 	}
 
