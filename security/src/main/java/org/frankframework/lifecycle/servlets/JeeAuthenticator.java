@@ -39,9 +39,28 @@ import org.springframework.security.web.authentication.preauth.j2ee.WebXmlMappab
 
 import org.frankframework.util.SpringUtils;
 
-/* https://docs.spring.io/spring-security/site/docs/3.0.x/reference/introduction.html
- * https://stackoverflow.com/questions/9831268/how-to-use-j2eepreauthenticatedprocessingfilter-and-a-custom-authentication-prov
- * https://docs.spring.io/spring-security/site/docs/3.0.x/reference/authz-arch.html
+/**
+ * Authenticator for J2EE authentication.
+ * <p>
+ * This authenticator can be used to authenticate users using J2EE authentication.
+ * It delegates authentication to the Java EE container, using container-managed security
+ * defined in web.xml or through other container-specific mechanisms.
+ * </p>
+ * <p>
+ * The authenticator extracts security roles from the container and maps them to
+ * Frank! Framework roles. No additional login form is required, as authentication
+ * is handled entirely by the container.
+ * </p>
+ * <p>
+ * This authenticator should be configured by setting its type to 'CONTAINER', for example:
+ * <pre>
+ * application.security.console.authentication.type=CONTAINER
+ * </pre>
+ * </p>
+ *
+ * @see <a href="https://docs.spring.io/spring-security/site/docs/3.0.x/reference/introduction.html">Spring Security Introduction</a>
+ * @see <a href="https://docs.spring.io/spring-security/site/docs/3.0.x/reference/authz-arch.html">Spring Security Authorization Architecture</a>
+ * @see <a href="https://stackoverflow.com/questions/9831268/how-to-use-j2eepreauthenticatedprocessingfilter-and-a-custom-authentication-prov">StackOverflow J2EE PreAuthenticatedProcessingFilter</a>
  */
 public class JeeAuthenticator extends AbstractServletAuthenticator {
 

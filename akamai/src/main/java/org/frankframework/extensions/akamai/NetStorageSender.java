@@ -94,8 +94,8 @@ public class NetStorageSender extends AbstractHttpSender {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		//The HttpSenderBase dictates that you must use a Parameter with 'getUrlParam()' as name to use a dynamic endpoint.
-		//In order to not force everyone to use the URL parameter but instead the input of the sender as 'dynamic' path, this exists.
+		// The HttpSenderBase dictates that you must use a Parameter with 'getUrlParam()' as name to use a dynamic endpoint.
+		// In order to not force everyone to use the URL parameter but instead the input of the sender as 'dynamic' path, this exists.
 		Parameter urlParameter = new Parameter();
 		urlParameter.setName(getUrlParam());
 		urlParameter.setSessionKey(URL_PARAM_KEY);
@@ -103,7 +103,7 @@ public class NetStorageSender extends AbstractHttpSender {
 
 		super.configure();
 
-		//Safety checks
+		// Safety checks
 		if(getAction() == null)
 			throw new ConfigurationException("action must be specified");
 
@@ -127,8 +127,8 @@ public class NetStorageSender extends AbstractHttpSender {
 			throw new ConfigurationException("the mtime action requires a mtime parameter to be present");
 		}
 
-		//check if md5/sha1/sha256 -> geef deprecated warning + parse hashAlgorithme
-		//hashValue  parameterList
+		// Check if md5/sha1/sha256 -> Add deprecated warning + parse hashAlgorithm
+		// hashValue  parameterList
 		for(HashAlgorithm algorithm : HashAlgorithm.values()) {
 			String simpleName = algorithm.name().toLowerCase();
 			IParameter hashValue = parameterList.findParameter(simpleName);
@@ -158,7 +158,7 @@ public class NetStorageSender extends AbstractHttpSender {
 
 		url += path;
 
-		if(url.endsWith(PATH_SEPARATOR)) //The path should never end with a '/'
+		if(url.endsWith(PATH_SEPARATOR)) // The path should never end with a '/'
 			url = url.substring(0, url.length() -1);
 
 		return new URIBuilder(url).build();
@@ -167,18 +167,18 @@ public class NetStorageSender extends AbstractHttpSender {
 	@Override
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 
-		//The input of this sender is the path where to send or retrieve info from.
+		// The input of this sender is the path where to send or retrieve info from.
 		String path;
 		try {
 			path = message.asString();
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix(), e);
 		}
-		//Store the input in the PipeLineSession, so it can be resolved as ParameterValue.
-		//See {@link HttpSenderBase#getURI getURI(..)} how this is resolved
+		// Store the input in the PipeLineSession, so it can be resolved as ParameterValue.
+		// See {@link HttpSenderBase#getURI getURI(..)} how this is resolved
 		session.put(URL_PARAM_KEY, path);
 
-		//We don't need to send any message to the HttpSenderBase
+		// We don't need to send any message to the HttpSenderBase
 		return super.sendMessage(new Message(""), session);
 	}
 
@@ -192,7 +192,7 @@ public class NetStorageSender extends AbstractHttpSender {
 			request.mapParameters(parameters);
 		}
 
-		setMethodType(request.getMethodType()); //For logging purposes
+		setMethodType(request.getMethodType()); // For logging purposes
 		log.debug("opening [{}] connection to [{}] with action [{}]", request::getMethodType, () -> uri, this::getAction);
 
 		NetStorageCmsSigner signer = new NetStorageCmsSigner(uri, accessTokenCf, getSignType());
@@ -368,7 +368,7 @@ public class NetStorageSender extends AbstractHttpSender {
 	}
 
 	/** Alias used to obtain credentials for nonce (username) and accesstoken (password) */
-	@Override //Overridden to prevent the super class from setting credentials
+	@Override // Overridden to prevent the super class from setting credentials
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}

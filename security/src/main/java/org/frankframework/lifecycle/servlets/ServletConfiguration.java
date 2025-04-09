@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,17 +39,22 @@ import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.lifecycle.DynamicRegistration.Servlet;
 import org.frankframework.util.EnumUtils;
 
-//servlets:
-//  IAF-API:
-//    transportGuarantee: NONE
-//    securityRoles:
-//      - IbisObserver
-//      - IbisDataAdmin
-//      - IbisAdmin
-//      - IbisTester
-//    urlMapping: iaf/api/*
-//    loadOnStartup: 0
-//    authenticator: myAuthenticatorID
+/**
+ * Yaml config example:
+ * <pre>{@code
+ *  servlets:
+ *    IAF-API:
+ *      transportGuarantee: NONE
+ *      securityRoles:
+ *        - IbisObserver
+ *        - IbisDataAdmin
+ *        - IbisAdmin
+ *        - IbisTester
+ *      urlMapping: iaf/api/*
+ *      loadOnStartup: 0
+ *      authenticator: myAuthenticatorID
+ * }</pre>
+ */
 @Log4j2
 public class ServletConfiguration implements InitializingBean, EnvironmentAware {
 

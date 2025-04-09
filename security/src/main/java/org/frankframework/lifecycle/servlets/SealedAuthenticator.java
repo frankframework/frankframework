@@ -29,6 +29,9 @@ import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * Sealed authenticator, all requests are blocked.
+ * <p>
+ * This is the default authenticator for the Frank!Framework. It is used to block all requests until another authenticator is configured.
+ * </p>
  */
 public class SealedAuthenticator extends AbstractServletAuthenticator {
 
