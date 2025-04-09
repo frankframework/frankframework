@@ -48,6 +48,7 @@ export class ServerInfoService {
   consoleVersion$ = this.consoleVersionSubject.asObservable();
 
   private serverInfo?: ServerInfo;
+  private consoleVersion?: string;
 
   constructor(
     private appService: AppService,
@@ -64,8 +65,8 @@ export class ServerInfoService {
 
   refresh(): Observable<ServerInfo> {
     this.fetchConsoleVersion().subscribe({
-      next: (version) => this.consoleVersionSubject.next(version),
-      error: () => this.consoleVersionSubject.next('null'),
+      next: (version) => this.setConsoleVersion(version),
+      error: () => this.setConsoleVersion('null'),
     });
     return this.fetchServerInfo().pipe(
       tap({
@@ -86,6 +87,12 @@ Java Version: **${this.serverInfo?.javaVersion}**
 Heap size: **${humanFileSize.transform(this.serverInfo?.processMetrics.heapSize ?? 0)}**, total JVM memory: **${humanFileSize.transform(this.serverInfo?.processMetrics?.totalMemory ?? 0)}**
 Free memory: **${humanFileSize.transform(this.serverInfo?.processMetrics.freeMemory ?? 0)}**, max memory: **${humanFileSize.transform(this.serverInfo?.processMetrics.maxMemory ?? 0)}**
 Free disk space: **${humanFileSize.transform(this.serverInfo?.fileSystem.freeSpace ?? 0)}**, total disk space: **${humanFileSize.transform(this.serverInfo?.fileSystem.totalSpace ?? 0)}**
-Up since: **${this.serverTimeService.getIntialTime()}**, timezone: **${this.serverInfo?.serverTimezone}**`;
+Up since: **${this.serverTimeService.getIntialTime()}**, timezone: **${this.serverInfo?.serverTimezone}**
+${this.consoleVersion === this.serverInfo.framework.version ? '' : `Console version: **${this.consoleVersion}**`}`;
+  }
+
+  private setConsoleVersion(version: string): void {
+    this.consoleVersion = version;
+    this.consoleVersionSubject.next(version);
   }
 }
