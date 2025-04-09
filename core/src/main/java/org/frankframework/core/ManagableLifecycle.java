@@ -40,7 +40,7 @@ public interface ManagableLifecycle extends ConfigurableLifecycle {
 	/**
 	 * Verifies if this object needs to be started or stopped.
 	 * 
-	 * {@inheritClassDoc}
+	 * {@inheritDoc}
 	 */
 	@Override
 	default boolean isRunning() {
