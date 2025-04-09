@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
+import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -43,7 +44,6 @@ import org.frankframework.testutil.LargeStructuredMockData;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 
 public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElementPipe> {
@@ -997,7 +997,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 			Message input = Message.asMessage(LargeStructuredMockData.getLargeXmlDataReader(20_000_000));
 			PipeRunResult prr = doPipe(pipe, input, session);
 			String actual = prr.getResult().asString();
-			int nrOfResultMessages = StringUtil.countSubstring(actual, "error");
+			int nrOfResultMessages = StringUtils.countMatches(actual, "error");
 			assertTrue(nrOfResultMessages > 65_535, "Should have had at least 65.535 messages in output without throwing an error, counted " + nrOfResultMessages);
 		} finally {
 			Configurator.setLevel("org.frankframework", originalLevel);
