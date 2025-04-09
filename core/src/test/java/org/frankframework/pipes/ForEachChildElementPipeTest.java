@@ -21,6 +21,7 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
@@ -975,6 +976,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	}
 
 	@Test
+	@Tag("slow")
 	public void testVeryLargeInput() throws Exception {
 		Logger logger = LogManager.getLogger("org.frankframework");
 		Level originalLevel = logger.getLevel();
