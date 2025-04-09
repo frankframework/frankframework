@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { Observable, ReplaySubject, tap } from 'rxjs';
+import { BehaviorSubject, Observable, ReplaySubject, tap } from 'rxjs';
 import { AppService } from '../app.service';
 import { HttpClient } from '@angular/common/http';
 import { HumanFileSizePipe } from '../pipes/human-file-size.pipe';
@@ -42,8 +42,10 @@ export type ServerInfo = {
 export class ServerInfoService {
   private readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
   private serverInfoSubject = new ReplaySubject<ServerInfo>(1);
+  private consoleVersionSubject = new BehaviorSubject<string>('null');
 
   serverInfo$ = this.serverInfoSubject.asObservable();
+  consoleVersion$ = this.consoleVersionSubject.asObservable();
 
   private serverInfo?: ServerInfo;
 
@@ -56,7 +58,15 @@ export class ServerInfoService {
     return this.http.get<ServerInfo>(`${this.appService.absoluteApiPath}server/info`);
   }
 
+  fetchConsoleVersion(): Observable<string> {
+    return this.http.get<string>(`${this.appService.absoluteApiPath}server/version`);
+  }
+
   refresh(): Observable<ServerInfo> {
+    this.fetchConsoleVersion().subscribe({
+      next: (version) => this.consoleVersionSubject.next(version),
+      error: () => this.consoleVersionSubject.next('null'),
+    });
     return this.fetchServerInfo().pipe(
       tap({
         next: (data) => {

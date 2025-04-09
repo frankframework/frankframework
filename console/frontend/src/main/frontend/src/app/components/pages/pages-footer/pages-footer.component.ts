@@ -1,8 +1,37 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { ServerInfoService } from '../../../services/server-info.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-pages-footer',
   templateUrl: './pages-footer.component.html',
   styleUrls: ['./pages-footer.component.scss'],
 })
-export class PagesFooterComponent {}
+export class PagesFooterComponent implements OnInit, OnDestroy {
+  protected ffVersion = '';
+  protected consoleVersion = '';
+
+  private readonly serverInfoService: ServerInfoService = inject(ServerInfoService);
+  private subscriptions: Subscription = new Subscription();
+
+  ngOnInit(): void {
+    this.subscriptions.add(
+      this.serverInfoService.serverInfo$.subscribe({
+        next: (data) => {
+          this.ffVersion = data.framework.version;
+        },
+      }),
+    );
+    this.subscriptions.add(
+      this.serverInfoService.consoleVersion$.subscribe({
+        next: (data) => {
+          this.consoleVersion = data;
+        },
+      }),
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+}

@@ -6,5 +6,10 @@
     <a href="//github.com/frankframework/frankframework" target="_blank">
       <i class="fa fa-github"></i> frankframework
     </a>
+    @if (consoleVersion !== ffVersion) {
+      <span class="console-version"
+        >Version: <strong>{{ consoleVersion }}</strong></span
+      >
+    }
   </div>
 </div>
