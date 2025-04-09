@@ -43,6 +43,7 @@ import org.frankframework.testutil.LargeStructuredMockData;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 
 public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElementPipe> {
@@ -980,6 +981,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	public void testVeryLargeInput() throws Exception {
 		Logger logger = LogManager.getLogger("org.frankframework");
 		Level originalLevel = logger.getLevel();
+		// Set the loglevel to INFO because otherwise this produces too much logging of every small sub-message.
 		Configurator.setLevel("org.frankframework", Level.INFO);
 		try {
 			pipe.setSender(new EchoSender());
@@ -995,6 +997,8 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 			Message input = Message.asMessage(LargeStructuredMockData.getLargeXmlDataReader(20_000_000));
 			PipeRunResult prr = doPipe(pipe, input, session);
 			String actual = prr.getResult().asString();
+			int nrOfResultMessages = StringUtil.countSubstring(actual, "error");
+			assertTrue(nrOfResultMessages > 65_535, "Should have had at least 65.535 messages in output without throwing an error, counted " + nrOfResultMessages);
 		} finally {
 			Configurator.setLevel("org.frankframework", originalLevel);
 		}

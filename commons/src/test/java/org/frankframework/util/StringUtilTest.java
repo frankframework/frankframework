@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 class StringUtilTest {
@@ -124,6 +125,19 @@ class StringUtilTest {
 		String regex = "\\d";
 		int regexCount = StringUtil.countRegex(s, regex);
 		assertEquals(4, regexCount);
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			", 0",
+			"z, 0",
+			"abcxyzdefxyz, 2",
+			"abc xyz def xy, 1",
+			"xyz, 1"
+	})
+	public void testCountSubstring(String input, int expectedCount) {
+		int actualCount = StringUtil.countSubstring(input, "xyz");
+		assertEquals(expectedCount, actualCount);
 	}
 
 	@Test

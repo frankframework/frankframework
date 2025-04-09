@@ -208,6 +208,26 @@ public class StringUtil {
 	}
 
 	/**
+	 * Count the number of occurrences of a substring in a string.
+	 *
+	 * @param input String in which to count occurrences. May be null.
+	 * @param stringToCount Substring to find. May not be null.
+	 * @return The number of times the substring was found.
+	 */
+	public static int countSubstring(@Nullable String input, @Nonnull String stringToCount) {
+		if (input == null) {
+			return 0;
+		}
+		int counter = 0;
+		int idx = 0;
+		while((idx = input.indexOf(stringToCount, idx)) >= 0) {
+			counter++;
+			idx += stringToCount.length();
+		};
+		return counter;
+	}
+
+	/**
 	 * Turns the first Char into lower case.
 	 */
 	public static String lcFirst(String input) {
