@@ -1,6 +1,9 @@
 package org.frankframework.pipes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -18,7 +21,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Tag;
@@ -178,6 +180,16 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		PipeRunResult prr = doPipe(pipe, messageBasicNoNS, session);
 		String actual = prr.getResult().asString();
 		assertEquals(expectedBasicNoNS, actual);
+	}
+
+	@Test
+	public void testMaxChildThreadsDefault() throws Exception {
+		pipe.setSender(new EchoSender());
+		pipe.setParallel(true);
+		configurePipe();
+
+		assertEquals(20, pipe.getMaxChildThreads(), "When not set and parallel is true, maxChildThreads should be set to 20");
+		assertThat(getConfigurationWarnings().getWarnings(), hasItem(containsString("maxChildThreads")));
 	}
 
 	@Test
@@ -714,7 +726,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 		// System.out.println("num reads="+sc.hitCount.get("in"));
-		assertThat(sc.hitCount.get("in"), Matchers.lessThan(17));
+		assertThat(sc.hitCount.get("in"), lessThan(17));
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 	}
 
@@ -732,7 +744,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 		// System.out.println("num reads="+sc.hitCount.get("in"));
-		assertThat(sc.hitCount.get("in"), Matchers.lessThan(17));
+		assertThat(sc.hitCount.get("in"), lessThan(17));
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 		assertEquals(StopReason.STOP_CONDITION_MET.getForwardName(), prr.getPipeForward().getName());
 	}
@@ -750,7 +762,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 		// System.out.println("num reads="+sc.hitCount.get("in"));
-		assertThat(sc.hitCount.get("in"), Matchers.lessThan(17));
+		assertThat(sc.hitCount.get("in"), lessThan(17));
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 		assertEquals(PipeForward.SUCCESS_FORWARD_NAME, prr.getPipeForward().getName());
 	}
@@ -769,7 +781,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		assertEquals(expectedBasicNoNSFirstElement, actual);
 		// System.out.println("num reads="+sc.hitCount.get("in"));
-		assertThat(sc.hitCount.get("in"), Matchers.lessThan(10));
+		assertThat(sc.hitCount.get("in"), lessThan(10));
 	}
 
 	@Test
@@ -787,7 +799,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		assertEquals(expectedBasicNoNSFirstElement, actual);
 		// System.out.println("num reads="+sc.hitCount.get("in"));
-		assertThat(sc.hitCount.get("in"), Matchers.lessThan(10));
+		assertThat(sc.hitCount.get("in"), lessThan(10));
 		assertEquals(StopReason.MAX_ITEMS_REACHED.getForwardName(), prr.getPipeForward().getName());
 	}
 
@@ -805,7 +817,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 		// System.out.println("num reads="+sc.hitCount.get("in"));
-		assertThat(sc.hitCount.get("in"), Matchers.lessThan(15));
+		assertThat(sc.hitCount.get("in"), lessThan(15));
 	}
 
 	@Test
@@ -823,7 +835,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 		// System.out.println("num reads="+sc.hitCount.get("in"));
-		assertThat(sc.hitCount.get("in"), Matchers.lessThan(15));
+		assertThat(sc.hitCount.get("in"), lessThan(15));
 		assertEquals(StopReason.MAX_ITEMS_REACHED.getForwardName(), prr.getPipeForward().getName());
 	}
 
@@ -841,7 +853,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 		// System.out.println("num reads="+sc.hitCount.get("in"));
-		assertThat(sc.hitCount.get("in"), Matchers.lessThan(15));
+		assertThat(sc.hitCount.get("in"), lessThan(15));
 		assertEquals(PipeForward.SUCCESS_FORWARD_NAME, prr.getPipeForward().getName());
 	}
 
@@ -860,7 +872,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 //		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
-		assertThat(sc.hitCount.get("in"), Matchers.lessThan(11));
+		assertThat(sc.hitCount.get("in"), lessThan(11));
 		assertEquals(expectedBasicNoNSFirstElement, actual);
 	}
 
@@ -879,7 +891,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 //		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
-		assertThat(sc.hitCount.get("in"), Matchers.lessThan(20));
+		assertThat(sc.hitCount.get("in"), lessThan(20));
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 	}
 

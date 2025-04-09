@@ -28,6 +28,11 @@ public class ResourceLimiter extends java.util.concurrent.Semaphore {
 		maxResourceLimit = permits;
 	}
 
+	public ResourceLimiter(int permits, boolean fair) {
+		super(permits, fair);
+		maxResourceLimit = permits;
+	}
+
 	public void increaseMaxResourceCount(int addition) {
 		if (addition < 0) throw new IllegalArgumentException("Only positive values are allowed.");
 		release(addition);
@@ -45,7 +50,10 @@ public class ResourceLimiter extends java.util.concurrent.Semaphore {
 	}
 
 	public void waitUntilAllResourcesAvailable() throws InterruptedException {
+		// To wait until all resources are available again, acquire up to the resource limit
 		acquire(maxResourceLimit);
+
+		// However since we don't need to keep them unavailable, release them again after acquiring.
 		release(maxResourceLimit);
 	}
 }
