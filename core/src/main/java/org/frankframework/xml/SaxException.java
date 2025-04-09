@@ -34,13 +34,11 @@ public class SaxException extends SAXException {
 	}
 
 	public SaxException(String message, Exception e) {
-		super(message, e);
-		if (getCause() != e) { // Not sure what would be the best condition that we can check but don't want to trigger the exception every time
-			try {
-				initCause(e); // this fixes stacktrace under IBM JDK, may trigger an exception under standard JDK
-			} catch (Exception e2) { // Jboss and newer JDKs throw 'IllegalStateException: Can't overwrite cause'
-				addSuppressed(e); // Add the original exception as suppressed exception, or get a stackoverflow in IbisException#getMessages
-			}
+		super(message);
+		try {
+			initCause(e); // this fixes stacktrace under IBM JDK, may trigger an exception under standard JDK
+		} catch (Exception e2) { // Jboss and newer JDKs throw 'IllegalStateException: Can't overwrite cause'
+			addSuppressed(e); // Add the original exception as suppressed exception, or get a stackoverflow in IbisException#getMessages
 		}
 	}
 
