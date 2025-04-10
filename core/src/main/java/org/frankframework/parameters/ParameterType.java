@@ -96,7 +96,10 @@ public enum ParameterType {
 
 	/** (Used in larva only) Converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;) */
 	@Deprecated
-	MAP;
+	MAP,
+
+	JSON(JsonParameter.class, true),
+	;
 
 	private final @Getter Class<? extends IParameter> typeClass;
 	public final boolean requiresTypeConversion;
@@ -105,12 +108,12 @@ public enum ParameterType {
 		this(false);
 	}
 
-	ParameterType(boolean requiresTypeConverion) {
-		this(Parameter.class, requiresTypeConverion);
+	ParameterType(boolean requiresTypeConversion) {
+		this(Parameter.class, requiresTypeConversion);
 	}
 
-	ParameterType(Class<? extends IParameter> typeClass, boolean requiresTypeConverion) {
-		this.requiresTypeConversion = requiresTypeConverion;
+	ParameterType(Class<? extends IParameter> typeClass, boolean requiresTypeConversion) {
+		this.requiresTypeConversion = requiresTypeConversion;
 		this.typeClass = typeClass;
 	}
 }
