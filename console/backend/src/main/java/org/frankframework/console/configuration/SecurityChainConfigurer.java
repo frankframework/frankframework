@@ -58,6 +58,8 @@ import org.frankframework.util.ClassUtils;
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) // Enables JSR 250 (JAX-RS) annotations
 @Order(Ordered.HIGHEST_PRECEDENCE+100)
 public class SecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware {
+	static final String HEALTH_CHECK_EXPRESSION_KEY = "iaf-api.healthCheckEndpointExpression";
+
 	private static final Logger APPLICATION_LOG = LogManager.getLogger("APPLICATION");
 	private static final String EXPRESSION_IS_LOCALHOST_OR_AUTHENTICATED = "hasIpAddress('127.0.0.1') or hasIpAddress('::1') or isAuthenticated()";
 
@@ -65,12 +67,14 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 	private boolean csrfEnabled;
 	private String csrfCookiePath;
 	private boolean corsEnabled;
+	private String healthCheckEndpointExpression;
 
 	@Override
 	public void setEnvironment(Environment env) {
 		csrfEnabled = env.getProperty("csrf.enabled", boolean.class, true);
 		csrfCookiePath = env.getProperty("csrf.cookie.path", String.class);
 		corsEnabled = env.getProperty("cors.enforced", boolean.class, false);
+		healthCheckEndpointExpression = env.getProperty(HEALTH_CHECK_EXPRESSION_KEY, EXPRESSION_IS_LOCALHOST_OR_AUTHENTICATED);
 	}
 
 	private SecurityFilterChain configureHttpSecurity(IAuthenticator authenticator, HttpSecurity http) throws Exception {
@@ -100,10 +104,15 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 		http.logout(t -> t.logoutRequestMatcher(this::requestMatcher).logoutSuccessHandler(new RedirectToServletRoot()));
 
 		// If the authenticator is NoOpAuthenticator, we can skip the authorization manager.
-		if (!(authenticator instanceof NoOpAuthenticator)) {
+		if (StringUtils.isNotEmpty(healthCheckEndpointExpression) && !(authenticator instanceof NoOpAuthenticator)) {
 			http.authorizeHttpRequests(authorize -> authorize
 					.requestMatchers(new AntPathRequestMatcher("/**/health"))
-					.access(new WebExpressionAuthorizationManager(EXPRESSION_IS_LOCALHOST_OR_AUTHENTICATED))
+					.access(new WebExpressionAuthorizationManager(healthCheckEndpointExpression))
+			);
+		} else {
+			http.authorizeHttpRequests(authorize -> authorize
+					.requestMatchers(new AntPathRequestMatcher("/**/health"))
+					.permitAll()
 			);
 		}
 
