@@ -30,11 +30,11 @@ import lombok.Setter;
  * </p>
  * <p>
  * This authenticator should be configured by setting its type to 'IN_MEMORY', for example:
- * <pre>
+ * <pre>{@code
  * application.security.console.authentication.type=IN_MEMORY
  * application.security.console.authentication.username=admin
  * application.security.console.authentication.password=secret
- * </pre>
+ * }</pre>
  * </p>
  */
 public class InMemoryAuthenticator extends AbstractServletAuthenticator {

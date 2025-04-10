@@ -63,12 +63,12 @@ import org.frankframework.util.StringUtil;
  * </p>
  * <p>
  * This authenticator should be configured by setting its type to 'OAUTH2', for example:
- * <pre>
+ * <pre>{@code
  * application.security.console.authentication.type=OAUTH2
  * application.security.console.authentication.provider=google
  * application.security.console.authentication.clientId=my-client-id
  * application.security.console.authentication.clientSecret=my-client-secret
- * </pre>
+ * }</pre>
  * </p>
  *
  * @author Niels Meijer
