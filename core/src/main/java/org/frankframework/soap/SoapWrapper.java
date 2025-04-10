@@ -95,7 +95,7 @@ public class SoapWrapper {
 		JCEMapper.registerDefaultAlgorithms();
 	}
 
-	private void init() throws ConfigurationException {
+	private static synchronized void initTransformerPools() throws ConfigurationException {
 		if (extractBodySoap11 == null) {
 			try {
 				extractBodySoap11 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_BODY_XPATH, TransformerPool.OutputType.XML, false, false), XmlUtils.DEFAULT_XSLT_VERSION);
@@ -114,10 +114,10 @@ public class SoapWrapper {
 		}
 	}
 
-	public static SoapWrapper getInstance() throws ConfigurationException {
+	public static synchronized SoapWrapper getInstance() throws ConfigurationException {
+		initTransformerPools();
 		if (self == null) {
 			self = new SoapWrapper();
-			self.init();
 		}
 		return self;
 	}
