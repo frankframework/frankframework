@@ -101,6 +101,7 @@ import org.xml.sax.ext.LexicalHandler;
 import com.ctc.wstx.api.ReaderConfig;
 import com.ctc.wstx.stax.WstxInputFactory;
 
+import lombok.Lombok;
 import net.sf.saxon.xpath.XPathFactoryImpl;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -166,20 +167,29 @@ public class XmlUtils {
 	}
 
 	private static TransformerPool getUtilityTransformerPool(Supplier<String> xsltSupplier, String key, boolean omitXmlDeclaration, boolean indent, int xsltVersion) throws ConfigurationException {
-		String fullKey=key+"-"+omitXmlDeclaration+"-"+indent;
-		TransformerPool result = utilityTPs.get(fullKey);
-		if (result==null) {
+		String fullKey = key + "-" + omitXmlDeclaration + "-" + indent;
+		return utilityTPs.computeIfAbsent(fullKey, ignored -> {
 			try {
-				TransformerPool newtp=TransformerPool.getUtilityInstance(xsltSupplier.get(), xsltVersion);
-				result=utilityTPs.put(fullKey, newtp);
-				if (result==null) {
-					result=newtp;
-				}
+				return TransformerPool.getUtilityInstance(xsltSupplier.get(), xsltVersion);
 			} catch (TransformerConfigurationException te) {
-				throw new ConfigurationException("Could not create TransformerPool for ["+key+"]", te);
+				throw Lombok.sneakyThrow(new ConfigurationException("Could not create TransformerPool for ["+key+"]", te));
 			}
-		}
-		return result;
+		});
+	}
+
+	public static TransformerPool getUtilityTransformerPool(String xsltPath, boolean omitXmlDeclaration, boolean indent, int xsltVersion) throws ConfigurationException {
+		Supplier<String> xsltSupplier = () -> {
+			URL resourceURL = ClassLoaderUtils.getResourceURL(xsltPath);
+			if (resourceURL == null) {
+				throw Lombok.sneakyThrow(new ConfigurationException("Could not find resource ["+xsltPath+"]"));
+			}
+			try {
+				return StreamUtil.resourceToString(resourceURL);
+			} catch (IOException e) {
+				throw Lombok.sneakyThrow(new ConfigurationException("Could not read resource ["+xsltPath+"]"));
+			}
+		};
+		return getUtilityTransformerPool(xsltSupplier, xsltPath, omitXmlDeclaration, indent, xsltVersion);
 	}
 
 	private static String makeDetectXsltVersionXslt() {
