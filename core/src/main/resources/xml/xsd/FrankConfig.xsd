@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.1.0-SNAPSHOT">
+<!-- Public FrankDoc XSD, should be used within an IDE to validate a configuration. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.1.0">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -549,21 +550,21 @@
       <xs:annotation>
         <xs:documentation>The &lt;code&gt;transactionAttribute&lt;/code&gt; declares transactional behavior of execution. It applies both to database transactions and XA transactions.
  The pipeline uses this to start a new transaction or suspend the current one when required.
- For developers: it is equal to &lt;a href=\"https://docs.oracle.com/javaee/7/tutorial/transactions003.htm\"&gt;EJB transaction attribute&lt;/a&gt;.
+ For developers: it is equal to &lt;a href="https://docs.oracle.com/javaee/7/tutorial/transactions003.htm"&gt;EJB transaction attribute&lt;/a&gt;.
  Possible values for transactionAttribute:
-   &lt;table border=\"1\"&gt;
+ &lt;table border="1"&gt;
      &lt;tr&gt;&lt;th&gt;transactionAttribute&lt;/th&gt;&lt;th&gt;callers Transaction&lt;/th&gt;&lt;th&gt;Pipeline excecuted in Transaction&lt;/th&gt;&lt;/tr&gt;
-     &lt;tr&gt;&lt;td colspan=\"1\" rowspan=\"2\"&gt;Required&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
+     &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Required&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
  											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;
-     &lt;tr&gt;&lt;td colspan=\"1\" rowspan=\"2\"&gt;RequiresNew&lt;/td&gt; &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
+     &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;RequiresNew&lt;/td&gt; &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
  											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
-     &lt;tr&gt;&lt;td colspan=\"1\" rowspan=\"2\"&gt;Mandatory&lt;/td&gt;   &lt;td&gt;none&lt;/td&gt;&lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;
+     &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Mandatory&lt;/td&gt;   &lt;td&gt;none&lt;/td&gt;&lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;
  											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;
-     &lt;tr&gt;&lt;td colspan=\"1\" rowspan=\"2\"&gt;NotSupported&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
+     &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;NotSupported&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
  											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
-     &lt;tr&gt;&lt;td colspan=\"1\" rowspan=\"2\"&gt;Supports&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
+     &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Supports&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
   										      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;
-     &lt;tr&gt;&lt;td colspan=\"1\" rowspan=\"2\"&gt;Never&lt;/td&gt;       &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
+     &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Never&lt;/td&gt;       &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
  											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;
    &lt;/table&gt; Default: Supports</xs:documentation>
       </xs:annotation>
@@ -870,7 +871,7 @@
   <xs:complexType name="JmsRealmType">
     <xs:annotation>
       <xs:documentation>A JmsRealm is a definition of a JMS provider, and is kind of a utility
- class to prevent the tedeous work of repeatedly defining all parameters
+ class to prevent the tedious work of repeatedly defining all parameters
  to connect to a queue or topic.
  &lt;br/&gt;
  This class is not an extension of JNDIBase, which would be logical, because
@@ -1384,7 +1385,7 @@
       <xs:element name="DirectoryListener">
         <xs:annotation>
           <xs:documentation>Listener that looks for files in a LocalFileSystem. The DirectoryListener keeps track of the file process by storing it in different folders. The application may create the folders if you (a) set the &lt;code&gt;root&lt;/code&gt; attribute and (b) set the attribute &lt;code&gt;createFolders&lt;/code&gt; to true.
-
+ 
  The attribute &lt;code&gt;messageType&lt;/code&gt; dictates what information of the file is passed to the pipeline. This may be the name, canonical path, the entire file, or the file's metadata.
 
  &lt;p&gt;
@@ -1406,7 +1407,7 @@
  listener that looks in a FileSystem for files.
  When a file is found, it is moved to an in-process folder, so that it isn't found more than once.
  &lt;br/&gt;
- The information specified by #setMessageType(IMessageType) is then passed to the pipeline.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;To avoid problems with duplicate filenames in folders like the &lt;code&gt;errorFolder&lt;/code&gt; or &lt;code&gt;processedFolder&lt;/code&gt;,
+ The information specified by &lt;code&gt;messageType&lt;/code&gt; is then passed to the pipeline.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;To avoid problems with duplicate filenames in folders like the &lt;code&gt;errorFolder&lt;/code&gt; or &lt;code&gt;processedFolder&lt;/code&gt;,
  you should configure either &lt;code&gt;overwrite=&amp;quot;true&amp;quot;&lt;/code&gt;, configure &lt;code&gt;numberOfBackups&lt;/code&gt; to a value larger than 0, or
  configure an &lt;code&gt;inProcessFolder&lt;/code&gt; and &lt;code&gt;fileTimeSensitive=&amp;quot;true&amp;quot;&lt;/code&gt;.
  These options can be used together as well.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;In addition to the above, prior to release 9.0 it was not sufficient to configure &lt;code&gt;inProcessFolder&lt;/code&gt; and &lt;code&gt;fileTimeSensitive&lt;/code&gt;
@@ -1422,7 +1423,72 @@
       </xs:element>
       <xs:element name="EsbJmsListener">
         <xs:annotation>
-          <xs:documentation>ESB (Enterprise Service Bus) extension of JmsListener.</xs:documentation>
+          <xs:documentation>ESB (Enterprise Service Bus) extension of JmsListener.
+
+ A true multi-threaded Listener-class.
+ &lt;br/&gt;
+
+ Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the
+ transacted attribute. If this is set to &lt;code&gt;true&lt;/code&gt;, received messages are
+ committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
+ In case of a failure, all actions within the transaction are rolled back.
+ &lt;/p&gt;&lt;p&gt;
+ Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
+ the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
+ when the state of the Adapter equals the success state for committing.
+ The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
+ delivery of duplicate messages if JMS fails. It should be used by consumers who are tolerant in processing duplicate messages.
+ In cases where the client is tolerant of duplicate messages, some enhancement in performance can be achieved using this mode,
+ since a session has lower overhead in trying to prevent duplicate messages.
+ &lt;/p&gt;
+ &lt;p&gt;The setting for listener.acknowledgeMode will only be processed if
+ the setting for listener.transacted.&lt;/p&gt;
+
+ &lt;p&gt;If useReplyTo is set and a replyTo-destination is
+ specified in the message, the JmsListener sends the result of the processing
+ in the pipeline to this destination. Otherwise the result is sent using the (optionally)
+ specified, that in turn sends the message to
+ whatever it is configured to.&lt;/p&gt;
+
+ &lt;p&gt;You can add parameters to the JmsListener, the values will be added as Headers to the JMS response message.&lt;/p&gt;
+
+ &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
+ jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
+ &lt;/p&gt;
+
+ JMSListener re-implemented as a pushing listener rather than a pulling listener.
+ The JMS messages have to come in from an external source: an MDB or a Spring
+ message container.
+
+ This version of the &lt;code&gt;JmsListener&lt;/code&gt; supports distributed transactions using the XA-protocol.
+ No special action is required to have the listener join the transaction.
+ &lt;/p&gt;&lt;p&gt;
+ Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
+ the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
+ when the state of the Adapter equals the success state.
+ The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
+ delivery of duplicate messages if JMS fails. It should be used by consumers who are tolerant in processing duplicate messages.
+ In cases where the client is tolerant of duplicate messages, some enhancement in performance can be achieved using this mode,
+ since a session has lower overhead in trying to prevent duplicate messages.
+ &lt;/p&gt;
+ &lt;p&gt;The setting for listener.acknowledgeMode will only be processed if
+ the setting for listener.transacted.&lt;/p&gt;
+
+ &lt;p&gt;If useReplyTo is set and a replyTo-destination is
+ specified in the message, the JmsListener sends the result of the processing
+ in the pipeline to this destination. Otherwise the result is sent using the (optionally)
+ specified Sender, that in turn sends the message to
+ whatever it is configured to.&lt;/p&gt;
+
+ &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
+ jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
+ &lt;/p&gt;
+
+ Provides functions for jms connections, queues and topics and acts as a facade
+ to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+ &lt;br/&gt;
+ The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+ This class sends messages with JMS.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -1467,7 +1533,7 @@
  listener that looks in a FileSystem for files.
  When a file is found, it is moved to an in-process folder, so that it isn't found more than once.
  &lt;br/&gt;
- The information specified by #setMessageType(IMessageType) is then passed to the pipeline.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;To avoid problems with duplicate filenames in folders like the &lt;code&gt;errorFolder&lt;/code&gt; or &lt;code&gt;processedFolder&lt;/code&gt;,
+ The information specified by &lt;code&gt;messageType&lt;/code&gt; is then passed to the pipeline.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;To avoid problems with duplicate filenames in folders like the &lt;code&gt;errorFolder&lt;/code&gt; or &lt;code&gt;processedFolder&lt;/code&gt;,
  you should configure either &lt;code&gt;overwrite=&amp;quot;true&amp;quot;&lt;/code&gt;, configure &lt;code&gt;numberOfBackups&lt;/code&gt; to a value larger than 0, or
  configure an &lt;code&gt;inProcessFolder&lt;/code&gt; and &lt;code&gt;fileTimeSensitive=&amp;quot;true&amp;quot;&lt;/code&gt;.
  These options can be used together as well.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;In addition to the above, prior to release 9.0 it was not sufficient to configure &lt;code&gt;inProcessFolder&lt;/code&gt; and &lt;code&gt;fileTimeSensitive&lt;/code&gt;
@@ -1492,10 +1558,77 @@
  &lt;tr&gt;&lt;td&gt;jmsRealm&lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;&lt;td&gt;"qcf_tibco_p2p_ff"&lt;/td&gt;&lt;/tr&gt;
  &lt;tr&gt;&lt;td&gt;messageProtocol&lt;/td&gt;&lt;td&gt;protocol of ESB service to be called. Possible values
  &lt;ul&gt;
-   &lt;li&gt;"FF": Fire &amp; Forget protocol&lt;/li&gt;
+   &lt;li&gt;"FF": Fire &amp;amp; Forget protocol&lt;/li&gt;
    &lt;li&gt;"RR": Request-Reply protocol&lt;/li&gt;
  &lt;/ul&gt;&lt;/td&gt;&lt;td&gt;"FF"&lt;/td&gt;&lt;/tr&gt;
- &lt;/table&gt;&lt;/p&gt;</xs:documentation>
+ &lt;/table&gt;&lt;/p&gt;
+
+ ESB (Enterprise Service Bus) extension of JmsListener.
+
+ A true multi-threaded Listener-class.
+ &lt;br/&gt;
+
+ Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the
+ transacted attribute. If this is set to &lt;code&gt;true&lt;/code&gt;, received messages are
+ committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
+ In case of a failure, all actions within the transaction are rolled back.
+ &lt;/p&gt;&lt;p&gt;
+ Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
+ the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
+ when the state of the Adapter equals the success state for committing.
+ The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
+ delivery of duplicate messages if JMS fails. It should be used by consumers who are tolerant in processing duplicate messages.
+ In cases where the client is tolerant of duplicate messages, some enhancement in performance can be achieved using this mode,
+ since a session has lower overhead in trying to prevent duplicate messages.
+ &lt;/p&gt;
+ &lt;p&gt;The setting for listener.acknowledgeMode will only be processed if
+ the setting for listener.transacted.&lt;/p&gt;
+
+ &lt;p&gt;If useReplyTo is set and a replyTo-destination is
+ specified in the message, the JmsListener sends the result of the processing
+ in the pipeline to this destination. Otherwise the result is sent using the (optionally)
+ specified, that in turn sends the message to
+ whatever it is configured to.&lt;/p&gt;
+
+ &lt;p&gt;You can add parameters to the JmsListener, the values will be added as Headers to the JMS response message.&lt;/p&gt;
+
+ &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
+ jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
+ &lt;/p&gt;
+
+ JMSListener re-implemented as a pushing listener rather than a pulling listener.
+ The JMS messages have to come in from an external source: an MDB or a Spring
+ message container.
+
+ This version of the &lt;code&gt;JmsListener&lt;/code&gt; supports distributed transactions using the XA-protocol.
+ No special action is required to have the listener join the transaction.
+ &lt;/p&gt;&lt;p&gt;
+ Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
+ the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
+ when the state of the Adapter equals the success state.
+ The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
+ delivery of duplicate messages if JMS fails. It should be used by consumers who are tolerant in processing duplicate messages.
+ In cases where the client is tolerant of duplicate messages, some enhancement in performance can be achieved using this mode,
+ since a session has lower overhead in trying to prevent duplicate messages.
+ &lt;/p&gt;
+ &lt;p&gt;The setting for listener.acknowledgeMode will only be processed if
+ the setting for listener.transacted.&lt;/p&gt;
+
+ &lt;p&gt;If useReplyTo is set and a replyTo-destination is
+ specified in the message, the JmsListener sends the result of the processing
+ in the pipeline to this destination. Otherwise the result is sent using the (optionally)
+ specified Sender, that in turn sends the message to
+ whatever it is configured to.&lt;/p&gt;
+
+ &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
+ jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
+ &lt;/p&gt;
+
+ Provides functions for jms connections, queues and topics and acts as a facade
+ to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+ &lt;br/&gt;
+ The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+ This class sends messages with JMS.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -1587,7 +1720,41 @@
 
  &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
  jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
- &lt;/p&gt;</xs:documentation>
+ &lt;/p&gt;
+
+ JMSListener re-implemented as a pushing listener rather than a pulling listener.
+ The JMS messages have to come in from an external source: an MDB or a Spring
+ message container.
+
+ This version of the &lt;code&gt;JmsListener&lt;/code&gt; supports distributed transactions using the XA-protocol.
+ No special action is required to have the listener join the transaction.
+ &lt;/p&gt;&lt;p&gt;
+ Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
+ the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
+ when the state of the Adapter equals the success state.
+ The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
+ delivery of duplicate messages if JMS fails. It should be used by consumers who are tolerant in processing duplicate messages.
+ In cases where the client is tolerant of duplicate messages, some enhancement in performance can be achieved using this mode,
+ since a session has lower overhead in trying to prevent duplicate messages.
+ &lt;/p&gt;
+ &lt;p&gt;The setting for listener.acknowledgeMode will only be processed if
+ the setting for listener.transacted.&lt;/p&gt;
+
+ &lt;p&gt;If useReplyTo is set and a replyTo-destination is
+ specified in the message, the JmsListener sends the result of the processing
+ in the pipeline to this destination. Otherwise the result is sent using the (optionally)
+ specified Sender, that in turn sends the message to
+ whatever it is configured to.&lt;/p&gt;
+
+ &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
+ jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
+ &lt;/p&gt;
+
+ Provides functions for jms connections, queues and topics and acts as a facade
+ to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+ &lt;br/&gt;
+ The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+ This class sends messages with JMS.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -1639,7 +1806,22 @@
         <xs:annotation>
           <xs:documentation>MQTT listener which will connect to a broker and subscribe to a topic.
 
- Links to &lt;a href="https://www.eclipse.org/paho/files/javadoc" target="_blank"&gt;https://www.eclipse.org/paho/files/javadoc&lt;/a&gt; are opened in a new window/tab because the response from eclipse.org contains header X-Frame-Options:SAMEORIGIN which will make the browser refuse to open the link inside this frame.</xs:documentation>
+ Links to &lt;a href="https://www.eclipse.org/paho/files/javadoc" target="_blank"&gt;https://www.eclipse.org/paho/files/javadoc&lt;/a&gt; are opened in a new window/tab because the response from eclipse.org contains header X-Frame-Options:SAMEORIGIN which will make the browser refuse to open the link inside this frame.
+
+ Requires a resource to be configured. Example `resources.yml`:
+ &lt;pre&gt;&lt;code&gt;mqtt:
+   - name: &amp;quot;my-connection&amp;quot;
+     type: &amp;quot;org.frankframework.jdbc.datasource.MqttClientSettings&amp;quot;
+     url: &amp;quot;tcp://host:port&amp;quot;
+     properties:
+       automaticReconnect: &amp;quot;true&amp;quot;
+       cleanSession: &amp;quot;false&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+ &lt;br&gt;
+ The clientId is automatically determined from &lt;code&gt;transactionmanager.uid&lt;/code&gt;, but can optionally be overwritten. Be aware that the clientId must be unique
+ for each instance of the framework.
+ &lt;br&gt;&lt;br&gt;
+ Inbound and outbound messages are persisted while they are in flight to prevent data loss. The default is an in memory store, but the `persistenceDirectory`
+ flag can be used to set the disk storage location.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -1678,7 +1860,13 @@
  &lt;/p&gt;
  &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
  &lt;code&gt;jakarta.jms.TextMessage&lt;/code&gt;s &lt;br/&gt;&lt;br/&gt;
- &lt;/p&gt;</xs:documentation>
+ &lt;/p&gt;
+
+ Provides functions for jms connections, queues and topics and acts as a facade
+ to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+ &lt;br/&gt;
+ The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+ This class sends messages with JMS.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -1716,7 +1904,13 @@
 
  &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
  jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
- &lt;/p&gt;</xs:documentation>
+ &lt;/p&gt;
+
+ Provides functions for jms connections, queues and topics and acts as a facade
+ to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+ &lt;br/&gt;
+ The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+ This class sends messages with JMS.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -1767,7 +1961,7 @@
  listener that looks in a FileSystem for files.
  When a file is found, it is moved to an in-process folder, so that it isn't found more than once.
  &lt;br/&gt;
- The information specified by #setMessageType(IMessageType) is then passed to the pipeline.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;To avoid problems with duplicate filenames in folders like the &lt;code&gt;errorFolder&lt;/code&gt; or &lt;code&gt;processedFolder&lt;/code&gt;,
+ The information specified by &lt;code&gt;messageType&lt;/code&gt; is then passed to the pipeline.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;To avoid problems with duplicate filenames in folders like the &lt;code&gt;errorFolder&lt;/code&gt; or &lt;code&gt;processedFolder&lt;/code&gt;,
  you should configure either &lt;code&gt;overwrite=&amp;quot;true&amp;quot;&lt;/code&gt;, configure &lt;code&gt;numberOfBackups&lt;/code&gt; to a value larger than 0, or
  configure an &lt;code&gt;inProcessFolder&lt;/code&gt; and &lt;code&gt;fileTimeSensitive=&amp;quot;true&amp;quot;&lt;/code&gt;.
  These options can be used together as well.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;In addition to the above, prior to release 9.0 it was not sufficient to configure &lt;code&gt;inProcessFolder&lt;/code&gt; and &lt;code&gt;fileTimeSensitive&lt;/code&gt;
@@ -1807,7 +2001,7 @@
  listener that looks in a FileSystem for files.
  When a file is found, it is moved to an in-process folder, so that it isn't found more than once.
  &lt;br/&gt;
- The information specified by #setMessageType(IMessageType) is then passed to the pipeline.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;To avoid problems with duplicate filenames in folders like the &lt;code&gt;errorFolder&lt;/code&gt; or &lt;code&gt;processedFolder&lt;/code&gt;,
+ The information specified by &lt;code&gt;messageType&lt;/code&gt; is then passed to the pipeline.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;To avoid problems with duplicate filenames in folders like the &lt;code&gt;errorFolder&lt;/code&gt; or &lt;code&gt;processedFolder&lt;/code&gt;,
  you should configure either &lt;code&gt;overwrite=&amp;quot;true&amp;quot;&lt;/code&gt;, configure &lt;code&gt;numberOfBackups&lt;/code&gt; to a value larger than 0, or
  configure an &lt;code&gt;inProcessFolder&lt;/code&gt; and &lt;code&gt;fileTimeSensitive=&amp;quot;true&amp;quot;&lt;/code&gt;.
  These options can be used together as well.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;In addition to the above, prior to release 9.0 it was not sufficient to configure &lt;code&gt;inProcessFolder&lt;/code&gt; and &lt;code&gt;fileTimeSensitive&lt;/code&gt;
@@ -1835,6 +2029,72 @@
         </xs:complexType>
       </xs:element>
       <xs:element name="TibcoLogJmsListener">
+        <xs:annotation>
+          <xs:documentation>A true multi-threaded Listener-class.
+ &lt;br/&gt;
+
+ Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the
+ transacted attribute. If this is set to &lt;code&gt;true&lt;/code&gt;, received messages are
+ committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
+ In case of a failure, all actions within the transaction are rolled back.
+ &lt;/p&gt;&lt;p&gt;
+ Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
+ the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
+ when the state of the Adapter equals the success state for committing.
+ The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
+ delivery of duplicate messages if JMS fails. It should be used by consumers who are tolerant in processing duplicate messages.
+ In cases where the client is tolerant of duplicate messages, some enhancement in performance can be achieved using this mode,
+ since a session has lower overhead in trying to prevent duplicate messages.
+ &lt;/p&gt;
+ &lt;p&gt;The setting for listener.acknowledgeMode will only be processed if
+ the setting for listener.transacted.&lt;/p&gt;
+
+ &lt;p&gt;If useReplyTo is set and a replyTo-destination is
+ specified in the message, the JmsListener sends the result of the processing
+ in the pipeline to this destination. Otherwise the result is sent using the (optionally)
+ specified, that in turn sends the message to
+ whatever it is configured to.&lt;/p&gt;
+
+ &lt;p&gt;You can add parameters to the JmsListener, the values will be added as Headers to the JMS response message.&lt;/p&gt;
+
+ &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
+ jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
+ &lt;/p&gt;
+
+ JMSListener re-implemented as a pushing listener rather than a pulling listener.
+ The JMS messages have to come in from an external source: an MDB or a Spring
+ message container.
+
+ This version of the &lt;code&gt;JmsListener&lt;/code&gt; supports distributed transactions using the XA-protocol.
+ No special action is required to have the listener join the transaction.
+ &lt;/p&gt;&lt;p&gt;
+ Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
+ the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
+ when the state of the Adapter equals the success state.
+ The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
+ delivery of duplicate messages if JMS fails. It should be used by consumers who are tolerant in processing duplicate messages.
+ In cases where the client is tolerant of duplicate messages, some enhancement in performance can be achieved using this mode,
+ since a session has lower overhead in trying to prevent duplicate messages.
+ &lt;/p&gt;
+ &lt;p&gt;The setting for listener.acknowledgeMode will only be processed if
+ the setting for listener.transacted.&lt;/p&gt;
+
+ &lt;p&gt;If useReplyTo is set and a replyTo-destination is
+ specified in the message, the JmsListener sends the result of the processing
+ in the pipeline to this destination. Otherwise the result is sent using the (optionally)
+ specified Sender, that in turn sends the message to
+ whatever it is configured to.&lt;/p&gt;
+
+ &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
+ jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
+ &lt;/p&gt;
+
+ Provides functions for jms connections, queues and topics and acts as a facade
+ to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+ &lt;br/&gt;
+ The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+ This class sends messages with JMS.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="TibcoLogJmsListenerType">
@@ -3017,6 +3277,7 @@
         <xs:documentation>Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute ref="additionalFields" />
     <xs:attribute ref="trace" />
   </xs:attributeGroup>
   <xs:attributeGroup name="JdbcListenerCumulativeAttributeGroup">
@@ -3179,14 +3440,6 @@
  &lt;b&gt;NB: If this column is not set, the &lt;code&gt;messageId&lt;/code&gt; and &lt;code&gt;correlationId&lt;/code&gt; will be the same!&lt;/b&gt; Default: CORRELATIONID</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="messageFieldType">
-      <xs:annotation>
-        <xs:documentation>Type of the field containing the message data Default: BLOB</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="MessageFieldTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
     <xs:attribute name="blobSmartGet" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string Default: &lt;code&gt;true&lt;/code&gt;</xs:documentation>
@@ -3257,6 +3510,7 @@
         <xs:documentation>Controls whether BLOB is considered stored compressed in the database Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute ref="additionalFields" />
     <xs:attribute ref="trace" />
     <xs:attributeGroup ref="JdbcFacadeCumulativeAttributeGroup" />
   </xs:attributeGroup>
@@ -3264,42 +3518,24 @@
     <xs:attributeGroup ref="MqttFacadeDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.mqtt.MqttListener" use="prohibited" />
   </xs:complexType>
-  <xs:complexType name="MqttFacadeType">
-    <xs:attributeGroup ref="MqttFacadeDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.mqtt.MqttFacade" use="prohibited" />
-  </xs:complexType>
   <xs:attributeGroup name="MqttFacadeDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
         <xs:documentation>The functional name of the object.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="timeout" type="frankInt" />
-    <xs:attribute ref="keepAliveInterval" />
-    <xs:attribute name="clientId" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>The clientId for this connection. Be aware that each connection (each sender or listener) needs to have a unique clientId. The MQTT broker uses the clientId to hold a persistent session, so it can send any missing messages when you reconnect.
- see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank"&gt;MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)&lt;/a&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="brokerUrl" use="required" />
     <xs:attribute name="topic" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#subscribe-java.lang.String-" target="_blank"&gt;MqttClient.subscribe(java.lang.String topicFilter)&lt;/a&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="qos" />
-    <xs:attribute ref="cleanSession" />
-    <xs:attribute ref="persistenceDirectory" />
-    <xs:attribute ref="automaticReconnect" />
     <xs:attribute name="charset" type="xs:string">
       <xs:annotation>
         <xs:documentation>character encoding of received messages Default: UTF-8</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="username" type="xs:string" />
-    <xs:attribute name="password" type="xs:string" />
-    <xs:attribute name="authAlias" type="xs:string" />
+    <xs:attribute ref="resourceName" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -3724,7 +3960,7 @@
     <xs:choice>
       <xs:element name="EsbJmsSender">
         <xs:annotation>
-          <xs:documentation>ESB (Enterprise Service Bus) extension of JmsSender.</xs:documentation>
+          <xs:documentation>ESB (Enterprise Service Bus) extension of @{codeJmsSender}.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -3738,7 +3974,16 @@
         <xs:annotation>
           <xs:documentation>JMS sender which will add an IMS header to the message and call the MQ specific logic.
 
- &lt;p&gt;See JmsSender for configuration&lt;/p&gt;</xs:documentation>
+ &lt;p&gt;See JmsSender for configuration&lt;/p&gt;
+
+ JMS sender which will call IBM WebSphere MQ specific &lt;code&gt;setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ)&lt;/code&gt; on the destination prior to sending a message.
+ This is needed when the MQ destination is not a JMS receiver otherwise format errors occur (e.g. dots are added after every character in the message).
+
+ Provides functions for jms connections, queues and topics and acts as a facade
+ to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+ &lt;br/&gt;
+ The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+ This class sends messages with JMS.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -3750,7 +3995,11 @@
       </xs:element>
       <xs:element name="JmsSender">
         <xs:annotation>
-          <xs:documentation>This class sends messages with JMS.</xs:documentation>
+          <xs:documentation>Provides functions for jms connections, queues and topics and acts as a facade
+ to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+ &lt;br/&gt;
+ The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+ This class sends messages with JMS.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -3762,13 +4011,14 @@
       </xs:element>
       <xs:element name="MQSender">
         <xs:annotation>
-          <xs:documentation>JMS sender which will call IBM WebSphere MQ specific
- setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ) on the destination prior to
- sending a message. This is needed when the MQ destination is not a JMS
- receiver otherwise format errors occur (e.g. dots are added after every
- character in the message).
+          <xs:documentation>JMS sender which will call IBM WebSphere MQ specific &lt;code&gt;setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ)&lt;/code&gt; on the destination prior to sending a message.
+ This is needed when the MQ destination is not a JMS receiver otherwise format errors occur (e.g. dots are added after every character in the message).
 
- &lt;p&gt;See JmsSender for configuration&lt;/p&gt;</xs:documentation>
+ Provides functions for jms connections, queues and topics and acts as a facade
+ to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+ &lt;br/&gt;
+ The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+ This class sends messages with JMS.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -3934,7 +4184,7 @@
     <xs:choice>
       <xs:element name="EsbJmsErrorStorage">
         <xs:annotation>
-          <xs:documentation>ESB (Enterprise Service Bus) extension of JmsTransactionalStorage.
+          <xs:documentation>ESB (Enterprise Service Bus) extension of &lt;code&gt;JmsTransactionalStorage&lt;/code&gt;.
 
  &lt;p&gt;
  Depending on the &lt;code&gt;type&lt;/code&gt; of the &lt;code&gt;TransactionalStorage&lt;/code&gt;
@@ -3946,17 +4196,23 @@
  ESB.Infrastructure.US.Log.BusinessLog.2.AuditLog.1.Action&lt;/li&gt;
  &lt;/ul&gt;
  &lt;/p&gt;
- &lt;p&gt;
- &lt;b&gt;Configuration &lt;/b&gt;&lt;i&gt;(where deviating from
- JmsTransactionalStorage)&lt;/i&gt;&lt;b&gt;:&lt;/b&gt;
- &lt;table border="1"&gt;
- &lt;tr&gt;
- &lt;th&gt;attributes&lt;/th&gt;
- &lt;th&gt;description&lt;/th&gt;
- &lt;th&gt;default&lt;/th&gt;
- &lt;/tr&gt;
- &lt;/table&gt;
- &lt;/p&gt;</xs:documentation>
+
+ Implements a message log (&lt;code&gt;JmsMessageLog&lt;/code&gt;) or error store (&lt;code&gt;JmsErrorStorage&lt;/code&gt;) that uses JMS technology.
+ &lt;br/&gt;&lt;br/&gt;
+ &lt;b&gt;Message log:&lt;/b&gt; A message log writes messages in persistent storage for logging purposes.
+ When a message log appears in a receiver, it also ensures that the same message is only processed
+ once, even if a related pushing listener receives the same message multiple times.
+ &lt;br/&gt;&lt;br/&gt;
+ &lt;b&gt;Error store:&lt;/b&gt; Appears in a receiver or sender pipe to store messages that could not be processed.
+ Storing a message in the error store is the last resort of the Frank!Framework. Many types of listeners and senders
+ offer a retry mechanism. Only if several tries have failed, then an optional transaction is not rolled
+ back and the message is stored in the error store. Users can retry messages in an error store using the Frank!Console. When
+ this is done, the message is processed in the same way as messages received from the original source.
+ &lt;br/&gt;&lt;br/&gt;
+ How does a message log or error store see duplicate messages? The message log or error store
+ always appears in combination with a sender or listener. This sender or listener determines
+ a key based on the sent or received message. Messages with the same key are considered to
+ be the same.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4250,7 +4506,7 @@
     <xs:choice>
       <xs:element name="EsbJmsMessageLog">
         <xs:annotation>
-          <xs:documentation>ESB (Enterprise Service Bus) extension of JmsTransactionalStorage.
+          <xs:documentation>ESB (Enterprise Service Bus) extension of &lt;code&gt;JmsTransactionalStorage&lt;/code&gt;.
 
  &lt;p&gt;
  Depending on the &lt;code&gt;type&lt;/code&gt; of the &lt;code&gt;TransactionalStorage&lt;/code&gt;
@@ -4262,17 +4518,23 @@
  ESB.Infrastructure.US.Log.BusinessLog.2.AuditLog.1.Action&lt;/li&gt;
  &lt;/ul&gt;
  &lt;/p&gt;
- &lt;p&gt;
- &lt;b&gt;Configuration &lt;/b&gt;&lt;i&gt;(where deviating from
- JmsTransactionalStorage)&lt;/i&gt;&lt;b&gt;:&lt;/b&gt;
- &lt;table border="1"&gt;
- &lt;tr&gt;
- &lt;th&gt;attributes&lt;/th&gt;
- &lt;th&gt;description&lt;/th&gt;
- &lt;th&gt;default&lt;/th&gt;
- &lt;/tr&gt;
- &lt;/table&gt;
- &lt;/p&gt;</xs:documentation>
+
+ Implements a message log (&lt;code&gt;JmsMessageLog&lt;/code&gt;) or error store (&lt;code&gt;JmsErrorStorage&lt;/code&gt;) that uses JMS technology.
+ &lt;br/&gt;&lt;br/&gt;
+ &lt;b&gt;Message log:&lt;/b&gt; A message log writes messages in persistent storage for logging purposes.
+ When a message log appears in a receiver, it also ensures that the same message is only processed
+ once, even if a related pushing listener receives the same message multiple times.
+ &lt;br/&gt;&lt;br/&gt;
+ &lt;b&gt;Error store:&lt;/b&gt; Appears in a receiver or sender pipe to store messages that could not be processed.
+ Storing a message in the error store is the last resort of the Frank!Framework. Many types of listeners and senders
+ offer a retry mechanism. Only if several tries have failed, then an optional transaction is not rolled
+ back and the message is stored in the error store. Users can retry messages in an error store using the Frank!Console. When
+ this is done, the message is processed in the same way as messages received from the original source.
+ &lt;br/&gt;&lt;br/&gt;
+ How does a message log or error store see duplicate messages? The message log or error store
+ always appears in combination with a sender or listener. This sender or listener determines
+ a key based on the sent or received message. Messages with the same key are considered to
+ be the same.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4669,7 +4931,7 @@
   <xs:attributeGroup name="AbstractPipeDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
-        <xs:documentation>The functional name of this pipe. Can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="getInputFromSessionKey" />
@@ -4742,7 +5004,6 @@
     <xs:attribute ref="ignoreUnknownNamespaces" />
     <xs:attributeGroup ref="Json2XmlValidatorDeclaredAttributeGroup" />
     <xs:attribute ref="schemaLocation" />
-    <xs:attribute ref="noNamespaceSchemaLocation" />
     <xs:attribute ref="responseRoot" />
     <xs:attribute ref="fullSchemaChecking" />
     <xs:attribute ref="throwException" />
@@ -4766,7 +5027,7 @@
     <xs:attribute ref="schemaSessionKey" />
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The functional name of this pipe. Can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attributeGroup ref="FixedForwardPipeDeclaredAttributeGroup" />
@@ -4812,7 +5073,6 @@
     <xs:attributeGroup ref="SoapValidatorDeclaredAttributeGroup" />
     <xs:attributeGroup ref="Json2XmlValidatorDeclaredAttributeGroup" />
     <xs:attribute ref="schemaLocation" />
-    <xs:attribute ref="noNamespaceSchemaLocation" />
     <xs:attribute ref="responseRoot" />
     <xs:attribute ref="fullSchemaChecking" />
     <xs:attribute ref="throwException" />
@@ -4836,7 +5096,7 @@
     <xs:attribute ref="schemaSessionKey" />
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The functional name of this pipe. Can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attributeGroup ref="FixedForwardPipeDeclaredAttributeGroup" />
@@ -4891,42 +5151,42 @@
     </xs:attribute>
     <xs:attribute name="autoFormat" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If true, the format on 'output' is set to the same as the format of the input message on 'input'. The format of the input message is stored in and retrieved from the session variable specified by outputFormatSessionKey Default: true</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the format on 'output' is set to the same as the format of the input message on 'input'. The format of the input message is stored in and retrieved from the session variable specified by outputFormatSessionKey Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="compactJsonArrays" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If true assume arrays in JSON do not have the element containers like in XML Default: true</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt; assume arrays in JSON do not have the element containers like in XML Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="strictJsonArraySyntax" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If true check that incoming JSON adheres to the specified syntax (compact or full), otherwise both types are accepted for conversion from JSON to XML Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt; check that incoming JSON adheres to the specified syntax (compact or full), otherwise both types are accepted for conversion from JSON to XML Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="jsonWithRootElements" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If true, assume that JSON contains/must contain a root element Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, assume that JSON contains/must contain a root element Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="deepSearch" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If true, and converting from JSON to XML, parameter substitutions are searched for optional sub elements too. By default, only mandatory elements are searched for parameter substitutions. N.B. Currently this option might cause problems. Please try using more qualified parameters names (using '/') first Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, and converting from JSON to XML, parameter substitutions are searched for optional sub elements too. By default, only mandatory elements are searched for parameter substitutions. N.B. Currently this option might cause problems. Please try using more qualified parameters names (using '/') first Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ignoreUndeclaredElements" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If true, and converting from JSON to XML, elements in JSON that are not found in the XML Schema are ignored Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, and converting from JSON to XML, elements in JSON that are not found in the XML Schema are ignored Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="failOnWildcards" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If true, an exception is thrown when a wildcard is found in the XML Schema when parsing an object. This often indicates that an element is not properly typed in the XML Schema, and could lead to ambuigities. Default: true</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, an exception is thrown when a wildcard is found in the XML Schema when parsing an object. This often indicates that an element is not properly typed in the XML Schema, and could lead to ambuigities. Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="acceptNamespacelessXml" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If true, all XML is allowed to be without namespaces. If no namespaces are detected (by the presence of the string 'xmlns') in the XML, the root namespace is added to the XML Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, all XML is allowed to be without namespaces. If no namespaces are detected (by the presence of the string 'xmlns') in the XML, the root namespace is added to the XML Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="produceNamespacelessXml" type="frankBoolean">
@@ -4936,12 +5196,17 @@
     </xs:attribute>
     <xs:attribute name="validateJsonToRootElementOnly" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If true, and converting to or from JSON, then the message root is the only rootValidation, ignoring root validations like for SOAP envelope and header set by descender classes like SoapValidator Default: true</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, and converting to or from JSON, then the message root is the only rootValidation, ignoring root validations like for SOAP envelope and header set by descender classes like SoapValidator Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowJson" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>Allow JSON input Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="omitXmlDeclaration" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Allow omitting the XML declaration from the output, if the output is in XML format. This can be useful when the output needs to be combined with other XML documents. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -4963,7 +5228,11 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="schemaLocation" />
-    <xs:attribute ref="noNamespaceSchemaLocation" />
+    <xs:attribute name="noNamespaceSchemaLocation" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>A URI reference as a hint as to the location of a schema document with no target namespace.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="root" type="xs:string">
       <xs:annotation>
         <xs:documentation>Name of the root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used</xs:documentation>
@@ -5000,7 +5269,7 @@
     <xs:attribute ref="schemaSessionKey" />
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The functional name of this pipe. Can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attributeGroup ref="FixedForwardPipeDeclaredAttributeGroup" />
@@ -5028,17 +5297,17 @@
     <xs:attribute ref="schemaSessionKey" />
     <xs:attribute name="root" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Name of the root element</xs:documentation>
+        <xs:documentation>Name of the root element.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="responseRoot" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Name of the response root element</xs:documentation>
+        <xs:documentation>Name of the response root element.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The functional name of this pipe. Can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -5068,12 +5337,12 @@
   <xs:attributeGroup name="FixedForwardPipeDeclaredAttributeGroup">
     <xs:attribute name="skipOnEmptyInput" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set, the processing continues directly at the forward of this pipe, without executing the pipe itself, if the input is empty Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the processing continues directly at the forward of this pipe, without executing the pipe itself, if the input is empty. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ifParam" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If set, this pipe is only executed when the value of parameter with name &lt;code&gt;ifParam&lt;/code&gt; equals &lt;code&gt;ifValue&lt;/code&gt; (otherwise this pipe is skipped)</xs:documentation>
+        <xs:documentation>If set, this pipe is only executed when the value of the parameter with the name &lt;code&gt;ifParam&lt;/code&gt; equals &lt;code&gt;ifValue&lt;/code&gt;. Otherwise, this pipe is skipped.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ifValue" type="xs:string">
@@ -5083,22 +5352,22 @@
     </xs:attribute>
     <xs:attribute name="onlyIfSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key of session variable to check if action must be executed. The pipe is only executed if the session variable exists and is not null</xs:documentation>
+        <xs:documentation>Key of the session variable to check if the action must be executed. The pipe is only executed if the session variable exists and is not null.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="onlyIfValue" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Value of session variable 'onlyIfSessionKey' to check if action must be executed. The pipe is only executed if the session variable has the specified value</xs:documentation>
+        <xs:documentation>Value of session variable 'onlyIfSessionKey' to check if the action must be executed. The pipe is only executed if the session variable has the specified value.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="unlessSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key of session variable to check if action must be executed. The pipe is not executed if the session variable exists and is not null</xs:documentation>
+        <xs:documentation>Key of the session variable to check if the action must be executed. The pipe is not executed if the session variable exists and is not null.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="unlessValue" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Value of session variable 'unlessSessionKey' to check if action must be executed. The pipe is not executed if the session variable has the specified value</xs:documentation>
+        <xs:documentation>Value of session variable 'unlessSessionKey' to check if the action must be executed. The pipe is not executed if the session variable has the specified value.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -5192,7 +5461,7 @@
     </xs:attribute>
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The functional name of this pipe. Can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -5801,7 +6070,7 @@
     </xs:attribute>
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The functional name of this pipe. Can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -6305,7 +6574,7 @@
     </xs:attribute>
     <xs:attribute name="diskPersistent" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the cache is stored on disk and survives configuration reloads &amp; JVM restarts. Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the cache is stored on disk and survives configuration reloads and JVM restarts. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="diskExpiryThreadIntervalSeconds" type="frankInt">
@@ -6471,7 +6740,13 @@
  &lt;/p&gt;
  &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
  &lt;code&gt;jakarta.jms.TextMessage&lt;/code&gt;s &lt;br/&gt;&lt;br/&gt;
- &lt;/p&gt;</xs:documentation>
+ &lt;/p&gt;
+
+ Provides functions for jms connections, queues and topics and acts as a facade
+ to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+ &lt;br/&gt;
+ The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+ This class sends messages with JMS.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -6792,6 +7067,7 @@
        &amp;lt;property name=&amp;quot;ArrivedAt&amp;quot; type=&amp;quot;datetime&amp;quot; formatString=&amp;quot;yyyy-MM-dd'T'HH:mm:ss.SSSz&amp;quot;&amp;gt;2014-11-27T16:43:01.268+0100&amp;lt;/property&amp;gt;
        &amp;lt;property name=&amp;quot;ArrivedBy&amp;quot;&amp;gt;HDN&amp;lt;/property&amp;gt;
        &amp;lt;property name=&amp;quot;DocumentType&amp;quot;&amp;gt;Geldlening&amp;lt;/property&amp;gt;
+       &amp;lt;property name=&amp;quot;DocumentDetail&amp;quot; isNull=&amp;quot;true&amp;quot; /&amp;gt;
     &amp;lt;/properties&amp;gt;
  &amp;lt;/cmis&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;/p&gt;
@@ -6864,7 +7140,7 @@
       </xs:element>
       <xs:element name="EsbJmsSender">
         <xs:annotation>
-          <xs:documentation>ESB (Enterprise Service Bus) extension of JmsSender.</xs:documentation>
+          <xs:documentation>ESB (Enterprise Service Bus) extension of @{codeJmsSender}.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -7137,14 +7413,10 @@
 
  &lt;p&gt;&lt;b&gt;Expected message format:&lt;/b&gt;&lt;/p&gt;
  &lt;p&gt;GET methods expect a message looking like this:
- &lt;pre&gt;
-    param_name=param_value&amp;another_param_name=another_param_value
- &lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;param_name=param_value&amp;amp;another_param_name=another_param_value&lt;/code&gt;&lt;/pre&gt;
  &lt;p&gt;POST AND PUT methods expect a message similar as GET, or looking like this:
- &lt;pre&gt;
-   param_name=param_value
-   another_param_name=another_param_value
- &lt;/pre&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
+ &lt;pre&gt;&lt;code&gt;param_name=param_value
+   another_param_name=another_param_value&lt;/code&gt;&lt;/pre&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
  This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;The use of `multi-value` parameters can be achieved by adding multiple parameters with the same name.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -7159,7 +7431,16 @@
         <xs:annotation>
           <xs:documentation>JMS sender which will add an IMS header to the message and call the MQ specific logic.
 
- &lt;p&gt;See JmsSender for configuration&lt;/p&gt;</xs:documentation>
+ &lt;p&gt;See JmsSender for configuration&lt;/p&gt;
+
+ JMS sender which will call IBM WebSphere MQ specific &lt;code&gt;setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ)&lt;/code&gt; on the destination prior to sending a message.
+ This is needed when the MQ destination is not a JMS receiver otherwise format errors occur (e.g. dots are added after every character in the message).
+
+ Provides functions for jms connections, queues and topics and acts as a facade
+ to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+ &lt;br/&gt;
+ The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+ This class sends messages with JMS.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -7323,7 +7604,11 @@
       </xs:element>
       <xs:element name="JmsSender">
         <xs:annotation>
-          <xs:documentation>This class sends messages with JMS.</xs:documentation>
+          <xs:documentation>Provides functions for jms connections, queues and topics and acts as a facade
+ to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+ &lt;br/&gt;
+ The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+ This class sends messages with JMS.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -7467,13 +7752,14 @@
       </xs:element>
       <xs:element name="MQSender">
         <xs:annotation>
-          <xs:documentation>JMS sender which will call IBM WebSphere MQ specific
- setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ) on the destination prior to
- sending a message. This is needed when the MQ destination is not a JMS
- receiver otherwise format errors occur (e.g. dots are added after every
- character in the message).
+          <xs:documentation>JMS sender which will call IBM WebSphere MQ specific &lt;code&gt;setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ)&lt;/code&gt; on the destination prior to sending a message.
+ This is needed when the MQ destination is not a JMS receiver otherwise format errors occur (e.g. dots are added after every character in the message).
 
- &lt;p&gt;See JmsSender for configuration&lt;/p&gt;</xs:documentation>
+ Provides functions for jms connections, queues and topics and acts as a facade
+ to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+ &lt;br/&gt;
+ The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+ This class sends messages with JMS.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -7583,7 +7869,22 @@
         <xs:annotation>
           <xs:documentation>MQTT listener which will connect to a broker and subscribe to a topic.
 
- Links to &lt;a href="https://www.eclipse.org/paho/files/javadoc" target="_blank"&gt;https://www.eclipse.org/paho/files/javadoc&lt;/a&gt; are opened in a new window/tab because the response from eclipse.org contains header X-Frame-Options:SAMEORIGIN which will make the browser refuse to open the link inside this frame.</xs:documentation>
+ Links to &lt;a href="https://www.eclipse.org/paho/files/javadoc" target="_blank"&gt;https://www.eclipse.org/paho/files/javadoc&lt;/a&gt; are opened in a new window/tab because the response from eclipse.org contains header X-Frame-Options:SAMEORIGIN which will make the browser refuse to open the link inside this frame.
+
+ Requires a resource to be configured. Example `resources.yml`:
+ &lt;pre&gt;&lt;code&gt;mqtt:
+   - name: &amp;quot;my-connection&amp;quot;
+     type: &amp;quot;org.frankframework.jdbc.datasource.MqttClientSettings&amp;quot;
+     url: &amp;quot;tcp://host:port&amp;quot;
+     properties:
+       automaticReconnect: &amp;quot;true&amp;quot;
+       cleanSession: &amp;quot;false&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+ &lt;br&gt;
+ The clientId is automatically determined from &lt;code&gt;transactionmanager.uid&lt;/code&gt;, but can optionally be overwritten. Be aware that the clientId must be unique
+ for each instance of the framework.
+ &lt;br&gt;&lt;br&gt;
+ Inbound and outbound messages are persisted while they are in flight to prevent data loss. The default is an in memory store, but the `persistenceDirectory`
+ flag can be used to set the disk storage location.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -8500,7 +8801,7 @@
     </xs:attribute>
     <xs:attribute name="commandWithArguments" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>In case the command that will be executed contains arguments then this flag should be set to true Default: false</xs:documentation>
+        <xs:documentation>In case the command that will be executed contains arguments then this flag should be set to &lt;code&gt;true&lt;/code&gt; Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -9207,11 +9508,7 @@
     <xs:attribute ref="tokenEndpoint" />
     <xs:attribute ref="tokenExpiry" />
     <xs:attribute ref="clientAlias" />
-    <xs:attribute name="clientId" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Client_id used in authentication to &lt;code&gt;tokenEndpoint&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="clientId" />
     <xs:attribute ref="clientSecret" />
     <xs:attribute ref="scope" />
     <xs:attribute ref="oauthAuthenticationMethod" />
@@ -9280,11 +9577,7 @@
     <xs:attribute ref="tokenEndpoint" />
     <xs:attribute ref="tokenExpiry" />
     <xs:attribute ref="clientAlias" />
-    <xs:attribute name="clientId" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Client_id used in authentication to &lt;code&gt;tokenEndpoint&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="clientId" />
     <xs:attribute ref="clientSecret" />
     <xs:attribute ref="scope" />
     <xs:attribute ref="oauthAuthenticationMethod" />
@@ -9384,7 +9677,7 @@
     </xs:attribute>
     <xs:attribute name="synchronous" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;false&lt;/code&gt;, the call is made asynchronously. This implies &lt;code&gt;isolated=true&lt;/code&gt; Default: true</xs:documentation>
+        <xs:documentation>If &lt;code&gt;false&lt;/code&gt;, the call is made asynchronously. This implies &lt;code&gt;isolated=true&lt;/code&gt; Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="isolated" type="frankBoolean">
@@ -9404,7 +9697,7 @@
     </xs:attribute>
     <xs:attribute name="throwJavaListenerNotFoundException" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;false&lt;/code&gt;, the xml-string \"&amp;lt;error&amp;gt;could not find JavaListener [...]&amp;lt;/error&amp;gt;\" is returned instead of throwing a senderexception Default: true</xs:documentation>
+        <xs:documentation>If &lt;code&gt;false&lt;/code&gt;, the xml-string "&amp;lt;error&amp;gt;could not find JavaListener [...]&amp;lt;/error&amp;gt;" is returned instead of throwing a senderexception Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -9691,7 +9984,7 @@
     </xs:attribute>
     <xs:attribute name="preserveInput" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the input of a pipe is restored before processing the next one Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the input of a pipe is restored before processing the next one Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="storeResultInSessionKey" type="xs:string">
@@ -9717,7 +10010,7 @@
   <xs:attributeGroup name="JsonXsltSenderDeclaredAttributeGroup">
     <xs:attribute name="jsonResult" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, the xml result of the transformation is converted back to json Default: true</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the xml result of the transformation is converted back to json Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
@@ -9755,7 +10048,7 @@
     </xs:attribute>
     <xs:attribute name="disableOutputEscaping" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for &lt;code&gt;@disable-output-escaping='yes'&lt;/code&gt; and the value is set accordingly Default: false, if not set in stylesheet</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for &lt;code&gt;@disable-output-escaping='yes'&lt;/code&gt; and the value is set accordingly Default: false, if not set in stylesheet</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="outputType">
@@ -9768,23 +10061,23 @@
     </xs:attribute>
     <xs:attribute name="indentXml" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, result is pretty-printed. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, result is pretty-printed. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="removeNamespaces" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before transformation Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before transformation Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="handleLexicalEvents" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text.
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text.
  Beware that this option can cause spurious NullPointerExceptions due to a race condition in streaming XSLT 1.0 processing in Xalan 2.7.2 Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="skipEmptyTags" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; empty tags in the output are removed after transformation Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt; empty tags in the output are removed after transformation Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
@@ -9828,13 +10121,13 @@
     </xs:attribute>
     <xs:attribute name="disableOutputEscaping" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for &lt;code&gt;@disable-output-escaping='yes'&lt;/code&gt; and the value is set accordingly Default: false, if not set in stylesheet</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for &lt;code&gt;@disable-output-escaping='yes'&lt;/code&gt; and the value is set accordingly Default: false, if not set in stylesheet</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
       <xs:annotation>
         <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. For some other use cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.
- If left empty, an the xpathExpression will match any namespace</xs:documentation>
+ If left empty, the xpathExpression will match any namespace</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="outputType">
@@ -9847,23 +10140,23 @@
     </xs:attribute>
     <xs:attribute name="indentXml" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, result is pretty-printed. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, result is pretty-printed. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="removeNamespaces" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before transformation Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before transformation Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="handleLexicalEvents" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text.
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text.
  Beware that this option can cause spurious NullPointerExceptions due to a race condition in streaming XSLT 1.0 processing in Xalan 2.7.2 Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="skipEmptyTags" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; empty tags in the output are removed after transformation Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt; empty tags in the output are removed after transformation Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
@@ -10010,7 +10303,7 @@
     </xs:attribute>
     <xs:attribute name="useSsl" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>When set to true, we ensure TLS is being used Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, we ensure TLS is being used Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -10187,27 +10480,13 @@
         <xs:documentation>The functional name of the object.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="timeout" type="frankInt" />
-    <xs:attribute ref="keepAliveInterval" />
-    <xs:attribute name="clientId" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>The clientId for this connection. Be aware that each connection (each sender or listener) needs to have a unique clientId. The MQTT broker uses the clientId to hold a persistent session, so it can send any missing messages when you reconnect.
- see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank"&gt;MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)&lt;/a&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="brokerUrl" use="required" />
     <xs:attribute ref="qos" />
-    <xs:attribute ref="cleanSession" />
-    <xs:attribute ref="persistenceDirectory" />
-    <xs:attribute ref="automaticReconnect" />
     <xs:attribute name="charset" type="xs:string">
       <xs:annotation>
         <xs:documentation>character encoding of received messages Default: UTF-8</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="username" type="xs:string" />
-    <xs:attribute name="password" type="xs:string" />
-    <xs:attribute name="authAlias" type="xs:string" />
+    <xs:attribute ref="resourceName" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -10315,11 +10594,7 @@
     <xs:attribute ref="tokenEndpoint" />
     <xs:attribute ref="tokenExpiry" />
     <xs:attribute ref="clientAlias" />
-    <xs:attribute name="clientId" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Client_id used in authentication to &lt;code&gt;tokenEndpoint&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="clientId" />
     <xs:attribute ref="clientSecret" />
     <xs:attribute ref="scope" />
     <xs:attribute ref="oauthAuthenticationMethod" />
@@ -10918,7 +11193,7 @@
     </xs:attribute>
     <xs:attribute name="waitForShadowsToFinish" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; the sender will wait for all shadows to have finished. Otherwise the collection of results will happen in a background thread. Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt; the sender will wait for all shadows to have finished. Otherwise the collection of results will happen in a background thread. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -11090,11 +11365,7 @@
     <xs:attribute ref="tokenEndpoint" />
     <xs:attribute ref="tokenExpiry" />
     <xs:attribute ref="clientAlias" />
-    <xs:attribute name="clientId" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Client_id used in authentication to &lt;code&gt;tokenEndpoint&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="clientId" />
     <xs:attribute ref="clientSecret" />
     <xs:attribute ref="scope" />
     <xs:attribute ref="oauthAuthenticationMethod" />
@@ -11339,7 +11610,7 @@
     <xs:attribute name="warn" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, send warnings to logging and console about syntax problems in the configured schema('s).
- Alternatively, warnings can be switched off using suppression properties &lt;code&gt;XSD_VALIDATION_WARNINGS_SUPPRESS_KEY&lt;/code&gt;, &lt;code&gt;XSD_VALIDATION_ERROR_SUPPRESS_KEY&lt;/code&gt; and &lt;code&gt;XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY&lt;/code&gt; Default: true</xs:documentation>
+ Alternatively, warnings can be switched off using suppression properties SuppressKeys#XSD_VALIDATION_WARNINGS_SUPPRESS_KEY, SuppressKeys#XSD_VALIDATION_ERROR_SUPPRESS_KEY and SuppressKeys#XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ignoreUnknownNamespaces" type="frankBoolean">
@@ -12005,8 +12276,8 @@
  for every field tag. Currently, two types of conversion are supported:
 
  &lt;ul&gt;
-   &lt;li&gt;&lt;code&gt;GetBytesFromString&lt;/code&gt;, a conversion from string to bytes as specified by java.lang.String.getBytes(String charsetName)&lt;/li&gt;
-   &lt;li&gt;&lt;code&gt;PackedDecimal&lt;/code&gt;, a conversion from string to Packed-decimal&lt;/li&gt;
+   &lt;li&gt;&lt;code&gt;GetBytesFromString&lt;/code&gt;, a conversion from string to bytes as specified by java.lang.String.getBytes(String charsetName).&lt;/li&gt;
+   &lt;li&gt;&lt;code&gt;PackedDecimal&lt;/code&gt;, a conversion from string to Packed-decimal.&lt;/li&gt;
  &lt;/ul&gt;
 
  An additional charset attribute is needed for a GetBytesFromString
@@ -12023,17 +12294,17 @@
  found in the following resources:
 
  &lt;ul&gt;
-   &lt;li&gt;A description as found at &lt;a href="http://www.simotime.com/datapk01.htm"&gt;http://www.simotime.com/datapk01.htm&lt;/a&gt;&lt;/li&gt;
-   &lt;li&gt;AS400PackedDecimal.java from jtopen_6_1_source.zip downloaded at &lt;a href="http://jt400.sourceforge.net/"&gt;http://jt400.sourceforge.net/&lt;/a&gt;&lt;/li&gt;
+   &lt;li&gt;A description as found at &lt;a href="http://www.simotime.com/datapk01.htm"&gt;http://www.simotime.com/datapk01.htm&lt;/a&gt;.&lt;/li&gt;
+   &lt;li&gt;AS400PackedDecimal.java from jtopen_6_1_source.zip downloaded at &lt;a href="http://jt400.sourceforge.net/"&gt;http://jt400.sourceforge.net/&lt;/a&gt;.&lt;/li&gt;
  &lt;/ul&gt;
 
  Some examples:
 
  &lt;ul&gt;
-   &lt;li&gt;The string +12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5C&lt;/li&gt;
-   &lt;li&gt;The string -12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5D&lt;/li&gt;
-   &lt;li&gt;The string 12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5F&lt;/li&gt;
-   &lt;li&gt;The string 1234 will be translated to three bytes with the following hexadecimal representation: 01 23 4F&lt;/li&gt;
+   &lt;li&gt;The string +12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5C.&lt;/li&gt;
+   &lt;li&gt;The string -12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5D.&lt;/li&gt;
+   &lt;li&gt;The string 12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5F.&lt;/li&gt;
+   &lt;li&gt;The string 1234 will be translated to three bytes with the following hexadecimal representation: 01 23 4F.&lt;/li&gt;
  &lt;/ul&gt;
 
  The Packed-decimal is prefixed with zeroes when the specified size is bigger
@@ -12095,7 +12366,7 @@
       <xs:element name="CompareIntegerPipe">
         <xs:annotation>
           <xs:documentation>Pipe that compares the two integer values.
- If one of the parameters is missing then the input message will be used as the missing operand.
+ If one of the parameters is missing, then the input message will be used as the missing operand.
  This pipe can be used in combination with IncreaseIntegerPipe to construct loops.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -12108,7 +12379,7 @@
       </xs:element>
       <xs:element name="CompareStringPipe">
         <xs:annotation>
-          <xs:documentation>Pipe that lexicographically compares two strings, that must NOT be empty.</xs:documentation>
+          <xs:documentation>Pipe that lexicographically compares two strings, which must NOT be empty.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -12199,7 +12470,7 @@
       </xs:element>
       <xs:element name="CsvParserPipe">
         <xs:annotation>
-          <xs:documentation>Reads a message in CSV format, and turns it into XML.</xs:documentation>
+          <xs:documentation>Reads a message in CSV format and turns it into XML.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -12212,12 +12483,12 @@
       <xs:element name="DataSonnetPipe">
         <xs:annotation>
           <xs:documentation>&lt;p&gt;
- Using &lt;code&gt;.jsonnet&lt;/code&gt; transformation files, the DataSonnetPipe uses JSonnet at it's core to transform files
+ Using &lt;code&gt;.jsonnet&lt;/code&gt; transformation files, the DataSonnetPipe uses JSonnet at its core to transform files
  from and to different file formats specified by supported outputTypes.
  &lt;/p&gt;
  &lt;p&gt;
  The pipe input message will be set to the JSON object called &lt;code&gt;payload&lt;/code&gt;.
- It's required for the input message to have a correct MimeType, else the text will be interpreted as a String.
+ It is required for the input message to have a correct MimeType; otherwise, the text will be interpreted as a String.
  &lt;/p&gt;
  &lt;p&gt;
  Input message (JSON) format:
@@ -12248,8 +12519,8 @@
       </xs:element>
       <xs:element name="DelayPipe">
         <xs:annotation>
-          <xs:documentation>Pipe that sleeps for a specified time, which defaults to 5000 msecs.
- Usefull for testing purposes.</xs:documentation>
+          <xs:documentation>Pipe that sleeps for a specified time, which defaults to 5000 msecs. 
+ It is useful for testing purposes.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -12275,13 +12546,13 @@
         <xs:annotation>
           <xs:documentation>Pipe that performs domain transforming on the basis of a database table.
 
- Every string which equals "%![DT{&lt;code&gt;label&lt;/code&gt;,&lt;code&gt;valueIn&lt;/code&gt;,&lt;code&gt;type&lt;/code&gt;}]" will be replaced by &lt;code&gt;valueOut&lt;/code&gt;.
+ Every string that equals "%![DT{&lt;code&gt;label&lt;/code&gt;,&lt;code&gt;valueIn&lt;/code&gt;,&lt;code&gt;type&lt;/code&gt;}]" will be replaced by &lt;code&gt;valueOut&lt;/code&gt;.
 
- The field &lt;code&gt;type&lt;/code&gt;, which is optional, indicates the format of &lt;code&gt;valueIn&lt;/code&gt;. Currently the following types are supported:
+ The field &lt;code&gt;type&lt;/code&gt;, which is optional, indicates the format of &lt;code&gt;valueIn&lt;/code&gt;. Currently, the following types are supported:
 
  &lt;ul&gt;
-   &lt;li&gt;&lt;code&gt;string&lt;/code&gt; (default): the methode setString() is used&lt;/li&gt;
-   &lt;li&gt;&lt;code&gt;number&lt;/code&gt;: the method setDouble() is used &lt;/li&gt;
+   &lt;li&gt;&lt;code&gt;string&lt;/code&gt; (default): the method setString() is used.&lt;/li&gt;
+   &lt;li&gt;&lt;code&gt;number&lt;/code&gt;: the method setDouble() is used.&lt;/li&gt;
  &lt;/ul&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -12527,8 +12798,8 @@
       </xs:element>
       <xs:element name="EscapePipe">
         <xs:annotation>
-          <xs:documentation>Pipe that performs translations between special characters and their xml equivalents.
- &lt;p&gt;When direction=cdata2text all cdata nodes are converted to text nodes without any other translations.&lt;/p&gt;</xs:documentation>
+          <xs:documentation>Pipe that performs translations between special characters and their XML equivalents.
+ &lt;p&gt;When direction=cdata2text, all CDATA nodes are converted to text nodes without any other translations.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -12540,9 +12811,9 @@
       </xs:element>
       <xs:element name="ExceptionPipe">
         <xs:annotation>
-          <xs:documentation>Pipe that throws an exception, based on the input message.
+          <xs:documentation>Pipe that throws an exception based on the input message.
  &lt;br/&gt;
- The `success` forward is only used when the (deprecated) attribute `throwException` has been set to `false`, otherwise the (default) `exception` forward will be used.&lt;br&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;The attribute `throwException` has been deprecated and thus the `success` forward will be removed along with the `throwException` attribute.&lt;/p&gt;</xs:documentation>
+ The `success` forward is only used when the (deprecated) attribute `throwException` has been set to `false`. Otherwise, the (default) `exception` forward will be used.&lt;br&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;The attribute `throwException` has been deprecated and thus the `success` forward will be removed along with the `throwException` attribute.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -12626,7 +12897,7 @@
  &amp;lt;/FixedResultPipe&amp;gt;
 
  &amp;lt;pipe name=&amp;quot;displayKeys&amp;quot; className=&amp;quot;org.frankframework.pipes.FixedResultPipe&amp;quot;
-     returnString=&amp;quot;branch [BRANCH] Orignal Id [MID] cid [CID] id=cid [SAME]&amp;quot; replaceFixedParams=&amp;quot;true&amp;quot;&amp;gt;
+     returnString=&amp;quot;branch [BRANCH] Original Id [MID] cid [CID] id=cid [SAME]&amp;quot; replaceFixedParams=&amp;quot;true&amp;quot;&amp;gt;
      &amp;lt;param name=&amp;quot;BRANCH&amp;quot; sessionKey=&amp;quot;originalMessage&amp;quot; xpathExpression=&amp;quot;*&amp;amp;#47;@branch&amp;quot; /&amp;gt;
      &amp;lt;param name=&amp;quot;MID&amp;quot; sessionKey=&amp;quot;id&amp;quot; /&amp;gt;
      &amp;lt;param name=&amp;quot;CID&amp;quot; sessionKey=&amp;quot;cid&amp;quot; /&amp;gt;
@@ -12680,7 +12951,7 @@
  is substituted. See Parameter to see how parameter values are determined.&lt;/li&gt;
 
  &lt;li&gt;If attribute &lt;code&gt;substituteVars&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt;, then expressions &lt;code&gt;${...}&lt;/code&gt; are substituted using
- system properties, pipelinesession variables and application properties. Please note that
+ system properties, pipeline session variables and application properties. Please note that
  no &lt;code&gt;${...}&lt;/code&gt; patterns are left if the initial string came from attribute &lt;code&gt;returnString&lt;/code&gt;, because
  any &lt;code&gt;${...}&lt;/code&gt; pattern in attribute &lt;code&gt;returnString&lt;/code&gt; is substituted when the configuration is loaded.&lt;/li&gt;
  &lt;li&gt;If attribute &lt;code&gt;styleSheetName&lt;/code&gt; is set, then the referenced XSLT stylesheet is applied to the resulting string.&lt;/li&gt;
@@ -12709,7 +12980,7 @@
       <xs:element name="ForEachChildElementPipe">
         <xs:annotation>
           <xs:documentation>Sends a message to a Sender for each child element of the input XML.
- Input can be a String containing XML, a filename (set processFile true), an InputStream or a Reader.</xs:documentation>
+ The input can be a String containing XML, a filename (set processFile true), an InputStream, or a Reader.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -12733,7 +13004,7 @@
  		&amp;lt;/EchoPipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;
  &lt;p&gt;
  This should call the echoPipe for i=0 until i=10.
- &lt;p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;After completing the for loop, the sessionKey containing the for loop iteration state, will be removed.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;The default format for the session key is "pipeName-iteration"&lt;/p&gt;</xs:documentation>
+ &lt;p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;After completing the for loop, the sessionKey containing the for loop iteration state will be removed.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;The default format for the session key is "pipeName-iteration".&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -12826,10 +13097,10 @@
       </xs:element>
       <xs:element name="HashPipe">
         <xs:annotation>
-          <xs:documentation>This pipe can be used to generate a hash for the given message using an algorithm. With this, you can prove the integrity of the message.
- If you use one of the Mac-based algorithms (starting with 'Hmac'), you need a secret as well. A Mac algorithm uses a secret, combined with the algorithm
- to create a 'hash' of a message. Only sources which have this secret are able to generate the same hash for the given message.
- With this, you can prove integrity and authenticity of a message.
+          <xs:documentation>This pipe can be used to generate a hash for the given message using an algorithm. With this, you can prove the integrity of the message. 
+ If you use one of the Mac-based algorithms (starting with 'Hmac'), you need a secret as well. A Mac algorithm uses a secret, combined with the algorithm 
+ to create a 'hash' of a message. Only sources that have this secret are able to generate the same hash for the given message. 
+ With this, you can prove the integrity and authenticity of a message.
  &lt;p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -12844,10 +13115,10 @@
         <xs:annotation>
           <xs:documentation>Selects a forward based on an expression. The expression type is coupled to the mediaType:
  &lt;ul&gt;
-     &lt;li&gt;XML (application/xml) uses Xpath&lt;/li&gt;
-     &lt;li&gt;JSON (application/json) uses jsonPath&lt;/li&gt;
+     &lt;li&gt;XML (application/xml) uses Xpath.&lt;/li&gt;
+     &lt;li&gt;JSON (application/json) uses jsonPath.&lt;/li&gt;
  &lt;/ul&gt;
- The XML mediaType is the default type, if you want to use json, you need to set this using 'mimeType' in the Message.
+ The XML mediaType is the default type. If you want to use JSON, you need to set this using 'mimeType' in the Message.
 
  &lt;h4&gt;Expressions&lt;/h4&gt;
  Expressions are used to select nodes in the given input document. Imagine a collection of books:
@@ -12884,22 +13155,22 @@
    }
  }&lt;/code&gt;&lt;/pre&gt;
  &lt;p&gt;
- With both expression languages you'll be able to select one or multiple nodes from this collection.
+ With both expression languages, you'll be able to select one or multiple nodes from this collection.
  &lt;br/&gt;
- Using this pipe there are two options. Use it only with an &lt;code&gt;expression&lt;/code&gt; or combine it with an &lt;code&gt;expressionValue&lt;/code&gt;. When using the expression,
- the pipe evaluates to &lt;code&gt;thenForwardName&lt;/code&gt; when &lt;em&gt;there is a match&lt;/em&gt;, even it is empty. In the given example, this might be one of:
+ Using this pipe, there are two options. Use it only with an &lt;code&gt;expression&lt;/code&gt; or combine it with an &lt;code&gt;expressionValue&lt;/code&gt;. When using the expression,
+ the pipe evaluates to &lt;code&gt;thenForwardName&lt;/code&gt; when &lt;em&gt;there is a match&lt;/em&gt;, even if it is empty. In the given example, this might be one of:
  &lt;pre&gt;&lt;code&gt;$.store
    $.store.book[1]
    $.store.book[?(@.price == 22.99)].author
    $.store.book[?(@.category == 'fiction')]&lt;/code&gt;&lt;/pre&gt;
 
  &lt;h4&gt;expressionValue&lt;/h4&gt;
- When using expression combined with expressionValue, the pipe evaluates to &lt;code&gt;thenForwardName&lt;/code&gt; when the &lt;em&gt;the matched value is equal to
+ When using expression combined with expressionValue, the pipe evaluates to &lt;code&gt;thenForwardName&lt;/code&gt; when &lt;em&gt;the matched value is equal to
  expressionValue&lt;/em&gt;. This needs to be an exact match.
  &lt;br/&gt;
 
  &lt;h4&gt;XML/XPATH&lt;/h4&gt;
- Xpath has been around a long time, information about the syntax can be found everywhere on the internet.
+ Xpath has been around a long time. Information about the syntax can be found everywhere on the internet.
  The XML implementation wraps the Xpath expression in an XSL. This enables us to use complex expressions which evaluate to true or false instead of
  being used only as a selector of nodes in the input XML. This is available to be backwards compatible with the XmlIf pipe.
  For instance, take the following example input:
@@ -12913,7 +13184,7 @@
  &lt;p&gt;&lt;/p&gt;
 
  &lt;h4&gt;Without expression&lt;/h4&gt;
- Without an expression, the default behaviour is to assume the input is a string, the code will try to match the string to an optional regular expression
+ Without an expression, the default behaviour is to assume the input is a string. The code will try to match the string to an optional regular expression
  or tries to match the string value to the optional expressionValue.
  &lt;p&gt;&lt;/p&gt;
 
@@ -12937,7 +13208,7 @@
       <xs:element name="IncreaseIntegerPipe">
         <xs:annotation>
           <xs:documentation>Pipe that increases the integer value of a session variable.
- Can be used in combination with CompareIntegerPipe to construct loops.</xs:documentation>
+ It can be used in combination with CompareIntegerPipe to construct loops.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -12953,7 +13224,7 @@
  Uses the PipeLineSessions methods.
  &lt;p&gt;
  If the role is not specified by the role attribute, the input of
- the pipe is used as role.
+ the pipe is used as the role.
  &lt;p&gt;
  N.B. The role itself must be specified by hand in the deployment descriptors web.xml and application.xml.
  &lt;/p&gt;</xs:documentation>
@@ -12968,7 +13239,7 @@
       </xs:element>
       <xs:element name="IsXmlPipe">
         <xs:annotation>
-          <xs:documentation>Selects an exitState, based on if the input is a XML string.
+          <xs:documentation>Selects an exitState, based on whether the input is an XML string.
  The input is an XML string if it, after removing leading white-space characters, starts with '&amp;lt;'.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -13969,47 +14240,47 @@
     </xs:attribute>
     <xs:attribute name="correlationIDNamespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceUri&lt;/code&gt;-definitions</xs:documentation>
+        <xs:documentation>Namespace definitions for correlationIDXPath. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceUri&lt;/code&gt; definitions.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="correlationIDSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key of a PipelineSession-variable. If specified, the value of the PipelineSession variable is used as input for the XPathExpression or stylesheet, instead of the current input message</xs:documentation>
+        <xs:documentation>Key of a pipeline session variable. If specified, the value of the PipelineSession variable is used as input for the XPathExpression or stylesheet, instead of the current input message.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="labelStyleSheet" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Stylesheet to extract label from message</xs:documentation>
+        <xs:documentation>Stylesheet to extract a label from a message.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="labelXPath" type="xs:string">
       <xs:annotation>
-        <xs:documentation>XPath expression to extract label from message</xs:documentation>
+        <xs:documentation>XPath expression to extract the label from the message.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="labelNamespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Namespace definitions for labelXPath. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceUri&lt;/code&gt;-definitions</xs:documentation>
+        <xs:documentation>Namespace definitions for labelXPath. Must be in the form of a comma or space-separated list of &lt;code&gt;prefix=namespaceUri&lt;/code&gt; definitions.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="auditTrailXPath" type="xs:string">
       <xs:annotation>
-        <xs:documentation>XPath expression to extract audit trail from message</xs:documentation>
+        <xs:documentation>XPath expression to extract the audit trail from the message.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="auditTrailNamespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Namespace defintions for auditTrailXPath. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceUri&lt;/code&gt;-definitions</xs:documentation>
+        <xs:documentation>Namespace definitions for auditTrailXPath. Must be in the form of a comma or space-separated list of &lt;code&gt;prefix=namespaceUri&lt;/code&gt; definitions.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="auditTrailSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key of a PipelineSession-variable. If specified, the value of the PipelineSession variable is used as audit trail (instead of the default 'no audit trail)</xs:documentation>
+        <xs:documentation>Key of a pipeline session variable. If specified, the value of the PipelineSession variable is used as an audit trail (instead of the default 'no audit trail').</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="useInputForExtract" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the input of the Pipe is used to extract audit trail, correlationid and label (instead of the wrapped input) Default: true</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the input of the Pipe is used to extract the audit trail, correlation ID, and label (instead of the wrapped input). Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -14062,7 +14333,7 @@
     </xs:attribute>
     <xs:attribute name="checkXmlWellFormed" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the XML Well-Formedness of the result is checked Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the XML Well-Formedness of the result is checked Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="checkRootTag" type="xs:string">
@@ -14093,7 +14364,7 @@
     </xs:attribute>
     <xs:attribute name="retryXPath" type="xs:string">
       <xs:annotation>
-        <xs:documentation>XPath expression evaluated on each technical successful reply. Retry is done if condition returns true</xs:documentation>
+        <xs:documentation>XPath expression evaluated on each technical successful reply. Retry is done if condition returns &lt;code&gt;true&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="retryNamespaceDefs" type="xs:string">
@@ -14127,7 +14398,7 @@
     <xs:attributeGroup ref="FixedForwardPipeDeclaredAttributeGroup" />
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
-        <xs:documentation>The functional name of this pipe. Can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="getInputFromSessionKey" />
@@ -14165,17 +14436,17 @@
     </xs:attribute>
     <xs:attribute name="charset" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Character encoding to be used to when reading input from strings for direction=encode or writing data for direction=decode.</xs:documentation>
+        <xs:documentation>Character encoding to be used when reading input from strings for direction = encode or writing data for direction = decode.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="lineSeparator" type="xs:string">
       <xs:annotation>
-        <xs:documentation>(Only used when direction=encode) Defines separator between lines. Special values: &lt;code&gt;auto&lt;/code&gt;: platform default, &lt;code&gt;dos&lt;/code&gt;: crlf, &lt;code&gt;unix&lt;/code&gt;: lf Default: auto</xs:documentation>
+        <xs:documentation>(Only used when direction=encode) Defines the separator between lines. Special values: &lt;code&gt;auto&lt;/code&gt;: platform default, &lt;code&gt;dos&lt;/code&gt;: crlf, &lt;code&gt;unix&lt;/code&gt;: lf. Default: auto</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="lineLength" type="frankInt">
       <xs:annotation>
-        <xs:documentation>(Only used when direction=encode) Each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). If linelength &amp;lt;= 0, then the output will not be divided into lines Default: 76</xs:documentation>
+        <xs:documentation>(Only used when direction=encode) Each line of encoded data will be at most the given length (rounded down to the nearest multiple of 4). If linelength &amp;lt;= 0, then the output will not be divided into lines. Default: 76</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -14395,7 +14666,7 @@
     </xs:attribute>
     <xs:attribute name="combineBlocks" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, all items in a block are sent at once. If set false, items are sent individually, potentially leveraging block enabled sending capabilities of the sender Default: true</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, all items in a block are sent at once. If &lt;code&gt;false&lt;/code&gt;, items are sent individually, potentially leveraging block enabled sending capabilities of the sender Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="blockPrefix" type="xs:string">
@@ -14485,7 +14756,7 @@
   <xs:attributeGroup name="CompareStringPipeDeclaredAttributeGroup">
     <xs:attribute name="xml" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>when set &lt;code&gt;true&lt;/code&gt; the string values to compare are considered to be xml strings and before the actual compare both xml strings are transformed to a canonical form Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the string values to compare are considered to be XML strings, and before the actual comparison, both XML strings are transformed to a canonical form. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -14501,17 +14772,17 @@
   <xs:attributeGroup name="CompressPipeDeclaredAttributeGroup">
     <xs:attribute name="compress" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>if &lt;code&gt;true&lt;/code&gt; the pipe compresses, otherwise it decompress Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the pipe compresses; otherwise, it decompresses. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="messageIsContent" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>flag indicates whether the message is the content or the path to a file with the contents. for multiple files use ';' as delimiter Default: false</xs:documentation>
+        <xs:documentation>A flag that indicates whether the message is the content or the path to a file with the contents. For multiple files, use ';' as a delimiter. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="resultIsContent" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>flag indicates whether the result must be written to the message or to a file (filename = message) Default: true when outputDirectory is not set.</xs:documentation>
+        <xs:documentation>A flag that indicates whether the result must be written to the message or to a file (filename = message). Default: true when outputDirectory is not set.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="fileFormat">
@@ -14580,22 +14851,22 @@
   <xs:attributeGroup name="CsvParserPipeDeclaredAttributeGroup">
     <xs:attribute name="fileContainsHeader" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Specifies if the first line should be treated as header or as data Default: true</xs:documentation>
+        <xs:documentation>Specifies if the first line should be treated as a header or as data. Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="fieldNames" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of header names. If set, then &lt;code&gt;fileContainsHeader&lt;/code&gt; defaults to false. If not set, headers are taken from the first line</xs:documentation>
+        <xs:documentation>Comma separated list of header names. If set, then &lt;code&gt;fileContainsHeader&lt;/code&gt; defaults to false. If not set, headers are taken from the first line.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="fieldSeparator" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Character that separates fields Default: ,</xs:documentation>
+        <xs:documentation>Character that separates fields. Default: ,</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="headerCase">
       <xs:annotation>
-        <xs:documentation>When set, character casing will be changed for the header</xs:documentation>
+        <xs:documentation>When set, character casing will be changed for the header.</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="HeaderCaseAttributeValuesType variableRef" />
@@ -14603,13 +14874,13 @@
     </xs:attribute>
     <xs:attribute name="prettyPrint" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Format the XML output in easy legible way</xs:documentation>
+        <xs:documentation>Format the XML output in an easily legible way.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="useControlCodes" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>Enables the ASCII &lt;code&gt;(RS) Record Separator&lt;/code&gt; and &lt;code&gt;(US) Unit Separator&lt;/code&gt; Control Code field delimiters.
- May not be used in combination with attribute &lt;code&gt;fieldSeparator&lt;/code&gt;.
+ This may not be used in combination with attribute &lt;code&gt;fieldSeparator&lt;/code&gt;.
  See &lt;a href="https://en.wikipedia.org/wiki/C0_and_C1_control_codes#Field_separators"&gt;WIKI Control Codes&lt;/a&gt;.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -14626,12 +14897,12 @@
   <xs:attributeGroup name="DataSonnetPipeDeclaredAttributeGroup">
     <xs:attribute name="styleSheetName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
+        <xs:documentation>Location of the stylesheet to apply to the input message.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Output file format, DataSonnet is semi-capable of converting the converted JSON to a different format.</xs:documentation>
+        <xs:documentation>Output file format. DataSonnet is semi-capable of converting the converted JSON to a different format.</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="DataSonnetOutputTypeAttributeValuesType variableRef" />
@@ -14639,7 +14910,7 @@
     </xs:attribute>
     <xs:attribute name="computeMimeType" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Compute mimetype when unknown. Requires more compute</xs:documentation>
+        <xs:documentation>Computes the mimetype when it is unknown. It requires more computation.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -14655,7 +14926,7 @@
   <xs:attributeGroup name="DelayPipeDeclaredAttributeGroup">
     <xs:attribute name="delayTime" type="frankInt">
       <xs:annotation>
-        <xs:documentation>The time &lt;i&gt;in milliseconds&lt;/i&gt; the thread will be put to sleep Default: 5000</xs:documentation>
+        <xs:documentation>The time &lt;i&gt;in milliseconds&lt;/i&gt; that the thread will be put to sleep. Default: 5000</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -14671,7 +14942,7 @@
   <xs:attributeGroup name="TimeoutGuardPipeDeclaredAttributeGroup">
     <xs:attribute name="throwException" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, a piperunexception is thrown. otherwise the output is only logged as an error (and returned in a xml string with 'error' tags) Default: true</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, a piperunexception is thrown. otherwise the output is only logged as an error (and returned in a xml string with 'error' tags) Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="timeout" type="frankInt">
@@ -14693,22 +14964,22 @@
     <xs:attribute name="datasourceName" type="xs:string" />
     <xs:attribute name="tableName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>the name of the table that contains the mapping Default: mapping</xs:documentation>
+        <xs:documentation>The name of the table that contains the mapping. Default: mapping</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="labelField" type="xs:string">
       <xs:annotation>
-        <xs:documentation>the name of the column labels are stored in Default: label</xs:documentation>
+        <xs:documentation>The name of the column labels are stored in. Default: label</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="valueInField" type="xs:string">
       <xs:annotation>
-        <xs:documentation>the name of the column source values are stored in Default: valuein</xs:documentation>
+        <xs:documentation>The name of the column source values are stored in. Default: valuein</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="valueOutField" type="xs:string">
       <xs:annotation>
-        <xs:documentation>the name of the column destination values are stored in Default: valueout</xs:documentation>
+        <xs:documentation>The name of the column destination values are stored in. Default: valueout</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -14729,12 +15000,12 @@
   <xs:attributeGroup name="EscapePipeDeclaredAttributeGroup">
     <xs:attribute name="substringStart" type="xs:string">
       <xs:annotation>
-        <xs:documentation>substring to start translation</xs:documentation>
+        <xs:documentation>Substring to start translation.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="substringEnd" type="xs:string">
       <xs:annotation>
-        <xs:documentation>substring to end translation</xs:documentation>
+        <xs:documentation>Substring to end translation.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="direction">
@@ -14744,7 +15015,7 @@
     </xs:attribute>
     <xs:attribute name="encodeSubstring" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>when set &lt;code&gt;true&lt;/code&gt; special characters in &lt;code&gt;substringstart&lt;/code&gt; and &lt;code&gt;substringend&lt;/code&gt; are first translated to their xml equivalents Default: false</xs:documentation>
+        <xs:documentation>When set to &lt;code&gt;true&lt;/code&gt;, special characters in &lt;code&gt;substringstart&lt;/code&gt; and &lt;code&gt;substringend&lt;/code&gt; are first translated to their XML equivalents. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -14806,30 +15077,30 @@
   <xs:attributeGroup name="ForEachChildElementPipeDeclaredAttributeGroup">
     <xs:attribute name="containerElement" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Element name (not an XPath-expression), qualified via attribute &lt;code&gt;namespaceDefs&lt;/code&gt;, used to determine the 'root' of elements to be iterated over, i.e. the root of the set of child elements.
- When empty, the pipe will iterate over each direct child element of the root</xs:documentation>
+        <xs:documentation>Element name (not an XPath expression), qualified via attribute &lt;code&gt;namespaceDefs&lt;/code&gt;, used to determine the 'root' of elements to be iterated over, i.e., the root of the set of child elements.
+ When empty, the pipe will iterate over each direct child element of the root.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="targetElement" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Element name (not an XPath-expression), qualified via attribute &lt;code&gt;namespaceDefs&lt;/code&gt;, used to determine the type of elements to be iterated over, i.e. the element name of each of the child elements.
- When empty, the pipe will iterate over any direct child element of the root or specified containerElement</xs:documentation>
+        <xs:documentation>Element name (not an XPath expression), qualified via attribute &lt;code&gt;namespaceDefs&lt;/code&gt;, used to determine the type of elements to be iterated over, i.e. the element name of each of the child elements.
+ When empty, the pipe will iterate over any direct child element of the root or specified &lt;code&gt;containerElement&lt;/code&gt;.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="elementXPathExpression" type="xs:string">
       <xs:annotation>
-        <xs:documentation>XPath-expression used to determine the set of elements to be iterated over, i.e. the set of child elements. When empty, the effective value is \/*\/*, i.e. the pipe will iterate over each direct child element of the root.
+        <xs:documentation>XPath expression used to determine the set of elements to be iterated over, i.e., the set of child elements. When empty, the effective value is \/*\/*, i.e., the pipe will iterate over each direct child element of the root.
  Be aware that memory consumption appears to increase with file size when this attribute is used. When possible, use containerElement and/or targetElement instead.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) XSLT processor 2.0 or 3.0 will be used, supporting XPath 2.0 or 3.0 respectively, otherwise an XSLT processor 1.0 (org.apache.xalan), supporting XPath 1.0. N.B. Be aware that setting this other than 1 might cause the input file being read as a whole in to memory, as XSLT Streaming is currently only supported by the XSLT Processor that is used for xsltVersion=1 Default: 1</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt;, a Saxon (net.sf.saxon) XSLT processor 2.0 or 3.0 will be used, supporting XPath 2.0 or 3.0 respectively. Otherwise, an XSLT processor 1.0 (org.apache.xalan), supporting XPath 1.0, will be used. N.B. Be aware that setting this to a value other than 1 might cause the input file to be read in its entirety into memory, as XSLT Streaming is currently only supported by the XSLT Processor that is used for xsltVersion=1. Default: 1</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="removeNamespaces" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) are removed from the items just before forwarding them to the sender. N.B. This takes place &lt;strong&gt;after&lt;/strong&gt; the transformation for &lt;code&gt;elementXPathExpression&lt;/code&gt; if that is specified</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, namespaces (and prefixes) are removed from the items just before forwarding them to the sender. N.B. This takes place &lt;strong&gt;after&lt;/strong&gt; the transformation for &lt;code&gt;elementXPathExpression&lt;/code&gt; if that is specified.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -14866,12 +15137,12 @@
   <xs:attributeGroup name="GetFromSessionDeclaredAttributeGroup">
     <xs:attribute name="sessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key of the session variable to retrieve the output message from. When left unspecified, the input message is used as the key of the session variable</xs:documentation>
+        <xs:documentation>Key of the session variable to retrieve the output message from. When left unspecified, the input message is used as the key of the session variable.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="type">
       <xs:annotation>
-        <xs:documentation>&lt;ul&gt;&lt;li&gt;&lt;code&gt;string&lt;/code&gt;: renders the contents&lt;/li&gt;&lt;li&gt;&lt;code&gt;map&lt;/code&gt;: converts a Map&amp;lt;String, String&amp;gt; object to a xml-string (&amp;lt;items&amp;gt;&amp;lt;item name='...'&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;item name='...'&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;/items&amp;gt;)&lt;/li&gt;&lt;/ul&gt; Default: string</xs:documentation>
+        <xs:documentation>&lt;ul&gt;&lt;li&gt;&lt;code&gt;string&lt;/code&gt;: Renders the contents.&lt;/li&gt;&lt;li&gt;&lt;code&gt;map&lt;/code&gt;: Converts a Map&amp;lt;String, String&amp;gt; object to an XML string (&amp;lt;items&amp;gt;&amp;lt;item name='...'&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;item name='...'&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;/items&amp;gt;).&lt;/li&gt;&lt;/ul&gt; Default: string</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="ParameterTypeAttributeValuesType variableRef" />
@@ -14890,7 +15161,7 @@
   <xs:attributeGroup name="GetPrincipalPipeDeclaredAttributeGroup">
     <xs:attribute name="notFoundForwardName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>name of forward returned if principal has not been found</xs:documentation>
+        <xs:documentation>Name of the forward returned if the principal has not been found.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -14953,7 +15224,7 @@
   <xs:attributeGroup name="HashPipeDeclaredAttributeGroup">
     <xs:attribute name="algorithm">
       <xs:annotation>
-        <xs:documentation>Hash Algorithm to use Default: HmacSHA256</xs:documentation>
+        <xs:documentation>Hash algorithm to use. Default: HmacSHA256</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="AlgorithmAttributeValuesType variableRef" />
@@ -14961,12 +15232,12 @@
     </xs:attribute>
     <xs:attribute name="charset" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Character set to use for converting the secret from String to bytes Default: UTF-8</xs:documentation>
+        <xs:documentation>Character set to use for converting the secret from String to bytes. Default: UTF-8</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="hashEncoding">
       <xs:annotation>
-        <xs:documentation>Method to use for converting the hash from bytes to String Default: Base64</xs:documentation>
+        <xs:documentation>Method to use for converting the hash from bytes to String. Default: Base64</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="HashEncodingAttributeValuesType variableRef" />
@@ -14974,7 +15245,7 @@
     </xs:attribute>
     <xs:attribute name="secret" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The secret to hash with. Only used if no parameter secret is configured. The secret is only used when there is no authAlias specified, by attribute or parameter</xs:documentation>
+        <xs:documentation>The secret to hash with. Only used if no parameter secret is configured. The secret is only used when there is no authAlias specified, by attribute or parameter.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="authAlias" type="xs:string">
@@ -14995,12 +15266,12 @@
   <xs:attributeGroup name="IfPipeDeclaredAttributeGroup">
     <xs:attribute name="expressionValue" type="xs:string">
       <xs:annotation>
-        <xs:documentation>a string to compare the result of the xpathExpression (or the input-message itself) to. If not specified, a non-empty result leads to the 'then'-forward, an empty result to 'else'-forward</xs:documentation>
+        <xs:documentation>A string to compare the result of the xpathExpression (or the input message itself) to. If not specified, a non-empty result leads to the 'then' forward, and an empty result leads to the 'else' forward.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="xpathExpression" type="xs:string">
       <xs:annotation>
-        <xs:documentation>xpath expression to be applied to the input-message. if not set, no transformation is done when the input message is mediatype XML</xs:documentation>
+        <xs:documentation>xpath expression to be applied to the input-message. If not set, no transformation is done when the input message is mediatype XML</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="jsonPathExpression" type="xs:string">
@@ -15010,7 +15281,7 @@
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan) Default: 2</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt;, a Saxon (net.sf.saxon) XSLT processor 2.0 or 3.0 respectively will be used. Otherwise, XSLT processor 1.0 (org.apache.xalan) will be used. Default: 2</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
@@ -15020,7 +15291,7 @@
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>controls namespace-awareness of XSLT transformation Default: true</xs:documentation>
+        <xs:documentation>Controls the namespace-awareness of the XSLT transformation. Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="defaultMediaType">
@@ -15044,12 +15315,12 @@
   <xs:attributeGroup name="IncreaseIntegerPipeDeclaredAttributeGroup">
     <xs:attribute name="sessionKey" type="xs:string" use="required">
       <xs:annotation>
-        <xs:documentation>Reference to the session variable whose value is to be increased</xs:documentation>
+        <xs:documentation>Reference to the session variable whose value is to be increased.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="increment" type="frankInt">
       <xs:annotation>
-        <xs:documentation>amount to increment the value. Can be set from the attribute or the parameter 'increment' Default: 1</xs:documentation>
+        <xs:documentation>Amount to increment the value. This can be set from the attribute or the parameter 'increment'. Default: 1</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -15065,7 +15336,7 @@
   <xs:attributeGroup name="IsUserInRolePipeDeclaredAttributeGroup">
     <xs:attribute name="role" type="xs:string">
       <xs:annotation>
-        <xs:documentation>the j2ee role(s) to check, if the user in multiple roles, the first specified role will be matched.</xs:documentation>
+        <xs:documentation>The J2EE role(s) to check. If the user is in multiple roles, the first specified role will be matched.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -15081,17 +15352,17 @@
   <xs:attributeGroup name="IsXmlPipeDeclaredAttributeGroup">
     <xs:attribute name="thenForwardName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>forward returned when &lt;code&gt;true&lt;/code&gt; Default: then</xs:documentation>
+        <xs:documentation>Forward returned when &lt;code&gt;true&lt;/code&gt;. Default: then</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="elseForwardName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>forward returned when 'false' Default: else</xs:documentation>
+        <xs:documentation>Forward returned when 'false'. Default: else</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="elseForwardOnEmptyInput" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>return elseforward when input is empty (or thenforward) Default: true</xs:documentation>
+        <xs:documentation>Returns elseforward when the input is empty (or thenforward). Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -15116,7 +15387,7 @@
     <xs:attribute name="addXmlRootElement" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>When direction is JSON2XML, it wraps a root element around the converted message.
- When direction is XML2JSON, it includes the name of the root element as a key in the converted message, thus preserving the structure of the original input message. Default: TRUE when JSON2XML and FALSE when XML2JSON</xs:documentation>
+ When direction is XML2JSON, it includes the name of the root element as a key in the converted message, thus preserving the structure of the original input message. Default: &lt;code&gt;true&lt;/code&gt; when JSON2XML and &lt;code&gt;false&lt;/code&gt; when XML2JSON</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rootElementName" type="xs:string">
@@ -15148,7 +15419,7 @@
   <xs:attributeGroup name="JsonXsltPipeDeclaredAttributeGroup">
     <xs:attribute name="jsonResult" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, the xml result of the transformation is converted back to json Default: true</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the xml result of the transformation is converted back to json Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
@@ -15186,7 +15457,7 @@
     </xs:attribute>
     <xs:attribute name="disableOutputEscaping" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for &lt;code&gt;@disable-output-escaping='yes'&lt;/code&gt; and the value is set accordingly Default: false, if not set in stylesheet</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for &lt;code&gt;@disable-output-escaping='yes'&lt;/code&gt; and the value is set accordingly Default: false, if not set in stylesheet</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="outputType">
@@ -15199,23 +15470,23 @@
     </xs:attribute>
     <xs:attribute name="indentXml" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, result is pretty-printed. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, result is pretty-printed. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="removeNamespaces" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before transformation Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before transformation Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="handleLexicalEvents" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text.
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text.
  Beware that this option can cause spurious NullPointerExceptions due to a race condition in streaming XSLT 1.0 processing in Xalan 2.7.2 Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="skipEmptyTags" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; empty tags in the output are removed after transformation Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt; empty tags in the output are removed after transformation Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
@@ -15258,13 +15529,13 @@
     </xs:attribute>
     <xs:attribute name="disableOutputEscaping" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for &lt;code&gt;@disable-output-escaping='yes'&lt;/code&gt; and the value is set accordingly Default: false, if not set in stylesheet</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for &lt;code&gt;@disable-output-escaping='yes'&lt;/code&gt; and the value is set accordingly Default: false, if not set in stylesheet</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
       <xs:annotation>
         <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. For some other use cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.
- If left empty, an the xpathExpression will match any namespace</xs:documentation>
+ If left empty, the xpathExpression will match any namespace</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="outputType">
@@ -15277,23 +15548,23 @@
     </xs:attribute>
     <xs:attribute name="indentXml" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, result is pretty-printed. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, result is pretty-printed. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="removeNamespaces" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before transformation Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before transformation Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="handleLexicalEvents" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text.
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text.
  Beware that this option can cause spurious NullPointerExceptions due to a race condition in streaming XSLT 1.0 processing in Xalan 2.7.2 Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="skipEmptyTags" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; empty tags in the output are removed after transformation Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt; empty tags in the output are removed after transformation Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
@@ -15672,12 +15943,12 @@
   <xs:attributeGroup name="LogContextPipeDeclaredAttributeGroup">
     <xs:attribute name="export" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; the ThreadContext parameters will be exported from the current PipeLine up in the call tree. Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt; the ThreadContext parameters will be exported from the current PipeLine up in the call tree. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="continueOnError" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; the pipe will never forward to the &lt;code&gt;ExceptionForward&lt;/code&gt; even if an error occurred during execution. Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt; the pipe will never forward to the &lt;code&gt;ExceptionForward&lt;/code&gt; even if an error occurred during execution. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -15733,7 +16004,7 @@
         <xs:documentation>Emails of the senders. This will be used to verify that all the senders have signed the given message.
  If not set, and the action is verify; this pipe will validate that at least one person has signed.
  For signing action, it needs to be set to the email that was used to generate the private key
- "that is being used for this process.</xs:documentation>
+ that is being used for this process.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="secretKey" type="xs:string">
@@ -16116,7 +16387,7 @@
   <xs:attributeGroup name="RemoveFromSessionDeclaredAttributeGroup">
     <xs:attribute name="sessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>name of the key of the entry in the &lt;code&gt;pipelinesession&lt;/code&gt; to remove. if this key is empty the input message is interpretted as key. for multiple keys use ',' as delimiter</xs:documentation>
+        <xs:documentation>name of the key of the entry in the &lt;code&gt;pipelinesession&lt;/code&gt; to remove. If this key is empty the input message is interpretted as key. for multiple keys use ',' as delimiter</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -16456,7 +16727,7 @@
     </xs:attribute>
     <xs:attribute name="signatureBase64" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>if true, the signature is (expected to be) base64 encoded Default: true</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the signature is (expected to be) base64 encoded Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keystore" type="xs:string" use="required">
@@ -16546,7 +16817,7 @@
     </xs:attribute>
     <xs:attribute name="startOfLineString" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Marks the start of a new record. If set, a new record is started when this line is read.</xs:documentation>
+        <xs:documentation>Marks the start of a new record. If &lt;code&gt;true&lt;/code&gt;, a new record is started when this line is read.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="closeInputstreamOnExit" type="frankBoolean">
@@ -16567,7 +16838,7 @@
   <xs:attributeGroup name="StreamPipeDeclaredAttributeGroup">
     <xs:attribute name="extractFirstStringPart" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt;) when true the first part is not put in a session key but returned to the pipeline (as the result of this pipe) Default: false</xs:documentation>
+        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt;) If &lt;code&gt;true&lt;/code&gt; the first part is not put in a session key but returned to the pipeline (as the result of this pipe) Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="multipartXmlSessionKey" type="xs:string">
@@ -16577,17 +16848,17 @@
     </xs:attribute>
     <xs:attribute name="checkAntiVirus" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt;) when true parts are checked for antivirus scan returncode. these antivirus scan parts have been added by another application (so the antivirus scan is not performed in this pipe). for each file part an antivirus scan part have been added by this other application (directly after this file part) Default: false</xs:documentation>
+        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt;) If &lt;code&gt;true&lt;/code&gt; parts are checked for antivirus scan returncode. these antivirus scan parts have been added by another application (so the antivirus scan is not performed in this pipe). for each file part an antivirus scan part have been added by this other application (directly after this file part) Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="antiVirusPartName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt; and when &lt;code&gt;checkantivirus=true&lt;/code&gt;) name of antivirus scan status parts Default: &lt;code&gt;antivirus_rc&lt;/code&gt;</xs:documentation>
+        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt; and when &lt;code&gt;true&lt;/code&gt;) name of antivirus scan status parts Default: &lt;code&gt;antivirus_rc&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="antiVirusMessagePartName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt; and when &lt;code&gt;checkantivirus=true&lt;/code&gt;) name of antivirus scan message parts Default: &lt;code&gt;antivirus_msg&lt;/code&gt;</xs:documentation>
+        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt; and when &lt;code&gt;true&lt;/code&gt; &lt;code&gt;checkantivirus=true&lt;/code&gt;) name of antivirus scan message parts Default: &lt;code&gt;antivirus_msg&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="antiVirusPassedMessage" type="xs:string">
@@ -16597,7 +16868,7 @@
     </xs:attribute>
     <xs:attribute name="antiVirusFailureAsSoapFault" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt; and when &lt;code&gt;checkantivirus=true&lt;/code&gt;) when true and the antivirusfailed forward is specified and the antivirus scan did not pass, a soap fault is returned instead of only a plain error message Default: false</xs:documentation>
+        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt; and when &lt;code&gt;checkantivirus=true&lt;/code&gt;) If &lt;code&gt;true&lt;/code&gt; and the antivirusfailed forward is specified and the antivirus scan did not pass, a soap fault is returned instead of only a plain error message Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="antiVirusFailureReasonSessionKey" type="xs:string">
@@ -16655,7 +16926,7 @@
     </xs:attribute>
     <xs:attribute name="softSplit" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If true, try to break up the message at spaces, instead of in the middle of words Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, try to break up the message at spaces, instead of in the middle of words Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -16700,12 +16971,12 @@
     </xs:attribute>
     <xs:attribute name="collectResults" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;false&lt;/code&gt;, only a small summary (count of items in zip) is returned Default: true</xs:documentation>
+        <xs:documentation>If &lt;code&gt;false&lt;/code&gt;, only a small summary (count of items in zip) is returned Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="collectFileContents" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the contents of the files in the zip are returned in the result xml message of this pipe. Please note this can consume a lot of memory for large files or a large number of files Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the contents of the files in the zip are returned in the result xml message of this pipe. Please note this can consume a lot of memory for large files or a large number of files Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="collectFileContentsBase64Encoded" type="xs:string">
@@ -16715,17 +16986,17 @@
     </xs:attribute>
     <xs:attribute name="keepOriginalFileName" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;false&lt;/code&gt;, a suffix is added to the original filename to be sure it is unique Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;false&lt;/code&gt;, a suffix is added to the original filename to be sure it is unique Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keepOriginalFilePath" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the path of the zip entry will be preserved. Otherwise, the zip entries will be extracted to the root folder Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the path of the zip entry will be preserved. Otherwise, the zip entries will be extracted to the root folder Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="assumeDirectoryExists" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, validation of directory is ignored Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, validation of directory is ignored Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -18865,7 +19136,7 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="FF">
         <xs:annotation>
-          <xs:documentation>Fire &amp; Forget protocol</xs:documentation>
+          <xs:documentation>Fire &amp;amp; Forget protocol</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="RR">
@@ -19046,7 +19317,7 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="FF">
         <xs:annotation>
-          <xs:documentation>Fire &amp; Forget protocol</xs:documentation>
+          <xs:documentation>Fire &amp;amp; Forget protocol</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="RR">
@@ -19672,14 +19943,14 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="GZ">
         <xs:annotation>
-          <xs:documentation>Gzip format; also used when direction is compress and resultIsContent=&lt;code&gt;true&lt;/code&gt;
- or when direction is decompress and messageIsContent=&lt;code&gt;true&lt;/code&gt;</xs:documentation>
+          <xs:documentation>Gzip format. It is used when compressing (&lt;code&gt;compress=&amp;quot;true&amp;quot;&lt;/code&gt;) and &lt;code&gt;resultIsContent=&amp;quot;true&amp;quot;&lt;/code&gt;,
+ or when decompressing (&lt;code&gt;compress=&amp;quot;false&amp;quot;&lt;/code&gt;) and &lt;code&gt;messageIsContent=&amp;quot;true&amp;quot;&lt;/code&gt;.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="ZIP">
         <xs:annotation>
-          <xs:documentation>Zip format; also used when direction is compress and resultIsContent=&lt;code&gt;false&lt;/code&gt;
- or when direction is decompress and messageIsContent=&lt;code&gt;false&lt;/code&gt;</xs:documentation>
+          <xs:documentation>Zip format. It is also used when compressing (&lt;code&gt;compress=&amp;quot;true&amp;quot;&lt;/code&gt;) and &lt;code&gt;resultIsContent=&amp;quot;false&amp;quot;&lt;/code&gt;,
+ or when decompressing (&lt;code&gt;compress=&amp;quot;false&amp;quot;&lt;/code&gt;) and &lt;code&gt;messageIsContent=&amp;quot;false&amp;quot;&lt;/code&gt;.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
     </xs:restriction>
@@ -19768,7 +20039,7 @@
       </xs:enumeration>
       <xs:enumeration value="SIGN">
         <xs:annotation>
-          <xs:documentation>Encrypts and then signs the given input. On top of the requirements for Encrypt action, signing requires senders to bet set for user's email; and secretKey &amp; secretPassword to be set to private key's path and it's password (password is optional, if private key does not have protection).</xs:documentation>
+          <xs:documentation>Encrypts and then signs the given input. On top of the requirements for the &lt;code&gt;Encrypt&lt;/code&gt; action, signing requires senders to be set for user's email; and secretKey `&amp;amp;` secretPassword to be set to private key's path and it's password (password is optional, if private key does not have protection).</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="DECRYPT">
@@ -19778,7 +20049,7 @@
       </xs:enumeration>
       <xs:enumeration value="VERIFY">
         <xs:annotation>
-          <xs:documentation>Decrypts and verifies the given input. On top of the requirements for Decrypt action, verification expects list of senders' email's and corresponding public keys. However, sender emails does not have to be set, and in that case, this pipe will only validate that someone signed the input.</xs:documentation>
+          <xs:documentation>Decrypts and verifies the given input. On top of the requirements for the &lt;code&gt;Decrypt&lt;/code&gt; action, verification expects list of senders' email's and corresponding public keys. However, sender emails does not have to be set, and in that case, this pipe will only validate that someone signed the input.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
     </xs:restriction>
@@ -19811,7 +20082,7 @@
       </xs:enumeration>
       <xs:enumeration value="FF">
         <xs:annotation>
-          <xs:documentation>Fire &amp; Forget</xs:documentation>
+          <xs:documentation>Fire &amp;amp; Forget</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
     </xs:restriction>
@@ -20098,6 +20369,12 @@
       <xs:documentation>(only used when &lt;code&gt;peekUntransacted&lt;/code&gt;=&lt;code&gt;true&lt;/code&gt;) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock Default: selectQuery</xs:documentation>
     </xs:annotation>
   </xs:attribute>
+  <xs:attribute name="additionalFields" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Comma-separated list of additional fields to be loaded from the table, besides Message, Key, MessageID and CorrelationID. Any fields listed here will
+ be added to the session as session-variables.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
   <xs:attribute name="trace" type="frankBoolean" />
   <xs:attribute name="datasourceName" type="xs:string">
     <xs:annotation>
@@ -20129,33 +20406,12 @@
       <xs:documentation>Additional condition for a row to belong to this TableListener. Impacts all process states</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="keepAliveInterval" type="frankInt" />
-  <xs:attribute name="brokerUrl" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank"&gt;MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)&lt;/a&gt;</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
   <xs:attribute name="qos" type="frankInt">
     <xs:annotation>
       <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank"&gt;MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)&lt;/a&gt; Default: 2</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="cleanSession" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html#setCleanSession-boolean-" target="_blank"&gt;MqttConnectOptions.setCleanSession(boolean cleanSession)&lt;/a&gt; Default: true</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="persistenceDirectory" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Stores inbound and outbound messages while they are in flight on disk storage. Recommended when reliability is paramount. Messages are persisted in memory when empty.
- see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/persist/MqttDefaultFilePersistence.html" target="_blank"&gt;MqttDefaultFilePersistence&lt;/a&gt; and &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html" target="_blank"&gt;MqttClient&lt;/a&gt;</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="automaticReconnect" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html#setAutomaticReconnect-boolean-" target="_blank"&gt;MqttConnectOptions.setAutomaticReconnect(boolean automaticReconnect)&lt;/a&gt; (apart from this recover job will also try to recover) Default: true</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
+  <xs:attribute name="resourceName" type="xs:string" />
   <xs:attribute name="correlationIdFieldIndex" type="frankInt">
     <xs:annotation>
       <xs:documentation>Index of the field in the ImportParameterList of the RFC function that contains the correlationId Default: 0</xs:documentation>
@@ -20316,21 +20572,21 @@
     <xs:annotation>
       <xs:documentation>The &lt;code&gt;transactionAttribute&lt;/code&gt; declares transactional behavior of execution. It applies both to database transactions and XA transactions.
  The pipeline uses this to start a new transaction or suspend the current one when required.
- For developers: it is equal to &lt;a href=\"https://docs.oracle.com/javaee/7/tutorial/transactions003.htm\"&gt;EJB transaction attribute&lt;/a&gt;.
+ For developers: it is equal to &lt;a href="https://docs.oracle.com/javaee/7/tutorial/transactions003.htm"&gt;EJB transaction attribute&lt;/a&gt;.
  Possible values for transactionAttribute:
-   &lt;table border=\"1\"&gt;
+ &lt;table border="1"&gt;
      &lt;tr&gt;&lt;th&gt;transactionAttribute&lt;/th&gt;&lt;th&gt;callers Transaction&lt;/th&gt;&lt;th&gt;Pipeline excecuted in Transaction&lt;/th&gt;&lt;/tr&gt;
-     &lt;tr&gt;&lt;td colspan=\"1\" rowspan=\"2\"&gt;Required&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
+     &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Required&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
  											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;
-     &lt;tr&gt;&lt;td colspan=\"1\" rowspan=\"2\"&gt;RequiresNew&lt;/td&gt; &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
+     &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;RequiresNew&lt;/td&gt; &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
  											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
-     &lt;tr&gt;&lt;td colspan=\"1\" rowspan=\"2\"&gt;Mandatory&lt;/td&gt;   &lt;td&gt;none&lt;/td&gt;&lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;
+     &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Mandatory&lt;/td&gt;   &lt;td&gt;none&lt;/td&gt;&lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;
  											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;
-     &lt;tr&gt;&lt;td colspan=\"1\" rowspan=\"2\"&gt;NotSupported&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
+     &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;NotSupported&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
  											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
-     &lt;tr&gt;&lt;td colspan=\"1\" rowspan=\"2\"&gt;Supports&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
+     &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Supports&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
   										      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;
-     &lt;tr&gt;&lt;td colspan=\"1\" rowspan=\"2\"&gt;Never&lt;/td&gt;       &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
+     &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Never&lt;/td&gt;       &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
  											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;
    &lt;/table&gt; Default: Supports</xs:documentation>
     </xs:annotation>
@@ -20360,8 +20616,8 @@
   </xs:attribute>
   <xs:attribute name="storeResultInSessionKey" type="xs:string">
     <xs:annotation>
-      <xs:documentation>If set, the pipe result is copied to a session key that has the name defined by this attribute. The
- pipe result is still written as the output message as usual.</xs:documentation>
+      <xs:documentation>If set, the pipe result is copied to a session key that has the name defined by this attribute. 
+ The pipe result is still written as the output message as usual.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="maxThreads" type="frankInt">
@@ -20403,17 +20659,18 @@
   </xs:attribute>
   <xs:attribute name="sizeStatistics" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>Collect and aggregate Message size statistics</xs:documentation>
+      <xs:documentation>Toggle if message-size statistics should be collected and aggregated.
+ The default is controlled by the application property &lt;code&gt;statistics.size&lt;/code&gt;.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="writeToSecLog" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>when set to &lt;code&gt;true&lt;/code&gt; a record is written to the security log when the pipe has finished successfully</xs:documentation>
+      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, a record is written to the security log when the pipe has finished successfully.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="secLogSessionKeys" type="xs:string">
     <xs:annotation>
-      <xs:documentation>(only used when &lt;code&gt;writeToSecLog=true&lt;/code&gt;) comma separated list of keys of session variables that is appended to the security log record</xs:documentation>
+      <xs:documentation>(only used when &lt;code&gt;writeToSecLog&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt;) comma separated list of keys of session variables that is appended to the security log record</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="logIntermediaryResults" type="xs:string">
@@ -20432,7 +20689,7 @@
   </xs:attribute>
   <xs:attribute name="outputSoapBody" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Identical to the &lt;code&gt;soapBody&lt;/code&gt; attribute except that it's used for the output message instead of the input message. For more information see &lt;a href=\"#note1\"&gt;note 1&lt;/a&gt;</xs:documentation>
+      <xs:documentation>Identical to the &lt;code&gt;soapBody&lt;/code&gt; attribute except that it's used for the output message instead of the input message.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="soapHeader" type="xs:string">
@@ -20470,11 +20727,6 @@
  The syntax is the same as for schemaLocation attributes in instance documents: e.g, "http://www.example.com file%20name.xsd".&lt;br/&gt;
  The user can specify more than one XML Schema in the list.&lt;br/&gt;
  &lt;b&gt;Note&lt;/b&gt; that spaces are considered separators for this attributed. This means that, for example, spaces in filenames should be escaped to %20.</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="noNamespaceSchemaLocation" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>A uri reference as a hint as to the location of a schema document with no target namespace.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="responseRoot" type="xs:string">
@@ -20526,7 +20778,7 @@
   </xs:attribute>
   <xs:attribute name="useBaseImportedSchemaLocationsToIgnore" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path Default: false</xs:documentation>
+      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="importedNamespacesToIgnore" type="xs:string">
@@ -20537,7 +20789,7 @@
   <xs:attribute name="warn" type="frankBoolean">
     <xs:annotation>
       <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, send warnings to logging and console about syntax problems in the configured schema('s).
- Alternatively, warnings can be switched off using suppression properties &lt;code&gt;XSD_VALIDATION_WARNINGS_SUPPRESS_KEY&lt;/code&gt;, &lt;code&gt;XSD_VALIDATION_ERROR_SUPPRESS_KEY&lt;/code&gt; and &lt;code&gt;XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY&lt;/code&gt; Default: true</xs:documentation>
+ Alternatively, warnings can be switched off using suppression properties SuppressKeys#XSD_VALIDATION_WARNINGS_SUPPRESS_KEY, SuppressKeys#XSD_VALIDATION_ERROR_SUPPRESS_KEY and SuppressKeys#XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY Default: true</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="ignoreCaching" type="frankBoolean">
@@ -20562,7 +20814,7 @@
   </xs:attribute>
   <xs:attribute name="schemaSessionKey" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Session key for retrieving a schema</xs:documentation>
+      <xs:documentation>Session key for retrieving a schema.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="packageContent" type="xs:string">
@@ -20650,7 +20902,7 @@
   </xs:attribute>
   <xs:attribute name="url" type="xs:string">
     <xs:annotation>
-      <xs:documentation>URL or base of URL to be used</xs:documentation>
+      <xs:documentation>URL or base of URL to be used. Expects all parts of the URL to already be encoded.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="urlParam" type="xs:string">
@@ -20727,6 +20979,11 @@
   <xs:attribute name="clientAlias" type="xs:string">
     <xs:annotation>
       <xs:documentation>Alias used to obtain client_id and client_secret for authentication to &lt;code&gt;tokenEndpoint&lt;/code&gt;</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="clientId" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Client_id used in authentication to &lt;code&gt;tokenEndpoint&lt;/code&gt;</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="clientSecret" type="xs:string">
@@ -20936,7 +21193,7 @@
   </xs:attribute>
   <xs:attribute name="debugInput" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; the input is written to the log file, at DEBUG level Default: false</xs:documentation>
+      <xs:documentation>If &lt;code&gt;true&lt;/code&gt; the input is written to the log file, at DEBUG level Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="userId" type="xs:string">
@@ -20961,12 +21218,12 @@
   </xs:attribute>
   <xs:attribute name="defaultMessageType" type="xs:string">
     <xs:annotation>
-      <xs:documentation>when messageType is not specified defaultMessageType will be used Default: text/plain</xs:documentation>
+      <xs:documentation>When messageType is not specified defaultMessageType will be used Default: text/plain</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="defaultMessageBase64" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>when messageBase64 is not specified defaultMessageBase64 will be used Default: false</xs:documentation>
+      <xs:documentation>When messageBase64 is not specified defaultMessageBase64 will be used Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="bounceAddress" type="xs:string">
@@ -21009,7 +21266,7 @@
   </xs:attribute>
   <xs:attribute name="collectResults" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>Controls whether all the results of each iteration will be collected in one result message. If set &lt;code&gt;false&lt;/code&gt;, only a small summary is returned.
+      <xs:documentation>Controls whether all the results of each iteration will be collected in one result message. If &lt;code&gt;false&lt;/code&gt;, only a small summary is returned.
  Setting this attributes to &lt;code&gt;false&lt;/code&gt; is often required to enable processing of very large files. N.B. Remember in such a case that setting transactionAttribute to NotSupported might be necessary too Default: true</xs:documentation>
     </xs:annotation>
   </xs:attribute>
