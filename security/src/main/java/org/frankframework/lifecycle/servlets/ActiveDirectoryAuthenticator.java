@@ -33,8 +33,27 @@ import lombok.Setter;
 
 import org.frankframework.util.ClassUtils;
 
+/**
+ * Authenticator for Microsoft Active Directory using LDAP.
+ * <p>
+ * This authenticator uses Active Directory to authenticate users.
+ * It also provides a way to map LDAP roles to Frank roles using a properties file, by default the `ldap-role-mapping.properties`.
+ * </p>
+ * <p>
+ * This authenticator should be configured by setting its type to 'AD', for example:
+ * <pre>
+ * application.security.console.authentication.type=AD
+ * application.security.console.authentication.baseDn=DC=company,DC=org
+ * application.security.console.authentication.url=ldap://10.1.2.3
+ * </pre>
+ * </p>
+ *
+ * @ff.info Please note that recursive group membership is not supported.
+ * @ff.info Please note that this authenticator is not compatible with ApacheDS.
+ */
 public class ActiveDirectoryAuthenticator extends AbstractServletAuthenticator {
 
+	/** The domain name, eg: company.org */
 	private @Setter String domainName = null;
 
 	/** LDAP server endpoint, eg: ldap://10.1.2.3 */
@@ -42,11 +61,22 @@ public class ActiveDirectoryAuthenticator extends AbstractServletAuthenticator {
 
 	/** Domain root DN, eg: DC=company,DC=org */
 	private @Setter String baseDn;
+
+	/** Enabled by default, aka 'follow' when lookup up LDAP servers. May be set to `false` if you only wish to target the specified server directly.  */
 	private @Setter boolean followReferrals = true;
 
-	/** defaults to {@code (&(objectClass=user)(userPrincipalName={0}))} */
+	/** Defaults to {@code (&(objectClass=user)(userPrincipalName={0}))} */
 	private @Setter String searchFilter = null;
 
+	/** The LDAP role-mapping file, defaults to `ldap-role-mapping.properties` in the classpath.
+	 * This file is used to map LDAP roles to Frank roles.
+	 * The file should be in the format:
+	 * For example:
+	 * <pre>
+	 * IbisAdmin=CN=Administrators,CN=Groups,DC=example,DC=com
+	 * IbisObserver=CN=Readers,CN=Groups,DC=example,DC=com
+	 * </pre>
+	 */
 	private @Setter String roleMappingFile = "ldap-role-mapping.properties";
 	private URL roleMappingURL = null;
 

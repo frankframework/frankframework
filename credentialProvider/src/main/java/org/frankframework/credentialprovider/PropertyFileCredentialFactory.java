@@ -21,22 +21,24 @@ import java.io.Reader;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.util.StreamUtil;
 
 /**
- * CredentialFactory that reads its credentials from a plain (unencrypted) .properties file.
- * For adequate privacy in production environments, the source file should not be readable by unauthorised users.
+ * <p>CredentialFactory that reads its credentials from a plain (unencrypted) .properties file.</p>
  *
+ * <p>Credentials are stored in the properties file as key/value pairs, where the key is the alias and the value is the password.</p>
+ *
+ * @ff.info For adequate privacy in production environments, the source file should not be readable by unauthorised users.
  * @author Gerrit van Brakel
- *
  */
 public class PropertyFileCredentialFactory extends AbstractMapCredentialFactory {
 
-	public static final String PROPERTY_BASE="credentialFactory.map";
+	private static final String PROPERTY_BASE = "credentialFactory.map";
 
-	public static final String FILE_PROPERTY=PROPERTY_BASE+".properties";
+	private static final String FILE_PROPERTY = PROPERTY_BASE + ".properties";
 
 	private static final String DEFAULT_PROPERTIES_FILE = "credentials.properties";
 
@@ -49,12 +51,16 @@ public class PropertyFileCredentialFactory extends AbstractMapCredentialFactory 
 	protected Map<String, String> getCredentialMap(CredentialConstants appConstants) throws IOException {
 		try (InputStream propertyStream = getInputStream(appConstants, FILE_PROPERTY, DEFAULT_PROPERTIES_FILE, "Credentials");
 			Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(propertyStream)) {
-
 			Properties properties = new Properties();
 			properties.load(reader);
-			Map<String,String> map = new LinkedHashMap<>();
-			properties.forEach((k,v) -> map.put((String)k, (String)v));
-			return map;
+
+			return properties.entrySet().stream()
+			    .collect(Collectors.toMap(
+			        entry -> (String) entry.getKey(),
+			        entry -> (String) entry.getValue(),
+			        (existing, replacement) -> existing, // Handle duplicate keys
+			        LinkedHashMap::new
+			    ));
 		}
 	}
 }

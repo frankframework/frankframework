@@ -134,7 +134,7 @@ public class NetStorageRequest {
 		if(pvl.contains(NetStorageSender.HASHVALUE_PARAM_KEY)) {
 			hash = pvl.get(NetStorageSender.HASHVALUE_PARAM_KEY).asStringValue(null);
 		}
-		else if(pvl.contains(algorithm)) { //backwards compatibility
+		else if(pvl.contains(algorithm)) { // Backwards compatibility
 			hash = pvl.get(algorithm).asStringValue(null);
 		}
 		else {

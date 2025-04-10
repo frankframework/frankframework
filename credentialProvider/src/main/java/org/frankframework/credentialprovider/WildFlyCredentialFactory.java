@@ -33,12 +33,22 @@ import org.wildfly.security.credential.store.CredentialStoreException;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
+/**
+ * <p>This CredentialFactory implementation uses the WildFly Credential Store to retrieve credentials.</p>
+ *
+ * <p>The {@value #WILDFLY_CREDENTIAL_STORE_PROPERTY} is used to set the credential store in WildFly which will be used.
+ * By default, the credential store is set to {@code CS}.</p>
+ *
+ * <p>Aliases ending with "/username" are normalized by removing the suffix before being included in the returned collection of configured aliases.</p>
+ *
+ * @see <a href="https://www.wildfly.org/guides/security-credential-store-for-passwords">WildFly Credential Store Guide</a>
+ */
 public class WildFlyCredentialFactory implements ICredentialFactory {
-	protected Logger log = Logger.getLogger(this.getClass().getName());
+	private Logger log = Logger.getLogger(this.getClass().getName());
 
 	private static final ServiceName SERVICE_NAME_CRED_STORE = ServiceName.of("org", "wildfly", "security", "credential-store");
 
-	public static final String WILDFLY_CREDENTIALSTORE_PROPERTY="credentialFactory.wildfly.credentialStore";
+	private static final String WILDFLY_CREDENTIAL_STORE_PROPERTY = "credentialFactory.wildfly.credentialStore";
 
 	private String credentialStore = "CS";
 
@@ -48,9 +58,9 @@ public class WildFlyCredentialFactory implements ICredentialFactory {
 	public void initialize() {
 		log.info("Initializing WildFlyCredentialFactory");
 		CredentialConstants appConstants = CredentialConstants.getInstance();
-		credentialStore = appConstants.getProperty(WILDFLY_CREDENTIALSTORE_PROPERTY, credentialStore);
+		credentialStore = appConstants.getProperty(WILDFLY_CREDENTIAL_STORE_PROPERTY, credentialStore);
 		if (StringUtils.isEmpty(credentialStore)) {
-			throw new IllegalStateException("No valid property ["+WILDFLY_CREDENTIALSTORE_PROPERTY+"] found");
+			throw new IllegalStateException("No valid property ["+ WILDFLY_CREDENTIAL_STORE_PROPERTY +"] found");
 		}
 	}
 

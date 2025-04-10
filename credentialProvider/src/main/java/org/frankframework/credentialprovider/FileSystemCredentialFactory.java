@@ -20,7 +20,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -28,16 +27,25 @@ import org.apache.commons.lang3.StringUtils;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 /**
- * It's required to set the property {@value FileSystemCredentialFactory#FILESYSTEM_ROOT_PROPERTY} to the directory you wish to read credentials from.
+ * <p>CredentialFactory implementation that reads secrets from the file system.</p>
+ *
+ * <p>It reads the username and password from files in a directory. The directory is set by the property {@value #FILESYSTEM_ROOT_PROPERTY}.</p>
+ *
+ * <p>It reads the username from a file with the name set by the property {@value #USERNAME_FILE_PROPERTY} and the password from a file with the name set by
+ * the property {@value #PASSWORD_FILE_PROPERTY}. These values are relative to the {@value #FILESYSTEM_ROOT_PROPERTY}</p>
+ *
+ * <p>By default, the default values {@code username} and {@code password} are used for these files.</p>
+ *
+ * @ff.info It's required to set the property {@value FileSystemCredentialFactory#FILESYSTEM_ROOT_PROPERTY} to the directory you wish to read credentials from.
+ *
  */
 public class FileSystemCredentialFactory implements ICredentialFactory {
+	private static final String FILESYSTEM_ROOT_PROPERTY = "credentialFactory.filesystem.root";
+	private static final String USERNAME_FILE_PROPERTY = "credentialFactory.filesystem.usernamefile";
+	private static final String PASSWORD_FILE_PROPERTY = "credentialFactory.filesystem.passwordfile";
 
-	public static final String FILESYSTEM_ROOT_PROPERTY="credentialFactory.filesystem.root";
-	public static final String USERNAME_FILE_PROPERTY="credentialFactory.filesystem.usernamefile";
-	public static final String PASSWORD_FILE_PROPERTY="credentialFactory.filesystem.passwordfile";
-
-	public static final String USERNAME_FILE_DEFAULT="username";
-	public static final String PASSWORD_FILE_DEFAULT="password";
+	static final String USERNAME_FILE_DEFAULT = "username";
+	static final String PASSWORD_FILE_DEFAULT = "password";
 
 	private Path root;
 	private String usernamefile;
@@ -72,11 +80,10 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 
 	@Override
 	public List<String> getConfiguredAliases() throws Exception{
-		List<String> aliases;
 		try(Stream<Path> stream = Files.list(Paths.get(root.toString()))) {
-			aliases = stream.map(p->p.getFileName().toString())
-					.collect(Collectors.toList());
+			return stream.map(Path::getFileName)
+					.map(Path::toString)
+					.toList();
 		}
-		return aliases;
 	}
 }

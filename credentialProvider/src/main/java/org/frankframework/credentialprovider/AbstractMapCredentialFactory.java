@@ -36,8 +36,8 @@ public abstract class AbstractMapCredentialFactory implements ICredentialFactory
 	private final String usernameSuffixProperty = getPropertyBase() + ".usernameSuffix";
 	private final String passwordSuffixProperty = getPropertyBase() + ".passwordSuffix";
 
-	public static final String USERNAME_SUFFIX_DEFAULT = "/username";
-	public static final String PASSWORD_SUFFIX_DEFAULT = "/password";
+	static final String USERNAME_SUFFIX_DEFAULT = "/username";
+	static final String PASSWORD_SUFFIX_DEFAULT = "/password";
 
 	private String usernameSuffix;
 	private String passwordSuffix;

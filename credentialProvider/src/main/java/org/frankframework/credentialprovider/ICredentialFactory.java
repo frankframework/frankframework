@@ -18,6 +18,13 @@ package org.frankframework.credentialprovider;
 import java.util.Collection;
 import java.util.function.Supplier;
 
+/**
+ * <p>Interface for a CredentialFactory. A CredentialFactory is responsible for providing credentials to the framework.</p>
+ *
+ * <p>Implementations of this interface should be registered in the {@code credentialproperties.properties} file.</p>
+ *
+ * <p>Implementations of this interface should be thread-safe.</p>
+ */
 public interface ICredentialFactory {
 
 	/**
