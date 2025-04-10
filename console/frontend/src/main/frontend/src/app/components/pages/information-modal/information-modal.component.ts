@@ -82,7 +82,7 @@ export class InformationModalComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.serverInfoService.consoleVersion$.subscribe({
         next: (data) => {
-          this.consoleVersion = data;
+          this.consoleVersion = data.version ?? 'null';
         },
       }),
     );

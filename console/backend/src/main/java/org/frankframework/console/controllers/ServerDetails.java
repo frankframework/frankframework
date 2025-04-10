@@ -17,9 +17,6 @@ package org.frankframework.console.controllers;
 
 import jakarta.annotation.security.PermitAll;
 
-import org.frankframework.util.Environment;
-
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -80,17 +77,5 @@ public class ServerDetails {
 	@GetMapping(value = "/health", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getFrankHealth() {
 		return frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.HEALTH));
-	}
-
-	@PermitAll
-	@GetMapping(value = "/version", produces = MediaType.TEXT_PLAIN_VALUE)
-	public ResponseEntity<String> getConsoleVersion() {
-//		String version = Environment.getModuleVersion("frankframework-console-backend");
-		String version = Environment.getModuleVersion("frankframework-webapp"); // exists in war but not in development???
-
-		if (version == null) {
-			return new ResponseEntity<>("version not found", HttpStatus.NOT_FOUND);
-		}
-		return ResponseEntity.ok(version);
 	}
 }
