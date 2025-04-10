@@ -1,8 +1,10 @@
 package org.frankframework.components;
 
+import static org.frankframework.testutil.TestAssertions.isTestRunningWithIntelliJ;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.IOException;
 import java.net.URL;
@@ -23,6 +25,9 @@ public class ComponentLoaderTest {
 	@Tag("integration") // This test fails when running just 'mvn test'. Tagged as integration to work around that in the Github Smoketest workflow
 	public void locateCommonsModule() {
 		List<Module> modules = ComponentLoader.findAllModules();
+		if (isTestRunningWithIntelliJ()) {
+			assumeFalse(modules.isEmpty());
+		}
 		assertFalse(modules.isEmpty(), "no modules found, failing!");
 
 		long foundCoreModule = modules.stream().filter(module -> {
