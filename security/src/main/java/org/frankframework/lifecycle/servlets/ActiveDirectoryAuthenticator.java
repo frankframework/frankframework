@@ -41,11 +41,11 @@ import org.frankframework.util.ClassUtils;
  * </p>
  * <p>
  * This authenticator should be configured by setting its type to 'AD', for example:
- * <pre>
+ * <pre>{@code
  * application.security.console.authentication.type=AD
  * application.security.console.authentication.baseDn=DC=company,DC=org
  * application.security.console.authentication.url=ldap://10.1.2.3
- * </pre>
+ * }</pre>
  * </p>
  *
  * @ff.info Please note that recursive group membership is not supported.

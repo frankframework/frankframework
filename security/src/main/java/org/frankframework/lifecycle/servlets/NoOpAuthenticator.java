@@ -37,9 +37,9 @@ import org.springframework.security.web.access.intercept.RequestAuthorizationCon
  * </p>
  * <p>
  * This authenticator should be configured by setting its type to 'NONE', for example:
- * <pre>
+ * <pre>{@code
  * application.security.console.authentication.type=NONE
- * </pre>
+ * }</pre>
  * </p>
  */
 public class NoOpAuthenticator extends AbstractServletAuthenticator {
