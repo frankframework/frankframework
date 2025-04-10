@@ -54,7 +54,7 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  * <p>Please note that using the {@code credentialFactory.delinea.autoComment.value} is optional. If not set, the feature to comment before getting a secret will
  * not be used. If set, this value will be used as a comment when getting the secret. See
  * <a href="https://updates.thycotic.net/secretserver/restapiguide/TokenAuth/#tag/SecretAccessRequests/operation/SecretAccessRequestsService_CreateViewComment">
-*  Delinea API documentation</a> for more information.</p>
+ * Delinea API documentation</a> for more information.</p>
  *
  * <p>Ideally you'd use the above, but you can also use a different url template, or specify the complete url by using one of the following properties
  * (eg: use {@code apiRootUrl} or {@code apiRootUrlTemplate}, not both. Same for the {@code tokenUrl} and {@code tokenUrlTemplate}):
