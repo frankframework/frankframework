@@ -109,7 +109,7 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 					.requestMatchers(new AntPathRequestMatcher("/**/health"))
 					.access(new WebExpressionAuthorizationManager(healthCheckEndpointExpression))
 			);
-		} else {
+		} else { // When NoOpAutheticator or healthCheckEndpointExpression is empty, you should be able to see the health endpoints.
 			http.authorizeHttpRequests(authorize -> authorize
 					.requestMatchers(new AntPathRequestMatcher("/**/health"))
 					.permitAll()
