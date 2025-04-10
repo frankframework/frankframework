@@ -168,13 +168,17 @@ public class XmlUtils {
 
 	private static TransformerPool getUtilityTransformerPool(Supplier<String> xsltSupplier, String key, boolean omitXmlDeclaration, boolean indent, int xsltVersion) throws ConfigurationException {
 		String fullKey = key + "-" + omitXmlDeclaration + "-" + indent;
-		return utilityTPs.computeIfAbsent(fullKey, ignored -> {
-			try {
-				return TransformerPool.getUtilityInstance(xsltSupplier.get(), xsltVersion);
-			} catch (TransformerConfigurationException te) {
-				throw Lombok.sneakyThrow(new ConfigurationException("Could not create TransformerPool for ["+key+"]", te));
-			}
-		});
+		try {
+			return utilityTPs.computeIfAbsent(fullKey, ignored -> {
+				try {
+					return TransformerPool.getUtilityInstance(xsltSupplier.get(), xsltVersion);
+				} catch (TransformerConfigurationException te) {
+					throw Lombok.sneakyThrow(te);
+				}
+			});
+		} catch (Exception e) {
+			throw new ConfigurationException("Could not create TransformerPool for [" + key + "]", e);
+		}
 	}
 
 	public static TransformerPool getUtilityTransformerPool(String xsltPath, boolean omitXmlDeclaration, boolean indent, int xsltVersion) throws ConfigurationException {
@@ -186,7 +190,7 @@ public class XmlUtils {
 			try {
 				return StreamUtil.resourceToString(resourceURL);
 			} catch (IOException e) {
-				throw Lombok.sneakyThrow(new ConfigurationException("Could not read resource ["+xsltPath+"]"));
+				throw Lombok.sneakyThrow(e);
 			}
 		};
 		return getUtilityTransformerPool(xsltSupplier, xsltPath, omitXmlDeclaration, indent, xsltVersion);
