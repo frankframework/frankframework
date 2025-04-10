@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.0.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.0.1">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -1341,7 +1341,7 @@
  &lt;li&gt;&lt;code&gt;etag.cache.username&lt;/code&gt;&lt;/li&gt;
  &lt;li&gt;&lt;code&gt;etag.cache.password&lt;/code&gt;&lt;/li&gt;
  &lt;li&gt;&lt;code&gt;etag.cache.authalias&lt;/code&gt;&lt;/li&gt;
- &lt;/ul&gt;</xs:documentation>
+ &lt;/ul&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;The OPTIONS verb will automatically be handled by the framework.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
