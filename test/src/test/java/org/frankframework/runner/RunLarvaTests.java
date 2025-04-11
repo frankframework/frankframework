@@ -7,12 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
@@ -157,15 +156,17 @@ public class RunLarvaTests {
 		request.setParameter("loglevel", LarvaLogLevel.SCENARIO_FAILED.getName());
 
 		// Invoke Larva tests
-		Writer writer = new StringWriter();
+		ByteArrayOutputStream boas = new ByteArrayOutputStream();
+		HtmlTagStrippingWriter htmlStrippingWriter = new HtmlTagStrippingWriter(boas, Set.of("form"));
+
 		System.err.printf("Starting Scenarios, should have %d scenarios to run loaded from directory [%s].%n", allScenarioFiles.size(), scenarioRootDir);
 		long start = System.currentTimeMillis();
-		int result = LarvaTool.runScenarios(servletContext, request, writer);
+		int result = LarvaTool.runScenarios(servletContext, request, htmlStrippingWriter);
 		long end = System.currentTimeMillis();
 		System.err.printf("Scenarios executed; duration: %dms%n", end - start);
-		writer.close();
+		boas.close();
 
-		String larvaOutput = stripLarvaOutput(writer.toString());
+		String larvaOutput = boas.toString();
 		assertFalse(result < 0, () -> "Error in LarvaTool execution, result is [%d] instead of 0; output from LarvaTool:%n%n%s".formatted(result, larvaOutput));
 
 		if (result > 0) {
@@ -177,20 +178,4 @@ public class RunLarvaTests {
 		// About 15 or 17 scenarios will fail because the environment is not set up entirely correct. Do not fail the build becausae of that, still catch the extra coverage.
 //		assertEquals(0, result, () -> "Error in LarvaTool scenarios, %d scenarios failed. Duration: %dms; %n%n%s".formatted(result, end - start, larvaOutput));
 	}
-
-	private @Nonnull String stripLarvaOutput(@Nonnull String input) {
-
-		String cleaned = input.replaceAll("(?s)<form.*?</form>", ""); // Strip out the huge forms
-		try {
-			// Now try to strip out remaining HTML tags while preserving the text data
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			HtmlTagStrippingWriter writer = new HtmlTagStrippingWriter(baos);
-			writer.write(cleaned);
-			return baos.toString();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return cleaned;
-		}
-	}
-
 }

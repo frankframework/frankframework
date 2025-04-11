@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
 
 import jakarta.annotation.Nonnull;
 
@@ -12,9 +13,16 @@ import org.apache.commons.text.StringEscapeUtils;
 class HtmlTagStrippingWriter extends Writer {
 	private final OutputStream out;
 	private boolean writingTag = false;
+	private boolean writingTagName = false;
 	private boolean lastCharWasNewLine = false;
 	private boolean writingHtmlEntity = false;
 	private final StringBuffer htmlEntityBuffer = new StringBuffer();
+	private final StringBuffer currentTagBuffer = new StringBuffer();
+	private @Nonnull Set<String> tagsToStripWithContents = Set.of();
+
+	private int previousChar = -1;
+	private String closingTagToFind = null;
+	private boolean skipAllUntilTagClosed = false;
 
 	/**
 	 * Create a new filtered writer.
@@ -26,22 +34,35 @@ class HtmlTagStrippingWriter extends Writer {
 		this.out = out;
 	}
 
+	protected HtmlTagStrippingWriter(@Nonnull OutputStream out, @Nonnull Set<String> tagsToStripWithContents) {
+		this.out = out;
+		this.tagsToStripWithContents = tagsToStripWithContents;
+	}
+
 	@Override
 	public void write(int c) throws IOException {
 		if (c == '<') {
 			writingTag = true;
+			writingTagName = true;
+			currentTagBuffer.setLength(0);
 		} else if (c == '>' && writingTag) {
 			writingTag = false;
-		} else if (writingHtmlEntity) {
+			writingTagName = false;
+			String tagName = currentTagBuffer.toString();
+			if (tagName.equals(closingTagToFind)) {
+				skipAllUntilTagClosed = false;
+			}
+			currentTagBuffer.setLength(0);
+		} else if (writingHtmlEntity && !skipAllUntilTagClosed) {
 			htmlEntityBuffer.append((char) c);
 			if (c == ';') {
 				writingHtmlEntity = false;
 				writeHtmlEntity();
 			}
-		} else if (c == '&') {
+		} else if (c == '&' && !skipAllUntilTagClosed) {
 			writingHtmlEntity = true;
 			htmlEntityBuffer.append((char) c);
-		} else if (!writingTag) {
+		} else if (!writingTag && !skipAllUntilTagClosed) {
 			boolean isNewLine = (c == '\n' || c == '\r');
 			if (isNewLine) {
 				if (!lastCharWasNewLine) {
@@ -51,7 +72,19 @@ class HtmlTagStrippingWriter extends Writer {
 				out.write(c);
 			}
 			lastCharWasNewLine = isNewLine;
+		} else if (writingTagName) {
+			if (!Character.isWhitespace(c)) {
+				currentTagBuffer.append((char) c);
+			} else {
+				writingTagName = false;
+				String tagName = currentTagBuffer.toString();
+				if (tagsToStripWithContents.contains(tagName)) {
+					closingTagToFind = "/" + tagName;
+					skipAllUntilTagClosed = true;
+				}
+			}
 		}
+		previousChar = c;
 	}
 
 	private void writeHtmlEntity() throws IOException {
