@@ -7,20 +7,12 @@ import { Subscription } from 'rxjs';
   templateUrl: './pages-footer.component.html',
 })
 export class PagesFooterComponent implements OnInit, OnDestroy {
-  protected ffVersion = '';
   protected consoleVersion = '';
 
   private readonly serverInfoService: ServerInfoService = inject(ServerInfoService);
   private subscriptions: Subscription = new Subscription();
 
   ngOnInit(): void {
-    this.subscriptions.add(
-      this.serverInfoService.serverInfo$.subscribe({
-        next: (data) => {
-          this.ffVersion = data.framework.version;
-        },
-      }),
-    );
     this.subscriptions.add(
       this.serverInfoService.consoleVersion$.subscribe({
         next: (data) => {
