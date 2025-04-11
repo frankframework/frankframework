@@ -654,7 +654,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 		private static class SenderPipeCheckPoint {
 			private List<String> serviceNames = new ArrayList<>();
 			private int senderIndex = 0;
-			private String name;
+			private final String name;
 
 			public SenderPipeCheckPoint(List<String> serviceNames, String name) {
 				this.serviceNames = serviceNames;

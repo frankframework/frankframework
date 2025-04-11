@@ -41,7 +41,7 @@ import org.frankframework.stream.Message;
 @BindingType(jakarta.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public class NamespaceUriProvider extends AbstractSOAPProvider {
 
-	private ServiceDispatcher sd = ServiceDispatcher.getInstance();
+	private final ServiceDispatcher sd = ServiceDispatcher.getInstance();
 
 	private SOAPMessage soapMessage;
 

@@ -74,6 +74,8 @@ import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 
+import lombok.Getter;
+
 import org.frankframework.configuration.ClassNameRewriter;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.IPullingListener;
@@ -81,7 +83,6 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.larva.queues.Queue;
 import org.frankframework.larva.queues.QueueCreator;
 import org.frankframework.larva.queues.QueueWrapper;
@@ -119,13 +120,14 @@ public class LarvaTool {
 	// dirty solution by Marco de Reus:
 	private String stepOutputFilename = "";
 	private static boolean autoSaveDiffs = false;
-	private final TestConfig config = new TestConfig();
+	private final @Getter TestConfig config = new TestConfig();
 
 	/*
 	 * if allowReadlineSteps is set to true, actual results can be compared in line by using .readline steps.
 	 * Those results cannot be saved to the inline expected value, however.
 	 */
-	protected static final boolean allowReadlineSteps = false;
+	protected final boolean allowReadlineSteps = false;
+
 	protected static int globalTimeoutMillis = AppConstants.getInstance().getInt("larva.timeout", 10_000);
 
 	private static final String TR_STARTING_TAG="<tr>";
@@ -143,12 +145,12 @@ public class LarvaTool {
 	}
 
 	// Invoked by LarvaServlet
-	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
-		runScenarios(getIbisContext(application), request, out, false);
+	public static int runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
+		return runScenarios(getIbisContext(application), request, out, false);
 	}
 
 	// Invoked by the IbisTester class
-	public static void runScenarios(IbisContext ibisContext, HttpServletRequest request, Writer out, boolean silent) {
+	public static int runScenarios(IbisContext ibisContext, HttpServletRequest request, Writer out, boolean silent) {
 		String paramLogLevel = request.getParameter("loglevel");
 		String paramAutoScroll = request.getParameter("autoscroll");
 		String paramMultiThreaded = request.getParameter("multithreaded");
@@ -165,7 +167,7 @@ public class LarvaTool {
 		}
 		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
 		LarvaTool larvaTool = new LarvaTool();
-		larvaTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, paramMultiThreaded, paramExecute, paramWaitBeforeCleanUp, timeout,
+		return larvaTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, paramMultiThreaded, paramExecute, paramWaitBeforeCleanUp, timeout,
 				paramScenariosRootDirectory, out, silent);
 	}
 
@@ -260,15 +262,17 @@ public class LarvaTool {
 				debugMessage("Read one scenario");
 				scenarioFiles = new ArrayList<>();
 				scenarioFiles.add(new File(paramExecute));
+			} else if (paramExecute.equals(currentScenariosRootDirectory)) {
+				debugMessage("Executing all scenario files from root directory '" + currentScenariosRootDirectory + "'");
+				scenarioFiles = allScenarioFiles;
 			} else {
 				debugMessage("Read all scenarios from directory '" + paramExecute + "'");
 				scenarioFiles = readScenarioFiles(appConstants, paramExecute);
 			}
-			boolean evenStep = false;
 			debugMessage("Initialize statistics variables");
 			long startTime = System.currentTimeMillis();
 			debugMessage("Execute scenario('s)");
-			ScenarioRunner scenarioRunner = new ScenarioRunner(this, ibisContext, config, appConstants, evenStep, waitBeforeCleanUp, logLevel);
+			ScenarioRunner scenarioRunner = new ScenarioRunner(this, ibisContext, config, appConstants, waitBeforeCleanUp, logLevel);
 			// If only one scenario is executed, do not use multithreading, because they mostly use the same resources
 			if (paramScenariosRootDirectory != null && !paramScenariosRootDirectory.equals(paramExecute)) {
 				scenarioRunner.setMultipleThreads(false);
@@ -801,6 +805,11 @@ public class LarvaTool {
 		config.writeSilent(message);
 	}
 
+	public void warningMessage(String message) {
+		writeLog("<h2 class='warning'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", LarvaLogLevel.ERROR, true);
+		config.writeSilent(message);
+	}
+
 	public void errorMessage(String message, Exception exception) {
 		errorMessage(message);
 		if (config.isSilent()) return;
@@ -1075,50 +1084,6 @@ public class LarvaTool {
 
 	public boolean closeQueues(Map<String, Queue> queues, Properties properties, String correlationId) {
 		boolean remainingMessagesFound = false;
-		debugMessage("Close jdbc connections");
-		for (Map.Entry<String, Queue> entry : queues.entrySet()) {
-			String name = entry.getKey();
-			if ("org.frankframework.jdbc.FixedQuerySender".equals(properties.get(name + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
-				Queue querySendersInfo = entry.getValue();
-				FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)querySendersInfo.get("prePostQueryFixedQuerySender");
-				if (prePostFixedQuerySender != null) {
-					try (PipeLineSession session = new PipeLineSession()) {
-						/* Check if the preResult and postResult are not equal. If so, then there is a
-						 * database change that has not been read in the scenario.
-						 * So set remainingMessagesFound to true and show the entry.
-						 * (see also executeFixedQuerySenderRead() )
-						 */
-						String preResult = (String)querySendersInfo.get("prePostQueryResult");
-						session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-						String postResult = prePostFixedQuerySender.sendMessageOrThrow(getQueryFromSender(prePostFixedQuerySender), session).asString();
-						if (!preResult.equals(postResult)) {
-							Message message = null;
-							FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
-							try {
-								message = readQueryFixedQuerySender.sendMessageOrThrow(getQueryFromSender(readQueryFixedQuerySender), session);
-							} catch(TimeoutException e) {
-								errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e);
-							} catch(SenderException e) {
-								errorMessage("Could not execute query for '" + name + "': " + e.getMessage(), e);
-							}
-							if (message != null) {
-								wrongPipelineMessage("Found remaining message on '" + name + "'", message);
-							}
-
-							remainingMessagesFound = true;
-
-						}
-						prePostFixedQuerySender.stop();
-					} catch(TimeoutException e) {
-						errorMessage("Time out on close (pre/post) '" + name + "': " + e.getMessage(), e);
-					} catch(IOException | SenderException e) {
-						errorMessage("Could not close (pre/post) '" + name + "': " + e.getMessage(), e);
-					}
-				}
-				FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
-				readQueryFixedQuerySender.stop();
-			}
-		}
 
 		debugMessage("Close autoclosables");
 		for (Map.Entry<String, Queue> entry : queues.entrySet()) {
@@ -1331,80 +1296,6 @@ public class LarvaTool {
 		return result;
 	}
 
-	private int executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, Message fileContent, String correlationId) {
-		int result = RESULT_ERROR;
-
-		Queue querySendersInfo = queues.get(queueName);
-		if (querySendersInfo == null) {
-			errorMessage("Property '" + queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
-			return RESULT_ERROR;
-		}
-		Integer waitBeforeRead = (Integer)querySendersInfo.get("readQueryWaitBeforeRead");
-
-		if (waitBeforeRead != null) {
-			try {
-				Thread.sleep(waitBeforeRead);
-			} catch (InterruptedException ignored) {
-				Thread.currentThread().interrupt();
-			}
-		}
-		boolean newRecordFound = true;
-		FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)querySendersInfo.get("prePostQueryFixedQuerySender");
-		if (prePostFixedQuerySender != null) {
-			try {
-				String preResult = (String)querySendersInfo.get("prePostQueryResult");
-				debugPipelineMessage(stepDisplayName, "Pre result '" + queueName + "':", new Message(preResult));
-				String postResult;
-				try (PipeLineSession session = new PipeLineSession()) {
-					session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-					postResult = messageToString(prePostFixedQuerySender.sendMessageOrThrow(getQueryFromSender(prePostFixedQuerySender), session));
-				}
-				debugPipelineMessage(stepDisplayName, "Post result '" + queueName + "':", postResult);
-				if (preResult.equals(postResult)) {
-					newRecordFound = false;
-				}
-				/* Fill the preResult with postResult, so closeQueues is able to determine if there
-				 * are remaining messages left.
-				 */
-				querySendersInfo.put("prePostQueryResult", postResult);
-			} catch(TimeoutException e) {
-				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e);
-			} catch(SenderException e) {
-				errorMessage("Could not execute query for '" + queueName + "': " + e.getMessage(), e);
-			}
-		}
-		Message message = null;
-		if (newRecordFound) {
-			FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender) querySendersInfo.get("readQueryQueryFixedQuerySender");
-			try (PipeLineSession session = new PipeLineSession()) {
-				session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-				message = readQueryFixedQuerySender.sendMessageOrThrow(getQueryFromSender(readQueryFixedQuerySender), session);
-			} catch(TimeoutException e) {
-				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e);
-			} catch (SenderException e) {
-				errorMessage("Could not execute query for '" + queueName + "': " + e.getMessage(), e);
-			}
-		}
-		if (message == null) {
-			if ("".equals(fileName)) {
-				result = RESULT_OK;
-			} else {
-				errorMessage("Could not read jdbc message (null returned) or no new message found (pre result equals post result)");
-			}
-		} else {
-			if ("".equals(fileName)) {
-				debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
-			} else {
-				result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties);
-			}
-		}
-		return result;
-	}
-
-	public static Message getQueryFromSender(FixedQuerySender sender) {
-		return new Message(sender.getQuery());
-	}
-
 	protected int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Queue> queues, String correlationId) {
 		int stepPassed;
 		String fileName = properties.getProperty(step);
@@ -1441,8 +1332,6 @@ public class LarvaTool {
 			Queue queue = queues.get(queueName);
 			if (queue instanceof QueueWrapper wrap && wrap.get() instanceof IPullingListener) {
 				stepPassed = executePullingListenerRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
-			} else if ("org.frankframework.jdbc.FixedQuerySender".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
-				stepPassed = executeFixedQuerySenderRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, correlationId);
 			} else if ("org.frankframework.http.WebServiceListener".equals(queueCreatorClassname) ||
 					"org.frankframework.receivers.FrankListener".equals(queueCreatorClassname) ||
 					"org.frankframework.receivers.JavaListener".equals(queueCreatorClassname)) {

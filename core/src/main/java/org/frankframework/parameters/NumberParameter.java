@@ -44,7 +44,7 @@ public class NumberParameter extends AbstractParameter {
 	private Number minInclusive;
 	private Number maxInclusive;
 
-	private @Getter DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
+	private final @Getter DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
 
 	public NumberParameter() {
 		setType(ParameterType.INTEGER); // Defaults to integer

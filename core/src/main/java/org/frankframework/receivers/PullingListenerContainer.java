@@ -145,7 +145,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 	private class ControllerTask implements SchedulingAwareRunnable, HasName {
 
-		private @Getter String name;
+		private final @Getter String name;
 
 		@Override
 		public boolean isLongLived() {

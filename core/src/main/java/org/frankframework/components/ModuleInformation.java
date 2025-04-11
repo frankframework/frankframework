@@ -22,11 +22,10 @@ import lombok.Setter;
 
 @Getter
 public class ModuleInformation {
-	private String title;
-	private String version;
-	private String vendor;
-
-	private String jdkVersion;
+	private final String title;
+	private final String version;
+	private final String vendor;
+	private final String jdkVersion;
 
 	// Through technically these are not required, they are used as properties to declare the version.
 	private @Setter String groupId;

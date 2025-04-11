@@ -16,10 +16,11 @@
 
 package org.frankframework.runner;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
 
@@ -36,7 +37,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import io.github.wimdeblauwe.testcontainers.cypress.CypressContainer;
-import io.github.wimdeblauwe.testcontainers.cypress.CypressTest;
 import io.github.wimdeblauwe.testcontainers.cypress.CypressTestResults;
 import io.github.wimdeblauwe.testcontainers.cypress.CypressTestSuite;
 import lombok.extern.log4j.Log4j2;
@@ -73,8 +73,8 @@ public class RunCypressE2eTest {
 		run = springApplication.run();
 		container.start();
 
-		Assertions.assertTrue(run.isRunning());
-		Assertions.assertTrue(container.isRunning());
+		assertTrue(run.isRunning());
+		assertTrue(container.isRunning());
 	}
 
 	@AfterAll
@@ -87,29 +87,25 @@ public class RunCypressE2eTest {
 	}
 
 	@TestFactory
-	@Nonnull
-	List<DynamicContainer> runCypressTests() throws InterruptedException, IOException, TimeoutException {
+	@Nonnull Stream<DynamicContainer> runCypressTests() throws InterruptedException, IOException, TimeoutException {
 		CypressTestResults testResults = container.getTestResults();
 
 		return testResults.getSuites()
 				.stream()
-				.map(this::createContainerFromSuite)
-				.toList();
+				.map(this::createContainerFromSuite);
 	}
 
 	private DynamicContainer createContainerFromSuite(CypressTestSuite suite) {
-		List<DynamicTest> dynamicTests = new ArrayList<>();
-		for (CypressTest test : suite.getTests()) {
-			dynamicTests.add(DynamicTest.dynamicTest(test.getDescription(), () -> {
-				if (!test.isSuccess()) {
-					log.error("{}:\n{}", test.getErrorMessage(), test.getStackTrace());
-				}
-				Assertions.assertTrue(test.isSuccess(), test::getErrorMessage);
-			}));
-		}
+		Stream<DynamicTest> dynamicTests = suite.getTests().stream()
+				.map(test -> DynamicTest.dynamicTest(
+						test.getDescription(), () -> {
+							if (!test.isSuccess()) {
+								log.error("{}:\n{}", test.getErrorMessage(), test.getStackTrace());
+							}
+							assertTrue(test.isSuccess(), test::getErrorMessage);
+						}
+				));
 
 		return DynamicContainer.dynamicContainer(suite.getTitle(), dynamicTests);
 	}
 }
-
-

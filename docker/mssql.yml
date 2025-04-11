@@ -5,9 +5,9 @@ services:
     environment:
       jdbc.dbms.default: mssql
       jdbc.hostname: mssql
+      active.storedProcedureTests: true
 
   mssql:
     image: private.docker.nexus.frankframework.org/ff-test/dbms/mssqlserver
     ports:
       - "1433:1433"
-

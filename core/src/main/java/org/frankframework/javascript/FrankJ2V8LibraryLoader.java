@@ -98,7 +98,7 @@ class FrankJ2V8LibraryLoader {
 			}
 			return true;
 		} catch (UnsatisfiedLinkError e) {
-			if (message.length() == 0) {
+			if (message.isEmpty()) {
 				message.append(DELIMITER);
 			}
 			message.append('\t');

@@ -26,18 +26,17 @@ import lombok.Setter;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
 
-
 @JsonInclude(Include.NON_NULL)
 public class StorageItemDTO {
-	private @Getter String id; //MessageId
-	private @Getter String originalId; //Made up Id?
-	private @Getter String correlationId;
-	private @Getter String type;
-	private @Getter String host;
-	private @Getter Date insertDate;
-	private @Getter Date expiryDate;
-	private @Getter String comment;
-	private @Getter String label;
+	private final @Getter String id; //MessageId
+	private final @Getter String originalId; //Made up Id?
+	private final @Getter String correlationId;
+	private final @Getter String type;
+	private final @Getter String host;
+	private final @Getter Date insertDate;
+	private final @Getter Date expiryDate;
+	private final @Getter String comment;
+	private final @Getter String label;
 
 	// Optional fields (with setters, should only be displayed when !NULL
 	private @Getter @Setter Integer position;

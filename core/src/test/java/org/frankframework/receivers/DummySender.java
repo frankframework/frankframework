@@ -16,7 +16,7 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
 
 public class DummySender implements ICorrelatedSender {
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter String name;
 	private @Getter boolean closed = false;

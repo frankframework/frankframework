@@ -229,7 +229,7 @@ public class StringUtil {
 		StringBuilder sb = new StringBuilder();
 		try {
 			for (Object o : collection) {
-				if (sb.length() > 0) sb.append(", ");
+				if (!sb.isEmpty()) sb.append(", ");
 				sb.append(o);
 			}
 		} catch (ConcurrentModificationException e) {

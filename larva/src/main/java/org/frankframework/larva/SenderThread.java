@@ -34,7 +34,7 @@ public class SenderThread extends Thread {
 
 	private final String name;
 	private final ISender sender;
-	private PipeLineSession session;
+	private final PipeLineSession session;
 	private final Message request;
 	private Message response;
 	private final String correlationId;
@@ -78,36 +78,36 @@ public class SenderThread extends Thread {
 		}
 	}
 
-    public Message getResponse() {
+	public Message getResponse() {
 		log.debug("Getting response for Sender: {}", name);
-        while (this.isAlive()) {
-            try {
-                Thread.sleep(100);
-            } catch(InterruptedException e) {
-            }
-        }
-        return response;
-    }
+		while (this.isAlive()) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+			}
+		}
+		return response;
+	}
 
-    public SenderException getSenderException() {
-        while (this.isAlive()) {
-            try {
-                Thread.sleep(100);
-            } catch(InterruptedException e) {
-            }
-        }
-        return senderException;
-    }
+	public SenderException getSenderException() {
+		while (this.isAlive()) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+			}
+		}
+		return senderException;
+	}
 
-    public TimeoutException getTimeoutException() {
-        while (this.isAlive()) {
-            try {
-                Thread.sleep(100);
-            } catch(InterruptedException e) {
-            }
-        }
-        return timeoutException;
-    }
+	public TimeoutException getTimeoutException() {
+		while (this.isAlive()) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+			}
+		}
+		return timeoutException;
+	}
 
 	static Message throwableToXml(Throwable throwable) {
 		return new Message(throwableToXmlString(throwable));

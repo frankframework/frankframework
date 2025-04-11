@@ -144,7 +144,7 @@ public class WsdlXmlValidator extends SoapValidator {
 					}
 				}
 			}
-			if (sb.length() > 0) {
+			if (!sb.isEmpty()) {
 				sb.append(" ");
 				sbx.append(" ");
 			}
@@ -165,7 +165,7 @@ public class WsdlXmlValidator extends SoapValidator {
 			throw new ConfigurationException("soapBody [" + getSoapBody() + "] exists multiple times, not possible to create schemaLocation from soapBodyNamespace");
 		}
 
-		if (sb.length() > 0) {
+		if (!sb.isEmpty()) {
 			String wsdlSchemaLocation = sb.toString();
 			if (StringUtils.isNotEmpty(getSchemaLocation()) && isAddNamespaceToSchema()) {
 				String formattedSchemaLocation = getFormattedSchemaLocation(getSchemaLocation());
@@ -267,7 +267,7 @@ public class WsdlXmlValidator extends SoapValidator {
 		Collections.sort(schemaLocationList);
 		StringBuilder sb = new StringBuilder();
 		for (SchemaLocation schemaLocationItem : schemaLocationList) {
-			if (sb.length() > 0) {
+			if (!sb.isEmpty()) {
 				sb.append(" ");
 			}
 			sb.append(schemaLocationItem.toString());
