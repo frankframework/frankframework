@@ -48,6 +48,14 @@ jobs:
     strategy:
       fail-fast: false
 
+    services:
+      database:
+        image: ghcr.io/frankframework/dbms/mysql:latest
+        ports: 3307:3307
+        credentials:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
