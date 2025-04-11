@@ -34,8 +34,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import javax.xml.XMLConstants;
@@ -102,7 +100,6 @@ import com.ctc.wstx.stax.WstxInputFactory;
 
 import net.sf.saxon.xpath.XPathFactoryImpl;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
 import org.frankframework.parameters.IParameter;
@@ -145,7 +142,6 @@ public class XmlUtils {
 	private static Boolean autoReload = null;
 	private static Integer bufferSize = null;
 
-	private static final ConcurrentHashMap<String, TransformerPool> utilityTPs = new ConcurrentHashMap<>();
 	public static final String XPATH_GETROOTNODENAME = "name(/node()[position()=last()])";
 
 	public static final XMLEventFactory EVENT_FACTORY = XMLEventFactory.newFactory();
@@ -162,23 +158,6 @@ public class XmlUtils {
 	 */
 	public static Date parseXmlDateTime(String s) {
 		return new GDate(s).getDate();
-	}
-
-	static TransformerPool getUtilityTransformerPool(Supplier<String> xsltSupplier, String key, boolean omitXmlDeclaration, boolean indent, int xsltVersion) throws ConfigurationException {
-		String fullKey=key+"-"+omitXmlDeclaration+"-"+indent;
-		TransformerPool result = utilityTPs.get(fullKey);
-		if (result==null) {
-			try {
-				TransformerPool newtp=TransformerPool.getUtilityInstance(xsltSupplier.get(), xsltVersion);
-				result=utilityTPs.put(fullKey, newtp);
-				if (result==null) {
-					result=newtp;
-				}
-			} catch (TransformerConfigurationException te) {
-				throw new ConfigurationException("Could not create TransformerPool for ["+key+"]", te);
-			}
-		}
-		return result;
 	}
 
 	private static String makeRemoveNamespacesXsltTemplates() {

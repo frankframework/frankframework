@@ -16,16 +16,52 @@
 package org.frankframework.util;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 import javax.xml.transform.Source;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+
+import lombok.Lombok;
 
 import org.frankframework.configuration.ConfigurationException;
 
 public class UtilityTransformerPools {
+	private static final ConcurrentHashMap<String, TransformerPool> utilityTPs = new ConcurrentHashMap<>();
+
+	private static TransformerPool getUtilityTransformerPool(Supplier<String> xsltSupplier, String key, boolean omitXmlDeclaration, boolean indent, int xsltVersion) throws ConfigurationException {
+		String fullKey = key + "-" + omitXmlDeclaration + "-" + indent;
+		try {
+			return utilityTPs.computeIfAbsent(fullKey, ignored -> {
+				try {
+					return TransformerPool.getUtilityInstance(xsltSupplier.get(), xsltVersion);
+				} catch (TransformerConfigurationException te) {
+					throw Lombok.sneakyThrow(te);
+				}
+			});
+		} catch (Exception e) {
+			throw new ConfigurationException("Could not create TransformerPool for [" + key + "]", e);
+		}
+	}
+
+	private static TransformerPool getUtilityTransformerPool(String xsltPath, boolean omitXmlDeclaration, boolean indent, int xsltVersion) throws ConfigurationException {
+		String xslt;
+		URL resourceURL = ClassLoaderUtils.getResourceURL(xsltPath);
+		if (resourceURL == null) {
+			throw new ConfigurationException("Could not find resource ["+xsltPath+"]");
+		}
+		try {
+			xslt = StreamUtil.resourceToString(resourceURL);
+		} catch (IOException e) {
+			throw new ConfigurationException("Could not load classpath resource [" + xsltPath + "]", e);
+		}
+		return getUtilityTransformerPool(() -> (xslt), xsltPath, omitXmlDeclaration, indent, xsltVersion);
+	}
 
 	private static String makeDetectXsltVersionXslt() {
 		return
@@ -41,7 +77,7 @@ public class UtilityTransformerPools {
 
 	public static TransformerPool getDetectXsltVersionTransformerPool() throws TransformerException {
 		try {
-			return XmlUtils.getUtilityTransformerPool(UtilityTransformerPools::makeDetectXsltVersionXslt,"DetectXsltVersion",true,false,2);
+			return getUtilityTransformerPool(UtilityTransformerPools::makeDetectXsltVersionXslt,"DetectXsltVersion",true,false,2);
 		} catch (ConfigurationException e) {
 			throw new TransformerException(e);
 		}
@@ -73,7 +109,7 @@ public class UtilityTransformerPools {
 
 	public static TransformerPool getGetXsltConfigTransformerPool() throws TransformerException {
 		try {
-			return XmlUtils.getUtilityTransformerPool(UtilityTransformerPools::makeGetXsltConfigXslt,"detectXsltOutputType",true,false,2);
+			return getUtilityTransformerPool(UtilityTransformerPools::makeGetXsltConfigXslt,"detectXsltOutputType",true,false,2);
 		} catch (ConfigurationException e) {
 			throw new TransformerException(e);
 		}
@@ -93,7 +129,7 @@ public class UtilityTransformerPools {
 	}
 
 	public static TransformerPool getGetRootNodeNameTransformerPool() throws ConfigurationException {
-		return XmlUtils.getUtilityTransformerPool(()->XmlUtils.createXPathEvaluatorSource(XmlUtils.XPATH_GETROOTNODENAME),"GetRootNodeName",true, false, XmlUtils.DEFAULT_XSLT_VERSION);
+		return getUtilityTransformerPool(()->XmlUtils.createXPathEvaluatorSource(XmlUtils.XPATH_GETROOTNODENAME),"GetRootNodeName",true, false, XmlUtils.DEFAULT_XSLT_VERSION);
 	}
 
 	private static String makeGetRootNamespaceXslt() {
@@ -109,7 +145,7 @@ public class UtilityTransformerPools {
 	}
 
 	public static TransformerPool getGetRootNamespaceTransformerPool() throws ConfigurationException {
-		return XmlUtils.getUtilityTransformerPool(UtilityTransformerPools::makeGetRootNamespaceXslt,"GetRootNamespace",true,false, 2);
+		return getUtilityTransformerPool(UtilityTransformerPools::makeGetRootNamespaceXslt,"GetRootNamespace",true,false, 2);
 	}
 
 	private static String makeAddRootNamespaceXslt(String namespace, boolean omitXmlDeclaration, boolean indent) {
@@ -145,7 +181,7 @@ public class UtilityTransformerPools {
 	}
 
 	public static TransformerPool getAddRootNamespaceTransformerPool(String namespace, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
-		return XmlUtils.getUtilityTransformerPool(()->UtilityTransformerPools.makeAddRootNamespaceXslt(namespace,omitXmlDeclaration,indent),"AddRootNamespace["+namespace+"]",omitXmlDeclaration,indent, 1);
+		return getUtilityTransformerPool(()->UtilityTransformerPools.makeAddRootNamespaceXslt(namespace,omitXmlDeclaration,indent),"AddRootNamespace["+namespace+"]",omitXmlDeclaration,indent, 1);
 	}
 
 	private static String makeChangeRootXslt(String root, boolean omitXmlDeclaration, boolean indent) {
@@ -164,7 +200,7 @@ public class UtilityTransformerPools {
 	}
 
 	public static TransformerPool getChangeRootTransformerPool(String root, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
-		return XmlUtils.getUtilityTransformerPool(()->UtilityTransformerPools.makeChangeRootXslt(root,omitXmlDeclaration,indent),"ChangeRoot["+root+"]",omitXmlDeclaration,indent, 1);
+		return getUtilityTransformerPool(()->UtilityTransformerPools.makeChangeRootXslt(root,omitXmlDeclaration,indent),"ChangeRoot["+root+"]",omitXmlDeclaration,indent, 1);
 	}
 
 	private static String makeRemoveUnusedNamespacesXslt(boolean omitXmlDeclaration, boolean indent) {
@@ -183,7 +219,7 @@ public class UtilityTransformerPools {
 	}
 
 	public static TransformerPool getRemoveUnusedNamespacesTransformerPool(boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
-		return XmlUtils.getUtilityTransformerPool(()->UtilityTransformerPools.makeRemoveUnusedNamespacesXslt(omitXmlDeclaration,indent),"RemoveUnusedNamespaces",omitXmlDeclaration,indent, 1);
+		return getUtilityTransformerPool(()->UtilityTransformerPools.makeRemoveUnusedNamespacesXslt(omitXmlDeclaration,indent),"RemoveUnusedNamespaces",omitXmlDeclaration,indent, 1);
 	}
 
 	private static String makeRemoveUnusedNamespacesXslt2(boolean omitXmlDeclaration, boolean indent) {
@@ -224,7 +260,7 @@ public class UtilityTransformerPools {
 	}
 
 	public static TransformerPool getRemoveUnusedNamespacesXslt2TransformerPool(boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
-		return XmlUtils.getUtilityTransformerPool(()->makeRemoveUnusedNamespacesXslt2(omitXmlDeclaration,indent),"RemoveUnusedNamespacesXslt2",omitXmlDeclaration,indent, 2);
+		return getUtilityTransformerPool(()->makeRemoveUnusedNamespacesXslt2(omitXmlDeclaration,indent),"RemoveUnusedNamespacesXslt2",omitXmlDeclaration,indent, 2);
 	}
 
 	private static String makeCopyOfSelectXslt(String xpath, boolean omitXmlDeclaration, boolean indent) {
@@ -241,7 +277,7 @@ public class UtilityTransformerPools {
 	}
 
 	public static TransformerPool getCopyOfSelectTransformerPool(String xpath, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
-		return XmlUtils.getUtilityTransformerPool(()->UtilityTransformerPools.makeCopyOfSelectXslt(xpath,omitXmlDeclaration,indent),"CopyOfSelect["+xpath+"]",omitXmlDeclaration,indent, 2);
+		return getUtilityTransformerPool(()->UtilityTransformerPools.makeCopyOfSelectXslt(xpath,omitXmlDeclaration,indent),"CopyOfSelect["+xpath+"]",omitXmlDeclaration,indent, 2);
 	}
 
 }
