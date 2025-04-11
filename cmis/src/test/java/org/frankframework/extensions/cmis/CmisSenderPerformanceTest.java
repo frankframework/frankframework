@@ -44,15 +44,12 @@ public class CmisSenderPerformanceTest {
 
 	private final boolean testViaHttpSender = false;
 
-	private final int threadCount[] = {1, 5, 10, 15, 20, 25, 30};
+	private final int[] threadCount = {1, 5, 10, 15, 20, 25, 30};
 
 	private final StringBuilder results = new StringBuilder();
 	private final String separator = "\t";
-
-
-
-	private CmisSender cmisSenders[];
-	private HttpSender httpSenders[];
+	private CmisSender[] cmisSenders;
+	private HttpSender[] httpSenders;
 
 	@BeforeEach
 	public void setUp() throws Exception {

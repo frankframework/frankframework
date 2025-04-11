@@ -176,7 +176,7 @@ public class ServerStatistics extends BusEndpointBase {
 
 				//Configuration specific warnings
 				ConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
-				if(configWarns != null && configWarns.size() > 0) {
+				if(configWarns != null && !configWarns.isEmpty()) {
 					configurationsMap.put("warnings", configWarns.getWarnings());
 				}
 
@@ -198,7 +198,7 @@ public class ServerStatistics extends BusEndpointBase {
 
 		//Global warnings
 		ApplicationWarnings globalConfigWarnings = getBean("applicationWarnings", ApplicationWarnings.class);
-		if (globalConfigWarnings.size()>0) {
+		if (!globalConfigWarnings.isEmpty()) {
 			List<Object> warnings = new ArrayList<>();
 			for (int j=0; j<globalConfigWarnings.size(); j++) {
 				warnings.add(globalConfigWarnings.get(j));

@@ -383,11 +383,11 @@ public class CmisUtils {
 				propertyDefinitionXml.addAttribute("queryable", definition.isQueryable());
 			if(definition.isRequired() != null)
 				propertyDefinitionXml.addAttribute("required", definition.isRequired());
-			if(definition.getDefaultValue() != null && definition.getDefaultValue().size() > 0) {
+			if(definition.getDefaultValue() != null && !definition.getDefaultValue().isEmpty()) {
 				String defValue = definition.getDefaultValue().get(0).toString();
 				propertyDefinitionXml.addAttribute("defaultValue", defValue);
 			}
-			if(definition.getChoices() != null && definition.getChoices().size() > 0) {
+			if(definition.getChoices() != null && !definition.getChoices().isEmpty()) {
 				propertyDefinitionXml.addAttribute("choices", "not implemented");
 			}
 			propertyDefinitionsXml.addSubElement(propertyDefinitionXml);
@@ -657,7 +657,7 @@ public class CmisUtils {
 			StringBuilder types = new StringBuilder();
 
 			for (String permission : mapping.getPermissions()) {
-				if(types.length() > 0)
+				if(!types.isEmpty())
 					types.append(",");
 
 				types.append(permission);

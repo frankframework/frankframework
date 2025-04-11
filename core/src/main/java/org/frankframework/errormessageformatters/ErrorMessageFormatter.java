@@ -57,7 +57,7 @@ import org.frankframework.util.XmlEncodingUtils;
  */
 public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProvider {
 	protected Logger log = LogUtil.getLogger(this);
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	/**
 	 * Format the available parameters into a XML-message.

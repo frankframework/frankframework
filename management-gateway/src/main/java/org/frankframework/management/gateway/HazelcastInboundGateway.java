@@ -59,8 +59,8 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 
 	private HazelcastInstance hzInstance;
 
-	private final String requestTopicName = HazelcastConfig.REQUEST_TOPIC_NAME;
 	private ITopic<Message<?>> requestTopic;
+
 	private JwtVerifier jwtVerifier;
 
 	@Value("${instance.name:}")
@@ -71,7 +71,7 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 		Map<String, String> attributes = Map.of(HazelcastConfig.ATTRIBUTE_APPLICATION_KEY, instanceName);
 		hzInstance = HazelcastConfig.newHazelcastInstance(InstanceType.WORKER, attributes);
 		SpringUtils.registerSingleton(getApplicationContext(), "hazelcastInboundInstance", hzInstance);
-		requestTopic = hzInstance.getTopic(requestTopicName);
+		requestTopic = hzInstance.getTopic(HazelcastConfig.REQUEST_TOPIC_NAME);
 
 		IMap<String, String> config = hzInstance.getMap(HazelcastConfig.FRANK_APPLICATION_CONFIG);
 		jwtVerifier = new JwtVerifier(() -> config.get(HazelcastConfig.FRANK_APPLICATION_KEYSET));
@@ -82,7 +82,7 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 		super.onInit();
 
 		UUID listenerId = requestTopic.addMessageListener(this::handleIncomingMessage);
-		log.debug("created message listener [{}] on topic [{}]", listenerId, requestTopicName);
+		log.debug("created message listener [{}] on topic [{}]", listenerId, HazelcastConfig.REQUEST_TOPIC_NAME);
 	}
 
 	private MessageChannel getRequestChannel(ApplicationContext applicationContext) {
