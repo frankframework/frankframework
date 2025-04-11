@@ -67,7 +67,7 @@ public class NetStorageUtils {
 	 * Computes the HMAC hash of a given byte[]. This is a wrapper over the Mac crypto functions.
 	 * @param data byte[] of content to hash
 	 * @param key secret key to salt the hash
-	 * @param hashType determines which alogirthm to use. The recommendation is to use HMAC-SHA256
+	 * @param hashType determines which algorithm to use. The recommendation is to use HMAC-SHA256
 	 * @return a byte[] presenting the HMAC hash of the source data.
 	 */
 	public static byte[] computeKeyedHash(@Nonnull byte[] data, String key, KeyedHashAlgorithm hashType) {
@@ -83,14 +83,14 @@ public class NetStorageUtils {
 	}
 
 	/**
-	 * Convert Map<String, String> into a name=value query params string.
+	 * Convert {@code Map<String, String>} into a {@code name=value} query params string.
 	 * <p/>
 	 * NB: This uses URLEncoding - not URI Encoding for escaping name and values. This
 	 * shouldn't be an issue for most uses of this function for the Netstorage API, but
 	 * could impact non-ascii usernames in the future.
 	 *
 	 * @param data a Key-Value map
-	 * @return a query params encoded string in the form of name=value&name2=value2...
+	 * @return a query params encoded string in the form of {@code name=value&name2=value2...}
 	 */
 	public static String convertMapAsQueryParams(Map<String, String> data) {
 		final StringBuilder result = new StringBuilder();

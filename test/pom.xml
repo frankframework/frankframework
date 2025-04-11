@@ -157,14 +157,13 @@
 	</dependencies>
 
 	<build>
-		<defaultGoal>package</defaultGoal>
-
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>copy-files</id>
+						<id>copy-frontend-to-TestClasses</id>
 						<phase>process-test-resources</phase>
 						<goals>
 							<goal>copy-resources</goal>
@@ -179,6 +178,7 @@
 									<targetPath>e2e</targetPath>
 								</resource>
 							</resources>
+							<skip>${maven.test.skip}</skip> <!-- A bit hacky way to prevent this execution from running when tests are skipped. -->
 						</configuration>
 					</execution>
 					<execution>
@@ -328,6 +328,13 @@
 					</webResources>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -465,6 +472,39 @@
 								<id>enforce-classpath-lib-ban</id>
 								<configuration>
 									<skip>true</skip>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>codecoverage</id>
+			<build>
+				<plugins>
+					<plugin>
+						<!--
+							JaCoCo aggregation of cross-module coverage.
+							Only needs to be done once in module running at end of the build.
+
+							The test module depends on all other Java code so seems a good place to stick this.
+
+							See also: https://www.baeldung.com/maven-jacoco-multi-module-project
+						-->
+						<groupId>org.jacoco</groupId>
+						<artifactId>jacoco-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<phase>verify</phase>
+								<goals>
+									<goal>report-aggregate</goal>
+								</goals>
+								<configuration>
+									<dataFileIncludes>
+										<dataFileInclude>**/jacoco.exec</dataFileInclude>
+									</dataFileIncludes>
+									<outputDirectory>${project.reporting.outputDirectory}/jacoco-aggregate</outputDirectory>
 								</configuration>
 							</execution>
 						</executions>

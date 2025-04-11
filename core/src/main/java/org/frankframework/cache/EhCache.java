@@ -233,7 +233,7 @@ public class EhCache<V> extends AbstractCacheAdapter<V> {
 	}
 
 	/**
-	 * If <code>true</code>, the cache is stored on disk and survives configuration reloads & JVM restarts.
+	 * If <code>true</code>, the cache is stored on disk and survives configuration reloads and JVM restarts.
 	 * @ff.default false
 	 */
 	public void setDiskPersistent(boolean diskPersistent) {

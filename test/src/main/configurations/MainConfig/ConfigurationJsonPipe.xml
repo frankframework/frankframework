@@ -1,8 +1,8 @@
 <module>
 	<adapter name="JsonPipe">
 		<receiver>
-			<listener className="org.frankframework.receivers.JavaListener"
-				serviceName="ibis4test-JsonPipe" />
+			<listener className="org.frankframework.receivers.FrankListener"
+				name="ibis4test-JsonPipe" />
 		</receiver>
 		<pipeline firstPipe="xml2json">
 			<exits>
@@ -14,8 +14,8 @@
 			</pipe>
 			<pipe name="send"
 				className="org.frankframework.pipes.SenderPipe">
-				<sender className="org.frankframework.senders.IbisJavaSender"
-					serviceName="testtool-JsonPipe" />
+				<sender className="org.frankframework.senders.FrankSender"
+					target="TestTool/JsonPipe" scope="LISTENER" />
 				<forward name="success" path="json2xml" />
 			</pipe>
 			<pipe name="json2xml" className="org.frankframework.pipes.JsonPipe" prettyPrint="true"

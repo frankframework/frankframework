@@ -24,9 +24,9 @@ import jakarta.servlet.ServletException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.boot.Banner.Mode;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
-import org.springframework.boot.Banner.Mode;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
@@ -40,6 +40,8 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.web.context.WebApplicationContext;
 
 import lombok.Setter;
+
+import org.frankframework.lifecycle.servlets.SecuritySettings;
 
 /**
  * Spring Boot entrypoint when running as a normal WAR application.
@@ -109,6 +111,9 @@ public class ConsoleWarInitializer extends SpringBootServletInitializer {
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
 		application.setEnvironment(environment);
 		application.setSources(set);
+
+		// When running the console in a traditional WAR environment this needs to be called.
+		SecuritySettings.setupDefaultSecuritySettings(environment);
 
 		return super.run(application);
 	}

@@ -35,22 +35,50 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.StreamUtil;
 
 /**
+ * Authenticator for in-memory authentication using a YAML file.
+ * <p>
+ * This authenticator can be used to authenticate users using a YAML file.
+ * It is a simple way to authenticate multiple users without using a database or an external authentication provider.
+ * </p>
+ * <p>
+ * The default file is `localUsers.yml`, but this can be overridden by setting the `file` property. It should be located in the classpath.
+ * </p>
+ * <p>The following properties can be set in this file:
+ * <pre>{@code
  * users [array] Set localUsers who can log in on the Frank!
  * users.username [string] Set the username of the user
  * users.password [string] Set the password of the user
  * users.roles [array] Set the roles of the user. Options: `IbisTester`, `IbisDataAdmin`, `IbisAdmin`, `IbisWebService`, `IbisObserver`
- * e.g.
+ * }</pre>
+ * Example YAML content:
  * <pre>{@code
  * users:
  *   - username: Tester
- *     password: ChangeMe!
+ *     password: pencil
  *     roles:
  *       - IbisTester
  *       - IbisObserver
+ *   - username: Admin
+ *     password: 12345
+ *     roles:
+ *       - IbisAdmin
+ * }</pre></p>
+ * <p>
+ * This authenticator should be configured by setting its type to 'YML' or 'YAML', for example:
+ * <pre>{@code
+ * application.security.console.authentication.type=YML
+ * application.security.console.authentication.file=myUsers.yml
  * }</pre>
+ * </p>
  */
 public class YmlFileAuthenticator extends AbstractServletAuthenticator {
 
+	/**
+	 * The YAML file to use for authentication.
+	 * <p>
+	 * This file should be in the classpath and should contain the users to authenticate.
+	 * </p>
+	 */
 	private @Setter String file = "localUsers.yml";
 	private URL ymlFileURL = null;
 

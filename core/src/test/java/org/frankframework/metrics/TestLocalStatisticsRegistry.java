@@ -19,7 +19,9 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLine;
+import org.frankframework.http.HttpSender;
 import org.frankframework.pipes.EchoPipe;
+import org.frankframework.pipes.SenderPipe;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
@@ -58,10 +60,21 @@ public class TestLocalStatisticsRegistry {
 	private <M> void createAndRegisterAdapter() throws ConfigurationException {
 		adapter = configuration.createBean(Adapter.class);
 		adapter.setName("myAdapter");
+
 		PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
+
 		EchoPipe echoPipe = SpringUtils.createBean(adapter, EchoPipe.class);
 		echoPipe.setName("echoPipe");
 		pipeline.addPipe(echoPipe);
+
+		SenderPipe senderPipe = SpringUtils.createBean(adapter, SenderPipe.class);
+		HttpSender httpSender = SpringUtils.createBean(adapter, HttpSender.class);
+		senderPipe.setSender(httpSender);
+		httpSender.setUrl("http://dummy.url");
+		httpSender.setName("httpSender");
+		senderPipe.setName("senderPipe");
+		pipeline.addPipe(senderPipe);
+
 		adapter.setPipeLine(pipeline);
 
 		Receiver<M> receiver = SpringUtils.createBean(adapter, Receiver.class);

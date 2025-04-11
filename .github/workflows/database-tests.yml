@@ -1,0 +1,152 @@
+# This workflow will build a Java project with Maven
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+name: Database Tests
+
+env:
+  PROFILES: frankframework,ci
+  USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'frankframework') && github.actor != 'dependabot[bot]' }}
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  PR_NUMBER: ${{ github.event.number || '' }}
+  MAVEN_GOALS: test
+
+on:
+  push:
+    branches:
+      - master
+      - '[0-9]+.[0-9]+-release'
+      - 'release/[0-9]+.[0-9]+'
+    paths-ignore:
+      - "**.md"
+      - "**.yml"
+      - "**.txt"
+      - "**.png"
+      - "**.toml"
+      - "**.js"
+      - "**.ts"
+      - ".github/**"
+      - "!.github/workflows/database-tests.yml"
+      - "docker/**"
+      - "aws/**"
+      - "filesystem/**"
+      - "larva/**"
+      - "ladybug/**"
+      - "messaging/**"
+      - "test/**"
+      - "example/**"
+  pull_request:
+    branches:
+      - master
+      - '[0-9]+.[0-9]+-release'
+      - 'release/[0-9]+.[0-9]+'
+    paths-ignore:
+      - "**.md"
+      - "**.yml"
+      - "**.txt"
+      - "**.png"
+      - "**.toml"
+      - "**.js"
+      - "**.ts"
+      - ".github/**"
+      - "!.github/workflows/database-tests.yml"
+      - "docker/**"
+      - "aws/**"
+      - "filesystem/**"
+      - "larva/**"
+      - "ladybug/**"
+      - "messaging/**"
+      - "test/**"
+      - "example/**"
+
+jobs:
+  run-database-tests:
+    name: Database Tests
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/frankframework/build/jdk21:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        db: [ 'postgresql', 'mariadb', 'mysql', 'mssqlserver', 'oracle'] # DB2 container fails to start so postponing for future, 'db2' ]
+
+    services:
+      database:
+        image: ghcr.io/frankframework/dbms/${{ matrix.db }}:latest
+        credentials:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+#      with:
+#        # Number of commits to fetch. 0 indicates all history for all branches and tags.
+#        # Required for SonarCloud
+#        fetch-depth: 0
+
+    - name: Create cached directories
+      run: |
+        mkdir -p ~/.m2/repository
+        mkdir -p ~/.sonar/cache
+        mkdir -p console/frontend/src/main/frontend/node_modules
+
+    - name: Restore cached directories
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          ~/.m2/repository
+          ~/.sonar/cache
+          console/frontend/src/main/frontend/node_modules
+        key: project-cache-
+
+    - name: Create Maven settings.xml file
+      if: ${{ env.USE_PROPRIETARY == 'true' }}
+      uses: s4u/maven-settings-action@v2.8.0
+      with:
+        servers: '[{"id": "proprietary", "username": "${{ secrets.CI_USER }}", "password": "${{ secrets.CI_PASS }}"}]'
+
+    - name: Update Maven profiles
+      if: ${{ env.USE_PROPRIETARY == 'true' }}
+      run: |
+        echo "PROFILES=${{ env.PROFILES }},proprietary" >> $GITHUB_ENV
+
+      # Use Maven Wrapper, so we can build with an older version of Maven, see PR #4579.
+    - name: Build with Maven
+      env:
+        CI_SERVICE: GITHUB
+        TZ: Europe/Amsterdam
+        JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SonarCloud
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud
+      # Tests with proprietary dependencies don't work for some reason. Build only core and the modules that Core depends on. If JDBC is moved to another modules that module should be built as well.
+      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -pl core -am -Djunit.includedTags=database -Djdbc.hostname=database
+
+    - name: Store Test Results
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: database-${{ matrix.db }}_Surefire
+        path: ${{ github.workspace }}/*/target/surefire-reports/*
+
+    - name: Print commit sha
+      shell: bash
+      env:
+        COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        echo "sha: $COMMIT_SHA"
+
+    - name: Save cached directories
+      uses: actions/cache/save@v4
+      if: |
+        always() &&
+        (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/[0-9]+.[0-9]+-release'))
+      with:
+        path: |
+          ~/.m2/repository
+          ~/.sonar/cache
+          console/frontend/src/main/frontend/node_modules
+        key: project-cache-${{ github.run_id }}-${{ github.run_attempt }}

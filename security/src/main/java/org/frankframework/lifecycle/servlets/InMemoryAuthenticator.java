@@ -23,8 +23,28 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Setter;
 
+/**
+ * Authenticator for in-memory authentication.
+ * <p>
+ * This authenticator provides a simple way to authenticate using a single username and password stored in memory.
+ * </p>
+ * <p>
+ * This authenticator should be configured by setting its type to 'IN_MEMORY', for example:
+ * <pre>{@code
+ * application.security.console.authentication.type=IN_MEMORY
+ * application.security.console.authentication.username=admin
+ * application.security.console.authentication.password=secret
+ * }</pre>
+ * </p>
+ */
 public class InMemoryAuthenticator extends AbstractServletAuthenticator {
+	/**
+	 * The username to use for authentication.
+	 */
 	private @Setter String username = null;
+	/**
+	 * The password to use for authentication.
+	 */
 	private @Setter String password = null;
 
 	@Override

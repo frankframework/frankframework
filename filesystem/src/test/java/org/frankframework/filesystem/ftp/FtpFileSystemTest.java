@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.filesystem.FileSystemTest;
@@ -17,6 +18,7 @@ import org.frankframework.testutil.junit.LocalFileSystemMock;
 /**
  * @author Niels Meijer
  */
+@Tag("slow")
 public class FtpFileSystemTest extends FileSystemTest<FTPFileRef, FtpFileSystem> {
 
 	private static final String username = "frankframework";

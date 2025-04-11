@@ -65,7 +65,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		NetStorageSender sender = super.getSender(false);
 		sender.setCpCode("cpCode123");
 		sender.setNonce("myNonce");
-		sender.setAccessToken(null); //As long as this is NULL, X-Akamai-ACS-Auth-Sign will be NULL
+		sender.setAccessToken(null); // As long as this is NULL, X-Akamai-ACS-Auth-Sign will be NULL
 		return sender;
 	}
 
@@ -81,7 +81,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	public void duAction() throws Throwable {
 		NetStorageSender sender = getSender();
 		sender.setAction(Action.DU);
-		Message input = new Message("my/special/path/"); //Last slash should be removed!
+		Message input = new Message("my/special/path/"); // Last slash should be removed!
 
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
@@ -104,8 +104,8 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	public void duActionWithRootDir() throws Throwable {
 		NetStorageSender sender = getSender();
 		sender.setAction(Action.DU);
-		sender.setRootDir("/my/special/"); //Start and end with a slash!
-		Message input = new Message("path/"); //Last slash should be removed!
+		sender.setRootDir("/my/special/"); // Start and end with a slash!
+		Message input = new Message("path/"); // Last slash should be removed!
 
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
@@ -230,7 +230,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setHashAlgorithm(HashAlgorithm.MD5);
 		Message input = new Message("my/special/path/");
 
-		sender.addParameter(ParameterBuilder.create().withName("md5").withValue("a1658c154b6af0fba9d93aa86e5be06f")); //Matches response file but uses a different input message
+		sender.addParameter(ParameterBuilder.create().withName("md5").withValue("a1658c154b6af0fba9d93aa86e5be06f")); // Matches response file but uses a different input message
 		sender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("fileMessage"));
 		try {
 			Message file = new Message("<dummyFile>----");
@@ -285,7 +285,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setHashAlgorithm(HashAlgorithm.SHA1);
 		Message input = new Message("my/special/path/");
 
-		sender.addParameter(ParameterBuilder.create().withName("sha1").withValue("51e8bbf813bdbcede109d13b863a58132e80b2e2")); //Matches response file but uses a different input message
+		sender.addParameter(ParameterBuilder.create().withName("sha1").withValue("51e8bbf813bdbcede109d13b863a58132e80b2e2")); // Matches response file but uses a different input message
 		sender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("fileMessage"));
 		try {
 			Message file = new Message("<dummyFile>----");
@@ -339,7 +339,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setAction(Action.UPLOAD);
 		Message input = new Message("my/special/path/");
 
-		//Matches response file but uses a different input message
+		// Matches response file but uses a different input message
 		sender.addParameter(ParameterBuilder.create().withName("sha256").withValue("71d1503b5afba60e212a46e4112fba56503e281224957ad8dee6034ad25f12dc"));
 		sender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("fileMessage"));
 		try {

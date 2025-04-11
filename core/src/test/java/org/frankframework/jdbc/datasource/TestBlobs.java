@@ -175,11 +175,13 @@ public class TestBlobs {
 	}
 
 	@DatabaseTest
+	@Timeout(60)
 	public void testWriteAndReadBlobUsingDbmsSupport15MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		testWriteAndReadBlobUsingDbmsSupport(10000, 1500, databaseTestEnvironment);
 	}
 
 	@DatabaseTest
+	@Timeout(60)
 	public void testWriteAndReadBlobUsingDbmsSupport20MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		assumeTrue(testBigBlobs);
 		assumeFalse(databaseTestEnvironment.getDbmsSupport().getDbms() == Dbms.MARIADB, "MariaDb cannot handle statement packets> 16M");
@@ -187,6 +189,7 @@ public class TestBlobs {
 	}
 
 	@DatabaseTest
+	@Timeout(600)
 	public void testWriteAndReadBlobUsingDbmsSupport100MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		assumeTrue(testBigBlobs);
 		assumeFalse(databaseTestEnvironment.getDbmsSupport().getDbms() == Dbms.MARIADB || databaseTestEnvironment.getDbmsSupport().getDbms() == Dbms.POSTGRESQL, "MariaDb cannot handle statement packets> 16M, PostgreSQL uses ByteArray");
@@ -200,6 +203,7 @@ public class TestBlobs {
 	}
 
 	@DatabaseTest
+	@Timeout(60)
 	public void testWriteAndReadClobUsingDbmsSupport20MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		assumeTrue(testBigBlobs);
 		assumeFalse(databaseTestEnvironment.getDbmsSupport().getDbms() == Dbms.MARIADB, "MariaDb cannot handle statement packets> 16M");
@@ -207,6 +211,7 @@ public class TestBlobs {
 	}
 
 	@DatabaseTest
+	@Timeout(600)
 	public void testWriteAndReadClobUsingDbmsSupport100MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		assumeTrue(testBigBlobs);
 		assumeFalse(databaseTestEnvironment.getDbmsSupport().getDbms() == Dbms.MARIADB || databaseTestEnvironment.getDbmsSupport().getDbms() == Dbms.POSTGRESQL, "MariaDb cannot handle statement packets> 16M, PostgreSQL uses ByteArray");

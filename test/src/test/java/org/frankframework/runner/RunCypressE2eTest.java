@@ -87,14 +87,10 @@ public class RunCypressE2eTest {
 	}
 
 	@TestFactory
+	@Nonnull
 	List<DynamicContainer> runCypressTests() throws InterruptedException, IOException, TimeoutException {
 		CypressTestResults testResults = container.getTestResults();
 
-		return convertToJUnitDynamicTests(testResults);
-	}
-
-	@Nonnull
-	private List<DynamicContainer> convertToJUnitDynamicTests(CypressTestResults testResults) {
 		return testResults.getSuites()
 				.stream()
 				.map(this::createContainerFromSuite)
@@ -108,7 +104,7 @@ public class RunCypressE2eTest {
 				if (!test.isSuccess()) {
 					log.error("{}:\n{}", test.getErrorMessage(), test.getStackTrace());
 				}
-				Assertions.assertTrue(test.isSuccess());
+				Assertions.assertTrue(test.isSuccess(), test::getErrorMessage);
 			}));
 		}
 

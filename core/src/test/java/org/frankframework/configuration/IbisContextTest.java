@@ -16,7 +16,7 @@ import org.springframework.context.support.AbstractApplicationContext;
 import org.frankframework.configuration.classloaders.DummyClassLoader;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.lifecycle.MessageEventListener;
-import org.frankframework.testutil.TestClassLoader;
+import org.frankframework.testutil.NullClassLoader;
 import org.frankframework.util.MessageKeeperMessage;
 
 public class IbisContextTest {
@@ -97,7 +97,7 @@ public class IbisContextTest {
 	public void nullClassLoader() {
 		String configurationName = "ConfigWithNullClassLoader";
 
-		try(IbisTestContext context = new IbisTestContext(configurationName, TestClassLoader.class)) {
+		try(IbisTestContext context = new IbisTestContext(configurationName, NullClassLoader.class)) {
 			context.init(false);
 
 			assertEquals("TestConfiguration", context.getApplicationName());
@@ -114,7 +114,7 @@ public class IbisContextTest {
 	public void configurationThatCannotInitialize() {
 		String configurationName = "ConfigWithTestClassLoader";
 
-		try(IbisContext context = new IbisTestContext(configurationName, TestClassLoader.class)) {
+		try(IbisContext context = new IbisTestContext(configurationName, NullClassLoader.class)) {
 			context.init(false);
 
 			assertEquals("TestConfiguration", context.getApplicationName());

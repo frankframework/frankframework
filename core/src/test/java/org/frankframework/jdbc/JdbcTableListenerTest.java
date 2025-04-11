@@ -932,6 +932,8 @@ public class JdbcTableListenerTest {
 				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',convert(varbinary, 'fBLOB'))", null, new PipeLineSession());
 			} else if (env.getDbmsSupport().getDbms() == Dbms.ORACLE) {
 				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',utl_raw.cast_to_raw('fBLOB'))", null, new PipeLineSession());
+			} else if (env.getDbmsSupport().getDbms() == Dbms.DB2) {
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',CAST('fBLOB' AS BLOB))", null, new PipeLineSession());
 			} else {
 				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message','fBLOB')", null, new PipeLineSession());
 			}

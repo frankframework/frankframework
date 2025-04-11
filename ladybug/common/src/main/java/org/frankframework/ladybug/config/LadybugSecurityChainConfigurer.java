@@ -17,7 +17,6 @@ package org.frankframework.ladybug.config;
 
 import jakarta.servlet.Filter;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -40,7 +39,6 @@ import org.springframework.security.web.context.AbstractSecurityWebApplicationIn
 
 import lombok.Setter;
 
-import org.frankframework.lifecycle.servlets.AuthenticatorUtils;
 import org.frankframework.lifecycle.servlets.IAuthenticator;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
 import org.frankframework.security.config.ServletRegistration;
@@ -62,35 +60,24 @@ import org.frankframework.util.ClassUtils;
  * 	   return registrationBean;
  * }
  * }</pre>
+ * <p>
+ * NB: This configuration has the highest order so the {@link SecurityFilterChain} is used before any other.
+ * </p>
  */
 @Configuration
 @EnableWebSecurity // Enables Spring Security (classpath)
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) // Enables JSR 250 (JAX-RS) annotations
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE) // Higher then the Frank!Console so this `SecurityFilterChain` is used before the Console `SecurityChainConfigurer`.
 public class LadybugSecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware {
 	private static final Logger APPLICATION_LOG = LogManager.getLogger("APPLICATION");
 
 	private @Setter ApplicationContext applicationContext;
 	private @Setter Environment environment;
 
-	private static final String STANDALONE_PROPERTY_PREFIX = "application.security.testtool.authentication.";
-	private static final String CONSOLE_PROPERTY_PREFIX = "application.security.console.authentication.";
-
-	@Bean
-	public IAuthenticator ladybugAuthenticator() {
-		final IAuthenticator authenticator;
-		if(StringUtils.isNotBlank(environment.getProperty(STANDALONE_PROPERTY_PREFIX+"type"))) {
-			authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, STANDALONE_PROPERTY_PREFIX);
-		} else {
-			authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, CONSOLE_PROPERTY_PREFIX);
-		}
-
-		APPLICATION_LOG.info("Securing Ladybug TestTool using {}", ClassUtils.classNameOf(authenticator));
-		return authenticator;
-	}
-
 	@Bean
 	public SecurityFilterChain createLadybugSecurityChain(HttpSecurity http, IAuthenticator ladybugAuthenticator) throws Exception {
+		APPLICATION_LOG.info("Securing Ladybug TestTool using {}", ClassUtils.classNameOf(ladybugAuthenticator));
+
 		ladybugAuthenticator.registerServlet(getServletConfig("ladybugApiServletBean"));
 		ladybugAuthenticator.registerServlet(getServletConfig("ladybugFrontendServletBean"));
 		ladybugAuthenticator.registerServlet(getServletConfig("testtoolServletBean"));

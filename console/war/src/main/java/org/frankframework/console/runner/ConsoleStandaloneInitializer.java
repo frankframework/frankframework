@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2024 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.context.event.ApplicationFailedEvent;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.ApplicationListener;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Spring Boot entrypoint or main class defined in the pom.xml when packaging using the 'spring-boot:repackage' goal.
@@ -66,10 +68,15 @@ public class ConsoleStandaloneInitializer {
 	 * When the application fails to start up, trigger a shutdown.
 	 * If this is not done the SpringBoot Tomcat instance will continue to work without any application deployed to it.
 	 */
+	@Log4j2
 	private static class FailedInitializationMonitor implements ApplicationListener<ApplicationFailedEvent> {
 
 		@Override
 		public void onApplicationEvent(ApplicationFailedEvent event) {
+			if (event.getException() != null) {
+				log.fatal("unable to start application", event.getException());
+			}
+
 			System.exit(1); //Terminate the JVM
 		}
 

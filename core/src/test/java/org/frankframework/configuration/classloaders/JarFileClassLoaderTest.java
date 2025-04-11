@@ -102,6 +102,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void loadCustomClassUsingForName() throws Exception {
 		AbstractClassLoader classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
 		classLoader.setBasePath(".");
@@ -120,6 +121,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void loadCustomClassUsingLoadClass() throws Exception {
 		AbstractClassLoader classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
 		classLoader.setBasePath(".");

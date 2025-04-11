@@ -404,8 +404,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 
 	/**
-	 * The <code>process</code> method does the processing of a message.<br/>
-	 * It retrieves the first pipe to execute from the <code>firstPipe</code field,
+	 * The {@code process} method does the processing of a message.<br/>
+	 * It retrieves the first pipe to execute from the {@code firstPipe} field,
 	 * the call results in a PipRunResult, containing the next pipe to activate.
 	 * While processing the process method keeps statistics.
 	 * @param message The message as received from the Listener

@@ -144,7 +144,7 @@ public class SoapValidator extends Json2XmlValidator {
 		this.soapBody = soapBody;
 	}
 
-	/** Identical to the <code>soapBody</code> attribute except that it's used for the output message instead of the input message. For more information see <a href=\"#note1\">note 1</a> */
+	/** Identical to the <code>soapBody</code> attribute except that it's used for the output message instead of the input message. */
 	public void setOutputSoapBody(String outputSoapBody) {
 		this.outputSoapBody = outputSoapBody;
 	}

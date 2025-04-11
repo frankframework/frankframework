@@ -59,6 +59,8 @@ import org.frankframework.util.XmlUtils;
 /**
  * ESB (Enterprise Service Bus) extension of JmsListener.
  *
+ * {@inheritDoc}
+ *
  * @author  Peter Leeuwenburgh
  */
 @Category(Category.Type.NN_SPECIAL)
@@ -77,7 +79,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	private final Map<String, String> xPathLogMap = new HashMap<>();
 
 	public enum MessageProtocol {
-		/** Fire & Forget protocol */
+		/** Fire &amp; Forget protocol */
 		FF,
 		/** Request-Reply protocol */
 		RR

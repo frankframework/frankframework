@@ -45,9 +45,9 @@ public class NetStorageCmsSignerTest {
 		assertEquals("w8k5LZTRNKubFvWIqUEgcTrDZhPCo48PeHX45zxSlBU=", sign);
 	}
 
+	// Validate hash compute method
 	@Test
 	public void netStorageUtilsComputeSignHeader() {
-		//Validate hash compute method
 		byte[] data = "myDummyString".getBytes();
 		byte[] binaryData = NetStorageUtils.computeKeyedHash(data, "accessToken", KeyedHashAlgorithm.HMACSHA256);
 		byte[] base64Result = Base64.encodeBase64Chunked(binaryData);

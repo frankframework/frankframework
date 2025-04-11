@@ -27,7 +27,9 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.util.SpringUtils;
 
 /**
- * ESB (Enterprise Service Bus) extension of JmsSender.
+ * ESB (Enterprise Service Bus) extension of @{codeJmsSender}.
+ *
+ * @{inheritDoc}
  *
  * @author  Peter Leeuwenburgh
  */
@@ -35,7 +37,7 @@ import org.frankframework.util.SpringUtils;
 public class EsbJmsSender extends JmsSender {
 
 	public enum MessageProtocol {
-		/** Fire & Forget protocol */
+		/** Fire &amp; Forget protocol */
 		FF,
 		/** Request-Reply protocol */
 		RR

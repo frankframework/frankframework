@@ -3,6 +3,7 @@ package org.frankframework.filesystem.smb;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.filesystem.FileSystemTest;
@@ -19,6 +20,7 @@ import org.frankframework.testutil.junit.LocalFileSystemMock;
  * Or read the docker/README.MD and checkout the ci-images repo and proceed inside directory filesystems/samba2
  * Note: 4 unit tests fail, and 45 passed with the Docker images.
  */
+@Tag("slow")
 public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileSystem> {
 	private static final boolean runWithDocker = false;
 	private final String username = "frankframework";

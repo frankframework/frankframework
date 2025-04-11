@@ -83,7 +83,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 
 		if(basePath == null) {
 			int i = configurationFile.lastIndexOf('/');
-			if (i != -1) { //Configuration file contains a path, derive the BasePath from the path
+			if (i != -1) { // Configuration file contains a path, derive the BasePath from the path
 				setBasePath(configurationFile.substring(0, i + 1));
 				setConfigurationFile(configurationFile.substring(i + 1));
 				log.info("derived basepath [{}] from configurationFile [{}]", getBasePath(), configurationFile);
@@ -175,14 +175,14 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 			return null;
 		}
 
-		//It will and should never find files that are in the META-INF folder in this classloader, so always traverse to it's parent classloader
+		// It will and should never find files that are in the META-INF folder in this classloader, so always traverse to it's parent classloader
 		if(name.startsWith("META-INF/")) {
 			return getParent().getResource(name);
 		}
 
-		//The configurationFile (Configuration.xml) should only be found in the current and not it's parent classloader
+		// The configurationFile (Configuration.xml) should only be found in the current and not it's parent classloader
 		if(getBasePath() != null && name.equals(getConfigurationFile())) {
-			return getResource(name, false); //Search for the resource in the local ClassLoader only
+			return getResource(name, false); // Search for the resource in the local ClassLoader only
 		}
 
 		return getResource(name, true);
@@ -192,7 +192,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	 * @param name of the file to search for in the current local classpath
 	 * @return the URL of the file if found in the ClassLoader or <code>null</code> when the file cannot be found
 	 */
-	public abstract URL getLocalResource(String name);
+	protected abstract URL getLocalResource(String name);
 
 	/**
 	 * In case of the {@link #getResources(String)} we only want the local paths and not the parent path
@@ -204,14 +204,18 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 		URL url = null;
 		String normalizedFilename = FilenameUtils.normalize(name, true);
 		if(normalizedFilename == null) {
-			return null; //if the path after normalization equals null, return null
+			return null; // If the path after normalization equals null, return null
+		}
+		// Resources retrieved from ClassLoaders should never start with a leading slash
+		if (normalizedFilename.startsWith("/")) {
+			normalizedFilename = normalizedFilename.substring(1);
 		}
 
 		url = getLocalResource(normalizedFilename);
 		if(log.isTraceEnabled())
 			log.trace("[{}] {} local resource [{}]", getConfigurationName(), url == null ? "failed to retrieve" : "retrieved", normalizedFilename);
 
-		//URL without basepath cannot be found, follow parent hierarchy
+		// URL without basepath cannot be found, follow parent hierarchy
 		if(url == null && useParent) {
 			url = getParent().getResource(name);
 			if(log.isTraceEnabled())
@@ -223,20 +227,20 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 
 	@Override
 	public final Enumeration<URL> getResources(String name) throws IOException {
-		//It will and should never find files that are in the META-INF folder in this classloader, so always traverse to it's parent
-		if(name.startsWith("META-INF/services")) {
+		// It will and should never find files that are in the META-INF folder in this classloader, so always traverse to it's parent
+		if (name.startsWith("META-INF/services")) {
 			return getParent().getResources(name);
 		}
 
 		Vector<URL> urls = new Vector<>();
 
-		//Search for the file in the local classpath only
+		// Search for the file in the local classpath only
 		URL localResource = getResource(name, false);
 		if (localResource != null) {
 			urls.add(localResource);
 		}
 
-		//Add all files found in the classpath's parent
+		// Add all files found in the classpath's parent
 		urls.addAll(Collections.list(getParent().getResources(name)));
 
 		if(log.isTraceEnabled()) log.trace("[{}] retrieved files [{}] found urls {}", getConfigurationName(), name, urls);
@@ -250,9 +254,9 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 			throw new IllegalArgumentException("classname to load may not be null");
 		}
 
-		//This is required because when using an external WebAppClassloader (ClassPath) inner classes may be retrieved from the wrong ClassLoader
+		// This is required because when using an external WebAppClassloader (ClassPath) inner classes may be retrieved from the wrong ClassLoader
 		int dollar = name.lastIndexOf("$");
-		if(dollar > 0) {
+		if (dollar > 0) {
 			String baseClass = name.substring(0, dollar);
 			if(loadedCustomClasses.contains(baseClass)) {
 				return defineClass(name, resolve);

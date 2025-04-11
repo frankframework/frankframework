@@ -41,9 +41,10 @@ import org.frankframework.util.StreamUtil;
  *
  * <p>See {@link JmsSender} for configuration</p>
  *
+ * {@inheritDoc}
+ *
  * @author Ricardo van Holst
  */
-
 public class IMSSender extends MQSender {
 	// IMS Header length
 	private static final int IIH_HEADERSIZE = 88;

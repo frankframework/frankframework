@@ -29,12 +29,12 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.19.1</version>
+			<version>1.20.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.33.0</version>
+			<version>6.34.0</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
@@ -72,7 +72,7 @@
 		<dependency>
 			<groupId>com.github.mwiede</groupId>
 			<artifactId>jsch</artifactId>
-			<version>0.2.24</version>
+			<version>0.2.25</version>
 		</dependency>
 
 		<!-- Test scoped and provided dependencies -->
