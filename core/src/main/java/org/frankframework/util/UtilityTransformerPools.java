@@ -17,13 +17,9 @@ package org.frankframework.util;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-import javax.xml.transform.Source;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
@@ -32,6 +28,11 @@ import lombok.Lombok;
 import org.frankframework.configuration.ConfigurationException;
 
 public class UtilityTransformerPools {
+
+	/** JsonPipe transformation xslt classpath resource */
+	private static final String XML_TO_JSON_XSLT = "/xml/xsl/xml2json.xsl";
+
+	/** Map with utility pools so they can be reused */
 	private static final ConcurrentHashMap<String, TransformerPool> utilityTPs = new ConcurrentHashMap<>();
 
 	private static TransformerPool getUtilityTransformerPool(Supplier<String> xsltSupplier, String key, boolean omitXmlDeclaration, boolean indent, int xsltVersion) throws ConfigurationException {
@@ -49,18 +50,20 @@ public class UtilityTransformerPools {
 		}
 	}
 
-	private static TransformerPool getUtilityTransformerPool(String xsltPath, boolean omitXmlDeclaration, boolean indent, int xsltVersion) throws ConfigurationException {
-		String xslt;
+	private static String getXsltFromClasspath(String xsltPath) {
 		URL resourceURL = ClassLoaderUtils.getResourceURL(xsltPath);
 		if (resourceURL == null) {
-			throw new ConfigurationException("Could not find resource ["+xsltPath+"]");
+			throw new IllegalStateException("Could not find classpath resource [" + xsltPath + "]");
 		}
 		try {
-			xslt = StreamUtil.resourceToString(resourceURL);
+			return StreamUtil.resourceToString(resourceURL);
 		} catch (IOException e) {
-			throw new ConfigurationException("Could not load classpath resource [" + xsltPath + "]", e);
+			throw new IllegalStateException("Could not load classpath resource [" + xsltPath + "]", e);
 		}
-		return getUtilityTransformerPool(() -> (xslt), xsltPath, omitXmlDeclaration, indent, xsltVersion);
+	}
+
+	public static TransformerPool getXml2JsonTransformerPool() throws ConfigurationException {
+		return getUtilityTransformerPool(() -> getXsltFromClasspath(XML_TO_JSON_XSLT), "xml2json", true, true, 2);
 	}
 
 	private static String makeDetectXsltVersionXslt() {
@@ -113,19 +116,6 @@ public class UtilityTransformerPools {
 		} catch (ConfigurationException e) {
 			throw new TransformerException(e);
 		}
-	}
-
-	public static Map<String,String> getXsltConfig(Source source) throws TransformerException, IOException {
-		TransformerPool tp = getGetXsltConfigTransformerPool();
-		String metadataString = tp.transformToString(source);
-		Map<String,String> result = new LinkedHashMap<>();
-		for (final String s : StringUtil.split(metadataString, ";")) {
-			List<String> kv = StringUtil.split(s, "=");
-			String key = kv.get(0);
-			String value = kv.get(1);
-			result.put(key, value);
-		}
-		return result;
 	}
 
 	public static TransformerPool getGetRootNodeNameTransformerPool() throws ConfigurationException {

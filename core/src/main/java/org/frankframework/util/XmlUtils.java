@@ -567,7 +567,7 @@ public class XmlUtils {
 		}
 		int version = xsltVersion == 0 ? DEFAULT_XSLT_VERSION : xsltVersion;
 
-		//xslt version 1 ignores namespaces by default, setting this to true will generate a different non-xslt1-parsable xslt: xslt1 'Can not convert #RTREEFRAG to a NodeList'
+		// Xslt version 1 ignores namespaces by default, setting this to true will generate a different non-xslt1-parsable xslt: xslt1 'Can not convert #RTREEFRAG to a NodeList'
 		if(version == 1 && ignoreNamespaces) {
 			ignoreNamespaces = false;
 		}
