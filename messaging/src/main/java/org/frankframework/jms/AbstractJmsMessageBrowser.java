@@ -18,6 +18,7 @@ package org.frankframework.jms;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import jakarta.jms.JMSException;
@@ -37,6 +38,7 @@ import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
+import org.frankframework.core.MessageBrowserField;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.StringUtil;
 
@@ -167,7 +169,6 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 		return (J)doBrowse("JMSMessageID", messageId);
 	}
 
-
 	protected jakarta.jms.Message doBrowse(Map<String,String> selectors) throws ListenerException {
 		QueueSession session=null;
 		QueueBrowser queueBrowser=null;
@@ -220,6 +221,21 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 			}
 			closeSession(session);
 		}
+	}
+
+	@Override
+	public List<MessageBrowserField> getStorageFields() {
+		return List.of(
+			new MessageBrowserField(null, "id", "Storage ID", "string"),
+			new MessageBrowserField(null, "originalId", "Original ID", "string"),
+			new MessageBrowserField(null, "correlationId", "Correlation ID", "string"),
+			new MessageBrowserField(null, "type", "Type", "string"),
+			new MessageBrowserField(null, "host", "Host", "string"),
+			new MessageBrowserField(null, "insertDate", "Timestamp", "date"),
+			new MessageBrowserField(null, "expiryDate", "Expires", "date"),
+			new MessageBrowserField(null, "comment", "Comment", "string"),
+			new MessageBrowserField(null, "label", "Label", "string")
+		);
 	}
 
 	protected String getCombinedSelector(String messageId) {

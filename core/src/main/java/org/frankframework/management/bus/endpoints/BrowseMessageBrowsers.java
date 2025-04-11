@@ -18,6 +18,7 @@ package org.frankframework.management.bus.endpoints;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,6 +26,9 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
+
+import org.frankframework.core.MessageBrowserField;
+
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -218,7 +222,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		return new JsonMessage(dto);
 	}
 
-	@ActionSelector(BusAction.STATUS)
+	@ActionSelector(BusAction.UPLOAD)
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public void resend(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, BusMessageUtils.ALL_CONFIGS_KEY);
@@ -291,6 +295,31 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		} else {
 			throw new BusException("it is not allowed to move messages from ["+processState+"] to ["+targetState+"]");
 		}
+	}
+
+	@ActionSelector(BusAction.STATUS)
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	public Message<String> getBrowserFields(Message<?> message) {
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, BusMessageUtils.ALL_CONFIGS_KEY);
+		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
+		Adapter adapter = getAdapterByName(configurationName, adapterName);
+		String pipeName = BusMessageUtils.getHeader(message, HEADER_PIPE_NAME_KEY);
+		String receiverName = BusMessageUtils.getHeader(message, HEADER_RECEIVER_NAME_KEY);
+
+		IMessageBrowser<?> storage;
+		StorageMetadataDTO storageMetadata;
+		if(StringUtils.isNotEmpty(pipeName)) {
+			storage = getStorageFromPipe(adapter, pipeName);
+		} else if(StringUtils.isNotEmpty(receiverName)) {
+			ProcessState processState = BusMessageUtils.getEnumHeader(message, HEADER_PROCESSSTATE_KEY, ProcessState.class);
+			Receiver<?> receiver = getReceiverByName(adapter, receiverName);
+			storage = receiver.getMessageBrowser(processState);
+		} else {
+			throw new BusException("no StorageSource provided");
+		}
+
+		storageMetadata = new StorageMetadataDTO(storage.getStorageFields());
+		return new JsonMessage(storageMetadata);
 	}
 
 	private IMessageBrowser<?> getStorageFromPipe(Adapter adapter, String pipeName) {
@@ -388,4 +417,6 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 		return result;
 	}
+
+	private record StorageMetadataDTO(List<MessageBrowserField> fields) {}
 }

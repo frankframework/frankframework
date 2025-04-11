@@ -390,14 +390,14 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 
 		public String fieldValue(String field) throws ListenerException {
 			try {
-				return StringUtils.isNotEmpty(field)?rs.getString(field):null;
+				return StringUtils.isNotEmpty(field) ? rs.getString(field) : null;
 			} catch (SQLException e) {
 				throw new ListenerException(e);
 			}
 		}
 		public Date dateFieldValue(String field) throws ListenerException {
 			try {
-				return StringUtils.isNotEmpty(field)?rs.getTimestamp(field):null;
+				return StringUtils.isNotEmpty(field) ? rs.getTimestamp(field) : null;
 			} catch (SQLException e) {
 				throw new ListenerException(e);
 			}
