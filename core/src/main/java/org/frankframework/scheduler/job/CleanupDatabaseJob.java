@@ -56,7 +56,7 @@ import org.frankframework.util.SpringUtils;
  * Find all MessageLogs and Lockers in the current configuration and removes database
  * entries which have surpassed their corresponding {@link JdbcTransactionalStorage#getExpiryDateField() MessageLog's ExpiryDateField}. 
  * 
- * {@inheritDoc}
+ * {@inheritClassDoc}
  * 
  * @ff.info This is a default job that can be controlled with the property {@literal cleanup.database.active} and {@literal cleanup.database.cron}.
  */

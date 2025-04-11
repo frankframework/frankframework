@@ -30,7 +30,7 @@ import org.frankframework.util.EnumUtils;
 /**
  * Job which can stop/start adapters and receivers.
  * 
- * {@inheritDoc}
+ * {@inheritClassDoc}
  */
 public class ActionJob extends AbstractJobDef {
 	private @Getter String configurationName;

@@ -45,7 +45,7 @@ import org.frankframework.util.StringUtil;
  * @param <M> the payload message type as used by IMessageBrowser.
  * @param <J> the physical JMS message to carry the payload.
  *
- * {@inheritDoc}
+ * {@inheritClassDoc}
  *
  * @author  Johan Verrips
  */

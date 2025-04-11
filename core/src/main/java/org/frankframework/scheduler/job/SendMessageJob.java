@@ -38,7 +38,7 @@ import org.frankframework.util.UUIDUtil;
  * Scheduled job to send messages to a {@link FrankListener}.
  * Message may be {@literal null} (or empty).
  * 
- * {@inheritDoc}
+ * {@inheritClassDoc}
  */
 public class SendMessageJob extends AbstractJobDef {
 	private @Setter IbisLocalSender localSender = null;

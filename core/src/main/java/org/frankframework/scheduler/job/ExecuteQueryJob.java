@@ -33,7 +33,7 @@ import org.frankframework.util.SpringUtils;
 /**
  * Scheduled job to execute JDBC Queries using a {@link FixedQuerySender}.
  * 
- * {@inheritDoc}
+ * {@inheritClassDoc}
  */
 public class ExecuteQueryJob extends AbstractJobDef {
 	private FixedQuerySender qs = null;

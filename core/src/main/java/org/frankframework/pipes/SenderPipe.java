@@ -34,7 +34,7 @@ import org.frankframework.util.AppConstants;
 /**
  * Sends a message using an {@link ISender sender} and optionally receives a reply from the same sender.
  *
- * {@inheritDoc}
+ * {@inheritClassDoc}
  */
 @Category(Category.Type.BASIC)
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ENDPOINT)

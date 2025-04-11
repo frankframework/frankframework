@@ -18,7 +18,7 @@ package org.frankframework.extensions.sap;
 import org.frankframework.extensions.sap.jco3.IdocSenderImpl;
 
 /**
- * {@inheritDoc}
+ * {@inheritClassDoc}
  */
 public class IdocSender extends IdocSenderImpl {
 }

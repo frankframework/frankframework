@@ -42,7 +42,7 @@ import org.frankframework.filesystem.LocalFileSystem;
  *
  * </p>
  *
- * {@inheritDoc}
+ * {@inheritClassDoc}
  */
 @Category(Category.Type.BASIC)
 public class DirectoryListener extends AbstractFileSystemListener<Path, LocalFileSystem> {

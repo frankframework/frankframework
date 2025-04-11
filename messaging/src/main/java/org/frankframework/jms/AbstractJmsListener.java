@@ -59,7 +59,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.DateFormatUtils;
 
 /**
- * {@inheritDoc}
+ * {@inheritClassDoc}
  *
  * @author  Gerrit van Brakel
  * @since   4.9

@@ -51,7 +51,7 @@ import org.frankframework.util.TransformerPool.OutputType;
 /**
  * Sends a message using an asynchronous {@link ISender sender} and receives a reply from a {@link ICorrelatedPullingListener listener}.
  * 
- * {@inheritDoc}
+ * {@inheritClassDoc}
  */
 @Category(Category.Type.BASIC)
 @EnterpriseIntegrationPattern(Type.ENDPOINT)

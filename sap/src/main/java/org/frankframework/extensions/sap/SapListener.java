@@ -18,7 +18,7 @@ package org.frankframework.extensions.sap;
 import org.frankframework.extensions.sap.jco3.SapListenerImpl;
 
 /**
- * {@inheritDoc}
+ * {@inheritClassDoc}
  */
 public class SapListener extends SapListenerImpl {
 }

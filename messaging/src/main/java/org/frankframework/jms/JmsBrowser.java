@@ -19,7 +19,7 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.receivers.RawMessageWrapper;
 
 /**
- * @{inheritDoc}
+ * @{inheritClassDoc}
  *
  * @author  Gerrit van Brakel
  */

@@ -73,7 +73,7 @@ import org.frankframework.util.RunStateEnquiring;
  * <code>jakarta.jms.TextMessage</code>s <br/><br/>
  * </p>
  *
- * {@inheritDoc}
+ * {@inheritClassDoc}
  *
  * @author Gerrit van Brakel
  * @since 4.0.1

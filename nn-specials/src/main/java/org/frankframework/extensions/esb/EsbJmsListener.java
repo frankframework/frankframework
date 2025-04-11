@@ -59,7 +59,7 @@ import org.frankframework.util.XmlUtils;
 /**
  * ESB (Enterprise Service Bus) extension of JmsListener.
  *
- * {@inheritDoc}
+ * {@inheritClassDoc}
  *
  * @author  Peter Leeuwenburgh
  */

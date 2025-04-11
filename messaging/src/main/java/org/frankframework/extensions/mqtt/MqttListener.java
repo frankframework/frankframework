@@ -44,7 +44,7 @@ import org.frankframework.util.RunState;
  *
  * Links to <a href="https://www.eclipse.org/paho/files/javadoc" target="_blank">https://www.eclipse.org/paho/files/javadoc</a> are opened in a new window/tab because the response from eclipse.org contains header X-Frame-Options:SAMEORIGIN which will make the browser refuse to open the link inside this frame.
  *
- * {@inheritDoc}
+ * {@inheritClassDoc}
  *
  * @author Jaco de Groot
  * @author Niels Meijer

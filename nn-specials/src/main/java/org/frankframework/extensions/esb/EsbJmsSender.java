@@ -29,7 +29,7 @@ import org.frankframework.util.SpringUtils;
 /**
  * ESB (Enterprise Service Bus) extension of @{codeJmsSender}.
  *
- * @{inheritDoc}
+ * @{inheritClassDoc}
  *
  * @author  Peter Leeuwenburgh
  */
