@@ -29,13 +29,14 @@
         Up since:
         <strong><span appToDate [time]="uptime"></span></strong> (<span appTimeSince [time]="uptime"></span>), timezone:
         <strong>{{ serverTimeService.timezone }}</strong>
+        @if (consoleVersion !== framework.version) {
+          <br />
+          Console version: <strong>{{ consoleVersion }}</strong>
+        }
       </p>
     } @else {
       <h3 class="text-center">Server info not (yet) available.</h3>
     }
-    <ng-template #information>
-      <h3 class="text-center">Server info not (yet) available.</h3>
-    </ng-template>
   </div>
   <div class="modal-footer">
     <span class="pull-left p-xxs">
