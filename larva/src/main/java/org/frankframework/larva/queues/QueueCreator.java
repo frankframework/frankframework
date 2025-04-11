@@ -15,34 +15,20 @@
  */
 package org.frankframework.larva.queues;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.core.IConfigurable;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
-import org.frankframework.core.TimeoutException;
-import org.frankframework.jdbc.AbstractJdbcQuerySender;
-import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.TestConfig;
-import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.senders.FrankSender;
-import org.frankframework.stream.Message;
 
 @Log4j2
 public class QueueCreator {
@@ -59,8 +45,6 @@ public class QueueCreator {
 	public Map<String, Queue> openQueues(String scenarioDirectory, Properties properties, IbisContext ibisContext, String correlationId) {
 		Map<String, Queue> queues = new HashMap<>();
 		debugMessage("Get all queue names");
-
-		List<String> jdbcFixedQuerySenders = new ArrayList<>();
 
 		try {
 			// Use DirectoryClassLoader to make it possible to retrieve resources (such as styleSheetName) relative to the scenarioDirectory.
@@ -83,32 +67,21 @@ public class QueueCreator {
 					className = "org.frankframework.jms.PullingJmsListener";
 				}
 
-				if ("org.frankframework.jdbc.FixedQuerySender".equals(className) && !jdbcFixedQuerySenders.contains(queueName)) {
-					debugMessage("Adding jdbcFixedQuerySender queue: " + queueName);
-					jdbcFixedQuerySenders.add(queueName);
-				} else {
-					Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
-
-					// Deprecation warning
-					if (queueProperties.containsValue("requestTimeOut") || queueProperties.containsValue("responseTimeOut")) {
-						errorMessage("properties " + queueName + ".requestTimeOut/" + queueName + ".responseTimeOut have been replaced with " + queueName + ".timeout");
-					}
-
-					IConfigurable configurable = QueueUtils.createInstance(ibisContext, directoryClassLoader, className);
-					log.debug("created FrankElement [{}]", configurable);
-					if (configurable instanceof FrankSender frankSender) {
-						frankSender.setIbisManager(ibisContext.getIbisManager());
-					}
-					Queue queue = QueueWrapper.create(configurable, queueProperties, config.getTimeout(), correlationId);
-
-					queue.configure();
-					queue.open();
-					queues.put(queueName, queue);
-					debugMessage("Opened [" + className + "] '" + queueName + "'");
+				IConfigurable configurable = QueueUtils.createInstance(ibisContext, directoryClassLoader, className);
+				log.debug("created FrankElement [{}]", configurable);
+				if (configurable instanceof FrankSender frankSender) {
+					frankSender.setIbisManager(ibisContext.getIbisManager());
 				}
+
+				Properties queueProperties = handleDeprecations(QueueUtils.getSubProperties(properties, queueName), queueName);
+				Queue queue = QueueWrapper.create(configurable, queueProperties, config.getTimeout(), correlationId);
+
+				queue.configure();
+				queue.open();
+				queues.put(queueName, queue);
+				debugMessage("Opened [" + className + "] '" + queueName + "'");
 			}
 
-			createFixedQuerySenders(queues, jdbcFixedQuerySenders, properties, ibisContext, correlationId);
 		} catch (Exception e) {
 			log.warn("Error occurred while creating queues", e);
 			closeQueues(queues, properties, null);
@@ -119,144 +92,23 @@ public class QueueCreator {
 		return queues;
 	}
 
-	private void createFixedQuerySenders(Map<String, Queue> queues, List<String> jdbcFixedQuerySenders, Properties properties, IbisContext ibisContext, String correlationId) {
-		debugMessage("Initialize jdbc fixed query senders");
-		Iterator<String> iterator = jdbcFixedQuerySenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String name = iterator.next();
-
-			Properties queueProperties = QueueUtils.getSubProperties(properties, name);
-			boolean allFound = false;
-			String preDelete = "";
-			int preDeleteIndex = 1;
-			String getBlobSmartString = (String)properties.get(name + ".getBlobSmart");
-			if(StringUtils.isNotEmpty(getBlobSmartString)) {
-				queueProperties.setProperty("blobSmartGet", getBlobSmartString);
-			}
-
-			Queue querySendersInfo = new QuerySenderQueue();
-			while (!allFound && queues != null) {
-				preDelete = (String)properties.get(name + ".preDel" + preDeleteIndex);
-				if (preDelete != null) {
-					FixedQuerySender deleteQuerySender = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-					deleteQuerySender.setName("Test Tool pre delete query sender");
-
-					try {
-						QueueUtils.invokeSetters(deleteQuerySender, queueProperties);
-						deleteQuerySender.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
-						deleteQuerySender.setQuery("delete from " + preDelete);
-
-						deleteQuerySender.configure();
-						deleteQuerySender.start();
-						try (PipeLineSession session = new PipeLineSession()){
-							deleteQuerySender.sendMessageOrThrow(LarvaTool.getQueryFromSender(deleteQuerySender), session).close();
-						} finally {
-							deleteQuerySender.stop();
-						}
-					} catch(ConfigurationException e) {
-						closeQueues(queues, properties, correlationId);
-						queues = null;
-						errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
-					} catch(TimeoutException e) {
-						closeQueues(queues, properties, correlationId);
-						queues = null;
-						errorMessage("Time out on execute pre delete query for '" + name + "': " + e.getMessage(), e);
-					} catch(Exception e) {
-						closeQueues(queues, properties, correlationId);
-						queues = null;
-						errorMessage("Could not execute pre delete query for '" + name + "': " + e.getMessage(), e);
-					}
-					preDeleteIndex++;
-				} else {
-					allFound = true;
-				}
-			}
-			if (queues != null) {
-				String prePostQuery = (String)properties.get(name + ".prePostQuery");
-				if (prePostQuery != null) {
-					FixedQuerySender prePostFixedQuerySender = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-					prePostFixedQuerySender.setName("Test Tool query sender");
-					try {
-						QueueUtils.invokeSetters(prePostFixedQuerySender, queueProperties);
-						prePostFixedQuerySender.setQuery(prePostQuery);
-						prePostFixedQuerySender.setQueryType(AbstractJdbcQuerySender.QueryType.SELECT);
-						prePostFixedQuerySender.configure();
-					} catch(Exception e) {
-						closeQueues(queues, properties, correlationId);
-						queues = null;
-						errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
-					}
-					if (queues != null) {
-						try {
-							prePostFixedQuerySender.start();
-						} catch(LifecycleException e) {
-							closeQueues(queues, properties, correlationId);
-							queues = null;
-							errorMessage("Could not open (pre/post) '" + name + "': " + e.getMessage(), e);
-						}
-					}
-					if (queues != null) {
-						try (PipeLineSession session = new PipeLineSession()) {
-							session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-							String result;
-							try (Message message = prePostFixedQuerySender.sendMessageOrThrow(LarvaTool.getQueryFromSender(prePostFixedQuerySender), session)) {
-								result = message.asString();
-							}
-							querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
-							querySendersInfo.put("prePostQueryResult", result);
-						} catch(TimeoutException e) {
-							closeQueues(queues, properties, correlationId);
-							queues = null;
-							errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e);
-						} catch(IOException | SenderException e) {
-							closeQueues(queues, properties, correlationId);
-							queues = null;
-							errorMessage("Could not execute query for '" + name + "': " + e.getMessage(), e);
-						}
-					}
-				}
-			}
-			if (queues != null) {
-				String readQuery = (String)properties.get(name + ".readQuery");
-				if (readQuery != null) {
-					FixedQuerySender readQueryFixedQuerySender = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-					readQueryFixedQuerySender.setName("Test Tool query sender");
-
-					try {
-						readQueryFixedQuerySender.setQueryType(AbstractJdbcQuerySender.QueryType.SELECT);
-						QueueUtils.invokeSetters(readQueryFixedQuerySender, queueProperties);
-						readQueryFixedQuerySender.setQuery(readQuery);
-						readQueryFixedQuerySender.configure();
-					} catch(Exception e) {
-						closeQueues(queues, properties, correlationId);
-						queues = null;
-						errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
-					}
-					if (queues != null) {
-						try {
-							readQueryFixedQuerySender.start();
-							querySendersInfo.put("readQueryQueryFixedQuerySender", readQueryFixedQuerySender);
-						} catch(LifecycleException e) {
-							closeQueues(queues, properties, correlationId);
-							queues = null;
-							errorMessage("Could not open '" + name + "': " + e.getMessage(), e);
-						}
-					}
-				}
-			}
-			if (queues != null) {
-				String waitBeforeRead = (String)properties.get(name + ".waitBeforeRead");
-				if (waitBeforeRead != null) {
-					try {
-						querySendersInfo.put("readQueryWaitBeforeRead", Integer.valueOf(waitBeforeRead));
-					} catch(NumberFormatException e) {
-						errorMessage("Value of '" + name + ".waitBeforeRead' not a number: " + e.getMessage(), e);
-					}
-				}
-				queues.put(name, querySendersInfo);
-				debugMessage("Opened jdbc connection '" + name + "'");
-			}
+	private Properties handleDeprecations(Properties queueProperties, String keyBase) {
+		if (queueProperties.containsKey("requestTimeOut") || queueProperties.containsKey("responseTimeOut")) {
+			warningMessage("Deprecation Warning: properties " + keyBase + ".requestTimeOut/" + keyBase + ".responseTimeOut have been replaced with " + keyBase + ".timeout");
 		}
+		if (queueProperties.containsKey("getBlobSmart")) {
+			warningMessage("Deprecation Warning: property " + keyBase + ".getBlobSmart has been replaced with " + keyBase + ".blobSmartGet");
+			String blobSmart = ""+queueProperties.remove("getBlobSmart");
+			queueProperties.setProperty("blobSmartGet", blobSmart);
+		}
+		if (queueProperties.containsKey("preDel1")) {
+			warningMessage("Removal Warning: property " + keyBase + ".preDel<index> has been removed without replacement");
+		}
+		if (queueProperties.containsKey("prePostQuery")) {
+			warningMessage("Removal Warning: property " + keyBase + ".prePostQuery has been removed without replacement");
+		}
+
+		return queueProperties;
 	}
 
 	private void closeQueues(Map<String, Queue> queues, Properties properties, String correlationId) {
@@ -267,8 +119,8 @@ public class QueueCreator {
 		testTool.debugMessage(message);
 	}
 
-	private void errorMessage(String message) {
-		testTool.errorMessage(message);
+	private void warningMessage(String message) {
+		testTool.warningMessage(message);
 	}
 
 	private void errorMessage(String message, Exception e) {
