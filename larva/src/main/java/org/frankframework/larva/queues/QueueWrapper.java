@@ -36,6 +36,8 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.http.WebServiceListener;
+import org.frankframework.jdbc.AbstractJdbcQuerySender.QueryType;
+import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.larva.FileListener;
 import org.frankframework.larva.FileSender;
 import org.frankframework.larva.LarvaTool;
@@ -50,6 +52,7 @@ import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DomBuilderException;
+import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 
@@ -59,6 +62,8 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	private static final String PIPELINESESSION_KEY = "session";
 	private static final String MESSAGE_HANDLER_KEY = "listenerMessageHandler";
 	private static final String SENDER_THREAD_KEY = "defaultSenderThread";
+	private static final String JDBC_INPUT_MESSAGE = "jdbcInputMessage";
+
 	private final String queueKey;
 
 	private QueueWrapper(IConfigurable configurable) {
@@ -115,13 +120,22 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 				getMessageHandler().setTimeout(defaultTimeout);
 			}
 
-			QueueUtils.invokeSetters(getMessageHandler(), properties); //set timeout properties
+			QueueUtils.invokeSetters(getMessageHandler(), properties); // Set timeout properties
 		}
 
 		String convertException = properties.getProperty(CONVERT_MESSAGE_TO_EXCEPTION_KEY);
 		put(CONVERT_MESSAGE_TO_EXCEPTION_KEY, Boolean.valueOf(convertException));
 
 		mapParameters(properties);
+
+		// Keeps properties backwards compatible
+		if (get() instanceof FixedQuerySender jdbcSender) {
+			String queryType = properties.getProperty("queryType", "select");
+			jdbcSender.setQueryType(EnumUtils.parse(QueryType.class, queryType));
+
+			String readQuery = properties.getProperty("readQuery");
+			jdbcSender.setQuery(readQuery);
+		}
 
 		return this;
 	}
@@ -218,14 +232,16 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 		return (IConfigurable) get(queueKey);
 	}
 
-	public static QueueWrapper create(IConfigurable configurable, Properties queueProperties, int defaultTimeout, String correlationId) { //TODO use correlationId
+	public static QueueWrapper create(IConfigurable configurable, Properties queueProperties, int defaultTimeout, String correlationId) {
 		QueueUtils.invokeSetters(configurable, queueProperties);
-		return create(configurable).invokeSetters(defaultTimeout, queueProperties);
+		QueueWrapper wrapper = create(configurable).invokeSetters(defaultTimeout, queueProperties);
+		wrapper.getSession().put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+		return wrapper;
 	}
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if(!(get() instanceof WebServiceListener)) {//requires a configuration as parent
+		if(!(get() instanceof WebServiceListener)) {// Requires a configuration as parent
 			get().configure();
 		}
 	}
@@ -271,6 +287,11 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			return LarvaTool.RESULT_OK;
 		}
 		if (get() instanceof ISender sender) {
+			if (sender instanceof FixedQuerySender) {
+				getSession().put(JDBC_INPUT_MESSAGE, fileContent);
+				return LarvaTool.RESULT_OK;
+			}
+
 			Boolean convertExceptionToMessage = (Boolean) get(CONVERT_MESSAGE_TO_EXCEPTION_KEY);
 			PipeLineSession session = getSession();
 			SenderThread senderThread = new SenderThread(sender, fileContent, session, convertExceptionToMessage, correlationId);
@@ -310,7 +331,13 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 		if (get() instanceof XsltProviderListener xsltProviderListener) {
 			return xsltProviderListener.getResult();
 		}
-		if (get() instanceof ISender) {
+		if (get() instanceof ISender sender) {
+			if (sender instanceof FixedQuerySender) {
+				try (Message input = getSession().getMessage(JDBC_INPUT_MESSAGE)) { // Uses the provided message or NULL
+					return sender.sendMessageOrThrow(input, getSession());
+				}
+			}
+
 			SenderThread senderThread = (SenderThread) remove(SENDER_THREAD_KEY);
 			removeSenderThread();
 			if (senderThread == null) {
