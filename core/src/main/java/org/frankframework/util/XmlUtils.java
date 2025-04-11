@@ -182,18 +182,17 @@ public class XmlUtils {
 	}
 
 	public static TransformerPool getUtilityTransformerPool(String xsltPath, boolean omitXmlDeclaration, boolean indent, int xsltVersion) throws ConfigurationException {
-		Supplier<String> xsltSupplier = () -> {
-			URL resourceURL = ClassLoaderUtils.getResourceURL(xsltPath);
-			if (resourceURL == null) {
-				throw Lombok.sneakyThrow(new ConfigurationException("Could not find resource ["+xsltPath+"]"));
-			}
-			try {
-				return StreamUtil.resourceToString(resourceURL);
-			} catch (IOException e) {
-				throw Lombok.sneakyThrow(e);
-			}
-		};
-		return getUtilityTransformerPool(xsltSupplier, xsltPath, omitXmlDeclaration, indent, xsltVersion);
+		String xslt;
+		URL resourceURL = ClassLoaderUtils.getResourceURL(xsltPath);
+		if (resourceURL == null) {
+			throw new ConfigurationException("Could not find resource ["+xsltPath+"]");
+		}
+		try {
+			xslt = StreamUtil.resourceToString(resourceURL);
+		} catch (IOException e) {
+			throw new ConfigurationException("Could not load classpath resource [" + xsltPath + "]", e);
+		}
+		return getUtilityTransformerPool(() -> (xslt), xsltPath, omitXmlDeclaration, indent, xsltVersion);
 	}
 
 	private static String makeDetectXsltVersionXslt() {
