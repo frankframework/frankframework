@@ -1,4 +1,4 @@
-FROM tomcat:10.1.39-jre21
+FROM tomcat:10.1.40-jre21
 ARG GID=2000
 ARG UID=2000
 

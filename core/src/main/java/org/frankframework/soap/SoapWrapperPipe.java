@@ -36,6 +36,7 @@ import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.TransformerPool;
+import org.frankframework.util.UtilityTransformerPools;
 import org.frankframework.util.XmlUtils;
 
 import lombok.Getter;
@@ -125,13 +126,13 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 			soapBodyTp = TransformerPool.configureStyleSheetTransformer(this, getSoapBodyStyleSheet(), 0);
 		}
 		if (isRemoveUnusedOutputNamespaces() && !isRemoveOutputNamespaces()) {
-			removeUnusedOutputNamespacesTp = XmlUtils.getRemoveUnusedNamespacesXslt2TransformerPool(true, false);
+			removeUnusedOutputNamespacesTp = UtilityTransformerPools.getRemoveUnusedNamespacesXslt2TransformerPool(true, false);
 		}
 		if (StringUtils.isNotEmpty(getOutputNamespace())) {
-			outputNamespaceTp = XmlUtils.getAddRootNamespaceTransformerPool(getOutputNamespace(), true, false);
+			outputNamespaceTp = UtilityTransformerPools.getAddRootNamespaceTransformerPool(getOutputNamespace(), true, false);
 		}
 		if (StringUtils.isNotEmpty(getRoot())) {
-			rootTp = XmlUtils.getChangeRootTransformerPool(getRoot(), true, false);
+			rootTp = UtilityTransformerPools.getChangeRootTransformerPool(getRoot(), true, false);
 		}
 		if (StringUtils.isNotEmpty(getWssAuthAlias()) || StringUtils.isNotEmpty(getWssUserName())) {
 			wssCredentialFactory = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());

@@ -35,6 +35,7 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
+import org.frankframework.util.UtilityTransformerPools;
 import org.frankframework.util.XmlUtils;
 
 
@@ -84,7 +85,7 @@ public class XmlSwitch extends AbstractPipe {
 		if (StringUtils.isNotEmpty(getXpathExpression()) || StringUtils.isNotEmpty(getStyleSheetName())) {
 			transformerPool = TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), OutputType.TEXT, false, getParameterList(), getXsltVersion());
 		} else {
-			transformerPool = XmlUtils.getGetRootNodeNameTransformerPool();
+			transformerPool = UtilityTransformerPools.getGetRootNodeNameTransformerPool();
 		}
 
 		registerEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);

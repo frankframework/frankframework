@@ -7,7 +7,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<revision>9.1.0-SNAPSHOT</revision>
+		<revision>9.2.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>17</maven.compiler.target>
 		<maven.compiler.source>17</maven.compiler.source>
@@ -494,7 +494,7 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-text</artifactId>
-				<version>1.13.0</version>
+				<version>1.13.1</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-codec</groupId>
