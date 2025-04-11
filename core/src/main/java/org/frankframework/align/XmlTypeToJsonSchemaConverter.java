@@ -57,14 +57,14 @@ public class XmlTypeToJsonSchemaConverter  {
 	private static final String XML_SCHEMA_NS = "http://www.w3.org/2001/XMLSchema";
 	private static final String DEFINITIONS_PATH = "#/definitions/";
 	public static final String SCHEMA_DEFINITION_PATH = "#/components/schemas/";
+	private static final String ATTRIBUTE_PREFIX = "@";
+	private static final String MIXED_CONTENT_LABEL = "#text";
 
 	private final List<XSModel> models;
 	private final boolean skipArrayElementContainers;
 	private final boolean skipRootElement;
 	private final String schemaLocation;
 	private final String definitionsPath;
-	private final String attributePrefix="@";
-	private final String mixedContentLabel="#text";
 
 	private enum SimpleType {
 		STRING("string"),
@@ -79,7 +79,6 @@ public class XmlTypeToJsonSchemaConverter  {
 		SimpleType(String type) {
 			this.type = type;
 		}
-
 	}
 
 	public XmlTypeToJsonSchemaConverter(List<XSModel> models, boolean skipArrayElementContainers, boolean skipRootElement, String schemaLocation) {
@@ -313,7 +312,7 @@ public class XmlTypeToJsonSchemaConverter  {
 
 		XSObjectList attributeUses = complexTypeDefinition.getAttributeUses();
 
-		buildObject(builder, null, attributeUses, mixedContentLabel, complexTypeDefinition.getBaseType());
+		buildObject(builder, null, attributeUses, MIXED_CONTENT_LABEL, complexTypeDefinition.getBaseType());
 	}
 
 	private void handleParticleForOneOf(JsonObjectBuilder builder, XSParticle particle) {
@@ -506,7 +505,7 @@ public class XmlTypeToJsonSchemaConverter  {
 			for (int i=0; i< attributeUses.getLength(); i++) {
 				XSAttributeUse attributeUse = (XSAttributeUse)attributeUses.get(i);
 				XSAttributeDeclaration attributeDecl = attributeUse.getAttrDeclaration();
-				propertiesBuilder.add(attributePrefix+attributeDecl.getName(), getDefinitionWithReferences(attributeDecl.getTypeDefinition()));
+				propertiesBuilder.add(ATTRIBUTE_PREFIX +attributeDecl.getName(), getDefinitionWithReferences(attributeDecl.getTypeDefinition()));
 			}
 		}
 		if (textAttribute!=null && ((attributeUses!=null && attributeUses.getLength()>0) || (particles!=null && particles.getLength()>0))) {

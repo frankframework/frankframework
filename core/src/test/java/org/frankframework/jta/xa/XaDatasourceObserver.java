@@ -11,11 +11,11 @@ import javax.sql.XADataSource;
 
 public class XaDatasourceObserver implements XADataSource{
 
-	private XADataSource target;
-	private Function<XAConnection,XAConnection> connectionObservationProvider;
+	private final XADataSource target;
+	private final Function<XAConnection,XAConnection> connectionObservationProvider;
 
 	public XaDatasourceObserver(XADataSource target) {
-		this(target, c -> new XaConnectionObserver(c));
+		this(target, XaConnectionObserver::new);
 	}
 
 	public XaDatasourceObserver(XADataSource target, Function<XAConnection,XAConnection> connectionObservationProvider) {

@@ -34,7 +34,7 @@ public class SenderThread extends Thread {
 
 	private final String name;
 	private final ISender sender;
-	private PipeLineSession session;
+	private final PipeLineSession session;
 	private final Message request;
 	private Message response;
 	private final String correlationId;

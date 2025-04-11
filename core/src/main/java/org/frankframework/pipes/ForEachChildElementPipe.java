@@ -159,7 +159,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		private final ItemCallback callback;
 
 		private XmlWriter xmlWriter;
-		private Exception rootException=null;
+
 		private StopReason stopReason=null;
 
 		public ItemCallbackCallingHandler(ItemCallback callback) {
@@ -215,8 +215,9 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 		private void checkInterrupt() throws SAXException {
 			if (Thread.currentThread().isInterrupted()) {
-				rootException = new InterruptedException("Thread has been interrupted");
+				Exception rootException = new InterruptedException("Thread has been interrupted");
 				rootException.fillInStackTrace();
+
 				throw new SAXException("Thread has been interrupted");
 			}
 		}

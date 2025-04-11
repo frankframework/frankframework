@@ -73,16 +73,16 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 
 	private static final boolean DEBUG = false;
 
+	private static final String DUMMY_DOMAIN = "dummyDomain.org";
+
 	private final String username;
 	private final String password;
 	private final InetAddress host = InetAddress.getByName("localhost");
 	private final int port;
 	private final String shareName = "home";
-	private final String domain = "dummyDomain.org";
 	private final String license;
 	private final Path testDirectory; // path in which the tests are executed
 	private final ServerConfiguration serverConfig;
-
 
 	public enum FileSystemType {
 		SMB1, SMB2, FTP
@@ -202,7 +202,7 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 		cifsConfig.setSMBBindAddress(host);
 		cifsConfig.setTcpipSMBPort(port);
 		cifsConfig.setServerName(host.getHostName());
-		cifsConfig.setDomainName(domain);
+		cifsConfig.setDomainName(DUMMY_DOMAIN);
 		cifsConfig.setSocketTimeout(0);
 		cifsConfig.setSessionDebugFlags(DEBUG ? EnumSet.allOf(SMBSrvSession.Dbg.class) : EnumSet.noneOf(SMBSrvSession.Dbg.class));
 	}

@@ -7,7 +7,7 @@ import lombok.Setter;
 
 public class KeystoreOwner implements HasKeystore {
 
-	private @Getter ClassLoader configurationClassLoader = getClass().getClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = getClass().getClassLoader();
 	private @Getter @Setter String keystore;
 	private @Getter @Setter String keystoreAuthAlias;
 	private @Getter @Setter String keystorePassword;

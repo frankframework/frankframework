@@ -24,7 +24,7 @@ import org.frankframework.documentbuilder.json.JsonWriter;
 
 public class JsonDocumentBuilder extends JsonNodeBuilder implements IDocumentBuilder {
 
-	private JsonEventHandler handler;
+	private final JsonEventHandler handler;
 	private Writer writer;
 
 	public JsonDocumentBuilder() throws SAXException {

@@ -33,15 +33,15 @@ public enum Dbms {
 	MARIADB("MariaDB", MariaDbDbmsSupport.class),
 	POSTGRESQL("PostgreSQL", PostgresqlDbmsSupport.class);
 
-	private @Getter String key;
-	private @Getter String productName;
-	private Class<? extends IDbmsSupport> dbmsSupportClass;
+	private final @Getter String key;
+	private final @Getter String productName;
+	private final Class<? extends IDbmsSupport> dbmsSupportClass;
 
-	private Dbms(String key, Class<? extends IDbmsSupport> dbmsSupportClass) {
+	Dbms(String key, Class<? extends IDbmsSupport> dbmsSupportClass) {
 		this(key, key, dbmsSupportClass);
 	}
 
-	private Dbms(String key, String productName, Class<? extends IDbmsSupport> dbmsSupportClass) {
+	Dbms(String key, String productName, Class<? extends IDbmsSupport> dbmsSupportClass) {
 		this.key = key;
 		this.productName = productName;
 		this.dbmsSupportClass = dbmsSupportClass;
