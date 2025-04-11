@@ -175,7 +175,7 @@ public class RunLarvaTests {
 			System.err.printf("All Larva tests succeeded in %dms%n", end - start);
 		}
 
-		// About 15 or 17 scenarios will fail because the environment is not set up entirely correct. Do not fail the build becausae of that, still catch the extra coverage.
+		// About 15 to 18 scenarios will fail because the environment is not set up entirely correct. Do not fail the build because of that, still get the extra coverage.
 //		assertEquals(0, result, () -> "Error in LarvaTool scenarios, %d scenarios failed. Duration: %dms; %n%n%s".formatted(result, end - start, larvaOutput));
 	}
 }

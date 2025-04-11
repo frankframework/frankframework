@@ -20,7 +20,6 @@ class HtmlTagStrippingWriter extends Writer {
 	private final StringBuffer currentTagBuffer = new StringBuffer();
 	private @Nonnull Set<String> tagsToStripWithContents = Set.of();
 
-	private int previousChar = -1;
 	private String closingTagToFind = null;
 	private boolean skipAllUntilTagClosed = false;
 
@@ -84,7 +83,6 @@ class HtmlTagStrippingWriter extends Writer {
 				}
 			}
 		}
-		previousChar = c;
 	}
 
 	private void writeHtmlEntity() throws IOException {
