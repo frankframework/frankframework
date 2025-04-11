@@ -49,6 +49,8 @@ import org.springframework.http.MediaType;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.FrankElement;
@@ -64,8 +66,6 @@ import org.frankframework.xml.ClassLoaderURIResolver;
 import org.frankframework.xml.NonResolvingURIResolver;
 import org.frankframework.xml.ThreadConnectingFilter;
 import org.frankframework.xml.TransformerFilter;
-
-import lombok.Getter;
 
 /**
  * Pool of transformers. As of IBIS 4.2.e the Templates object is used to

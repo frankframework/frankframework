@@ -47,6 +47,7 @@ import org.frankframework.documentbuilder.IDocumentBuilder;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.TransformerPool;
+import org.frankframework.util.XmlUtils;
 
 /**
  * JSON is not aware of the element order. This pipe performs a <strong>best effort</strong> JSON to XML transformation.
@@ -93,7 +94,7 @@ public class JsonPipe extends FixedForwardPipe {
 			addXmlRootElement = dir == Direction.JSON2XML;
 		}
 		if (dir == Direction.XML2JSON) {
-			tpXml2Json = TransformerPool.configureStyleSheetTransformer(this, "/xml/xsl/xml2json.xsl", 2); // shouldn't this be a utility transformer?
+			tpXml2Json = XmlUtils.getUtilityTransformerPool("/xml/xsl/xml2json.xsl", true, true, 2);
 		}
 	}
 

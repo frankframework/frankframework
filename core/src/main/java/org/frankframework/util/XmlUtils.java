@@ -101,6 +101,7 @@ import org.xml.sax.ext.LexicalHandler;
 import com.ctc.wstx.api.ReaderConfig;
 import com.ctc.wstx.stax.WstxInputFactory;
 
+import lombok.Lombok;
 import net.sf.saxon.xpath.XPathFactoryImpl;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -166,20 +167,32 @@ public class XmlUtils {
 	}
 
 	private static TransformerPool getUtilityTransformerPool(Supplier<String> xsltSupplier, String key, boolean omitXmlDeclaration, boolean indent, int xsltVersion) throws ConfigurationException {
-		String fullKey=key+"-"+omitXmlDeclaration+"-"+indent;
-		TransformerPool result = utilityTPs.get(fullKey);
-		if (result==null) {
-			try {
-				TransformerPool newtp=TransformerPool.getUtilityInstance(xsltSupplier.get(), xsltVersion);
-				result=utilityTPs.put(fullKey, newtp);
-				if (result==null) {
-					result=newtp;
+		String fullKey = key + "-" + omitXmlDeclaration + "-" + indent;
+		try {
+			return utilityTPs.computeIfAbsent(fullKey, ignored -> {
+				try {
+					return TransformerPool.getUtilityInstance(xsltSupplier.get(), xsltVersion);
+				} catch (TransformerConfigurationException te) {
+					throw Lombok.sneakyThrow(te);
 				}
-			} catch (TransformerConfigurationException te) {
-				throw new ConfigurationException("Could not create TransformerPool for ["+key+"]", te);
-			}
+			});
+		} catch (Exception e) {
+			throw new ConfigurationException("Could not create TransformerPool for [" + key + "]", e);
 		}
-		return result;
+	}
+
+	public static TransformerPool getUtilityTransformerPool(String xsltPath, boolean omitXmlDeclaration, boolean indent, int xsltVersion) throws ConfigurationException {
+		String xslt;
+		URL resourceURL = ClassLoaderUtils.getResourceURL(xsltPath);
+		if (resourceURL == null) {
+			throw new ConfigurationException("Could not find resource ["+xsltPath+"]");
+		}
+		try {
+			xslt = StreamUtil.resourceToString(resourceURL);
+		} catch (IOException e) {
+			throw new ConfigurationException("Could not load classpath resource [" + xsltPath + "]", e);
+		}
+		return getUtilityTransformerPool(() -> (xslt), xsltPath, omitXmlDeclaration, indent, xsltVersion);
 	}
 
 	private static String makeDetectXsltVersionXslt() {
