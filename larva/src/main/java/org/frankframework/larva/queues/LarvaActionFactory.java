@@ -26,24 +26,33 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.core.IConfigurable;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SenderException;
+import org.frankframework.core.TimeoutException;
 import org.frankframework.larva.LarvaTool;
-import org.frankframework.larva.TestConfig;
+import org.frankframework.larva.ListenerMessage;
+import org.frankframework.larva.ListenerMessageHandler;
+import org.frankframework.larva.SenderThread;
 import org.frankframework.senders.FrankSender;
+import org.frankframework.stream.Message;
 
+/**
+ * This class is used to create and manage the lifecycle of Larva queues.
+ */
 @Log4j2
-public class QueueCreator {
+public class LarvaActionFactory {
 
 	public static final String CLASS_NAME_PROPERTY_SUFFIX = ".className";
-	private final TestConfig config;
+	private final int defaultTimeout;
 	private final LarvaTool testTool;
 
-	public QueueCreator(TestConfig config, LarvaTool testTool) {
-		this.config = config;
+	public LarvaActionFactory(LarvaTool testTool) {
 		this.testTool = testTool;
+		this.defaultTimeout = testTool.getConfig().getTimeout();
 	}
 
-	public Map<String, Queue> openQueues(String scenarioDirectory, Properties properties, IbisContext ibisContext, String correlationId) {
-		Map<String, Queue> queues = new HashMap<>();
+	public Map<String, LarvaAction> createLarvaActions(String scenarioDirectory, Properties properties, IbisContext ibisContext, String correlationId) {
+		Map<String, LarvaAction> queues = new HashMap<>();
 		debugMessage("Get all queue names");
 
 		try {
@@ -67,14 +76,14 @@ public class QueueCreator {
 					className = "org.frankframework.jms.PullingJmsListener";
 				}
 
-				IConfigurable configurable = QueueUtils.createInstance(ibisContext, directoryClassLoader, className);
+				IConfigurable configurable = LarvaActionUtils.createInstance(ibisContext, directoryClassLoader, className);
 				log.debug("created FrankElement [{}]", configurable);
 				if (configurable instanceof FrankSender frankSender) {
 					frankSender.setIbisManager(ibisContext.getIbisManager());
 				}
 
-				Properties queueProperties = handleDeprecations(QueueUtils.getSubProperties(properties, queueName), queueName);
-				Queue queue = QueueWrapper.create(configurable, queueProperties, config.getTimeout(), correlationId);
+				Properties queueProperties = handleDeprecations(LarvaActionUtils.getSubProperties(properties, queueName), queueName);
+				LarvaAction queue = create(configurable, queueProperties, defaultTimeout, correlationId);
 
 				queue.configure();
 				queue.open();
@@ -84,12 +93,19 @@ public class QueueCreator {
 
 		} catch (Exception e) {
 			log.warn("Error occurred while creating queues", e);
-			closeQueues(queues, properties, null);
+			closeLarvaActions(queues);
 			queues = null;
 			errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e);
 		}
 
 		return queues;
+	}
+
+	private static LarvaAction create(IConfigurable configurable, Properties queueProperties, int defaultTimeout, String correlationId) {
+		LarvaAction queue = new LarvaAction(configurable);
+		queue.invokeSetters(defaultTimeout, queueProperties);
+		queue.getSession().put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+		return queue;
 	}
 
 	private Properties handleDeprecations(Properties queueProperties, String keyBase) {
@@ -111,8 +127,67 @@ public class QueueCreator {
 		return queueProperties;
 	}
 
-	private void closeQueues(Map<String, Queue> queues, Properties properties, String correlationId) {
-		testTool.closeQueues(queues, properties, correlationId);
+	public boolean closeLarvaActions(Map<String, LarvaAction> queues) {
+		boolean remainingMessagesFound = false;
+
+		debugMessage("Close autoclosables");
+		for (Map.Entry<String, LarvaAction> entry : queues.entrySet()) {
+			String queueName = entry.getKey();
+			LarvaAction queue = entry.getValue();
+			SenderThread senderThread = queue.getSenderThread();
+			if (senderThread != null) {
+				debugMessage("Found remaining SenderThread");
+				SenderException senderException = senderThread.getSenderException();
+				if (senderException != null) {
+					errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException);
+				}
+				TimeoutException timeoutException = senderThread.getTimeoutException();
+				if (timeoutException != null) {
+					errorMessage("Found remaining TimeOutException: " + timeoutException.getMessage(), timeoutException);
+				}
+				Message message = senderThread.getResponse();
+				if (message != null) {
+					wrongPipelineMessage("Found remaining message on '" + queueName + "'", message);
+				}
+			}
+			ListenerMessageHandler<?> listenerMessageHandler = queue.getMessageHandler();
+			if (listenerMessageHandler != null) {
+				ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
+				while (listenerMessage != null) {
+					Message message = listenerMessage.getMessage();
+					if (listenerMessage.getContext() != null) {
+						listenerMessage.getContext().close();
+					}
+					wrongPipelineMessage("Found remaining request message on '" + queueName + "'", message);
+					remainingMessagesFound = true;
+					listenerMessage = listenerMessageHandler.getRequestMessage();
+				}
+				listenerMessage = listenerMessageHandler.getResponseMessage();
+				while (listenerMessage != null) {
+					Message message = listenerMessage.getMessage();
+					if (listenerMessage.getContext() != null) {
+						listenerMessage.getContext().close();
+					}
+					wrongPipelineMessage("Found remaining response message on '" + queueName + "'", message);
+					remainingMessagesFound = true;
+					listenerMessage = listenerMessageHandler.getResponseMessage();
+				}
+			}
+
+			try {
+				queue.close();
+				debugMessage("Closed queue '" + queueName + "'");
+			} catch(Exception e) {
+				log.error("could not close '" + queueName + "'", e);
+				errorMessage("Could not close '" + queueName + "': " + e.getMessage(), e);
+			}
+		}
+
+		return remainingMessagesFound;
+	}
+
+	private void wrongPipelineMessage(String message, Message pipelineMessage) {
+		testTool.wrongPipelineMessage(message, pipelineMessage);
 	}
 
 	private void debugMessage(String message) {

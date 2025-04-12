@@ -42,8 +42,8 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.IbisContext;
-import org.frankframework.larva.queues.Queue;
-import org.frankframework.larva.queues.QueueCreator;
+import org.frankframework.larva.queues.LarvaAction;
+import org.frankframework.larva.queues.LarvaActionFactory;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlEncodingUtils;
@@ -87,20 +87,20 @@ public class ScenarioRunner {
 		threads = AppConstants.getInstance().getInt("larva.parallel.threads", 4);
 	}
 
-	public void runScenario(List<File> scenarioFiles, String currentScenariosRootDirectory) {
-		scenariosTotal = scenarioFiles.size();
-		Map<String, List<File>> filesByFolder = groupFilesByFolder(scenarioFiles, currentScenariosRootDirectory);
+	public void runScenario(List<File> scenarioConfigurationFiles, String larvaScenarioRootDirectory) {
+		scenariosTotal = scenarioConfigurationFiles.size();
+		Map<String, List<File>> filesByFolder = groupFilesByFolder(scenarioConfigurationFiles, larvaScenarioRootDirectory);
 		log.debug("Found: {} folders", filesByFolder.size());
 
 		List<File> singleThreadedScenarios;
 		if (multipleThreads) {
-			singleThreadedScenarios = runScenariosMultithreaded(currentScenariosRootDirectory, filesByFolder);
+			singleThreadedScenarios = runScenariosMultithreaded(larvaScenarioRootDirectory, filesByFolder);
 		} else {
-			singleThreadedScenarios = scenarioFiles;
+			singleThreadedScenarios = scenarioConfigurationFiles;
 		}
 
-		runScenariosSingleThreaded(singleThreadedScenarios, currentScenariosRootDirectory);
-		log.info("Summary Larva run Scenario's: {} passed, {} failed. Total: {}", scenariosPassed, scenariosFailed, scenarioFiles.size());
+		runScenariosSingleThreaded(singleThreadedScenarios, larvaScenarioRootDirectory);
+		log.info("Summary Larva run Scenario's: {} passed, {} failed. Total: {}", scenariosPassed, scenariosFailed, scenarioConfigurationFiles.size());
 	}
 
 	private List<File> runScenariosMultithreaded(String currentScenariosRootDirectory, Map<String, List<File>> filesByFolder) {
@@ -171,26 +171,41 @@ public class ScenarioRunner {
 		return parentFolder.getName();
 	}
 
-	public int runOneFile(File file, String currentScenariosRootDirectory, boolean flushLogsForEveryScenarioStep) {
+	/**
+	 * @param scenarioConfigurationFile full path to the `.properties` configuration file
+	 * @param larvaScenariosRootDirectory the root directory of all larva scenarios
+	 * @param flushLogsForEveryScenarioStep if true, the log will be flushed after every scenario step
+	 */
+	public int runOneFile(File scenarioConfigurationFile, String larvaScenariosRootDirectory, boolean flushLogsForEveryScenarioStep) {
 		// increment suffix for each scenario
-		String correlationId = TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
 		int scenarioPassed = RESULT_ERROR;
 
-		String scenarioDirectory = file.getParentFile().getAbsolutePath() + File.separator;
-		String longName = file.getAbsolutePath();
-		String shortName = longName.substring(currentScenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
+		String scenarioFolder = getScenarioFolder(scenarioConfigurationFile, larvaScenariosRootDirectory);
+		System.out.println(scenarioFolder);
+
+		String scenarioDirectory = scenarioConfigurationFile.getParentFile().getAbsolutePath() + File.separator;
+		String longName = scenarioConfigurationFile.getAbsolutePath();
+		String shortName = longName.substring(larvaScenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
+
+		larvaTool.debugMessage("Read property file " + scenarioConfigurationFile.getName());
+		Properties properties = larvaTool.readProperties(appConstants, scenarioConfigurationFile);
+		String scenarioDescription = properties.getProperty("scenario.description");
+
+		larvaTool.debugMessage("Open queues");
+
+		LarvaActionFactory queueCreator = new LarvaActionFactory(larvaTool);
+
+		String correlationId = TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
+		Map<String, LarvaAction> queues = queueCreator.createLarvaActions(scenarioDirectory, properties, ibisContext, correlationId);
+
+		// Start the scenario
 		StringBuilder output = new StringBuilder();
 		if (!config.isSilent() && (logLevel.shouldLog(LarvaLogLevel.SCENARIO_PASSED_FAILED))) {
 			output.append("<br/><br/><div class='scenario'>");
 		}
-		larvaTool.debugMessage("Read property file " + file.getName());
-		Properties properties = larvaTool.readProperties(appConstants, file);
-		String scenarioDescription = properties.getProperty("scenario.description");
 
 		larvaTool.debugMessage("Read steps from property file");
 		List<String> stepList = getSteps(properties);
-		larvaTool.debugMessage("Open queues");
-		Map<String, Queue> queues = new QueueCreator(config, larvaTool).openQueues(scenarioDirectory, properties, ibisContext, correlationId);
 		if (queues != null) {
 			larvaTool.debugMessage("Execute steps");
 			boolean allStepsPassed = true;
@@ -244,7 +259,7 @@ public class ScenarioRunner {
 				Thread.currentThread().interrupt();
 			}
 			larvaTool.debugMessage("Close queues");
-			boolean remainingMessagesFound = larvaTool.closeQueues(queues, properties, correlationId);
+			boolean remainingMessagesFound = queueCreator.closeLarvaActions(queues);
 			if (remainingMessagesFound) {
 				if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED))
 					output.append(stepFailedMessage("Found one or more messages on queues or in database after scenario executed"));

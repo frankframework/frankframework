@@ -50,7 +50,7 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 			ListenerMessage requestMessage = new ListenerMessage(message, session);
 			requestMessages.add(requestMessage);
 
-			ListenerMessage responseMessage = getResponseMessage(defaultTimeout);
+			ListenerMessage responseMessage = getResponseMessage(0);
 			Message responseAsMessage = responseMessage.getMessage();
 			if (responseMessage.getContext() != null && responseMessage.getContext() != session) {
 				// Sometimes the response has a different PipeLineSession than the original request. If we don't close it here, we'll leak it.
@@ -65,13 +65,16 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	/** Attempt to retrieve a {@link ListenerMessage}. Returns NULL if none is present */
 	public ListenerMessage getRequestMessage() {
 		try {
-			return getRequestMessage(0);
+			return getRequestMessage(1);
 		} catch (TimeoutException e) {
 			return null;
 		}
 	}
 	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
 	public ListenerMessage getRequestMessage(long timeout) throws TimeoutException {
+		if (timeout <= 0) {
+			timeout = defaultTimeout;
+		}
 		return getMessageFromQueue(requestMessages, timeout, "request");
 	}
 
@@ -92,13 +95,16 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	/** Attempt to retrieve a {@link ListenerMessage}. Returns NULL if none is present */
 	public ListenerMessage getResponseMessage() {
 		try {
-			return getResponseMessage(0);
+			return getResponseMessage(1);
 		} catch (TimeoutException e) {
 			return null;
 		}
 	}
 	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
 	public ListenerMessage getResponseMessage(long timeout) throws TimeoutException {
+		if (timeout <= 0) {
+			timeout = defaultTimeout;
+		}
 		return getMessageFromQueue(responseMessages, timeout, "response");
 	}
 

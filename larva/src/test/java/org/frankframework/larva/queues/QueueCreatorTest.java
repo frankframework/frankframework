@@ -22,7 +22,7 @@ import org.frankframework.util.ClassUtils;
 
 class QueueCreatorTest {
 
-	private QueueCreator queueCreator;
+	private LarvaActionFactory queueCreator;
 	private TestConfig testConfig;
 	private LarvaTool larvaTool;
 	private IbisContext ibisContext;
@@ -31,7 +31,7 @@ class QueueCreatorTest {
 	void setUp() {
 		testConfig = new TestConfig();
 		larvaTool = new LarvaTool();
-		queueCreator = new QueueCreator(testConfig, larvaTool);
+		queueCreator = new LarvaActionFactory(testConfig, larvaTool);
 		ibisContext = mock();
 
 		// This is far from perfect but at least allows us to test simple things...
@@ -50,7 +50,7 @@ class QueueCreatorTest {
 		props.load(this.getClass().getResourceAsStream("/queueCreatorTest.properties"));
 
 		// Act
-		Map<String, Queue> queues = queueCreator.openQueues("/", props, ibisContext, "cid");
+		Map<String, LarvaAction> queues = queueCreator.createLarvaActions("/", props, ibisContext, "cid");
 
 		// Assert
 		assertNotNull(queues);

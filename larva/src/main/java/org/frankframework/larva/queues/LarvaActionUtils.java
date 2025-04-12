@@ -15,18 +15,30 @@
  */
 package org.frankframework.larva.queues;
 
+import java.io.File;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.NameAware;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.AbstractHttpSender;
+import org.frankframework.parameters.IParameter;
+import org.frankframework.parameters.Parameter;
+import org.frankframework.stream.FileMessage;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
+import org.frankframework.util.XmlUtils;
 
 /**
  * Reflection helper to create Larva Queues'
@@ -36,8 +48,8 @@ import org.frankframework.util.StringUtil;
  *
  * @author Niels Meijer
  */
-public class QueueUtils {
-	private static final Logger LOG = LogUtil.getLogger(QueueUtils.class);
+public class LarvaActionUtils {
+	private static final Logger LOG = LogUtil.getLogger(LarvaActionUtils.class);
 
 	public static IConfigurable createInstance(IbisContext ibisContext, ClassLoader classLoader, String className) {
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
@@ -104,5 +116,85 @@ public class QueueUtils {
 				throw new IllegalArgumentException("unable to set method ["+setter+"] on Class ["+ClassUtils.nameOf(clazz)+"]: "+e.getMessage(), e);
 			}
 		}
+	}
+
+	public static Map<String, IParameter> createParametersMapFromParamProperties(Properties properties, PipeLineSession session) {
+		final String _name = ".name";
+		final String _param = "param";
+		final String _type = ".type";
+		Map<String, IParameter> result = new HashMap<>();
+		boolean processed = false;
+		int i = 1;
+		while (!processed) {
+			String name = properties.getProperty(_param + i + _name);
+			if (name != null) {
+				String type = properties.getProperty(_param + i + _type);
+				String propertyValue = properties.getProperty(_param + i + ".value");
+				Object value = propertyValue;
+
+				if (value == null) {
+					String filename = properties.getProperty(_param + i + ".valuefile.absolutepath");
+					if (filename != null) {
+						value = new FileMessage(new File(filename));
+					} else {
+						String inputStreamFilename = properties.getProperty(_param + i + ".valuefileinputstream.absolutepath");
+						if (inputStreamFilename != null) {
+							throw new IllegalStateException("valuefileinputstream is no longer supported use valuefile instead");
+						}
+					}
+				}
+				if ("node".equals(type)) {
+					try {
+						value = XmlUtils.buildNode(propertyValue, true);
+					} catch (DomBuilderException e) {
+						throw new IllegalStateException("Could not build node for parameter '" + name + "' with value: " + value, e);
+					}
+				} else if ("domdoc".equals(type)) {
+					try {
+						value = XmlUtils.buildDomDocument(propertyValue, true);
+					} catch (DomBuilderException e) {
+						throw new IllegalStateException("Could not build node for parameter '" + name + "' with value: " + value, e);
+					}
+				} else if ("list".equals(type)) {
+					value = StringUtil.split(propertyValue);
+				} else if ("map".equals(type)) {
+					List<String> parts = StringUtil.split(propertyValue);
+					Map<String, String> map = new LinkedHashMap<>();
+					for (String part : parts) {
+						String[] splitted = part.split("\\s*(=\\s*)+", 2);
+						if (splitted.length == 2) {
+							map.put(splitted[0], splitted[1]);
+						} else {
+							map.put(splitted[0], "");
+						}
+					}
+					value = map;
+				}
+				String pattern = properties.getProperty(_param + i + ".pattern");
+				if (value == null && pattern == null) {
+					throw new IllegalStateException("Property '" + _param + i + " doesn't have a value or pattern");
+				} else {
+					try {
+						Parameter parameter = new Parameter();
+						parameter.setName(name);
+						if (value != null && !(value instanceof String)) {
+							parameter.setSessionKey(name);
+							session.put(name, value);
+						} else {
+							parameter.setValue((String) value);
+							parameter.setPattern(pattern);
+						}
+						parameter.configure();
+						result.put(name, parameter);
+					} catch (ConfigurationException e) {
+						throw new IllegalStateException("Parameter '" + name + "' could not be configured");
+					}
+				}
+				i++;
+			} else {
+				processed = true;
+			}
+		}
+		return result;
 	}
 }
