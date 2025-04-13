@@ -64,10 +64,9 @@ class LarvaActionFactoryTest {
 		assertNotNull(action);
 		SenderAction senderAction = assertInstanceOf(SenderAction.class, action);
 
-		String stepName = "thisIsAQueue";
 		long start = System.currentTimeMillis();
-		assertEquals(LarvaTool.RESULT_OK, senderAction.executeWrite(stepName, new Message("input"), null, null));
-		Message message = senderAction.executeRead(stepName, stepName, props, null, Message.nullMessage());
+		senderAction.executeWrite(new Message("input"), null, null);
+		Message message = senderAction.executeRead(props);
 		long duration = System.currentTimeMillis() - start;
 		assertTrue(duration > 100, "delay should be > 100ms but was " + duration);
 		assertNotNull(message);

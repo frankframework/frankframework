@@ -81,6 +81,7 @@ import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.larva.actions.LarvaActionFactory;
+import org.frankframework.larva.actions.LarvaActionUtils;
 import org.frankframework.larva.actions.LarvaScenarioAction;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.stream.FileMessage;
@@ -1123,6 +1124,7 @@ public class LarvaTool {
 		return RESULT_ERROR;
 	}
 
+	// Ideally this should be moved to it's own class. But for now it's a bridge too far because of `stepOutputFilename`.
 	protected int executeStep(String step, Properties properties, String stepDisplayName, Map<String, LarvaScenarioAction> queues, String correlationId) {
 		String fileName = properties.getProperty(step);
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
@@ -1158,7 +1160,8 @@ public class LarvaTool {
 			Object queueCreatorClassname = properties.get(queueName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX);
 			if (step.endsWith(".read") || (allowReadlineSteps && step.endsWith(".readline"))) {
 				if ("org.frankframework.larva.XsltProviderListener".equals(queueCreatorClassname)) {
-					Map<String, Object> xsltParameters = createParametersMapFromParamProperties(properties, step);
+					Properties scenarioStepProperties = LarvaActionUtils.getSubProperties(properties, step);
+					Map<String, Object> xsltParameters = createParametersMapFromParamProperties(scenarioStepProperties);
 					return executeQueueWrite(stepDisplayName, queues, queueName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
 				} else {
 					return executeQueueRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
@@ -1184,7 +1187,7 @@ public class LarvaTool {
 		}
 	}
 
-	public Message readFile(@Nonnull String fileName) {
+	private Message readFile(@Nonnull String fileName) {
 		String encoding;
 		if (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")) {
 			encoding = parseEncodingFromXml(fileName);
@@ -1905,27 +1908,27 @@ public class LarvaTool {
 	 * @param property   Property name to use as base name
 	 * @return A map with parameters
 	 */
-	public Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property) {
-		debugMessage("Search parameters for property '" + property + "'");
+	// Replace or merge this with LarvaActionUtils.createParametersMapFromParamProperties
+	public Map<String, Object> createParametersMapFromParamProperties(Properties properties) {
 		final String _name = ".name";
-		final String _param = ".param";
+		final String _param = "param";
 		final String _type = ".type";
 		Map<String, Object> result = new HashMap<>();
 		boolean processed = false;
 		int i = 1;
 		while (!processed) {
-			String name = properties.getProperty(property + _param + i + _name);
+			String name = properties.getProperty(_param + i + _name);
 			if (name != null) {
-				String type = properties.getProperty(property + _param + i + _type);
-				String propertyValue = properties.getProperty(property + _param + i + ".value");
+				String type = properties.getProperty(_param + i + _type);
+				String propertyValue = properties.getProperty(_param + i + ".value");
 				Object value = propertyValue;
 
 				if (value == null) {
-					String filename = properties.getProperty(property + _param + i + ".valuefile.absolutepath");
+					String filename = properties.getProperty(_param + i + ".valuefile.absolutepath");
 					if (filename != null) {
 						value = new FileMessage(new File(filename));
 					} else {
-						String inputStreamFilename = properties.getProperty(property + _param + i + ".valuefileinputstream.absolutepath");
+						String inputStreamFilename = properties.getProperty(_param + i + ".valuefileinputstream.absolutepath");
 						if (inputStreamFilename != null) {
 							errorMessage("valuefileinputstream is no longer supported use valuefile instead");
 						}
@@ -1960,10 +1963,10 @@ public class LarvaTool {
 					value = map;
 				}
 				if (value == null) {
-					errorMessage("Property '" + property + _param + i + ".value' or '" + property + _param + i + ".valuefile' not found while property '" + property + _param + i + ".name' exist");
+					errorMessage("Property '" + _param + i + ".value' or '" + _param + i + ".valuefile' not found while property '" + _param + i + ".name' exist");
 				} else {
 					result.put(name, value);
-					debugMessage("Add param with name '" + name + "' and value '" + value + "' for property '" + property + "'");
+					debugMessage("Add param with name '" + name + "' and value '" + value + "' for property '" + "'");
 				}
 				i++;
 			} else {

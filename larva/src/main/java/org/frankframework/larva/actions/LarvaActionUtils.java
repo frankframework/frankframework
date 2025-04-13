@@ -16,6 +16,7 @@
 package org.frankframework.larva.actions;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -37,6 +38,7 @@ import org.frankframework.stream.FileMessage;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 
@@ -159,14 +161,14 @@ public class LarvaActionUtils {
 				}
 				if ("node".equals(type)) {
 					try {
-						value = XmlUtils.buildNode(propertyValue, true);
-					} catch (DomBuilderException e) {
+						value = XmlUtils.buildNode(MessageUtils.asString(value), true);
+					} catch (DomBuilderException | IOException e) {
 						throw new IllegalStateException("Could not build node for parameter '" + name + "' with value: " + value, e);
 					}
 				} else if ("domdoc".equals(type)) {
 					try {
-						value = XmlUtils.buildDomDocument(propertyValue, true);
-					} catch (DomBuilderException e) {
+						value = XmlUtils.buildDomDocument(MessageUtils.asString(value), true);
+					} catch (DomBuilderException | IOException e) {
 						throw new IllegalStateException("Could not build node for parameter '" + name + "' with value: " + value, e);
 					}
 				} else if ("list".equals(type)) {
