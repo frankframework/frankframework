@@ -77,9 +77,6 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 
 	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
 	private ListenerMessage getRequestMessage(long timeout) throws TimeoutException {
-		if (timeout <= 0) {
-			timeout = defaultTimeout;
-		}
 		return getMessageFromQueue(requestMessages, timeout, "request");
 	}
 
