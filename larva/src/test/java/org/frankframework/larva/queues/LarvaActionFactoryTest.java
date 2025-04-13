@@ -18,6 +18,9 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.larva.LarvaTool;
+import org.frankframework.larva.actions.LarvaActionFactory;
+import org.frankframework.larva.actions.LarvaScenarioAction;
+import org.frankframework.larva.actions.SenderAction;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 

@@ -42,8 +42,8 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.IbisContext;
-import org.frankframework.larva.queues.LarvaActionFactory;
-import org.frankframework.larva.queues.LarvaScenarioAction;
+import org.frankframework.larva.actions.LarvaActionFactory;
+import org.frankframework.larva.actions.LarvaScenarioAction;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlEncodingUtils;
