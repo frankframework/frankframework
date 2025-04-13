@@ -24,7 +24,6 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.larva.FileListener;
 import org.frankframework.larva.FileSender;
-import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.XsltProviderListener;
 import org.frankframework.stream.Message;
 
@@ -35,20 +34,18 @@ public class LarvaAction extends AbstractLarvaAction<IConfigurable> {
 	}
 
 	@Override
-	public int executeWrite(String stepDisplayName, Message fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
+	public void executeWrite(Message fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
 		if (peek() instanceof FileSender fileSender) {
 			fileSender.sendMessage(fileContent);
-			return LarvaTool.RESULT_OK;
-		}
-		if (peek() instanceof XsltProviderListener xsltProviderListener) {
+		} else if (peek() instanceof XsltProviderListener xsltProviderListener) {
 			xsltProviderListener.processRequest(fileContent, parameters);
-			return LarvaTool.RESULT_OK;
+		} else {
+			throw new SenderException("could not perform write step for queue [" + peek() + "]");
 		}
-		throw new SenderException("could not perform write step for queue [" + peek() + "]");
 	}
 
 	@Override
-	public Message executeRead(String step, String stepDisplayName, Properties properties, String fileName, Message fileContent) throws SenderException, TimeoutException, ListenerException {
+	public Message executeRead(Properties properties) throws SenderException, TimeoutException, ListenerException {
 		if (peek() instanceof FileSender fileSender) {
 			return fileSender.getMessage();
 		}

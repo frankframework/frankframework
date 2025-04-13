@@ -25,7 +25,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.http.WebServiceListener;
-import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.ListenerMessage;
 import org.frankframework.larva.ListenerMessageHandler;
 import org.frankframework.stream.Message;
@@ -75,7 +74,7 @@ public class LarvaPushingListenerAction extends AbstractLarvaAction<IPushingList
 	}
 
 	@Override
-	public int executeWrite(String stepDisplayName, Message fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
+	public void executeWrite(Message fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
 		PipeLineSession context;
 		if (listenerMessage != null) { // Reuse the context from the previous message
 			context = listenerMessage.getContext();
@@ -85,11 +84,10 @@ public class LarvaPushingListenerAction extends AbstractLarvaAction<IPushingList
 
 		ListenerMessage listenerMessage = new ListenerMessage(fileContent, context);
 		listenerMessageHandler.putResponseMessage(listenerMessage);
-		return LarvaTool.RESULT_OK;
 	}
 
 	@Override
-	public Message executeRead(String step, String stepDisplayName, Properties properties, String fileName, Message fileContent) throws SenderException, TimeoutException, ListenerException {
+	public Message executeRead(Properties properties) throws SenderException, TimeoutException, ListenerException {
 		ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage(0);
 
 		if (listenerMessage != null) {

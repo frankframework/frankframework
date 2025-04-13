@@ -26,7 +26,7 @@ import org.frankframework.stream.Message;
 
 public interface LarvaScenarioAction extends AutoCloseable {
 
-	int executeWrite(String stepDisplayName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) throws TimeoutException, SenderException, ListenerException;
+	void executeWrite(Message fileContent, String correlationId, Map<String, Object> xsltParameters) throws TimeoutException, SenderException, ListenerException;
 
-	Message executeRead(String step, String stepDisplayName, Properties properties, String fileName, Message fileContent) throws SenderException, IOException, TimeoutException, ListenerException;
+	Message executeRead(Properties properties) throws SenderException, IOException, TimeoutException, ListenerException;
 }

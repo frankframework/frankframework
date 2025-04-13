@@ -25,7 +25,6 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jdbc.FixedQuerySender;
-import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.SenderThread;
 import org.frankframework.stream.Message;
 
@@ -49,20 +48,19 @@ public class SenderAction extends AbstractLarvaAction<ISender> {
 	}
 
 	@Override
-	public int executeWrite(String stepDisplayName, Message fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
+	public void executeWrite(Message fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
 		if (peek() instanceof FixedQuerySender) { // QuerySender is reversed, write is read. Just copy the input message here.
 			jdbcInputMessage = fileContent;
-			return LarvaTool.RESULT_OK;
+			return;
 		}
 
 		SenderThread senderThread = new SenderThread(peek(), fileContent, getSession(), isConvertExceptionToMessage(), correlationId);
 		senderThread.start();
 		this.senderThread = senderThread;
-		return LarvaTool.RESULT_OK;
 	}
 
 	@Override
-	public Message executeRead(String step, String stepDisplayName, Properties properties, String fileName, Message fileContent) throws SenderException, TimeoutException, ListenerException {
+	public Message executeRead(Properties properties) throws SenderException, TimeoutException, ListenerException {
 		if (peek() instanceof FixedQuerySender) { // QuerySender is reversed, read is write. Execute the query here.
 			try (Message input = Message.asMessage(jdbcInputMessage)) { // Uses the provided message or NULL
 				return peek().sendMessageOrThrow(input, getSession());

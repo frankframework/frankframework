@@ -118,6 +118,20 @@ public class LarvaActionUtils {
 		}
 	}
 
+	/**
+	 * Create a Map for a specific property based on other properties that are
+	 * the same except for a .param1.name, .param1.value or .param1.valuefile
+	 * suffix.  The property with the .name suffix specifies the key for the
+	 * Map, the property with the value suffix specifies the value for the Map.
+	 * A property with a the .valuefile suffix can be used as an alternative
+	 * for a property with a .value suffix to specify the file to read the
+	 * value for the Map from. More than one param can be specified by using
+	 * param2, param3 etc.
+	 *
+	 * @param properties Properties object from which to create the map
+	 * @param property   Property name to use as base name
+	 * @return A map with parameters
+	 */
 	public static Map<String, IParameter> createParametersMapFromParamProperties(Properties properties, PipeLineSession session) {
 		final String _name = ".name";
 		final String _param = "param";

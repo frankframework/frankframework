@@ -1083,34 +1083,29 @@ public class LarvaTool {
 			errorMessage("Property '" + queueName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
 			return RESULT_ERROR;
 		}
-		int result = RESULT_ERROR;
 		try {
-			result = queue.executeWrite(stepDisplayName, fileContent, correlationId, xsltParameters);
-			if (result == RESULT_OK) {
-				debugPipelineMessage(stepDisplayName, "Successfully wrote message to '" + queueName + "':", fileContent);
-				logger.debug("Successfully wrote message to '{}'", queueName);
-			}
+			queue.executeWrite(fileContent, correlationId, xsltParameters);
+			debugPipelineMessage(stepDisplayName, "Successfully wrote message to '" + queueName + "':", fileContent);
+			logger.debug("Successfully wrote message to '{}'", queueName);
+			return RESULT_OK;
 		} catch(TimeoutException e) {
-			errorMessage("Time out sending message to '" + queueName + "': " + e.getMessage(), e);
+			errorMessage("Timeout sending message to '" + queueName + "': " + e.getMessage(), e);
 		} catch(Exception e) {
 			errorMessage("Could not send message to '" + queueName + "' ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e);
 		}
-		return result;
+		return RESULT_ERROR;
 	}
 
-	private int executeQueueRead(String step, String stepDisplayName, Properties properties, Map<String, LarvaScenarioAction> queues, String queueName, String fileName, Message fileContent) {
-		int result = RESULT_ERROR;
-
+	private int executeQueueRead(String step, String stepDisplayName, Properties properties, Map<String, LarvaScenarioAction> queues, String queueName, String fileName, Message expected) {
 		LarvaScenarioAction queue = queues.get(queueName);
 		if (queue == null) {
 			errorMessage("Property '" + queueName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
 			return RESULT_ERROR;
 		}
-		try {
-			Message message = queue.executeRead(step, stepDisplayName, properties, fileName, fileContent);
+		try (Message message = queue.executeRead(properties)) {
 			if (message == null) {
 				if ("".equals(fileName)) {
-					result = RESULT_OK;
+					return RESULT_OK;
 				} else {
 					errorMessage("Could not read from ["+queueName+"] (null returned)");
 				}
@@ -1118,18 +1113,17 @@ public class LarvaTool {
 				if ("".equals(fileName)) {
 					debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
 				} else {
-					result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties);
+					return compareResult(step, stepDisplayName, fileName, expected, message, properties);
 				}
 			}
 		} catch (Exception e) {
 			errorMessage("Could not read from ["+queueName+"] ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e);
 		}
 
-		return result;
+		return RESULT_ERROR;
 	}
 
 	protected int executeStep(String step, Properties properties, String stepDisplayName, Map<String, LarvaScenarioAction> queues, String correlationId) {
-		int stepPassed;
 		String fileName = properties.getProperty(step);
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
 		int i = step.indexOf('.');
@@ -1158,35 +1152,36 @@ public class LarvaTool {
 			errorMessage("Could not read file '" + fileName + "'");
 			return RESULT_ERROR;
 		}
-		queueName = step.substring(i + 1, step.lastIndexOf("."));
-		Object queueCreatorClassname = properties.get(queueName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX);
-		if (step.endsWith(".read") || (allowReadlineSteps && step.endsWith(".readline"))) {
-			if ("org.frankframework.larva.XsltProviderListener".equals(queueCreatorClassname)) {
-				Map<String, Object> xsltParameters = createParametersMapFromParamProperties(properties, step);
-				stepPassed = executeQueueWrite(stepDisplayName, queues, queueName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
-			} else {
-				stepPassed = executeQueueRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
-			}
-		} else {
-			// TODO: Try if anything breaks when this block is moved to `readFile()` method.
-			String resolveProperties = properties.getProperty("scenario.resolveProperties");
-			if(!"false".equalsIgnoreCase(resolveProperties)){
-				String fileData = messageToString(fileContent);
-				if (fileData == null) {
-					errorMessage("Failed to resolve properties in inputfile");
-					return RESULT_ERROR;
+
+		try (Message closeable = fileContent) {
+			queueName = step.substring(i + 1, step.lastIndexOf("."));
+			Object queueCreatorClassname = properties.get(queueName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX);
+			if (step.endsWith(".read") || (allowReadlineSteps && step.endsWith(".readline"))) {
+				if ("org.frankframework.larva.XsltProviderListener".equals(queueCreatorClassname)) {
+					Map<String, Object> xsltParameters = createParametersMapFromParamProperties(properties, step);
+					return executeQueueWrite(stepDisplayName, queues, queueName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
+				} else {
+					return executeQueueRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
 				}
-				AppConstants appConstants = AppConstants.getInstance();
-				fileContent = new Message(StringResolver.substVars(fileData, appConstants), fileContent.copyContext());
-			}
-			if ("org.frankframework.larva.XsltProviderListener".equals(queueCreatorClassname)) {
-				stepPassed = executeQueueRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);  // XsltProviderListener has .read and .write reversed
 			} else {
-				stepPassed = executeQueueWrite(stepDisplayName, queues, queueName, fileContent, correlationId, null);
+				// TODO: Try if anything breaks when this block is moved to `readFile()` method.
+				String resolveProperties = properties.getProperty("scenario.resolveProperties");
+				if(!"false".equalsIgnoreCase(resolveProperties)){
+					String fileData = messageToString(fileContent);
+					if (fileData == null) {
+						errorMessage("Failed to resolve properties in inputfile");
+						return RESULT_ERROR;
+					}
+					AppConstants appConstants = AppConstants.getInstance();
+					fileContent = new Message(StringResolver.substVars(fileData, appConstants), fileContent.copyContext());
+				}
+				if ("org.frankframework.larva.XsltProviderListener".equals(queueCreatorClassname)) {
+					return executeQueueRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);  // XsltProviderListener has .read and .write reversed
+				} else {
+					return executeQueueWrite(stepDisplayName, queues, queueName, fileContent, correlationId, null);
+				}
 			}
 		}
-
-		return stepPassed;
 	}
 
 	public Message readFile(@Nonnull String fileName) {
