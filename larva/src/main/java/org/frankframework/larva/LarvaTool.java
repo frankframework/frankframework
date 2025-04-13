@@ -1103,7 +1103,8 @@ public class LarvaTool {
 			errorMessage("Property '" + queueName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
 			return RESULT_ERROR;
 		}
-		try (Message message = queue.executeRead(properties)) {
+		try {
+			Message message = queue.executeRead(properties); // cannot close this message because of FrankSender (JSON scenario02)
 			if (message == null) {
 				if ("".equals(fileName)) {
 					return RESULT_OK;
