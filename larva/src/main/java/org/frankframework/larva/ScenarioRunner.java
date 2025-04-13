@@ -37,6 +37,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.CloseableThreadContext;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -180,119 +182,121 @@ public class ScenarioRunner {
 		// increment suffix for each scenario
 		int scenarioPassed = RESULT_ERROR;
 
-		String scenarioFolder = getScenarioFolder(scenarioConfigurationFile, larvaScenariosRootDirectory);
-		System.out.println(scenarioFolder);
+		String scenarioFolderName = getScenarioFolder(scenarioConfigurationFile, larvaScenariosRootDirectory);
+		log.info("Running scenario [{}]", scenarioFolderName);
+		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("scenario", scenarioFolderName)) {
 
-		String scenarioDirectory = scenarioConfigurationFile.getParentFile().getAbsolutePath() + File.separator;
-		String longName = scenarioConfigurationFile.getAbsolutePath();
-		String shortName = longName.substring(larvaScenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
+			String scenarioDirectory = scenarioConfigurationFile.getParentFile().getAbsolutePath() + File.separator;
+			String longName = scenarioConfigurationFile.getAbsolutePath();
+			String shortName = longName.substring(larvaScenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
 
-		larvaTool.debugMessage("Read property file " + scenarioConfigurationFile.getName());
-		Properties properties = larvaTool.readProperties(appConstants, scenarioConfigurationFile);
-		String scenarioDescription = properties.getProperty("scenario.description");
+			larvaTool.debugMessage("Read property file " + scenarioConfigurationFile.getName());
+			Properties properties = larvaTool.readProperties(appConstants, scenarioConfigurationFile);
+			String scenarioDescription = properties.getProperty("scenario.description");
 
-		larvaTool.debugMessage("Open queues");
+			larvaTool.debugMessage("Open queues");
 
-		LarvaActionFactory queueCreator = new LarvaActionFactory(larvaTool);
+			LarvaActionFactory queueCreator = new LarvaActionFactory(larvaTool);
 
-		String correlationId = TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
-		Map<String, LarvaScenarioAction> queues = queueCreator.createLarvaActions(scenarioDirectory, properties, ibisContext, correlationId);
+			String correlationId = TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
+			Map<String, LarvaScenarioAction> queues = queueCreator.createLarvaActions(scenarioDirectory, properties, ibisContext, correlationId);
 
-		// Start the scenario
-		StringBuilder output = new StringBuilder();
-		if (!config.isSilent() && (logLevel.shouldLog(LarvaLogLevel.SCENARIO_PASSED_FAILED))) {
-			output.append("<br/><br/><div class='scenario'>");
-		}
+			// Start the scenario
+			StringBuilder output = new StringBuilder();
+			if (!config.isSilent() && (logLevel.shouldLog(LarvaLogLevel.SCENARIO_PASSED_FAILED))) {
+				output.append("<br/><br/><div class='scenario'>");
+			}
 
-		larvaTool.debugMessage("Read steps from property file");
-		List<String> stepList = getSteps(properties);
-		if (queues != null) {
-			larvaTool.debugMessage("Execute steps");
-			boolean allStepsPassed = true;
-			boolean autoSaved = false;
-			Iterator<String> steps = stepList.iterator();
-			while (allStepsPassed && steps.hasNext()) {
-				if (evenStep) {
-					output.append("<div class='even'>");
-					evenStep = false;
-				} else {
-					output.append("<div class='odd'>");
-					evenStep = true;
+			larvaTool.debugMessage("Read steps from property file");
+			List<String> stepList = getSteps(properties);
+			if (queues != null) {
+				larvaTool.debugMessage("Execute steps");
+				boolean allStepsPassed = true;
+				boolean autoSaved = false;
+				Iterator<String> steps = stepList.iterator();
+				while (allStepsPassed && steps.hasNext()) {
+					if (evenStep) {
+						output.append("<div class='even'>");
+						evenStep = false;
+					} else {
+						output.append("<div class='odd'>");
+						evenStep = true;
+					}
+					String step = steps.next();
+					String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
+					larvaTool.debugMessage("Execute step '" + stepDisplayName + "'");
+					LocalTime start = LocalTime.now();
+					int stepPassed = larvaTool.executeStep(step, properties, stepDisplayName, queues, correlationId);
+					LocalTime end = LocalTime.now();
+					if (stepPassed == RESULT_OK) {
+						if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED)) output.append(stepPassedMessage("Step '" + stepDisplayName + "' passed."));
+					} else if (stepPassed == RESULT_AUTOSAVED) {
+						if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED))
+							output.append(stepAutosavedMessage("Step '" + stepDisplayName + "' passed after autosave."));
+						autoSaved = true;
+					} else {
+						if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED)) output.append(stepFailedMessage("Step '" + stepDisplayName + "' failed."));
+						allStepsPassed = false;
+					}
+					if (logLevel.shouldLog(LarvaLogLevel.DEBUG)) {
+						output.append(" Test Duration: " + start.until(end, ChronoUnit.MILLIS) + " ms");
+					}
+					output.append("</div>");
+					if (flushLogsForEveryScenarioStep) {
+						larvaTool.writeHtml(output.toString(), true);
+						config.flushWriters();
+						output.setLength(0);
+					}
 				}
-				String step = steps.next();
-				String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
-				larvaTool.debugMessage("Execute step '" + stepDisplayName + "'");
-				LocalTime start = LocalTime.now();
-				int stepPassed = larvaTool.executeStep(step, properties, stepDisplayName, queues, correlationId);
-				LocalTime end = LocalTime.now();
-				if (stepPassed == RESULT_OK) {
-					if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED)) output.append(stepPassedMessage("Step '" + stepDisplayName + "' passed."));
-				} else if (stepPassed == RESULT_AUTOSAVED) {
+				if (allStepsPassed) {
+					if (autoSaved) {
+						scenarioPassed = RESULT_AUTOSAVED;
+					} else {
+						scenarioPassed = RESULT_OK;
+					}
+				}
+				larvaTool.debugMessage("Wait " + waitBeforeCleanUp + " ms before clean up");
+				try {
+					Thread.sleep(waitBeforeCleanUp);
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
+				larvaTool.debugMessage("Close queues");
+				boolean remainingMessagesFound = queueCreator.closeLarvaActions(queues);
+				if (remainingMessagesFound) {
 					if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED))
-						output.append(stepAutosavedMessage("Step '" + stepDisplayName + "' passed after autosave."));
-					autoSaved = true;
-				} else {
-					if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED)) output.append(stepFailedMessage("Step '" + stepDisplayName + "' failed."));
-					allStepsPassed = false;
-				}
-				if (logLevel.shouldLog(LarvaLogLevel.DEBUG)) {
-					output.append(" Test Duration: " + start.until(end, ChronoUnit.MILLIS) + " ms");
-				}
-				output.append("</div>");
-				if (flushLogsForEveryScenarioStep) {
-					larvaTool.writeHtml(output.toString(), true);
-					config.flushWriters();
-					output.setLength(0);
+						output.append(stepFailedMessage("Found one or more messages on queues or in database after scenario executed"));
+					scenarioPassed = RESULT_ERROR;
 				}
 			}
-			if (allStepsPassed) {
-				if (autoSaved) {
-					scenarioPassed = RESULT_AUTOSAVED;
-				} else {
-					scenarioPassed = RESULT_OK;
-				}
-			}
-			larvaTool.debugMessage("Wait " + waitBeforeCleanUp + " ms before clean up");
-			try {
-				Thread.sleep(waitBeforeCleanUp);
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			}
-			larvaTool.debugMessage("Close queues");
-			boolean remainingMessagesFound = queueCreator.closeLarvaActions(queues);
-			if (remainingMessagesFound) {
-				if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED))
-					output.append(stepFailedMessage("Found one or more messages on queues or in database after scenario executed"));
-				scenarioPassed = RESULT_ERROR;
-			}
-		}
 
-		if (scenarioPassed == RESULT_OK) {
-			scenariosPassed.incrementAndGet();
-			if (logLevel.shouldLog(LarvaLogLevel.SCENARIO_PASSED_FAILED))
-				output.append(scenarioPassedMessage("Scenario '" + shortName + " - " + scenarioDescription + "' passed (" + scenariosFailed.get() + "/" + scenariosPassed.get() + "/" + scenariosTotal + ")"));
-			if (config.isSilent() && logLevel.shouldLog(LarvaLogLevel.SCENARIO_PASSED_FAILED)) {
-				config.writeSilent("Scenario '" + shortName + " - " + scenarioDescription + "' passed");
+			if (scenarioPassed == RESULT_OK) {
+				scenariosPassed.incrementAndGet();
+				if (logLevel.shouldLog(LarvaLogLevel.SCENARIO_PASSED_FAILED))
+					output.append(scenarioPassedMessage("Scenario '" + shortName + " - " + scenarioDescription + "' passed (" + scenariosFailed.get() + "/" + scenariosPassed.get() + "/" + scenariosTotal + ")"));
+				if (config.isSilent() && logLevel.shouldLog(LarvaLogLevel.SCENARIO_PASSED_FAILED)) {
+					config.writeSilent("Scenario '" + shortName + " - " + scenarioDescription + "' passed");
+				}
+			} else if (scenarioPassed == RESULT_AUTOSAVED) {
+				scenariosAutosaved.incrementAndGet();
+				if (logLevel.shouldLog(LarvaLogLevel.SCENARIO_PASSED_FAILED))
+					output.append(scenarioAutosavedMessage("Scenario '" + shortName + " - " + scenarioDescription + "' passed after autosave"));
+				if (config.isSilent()) {
+					config.writeSilent("Scenario '" + shortName + " - " + scenarioDescription + "' passed after autosave");
+				}
+			} else {
+				scenariosFailed.incrementAndGet();
+				if (logLevel.shouldLog(LarvaLogLevel.SCENARIO_FAILED))
+					output.append(scenarioFailedMessage("Scenario '" + shortName + " - " + scenarioDescription + "' failed (" + scenariosFailed.get() + "/" + scenariosPassed.get() + "/" + scenariosTotal + ")"));
+				if (config.isSilent()) {
+					config.writeSilent("Scenario '" + shortName + " - " + scenarioDescription + "' failed");
+				}
 			}
-		} else if (scenarioPassed == RESULT_AUTOSAVED) {
-			scenariosAutosaved.incrementAndGet();
-			if (logLevel.shouldLog(LarvaLogLevel.SCENARIO_PASSED_FAILED))
-				output.append(scenarioAutosavedMessage("Scenario '" + shortName + " - " + scenarioDescription + "' passed after autosave"));
-			if (config.isSilent()) {
-				config.writeSilent("Scenario '" + shortName + " - " + scenarioDescription + "' passed after autosave");
-			}
-		} else {
-			scenariosFailed.incrementAndGet();
-			if (logLevel.shouldLog(LarvaLogLevel.SCENARIO_FAILED))
-				output.append(scenarioFailedMessage("Scenario '" + shortName + " - " + scenarioDescription + "' failed (" + scenariosFailed.get() + "/" + scenariosPassed.get() + "/" + scenariosTotal + ")"));
-			if (config.isSilent()) {
-				config.writeSilent("Scenario '" + shortName + " - " + scenarioDescription + "' failed");
-			}
+			output.append("</div>");
+			larvaTool.writeHtml(output.toString(), true);
+			config.flushWriters();
+			return scenarioPassed;
 		}
-		output.append("</div>");
-		larvaTool.writeHtml(output.toString(), true);
-		config.flushWriters();
-		return scenarioPassed;
 	}
 
 	private List<String> getSteps(Properties properties) {
