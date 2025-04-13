@@ -23,9 +23,13 @@ import java.util.stream.Collectors;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.core.IConfigurable;
+import org.frankframework.core.IPullingListener;
+import org.frankframework.core.IPushingListener;
+import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
@@ -51,8 +55,8 @@ public class LarvaActionFactory {
 		this.defaultTimeout = testTool.getConfig().getTimeout();
 	}
 
-	public Map<String, LarvaAction> createLarvaActions(String scenarioDirectory, Properties properties, IbisContext ibisContext, String correlationId) {
-		Map<String, LarvaAction> queues = new HashMap<>();
+	public Map<String, LarvaScenarioAction> createLarvaActions(String scenarioDirectory, Properties properties, IbisContext ibisContext, String correlationId) {
+		Map<String, LarvaScenarioAction> queues = new HashMap<>();
 		debugMessage("Get all queue names");
 
 		try {
@@ -83,10 +87,7 @@ public class LarvaActionFactory {
 				}
 
 				Properties queueProperties = handleDeprecations(LarvaActionUtils.getSubProperties(properties, queueName), queueName);
-				LarvaAction queue = create(configurable, queueProperties, defaultTimeout, correlationId);
-
-				queue.configure();
-				queue.open();
+				LarvaScenarioAction queue = create(configurable, queueProperties, defaultTimeout, correlationId);
 				queues.put(queueName, queue);
 				debugMessage("Opened [" + className + "] '" + queueName + "'");
 			}
@@ -101,10 +102,24 @@ public class LarvaActionFactory {
 		return queues;
 	}
 
-	private static LarvaAction create(IConfigurable configurable, Properties queueProperties, int defaultTimeout, String correlationId) {
-		LarvaAction queue = new LarvaAction(configurable);
+	private static LarvaScenarioAction create(IConfigurable configurable, Properties queueProperties, int defaultTimeout, String correlationId) throws ConfigurationException {
+		final AbstractLarvaAction<?> queue;
+		if (configurable instanceof IPullingListener pullingListener) {
+			queue = new PullingListenerAction(pullingListener);
+		} else if (configurable instanceof IPushingListener pushingListener) {
+			queue = new LarvaPushingListenerAction(pushingListener);
+		} else if (configurable instanceof ISender sender) {
+			queue = new SenderAction(sender);
+		} else {
+			queue = new LarvaAction(configurable);
+		}
+
 		queue.invokeSetters(defaultTimeout, queueProperties);
 		queue.getSession().put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+
+		queue.configure();
+		queue.start();
+
 		return queue;
 	}
 
@@ -127,15 +142,15 @@ public class LarvaActionFactory {
 		return queueProperties;
 	}
 
-	public boolean closeLarvaActions(Map<String, LarvaAction> queues) {
+	public boolean closeLarvaActions(Map<String, LarvaScenarioAction> queues) {
 		boolean remainingMessagesFound = false;
 
 		debugMessage("Close autoclosables");
-		for (Map.Entry<String, LarvaAction> entry : queues.entrySet()) {
+		for (Map.Entry<String, LarvaScenarioAction> entry : queues.entrySet()) {
 			String queueName = entry.getKey();
-			LarvaAction queue = entry.getValue();
-			SenderThread senderThread = queue.getSenderThread();
-			if (senderThread != null) {
+			LarvaScenarioAction queue = entry.getValue();
+			if (queue instanceof SenderAction senderAction && senderAction.getSenderThread() != null) {
+				SenderThread senderThread = senderAction.getSenderThread();
 				debugMessage("Found remaining SenderThread");
 				SenderException senderException = senderThread.getSenderException();
 				if (senderException != null) {
@@ -150,8 +165,8 @@ public class LarvaActionFactory {
 					wrongPipelineMessage("Found remaining message on '" + queueName + "'", message);
 				}
 			}
-			ListenerMessageHandler<?> listenerMessageHandler = queue.getMessageHandler();
-			if (listenerMessageHandler != null) {
+			if (queue instanceof LarvaPushingListenerAction listenerAction && listenerAction.getMessageHandler() != null) {
+				ListenerMessageHandler<?> listenerMessageHandler = listenerAction.getMessageHandler();
 				ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
 				while (listenerMessage != null) {
 					Message message = listenerMessage.getMessage();

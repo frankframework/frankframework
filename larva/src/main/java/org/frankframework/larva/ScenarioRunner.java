@@ -42,8 +42,8 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.IbisContext;
-import org.frankframework.larva.queues.LarvaAction;
 import org.frankframework.larva.queues.LarvaActionFactory;
+import org.frankframework.larva.queues.LarvaScenarioAction;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlEncodingUtils;
@@ -196,7 +196,7 @@ public class ScenarioRunner {
 		LarvaActionFactory queueCreator = new LarvaActionFactory(larvaTool);
 
 		String correlationId = TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
-		Map<String, LarvaAction> queues = queueCreator.createLarvaActions(scenarioDirectory, properties, ibisContext, correlationId);
+		Map<String, LarvaScenarioAction> queues = queueCreator.createLarvaActions(scenarioDirectory, properties, ibisContext, correlationId);
 
 		// Start the scenario
 		StringBuilder output = new StringBuilder();

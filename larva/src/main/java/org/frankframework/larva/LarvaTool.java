@@ -80,8 +80,8 @@ import org.frankframework.configuration.ClassNameRewriter;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.larva.queues.LarvaAction;
 import org.frankframework.larva.queues.LarvaActionFactory;
+import org.frankframework.larva.queues.LarvaScenarioAction;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
@@ -1077,8 +1077,8 @@ public class LarvaTool {
 		properties.putAll(absolutePathProperties);
 	}
 
-	private int executeQueueWrite(String stepDisplayName, Map<String, LarvaAction> queues, String queueName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
-		LarvaAction queue = queues.get(queueName);
+	private int executeQueueWrite(String stepDisplayName, Map<String, LarvaScenarioAction> queues, String queueName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
+		LarvaScenarioAction queue = queues.get(queueName);
 		if (queue==null) {
 			errorMessage("Property '" + queueName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
 			return RESULT_ERROR;
@@ -1098,10 +1098,10 @@ public class LarvaTool {
 		return result;
 	}
 
-	private int executeQueueRead(String step, String stepDisplayName, Properties properties, Map<String, LarvaAction> queues, String queueName, String fileName, Message fileContent) {
+	private int executeQueueRead(String step, String stepDisplayName, Properties properties, Map<String, LarvaScenarioAction> queues, String queueName, String fileName, Message fileContent) {
 		int result = RESULT_ERROR;
 
-		LarvaAction queue = queues.get(queueName);
+		LarvaScenarioAction queue = queues.get(queueName);
 		if (queue == null) {
 			errorMessage("Property '" + queueName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
 			return RESULT_ERROR;
@@ -1128,7 +1128,7 @@ public class LarvaTool {
 		return result;
 	}
 
-	protected int executeStep(String step, Properties properties, String stepDisplayName, Map<String, LarvaAction> queues, String correlationId) {
+	protected int executeStep(String step, Properties properties, String stepDisplayName, Map<String, LarvaScenarioAction> queues, String correlationId) {
 		int stepPassed;
 		String fileName = properties.getProperty(step);
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");

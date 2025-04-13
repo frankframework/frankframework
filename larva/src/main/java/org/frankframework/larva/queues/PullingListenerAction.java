@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,46 +18,52 @@ package org.frankframework.larva.queues;
 import java.util.Map;
 import java.util.Properties;
 
-import org.frankframework.core.IConfigurable;
+import org.frankframework.core.IPullingListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.larva.FileListener;
-import org.frankframework.larva.FileSender;
-import org.frankframework.larva.LarvaTool;
-import org.frankframework.larva.XsltProviderListener;
+import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
-public class LarvaAction extends AbstractLarvaAction<IConfigurable> {
+@SuppressWarnings({ "rawtypes", "unchecked" })
+public class PullingListenerAction extends AbstractLarvaAction<IPullingListener> {
 
-	public LarvaAction(IConfigurable configurable) {
-		super(configurable);
+	public PullingListenerAction(IPullingListener listener) {
+		super(listener);
+	}
+
+	@Override
+	public void start() {
+		peek().start();
+	}
+
+	@Override
+	public void stop() {
+		peek().stop();
 	}
 
 	@Override
 	public int executeWrite(String stepDisplayName, Message fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
-		if (peek() instanceof FileSender fileSender) {
-			fileSender.sendMessage(fileContent);
-			return LarvaTool.RESULT_OK;
-		}
-		if (peek() instanceof XsltProviderListener xsltProviderListener) {
-			xsltProviderListener.processRequest(fileContent, parameters);
-			return LarvaTool.RESULT_OK;
-		}
-		throw new SenderException("could not perform write step for queue [" + peek() + "]");
+		throw new ListenerException("no write step for pulling listener [" + peek() + "]");
 	}
 
 	@Override
 	public Message executeRead(String step, String stepDisplayName, Properties properties, String fileName, Message fileContent) throws SenderException, TimeoutException, ListenerException {
-		if (peek() instanceof FileSender fileSender) {
-			return fileSender.getMessage();
+		Map<String, Object> threadContext = null;
+		IPullingListener pullingListener = peek();
+		try {
+			threadContext = pullingListener.openThread();
+			RawMessageWrapper rawMessage = pullingListener.getRawMessage(threadContext);
+			if (rawMessage != null) {
+				return pullingListener.extractMessage(rawMessage, threadContext);
+			}
+		} finally {
+			if (threadContext != null) {
+				pullingListener.closeThread(threadContext);
+			}
+			threadContext = null;
 		}
-		if (peek() instanceof FileListener fileListener) {
-			return fileListener.getMessage();
-		}
-		if (peek() instanceof XsltProviderListener xsltProviderListener) {
-			return xsltProviderListener.getResult();
-		}
-		throw new SenderException("could not perform read step for queue [" + peek() + "]");
+		throw new ListenerException("No message found in queue [" + peek() + "]");
 	}
+
 }

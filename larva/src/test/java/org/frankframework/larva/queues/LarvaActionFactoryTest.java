@@ -1,13 +1,14 @@
 package org.frankframework.larva.queues;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.Properties;
@@ -17,21 +18,19 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.larva.LarvaTool;
-import org.frankframework.larva.TestConfig;
+import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 
-class QueueCreatorTest {
+class LarvaActionFactoryTest {
 
-	private LarvaActionFactory queueCreator;
-	private TestConfig testConfig;
+	private LarvaActionFactory actionFactory;
 	private LarvaTool larvaTool;
 	private IbisContext ibisContext;
 
 	@BeforeEach
 	void setUp() {
-		testConfig = new TestConfig();
 		larvaTool = new LarvaTool();
-		queueCreator = new LarvaActionFactory(testConfig, larvaTool);
+		actionFactory = new LarvaActionFactory(larvaTool);
 		ibisContext = mock();
 
 		// This is far from perfect but at least allows us to test simple things...
@@ -44,18 +43,31 @@ class QueueCreatorTest {
 	}
 
 	@Test
-	void openQueues() throws IOException {
+	void openQueues() throws Exception {
 		// Arrange
 		Properties props = new Properties();
 		props.load(this.getClass().getResourceAsStream("/queueCreatorTest.properties"));
 
 		// Act
-		Map<String, LarvaAction> queues = queueCreator.createLarvaActions("/", props, ibisContext, "cid");
+		Map<String, LarvaScenarioAction> queues = actionFactory.createLarvaActions("/", props, ibisContext, "cid");
 
 		// Assert
 		assertNotNull(queues);
 		assertTrue(queues.containsKey("thisIsAQueue"));
 		assertTrue(queues.containsKey("this.is.another.queue"));
 		assertFalse(queues.containsKey("prop.without"));
+
+		LarvaScenarioAction action = queues.get("thisIsAQueue");
+		assertNotNull(action);
+		SenderAction senderAction = assertInstanceOf(SenderAction.class, action);
+
+		String stepName = "thisIsAQueue";
+		long start = System.currentTimeMillis();
+		assertEquals(LarvaTool.RESULT_OK, senderAction.executeWrite(stepName, new Message("input"), null, null));
+		Message message = senderAction.executeRead(stepName, stepName, props, null, Message.nullMessage());
+		long duration = System.currentTimeMillis() - start;
+		assertTrue(duration > 100, "delay should be > 100ms but was " + duration);
+		assertNotNull(message);
+		assertEquals("input", message.asString());
 	}
 }
