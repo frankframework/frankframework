@@ -50,7 +50,7 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 			ListenerMessage requestMessage = new ListenerMessage(message, session);
 			requestMessages.add(requestMessage);
 
-			ListenerMessage responseMessage = getResponseMessage(0);
+			ListenerMessage responseMessage = getResponseMessage(defaultTimeout);
 			Message responseAsMessage = responseMessage.getMessage();
 			if (responseMessage.getContext() != null && responseMessage.getContext() != session) {
 				// Sometimes the response has a different PipeLineSession than the original request. If we don't close it here, we'll leak it.
@@ -65,13 +65,18 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	/** Attempt to retrieve a {@link ListenerMessage}. Returns NULL if none is present */
 	public ListenerMessage getRequestMessage() {
 		try {
-			return getRequestMessage(1);
+			return getRequestMessage(0);
 		} catch (TimeoutException e) {
 			return null;
 		}
 	}
+
+	public ListenerMessage getRequestMessageWithDefaultTimeout() throws TimeoutException {
+		return getRequestMessage(defaultTimeout);
+	}
+
 	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
-	public ListenerMessage getRequestMessage(long timeout) throws TimeoutException {
+	private ListenerMessage getRequestMessage(long timeout) throws TimeoutException {
 		if (timeout <= 0) {
 			timeout = defaultTimeout;
 		}
@@ -95,16 +100,14 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	/** Attempt to retrieve a {@link ListenerMessage}. Returns NULL if none is present */
 	public ListenerMessage getResponseMessage() {
 		try {
-			return getResponseMessage(1);
+			return getResponseMessage(0);
 		} catch (TimeoutException e) {
 			return null;
 		}
 	}
+
 	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
-	public ListenerMessage getResponseMessage(long timeout) throws TimeoutException {
-		if (timeout <= 0) {
-			timeout = defaultTimeout;
-		}
+	private ListenerMessage getResponseMessage(long timeout) throws TimeoutException {
 		return getMessageFromQueue(responseMessages, timeout, "response");
 	}
 
@@ -141,5 +144,4 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 		log.error("formatException not implemented", e);
 		return null;
 	}
-
 }

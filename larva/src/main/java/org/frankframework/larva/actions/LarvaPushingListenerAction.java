@@ -88,7 +88,7 @@ public class LarvaPushingListenerAction extends AbstractLarvaAction<IPushingList
 
 	@Override
 	public Message executeRead(Properties properties) throws SenderException, TimeoutException, ListenerException {
-		ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage(0);
+		ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessageWithDefaultTimeout();
 
 		if (listenerMessage != null) {
 			this.listenerMessage = listenerMessage;
