@@ -44,15 +44,16 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 
 /**
- * Selects a forward based on an expression. The expression type is coupled to the mediaType:
+ * <p>Selects a forward based on an expression. The expression type is coupled to the mediaType:</p>
  * <ul>
  *     <li>XML (application/xml) uses Xpath.</li>
  *     <li>JSON (application/json) uses jsonPath.</li>
  * </ul>
- * The XML mediaType is the default type. If you want to use JSON, you need to set this using 'mimeType' in the Message.
+ *
+ * <p>The XML mediaType is the default type. If you want to use JSON, you need to set this using 'mimeType' in the Message.</p>
  *
  * <h4>Expressions</h4>
- * Expressions are used to select nodes in the given input document. Imagine a collection of books:
+ * <p>Expressions are used to select nodes in the given input document. Imagine a collection of books:</p>
  * <pre>{@code
  * {
  *   "store": {
@@ -87,11 +88,11 @@ import org.frankframework.util.XmlUtils;
  *   }
  * }
  * }</pre>
- * <p>
- * With both expression languages, you'll be able to select one or multiple nodes from this collection.
- * <br/>
- * Using this pipe, there are two options. Use it only with an {@code expression} or combine it with an {@code expressionValue}. When using the expression,
- * the pipe evaluates to {@code thenForwardName} when <em>there is a match</em>, even if it is empty. In the given example, this might be one of:
+ *
+ * <p>With both expression languages, you'll be able to select one or multiple nodes from this collection.</p>
+ *
+ * <p>Using this pipe, there are two options. Use it only with an {@code expression} or combine it with an {@code expressionValue}. When using the expression,
+ * the pipe evaluates to {@code thenForwardName} when <em>there is a match</em>, even if it is empty. In the given example, this might be one of:</p>
  * <pre>{@code
  *   $.store
  *   $.store.book[1]
@@ -100,42 +101,36 @@ import org.frankframework.util.XmlUtils;
  * }</pre>
  *
  * <h4>expressionValue</h4>
- * When using expression combined with expressionValue, the pipe evaluates to {@code thenForwardName} when <em>the matched value is equal to
- * expressionValue</em>. This needs to be an exact match.
- * <br/>
+ * <p>When using expression combined with expressionValue, the pipe evaluates to {@code thenForwardName} when <em>the matched value is equal to
+ * expressionValue</em>. This needs to be an exact match.</p>
  *
  * <h4>XML/XPATH</h4>
- * Xpath has been around a long time. Information about the syntax can be found everywhere on the internet.
+ * <p>Xpath has been around a long time. Information about the syntax can be found everywhere on the internet.
  * The XML implementation wraps the Xpath expression in an XSL. This enables us to use complex expressions which evaluate to true or false instead of
  * being used only as a selector of nodes in the input XML. This is available to be backwards compatible with the {@link XmlIf} pipe.
- * For instance, take the following example input:
+ * For instance, take the following example input:</p>
  * <pre>{@code
  *   <results>
  *     <result name="test"></result>
  *     <result name="test"></result>
  *   </results>
  * }</pre>
- * Examples with complex expressions might be something like: {@code number(count(/results/result[contains(@name , 'test')])) > 1}, to test if there's more
+ *
+ * <p>Examples with complex expressions might be something like: {@code number(count(/results/result[contains(@name , 'test')])) > 1}, to test if there's more
  * than one node found containing the string 'test'. Please check if a simpler, less error-prone expression like
- * {@code /results/result[contains(@name, 'test')]} can suffice.
- * <p></p>
+ * {@code /results/result[contains(@name, 'test')]} can suffice.</p>
  *
  * <h4>Without expression</h4>
- * Without an expression, the default behaviour is to assume the input is a string. The code will try to match the string to an optional regular expression
- * or tries to match the string value to the optional expressionValue.
- * <p></p>
+ * <p>Without an expression, the default behaviour is to assume the input is a string. The code will try to match the string to an optional regular expression
+ * or tries to match the string value to the optional expressionValue.</p>
  *
- * <h4>Resources</h4>
- * <ul>
- *     <li><a href="https://github.com/json-path/JsonPath">JsonPath / Jayway implementation including examples</a></li>
- *     <li><a href="https://jsonpath.fly.dev/">JsonPath online evaluator</a></li>
- *     <li><a href="https://www.w3schools.com/xml/xpath_syntax.asp">Xpath syntax</a></li>
- *     <li><a href="https://www.freeformatter.com/xpath-tester.html">Xpath online evaluator</a></li>
- *     <li><a href="https://en.wikipedia.org/wiki/XPath">Xpath information and history</a></li>
- * </ul>
+ * @ff.note Some behaviour has been slightly modified compared to XmlIf!
  *
- * @ff.note Some behaviour has been slightly modified compared to XmlIf! See 'Changes compared to the XmlIf pipe'.
- * @see DataSonnetPipe
+ * @see <a href="https://github.com/json-path/JsonPath">JsonPath / Jayway implementation including examples</a>
+ * @see <a href="https://jsonpath.fly.dev/">JsonPath online evaluator</a>
+ * @see <a href="https://www.w3schools.com/xml/xpath_syntax.asp">Xpath syntax</a>
+ * @see <a href="https://www.freeformatter.com/xpath-tester.html">Xpath online evaluator</a>
+ * @see <a href="https://en.wikipedia.org/wiki/XPath">Xpath information and history</a>
  */
 @Forward(name = "*", description = "when {@literal thenForwardName} or {@literal elseForwardName} are used")
 @Forward(name = "then", description = "the configured condition is met")
@@ -293,7 +288,7 @@ public class IfPipe extends AbstractPipe {
 			} catch (PathNotFoundException e) {
 				// No results found for path
 			} catch (IOException ioe) {
-				throw new PipeRunException(this, "error reading message");
+				throw new PipeRunException(this, "error reading message", ioe);
 			}
 		}
 
@@ -328,7 +323,7 @@ public class IfPipe extends AbstractPipe {
 			// If the input is not empty, use then forward.
 			return StringUtils.isNotEmpty(inputString) ? thenForward : elseForward;
 		} catch (IOException e) {
-			throw new PipeRunException(this, "error reading message");
+			throw new PipeRunException(this, "error reading message", e);
 		}
 	}
 
