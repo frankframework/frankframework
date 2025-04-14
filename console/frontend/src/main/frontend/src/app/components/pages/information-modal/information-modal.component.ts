@@ -49,11 +49,12 @@ export class InformationModalComponent implements OnInit, OnDestroy {
     totalSpace: -1,
   };
   protected uptime: number = 0;
+  protected consoleVersion = 'null';
 
   private activeModal: NgbActiveModal = inject(NgbActiveModal);
   private toastService: ToastService = inject(ToastService);
   private serverInfoService: ServerInfoService = inject(ServerInfoService);
-  private serverInfoSubscription?: Subscription;
+  private subscriptions?: Subscription;
 
   ngOnInit(): void {
     this.refresh();
@@ -61,11 +62,11 @@ export class InformationModalComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.serverInfoSubscription?.unsubscribe();
+    this.subscriptions?.unsubscribe();
   }
 
   subscribeToServerInfo(): void {
-    this.serverInfoSubscription = this.serverInfoService.serverInfo$.subscribe({
+    this.subscriptions = this.serverInfoService.serverInfo$.subscribe({
       next: (data) => {
         this.applicationServer = data.applicationServer;
         this.fileSystem = data.fileSystem;
@@ -78,6 +79,13 @@ export class InformationModalComponent implements OnInit, OnDestroy {
         this.initialized = true;
       },
     });
+    this.subscriptions.add(
+      this.serverInfoService.consoleVersion$.subscribe({
+        next: (data) => {
+          this.consoleVersion = data.version ?? 'null';
+        },
+      }),
+    );
   }
 
   close(): void {

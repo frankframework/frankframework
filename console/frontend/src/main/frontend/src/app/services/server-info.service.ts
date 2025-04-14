@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { Observable, ReplaySubject, tap } from 'rxjs';
+import { BehaviorSubject, Observable, ReplaySubject, tap } from 'rxjs';
 import { AppService } from '../app.service';
 import { HttpClient } from '@angular/common/http';
 import { HumanFileSizePipe } from '../pipes/human-file-size.pipe';
@@ -36,16 +36,25 @@ export type ServerInfo = {
   userName?: string;
 };
 
+export type ConsoleInfo = {
+  version: string | null;
+};
+
 @Injectable({
   providedIn: 'root',
 })
 export class ServerInfoService {
   private readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
   private serverInfoSubject = new ReplaySubject<ServerInfo>(1);
+  private consoleInfoSubject = new BehaviorSubject<ConsoleInfo>({
+    version: null,
+  });
 
   serverInfo$ = this.serverInfoSubject.asObservable();
+  consoleVersion$ = this.consoleInfoSubject.asObservable();
 
   private serverInfo?: ServerInfo;
+  private consoleInfo?: ConsoleInfo;
 
   constructor(
     private appService: AppService,
@@ -56,7 +65,17 @@ export class ServerInfoService {
     return this.http.get<ServerInfo>(`${this.appService.absoluteApiPath}server/info`);
   }
 
+  fetchConsoleVersion(): Observable<ConsoleInfo> {
+    return this.http.get<ConsoleInfo>(`${this.appService.absoluteApiPath}console/info`);
+  }
+
   refresh(): Observable<ServerInfo> {
+    this.fetchConsoleVersion().subscribe({
+      next: (info) => {
+        this.consoleInfo = info;
+        this.consoleInfoSubject.next(info);
+      },
+    });
     return this.fetchServerInfo().pipe(
       tap({
         next: (data) => {
@@ -76,6 +95,7 @@ Java Version: **${this.serverInfo?.javaVersion}**
 Heap size: **${humanFileSize.transform(this.serverInfo?.processMetrics.heapSize ?? 0)}**, total JVM memory: **${humanFileSize.transform(this.serverInfo?.processMetrics?.totalMemory ?? 0)}**
 Free memory: **${humanFileSize.transform(this.serverInfo?.processMetrics.freeMemory ?? 0)}**, max memory: **${humanFileSize.transform(this.serverInfo?.processMetrics.maxMemory ?? 0)}**
 Free disk space: **${humanFileSize.transform(this.serverInfo?.fileSystem.freeSpace ?? 0)}**, total disk space: **${humanFileSize.transform(this.serverInfo?.fileSystem.totalSpace ?? 0)}**
-Up since: **${this.serverTimeService.getIntialTime()}**, timezone: **${this.serverInfo?.serverTimezone}**`;
+Up since: **${this.serverTimeService.getIntialTime()}**, timezone: **${this.serverInfo?.serverTimezone}**
+${this.consoleInfo?.version === this.serverInfo.framework.version ? '' : `Console version: **${this.consoleInfo?.version ?? 'null'}**`}`;
   }
 }
