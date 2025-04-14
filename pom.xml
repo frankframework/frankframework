@@ -918,7 +918,7 @@
 				<plugin>
 					<groupId>com.github.hazendaz.maven</groupId>
 					<artifactId>directory-maven-plugin</artifactId>
-					<version>1.2.0</version>
+					<version>1.2.1</version>
 					<executions>
 						<execution>
 							<id>find-project-root-directory</id>
