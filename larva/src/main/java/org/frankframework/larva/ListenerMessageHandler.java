@@ -70,8 +70,13 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 			return null;
 		}
 	}
+
+	public ListenerMessage getRequestMessageWithDefaultTimeout() throws TimeoutException {
+		return getRequestMessage(defaultTimeout);
+	}
+
 	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
-	public ListenerMessage getRequestMessage(long timeout) throws TimeoutException {
+	private ListenerMessage getRequestMessage(long timeout) throws TimeoutException {
 		return getMessageFromQueue(requestMessages, timeout, "request");
 	}
 
@@ -97,8 +102,9 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 			return null;
 		}
 	}
+
 	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
-	public ListenerMessage getResponseMessage(long timeout) throws TimeoutException {
+	private ListenerMessage getResponseMessage(long timeout) throws TimeoutException {
 		return getMessageFromQueue(responseMessages, timeout, "response");
 	}
 
@@ -135,5 +141,4 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 		log.error("formatException not implemented", e);
 		return null;
 	}
-
 }
