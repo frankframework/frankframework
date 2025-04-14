@@ -1,3 +1,5 @@
+name: OWASP ZAP
+
 on: 
   workflow_dispatch:
   release:
