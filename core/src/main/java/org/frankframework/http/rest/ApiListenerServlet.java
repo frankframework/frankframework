@@ -43,6 +43,7 @@ import org.apache.http.HttpEntity;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
+import org.springframework.http.HttpHeaders;
 import org.springframework.util.InvalidMimeTypeException;
 import org.springframework.util.MimeType;
 
@@ -297,7 +298,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 						}
 						break;
 					case HEADER:
-						authorizationToken = request.getHeader(ApiListener.DEFAULT_AUTHORIZATION_HEADER);
+						authorizationToken = request.getHeader(HttpHeaders.AUTHORIZATION);
 						break;
 					case AUTHROLE:
 						List<String> roles = listener.getAuthenticationRoleList();
@@ -310,7 +311,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 						break;
 					case JWT:
 						String authorizationHeader = request.getHeader(listener.getJwtHeader());
-						boolean isNonStandardJwtAuthHeader = !ApiListener.DEFAULT_AUTHORIZATION_HEADER.equalsIgnoreCase(listener.getJwtHeader());
+						boolean isNonStandardJwtAuthHeader = !HttpHeaders.AUTHORIZATION.equalsIgnoreCase(listener.getJwtHeader());
 						if (StringUtils.isNotEmpty(authorizationHeader) && (authorizationHeader.startsWith("Bearer") || isNonStandardJwtAuthHeader)) {
 							try {
 								String jwtToken = StringUtils.removeStartIgnoreCase(authorizationHeader, "Bearer ");

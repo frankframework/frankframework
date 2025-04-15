@@ -78,6 +78,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -1688,7 +1689,7 @@ public class ApiListenerServletTest {
 				.setAuthenticationMethod(AuthenticationMethods.JWT)
 				.build();
 
-		Response result = service(prepareJWTRequest(null, ApiListener.DEFAULT_AUTHORIZATION_HEADER, false));
+		Response result = service(prepareJWTRequest(null, HttpHeaders.AUTHORIZATION, false));
 
 		assertEquals(401, result.getStatus());
 		assertEquals("JWT is not provided as bearer token",result.getErrorMessage());
@@ -2039,7 +2040,7 @@ public class ApiListenerServletTest {
 	}
 
 	public @Nonnull MockHttpServletRequest prepareJWTRequest(@Nullable String token) throws Exception {
-		return prepareJWTRequest(token, ApiListener.DEFAULT_AUTHORIZATION_HEADER, true);
+		return prepareJWTRequest(token, HttpHeaders.AUTHORIZATION, true);
 	}
 	public @Nonnull MockHttpServletRequest prepareJWTRequest(@Nullable String token, @Nonnull String header) throws Exception {
 		return prepareJWTRequest(token, header, true);
