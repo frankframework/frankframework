@@ -40,7 +40,7 @@ public class LarvaAction extends AbstractLarvaAction<IConfigurable> {
 		} else if (peek() instanceof XsltProviderListener xsltProviderListener) {
 			xsltProviderListener.processRequest(fileContent, parameters);
 		} else {
-			throw new SenderException("could not perform write step for queue [" + peek() + "]");
+			throw new SenderException("could not perform write step for action [" + peek() + "]");
 		}
 	}
 
@@ -55,6 +55,6 @@ public class LarvaAction extends AbstractLarvaAction<IConfigurable> {
 		if (peek() instanceof XsltProviderListener xsltProviderListener) {
 			return xsltProviderListener.getResult();
 		}
-		throw new SenderException("could not perform read step for queue [" + peek() + "]");
+		throw new SenderException("could not perform read step for action [" + peek() + "]");
 	}
 }

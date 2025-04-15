@@ -41,7 +41,7 @@ import org.frankframework.senders.FrankSender;
 import org.frankframework.stream.Message;
 
 /**
- * This class is used to create and manage the lifecycle of Larva queues.
+ * This class is used to create and manage the lifecycle of Larva actions.
  */
 @Log4j2
 public class LarvaActionFactory {
@@ -56,8 +56,8 @@ public class LarvaActionFactory {
 	}
 
 	public Map<String, LarvaScenarioAction> createLarvaActions(String scenarioDirectory, Properties properties, IbisContext ibisContext, String correlationId) {
-		Map<String, LarvaScenarioAction> queues = new HashMap<>();
-		debugMessage("Get all queue names");
+		Map<String, LarvaScenarioAction> larvaActions = new HashMap<>();
+		debugMessage("Get all action names");
 
 		try {
 			// Use DirectoryClassLoader to make it possible to retrieve resources (such as styleSheetName) relative to the scenarioDirectory.
@@ -66,16 +66,16 @@ public class LarvaActionFactory {
 			directoryClassLoader.setBasePath(".");
 			directoryClassLoader.configure(null, "LarvaTool");
 
-			Set<String> queueNames = properties.keySet()
+			Set<String> actionNames = properties.keySet()
 					.stream()
 					.map(String.class::cast)
 					.filter(key -> key.endsWith(CLASS_NAME_PROPERTY_SUFFIX))
 					.map(key -> key.substring(0, key.lastIndexOf(".")))
 					.collect(Collectors.toSet());
 
-			for (String queueName : queueNames) {
-				debugMessage("queuename openqueue: " + queueName);
-				String className = properties.getProperty(queueName + CLASS_NAME_PROPERTY_SUFFIX);
+			for (String actionName : actionNames) {
+				debugMessage("actionname openaction: " + actionName);
+				String className = properties.getProperty(actionName + CLASS_NAME_PROPERTY_SUFFIX);
 				if ("org.frankframework.jms.JmsListener".equals(className)) {
 					className = "org.frankframework.jms.PullingJmsListener";
 				}
@@ -86,70 +86,70 @@ public class LarvaActionFactory {
 					frankSender.setIbisManager(ibisContext.getIbisManager());
 				}
 
-				Properties queueProperties = handleDeprecations(LarvaActionUtils.getSubProperties(properties, queueName), queueName);
-				LarvaScenarioAction queue = create(configurable, queueProperties, defaultTimeout, correlationId);
-				queues.put(queueName, queue);
-				debugMessage("Opened [" + className + "] '" + queueName + "'");
+				Properties actionProperties = handleDeprecations(LarvaActionUtils.getSubProperties(properties, actionName), actionName);
+				LarvaScenarioAction larvaScenarioAction = create(configurable, actionProperties, defaultTimeout, correlationId);
+				larvaActions.put(actionName, larvaScenarioAction);
+				debugMessage("Opened [" + className + "] '" + actionName + "'");
 			}
 
 		} catch (Exception e) {
-			log.warn("Error occurred while creating queues", e);
-			closeLarvaActions(queues);
-			queues = null;
+			log.warn("Error occurred while creating Larva Scenario Actions", e);
+			closeLarvaActions(larvaActions);
+			larvaActions = null;
 			errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e);
 		}
 
-		return queues;
+		return larvaActions;
 	}
 
-	private static LarvaScenarioAction create(IConfigurable configurable, Properties queueProperties, int defaultTimeout, String correlationId) throws ConfigurationException {
-		final AbstractLarvaAction<?> queue;
+	private static LarvaScenarioAction create(IConfigurable configurable, Properties actionProperties, int defaultTimeout, String correlationId) throws ConfigurationException {
+		final AbstractLarvaAction<?> larvaAction;
 		if (configurable instanceof IPullingListener pullingListener) {
-			queue = new PullingListenerAction(pullingListener);
+			larvaAction = new PullingListenerAction(pullingListener);
 		} else if (configurable instanceof IPushingListener pushingListener) {
-			queue = new LarvaPushingListenerAction(pushingListener);
+			larvaAction = new LarvaPushingListenerAction(pushingListener);
 		} else if (configurable instanceof ISender sender) {
-			queue = new SenderAction(sender);
+			larvaAction = new SenderAction(sender);
 		} else {
-			queue = new LarvaAction(configurable);
+			larvaAction = new LarvaAction(configurable);
 		}
 
-		queue.invokeSetters(defaultTimeout, queueProperties);
-		queue.getSession().put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+		larvaAction.invokeSetters(defaultTimeout, actionProperties);
+		larvaAction.getSession().put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 
-		queue.configure();
-		queue.start();
+		larvaAction.configure();
+		larvaAction.start();
 
-		return queue;
+		return larvaAction;
 	}
 
-	private Properties handleDeprecations(Properties queueProperties, String keyBase) {
-		if (queueProperties.containsKey("requestTimeOut") || queueProperties.containsKey("responseTimeOut")) {
+	private Properties handleDeprecations(Properties actionProperties, String keyBase) {
+		if (actionProperties.containsKey("requestTimeOut") || actionProperties.containsKey("responseTimeOut")) {
 			warningMessage("Deprecation Warning: properties " + keyBase + ".requestTimeOut/" + keyBase + ".responseTimeOut have been replaced with " + keyBase + ".timeout");
 		}
-		if (queueProperties.containsKey("getBlobSmart")) {
+		if (actionProperties.containsKey("getBlobSmart")) {
 			warningMessage("Deprecation Warning: property " + keyBase + ".getBlobSmart has been replaced with " + keyBase + ".blobSmartGet");
-			String blobSmart = ""+queueProperties.remove("getBlobSmart");
-			queueProperties.setProperty("blobSmartGet", blobSmart);
+			String blobSmart = ""+actionProperties.remove("getBlobSmart");
+			actionProperties.setProperty("blobSmartGet", blobSmart);
 		}
-		if (queueProperties.containsKey("preDel1")) {
+		if (actionProperties.containsKey("preDel1")) {
 			warningMessage("Removal Warning: property " + keyBase + ".preDel<index> has been removed without replacement");
 		}
-		if (queueProperties.containsKey("prePostQuery")) {
+		if (actionProperties.containsKey("prePostQuery")) {
 			warningMessage("Removal Warning: property " + keyBase + ".prePostQuery has been removed without replacement");
 		}
 
-		return queueProperties;
+		return actionProperties;
 	}
 
-	public boolean closeLarvaActions(Map<String, LarvaScenarioAction> queues) {
+	public boolean closeLarvaActions(Map<String, LarvaScenarioAction> larvaActions) {
 		boolean remainingMessagesFound = false;
 
 		debugMessage("Close autoclosables");
-		for (Map.Entry<String, LarvaScenarioAction> entry : queues.entrySet()) {
-			String queueName = entry.getKey();
-			LarvaScenarioAction queue = entry.getValue();
-			if (queue instanceof SenderAction senderAction && senderAction.getSenderThread() != null) {
+		for (Map.Entry<String, LarvaScenarioAction> entry : larvaActions.entrySet()) {
+			String actionName = entry.getKey();
+			LarvaScenarioAction larvaScenarioAction = entry.getValue();
+			if (larvaScenarioAction instanceof SenderAction senderAction && senderAction.getSenderThread() != null) {
 				SenderThread senderThread = senderAction.getSenderThread();
 				debugMessage("Found remaining SenderThread");
 				SenderException senderException = senderThread.getSenderException();
@@ -162,10 +162,10 @@ public class LarvaActionFactory {
 				}
 				Message message = senderThread.getResponse();
 				if (message != null) {
-					wrongPipelineMessage("Found remaining message on '" + queueName + "'", message);
+					wrongPipelineMessage("Found remaining message on '" + actionName + "'", message);
 				}
 			}
-			if (queue instanceof LarvaPushingListenerAction listenerAction && listenerAction.getMessageHandler() != null) {
+			if (larvaScenarioAction instanceof LarvaPushingListenerAction listenerAction && listenerAction.getMessageHandler() != null) {
 				ListenerMessageHandler<?> listenerMessageHandler = listenerAction.getMessageHandler();
 				ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
 				while (listenerMessage != null) {
@@ -173,7 +173,7 @@ public class LarvaActionFactory {
 					if (listenerMessage.getContext() != null) {
 						listenerMessage.getContext().close();
 					}
-					wrongPipelineMessage("Found remaining request message on '" + queueName + "'", message);
+					wrongPipelineMessage("Found remaining request message on '" + actionName + "'", message);
 					remainingMessagesFound = true;
 					listenerMessage = listenerMessageHandler.getRequestMessage();
 				}
@@ -183,18 +183,18 @@ public class LarvaActionFactory {
 					if (listenerMessage.getContext() != null) {
 						listenerMessage.getContext().close();
 					}
-					wrongPipelineMessage("Found remaining response message on '" + queueName + "'", message);
+					wrongPipelineMessage("Found remaining response message on '" + actionName + "'", message);
 					remainingMessagesFound = true;
 					listenerMessage = listenerMessageHandler.getResponseMessage();
 				}
 			}
 
 			try {
-				queue.close();
-				debugMessage("Closed queue '" + queueName + "'");
+				larvaScenarioAction.close();
+				debugMessage("Closed action '" + actionName + "'");
 			} catch(Exception e) {
-				log.error("could not close '" + queueName + "'", e);
-				errorMessage("Could not close '" + queueName + "': " + e.getMessage(), e);
+				log.error("could not close '" + actionName + "'", e);
+				errorMessage("Could not close '" + actionName + "': " + e.getMessage(), e);
 			}
 		}
 

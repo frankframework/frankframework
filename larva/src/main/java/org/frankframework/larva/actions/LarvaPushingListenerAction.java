@@ -22,7 +22,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IPushingListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.http.WebServiceListener;
 import org.frankframework.larva.ListenerMessage;
@@ -31,7 +30,7 @@ import org.frankframework.stream.Message;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class LarvaPushingListenerAction extends AbstractLarvaAction<IPushingListener> {
-	private ListenerMessageHandler<?> listenerMessageHandler;
+	private final ListenerMessageHandler<?> listenerMessageHandler;
 	private ListenerMessage listenerMessage;
 
 	public LarvaPushingListenerAction(IPushingListener listener) {
@@ -47,7 +46,7 @@ public class LarvaPushingListenerAction extends AbstractLarvaAction<IPushingList
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if(!(peek() instanceof WebServiceListener)) {// Requires a configuration as parent
+		if(!(peek() instanceof WebServiceListener)) { // Requires a configuration as parent
 			super.configure();
 		}
 	}
@@ -74,7 +73,7 @@ public class LarvaPushingListenerAction extends AbstractLarvaAction<IPushingList
 	}
 
 	@Override
-	public void executeWrite(Message fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
+	public void executeWrite(Message fileContent, String correlationId, Map<String, Object> parameters) {
 		PipeLineSession context;
 		if (listenerMessage != null) { // Reuse the context from the previous message
 			context = listenerMessage.getContext();
@@ -87,7 +86,7 @@ public class LarvaPushingListenerAction extends AbstractLarvaAction<IPushingList
 	}
 
 	@Override
-	public Message executeRead(Properties properties) throws SenderException, TimeoutException, ListenerException {
+	public Message executeRead(Properties properties) throws TimeoutException, ListenerException {
 		ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessageWithDefaultTimeout();
 
 		if (listenerMessage != null) {

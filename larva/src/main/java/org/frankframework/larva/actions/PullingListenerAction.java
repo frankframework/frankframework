@@ -20,8 +20,6 @@ import java.util.Properties;
 
 import org.frankframework.core.IPullingListener;
 import org.frankframework.core.ListenerException;
-import org.frankframework.core.SenderException;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
@@ -43,12 +41,12 @@ public class PullingListenerAction extends AbstractLarvaAction<IPullingListener>
 	}
 
 	@Override
-	public void executeWrite(Message fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
+	public void executeWrite(Message fileContent, String correlationId, Map<String, Object> parameters) throws ListenerException {
 		throw new ListenerException("no write step for pulling listener [" + peek() + "]");
 	}
 
 	@Override
-	public Message executeRead(Properties properties) throws SenderException, TimeoutException, ListenerException {
+	public Message executeRead(Properties properties) throws ListenerException {
 		Map<String, Object> threadContext = null;
 		IPullingListener pullingListener = peek();
 		try {

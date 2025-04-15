@@ -33,7 +33,7 @@ import org.frankframework.parameters.IParameter;
 import org.frankframework.util.EnumUtils;
 
 /**
- * This class is used to create and manage the lifecycle of Larva queues.
+ * This class is used to create and manage the lifecycle of Larva actions.
  * 
  * This class is a wrapper around the IConfigurable interface and handles the read and write operations.
  * 
@@ -48,7 +48,7 @@ public abstract class AbstractLarvaAction<T extends IConfigurable> implements Li
 	private @Getter boolean convertExceptionToMessage = false;
 	private @Getter PipeLineSession session = new PipeLineSession();
 
-	public AbstractLarvaAction(T configurable) {
+	protected AbstractLarvaAction(T configurable) {
 		this.configurable = configurable;
 	}
 
@@ -99,7 +99,7 @@ public abstract class AbstractLarvaAction<T extends IConfigurable> implements Li
 		LarvaActionUtils.invokeSetters(configurable, properties);
 
 		String convertException = properties.getProperty(CONVERT_MESSAGE_TO_EXCEPTION_PROPERTY_KEY);
-		convertExceptionToMessage = Boolean.valueOf(convertException);
+		convertExceptionToMessage = Boolean.parseBoolean(convertException);
 
 		mapParameters(properties);
 
