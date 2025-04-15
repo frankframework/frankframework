@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,24 +17,31 @@ package org.frankframework.configuration;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.quartz.SchedulerException;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.LifecycleProcessor;
+import org.springframework.context.support.GenericApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
-import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
+import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.scheduler.SchedulerHelper;
 import org.frankframework.scheduler.job.IJob;
 import org.frankframework.util.RunState;
+import org.frankframework.util.SpringUtils;
 
 /**
  * Container for jobs that are scheduled for periodic execution.
@@ -45,20 +52,53 @@ import org.frankframework.util.RunState;
  * @author Niels Meijer
  *
  */
+@Log4j2
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class ScheduleManager extends AbstractConfigurableLifecyle implements ApplicationContextAware, AutoCloseable {
+public class ScheduleManager extends GenericApplicationContext implements ConfigurableLifecycle, InitializingBean, ApplicationContextAware {
 
-	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter SchedulerHelper schedulerHelper;
-	private final Map<String, IJob> schedules = new LinkedHashMap<>();
+
+	private @Getter boolean isConfigured = false;
+	private @Getter RunState state = RunState.STOPPED;
+
+	@Override
+	protected void initLifecycleProcessor() {
+		ConfiguringLifecycleProcessor defaultProcessor = new ConfiguringLifecycleProcessor();
+		defaultProcessor.setBeanFactory(getBeanFactory());
+		getBeanFactory().registerSingleton(LIFECYCLE_PROCESSOR_BEAN_NAME, defaultProcessor);
+		super.initLifecycleProcessor();
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) {
+		setParent(applicationContext);
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		if (isActive()) {
+			throw new LifecycleException("unable to refresh, ScheduleManager is already active");
+		}
+
+		refresh();
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if(!inState(RunState.STOPPED)) {
-			log.warn("unable to configure [{}] while in state [{}]", ()->this, this::getState);
-			return;
+		log.info("configuring ScheduleManager [{}]", this::getId);
+		state = RunState.STARTING;
+
+		LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
+		if (!(lifecycle instanceof ConfigurableLifecycle configurableLifecycle)) {
+			throw new ConfigurationException("wrong lifecycle processor found, unable to configure beans");
 		}
-		updateState(RunState.STARTING);
+
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("scheduler", getId())) {
+			log.debug("configuring ScheduleManager [{}]", getId());
+
+			// Trigger a configure on all (Configurable) Lifecycle beans
+			configurableLifecycle.configure();
+		}
 
 		for (IJob jobdef : getSchedulesList()) {
 			try {
@@ -68,6 +108,8 @@ public class ScheduleManager extends AbstractConfigurableLifecyle implements App
 				throw new ConfigurationException("could not schedule job [" + jobdef.getName() + "] cron [" + jobdef.getCronExpression() + "]", e);
 			}
 		}
+
+		isConfigured = true;
 	}
 
 	@Override
@@ -75,28 +117,22 @@ public class ScheduleManager extends AbstractConfigurableLifecyle implements App
 		return 200;
 	}
 
+	@Override
+	public boolean isRunning() {
+		return state == RunState.STARTED && super.isRunning();
+	}
+
 	/**
 	 * Configure and start, managed through the Spring Lifecyle
 	 */
 	@Override
 	public void start() {
-		if(!inState(RunState.STARTING)) {
-			log.warn("unable to start [{}] while in state [{}]", ()->this, this::getState);
-			return;
+		log.info("starting ScheduleManager [{}]", this::getId);
+		if (!isConfigured()) {
+			throw new IllegalStateException("cannot start ScheduleManager that's not configured");
 		}
 
-		for (IJob jobdef : getSchedulesList()) {
-			if(jobdef.isConfigured()) {
-				try {
-					schedulerHelper.scheduleJob(jobdef);
-					log.info("job scheduled with properties: {}", jobdef::toString);
-				} catch (SchedulerException e) {
-					log.error("could not schedule job [{}] cron [{}]", jobdef.getName(), jobdef.getCronExpression(), e);
-				}
-			} else {
-				log.info("could not schedule job [{}] as it is not configured", jobdef::getName);
-			}
-		}
+		super.start();
 
 		try {
 			schedulerHelper.startScheduler();
@@ -105,44 +141,37 @@ public class ScheduleManager extends AbstractConfigurableLifecyle implements App
 			log.error("could not start scheduler", e);
 		}
 
-		updateState(RunState.STARTED);
+		state = RunState.STARTED;
 	}
 
-	/**
-	 * remove all registered jobs
+	/*
+	 * Opposed to close you do not need to reconfigure the manager. Allows you to stop and start Schedules.
 	 */
 	@Override
 	public void stop() {
-		if(!inState(RunState.STARTED)) {
-			log.warn("forcing [{}] to stop while in state [{}]", ()->this, this::getState);
-		}
-		updateState(RunState.STOPPING);
+		log.info("stopping ScheduleManager [{}]", this::getId);
+		state = RunState.STOPPING;
 
-		log.info("stopping all jobs in ScheduleManager [{}]", ()->this);
-		List<IJob> scheduledJobs = getSchedulesList();
-		Collections.reverse(scheduledJobs);
-		for (IJob jobDef : scheduledJobs) {
-			log.info("removing trigger for JobDef [{}]", jobDef::getName);
-			try {
-				getSchedulerHelper().deleteTrigger(jobDef);
-			}
-			catch (SchedulerException se) {
-				log.error("unable to remove scheduled job [{}]", jobDef, se);
-			}
+		try {
+			super.stop();
+		} finally {
+			state = RunState.STOPPED;
 		}
-
-		updateState(RunState.STOPPED);
 	}
 
-	@Override
-	public void close() throws Exception {
-		if(!inState(RunState.STOPPED)) {
-			stop(); //Call this just in case...
-		}
 
-		while (!getSchedulesList().isEmpty()) {
-			IJob job = getSchedulesList().get(0);
-			unRegister(job);
+	/**
+	 * Close this context and remove all registered jobs
+	 */
+	@Override
+	public void close() {
+		log.info("closing ScheduleManager [{}]", this::getId);
+		try {
+			state = RunState.STOPPING;
+			super.close();
+		} finally {
+			isConfigured = false;
+			state = RunState.STOPPED;
 		}
 	}
 
@@ -151,49 +180,39 @@ public class ScheduleManager extends AbstractConfigurableLifecyle implements App
 	 * or from outside the configuration through the Frank!Console.
 	 */
 	public void addScheduledJob(IJob job) {
-		if(!inState(RunState.STOPPED)) {
-			log.warn("cannot add JobDefinition, manager in state [{}]", this::getState);
-		}
-
-		log.debug("registering JobDef [{}] with ScheduleManager [{}]", ()->job, ()->this);
+		log.debug("registering job [{}] with ScheduleManager [{}]", ()->job, ()->this);
 		if(job.getName() == null) {
 			throw new IllegalStateException("JobDef has no name");
 		}
-		if(schedules.containsKey(job.getName())) {
-			throw new IllegalStateException("JobDef [" + job.getName() + "] already registered.");
-		}
 
-		schedules.put(job.getName(), job);
+		SpringUtils.registerSingleton(this, job.getName(), job);
+		log.debug("ScheduleManager [{}] registered job [{}]", this::getId, job::toString);
 	}
 
 	public void unRegister(IJob job) {
+		DefaultListableBeanFactory cbf = (DefaultListableBeanFactory) getAutowireCapableBeanFactory();
 		String name = job.getName();
-
-		schedules.remove(name);
+		getSchedules()
+				.keySet()
+				.stream()
+				.filter(name::equals)
+				.forEach(cbf::destroySingleton);
 		log.debug("unregistered JobDef [{}] from ScheduleManager [{}]", ()->name, ()->this);
 	}
 
 	public final Map<String, IJob> getSchedules() {
-		return Collections.unmodifiableMap(schedules);
+		Map<String, IJob> jobs = getBeansOfType(IJob.class);
+		return Collections.unmodifiableMap(jobs);
 	}
 
 	public List<IJob> getSchedulesList() {
+		if (!isActive()) {
+			return Collections.emptyList();
+		}
 		return new ArrayList<>(getSchedules().values());
 	}
 
 	public IJob getSchedule(String name) {
 		return getSchedules().get(name);
-	}
-
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append(getClass().getSimpleName() + "@").append(Integer.toHexString(hashCode()));
-		builder.append(" state [").append(getState()).append("]");
-		builder.append(" schedules [").append(schedules.size()).append("]");
-		if(applicationContext != null) {
-			builder.append(" applicationContext [").append(applicationContext.getDisplayName()).append("]");
-		}
-		return builder.toString();
 	}
 }

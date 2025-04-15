@@ -24,6 +24,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -208,7 +209,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 		state = RunState.STARTING;
 		long start = System.currentTimeMillis();
 
-		try {
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("configuration", getName())) {
 			ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 			configurationDigester.digest();
 
@@ -241,6 +242,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 
 	@Override
 	public void close() {
+		log.info("closing configuration [{}]", this::getName);
 		try {
 			state = RunState.STOPPING;
 			super.close();

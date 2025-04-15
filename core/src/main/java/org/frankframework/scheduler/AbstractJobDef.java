@@ -17,6 +17,7 @@ package org.frankframework.scheduler;
 
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobDetail;
+import org.quartz.SchedulerException;
 import org.springframework.context.ApplicationContext;
 
 import io.micrometer.core.instrument.DistributionSummary;
@@ -266,6 +267,7 @@ public abstract class AbstractJobDef extends TransactionAttributes implements IJ
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Setter MetricsInitializer configurationMetrics;
+	private @Getter @Setter SchedulerHelper schedulerHelper;
 	private @Getter boolean configured;
 
 	private @Getter String name;
@@ -307,7 +309,43 @@ public abstract class AbstractJobDef extends TransactionAttributes implements IJ
 	}
 
 	@Override
-	public JobDetail getJobDetail() {
+	public final void start() {
+		if (!configured) {
+			log.info("could not schedule job [{}] as it is not configured", this::getName);
+			return;
+		}
+
+		log.info("starting job [{}]", this::getName);
+		try {
+			schedulerHelper.scheduleJob(this);
+		} catch (SchedulerException e) {
+			log.error("could not schedule job [{}] cron [{}]", getName(), getCronExpression(), e);
+		}
+	}
+
+	@Override
+	public final boolean isRunning() {
+		try {
+			return schedulerHelper.contains(this.getName(), this.getJobGroup());
+		} catch (SchedulerException e) {
+			log.warn("could not check if job is running", e);
+			return false;
+		}
+	}
+
+	@Override
+	public final void stop() {
+		log.info("removing job [{}]", this::getName);
+		try {
+			getSchedulerHelper().deleteTrigger(this);
+		}
+		catch (SchedulerException se) {
+			log.error("unable to remove scheduled job [{}]", this, se);
+		}
+	}
+
+	@Override
+	public final JobDetail getJobDetail() {
 		return IbisJobBuilder.fromJobDef(this).build();
 	}
 
