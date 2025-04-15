@@ -26,7 +26,6 @@ import lombok.SneakyThrows;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ScheduleManager;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
@@ -41,6 +40,7 @@ import org.frankframework.monitoring.SourceFiltering;
 import org.frankframework.monitoring.Trigger;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.pipes.EchoPipe;
+import org.frankframework.scheduler.ScheduleManager;
 import org.frankframework.testutil.JunitTestClassLoaderWrapper;
 import org.frankframework.testutil.mock.WaitUtils;
 import org.frankframework.util.RunState;

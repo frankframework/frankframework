@@ -56,6 +56,7 @@ import org.frankframework.lifecycle.SpringContextScope;
 import org.frankframework.monitoring.MonitorManager;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.scheduler.AbstractJobDef;
+import org.frankframework.scheduler.ScheduleManager;
 import org.frankframework.scheduler.job.IJob;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
@@ -247,12 +248,14 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 			state = RunState.STOPPING;
 			super.close();
 		} finally {
+			log.info("closed configuration [{}]", this::getName);
 			configured = false;
 			state = RunState.STOPPED;
 		}
 	}
 
-	// capture ContextClosedEvent which is published during AbstractApplicationContext#doClose()
+	// Capture ContextClosedEvent which is published during AbstractApplicationContext#doClose()
+	// This event will be published before the actual context is closed.
 	@Override
 	public void publishEvent(ApplicationEvent event) {
 		if (event instanceof ContextClosedEvent) {

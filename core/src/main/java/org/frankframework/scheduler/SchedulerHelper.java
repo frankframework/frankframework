@@ -38,7 +38,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.scheduler.job.IJob;
 
 /**
- * The SchedulerHelper encapsulates the quarz scheduler.
+ * The SchedulerHelper encapsulates the Quarz scheduler.
  *
  * @author John Dekker
  */
