@@ -8,7 +8,6 @@ on:
       - published
 
 jobs:
-  # Job to extract version from pom.xml
   extract_version:
     name: Extract Version
     runs-on: ubuntu-latest
@@ -28,7 +27,6 @@ jobs:
         id: get-version
         run: echo "version=$(./mvnw -f ./pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
 
-  # Main job that depends on the extract_version job
   zap_scan:
     name: Scan Frank2Example
     needs: extract_version
@@ -41,6 +39,8 @@ jobs:
     steps:
       - name: Checkout 
         uses: actions/checkout@v4
+      - name: Print ref name
+        run: echo "The ref is ${{ github.ref }} and the ref_name is ${{ github.ref_name }}"
       - name: ZAP Scan
         uses: zaproxy/action-full-scan@v0.12.0
         with:
@@ -49,3 +49,4 @@ jobs:
           target: 'http://localhost:8080'
           rules_file_name: '.zap/rules.tsv'
           cmd_options: '-a -j'
+          issue_title: OWASP ZAP Scan (branch `${{ github.ref_name }})`
