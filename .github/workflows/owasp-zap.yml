@@ -4,8 +4,9 @@ on:
   workflow_dispatch:
   release:
     types:
-      - edited
+      - created
       - published
+      - edited
 
 jobs:
   extract_version:
