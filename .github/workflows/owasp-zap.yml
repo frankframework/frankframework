@@ -2,46 +2,19 @@ name: OWASP ZAP
 
 on: 
   workflow_dispatch:
-  release:
-    types:
-      - created
-      - published
-      - edited
 
 jobs:
-  extract_version:
-    name: Extract Version
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.get-version.outputs.version }}
-    steps:
-      - name: Checkout 
-        uses: actions/checkout@v4
-        
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          
-      - name: Get version from pom.xml
-        id: get-version
-        run: echo "version=$(./mvnw -f ./pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
-
   zap_scan:
     name: Scan Frank2Example
-    needs: extract_version
     runs-on: ubuntu-latest
     services:
       frankframework:
-        image: frankframework/frank2example:${{ needs.extract_version.outputs.version }}
+        image: frankframework/frank2example
         ports:
           - "8080:8080"
     steps:
       - name: Checkout 
         uses: actions/checkout@v4
-      - name: Print ref name
-        run: echo "The ref is ${{ github.ref }} and the ref_name is ${{ github.ref_name }}"
       - name: ZAP Scan
         uses: zaproxy/action-full-scan@v0.12.0
         with:
@@ -50,4 +23,3 @@ jobs:
           target: 'http://localhost:8080'
           rules_file_name: '.zap/rules.tsv'
           cmd_options: '-a -j'
-          issue_title: OWASP ZAP Scan (branch `${{ github.ref_name }})`
