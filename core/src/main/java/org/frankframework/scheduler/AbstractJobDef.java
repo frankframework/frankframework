@@ -16,6 +16,7 @@
 package org.frankframework.scheduler;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
 import org.springframework.context.ApplicationContext;
@@ -26,13 +27,16 @@ import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
+import org.frankframework.core.TimeoutException;
 import org.frankframework.core.TransactionAttributes;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.scheduler.job.IJob;
+import org.frankframework.scheduler.job.JobExecutionException;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.Locker;
+import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 
@@ -287,25 +291,29 @@ public abstract class AbstractJobDef extends TransactionAttributes implements IJ
 
 	@Override
 	public void configure() throws ConfigurationException {
-		super.configure();
 		if (StringUtils.isEmpty(getName())) {
 			throw new ConfigurationException("a name must be specified");
 		}
 
-		if(StringUtils.isEmpty(getJobGroup())) { // If not explicitly set, configure this JobDef under the config it's specified in
-			setJobGroup(applicationContext.getId());
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_JOB_KEY, getName())) {
+			log.info("configuring job");
+			super.configure();
+
+			if(StringUtils.isEmpty(getJobGroup())) { // If not explicitly set, configure this JobDef under the config it's specified in
+				setJobGroup(applicationContext.getId());
+			}
+
+			SchedulerHelper.validateJob(getJobDetail(), getCronExpression());
+
+			if (getLocker()!=null) {
+				getLocker().configure();
+			}
+
+			summary = configurationMetrics.createDistributionSummary(this, FrankMeterType.JOB_DURATION);
+
+			getMessageKeeper().add("job successfully configured");
+			configured = true;
 		}
-
-		SchedulerHelper.validateJob(getJobDetail(), getCronExpression());
-
-		if (getLocker()!=null) {
-			getLocker().configure();
-		}
-
-		summary = configurationMetrics.createDistributionSummary(this, FrankMeterType.JOB_DURATION);
-
-		getMessageKeeper().add("job successfully configured");
-		configured = true;
 	}
 
 	@Override
@@ -372,42 +380,44 @@ public abstract class AbstractJobDef extends TransactionAttributes implements IJ
 		if (!incrementCountThreads()) {
 			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be aborted";
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-			log.error("{}{}", getLogPrefix(), msg);
+			log.error(msg);
 			return;
 		}
-		try {
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_JOB_KEY, getName())) {
 			if(beforeExecuteJob()) {
+				log.info("executing job");
 				if (getLocker() != null) {
 					String objectId = null;
 					try {
 						objectId = getLocker().acquire(getMessageKeeper());
 					} catch (Exception e) {
 						getMessageKeeper().add(e.getMessage(), MessageKeeperLevel.ERROR);
-						log.error("{}{}", getLogPrefix(), e.getMessage());
+						log.error("unable to aquire lock", e);
 					}
-					if (objectId!=null) {
+					if (objectId != null) {
 						TimeoutGuard tg = new TimeoutGuard("Job "+getName());
 						try {
 							tg.activateGuard(getTransactionTimeout());
 							runJob();
 						} finally {
 							if (tg.cancel()) {
-								log.error("{}thread has been interrupted", getLogPrefix());
+								log.error("thread has been interrupted");
 							}
 						}
 						try {
 							getLocker().release(objectId);
 						} catch (Exception e) {
-							String msg = "error while removing lock: " + e.getMessage();
-							getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
-							log.warn("{}{}", getLogPrefix(), msg);
+							getMessageKeeper().add("error while removing lock: " + e.getMessage(), MessageKeeperLevel.WARN);
+							log.warn("error while removing lock [{}]", objectId, e);
 						}
 					} else {
-						getMessageKeeper().add("unable to acquire lock ["+getName()+"] did not run");
+						getMessageKeeper().add("unable to acquire lock, job ["+getName()+"] did not run");
+						log.warn("unable to acquire lock, job did not run");
 					}
 				} else {
 					runJob();
 				}
+				log.info("finished executing job");
 			}
 		} finally {
 			decrementCountThreads();
@@ -426,21 +436,25 @@ public abstract class AbstractJobDef extends TransactionAttributes implements IJ
 		} catch (Exception e) {
 			String msg = "error while executing job ["+this+"] (as part of scheduled job execution): " + e.getMessage();
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-			log.error("{}{}", getLogPrefix(), msg, e);
+			log.error("error while executing job", e);
 		}
 
 		long endTime = System.currentTimeMillis();
 		long duration = endTime - startTime;
 		summary.record(duration);
 		getMessageKeeper().add("finished running the job in ["+duration+"] ms");
+		log.info("finished running the job in [{}] ms", duration);
 	}
 
-	protected IbisManager getIbisManager() {
+	/**
+	 * Is wrapped around a {@link Locker} and {@link MessageKeeper exceptions} will be managed automatically.
+	 * @exception TimeoutException when the TransactionTimeout has been reached
+	 * @exception JobExecutionException when the implementation fails to execute
+	 */
+	protected abstract void execute() throws JobExecutionException, TimeoutException;
+
+	protected final IbisManager getIbisManager() {
 		return getApplicationContext().getBean(IbisManager.class);
-	}
-
-	protected String getLogPrefix() {
-		return "Job ["+getName()+"] ";
 	}
 
 	@Override

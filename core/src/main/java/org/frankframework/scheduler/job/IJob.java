@@ -19,7 +19,6 @@ import org.quartz.JobDetail;
 
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.NameAware;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
@@ -29,13 +28,6 @@ import org.frankframework.util.MessageKeeper;
 
 @FrankDocGroup(FrankDocGroupValue.JOB)
 public interface IJob extends ConfigurableLifecycle, FrankElement, NameAware {
-
-	/**
-	 * Actual implementation of the {@link IJob}. Is wrapped around a {@link Locker} and {@link MessageKeeper exceptions} will be managed automatically.
-	 * @exception TimeoutException when the TransactionTimeout has been reached
-	 * @exception JobExecutionException when the implementation fails to execute
-	 */
-	public void execute() throws JobExecutionException, TimeoutException;
 
 	/**
 	 * Triggers the Job at the specified number of milliseconds. Keep cronExpression empty in order to use interval.

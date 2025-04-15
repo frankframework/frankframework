@@ -20,8 +20,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.CloseableThreadContext;
-import org.quartz.SchedulerException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -30,7 +28,6 @@ import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.support.GenericApplicationContext;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.doc.FrankDocGroup;
@@ -38,7 +35,6 @@ import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
 import org.frankframework.lifecycle.LifecycleException;
-import org.frankframework.scheduler.SchedulerHelper;
 import org.frankframework.scheduler.job.IJob;
 import org.frankframework.util.RunState;
 import org.frankframework.util.SpringUtils;
@@ -55,8 +51,6 @@ import org.frankframework.util.SpringUtils;
 @Log4j2
 @FrankDocGroup(FrankDocGroupValue.OTHER)
 public class ScheduleManager extends GenericApplicationContext implements ConfigurableLifecycle, InitializingBean, ApplicationContextAware {
-
-	private @Getter @Setter SchedulerHelper schedulerHelper;
 
 	private @Getter boolean isConfigured = false;
 	private @Getter RunState state = RunState.STOPPED;
@@ -93,22 +87,10 @@ public class ScheduleManager extends GenericApplicationContext implements Config
 			throw new ConfigurationException("wrong lifecycle processor found, unable to configure beans");
 		}
 
-		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("scheduler", getId())) {
-			log.debug("configuring ScheduleManager [{}]", getId());
+		log.debug("configuring ScheduleManager [{}]", getId());
 
-			// Trigger a configure on all (Configurable) Lifecycle beans
-			configurableLifecycle.configure();
-		}
-
-		for (IJob jobdef : getSchedulesList()) {
-			try {
-				jobdef.configure();
-				log.info("job scheduled with properties: {}", jobdef::toString);
-			} catch (Exception e) {
-				throw new ConfigurationException("could not schedule job [" + jobdef.getName() + "] cron [" + jobdef.getCronExpression() + "]", e);
-			}
-		}
-
+		// Trigger a configure on all (Configurable) Lifecycle beans
+		configurableLifecycle.configure();
 		isConfigured = true;
 	}
 
@@ -133,14 +115,6 @@ public class ScheduleManager extends GenericApplicationContext implements Config
 		}
 
 		super.start();
-
-		try {
-			schedulerHelper.startScheduler();
-			log.info("scheduler started");
-		} catch (SchedulerException e) {
-			log.error("could not start scheduler", e);
-		}
-
 		state = RunState.STARTED;
 	}
 

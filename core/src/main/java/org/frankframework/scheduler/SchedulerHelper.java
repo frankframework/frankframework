@@ -20,7 +20,6 @@ import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
@@ -33,18 +32,18 @@ import org.quartz.TriggerKey;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.scheduler.job.IJob;
-import org.frankframework.util.LogUtil;
 
 /**
  * The SchedulerHelper encapsulates the quarz scheduler.
  *
  * @author John Dekker
  */
+@Log4j2
 public class SchedulerHelper {
-	protected static Logger log = LogUtil.getLogger(SchedulerHelper.class);
 
 	public static final String DEFAULT_GROUP = Scheduler.DEFAULT_GROUP;
 
@@ -184,13 +183,4 @@ public class SchedulerHelper {
 
 		getScheduler().unscheduleJob(key);
 	}
-
-	public void startScheduler() throws SchedulerException {
-		if (scheduler != null && !scheduler.isStarted()) {
-			log.info("Starting Scheduler");
-			scheduler.start();
-		}
-	}
-
-
 }
