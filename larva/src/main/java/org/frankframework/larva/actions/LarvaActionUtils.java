@@ -43,7 +43,7 @@ import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 
 /**
- * Reflection helper to create Larva Queues'
+ * Reflection helper to create Larva Actions
  *
  * When a class is created it will attempt to set the name and disable HTTP SSL capabilities by default
  * When setting the bean properties it loops through the available setter methods and looks for a matching property.
@@ -66,7 +66,7 @@ public class LarvaActionUtils {
 	}
 
 	private static IConfigurable createInstance(IbisContext ibisContext, String className) {
-		LOG.debug("instantiating queue [{}]", className);
+		LOG.debug("instantiating action [{}]", className);
 		try {
 			Class<?> clazz = ClassUtils.loadClass(className);
 			Object obj = ibisContext.createBeanAutowireByName(clazz);
@@ -102,20 +102,20 @@ public class LarvaActionUtils {
 		return filteredProperties;
 	}
 
-	public static void invokeSetters(Object clazz, Properties queueProperties) {
-		for(Method method: clazz.getClass().getMethods()) {
+	public static void invokeSetters(Object clazz, Properties actionProperties) {
+		for (Method method : clazz.getClass().getMethods()) {
 			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
 				continue;
 
 			String setter = StringUtil.lcFirst(method.getName().substring(3));
-			String value = queueProperties.getProperty(setter);
+			String value = actionProperties.getProperty(setter);
 			if(value == null)
 				continue;
 
 			try {
 				ClassUtils.invokeSetter(clazz, method, value);
 			} catch (Exception e) {
-				throw new IllegalArgumentException("unable to set method ["+setter+"] on Class ["+ClassUtils.nameOf(clazz)+"]: "+e.getMessage(), e);
+				throw new IllegalArgumentException("unable to set method [" + setter + "] on Class [" + ClassUtils.nameOf(clazz) + "]: " + e.getMessage(), e);
 			}
 		}
 	}

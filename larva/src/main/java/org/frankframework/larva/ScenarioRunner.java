@@ -194,12 +194,12 @@ public class ScenarioRunner {
 			Properties properties = larvaTool.readProperties(appConstants, scenarioConfigurationFile);
 			String scenarioDescription = properties.getProperty("scenario.description");
 
-			larvaTool.debugMessage("Open queues");
+			larvaTool.debugMessage("Open actions");
 
-			LarvaActionFactory queueCreator = new LarvaActionFactory(larvaTool);
+			LarvaActionFactory actionFactory = new LarvaActionFactory(larvaTool);
 
 			String correlationId = TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
-			Map<String, LarvaScenarioAction> queues = queueCreator.createLarvaActions(scenarioDirectory, properties, ibisContext, correlationId);
+			Map<String, LarvaScenarioAction> larvaActions = actionFactory.createLarvaActions(scenarioDirectory, properties, ibisContext, correlationId);
 
 			// Start the scenario
 			StringBuilder output = new StringBuilder();
@@ -209,7 +209,7 @@ public class ScenarioRunner {
 
 			larvaTool.debugMessage("Read steps from property file");
 			List<String> stepList = getSteps(properties);
-			if (queues != null) {
+			if (larvaActions != null) {
 				larvaTool.debugMessage("Execute steps");
 				boolean allStepsPassed = true;
 				boolean autoSaved = false;
@@ -226,7 +226,7 @@ public class ScenarioRunner {
 					String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
 					larvaTool.debugMessage("Execute step '" + stepDisplayName + "'");
 					LocalTime start = LocalTime.now();
-					int stepPassed = larvaTool.executeStep(step, properties, stepDisplayName, queues, correlationId);
+					int stepPassed = larvaTool.executeStep(step, properties, stepDisplayName, larvaActions, correlationId);
 					LocalTime end = LocalTime.now();
 					if (stepPassed == RESULT_OK) {
 						if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED)) output.append(stepPassedMessage("Step '" + stepDisplayName + "' passed."));
@@ -261,11 +261,11 @@ public class ScenarioRunner {
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
 				}
-				larvaTool.debugMessage("Close queues");
-				boolean remainingMessagesFound = queueCreator.closeLarvaActions(queues);
+				larvaTool.debugMessage("Close actions");
+				boolean remainingMessagesFound = actionFactory.closeLarvaActions(larvaActions);
 				if (remainingMessagesFound) {
 					if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED))
-						output.append(stepFailedMessage("Found one or more messages on queues or in database after scenario executed"));
+						output.append(stepFailedMessage("Found one or more messages on actions or in database after scenario executed"));
 					scenarioPassed = RESULT_ERROR;
 				}
 			}
