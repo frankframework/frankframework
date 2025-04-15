@@ -8,26 +8,36 @@ on:
       - published
 
 jobs:
+  # Job to extract version from pom.xml
   extract_version:
+    name: Extract Version
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.pom-version.outputs.version }}
+      version: ${{ steps.get-version.outputs.version }}
     steps:
       - name: Checkout 
         uses: actions/checkout@v4
-      - name: Get POM version
-        id: pom-version
-        uses: PERES-Richard/maven-get-version-action@v3.0.0
+        
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          
+      - name: Get version from pom.xml
+        id: get-version
+        run: echo "version=$(./mvnw -f ./pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
 
+  # Main job that depends on the extract_version job
   zap_scan:
+    name: Scan Frank2Example
     needs: extract_version
+    runs-on: ubuntu-latest
     services:
       frankframework:
         image: frankframework/frank2example:${{ needs.extract_version.outputs.version }}
         ports:
           - "8080:8080"
-    runs-on: ubuntu-latest
-    name: Scan Frank2Example
     steps:
       - name: Checkout 
         uses: actions/checkout@v4
