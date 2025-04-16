@@ -180,7 +180,7 @@ public class MailFileSystemUtils {
 				if (personal!=null) {
 					iaddress.setPersonal(iaddress.getPersonal().trim());
 				}
-				if (result.length()!=0) {
+				if (!result.isEmpty()) {
 					result.append(", ");
 				}
 				result.append(iaddress.toUnicodeString());

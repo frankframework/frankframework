@@ -647,7 +647,7 @@
         <xs:group ref="JobElementGroup" minOccurs="0" maxOccurs="unbounded" />
       </xs:choice>
     </xs:sequence>
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.configuration.ScheduleManager" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.ScheduleManager" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="scheduler" />
     <xs:anyAttribute namespace="##other" processContents="skip" />

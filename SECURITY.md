@@ -59,3 +59,11 @@ In order for us to best respond to your report, please include any of the follow
 * Steps to reproduce or proof-of-concept
 * Any relevant tools, including versions used
 * Tool output
+
+## CI images
+In these images, dependencies are updated by dependabot in github. Since we can't test those updates, we have the following process in place. When we are not preparing a release 
+(that is, in the last month _before_ release), we can update the dependencies in the CI images. We try to follow the following rules:
+* update server versions (like DBMS's) when the client version was successfully updated in the frank framework (eg: when mysql-driver is updated to x.y, we can update mysql-server to x.y as well)
+* determine the 'stable' versions before each frank framework release for the ci-images
+* update patch versions when available
+

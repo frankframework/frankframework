@@ -55,6 +55,7 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
+import org.frankframework.util.UtilityTransformerPools;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.validation.AbstractValidationContext;
 import org.frankframework.validation.AbstractXSD;
@@ -142,7 +143,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 					throw new ConfigurationException("got error creating transformer from getSoapBody", te);
 				}
 
-				transformerPoolGetRootNamespace = XmlUtils.getGetRootNamespaceTransformerPool();
+				transformerPoolGetRootNamespace = UtilityTransformerPools.getGetRootNamespaceTransformerPool();
 			}
 
 			if (!isForwardFailureToSuccess() && !isThrowException() && findForward("failure") == null) {

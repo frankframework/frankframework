@@ -69,8 +69,8 @@ public class BrowseJdbcTable extends BusEndpointBase {
 	private static final String COLUMN_NAME = "COLUMN_NAME";
 	private static final String DATA_TYPE = "DATA_TYPE";
 	private static final String COLUMN_SIZE = "COLUMN_SIZE";
-	private String countColumnName = "ROWCOUNTER";
-	private String rnumColumnName = "RNUM";
+	private static final String COUNT_COLUMN_NAME = "ROWCOUNTER";
+	private static final String RNUM_COLUMN_NAME = "RNUM";
 	private Transformer transformer = null;
 
 	@Override
@@ -166,7 +166,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 
 	private List<RowDefinition> getFieldDefinitions(DirectQuerySender qs, boolean numberOfRowsOnly, String table, String order) throws SQLException, JdbcException {
 		List<RowDefinition> rowDefinitions = new ArrayList<>();
-		rowDefinitions.add(new RowDefinition(numberOfRowsOnly ? countColumnName : rnumColumnName, JDBCType.INTEGER, 0));
+		rowDefinitions.add(new RowDefinition(numberOfRowsOnly ? COUNT_COLUMN_NAME : RNUM_COLUMN_NAME, JDBCType.INTEGER, 0));
 
 		IDbmsSupport dbmsSupport = qs.getDbmsSupport();
 		if(!numberOfRowsOnly || StringUtils.isNotEmpty(order)) {
@@ -219,10 +219,10 @@ public class BrowseJdbcTable extends BusEndpointBase {
 				+ dbms.getKey()
 				+ "</dbmsName>"
 				+ "<countColumnName>"
-				+ countColumnName
+				+ COUNT_COLUMN_NAME
 				+ "</countColumnName>"
 				+ "<rnumColumnName>"
-				+ rnumColumnName
+				+ RNUM_COLUMN_NAME
 				+ "</rnumColumnName>"
 				+ "<tableName>"
 				+ table

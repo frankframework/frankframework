@@ -5,6 +5,7 @@ services:
     environment:
       jdbc.dbms.default: mysql
       jdbc.hostname: mysql
+      active.storedProcedureTests: true
 
   mysql:
     image: private.docker.nexus.frankframework.org/ff-test/dbms/mysql

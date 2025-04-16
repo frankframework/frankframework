@@ -20,7 +20,7 @@ public class SpringConfigurationXmlPropertyResolverTest {
 		}) {
 			context.init(false);
 
-			//Make sure property in the Spring XML is resolved
+			// Make sure property in the Spring XML is resolved
 			assertEquals("iaf/gui/", context.getBean("testSpringXmlPropertyResolver", String.class));
 		}
 	}

@@ -40,14 +40,13 @@ import org.frankframework.util.AppConstants;
 
 public class NarayanaJtaTransactionManager extends AbstractStatusRecordingTransactionManager {
 
-	private boolean heuristicDetectorEnabled = AppConstants.getInstance().getBoolean("transactionmanager.narayana.detectStuckTransactions", false);
+	private final boolean heuristicDetectorEnabled = AppConstants.getInstance().getBoolean("transactionmanager.narayana.detectStuckTransactions", false);
 
 	private static final long serialVersionUID = 1L;
 
 	private @Getter RecoveryManager recoveryManager;
 
 	private boolean initialized = false;
-
 
 	@Override
 	protected UserTransaction retrieveUserTransaction() throws TransactionSystemException {

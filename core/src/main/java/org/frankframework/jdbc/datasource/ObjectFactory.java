@@ -54,7 +54,7 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	private final @Getter String resourcePrefix;
 	private final @Getter String displayName;
 
-	private Map<String, O> objects = new ConcurrentHashMap<>();
+	private final Map<String, O> objects = new ConcurrentHashMap<>();
 
 	@Autowired @Setter
 	private List<? extends IObjectLocator> objectLocators;

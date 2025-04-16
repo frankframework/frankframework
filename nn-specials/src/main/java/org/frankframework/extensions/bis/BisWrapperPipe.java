@@ -41,6 +41,7 @@ import org.frankframework.util.Misc;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.UUIDUtil;
+import org.frankframework.util.UtilityTransformerPools;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
 
@@ -258,7 +259,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			bisErrorXe = bisErrorXe + " or string-length(" + soapBodyXPath + "/" + soapErrorXPath + ")&gt;0";
 			bisErrorTp = TransformerPool.getXPathTransformerPool(bisErrorNd, bisErrorXe, OutputType.TEXT);
 			if (isAddOutputNamespace()) {
-				addOutputNamespaceTp = XmlUtils.getAddRootNamespaceTransformerPool(getOutputNamespace(), true, false);
+				addOutputNamespaceTp = UtilityTransformerPools.getAddRootNamespaceTransformerPool(getOutputNamespace(), true, false);
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("cannot create transformer", e);

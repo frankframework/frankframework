@@ -95,7 +95,7 @@ class RekenboxLineReader extends BufferedReader {
 				str.append((char) b);
 			}
 		}
-		if(eos && str.length() == 0) {
+		if(eos && str.isEmpty()) {
 			return null;
 		}
 		return str.toString();

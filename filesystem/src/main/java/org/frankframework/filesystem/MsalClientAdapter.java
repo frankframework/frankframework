@@ -161,7 +161,7 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 
 	/** Silly wrapper to create a clean SDK */
 	public static class GraphClient implements AutoCloseable {
-		private MsalClientAdapter msal;
+		private final MsalClientAdapter msal;
 		public GraphClient(MsalClientAdapter msal) {
 			this.msal = msal;
 		}

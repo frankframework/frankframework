@@ -3,7 +3,7 @@
         "paused": true,
         "threadPoolClass": "org.quartz.simpl.SimpleThreadPool",
         "isSchedulerRemote": false,
-        "started": false,
+        "started": true,
         "version": "2.5.0",
         "jobStoreSupportsPersistence": false,
         "instanceId": "one",

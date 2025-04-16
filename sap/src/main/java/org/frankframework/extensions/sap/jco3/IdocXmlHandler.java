@@ -177,7 +177,7 @@ public class IdocXmlHandler extends DefaultHandler {
 			if (parsingEdiDcHeader) {
 				parsingEdiDcHeader=false;
 			} else {
-				if (segmentStack.size()>0) {
+				if (!segmentStack.isEmpty()) {
 					segmentStack.remove(segmentStack.size()-1);
 				}
 			}

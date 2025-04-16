@@ -25,8 +25,8 @@ import org.frankframework.monitoring.EventThrowing;
 import org.frankframework.stream.Message;
 
 public class MonitorEvent extends ApplicationEvent {
-	private @Getter String eventCode;
-	private @Getter Message eventMessage;
+	private final @Getter String eventCode;
+	private final @Getter Message eventMessage;
 
 	public MonitorEvent(EventThrowing source, String eventCode, Message eventMessage) {
 		super(source);
