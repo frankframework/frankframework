@@ -48,9 +48,9 @@ import org.springframework.util.MimeType;
 
 import com.nimbusds.jose.util.JSONObjectUtils;
 
+import org.frankframework.core.ContextSecurityHandler;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.AbstractHttpServlet;
-import org.frankframework.http.HttpSecurityHandler;
 import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.http.mime.MultipartUtils.MultipartMessages;
 import org.frankframework.jwt.AuthorizationException;
@@ -277,7 +277,8 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 			pipelineSession.put(PipeLineSession.HTTP_METHOD_KEY, method);
 			pipelineSession.put(PipeLineSession.HTTP_REQUEST_KEY, request);
 			pipelineSession.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
-			pipelineSession.setSecurityHandler(new HttpSecurityHandler(request));
+			pipelineSession.setSecurityHandler(new ContextSecurityHandler());
+
 			try {
 				/*
 				 * Check authentication

@@ -32,6 +32,7 @@ import com.google.common.net.HttpHeaders;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.core.ContextSecurityHandler;
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -97,14 +98,14 @@ public class RestListenerServlet extends AbstractHttpServlet {
 			}
 		}
 
-		String ifNoneMatch=request.getHeader("If-None-Match");
-		String ifMatch=request.getHeader("If-Match");
-		String contentType=request.getHeader("accept");
+		String ifNoneMatch = request.getHeader("If-None-Match");
+		String ifMatch = request.getHeader("If-Match");
+		String contentType = request.getHeader("accept");
 
 		if (log.isTraceEnabled()) log.trace("path [{}] If-Match [{}] If-None-Match [{}] contentType [{}]", path, ifMatch, ifNoneMatch, contentType);
 
-		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
-		try (PipeLineSession messageContext= new PipeLineSession()) {
+		ISecurityHandler securityHandler = new ContextSecurityHandler();
+		try (PipeLineSession messageContext = new PipeLineSession()) {
 			messageContext.setSecurityHandler(securityHandler);
 			messageContext.put(PipeLineSession.HTTP_METHOD_KEY, request.getMethod());
 

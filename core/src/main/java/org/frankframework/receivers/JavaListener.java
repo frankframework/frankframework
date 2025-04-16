@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Set;
 
 import jakarta.annotation.Nonnull;
-import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -35,6 +34,7 @@ import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.ContextSecurityHandler;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
@@ -45,7 +45,6 @@ import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.Mandatory;
-import org.frankframework.http.HttpSecurityHandler;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.senders.IbisJavaSender;
 import org.frankframework.senders.IbisLocalSender;
@@ -168,15 +167,10 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
 		}
 		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), messageWrapper.getCorrelationId());
-		Object object = parentSession.get(PipeLineSession.HTTP_REQUEST_KEY); //TODO dit moet weg
-		if (object != null) {
-			if (object instanceof HttpServletRequest request) {
-				ISecurityHandler securityHandler = new HttpSecurityHandler(request);
-				parentSession.setSecurityHandler(securityHandler);
-			} else {
-				log.warn("No securityHandler added for httpRequest [{}]", object::getClass);
-			}
-		}
+
+		ISecurityHandler securityHandler = new ContextSecurityHandler();
+		parentSession.setSecurityHandler(securityHandler);
+
 		try (PipeLineSession session = new PipeLineSession(parentSession)) {
 			Message message = messageWrapper.getMessage();
 			try {
