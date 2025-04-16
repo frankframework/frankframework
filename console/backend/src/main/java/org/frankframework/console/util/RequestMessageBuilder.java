@@ -41,8 +41,8 @@ import org.frankframework.util.JacksonUtils;
 public class RequestMessageBuilder {
 	private final Map<String, Object> customHeaders = new HashMap<>();
 
-	private final @Getter BusTopic topic;
-	private final @Getter BusAction action;
+	private final @Getter @Nonnull BusTopic topic;
+	private final @Getter @Nonnull BusAction action;
 
 	private static final String DEFAULT_PAYLOAD = "NONE";
 	private Object payload = DEFAULT_PAYLOAD;
@@ -133,9 +133,7 @@ public class RequestMessageBuilder {
 
 		MessageBuilder<?> builder = MessageBuilder.withPayload(payload);
 		builder.setHeader(BusTopic.TOPIC_HEADER_NAME, topic.name());
-		if (action != null) {
-			builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
-		}
+		builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
 
 		// Optional target parameter, to target a specific backend node.
 		if(uuid != null) {
