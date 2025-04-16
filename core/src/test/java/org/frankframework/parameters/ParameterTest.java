@@ -1432,4 +1432,160 @@ public class ParameterTest {
 		// Assert
 		assertTrue(((String)result).matches("\\d{1,2}:\\d{2}"));
 	}
+
+	@Test
+	public void testParameterWithJsonPathExpressionValueFromSessionKey() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setJsonPathExpression(".root.a");
+		parameter.setSessionKey("sessionKey");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		PipeLineSession session = new PipeLineSession();
+		session.put("sessionKey", """
+				{
+				  "root": {
+				    "a": "v1"
+				  }
+				}
+				""");
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertEquals("v1", result);
+	}
+
+	@Test
+	public void testParameterWithJsonPathExpressionValueFromSessionKeyAndContextKey() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setJsonPathExpression(".root.a");
+		parameter.setSessionKey("sessionKey");
+		parameter.setContextKey("ctx");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		message.getContext().put("ctx", """
+				{
+				  "root": {
+				    "a": "v1"
+				  }
+				}
+				""");
+		PipeLineSession session = new PipeLineSession();
+		session.put("sessionKey",message);
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertEquals("v1", result);
+	}
+
+	@Test
+	public void testParameterWithJsonPathExpressionFromValue() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setJsonPathExpression(".root.a");
+		parameter.setSessionKey("sessionKey");
+		parameter.setContextKey("ctx");
+		parameter.setValue( """
+				{
+				  "root": {
+				    "a": "v1"
+				  }
+				}
+				""");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		message.getContext().put("ctx", """
+				{
+				  "root": {
+				    "a": "wrongOutcome"
+				  }
+				}
+				""");
+		PipeLineSession session = new PipeLineSession();
+		session.put("sessionKey",message);
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertEquals("v1", result);
+	}
+
+	@Test
+	public void testParameterWithJsonPathExpressionValueFromMessage() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setJsonPathExpression(".root.a");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("""
+				{
+				  "root": {
+				    "a": "v1"
+				  }
+				}
+				""");
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertEquals("v1", result);
+	}
+
+	@Test
+	public void testParameterWithJsonPathExpressionValueFromMessageAndContextKey() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setJsonPathExpression(".root.a");
+		parameter.setContextKey("ctx");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		message.getContext().put("ctx", """
+				{
+				  "root": {
+				    "a": "v1"
+				  }
+				}
+				""");
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertEquals("v1", result);
+	}
+
+	@Test
+	public void testParameterCannotHaveBothXPathAndJsonPathExpression() {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setJsonPathExpression(".root.a");
+		parameter.setXpathExpression("/root/a");
+
+		// Act
+		assertThrows(ConfigurationException.class, parameter::configure);
+	}
 }

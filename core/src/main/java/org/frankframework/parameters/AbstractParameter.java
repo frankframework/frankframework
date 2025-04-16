@@ -35,6 +35,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -42,8 +43,11 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Document;
 
+import com.jayway.jsonpath.JsonPath;
+
 import lombok.Getter;
 import lombok.Setter;
+import net.minidev.json.JSONArray;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
@@ -59,12 +63,14 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.EnumUtils;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlBuilder;
+import org.frankframework.util.XmlException;
 import org.frankframework.util.XmlUtils;
 
 /**
@@ -113,8 +119,10 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	private @Getter ParameterType type = ParameterType.STRING;
 	private @Getter String sessionKey = null;
 	private @Getter String sessionKeyXPath = null;
+	private @Getter String sessionKeyJPath = null;
 	private @Getter String contextKey = null;
 	private @Getter String xpathExpression = null;
+	private @Getter String jsonPathExpression = null;
 	private @Getter String namespaceDefs = null;
 	private @Getter String styleSheetName = null;
 	private @Getter String pattern = null;
@@ -168,6 +176,9 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isNotEmpty(getSessionKey()) && StringUtils.isNotEmpty(getSessionKeyXPath())) {
 			throw new ConfigurationException("Parameter ["+getName()+"] cannot have both sessionKey and sessionKeyXPath specified");
+		}
+		if (StringUtils.isNotEmpty(getXpathExpression()) && StringUtils.isNotEmpty(getJsonPathExpression())) {
+			throw new ConfigurationException("Parameter [" +getName()+"] cannot have both xpathExpression and jpathExpression");
 		}
 		paramList.configure();
 		if (StringUtils.isNotEmpty(getXpathExpression()) || StringUtils.isNotEmpty(styleSheetName)) {
@@ -251,7 +262,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			try {
 				requestedSessionKey = tpDynamicSessionKey.transformToString(message);
 			} catch (Exception e) {
-				throw new ParameterException(getName(), "SessionKey for parameter ["+getName()+"] exception on transformation to get name", e);
+				throw new ParameterException(getName(), "SessionKey for parameter [" + getName() + "] exception on transformation to get name", e);
 			}
 		} else {
 			requestedSessionKey = getSessionKey();
@@ -325,7 +336,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 				} else {
 					source = null;
 				}
-				if (source!=null) {
+				if (source != null) {
 					if (isRemoveNamespaces()) {
 						// TODO: There should be a more efficient way to do this
 						String rnResult = XmlUtils.removeNamespaces(XmlUtils.source2String(source));
@@ -347,9 +358,34 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			} catch (Exception e) {
 				throw new ParameterException(getName(), "Parameter ["+getName()+"] exception on transformation to get parametervalue", e);
 			}
+		} else if (getJsonPathExpression() != null) {
+			/*
+			 * determine source for JPath evaluation same as for XSLT / XPath, from
+			 * 1) value attribute
+			 * 2) requestedSessionKey
+			 * 3) pattern
+			 * 4) input message
+			 *
+			 * N.B. this order differs from untransformed parameters
+			 */
+			Object input;
+			if (getValue() != null) {
+				input = getValue();
+			} else if (StringUtils.isNotEmpty(requestedSessionKey)) {
+				input = getParameterValueFromSessionKey(session, requestedSessionKey);
+			} else if (StringUtils.isNotEmpty(getPattern())) {
+				input = formatPattern(alreadyResolvedParameters, session);
+			} else if (message != null) {
+				input = getParameterValueFromInputMessage(message);
+			} else {
+				input = null;
+			}
+			if (input != null) {
+				result = evaluateJsonPath(input, getJsonPathExpression());
+			}
 		} else {
 			/*
-			 * No XSLT transformation, determine primary result from
+			 * No XSLT transformation or JPath evaluation, determine primary result from
 			 * 1) requestedSessionKey
 			 * 2) pattern
 			 * 3) value attribute
@@ -358,33 +394,15 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			 * N.B. this order differs from transformed parameters.
 			 */
 			if (StringUtils.isNotEmpty(requestedSessionKey)) {
-				result = session.get(requestedSessionKey);
-				if (result instanceof Message message1 && StringUtils.isNotEmpty(getContextKey())) {
-					result = message1.getContext().get(getContextKey());
-				}
-				if (LOG.isDebugEnabled() && (result == null ||
-						((result instanceof String string) && string.isEmpty()) ||
-						((result instanceof Message message1) && message1.isEmpty()))) {
-					LOG.debug("Parameter [{}] session variable [{}] is empty", this::getName, () -> requestedSessionKey);
-				}
+				result = getParameterValueFromSessionKey(session, requestedSessionKey);
 			} else if (StringUtils.isNotEmpty(getPattern())) {
 				result = formatPattern(alreadyResolvedParameters, session);
 			} else if (getValue()!=null) {
 				result = getValue();
+			} else if (message != null) {
+				result = getParameterValueFromInputMessage(message);
 			} else {
-				try {
-					if (message==null) {
-						return null;
-					}
-					if (StringUtils.isNotEmpty(getContextKey())) {
-						result = message.getContext().get(getContextKey());
-					} else {
-						message.preserve();
-						result = message;
-					}
-				} catch (IOException e) {
-					throw new ParameterException(getName(), e);
-				}
+				result = null;
 			}
 		}
 
@@ -453,6 +471,61 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		}
 
 		return result;
+	}
+
+	private Object getParameterValueFromInputMessage(Message message) throws ParameterException {
+		Object input;
+		try {
+			if (StringUtils.isNotEmpty(getContextKey())) {
+				input = message.getContext().get(getContextKey());
+			} else {
+				message.preserve();
+				input = message;
+			}
+		} catch (IOException e) {
+			throw new ParameterException(getName(), e);
+		}
+		return input;
+	}
+
+	@Nullable
+	private Object getParameterValueFromSessionKey(PipeLineSession session, String requestedSessionKey) {
+		Object input = session.get(requestedSessionKey);
+		if (input instanceof Message message1 && StringUtils.isNotEmpty(getContextKey())) {
+			input = message1.getContext().get(getContextKey());
+		}
+		if (LOG.isDebugEnabled() && (input == null ||
+				((input instanceof String string) && string.isEmpty()) ||
+				((input instanceof Message message1) && message1.isEmpty()))) {
+			LOG.debug("Parameter [{}] session variable [{}] is empty", this::getName, () -> requestedSessionKey);
+		}
+		return input;
+	}
+
+	private Object evaluateJsonPath(Object input, String jsonPathExpression) throws ParameterException {
+		try {
+			Message inputMessage = MessageUtils.asJsonMessage(input);
+			Object result = JsonPath.read(inputMessage.asInputStream(), jsonPathExpression);
+			return getJsonPathResult(result);
+		} catch (XmlException | IOException e) {
+			throw new ParameterException("Cannot evaluate JSonPathExpression on parameter value", e);
+		}
+	}
+
+	/**
+	 * When using expressions, jsonPath returns a JsonArray, even if there is only one match. Make sure to get a String from it.
+	 */
+	private String getJsonPathResult(Object jsonPathResult) {
+		if (jsonPathResult instanceof String string) {
+			return string;
+		}
+
+		if (jsonPathResult instanceof JSONArray jsonArray
+				&& !jsonArray.isEmpty()) {
+			return jsonArray.get(0).toString();
+		}
+
+		return null;
 	}
 
 	private Object applyMinAndMaxLengths(final Object request) {
@@ -668,7 +741,12 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 	@Override
 	public String toString() {
-		return "Parameter name=[" + name + "] defaultValue=[" + defaultValue + "] sessionKey=[" + sessionKey + "] sessionKeyXPath=[" + sessionKeyXPath + "] xpathExpression=[" + xpathExpression + "] type=[" + type + "] value=[" + value + "]";
+		String expression = jsonPathExpression != null ? jsonPathExpression : xpathExpression;
+		String expressionType = jsonPathExpression != null ? "jpathExpression" : "xpathExpression";
+		String sessionKeyExpression = sessionKeyJPath != null ? sessionKeyJPath : sessionKeyXPath;
+		String sessionKeyExpressionType = sessionKeyJPath != null ? "sessionKeyJPath" : "sessionKeyXPath";
+
+		return "Parameter name=[" + name + "] defaultValue=[" + defaultValue + "] sessionKey=[" + sessionKey + "] "+ sessionKeyExpressionType+" =[" + sessionKeyExpression + "] "+expressionType+"=[" + expression + "] type=[" + type + "] value=[" + value + "]";
 	}
 
 	private TransformerPool getTransformerPool() {
@@ -689,7 +767,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		this.type = type;
 	}
 
-	/** The value of the parameter, or the base for transformation using xpathExpression or stylesheet, or formatting. */
+	/** The value of the parameter, or the base for transformation using xpathExpression, jpathExpression or stylesheet, or formatting. */
 	@Override
 	public void setValue(String value) {
 		this.value = value;
@@ -697,7 +775,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 	/**
 	 * Key of a PipelineSession-variable. <br/>If specified, the value of the PipelineSession variable is used as input for
-	 * the xpathExpression or stylesheet, instead of the current input message. <br/>If no xpathExpression or stylesheet are
+	 * the xpathExpression, jpathExpression or stylesheet, instead of the current input message. <br/>If no xpathExpression, jpathExpression or stylesheet are
 	 * specified, the value itself is returned. <br/>If the value '*' is specified, all existing sessionkeys are added as
 	 * parameter of which the name starts with the name of this parameter. <br/>If also the name of the parameter has the
 	 * value '*' then all existing sessionkeys are added as parameter (except tsReceived)
@@ -717,6 +795,11 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		sessionKeyXPath = string;
 	}
 
+	/** Instead of a fixed <code>sessionKey</code> it's also possible to use a JPath expression applied to the input message to extract the name of the session-variable. */
+	public void setSessionKeyJPath(String string) {
+		sessionKeyJPath = string;
+	}
+
 	/** URL to a stylesheet that wil be applied to the contents of the message or the value of the session-variable. */
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
@@ -725,6 +808,14 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	/** the XPath expression to extract the parameter value from the (xml formatted) input or session-variable. */
 	public void setXpathExpression(String xpathExpression) {
 		this.xpathExpression = xpathExpression;
+	}
+
+	/**
+	 * The JPath expression to extract the parameter value from the input or session-variable.
+	 * The input should be JSON or XML formatted, if it is XML formatter a simple XML-to-JSON conversion is done.
+	 */
+	public void setJsonPathExpression(String jsonPathExpression) {
+		this.jsonPathExpression = jsonPathExpression;
 	}
 
 	/**

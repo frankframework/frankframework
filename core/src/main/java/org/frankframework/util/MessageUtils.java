@@ -23,6 +23,10 @@ import java.util.Iterator;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
+import javax.xml.transform.TransformerException;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.xml.soap.AttachmentPart;
 import jakarta.xml.soap.MimeHeader;
@@ -38,10 +42,12 @@ import org.apache.logging.log4j.Logger;
 import org.apache.tika.Tika;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.MimeType;
+import org.xml.sax.SAXException;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
@@ -51,6 +57,9 @@ public class MessageUtils {
 	private static final Logger LOG = LogUtil.getLogger(MessageUtils.class);
 	private static final int CHARSET_CONFIDENCE_LEVEL = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
 	private static final Tika TIKA = new Tika();
+
+	private static final MimeType JSON_MIME_TYPE = new MimeType("application", "json");
+	private static final MimeType XML_MIME_TYPE = new MimeType("application", "xml");
 
 	private MessageUtils() {
 		throw new IllegalStateException("Don't construct utility class");
@@ -354,7 +363,7 @@ public class MessageUtils {
 	 * Convert an object to a string. Does not close object when it is of type Message or MessageWrapper.
 	 */
 	@Deprecated
-	public static String asString(Object object) throws IOException {
+	public static @Nullable String asString(@Nullable Object object) throws IOException {
 		if (object == null) {
 			return null;
 		}
@@ -372,5 +381,26 @@ public class MessageUtils {
 		try (Message message = Message.asMessage(object)) {
 			return message.asString();
 		}
+	}
+
+	public static @Nonnull Message asJsonMessage(@Nonnull Object object) throws IOException, XmlException {
+		Message message = Message.asMessage(object);
+		MimeType mimeType = MessageUtils.computeMimeType(message);
+		if (JSON_MIME_TYPE.isCompatibleWith(mimeType)) {
+			return message;
+		}
+
+		if (XML_MIME_TYPE.isCompatibleWith(mimeType)) {
+			try {
+				TransformerPool tpXml2Json = UtilityTransformerPools.getXml2JsonTransformerPool();
+				return tpXml2Json.transform(message);
+			} catch (ConfigurationException | TransformerException | SAXException e) {
+				throw new XmlException("Cannot convert message from XML to JSON", e);
+			}
+		}
+
+		Message result = new Message("{\"value\": " + message.asString() + "}");
+		result.getContext().withMimeType(JSON_MIME_TYPE).withCharset(Charset.defaultCharset());
+		return result;
 	}
 }

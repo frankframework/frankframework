@@ -45,7 +45,7 @@ public class XmlParameter extends AbstractParameter {
 	}
 
 	@Override
-	protected Object getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException, IOException {
+	protected Object getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException {
 		boolean isTypeNode = XmlType.NODE.equals(xmlType);
 
 		if (isTypeNode) {
