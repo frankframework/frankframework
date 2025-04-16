@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.logging.log4j.LogManager;
@@ -48,11 +49,11 @@ public class RequestMessageBuilder {
 
 	private static final Logger SEC_LOG = LogManager.getLogger("SEC");
 
-	public RequestMessageBuilder(BusTopic topic) {
-		this( topic, null);
+	public RequestMessageBuilder(@Nonnull BusTopic topic) {
+		this( topic, BusAction.GET);
 	}
 
-	public RequestMessageBuilder(BusTopic topic, BusAction action) {
+	public RequestMessageBuilder(@Nonnull BusTopic topic, @Nonnull BusAction action) {
 		this.topic = topic;
 		this.action = action;
 	}
@@ -94,11 +95,11 @@ public class RequestMessageBuilder {
 		return this;
 	}
 
-	public static RequestMessageBuilder create(BusTopic topic) {
+	public static RequestMessageBuilder create(@Nonnull BusTopic topic) {
 		return new RequestMessageBuilder(topic);
 	}
 
-	public static RequestMessageBuilder create(BusTopic topic, BusAction action) {
+	public static RequestMessageBuilder create(@Nonnull BusTopic topic, @Nonnull BusAction action) {
 		return new RequestMessageBuilder(topic, action);
 	}
 
