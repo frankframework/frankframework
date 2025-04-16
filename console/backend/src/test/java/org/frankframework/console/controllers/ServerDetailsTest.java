@@ -23,6 +23,6 @@ public class ServerDetailsTest extends FrankApiTestBase {
 
 	@Test
 	public void testFrankHealth() throws Exception {
-		this.testActionAndTopicHeaders("/server/health", "HEALTH", null);
+		this.testActionAndTopicHeaders("/server/health", "HEALTH", "GET");
 	}
 }
