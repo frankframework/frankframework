@@ -25,15 +25,16 @@ import jakarta.annotation.Nullable;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.BusTopic;
-import org.frankframework.util.JacksonUtils;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.BusTopic;
+import org.frankframework.util.JacksonUtils;
 
 @Log4j2
 public class RequestMessageBuilder {
@@ -118,9 +119,9 @@ public class RequestMessageBuilder {
 				log.warn("created bus request [GET:{}] with payload [{}]", topic, payload);
 			}
 
-			SEC_LOG.debug("created bus request [{}:{}] with headers [{}]", topic, action, headers);
+			SEC_LOG.debug("created bus request [{}:{}] with headers [{}]", action, topic, headers);
 		} else {
-			SEC_LOG.info("created bus request [{}:{}] with headers [{}] payload [{}]", topic, action, headers, payload);
+			SEC_LOG.info("created bus request [{}:{}] with headers [{}] payload [{}]", action, topic, headers, payload);
 		}
 	}
 
