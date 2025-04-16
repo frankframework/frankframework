@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+Copyright 2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockito.Mockito.spy;
 
 import java.io.ByteArrayInputStream;
@@ -56,6 +55,7 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.X509KeyManager;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.Cookie;
@@ -78,6 +78,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -1345,11 +1346,9 @@ public class ApiListenerServletTest {
 	}
 
 	@ParameterizedTest
-	@EnumSource(HttpMethod.class)
+	//you may not set the OPTIONS method on an ApiListener, the Servlet should handle this without calling the adapter
+	@EnumSource(value = HttpMethod.class, mode = EnumSource.Mode.EXCLUDE, names = { "OPTIONS" })
 	public void testRequestWithAccept(HttpMethod method) throws Exception {
-		//you may not set the OPTIONS method on an ApiListener, the Servlet should handle this without calling the adapter
-		assumeFalse(method == HttpMethod.OPTIONS);
-
 		// Arrange
 		String uri = "/messageWithJson2XmlValidator";
 		new ApiListenerBuilder(uri, List.of(method), null, MediaTypes.XML).build();
@@ -1662,6 +1661,38 @@ public class ApiListenerServletTest {
 		assertEquals(PAYLOAD, session.get("ClaimsSet"));
 		assertTrue(result.containsHeader("Allow"));
 		assertNull(result.getErrorMessage());
+	}
+
+	@Test
+	public void testJwtTokenParsingWithNonStandardJwtHeaderNoBearerToken() throws Exception {
+		final String JWT_HEADER = "X-JWT-Assertion";
+		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(HttpMethod.GET))
+				.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
+				.setRequiredIssuer("JWTPipeTest")
+				.setAuthenticationMethod(AuthenticationMethods.JWT)
+				.setJwtHeader(JWT_HEADER)
+				.build();
+
+		Response result = service(prepareJWTRequest(null, JWT_HEADER, false));
+
+		assertEquals(200, result.getStatus());
+		assertEquals(PAYLOAD, session.get("ClaimsSet"));
+		assertTrue(result.containsHeader("Allow"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
+	public void testJwtTokenParsingWithStandardJwtHeaderNoBearerToken() throws Exception {
+		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(HttpMethod.GET))
+				.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
+				.setRequiredIssuer("JWTPipeTest")
+				.setAuthenticationMethod(AuthenticationMethods.JWT)
+				.build();
+
+		Response result = service(prepareJWTRequest(null, HttpHeaders.AUTHORIZATION, false));
+
+		assertEquals(401, result.getStatus());
+		assertEquals("JWT is not provided as bearer token",result.getErrorMessage());
 	}
 
 	@Test
@@ -2008,12 +2039,15 @@ public class ApiListenerServletTest {
 		return signedJWT.serialize();
 	}
 
-	public MockHttpServletRequest prepareJWTRequest(String token) throws Exception {
-		return prepareJWTRequest(token, "Authorization");
+	public @Nonnull MockHttpServletRequest prepareJWTRequest(@Nullable String token) throws Exception {
+		return prepareJWTRequest(token, HttpHeaders.AUTHORIZATION, true);
 	}
-	public MockHttpServletRequest prepareJWTRequest(String token, String header) throws Exception {
+	public @Nonnull MockHttpServletRequest prepareJWTRequest(@Nullable String token, @Nonnull String header) throws Exception {
+		return prepareJWTRequest(token, header, true);
+	}
+	public @Nonnull MockHttpServletRequest prepareJWTRequest(@Nullable String token, @Nonnull String header, boolean isBearerToken) throws Exception {
 		Map<String, String> headers = new HashMap<>();
-		headers.put(header, "Bearer "+ (token != null ? token : createJWT()) );
+		headers.put(header, (isBearerToken ? "Bearer " : "") + (token != null ? token : createJWT()) );
 
 		return createRequest(JWT_VALIDATION_URI, HttpMethod.GET, null, headers);
 	}
