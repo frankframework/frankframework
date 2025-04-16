@@ -7,6 +7,6 @@ import org.springframework.test.context.ContextConfiguration;
 class SecurityItemsTest extends FrankApiTestBase {
 	@Test
 	public void getSecurityItemsBasic() throws Exception {
-		testActionAndTopicHeaders("/securityitems", "SECURITY_ITEMS", null);
+		testActionAndTopicHeaders("/securityitems", "SECURITY_ITEMS", "GET");
 	}
 }
