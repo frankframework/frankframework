@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2023 WeAreFrank!
+   Copyright 2017-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,13 +21,14 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.MimeType;
-
 import com.nimbusds.jose.proc.SecurityContext;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpHeaders;
+import org.springframework.util.MimeType;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
@@ -88,7 +89,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	// for jwt validation
 	private @Getter String requiredIssuer = null;
 	private @Getter String jwksUrl = null;
-	private @Getter String jwtHeader = "Authorization";
+	private @Getter String jwtHeader = HttpHeaders.AUTHORIZATION;
 	private @Getter String requiredClaims = null;
 	private @Getter String exactMatchClaims = null;
 	private @Getter String anyMatchClaims = null;

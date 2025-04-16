@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2024 WeAreFrank!
+   Copyright 2017-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,12 +33,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
-import org.springframework.util.InvalidMimeTypeException;
-import org.springframework.util.MimeType;
-
 import com.nimbusds.jose.util.JSONObjectUtils;
 
 import jakarta.json.Json;
@@ -49,6 +43,13 @@ import jakarta.json.stream.JsonGenerator;
 import jakarta.mail.BodyPart;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMultipart;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
+import org.springframework.http.HttpHeaders;
+import org.springframework.util.InvalidMimeTypeException;
+import org.springframework.util.MimeType;
+
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.HttpServletBase;
@@ -283,7 +284,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 						break;
 					case HEADER:
-						authorizationToken = request.getHeader("Authorization");
+						authorizationToken = request.getHeader(HttpHeaders.AUTHORIZATION);
 						break;
 					case AUTHROLE:
 						List<String> roles = listener.getAuthenticationRoleList();
@@ -296,9 +297,11 @@ public class ApiListenerServlet extends HttpServletBase {
 						break;
 					case JWT:
 						String authorizationHeader = request.getHeader(listener.getJwtHeader());
-						if(StringUtils.isNotEmpty(authorizationHeader) && authorizationHeader.contains("Bearer")) {
+						boolean isNonStandardJwtAuthHeader = !HttpHeaders.AUTHORIZATION.equalsIgnoreCase(listener.getJwtHeader());
+						if (StringUtils.isNotEmpty(authorizationHeader) && (authorizationHeader.startsWith("Bearer") || isNonStandardJwtAuthHeader)) {
 							try {
-								Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(authorizationHeader.substring(7));
+								String jwtToken = StringUtils.removeStartIgnoreCase(authorizationHeader, "Bearer ");
+								Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(jwtToken);
 								messageContext.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim(), listener.getPrincipalNameClaim()));
 								messageContext.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
 							} catch(Exception e) {
