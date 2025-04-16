@@ -15,4 +15,11 @@
 */
 package org.frankframework.core;
 
+/**
+ * Represents a field from the message browser item.
+ * @param fieldName Configured database table column name.
+ * @param property The property that represents this field in the Message objects retrieved by the FF! Console.
+ * @param displayName Column name shown in the table in the FF! Console.
+ * @param type Type of data used to display dates or other data in a human readable format, e.g. "string" or "date".
+ */
 public record MessageBrowserField(String fieldName, String property, String displayName, String type) { }
