@@ -8,6 +8,6 @@ public class ConnectionOverviewTest extends FrankApiTestBase {
 
 	@Test
 	public void getConnections() throws Exception {
-		testActionAndTopicHeaders("/connections", "CONNECTION_OVERVIEW", null);
+		testActionAndTopicHeaders("/connections", "CONNECTION_OVERVIEW", "GET");
 	}
 }

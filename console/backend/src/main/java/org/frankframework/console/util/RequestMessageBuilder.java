@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.logging.log4j.LogManager;
@@ -40,19 +41,19 @@ import org.frankframework.util.JacksonUtils;
 public class RequestMessageBuilder {
 	private final Map<String, Object> customHeaders = new HashMap<>();
 
-	private final @Getter BusTopic topic;
-	private final @Getter BusAction action;
+	private final @Getter @Nonnull BusTopic topic;
+	private final @Getter @Nonnull BusAction action;
 
 	private static final String DEFAULT_PAYLOAD = "NONE";
 	private Object payload = DEFAULT_PAYLOAD;
 
 	private static final Logger SEC_LOG = LogManager.getLogger("SEC");
 
-	public RequestMessageBuilder(BusTopic topic) {
-		this( topic, null);
+	public RequestMessageBuilder(@Nonnull BusTopic topic) {
+		this(topic, BusAction.GET);
 	}
 
-	public RequestMessageBuilder(BusTopic topic, BusAction action) {
+	public RequestMessageBuilder(@Nonnull BusTopic topic, @Nonnull BusAction action) {
 		this.topic = topic;
 		this.action = action;
 	}
@@ -94,11 +95,11 @@ public class RequestMessageBuilder {
 		return this;
 	}
 
-	public static RequestMessageBuilder create(BusTopic topic) {
+	public static RequestMessageBuilder create(@Nonnull BusTopic topic) {
 		return new RequestMessageBuilder(topic);
 	}
 
-	public static RequestMessageBuilder create(BusTopic topic, BusAction action) {
+	public static RequestMessageBuilder create(@Nonnull BusTopic topic, @Nonnull BusAction action) {
 		return new RequestMessageBuilder(topic, action);
 	}
 
@@ -119,9 +120,9 @@ public class RequestMessageBuilder {
 				log.warn("created bus request [GET:{}] with payload [{}]", topic, payload);
 			}
 
-			SEC_LOG.debug("created bus request [{}:{}] with headers [{}]", topic, action, headers);
+			SEC_LOG.debug("created bus request [{}:{}] with headers [{}]", action, topic, headers);
 		} else {
-			SEC_LOG.info("created bus request [{}:{}] with headers [{}] payload [{}]", topic, action, headers, payload);
+			SEC_LOG.info("created bus request [{}:{}] with headers [{}] payload [{}]", action, topic, headers, payload);
 		}
 	}
 
@@ -132,9 +133,7 @@ public class RequestMessageBuilder {
 
 		MessageBuilder<?> builder = MessageBuilder.withPayload(payload);
 		builder.setHeader(BusTopic.TOPIC_HEADER_NAME, topic.name());
-		if (action != null) {
-			builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
-		}
+		builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
 
 		// Optional target parameter, to target a specific backend node.
 		if(uuid != null) {
