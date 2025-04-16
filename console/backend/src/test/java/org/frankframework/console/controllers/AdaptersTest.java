@@ -47,7 +47,7 @@ public class AdaptersTest extends FrankApiTestBase {
 
 	@Test
 	public void getAdapterHealth() throws Exception {
-		testActionAndTopicHeaders("/configurations/configuration/adapters/name/health", "HEALTH", null);
+		testActionAndTopicHeaders("/configurations/configuration/adapters/name/health", "HEALTH", "GET");
 	}
 
 	@Test
@@ -203,7 +203,7 @@ public class AdaptersTest extends FrankApiTestBase {
 
 	@Test
 	public void getAdapterFlow() throws Exception {
-		testActionAndTopicHeaders("/configurations/configuration/adapters/adapter/flow", "FLOW", null);
+		testActionAndTopicHeaders("/configurations/configuration/adapters/adapter/flow", "FLOW", "GET");
 	}
 
 	@Test
