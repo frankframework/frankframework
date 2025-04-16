@@ -23,13 +23,16 @@ import java.util.Map;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import lombok.NoArgsConstructor;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
+
+import lombok.NoArgsConstructor;
+
 import org.frankframework.console.ApiException;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.StreamUtil;
-import org.springframework.http.MediaType;
-import org.springframework.web.multipart.MultipartFile;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class RequestUtils {
@@ -44,7 +47,7 @@ public class RequestUtils {
 			return null;
 		}
 		if(clazz.isAssignableFrom(boolean.class) || clazz.isAssignableFrom(Boolean.class)) {
-			return (T) Boolean.valueOf(str); //At the moment we allow null/empty -> FALSE
+			return (T) Boolean.valueOf(str); // At the moment we allow null/empty -> FALSE
 		}
 		return ClassUtils.convertToType(clazz, str);
 	}

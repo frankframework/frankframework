@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,33 +21,39 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.BusTopic;
-import org.frankframework.util.JacksonUtils;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.BusTopic;
+import org.frankframework.util.JacksonUtils;
+
+@Log4j2
 public class RequestMessageBuilder {
 	private final Map<String, Object> customHeaders = new HashMap<>();
 
-	private final @Getter BusTopic topic;
-	private final @Getter BusAction action;
-	private Object payload = "NONE";
+	private final @Getter @Nonnull BusTopic topic;
+	private final @Getter @Nonnull BusAction action;
+
+	private static final String DEFAULT_PAYLOAD = "NONE";
+	private Object payload = DEFAULT_PAYLOAD;
 
 	private static final Logger SEC_LOG = LogManager.getLogger("SEC");
 
-	public RequestMessageBuilder(BusTopic topic) {
-		this( topic, null);
+	public RequestMessageBuilder(@Nonnull BusTopic topic) {
+		this(topic, BusAction.GET);
 	}
 
-	public RequestMessageBuilder(BusTopic topic, BusAction action) {
+	public RequestMessageBuilder(@Nonnull BusTopic topic, @Nonnull BusAction action) {
 		this.topic = topic;
 		this.action = action;
 	}
@@ -89,27 +95,45 @@ public class RequestMessageBuilder {
 		return this;
 	}
 
-	public static RequestMessageBuilder create(BusTopic topic) {
+	public static RequestMessageBuilder create(@Nonnull BusTopic topic) {
 		return new RequestMessageBuilder(topic);
 	}
 
-	public static RequestMessageBuilder create(BusTopic topic, BusAction action) {
+	public static RequestMessageBuilder create(@Nonnull BusTopic topic, @Nonnull BusAction action) {
 		return new RequestMessageBuilder(topic, action);
+	}
+
+	/**
+	 * Log relevant information to the Security-log.
+	 * GET requests, and requests without payload, are logged on debug level.
+	 *
+	 * When a GET request contains a payload we're doing something wrong...
+	 * Ideally only the `upload` TOPIC should use a payload.
+	 */
+	private void addLogLines() {
+		String headers = customHeaders.entrySet().stream()
+				.map(this::mapHeaderForLog)
+				.collect(Collectors.joining(", "));
+
+		if (action == BusAction.GET || DEFAULT_PAYLOAD.equals(payload)) {
+			if(action == BusAction.GET && !DEFAULT_PAYLOAD.equals(payload)) {
+				log.warn("created bus request [GET:{}] with payload [{}]", topic, payload);
+			}
+
+			SEC_LOG.debug("created bus request [{}:{}] with headers [{}]", action, topic, headers);
+		} else {
+			SEC_LOG.info("created bus request [{}:{}] with headers [{}] payload [{}]", action, topic, headers, payload);
+		}
 	}
 
 	public Message<?> build(@Nullable UUID uuid) {
 		if (SEC_LOG.isInfoEnabled()) {
-			String headers = customHeaders.entrySet().stream()
-					.map(this::mapHeaderForLog)
-					.collect(Collectors.joining(", "));
-			SEC_LOG.info("created bus request [{}:{}] with headers [{}] payload [{}]", action, topic, headers, payload);
+			addLogLines();
 		}
 
 		MessageBuilder<?> builder = MessageBuilder.withPayload(payload);
 		builder.setHeader(BusTopic.TOPIC_HEADER_NAME, topic.name());
-		if (action != null) {
-			builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
-		}
+		builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
 
 		// Optional target parameter, to target a specific backend node.
 		if(uuid != null) {
