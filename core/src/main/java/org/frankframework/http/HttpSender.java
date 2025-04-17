@@ -53,7 +53,7 @@ import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
 
 /**
- * {@inheritDoc}
+ * {@inheritClassDoc}
  *
  * @author Niels Meijer
  * @since 7.0

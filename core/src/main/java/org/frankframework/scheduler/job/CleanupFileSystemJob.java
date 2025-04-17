@@ -26,7 +26,7 @@ import org.frankframework.util.DirectoryCleaner;
  * stale (untouched) for the given {@code retention} duration.
  * See {@link DirectoryCleaner} for more info.
  * 
- * {@inheritDoc}
+ * {@inheritClassDoc}
  */
 public class CleanupFileSystemJob extends AbstractJobDef {
 

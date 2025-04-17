@@ -37,7 +37,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.DateFormatUtils;
 
 /**
- * {@inheritDoc}
+ * {@inheritClassDoc}
  */
 public class TibcoLogJmsListener extends JmsListener {
 
