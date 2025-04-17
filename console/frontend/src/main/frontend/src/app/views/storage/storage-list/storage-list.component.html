@@ -28,122 +28,17 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <th>Storage ID</th>
-                    <td>
-                      <input
-                        disabled
-                        type="checkbox"
-                        name="id"
-                        (change)="updateFilter('id')"
-                        [(ngModel)]="displayColumn.id"
-                      />
-                    </td>
-                    <td>
-                      <input type="text" class="full-width" [(ngModel)]="search['id']" />
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>Timestamp (From)</th>
-                    <td>
-                      <input
-                        type="checkbox"
-                        (change)="updateFilter('insertDate')"
-                        [(ngModel)]="displayColumn.insertDate"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        class="full-width"
-                        [(ngModel)]="search['startDate']"
-                        title="Expects a timestamp with at least yyyy-mm"
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>Timestamp (To)</th>
-                    <td>&nbsp;</td>
-                    <td>
-                      <input
-                        type="text"
-                        class="full-width"
-                        [(ngModel)]="search['endDate']"
-                        title="Expects a timestamp with at least yyyy-mm"
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>Host</th>
-                    <td>
-                      <input type="checkbox" (change)="updateFilter('host')" [(ngModel)]="displayColumn.host" />
-                    </td>
-                    <td>
-                      <input type="text" class="full-width" [(ngModel)]="search['host']" />
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>Original ID</th>
-                    <td>
-                      <input
-                        type="checkbox"
-                        (change)="updateFilter('originalId')"
-                        [(ngModel)]="displayColumn.originalId"
-                      />
-                    </td>
-                    <td>
-                      <input type="text" class="full-width" [(ngModel)]="search['messageId']" />
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>Correlation ID</th>
-                    <td>
-                      <input
-                        type="checkbox"
-                        (change)="updateFilter('correlationId')"
-                        [(ngModel)]="displayColumn.correlationId"
-                      />
-                    </td>
-                    <td>
-                      <input type="text" class="full-width" [(ngModel)]="search['correlationId']" />
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>Comment</th>
-                    <td>
-                      <input type="checkbox" (change)="updateFilter('comment')" [(ngModel)]="displayColumn.comment" />
-                    </td>
-                    <td>
-                      <input type="text" class="full-width" [(ngModel)]="search['comment']" />
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>Expires</th>
-                    <td>
-                      <input
-                        type="checkbox"
-                        (change)="updateFilter('expiryDate')"
-                        [(ngModel)]="displayColumn.expiryDate"
-                      />
-                    </td>
-                    <td>&nbsp;</td>
-                  </tr>
-                  <tr>
-                    <th>Label</th>
-                    <td>
-                      <input type="checkbox" (change)="updateFilter('label')" [(ngModel)]="displayColumn.label" />
-                    </td>
-                    <td>
-                      <input type="text" class="full-width" [(ngModel)]="search['label']" />
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>Message</th>
-                    <td>&nbsp;</td>
-                    <td>
-                      <input type="text" class="full-width" [(ngModel)]="search['message']" />
-                    </td>
-                  </tr>
+                  @for (column of messageFields; track column) {
+                    <tr>
+                      <th>{{ column.displayName }}</th>
+                      <td>
+                        <input type="checkbox" [(ngModel)]="column.display" (change)="updateFilter(column.fieldName)" />
+                      </td>
+                      <td>
+                        <input type="text" class="full-width" [(ngModel)]="column.filter" />
+                      </td>
+                    </tr>
+                  }
                   <tr>
                     <th>&nbsp;</th>
                     <td>&nbsp;</td>

@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, inject, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { MessageStore, Note, StorageService } from '../storage.service';
+import { MessageField, MessageStore, Note, StorageService } from '../storage.service';
 import { StorageListDtComponent } from './storage-list-dt/storage-list-dt.component';
 import { SessionService } from 'src/app/services/session.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
@@ -34,6 +34,11 @@ type DisplayColumn = {
   label: boolean;
 };
 
+type SearchColumn = MessageField & {
+  filter: string;
+  display: boolean;
+};
+
 type MessageData = MessageStore['messages'][number];
 
 @Component({
@@ -66,8 +71,6 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   protected messagesProcessing = false;
   protected changingProcessState = false;
-
-  protected search: Record<string, string> = {};
   protected searching = false;
   protected clearSearchLadda = false;
   protected messagesDownloading = false;
@@ -95,6 +98,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   protected datasource: DataTableDataSource<MessageData> = new DataTableDataSource<MessageData>();
   protected displayedColumns: DataTableColumn<MessageData>[] = [];
+  protected messageFields: SearchColumn[] = [];
 
   private webStorageService: WebStorageService = inject(WebStorageService);
   private Session: SessionService = inject(SessionService);
@@ -198,6 +202,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
           className: field.type === 'date' ? 'date' : undefined,
         })),
       ];
+      this.messageFields = response.fields.map((field) => ({ ...field, display: true, filter: '' }));
     });
   }
 
@@ -283,7 +288,10 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   clearSearch(): void {
     this.clearSearchLadda = true;
     this.Session.remove('search');
-    this.search = {};
+
+    for (const column of this.messageFields) {
+      column.filter = '';
+    }
     this.storageService.updateTable();
   }
 
