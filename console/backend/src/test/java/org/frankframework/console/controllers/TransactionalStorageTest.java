@@ -46,6 +46,15 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 	}
 
 	@Test
+	public void testGetFields() throws Exception {
+		testActionAndTopicHeaders(
+				"/configurations/configuration/adapters/adapterName/receivers/storageSourceName/stores/error/fields",
+				"MESSAGE_BROWSER",
+				"STATUS"
+		);
+	}
+
+	@Test
 	public void testDownloadMessage() throws Exception {
 		testActionAndTopicHeaders(
 				"/configurations/configuration/adapters/adapterName/receivers/storageSourceName/stores/error/messages/MQ==/download", // MQ== is the Base64 encoded value for 1
