@@ -28,6 +28,12 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationDigester;
 import org.frankframework.configuration.ConfigurationException;
 
+/**
+ * This class is a custom implementation of the Spring {@link DefaultLifecycleProcessor} that adds support for
+ * {@link ConfigurableLifecycle} beans. It allows for the configuration of lifecycle beans before they are started.
+ * <p>
+ * See {@link ConfigurableApplicationContext} for more information.
+ */
 @Log4j2
 public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor implements ConfigurableLifecycle {
 
