@@ -27,7 +27,7 @@ import org.frankframework.xml.XmlWriter;
 public class XmlDocumentBuilder extends XmlNodeBuilder implements IDocumentBuilder {
 
 	private Writer writer;
-	private SaxDocumentBuilder saxDocumentBuilder;
+	private final SaxDocumentBuilder saxDocumentBuilder;
 
 	public XmlDocumentBuilder(String rootElement, Writer writer) throws SAXException {
 		this(new SaxDocumentBuilder(null, new XmlWriter(writer), true), rootElement);

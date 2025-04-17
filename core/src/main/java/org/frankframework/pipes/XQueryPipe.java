@@ -51,7 +51,7 @@ import org.frankframework.util.StreamUtil;
  */
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class XQueryPipe extends FixedForwardPipe {
-	private String xquery;
+
 	private String xqueryName;
 	private String xqueryFile;
 	private XQPreparedExpression preparedExpression;
@@ -59,6 +59,7 @@ public class XQueryPipe extends FixedForwardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+
 		URL url;
 		if (StringUtils.isNotEmpty(getXqueryName())) {
 			url = ClassLoaderUtils.getResourceURL(this, getXqueryName());
@@ -76,6 +77,7 @@ public class XQueryPipe extends FixedForwardPipe {
 			throw new ConfigurationException("no XQuery name or file specified");
 		}
 
+		String xquery;
 		try {
 			xquery = StreamUtil.resourceToString(url);
 		} catch (IOException e) {

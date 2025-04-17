@@ -37,12 +37,14 @@ public class LogUtil {
 	public static final String MDC_SENDER_KEY = "sender";
 	public static final String MDC_LISTENER_KEY = "listener";
 	public static final String MDC_ADAPTER_KEY = "adapter";
+	public static final String MDC_JOB_KEY = "job";
 
 	public static final String MDC_EXIT_STATE_KEY = "exit.state";
 	public static final String MDC_EXIT_CODE_KEY = "exit.code";
 
 	public static final String MDC_MESSAGE_ID_KEY = "mid";
 	public static final String MDC_CORRELATION_ID_KEY = "cid";
+
 
 
 	public static Logger getRootLogger() {

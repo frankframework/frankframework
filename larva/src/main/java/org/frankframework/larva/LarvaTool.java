@@ -74,19 +74,16 @@ import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 
+import lombok.Getter;
+
 import org.frankframework.configuration.ClassNameRewriter;
 import org.frankframework.configuration.IbisContext;
-import org.frankframework.core.IPullingListener;
-import org.frankframework.core.ListenerException;
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.jdbc.FixedQuerySender;
-import org.frankframework.larva.queues.Queue;
-import org.frankframework.larva.queues.QueueCreator;
-import org.frankframework.larva.queues.QueueWrapper;
+import org.frankframework.larva.actions.LarvaActionFactory;
+import org.frankframework.larva.actions.LarvaActionUtils;
+import org.frankframework.larva.actions.LarvaScenarioAction;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
-import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
@@ -119,13 +116,14 @@ public class LarvaTool {
 	// dirty solution by Marco de Reus:
 	private String stepOutputFilename = "";
 	private static boolean autoSaveDiffs = false;
-	private final TestConfig config = new TestConfig();
+	private final @Getter TestConfig config = new TestConfig();
 
 	/*
 	 * if allowReadlineSteps is set to true, actual results can be compared in line by using .readline steps.
 	 * Those results cannot be saved to the inline expected value, however.
 	 */
-	protected static final boolean allowReadlineSteps = false;
+	protected final boolean allowReadlineSteps = false;
+
 	protected static int globalTimeoutMillis = AppConstants.getInstance().getInt("larva.timeout", 10_000);
 
 	private static final String TR_STARTING_TAG="<tr>";
@@ -143,12 +141,12 @@ public class LarvaTool {
 	}
 
 	// Invoked by LarvaServlet
-	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
-		runScenarios(getIbisContext(application), request, out, false);
+	public static int runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
+		return runScenarios(getIbisContext(application), request, out, false);
 	}
 
 	// Invoked by the IbisTester class
-	public static void runScenarios(IbisContext ibisContext, HttpServletRequest request, Writer out, boolean silent) {
+	public static int runScenarios(IbisContext ibisContext, HttpServletRequest request, Writer out, boolean silent) {
 		String paramLogLevel = request.getParameter("loglevel");
 		String paramAutoScroll = request.getParameter("autoscroll");
 		String paramMultiThreaded = request.getParameter("multithreaded");
@@ -165,7 +163,7 @@ public class LarvaTool {
 		}
 		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
 		LarvaTool larvaTool = new LarvaTool();
-		larvaTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, paramMultiThreaded, paramExecute, paramWaitBeforeCleanUp, timeout,
+		return larvaTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, paramMultiThreaded, paramExecute, paramWaitBeforeCleanUp, timeout,
 				paramScenariosRootDirectory, out, silent);
 	}
 
@@ -260,15 +258,17 @@ public class LarvaTool {
 				debugMessage("Read one scenario");
 				scenarioFiles = new ArrayList<>();
 				scenarioFiles.add(new File(paramExecute));
+			} else if (paramExecute.equals(currentScenariosRootDirectory)) {
+				debugMessage("Executing all scenario files from root directory '" + currentScenariosRootDirectory + "'");
+				scenarioFiles = allScenarioFiles;
 			} else {
 				debugMessage("Read all scenarios from directory '" + paramExecute + "'");
 				scenarioFiles = readScenarioFiles(appConstants, paramExecute);
 			}
-			boolean evenStep = false;
 			debugMessage("Initialize statistics variables");
 			long startTime = System.currentTimeMillis();
 			debugMessage("Execute scenario('s)");
-			ScenarioRunner scenarioRunner = new ScenarioRunner(this, ibisContext, config, appConstants, evenStep, waitBeforeCleanUp, logLevel);
+			ScenarioRunner scenarioRunner = new ScenarioRunner(this, ibisContext, config, appConstants, waitBeforeCleanUp, logLevel);
 			// If only one scenario is executed, do not use multithreading, because they mostly use the same resources
 			if (paramScenariosRootDirectory != null && !paramScenariosRootDirectory.equals(paramExecute)) {
 				scenarioRunner.setMultipleThreads(false);
@@ -801,6 +801,11 @@ public class LarvaTool {
 		config.writeSilent(message);
 	}
 
+	public void warningMessage(String message) {
+		writeLog("<h2 class='warning'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", LarvaLogLevel.ERROR, true);
+		config.writeSilent(message);
+	}
+
 	public void errorMessage(String message, Exception exception) {
 		errorMessage(message);
 		if (config.isSilent()) return;
@@ -1013,7 +1018,7 @@ public class LarvaTool {
 
 	private static Entry<Object, Object> rewriteClassName(Entry<Object, Object> e) {
 		Object propertyName = e.getKey();
-		if (e.getValue() == null || !propertyName.toString().endsWith(QueueCreator.CLASS_NAME_PROPERTY_SUFFIX)) {
+		if (e.getValue() == null || !propertyName.toString().endsWith(LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX)) {
 			return e;
 		}
 		String newClassName = e.getValue()
@@ -1073,350 +1078,65 @@ public class LarvaTool {
 		properties.putAll(absolutePathProperties);
 	}
 
-	public boolean closeQueues(Map<String, Queue> queues, Properties properties, String correlationId) {
-		boolean remainingMessagesFound = false;
-		debugMessage("Close jdbc connections");
-		for (Map.Entry<String, Queue> entry : queues.entrySet()) {
-			String name = entry.getKey();
-			if ("org.frankframework.jdbc.FixedQuerySender".equals(properties.get(name + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
-				Queue querySendersInfo = entry.getValue();
-				FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)querySendersInfo.get("prePostQueryFixedQuerySender");
-				if (prePostFixedQuerySender != null) {
-					try (PipeLineSession session = new PipeLineSession()) {
-						/* Check if the preResult and postResult are not equal. If so, then there is a
-						 * database change that has not been read in the scenario.
-						 * So set remainingMessagesFound to true and show the entry.
-						 * (see also executeFixedQuerySenderRead() )
-						 */
-						String preResult = (String)querySendersInfo.get("prePostQueryResult");
-						session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-						String postResult = prePostFixedQuerySender.sendMessageOrThrow(getQueryFromSender(prePostFixedQuerySender), session).asString();
-						if (!preResult.equals(postResult)) {
-							Message message = null;
-							FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
-							try {
-								message = readQueryFixedQuerySender.sendMessageOrThrow(getQueryFromSender(readQueryFixedQuerySender), session);
-							} catch(TimeoutException e) {
-								errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e);
-							} catch(SenderException e) {
-								errorMessage("Could not execute query for '" + name + "': " + e.getMessage(), e);
-							}
-							if (message != null) {
-								wrongPipelineMessage("Found remaining message on '" + name + "'", message);
-							}
-
-							remainingMessagesFound = true;
-
-						}
-						prePostFixedQuerySender.stop();
-					} catch(TimeoutException e) {
-						errorMessage("Time out on close (pre/post) '" + name + "': " + e.getMessage(), e);
-					} catch(IOException | SenderException e) {
-						errorMessage("Could not close (pre/post) '" + name + "': " + e.getMessage(), e);
-					}
-				}
-				FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
-				readQueryFixedQuerySender.stop();
-			}
-		}
-
-		debugMessage("Close autoclosables");
-		for (Map.Entry<String, Queue> entry : queues.entrySet()) {
-			String queueName = entry.getKey();
-			Queue value = entry.getValue();
-			if(value instanceof QueueWrapper queue) {
-				SenderThread senderThread = queue.getSenderThread();
-				if (senderThread != null) {
-					debugMessage("Found remaining SenderThread");
-					SenderException senderException = senderThread.getSenderException();
-					if (senderException != null) {
-						errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException);
-					}
-					TimeoutException timeoutException = senderThread.getTimeoutException();
-					if (timeoutException != null) {
-						errorMessage("Found remaining TimeOutException: " + timeoutException.getMessage(), timeoutException);
-					}
-					Message message = senderThread.getResponse();
-					if (message != null) {
-						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message);
-					}
-				}
-				ListenerMessageHandler<?> listenerMessageHandler = queue.getMessageHandler();
-				if (listenerMessageHandler != null) {
-					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
-					while (listenerMessage != null) {
-						Message message = listenerMessage.getMessage();
-						if (listenerMessage.getContext() != null) {
-							listenerMessage.getContext().close();
-						}
-						wrongPipelineMessage("Found remaining request message on '" + queueName + "'", message);
-						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getRequestMessage();
-					}
-					listenerMessage = listenerMessageHandler.getResponseMessage();
-					while (listenerMessage != null) {
-						Message message = listenerMessage.getMessage();
-						if (listenerMessage.getContext() != null) {
-							listenerMessage.getContext().close();
-						}
-						wrongPipelineMessage("Found remaining response message on '" + queueName + "'", message);
-						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getResponseMessage();
-					}
-				}
-
-				try {
-					queue.close();
-					debugMessage("Closed queue '" + queueName + "'");
-				} catch(Exception e) {
-					errorMessage("Could not close '" + queueName + "': " + e.getMessage(), e);
-				}
-			}
-		}
-
-		return remainingMessagesFound;
-	}
-
-	private int executeQueueWrite(String stepDisplayName, Map<String, Queue> queues, String queueName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
-		Queue queue = queues.get(queueName);
-		if (queue==null) {
-			errorMessage("Property '" + queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
+	private int executeActionWriteStep(String stepDisplayName, Map<String, LarvaScenarioAction> actions, String actionName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
+		LarvaScenarioAction scenarioAction = actions.get(actionName);
+		if (scenarioAction == null) {
+			errorMessage("Property '" + actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
 			return RESULT_ERROR;
 		}
-		int result = RESULT_ERROR;
 		try {
-			result = queue.executeWrite(stepDisplayName, fileContent, correlationId, xsltParameters);
-			if (result == RESULT_OK) {
-				debugPipelineMessage(stepDisplayName, "Successfully wrote message to '" + queueName + "':", fileContent);
-				logger.debug("Successfully wrote message to '{}'", queueName);
-			}
+			scenarioAction.executeWrite(fileContent, correlationId, xsltParameters);
+			debugPipelineMessage(stepDisplayName, "Successfully wrote message to '" + actionName + "':", fileContent);
+			logger.debug("Successfully wrote message to '{}'", actionName);
+			return RESULT_OK;
 		} catch(TimeoutException e) {
-			errorMessage("Time out sending message to '" + queueName + "': " + e.getMessage(), e);
+			errorMessage("Timeout sending message to '" + actionName + "': " + e.getMessage(), e);
 		} catch(Exception e) {
-			errorMessage("Could not send message to '" + queueName + "' ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e);
+			errorMessage("Could not send message to '" + actionName + "' ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e);
 		}
-		return result;
+		return RESULT_ERROR;
 	}
 
-	private int executePullingListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, Message fileContent) {
-		int result = RESULT_ERROR;
-
-		Queue queue = queues.get(queueName);
-		if (!(queue instanceof QueueWrapper listenerInfo)) {
-			errorMessage("Property '" + queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
-			return RESULT_ERROR;
-		}
-		IPullingListener pullingListener = (IPullingListener) listenerInfo.get();
-		Map<String, Object> threadContext = null;
-		Message message = null;
-		try {
-			threadContext = pullingListener.openThread();
-			RawMessageWrapper rawMessage = pullingListener.getRawMessage(threadContext);
-			if (rawMessage != null) {
-				message = pullingListener.extractMessage(rawMessage, threadContext);
-				String correlationId = rawMessage.getId(); // NB: Historically this code extracted message-ID then used that as correlation-ID.
-				listenerInfo.put("correlationId", correlationId);
-			}
-		} catch(ListenerException e) {
-			if (!"".equals(fileName)) {
-				errorMessage("Could not read PullingListener message from '" + queueName + "': " + e.getMessage(), e);
-			}
-		} finally {
-			if (threadContext != null) {
-				try {
-					pullingListener.closeThread(threadContext);
-				} catch(ListenerException e) {
-					errorMessage("Could not close thread on PullingListener '" + queueName + "': " + e.getMessage(), e);
-				}
-			}
-		}
-
-		if (message == null || message.isEmpty()) {
-			if ("".equals(fileName)) {
-				result = RESULT_OK;
-			} else {
-				errorMessage("Could not read PullingListener message (null returned)");
-			}
-		} else {
-			result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties);
-		}
-
-		return result;
-	}
-
-
-	private int executeQueueRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, Message fileContent) {
-		int result = RESULT_ERROR;
-
-		Queue queue = queues.get(queueName);
-		if (queue == null) {
-			errorMessage("Property '" + queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
+	private int executeActionReadStep(String step, String stepDisplayName, Properties properties, Map<String, LarvaScenarioAction> actions, String actionName, String fileName, Message expected) {
+		LarvaScenarioAction scenarioAction = actions.get(actionName);
+		if (scenarioAction == null) {
+			errorMessage("Property '" + actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
 			return RESULT_ERROR;
 		}
 		try {
-			Message message = queue.executeRead(step, stepDisplayName, properties, fileName, fileContent);
+			Message message = scenarioAction.executeRead(properties); // cannot close this message because of FrankSender (JSON scenario02)
 			if (message == null) {
 				if ("".equals(fileName)) {
-					result = RESULT_OK;
+					return RESULT_OK;
 				} else {
-					errorMessage("Could not read from ["+queueName+"] (null returned)");
+					errorMessage("Could not read from ["+actionName+"] (null returned)");
 				}
 			} else {
 				if ("".equals(fileName)) {
-					debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
+					debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + actionName + "':", message);
 				} else {
-					result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties);
+					return compareResult(step, stepDisplayName, fileName, expected, message, properties);
 				}
 			}
 		} catch (Exception e) {
-			errorMessage("Could not read from ["+queueName+"] ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e);
+			errorMessage("Could not read from ["+actionName+"] ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e);
 		}
 
-		return result;
+		return RESULT_ERROR;
 	}
 
-
-	private int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, Message fileContent, int parameterTimeout) {
-
-		Queue listenerInfo = queues.get(queueName);
-		if (listenerInfo == null) {
-			errorMessage("Property '" + queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
-			return RESULT_ERROR;
-		}
-		ListenerMessageHandler<?> listenerMessageHandler = (ListenerMessageHandler<?>)listenerInfo.get("listenerMessageHandler");
-		if (listenerMessageHandler == null) {
-			errorMessage("No ListenerMessageHandler found");
-			return RESULT_ERROR;
-		}
-
-		Message message = null;
-		ListenerMessage listenerMessage;
-		long timeout;
-		try {
-			timeout = Long.parseLong((String) properties.get(queueName + ".timeout"));
-			debugMessage("Timeout set to '" + timeout + "'");
-		} catch (Exception e) {
-			timeout = parameterTimeout;
-		}
-		try {
-			listenerMessage = listenerMessageHandler.getRequestMessage(timeout);
-		} catch (TimeoutException e) {
-			errorMessage("Could not read listenerMessageHandler message (timeout of ["+parameterTimeout+"] reached)");
-			return RESULT_ERROR;
-		}
-
-		if (listenerMessage != null) {
-			message = listenerMessage.getMessage();
-			listenerInfo.put("listenerMessage", listenerMessage);
-		}
-		int result = RESULT_ERROR;
-		if (message == null) {
-			if ("".equals(fileName)) {
-				result = RESULT_OK;
-			} else {
-				errorMessage("Could not read listenerMessageHandler message (null returned)");
-			}
-		} else {
-			if ("".equals(fileName)) {
-				debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
-			} else {
-				result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties);
-				if (result!=RESULT_OK) {
-					// Send a cleanup reply because there is probably a thread waiting for a reply
-					listenerMessage = new ListenerMessage(TESTTOOL_CLEAN_UP_REPLY, new PipeLineSession());
-					listenerMessageHandler.putResponseMessage(listenerMessage);
-				}
-			}
-		}
-		return result;
-	}
-
-	private int executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, Message fileContent, String correlationId) {
-		int result = RESULT_ERROR;
-
-		Queue querySendersInfo = queues.get(queueName);
-		if (querySendersInfo == null) {
-			errorMessage("Property '" + queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
-			return RESULT_ERROR;
-		}
-		Integer waitBeforeRead = (Integer)querySendersInfo.get("readQueryWaitBeforeRead");
-
-		if (waitBeforeRead != null) {
-			try {
-				Thread.sleep(waitBeforeRead);
-			} catch (InterruptedException ignored) {
-				Thread.currentThread().interrupt();
-			}
-		}
-		boolean newRecordFound = true;
-		FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)querySendersInfo.get("prePostQueryFixedQuerySender");
-		if (prePostFixedQuerySender != null) {
-			try {
-				String preResult = (String)querySendersInfo.get("prePostQueryResult");
-				debugPipelineMessage(stepDisplayName, "Pre result '" + queueName + "':", new Message(preResult));
-				String postResult;
-				try (PipeLineSession session = new PipeLineSession()) {
-					session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-					postResult = messageToString(prePostFixedQuerySender.sendMessageOrThrow(getQueryFromSender(prePostFixedQuerySender), session));
-				}
-				debugPipelineMessage(stepDisplayName, "Post result '" + queueName + "':", postResult);
-				if (preResult.equals(postResult)) {
-					newRecordFound = false;
-				}
-				/* Fill the preResult with postResult, so closeQueues is able to determine if there
-				 * are remaining messages left.
-				 */
-				querySendersInfo.put("prePostQueryResult", postResult);
-			} catch(TimeoutException e) {
-				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e);
-			} catch(SenderException e) {
-				errorMessage("Could not execute query for '" + queueName + "': " + e.getMessage(), e);
-			}
-		}
-		Message message = null;
-		if (newRecordFound) {
-			FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender) querySendersInfo.get("readQueryQueryFixedQuerySender");
-			try (PipeLineSession session = new PipeLineSession()) {
-				session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-				message = readQueryFixedQuerySender.sendMessageOrThrow(getQueryFromSender(readQueryFixedQuerySender), session);
-			} catch(TimeoutException e) {
-				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e);
-			} catch (SenderException e) {
-				errorMessage("Could not execute query for '" + queueName + "': " + e.getMessage(), e);
-			}
-		}
-		if (message == null) {
-			if ("".equals(fileName)) {
-				result = RESULT_OK;
-			} else {
-				errorMessage("Could not read jdbc message (null returned) or no new message found (pre result equals post result)");
-			}
-		} else {
-			if ("".equals(fileName)) {
-				debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
-			} else {
-				result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties);
-			}
-		}
-		return result;
-	}
-
-	public static Message getQueryFromSender(FixedQuerySender sender) {
-		return new Message(sender.getQuery());
-	}
-
-	protected int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Queue> queues, String correlationId) {
-		int stepPassed;
+	// Ideally this should be moved to it's own class. But for now it's a bridge too far because of `stepOutputFilename`.
+	protected int executeStep(String step, Properties properties, String stepDisplayName, Map<String, LarvaScenarioAction> actions, String correlationId) {
 		String fileName = properties.getProperty(step);
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
 		int i = step.indexOf('.');
-		String queueName;
+		String actionName;
 		Message fileContent;
 		// Set output filename, dirty old solution to pass the name on to the HTML-generating functions.
 		stepOutputFilename = fileNameAbsolutePath;
 
 		// Read the scenario file for this step
-		if ("".equals(fileName)) {
+		if (StringUtils.isBlank(fileName)) {
 			errorMessage("No file specified for step '" + step + "'");
 			return RESULT_ERROR;
 		}
@@ -1424,7 +1144,7 @@ public class LarvaTool {
 			fileContent = new Message(fileName);
 		} else {
 			if (fileName.endsWith("ignore")) {
-				debugMessage("creating dummy expected file for filename '"+fileName+"'");
+				debugMessage("creating dummy expected file for filename '" + fileName + "'");
 				fileContent = new Message("ignore");
 			} else {
 				debugMessage("Read file " + fileName);
@@ -1435,47 +1155,40 @@ public class LarvaTool {
 			errorMessage("Could not read file '" + fileName + "'");
 			return RESULT_ERROR;
 		}
-		queueName = step.substring(i + 1, step.lastIndexOf("."));
-		Object queueCreatorClassname = properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX);
-		if (step.endsWith(".read") || (allowReadlineSteps && step.endsWith(".readline"))) {
-			Queue queue = queues.get(queueName);
-			if (queue instanceof QueueWrapper wrap && wrap.get() instanceof IPullingListener) {
-				stepPassed = executePullingListenerRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
-			} else if ("org.frankframework.jdbc.FixedQuerySender".equals(properties.get(queueName + QueueCreator.CLASS_NAME_PROPERTY_SUFFIX))) {
-				stepPassed = executeFixedQuerySenderRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, correlationId);
-			} else if ("org.frankframework.http.WebServiceListener".equals(queueCreatorClassname) ||
-					"org.frankframework.receivers.FrankListener".equals(queueCreatorClassname) ||
-					"org.frankframework.receivers.JavaListener".equals(queueCreatorClassname)) {
-				stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, config.getTimeout());
-			} else if ("org.frankframework.larva.XsltProviderListener".equals(queueCreatorClassname)) {
-				Map<String, Object> xsltParameters = createParametersMapFromParamProperties(properties, step);
-				stepPassed = executeQueueWrite(stepDisplayName, queues, queueName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
-			} else {
-				stepPassed = executeQueueRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
-			}
-		} else {
-			// TODO: Try if anything breaks when this block is moved to `readFile()` method.
-			String resolveProperties = properties.getProperty("scenario.resolveProperties");
-			if(!"false".equalsIgnoreCase(resolveProperties)){
-				String fileData = messageToString(fileContent);
-				if (fileData == null) {
-					errorMessage("Failed to resolve properties in inputfile");
-					return RESULT_ERROR;
+
+		try (Message closeable = fileContent) {
+			actionName = step.substring(i + 1, step.lastIndexOf("."));
+			Object actionFactoryClassname = properties.get(actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX);
+			if (step.endsWith(".read") || (allowReadlineSteps && step.endsWith(".readline"))) {
+				if ("org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname)) {
+					Properties scenarioStepProperties = LarvaActionUtils.getSubProperties(properties, step);
+					Map<String, Object> xsltParameters = createParametersMapFromParamProperties(scenarioStepProperties);
+					return executeActionWriteStep(stepDisplayName, actions, actionName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
+				} else {
+					return executeActionReadStep(step, stepDisplayName, properties, actions, actionName, fileName, fileContent);
 				}
-				AppConstants appConstants = AppConstants.getInstance();
-				fileContent = new Message(StringResolver.substVars(fileData, appConstants), fileContent.copyContext());
-			}
-			if ("org.frankframework.larva.XsltProviderListener".equals(queueCreatorClassname)) {
-				stepPassed = executeQueueRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);  // XsltProviderListener has .read and .write reversed
 			} else {
-				stepPassed = executeQueueWrite(stepDisplayName, queues, queueName, fileContent, correlationId, null);
+				// TODO: Try if anything breaks when this block is moved to `readFile()` method.
+				String resolveProperties = properties.getProperty("scenario.resolveProperties");
+				if(!"false".equalsIgnoreCase(resolveProperties)){
+					String fileData = messageToString(fileContent);
+					if (fileData == null) {
+						errorMessage("Failed to resolve properties in inputfile");
+						return RESULT_ERROR;
+					}
+					AppConstants appConstants = AppConstants.getInstance();
+					fileContent = new Message(StringResolver.substVars(fileData, appConstants), fileContent.copyContext());
+				}
+				if ("org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname)) {
+					return executeActionReadStep(step, stepDisplayName, properties, actions, actionName, fileName, fileContent);  // XsltProviderListener has .read and .write reversed
+				} else {
+					return executeActionWriteStep(stepDisplayName, actions, actionName, fileContent, correlationId, null);
+				}
 			}
 		}
-
-		return stepPassed;
 	}
 
-	public Message readFile(@Nonnull String fileName) {
+	private Message readFile(@Nonnull String fileName) {
 		String encoding;
 		if (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")) {
 			encoding = parseEncodingFromXml(fileName);
@@ -2196,27 +1909,27 @@ public class LarvaTool {
 	 * @param property   Property name to use as base name
 	 * @return A map with parameters
 	 */
-	public Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property) {
-		debugMessage("Search parameters for property '" + property + "'");
+	// Replace or merge this with LarvaActionUtils.createParametersMapFromParamProperties
+	public Map<String, Object> createParametersMapFromParamProperties(Properties properties) {
 		final String _name = ".name";
-		final String _param = ".param";
+		final String _param = "param";
 		final String _type = ".type";
 		Map<String, Object> result = new HashMap<>();
 		boolean processed = false;
 		int i = 1;
 		while (!processed) {
-			String name = properties.getProperty(property + _param + i + _name);
+			String name = properties.getProperty(_param + i + _name);
 			if (name != null) {
-				String type = properties.getProperty(property + _param + i + _type);
-				String propertyValue = properties.getProperty(property + _param + i + ".value");
+				String type = properties.getProperty(_param + i + _type);
+				String propertyValue = properties.getProperty(_param + i + ".value");
 				Object value = propertyValue;
 
 				if (value == null) {
-					String filename = properties.getProperty(property + _param + i + ".valuefile.absolutepath");
+					String filename = properties.getProperty(_param + i + ".valuefile.absolutepath");
 					if (filename != null) {
 						value = new FileMessage(new File(filename));
 					} else {
-						String inputStreamFilename = properties.getProperty(property + _param + i + ".valuefileinputstream.absolutepath");
+						String inputStreamFilename = properties.getProperty(_param + i + ".valuefileinputstream.absolutepath");
 						if (inputStreamFilename != null) {
 							errorMessage("valuefileinputstream is no longer supported use valuefile instead");
 						}
@@ -2251,10 +1964,10 @@ public class LarvaTool {
 					value = map;
 				}
 				if (value == null) {
-					errorMessage("Property '" + property + _param + i + ".value' or '" + property + _param + i + ".valuefile' not found while property '" + property + _param + i + ".name' exist");
+					errorMessage("Property '" + _param + i + ".value' or '" + _param + i + ".valuefile' not found while property '" + _param + i + ".name' exist");
 				} else {
 					result.put(name, value);
-					debugMessage("Add param with name '" + name + "' and value '" + value + "' for property '" + property + "'");
+					debugMessage("Add param with name '" + name + "' and value '" + value + "' for property '" + "'");
 				}
 				i++;
 			} else {

@@ -59,7 +59,7 @@ public class ConfigurationsTest extends FrankApiTestBase {
 
 	@Test
 	public void getConfigurationsWithFlow() throws Exception {
-		testActionAndTopicHeaders("/configurations?flow=flowName", "FLOW", null);
+		testActionAndTopicHeaders("/configurations?flow=flowName", "FLOW", "GET");
 	}
 
 	@Test
@@ -69,12 +69,12 @@ public class ConfigurationsTest extends FrankApiTestBase {
 
 	@Test
 	public void getConfigurationHealth() throws Exception {
-		testActionAndTopicHeaders("/configurations/name/health", "HEALTH", null);
+		testActionAndTopicHeaders("/configurations/name/health", "HEALTH", "GET");
 	}
 
 	@Test
 	public void getConfigurationFlow() throws Exception {
-		testActionAndTopicHeaders("/configurations/name/flow", "FLOW", null);
+		testActionAndTopicHeaders("/configurations/name/flow", "FLOW", "GET");
 	}
 
 	@Test

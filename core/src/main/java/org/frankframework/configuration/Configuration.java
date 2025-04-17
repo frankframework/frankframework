@@ -24,6 +24,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,7 @@ import org.frankframework.lifecycle.SpringContextScope;
 import org.frankframework.monitoring.MonitorManager;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.scheduler.AbstractJobDef;
+import org.frankframework.scheduler.ScheduleManager;
 import org.frankframework.scheduler.job.IJob;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
@@ -208,7 +210,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 		state = RunState.STARTING;
 		long start = System.currentTimeMillis();
 
-		try {
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("configuration", getName())) {
 			ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 			configurationDigester.digest();
 
@@ -241,16 +243,19 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 
 	@Override
 	public void close() {
+		log.info("closing configuration [{}]", this::getName);
 		try {
 			state = RunState.STOPPING;
 			super.close();
 		} finally {
+			log.info("closed configuration [{}]", this::getName);
 			configured = false;
 			state = RunState.STOPPED;
 		}
 	}
 
-	// capture ContextClosedEvent which is published during AbstractApplicationContext#doClose()
+	// Capture ContextClosedEvent which is published during AbstractApplicationContext#doClose()
+	// This event will be published before the actual context is closed.
 	@Override
 	public void publishEvent(ApplicationEvent event) {
 		if (event instanceof ContextClosedEvent) {

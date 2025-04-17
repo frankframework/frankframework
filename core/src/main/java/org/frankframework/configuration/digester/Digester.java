@@ -49,10 +49,10 @@ import org.frankframework.xml.FullXmlFilter;
 public class Digester extends FullXmlFilter implements InitializingBean, ApplicationContextAware {
 	private final Set<DigesterRule> parsedPatterns = new HashSet<>();
 
-	private Deque<String> elementNames = new ArrayDeque<>(); // XML element names
-	private Deque<BeanRuleWrapper> elementBeans = new ArrayDeque<>(); // Beans conform found element names
-	private Deque<ApplicationContext> applicationContext = new ArrayDeque<>(); // Context Stack
-	private Map<DigesterRule, IDigesterFactory> beanFactories = new ConcurrentHashMap<>();
+	private final Deque<String> elementNames = new ArrayDeque<>(); // XML element names
+	private final Deque<BeanRuleWrapper> elementBeans = new ArrayDeque<>(); // Beans conform found element names
+	private final Deque<ApplicationContext> applicationContext = new ArrayDeque<>(); // Context Stack
+	private final Map<DigesterRule, IDigesterFactory> beanFactories = new ConcurrentHashMap<>();
 
 	private ValidateAttributeRule handleAttributeRule;
 	private @Getter @Setter Locator documentLocator;

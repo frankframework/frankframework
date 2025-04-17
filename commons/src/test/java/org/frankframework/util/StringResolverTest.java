@@ -33,7 +33,7 @@ public class StringResolverTest {
 
 		InputStream propsStream = propertiesURL.openStream();
 		properties.load(propsStream);
-		assertTrue(properties.size() > 0, "did not find any properties!");
+		assertTrue(!properties.isEmpty(), "did not find any properties!");
 
 		System.setProperty("authAliases.expansion.allowed", "${allowedAliases}");
 	}

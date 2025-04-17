@@ -28,7 +28,7 @@ import org.frankframework.monitoring.EventThrowing;
  * A Monitoring Event with a map of potential Adapters that can throw events of this type.
  */
 public class Event {
-	private List<EventThrowing> throwers = new ArrayList<>();
+	private final List<EventThrowing> throwers = new ArrayList<>();
 
 	public Event() {}
 

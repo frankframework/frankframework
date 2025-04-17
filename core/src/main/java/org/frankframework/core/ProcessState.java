@@ -21,9 +21,6 @@ import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
-import lombok.Setter;
-
-import org.frankframework.util.EnumUtils;
 
 public enum ProcessState {
 
@@ -33,8 +30,8 @@ public enum ProcessState {
 	ERROR("Error"),
 	HOLD("Hold");
 
-	@Getter @Setter
-	private String name;
+	@Getter
+	private final String name;
 
 	ProcessState(String name) {
 		this.name = name;
@@ -65,9 +62,4 @@ public enum ProcessState {
 		}
 		return targetProcessStates;
 	}
-
-	public static ProcessState getProcessStateFromName(String name) {
-		return EnumUtils.parseFromField(ProcessState.class, "state", name, e -> e.getName());
-	}
-
 }

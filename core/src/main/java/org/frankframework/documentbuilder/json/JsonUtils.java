@@ -24,14 +24,14 @@ import jakarta.json.stream.JsonParser;
 import jakarta.json.stream.JsonParser.Event;
 import jakarta.json.stream.JsonParserFactory;
 
-import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
-import org.frankframework.documentbuilder.JsonEventHandler;
-import org.frankframework.util.LogUtil;
+import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.documentbuilder.JsonEventHandler;
+
+@Log4j2
 public class JsonUtils {
-	private static final Logger log = LogUtil.getLogger(JsonUtils.class);
 
 	public static void parseJson(String json, JsonEventHandler handler) throws SAXException {
 		parseJson(new StringReader(json),handler);

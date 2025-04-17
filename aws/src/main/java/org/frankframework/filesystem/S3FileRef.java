@@ -64,8 +64,8 @@ public class S3FileRef {
 	@Nullable
 	private @Getter @Setter String bucketName;
 
-	@Nonnull //may be empty
-	private Map<String, String> userMetadata = new HashMap<>();
+	@Nonnull // may be empty
+	private final Map<String, String> userMetadata = new HashMap<>();
 
 	private @Getter InputStream objectContent;
 

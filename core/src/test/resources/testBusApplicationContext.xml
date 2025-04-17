@@ -48,7 +48,6 @@
 	<bean id="scheduler" class="org.frankframework.scheduler.SchedulerFactoryBean" lazy-init="true" >
 		<!-- Auto-wiring wires up bean named taskExecutor as threadpool implementation -->
 		<property name="configLocation" value="classpath:quartz.properties"/>
-		<property name="autoStartup" value="false"/>
 		<property name="schedulerName" value="TestScheduler"/>
 		<property name="waitForJobsToCompleteOnShutdown" value="true"/>
 	</bean>

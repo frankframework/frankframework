@@ -59,7 +59,7 @@ public class HttpUtils {
 			String paramname = StringEscapeUtils.escapeJava(paramnames.nextElement());
 			String paramvalue = StringEscapeUtils.escapeJava(request.getParameter(paramname));
 			if (StringUtils.isNotEmpty(paramvalue)) {
-				if (result.length() > 0) {
+				if (!result.isEmpty()) {
 					result = result + ",";
 				}
 				result = result + paramname + "=" + paramvalue;

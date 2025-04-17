@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import org.frankframework.documentbuilder.IDocumentBuilder;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.TransformerPool;
+import org.frankframework.util.UtilityTransformerPools;
 
 /**
  * JSON is not aware of the element order. This pipe performs a <strong>best effort</strong> JSON to XML transformation.
@@ -93,7 +94,7 @@ public class JsonPipe extends FixedForwardPipe {
 			addXmlRootElement = dir == Direction.JSON2XML;
 		}
 		if (dir == Direction.XML2JSON) {
-			tpXml2Json = TransformerPool.configureStyleSheetTransformer(this, "/xml/xsl/xml2json.xsl", 2); // shouldn't this be a utility transformer?
+			tpXml2Json = UtilityTransformerPools.getXml2JsonTransformerPool();
 		}
 	}
 

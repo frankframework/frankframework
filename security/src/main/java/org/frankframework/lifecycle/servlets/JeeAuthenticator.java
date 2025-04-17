@@ -53,9 +53,9 @@ import org.frankframework.util.SpringUtils;
  * </p>
  * <p>
  * This authenticator should be configured by setting its type to 'CONTAINER', for example:
- * <pre>
+ * <pre>{@code
  * application.security.console.authentication.type=CONTAINER
- * </pre>
+ * }</pre>
  * </p>
  *
  * @see <a href="https://docs.spring.io/spring-security/site/docs/3.0.x/reference/introduction.html">Spring Security Introduction</a>

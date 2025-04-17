@@ -26,7 +26,7 @@
 				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex:-}" />
 			</Filters>
 			<Layout type="IbisPatternLayout">
-				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X{mid,cid,listener,adapter,pipe,sender} %c{2} - %m%n%xEx{filters(${ctx:log.stacktrace.filters})}</Pattern>
+				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X{mid,cid,listener,adapter,pipe,job,sender} %c{2} - %m%n%xEx{filters(${ctx:log.stacktrace.filters})}</Pattern>
 			</Layout>
 			<Policies>
 				<SizeBasedTriggeringPolicy size="${ctx:log.maxFileSize}" />

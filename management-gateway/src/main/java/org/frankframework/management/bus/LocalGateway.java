@@ -29,7 +29,7 @@ import org.springframework.messaging.core.GenericMessagingTemplate;
  */
 public class LocalGateway extends MessagingGatewaySupport implements OutboundGateway {
 
-	private static long DEFAULT_REQUEST_TIMEOUT = 1000L;
+	private static final long DEFAULT_REQUEST_TIMEOUT = 1000L;
 
 	@Override
 	protected void onInit() {

@@ -135,6 +135,13 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-core</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>io.github.wimdeblauwe</groupId>
 			<artifactId>testcontainers-cypress</artifactId>
 			<version>1.9.1</version>
@@ -176,6 +183,16 @@
 									<directory>${iaf.rootdir}/console/frontend/src/main/frontend</directory>
 									<filtering>false</filtering>
 									<targetPath>e2e</targetPath>
+								</resource>
+								<!-- Copy scenarios -->
+								<resource>
+									<directory>${project.basedir}/src/test/testtool</directory>
+									<targetPath>${project.build.directory}/src/test/testtool</targetPath>
+								</resource>
+								<!-- Copy Configurations -->
+								<resource>
+									<directory>${project.basedir}/src/main/configurations</directory>
+									<targetPath>${project.build.directory}/configurations</targetPath>
 								</resource>
 							</resources>
 							<skip>${maven.test.skip}</skip> <!-- A bit hacky way to prevent this execution from running when tests are skipped. -->

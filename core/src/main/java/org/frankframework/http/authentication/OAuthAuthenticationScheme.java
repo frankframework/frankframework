@@ -38,7 +38,7 @@ public class OAuthAuthenticationScheme extends BasicScheme {
 	public static final String SCHEME_NAME_AUTO = "OAUTH2";
 	public static final String SCHEME_NAME_FORCE_REFRESH = "OAUTH2-REFRESHED";
 
-	private boolean forceRefresh;
+	private final boolean forceRefresh;
 
 	public OAuthAuthenticationScheme() {
 		this(false);
