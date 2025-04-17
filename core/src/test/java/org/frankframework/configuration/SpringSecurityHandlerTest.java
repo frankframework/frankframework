@@ -16,11 +16,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import org.frankframework.core.ContextSecurityHandler;
+import org.frankframework.core.SpringSecurityHandler;
 
-class ContextSecurityHandlerTest {
+class SpringSecurityHandlerTest {
 
-	private ContextSecurityHandler contextSecurityHandler = new ContextSecurityHandler();
+	private SpringSecurityHandler springSecurityHandler = new SpringSecurityHandler();
 
 	@BeforeEach
 	void mockAuthentication() {
@@ -37,21 +37,21 @@ class ContextSecurityHandlerTest {
 
 	@Test
 	void testIsUserInRole_UserHasRole_ReturnsTrue() {
-		boolean result = contextSecurityHandler.isUserInRole("ADMIN");
+		boolean result = springSecurityHandler.isUserInRole("ADMIN");
 
 		assertTrue(result);
 	}
 
 	@Test
 	void testIsUserInRole_UserDoesNotHaveRole_ReturnsFalse() {
-		boolean result = contextSecurityHandler.isUserInRole("BLABLA");
+		boolean result = springSecurityHandler.isUserInRole("BLABLA");
 
 		assertFalse(result);
 	}
 
 	@Test
 	void testGetPrincipal_ReturnsPrincipal() {
-		Principal result = contextSecurityHandler.getPrincipal();
+		Principal result = springSecurityHandler.getPrincipal();
 
 		assertEquals("testuser", result.getName());
 	}

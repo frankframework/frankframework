@@ -127,8 +127,8 @@ import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import org.frankframework.core.ContextSecurityHandler;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SpringSecurityHandler;
 import org.frankframework.extensions.cmis.server.CmisSecurityHandler;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
@@ -156,7 +156,7 @@ public class CmisUtils {
 			session.put(CMIS_BINDING_KEY, callContext.getBinding());
 
 			if("basic".equalsIgnoreCase(CMIS_SECURITYHANDLER)) {
-				session.setSecurityHandler(new ContextSecurityHandler());
+				session.setSecurityHandler(new SpringSecurityHandler());
 			} else if("wsse".equalsIgnoreCase(CMIS_SECURITYHANDLER)) {
 				session.setSecurityHandler(new CmisSecurityHandler(callContext));
 			}

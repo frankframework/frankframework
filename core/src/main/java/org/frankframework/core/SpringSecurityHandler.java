@@ -24,11 +24,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * ISecurityHandler implementation that uses Spring Security's SecurityContextHolder to retrieve the user information. Since the application is fully
- * based on spring and spring security, the SecurityContextHolder should always be filled when security is enabled.
+ * based on spring and spring security, the SecurityContextHolder should always be filled for urls where security is enabled.
  *
  * @author evandongen
  */
-public class ContextSecurityHandler implements ISecurityHandler {
+public class SpringSecurityHandler implements ISecurityHandler {
 	@Override
 	public boolean isUserInRole(String role) throws NotImplementedException {
 		return getAuthorities().stream()

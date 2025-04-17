@@ -48,8 +48,8 @@ import org.springframework.util.MimeType;
 
 import com.nimbusds.jose.util.JSONObjectUtils;
 
-import org.frankframework.core.ContextSecurityHandler;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SpringSecurityHandler;
 import org.frankframework.http.AbstractHttpServlet;
 import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.http.mime.MultipartUtils.MultipartMessages;
@@ -87,8 +87,8 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 	private static final List<String> IGNORE_HEADERS = List.of("connection", "transfer-encoding", "content-type", "authorization");
 
 	private final int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
-	private final String CorsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
-	private final String CorsExposeHeaders = AppConstants.getInstance().getString("api.auth.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
+	private final String corsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
+	private final String corsExposeHeaders = AppConstants.getInstance().getString("api.auth.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 
 	private ApiServiceDispatcher dispatcher = null;
 	private IApiCache cache = null;
@@ -233,14 +233,14 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		 */
 		String origin = request.getHeader("Origin");
 		if (method == ApiListener.HttpMethod.OPTIONS || origin != null) {
-			response.setHeader("Access-Control-Allow-Origin", CorsAllowOrigin);
+			response.setHeader("Access-Control-Allow-Origin", corsAllowOrigin);
 			String headers = request.getHeader("Access-Control-Request-Headers");
 			if (headers != null) {
 				// Strip CR & LF characters from the headers as they come from request and Codacy warns
 				// this could result in a security issue.
 				response.setHeader("Access-Control-Allow-Headers", StringEscapeUtils.escapeJava(headers));
 			}
-			response.setHeader("Access-Control-Expose-Headers", CorsExposeHeaders);
+			response.setHeader("Access-Control-Expose-Headers", corsExposeHeaders);
 
 			String methods = config.getMethods().stream()
 					.map(ApiListener.HttpMethod::name)
@@ -271,13 +271,13 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		 * Initiate and populate messageContext
 		 */
 
-		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_LISTENER_KEY, listener.getName());
-				final PipeLineSession pipelineSession = new PipeLineSession()) {
+		try (final CloseableThreadContext.Instance ignored = CloseableThreadContext.put(LogUtil.MDC_LISTENER_KEY, listener.getName());
+			 final PipeLineSession pipelineSession = new PipeLineSession()) {
 
 			pipelineSession.put(PipeLineSession.HTTP_METHOD_KEY, method);
 			pipelineSession.put(PipeLineSession.HTTP_REQUEST_KEY, request);
 			pipelineSession.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
-			pipelineSession.setSecurityHandler(new ContextSecurityHandler());
+			pipelineSession.setSecurityHandler(new SpringSecurityHandler());
 
 			try {
 				/*

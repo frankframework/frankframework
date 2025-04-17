@@ -32,10 +32,10 @@ import com.google.common.net.HttpHeaders;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.core.ContextSecurityHandler;
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SpringSecurityHandler;
 import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.stream.Message;
@@ -104,7 +104,7 @@ public class RestListenerServlet extends AbstractHttpServlet {
 
 		if (log.isTraceEnabled()) log.trace("path [{}] If-Match [{}] If-None-Match [{}] contentType [{}]", path, ifMatch, ifNoneMatch, contentType);
 
-		ISecurityHandler securityHandler = new ContextSecurityHandler();
+		ISecurityHandler securityHandler = new SpringSecurityHandler();
 		try (PipeLineSession messageContext = new PipeLineSession()) {
 			messageContext.setSecurityHandler(securityHandler);
 			messageContext.put(PipeLineSession.HTTP_METHOD_KEY, request.getMethod());

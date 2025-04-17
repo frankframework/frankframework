@@ -34,7 +34,6 @@ import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.ContextSecurityHandler;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
@@ -43,6 +42,7 @@ import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SpringSecurityHandler;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.lifecycle.LifecycleException;
@@ -168,7 +168,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 		}
 		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), messageWrapper.getCorrelationId());
 
-		ISecurityHandler securityHandler = new ContextSecurityHandler();
+		ISecurityHandler securityHandler = new SpringSecurityHandler();
 		parentSession.setSecurityHandler(securityHandler);
 
 		try (PipeLineSession session = new PipeLineSession(parentSession)) {
