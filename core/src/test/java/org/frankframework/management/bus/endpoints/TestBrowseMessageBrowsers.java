@@ -17,6 +17,7 @@ package org.frankframework.management.bus.endpoints;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -40,6 +41,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandlingException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
@@ -292,17 +294,37 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	}
 
 	@Test
-	public void getBrowserFields() {
+	public void getBrowserFieldsWithoutStorage() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
-		try {
-			callSyncGateway(request);
-		} catch (Exception e) {
-			assertInstanceOf(BusException.class, e.getCause());
-			BusException be = (BusException) e.getCause();
-			assertEquals("no StorageSource provided", be.getMessage());
-		}
+
+		Exception exception = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
+		assertInstanceOf(BusException.class, exception.getCause());
+		assertEquals("no StorageSource provided", exception.getCause().getMessage());
+	}
+
+	@Test
+	public void getBrowserFieldsWithPipe() {
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader(BusMessageUtils.HEADER_PIPE_NAME_KEY, adapter.getPipeLine().getPipe(0).getName());
+
+		Message<?> response = callSyncGateway(request);
+		MatchUtils.assertJsonEquals("{\"fields\":[]}", (String) response.getPayload());
+	}
+
+	@Test
+	public void getBrowserFieldsWithReceiver() {
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, adapter.getReceivers().iterator().next().getName());
+		request.setHeader(BusMessageUtils.HEADER_PROCESSSTATE_KEY, ProcessState.AVAILABLE);
+
+		Message<?> response = callSyncGateway(request);
+		MatchUtils.assertJsonEquals("{\"fields\":[]}", (String) response.getPayload());
 	}
 
 	/**
