@@ -51,7 +51,7 @@
 10062	WARN	(PII Disclosure - Passive/release)
 10063	WARN	(Permissions Policy Header Not Set - Passive/beta)
 10094	WARN	(Base64 Disclosure - Passive/alpha)
-10095	INGORE	(Backup File Disclosure - Active/beta)
+10095	IGNORE	(Backup File Disclosure - Active/beta)
 10096	WARN	(Timestamp Disclosure - Passive/release)
 10097	WARN	(Hash Disclosure - Passive/release)
 10098	WARN	(Cross-Domain Misconfiguration - Passive/release)
