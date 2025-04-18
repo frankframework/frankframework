@@ -18,9 +18,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import org.frankframework.core.SpringSecurityHandler;
 
-class SpringSecurityHandlerTest {
+class SpringSecuritayHandlerTest {
 
-	private SpringSecurityHandler springSecurityHandler = new SpringSecurityHandler();
+	private SpringSecurityHandler springSecurityHandler;
 
 	@BeforeEach
 	void mockAuthentication() {
@@ -29,6 +29,8 @@ class SpringSecurityHandlerTest {
 		Authentication authentication = new UsernamePasswordAuthenticationToken(testUser, testUser.getPassword(), testUser.getAuthorities());
 
 		SecurityContextHolder.getContext().setAuthentication(authentication);
+
+		springSecurityHandler = new SpringSecurityHandler();
 	}
 
 	private UserDetails getTestUser() {
