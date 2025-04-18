@@ -35,27 +35,26 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.XmlBuilder;
 
 /**
- * Pipe that returns the memberships of a userDN.
- * The input is a fullDn, of a user or a group.
- * <br/>
- * Sample result:<br/><code><pre>
- *	&lt;ldap&gt;
- *	 &lt;entry name="CN=xxyyzz,OU=Users,DC=domain,DC=ext"&gt;
- *	   &lt;attributes&gt;
- *	    &lt;attribute&gt;
- *	    &lt;attribute name="memberOf" value="Extern"/&gt;
- *	    &lt;attribute name="departmentCode" value="358000"/&gt;
- *	    &lt;attribute name="organizationalHierarchy"&gt;
- *	        &lt;item value="ou=zzyyxx"/&gt;
- *	        &lt;item value="ou=OPS&amp;IT,ou=Group,ou=domain,o=ext"/&gt;
- *	    &lt;/attribute>
- *	    &lt;attribute name="givenName" value="Gerrit"/>
- *	   &lt;/attributes&gt;
- *	  &lt;/entry&gt;
- *   &lt;entry&gt; .... &lt;/entry&gt;
- *   .....
- *	&lt;/ldap&gt;
- * </pre></code> <br/>
+ * <p>Pipe that returns the memberships of a userDN. The input is a fullDn, of a user or a group.</p>
+ * <p>Sample result:</p>
+ *
+ * <pre>{@code
+ * <ldap>
+ *     <entry name="CN=xxyyzz,OU=Users,DC=domain,DC=ext">
+ *         <attributes>
+ *             <attribute>
+ *             <attribute name="memberOf" value="Extern"/>
+ *             <attribute name="departmentCode" value="358000"/>
+ *             <attribute name="organizationalHierarchy">
+ *                 <item value="ou=zzyyxx"/>
+ *                 <item value="ou=OPS&IT,ou=Group,ou=domain,o=ext"/>
+ *             </attribute>
+ *             <attribute name="givenName" value="Gerrit">
+ *         </attributes>
+ *     </entry>
+ *     <entry> .... </entry>
+ * </ldap>
+ * }</pre>
  *
  * @author Gerrit van Brakel
  */
