@@ -30,7 +30,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * @author evandongen
  */
 public class SpringSecurityHandler implements ISecurityHandler {
-	private Authentication cachedAuthentication;
+	private final Authentication authentication;
+
+	public SpringSecurityHandler() {
+		this.authentication = SecurityContextHolder.getContext().getAuthentication();
+	}
 
 	@Override
 	public boolean isUserInRole(String role) throws NotImplementedException {
@@ -42,24 +46,11 @@ public class SpringSecurityHandler implements ISecurityHandler {
 	}
 
 	Collection<? extends GrantedAuthority> getAuthorities() {
-		return getAuthentication().getAuthorities();
+		return authentication.getAuthorities();
 	}
 
 	@Override
 	public Principal getPrincipal() throws NotImplementedException {
-		return getAuthentication();
-	}
-
-	/**
-	 * Cache the authentication object because we might need this in subsequent calls in child-threads where the
-	 * SecurityContextHolder is not bound to.
-	 * @return
-	 */
-	private Authentication getAuthentication() {
-		if (cachedAuthentication == null) {
-			cachedAuthentication = SecurityContextHolder.getContext().getAuthentication();
-		}
-
-		return cachedAuthentication;
+		return authentication;
 	}
 }
