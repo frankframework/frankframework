@@ -39,7 +39,7 @@ public class SkipContainersFilter extends FullXmlFilter {
 	// To search for the relevant Frank!Doc code, you can start at
 	// nl.nn.adapterframework.frankdoc.Constants.MODULE_ELEMENT_NAME.
 	private static final String[] SKIPABLE_CONTAINERS = { "Exits", "Forwards", "Module", "Root", "GlobalForwards", "Global-forwards", "Scheduler" };
-	private Set<String> skipableContainers = new LinkedHashSet<>(Arrays.asList(SKIPABLE_CONTAINERS));
+	private final Set<String> skipableContainers = new LinkedHashSet<>(Arrays.asList(SKIPABLE_CONTAINERS));
 
 	public SkipContainersFilter() {
 		super();

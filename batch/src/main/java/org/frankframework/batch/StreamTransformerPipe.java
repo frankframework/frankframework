@@ -444,7 +444,8 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 						if (!blocks.containsKey(originalBlockKey)) {
 							sb = new StringBuilder();
 						}
-						if (sb.length()>0) {
+
+						if (!sb.isEmpty()) {
 							sb.append(System.getProperty("line.separator"));
 						}
 						sb.append(rawRecord);

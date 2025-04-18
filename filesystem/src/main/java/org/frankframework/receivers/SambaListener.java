@@ -21,7 +21,7 @@ import org.frankframework.doc.Category;
 /**
  * This class is an alias for {@link Samba2Listener}, which should be used instead.
  *
- * {@inheritDoc}
+ * {@inheritClassDoc}
  */
 @Deprecated(since = "9.0")
 @ConfigurationWarning("Class SambaListener is an alias for Samba2Listener. Use Samba2Listener instead.")

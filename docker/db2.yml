@@ -5,6 +5,7 @@ services:
     environment:
       jdbc.dbms.default: db2
       jdbc.hostname: db2
+      active.storedProcedureTests: true
 
   db2:
     image: private.docker.nexus.frankframework.org/ff-test/dbms/db2

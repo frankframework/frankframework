@@ -94,7 +94,15 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   };
 
   protected datasource: DataTableDataSource<MessageData> = new DataTableDataSource<MessageData>();
-  protected displayedColumns: DataTableColumn<MessageData>[] = [
+  protected displayedColumns: DataTableColumn<MessageData>[] = [];
+
+  private webStorageService: WebStorageService = inject(WebStorageService);
+  private Session: SessionService = inject(SessionService);
+  private SweetAlert: SweetalertService = inject(SweetalertService);
+  private appService: AppService = inject(AppService);
+
+  private subscriptions: Subscription = new Subscription();
+  private initialDisplayedColumns: DataTableColumn<MessageData>[] = [
     {
       name: 'actions',
       property: null,
@@ -107,82 +115,33 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
       property: 'position',
       displayName: 'No.',
     },
-    { name: 'id', property: 'id', displayName: 'Storage ID' },
-    {
-      name: 'insertDate',
-      property: 'insertDate',
-      displayName: 'Timestamp',
-      className: 'date',
-    },
-    { name: 'host', property: 'host', displayName: 'Host' },
-    {
-      name: 'originalId',
-      property: 'originalId',
-      displayName: 'Original ID',
-    },
-    {
-      name: 'correlationId',
-      property: 'correlationId',
-      displayName: 'Correlation ID',
-    },
-    { name: 'comment', property: 'comment', displayName: 'Comment' },
-    {
-      name: 'expiryDate',
-      property: 'expiryDate',
-      displayName: 'Expires',
-      className: 'date',
-    },
-    { name: 'label', property: 'label', displayName: 'Label' },
   ];
-
-  private webStorageService: WebStorageService = inject(WebStorageService);
-  private Session: SessionService = inject(SessionService);
-  private SweetAlert: SweetalertService = inject(SweetalertService);
-  private appService: AppService = inject(AppService);
-
-  private subscriptions: Subscription = new Subscription();
 
   ngOnInit(): void {
     this.storageService.closeNotes();
-
-    this.appService.customBreadcrumbs(
-      `Adapter > ${
-        this.storageParams['storageSource'] == 'pipes' ? `Pipes > ${this.storageParams['storageSourceName']} > ` : ''
-      }${this.storageParams['processState']} List`,
-    );
+    this.setBreadcrumbs();
 
     this.datasource.options = {
       filter: false,
       serverSide: true,
     };
 
+    this.getDisplayedColumns();
     this.setupMessagesRequest();
 
     const searchSession = this.Session.get<Record<string, string>>('search');
 
-    this.search = searchSession
-      ? {
-          id: searchSession['id'],
-          startDate: searchSession['startDate'],
-          endDate: searchSession['endDate'],
-          host: searchSession['host'],
-          messageId: searchSession['messageId'],
-          correlationId: searchSession['correlationId'],
-          comment: searchSession['comment'],
-          label: searchSession['label'],
-          message: searchSession['message'],
-        }
-      : {
-          id: '',
-          startDate: '',
-          endDate: '',
-          host: '',
-          messageId: '',
-          correlationId: '',
-          comment: '',
-          label: '',
-          message: '',
-        };
+    this.search = searchSession ?? {
+      id: '',
+      startDate: '',
+      endDate: '',
+      host: '',
+      messageId: '',
+      correlationId: '',
+      comment: '',
+      label: '',
+      message: '',
+    };
 
     const search = this.search;
     if (search) {
@@ -228,7 +187,21 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  setupMessagesRequest(): void {
+  protected getDisplayedColumns(): void {
+    this.storageService.getStorageFields().subscribe((response) => {
+      this.displayedColumns = [
+        ...this.initialDisplayedColumns,
+        ...response.fields.map<DataTableColumn<MessageData>>((field) => ({
+          name: field.fieldName,
+          property: field.property,
+          displayName: field.displayName,
+          className: field.type === 'date' ? 'date' : undefined,
+        })),
+      ];
+    });
+  }
+
+  protected setupMessagesRequest(): void {
     this.datasource.setServerRequest(
       (requestInfo) =>
         new Promise((resolve, reject) => {
@@ -455,5 +428,13 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     } else {
       return true;
     }
+  }
+
+  private setBreadcrumbs(): void {
+    this.appService.customBreadcrumbs(
+      `${this.storageParams['adapterName']} > ${
+        this.storageParams['storageSource'] == 'pipes' ? 'Pipes' : 'Receivers'
+      } > ${this.storageParams['storageSourceName']} > ${this.storageParams['processState']} List`,
+    );
   }
 }

@@ -5,6 +5,7 @@ services:
     environment:
       jdbc.dbms.default: mariadb
       jdbc.hostname: mariadb
+      active.storedProcedureTests: true
 
   mariadb:
     image: private.docker.nexus.frankframework.org/ff-test/dbms/mariadb

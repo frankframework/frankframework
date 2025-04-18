@@ -40,7 +40,7 @@ public class ClassLoaderURIResolverTest {
 	private enum BaseType { LOCAL, BYTES, CLASSPATH, FILE_SCHEME, NULL }
 	private enum RefType  {
 		ROOT, ABS_PATH, DOTDOT, SAME_FOLDER, OVERRIDABLE, CLASSPATH, FILE_SCHEME(TransformerException.class);
-		private Class<? extends Exception> exception;
+		private final Class<? extends Exception> exception;
 
 		RefType() {
 			this(null);

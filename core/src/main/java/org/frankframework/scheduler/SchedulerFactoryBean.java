@@ -31,10 +31,10 @@ public class SchedulerFactoryBean extends org.springframework.scheduling.quartz.
 
 	@Override
 	public void setDataSource(DataSource dataSource) {
-		//Make sure this isn't autowired by Spring
+		// Make sure this isn't autowired by Spring
 	}
 	@Override
 	public void setTransactionManager(PlatformTransactionManager transactionManager) {
-		//Make sure this isn't autowired by Spring
+		// Make sure this isn't autowired by Spring
 	}
 }

@@ -71,7 +71,7 @@ import org.frankframework.util.CredentialFactory;
  * {@link jakarta.jms.TextMessage}s and {@link jakarta.jms.BytesMessage}<br/><br/>
  * </p>
  *
- * {@inheritDoc}
+ * {@inheritClassDoc}
  *
  * @author  Tim van der Leeuw
  * @since   4.8

@@ -466,8 +466,8 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	}
 
 public static class ParallelSenderExecutorWrapper implements Runnable {
-		private AbstractRequestReplyExecutor requestReplyExecutor;
-		private ThreadConnector<ThreadDebugInfo> threadConnector;
+		private final AbstractRequestReplyExecutor requestReplyExecutor;
+		private final ThreadConnector<ThreadDebugInfo> threadConnector;
 
 		public ParallelSenderExecutorWrapper(ParallelSenderExecutor parallelSenderExecutor, ThreadLifeCycleEventListener<ThreadDebugInfo> threadLifeCycleEventListener) {
 			this.requestReplyExecutor=parallelSenderExecutor;

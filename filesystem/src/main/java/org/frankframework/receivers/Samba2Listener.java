@@ -23,7 +23,7 @@ import org.frankframework.filesystem.smb.SmbFileRef;
 /**
  * File listener for an SMB2 or SMB3 share.
  *
- * {@inheritDoc}
+ * {@inheritClassDoc}
  */
 public class Samba2Listener extends AbstractFileSystemListener<SmbFileRef, Samba2FileSystem> implements Samba2FileSystemDelegator {
 

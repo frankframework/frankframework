@@ -10,6 +10,8 @@
             "position": 1
         }
     ],
+    "fields":[
+    ],
     "targetStates": {
         "AVAILABLE": {
             "name": "Available"

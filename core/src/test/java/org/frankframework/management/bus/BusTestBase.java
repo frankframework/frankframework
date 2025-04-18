@@ -126,7 +126,7 @@ public class BusTestBase {
 
 	public static class MessageBuilder<T> {
 		private final T payload;
-		private Map<String, Object> headers = new HashMap<>();
+		private final Map<String, Object> headers = new HashMap<>();
 		public MessageBuilder(T payload) {
 			this.payload = payload;
 		}

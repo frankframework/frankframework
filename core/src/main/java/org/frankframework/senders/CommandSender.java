@@ -48,7 +48,6 @@ public class CommandSender extends AbstractSenderWithParameters {
 	private String command;
 	@Getter private int timeout = 0;
 	private boolean commandWithArguments = false;
-	private final boolean synchronous = true;
 
 	@Override
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
@@ -83,11 +82,6 @@ public class CommandSender extends AbstractSenderWithParameters {
 			list.add(command);
 		}
 		return list;
-	}
-
-	@Override
-	public boolean isSynchronous() {
-		return synchronous;
 	}
 
 	/** The command to be executed. Note: Executing a command in WAS requires &lt;&lt;ALL FILES&gt;&gt; execute permission to avoid that provide the absolute path of the command. Absolute path can be found with the following command 'which -a {commandName}' */

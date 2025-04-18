@@ -18,6 +18,7 @@ package org.frankframework.jms;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import jakarta.jms.JMSException;
@@ -37,6 +38,7 @@ import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
+import org.frankframework.core.MessageBrowserField;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.StringUtil;
 
@@ -45,7 +47,7 @@ import org.frankframework.util.StringUtil;
  * @param <M> the payload message type as used by IMessageBrowser.
  * @param <J> the physical JMS message to carry the payload.
  *
- * {@inheritDoc}
+ * {@inheritClassDoc}
  *
  * @author  Johan Verrips
  */
@@ -167,7 +169,6 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 		return (J)doBrowse("JMSMessageID", messageId);
 	}
 
-
 	protected jakarta.jms.Message doBrowse(Map<String,String> selectors) throws ListenerException {
 		QueueSession session=null;
 		QueueBrowser queueBrowser=null;
@@ -222,6 +223,21 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 		}
 	}
 
+	@Override
+	public List<MessageBrowserField> getStorageFields() {
+		return List.of(
+			new MessageBrowserField(null, "id", "Storage ID", "string"),
+			new MessageBrowserField(null, "originalId", "Original ID", "string"),
+			new MessageBrowserField(null, "correlationId", "Correlation ID", "string"),
+			new MessageBrowserField(null, "type", "Type", "string"),
+			new MessageBrowserField(null, "host", "Host", "string"),
+			new MessageBrowserField(null, "insertDate", "Timestamp", "date"),
+			new MessageBrowserField(null, "expiryDate", "Expires", "date"),
+			new MessageBrowserField(null, "comment", "Comment", "string"),
+			new MessageBrowserField(null, "label", "Label", "string")
+		);
+	}
+
 	protected String getCombinedSelector(String messageId) {
 		Map<String,String> selectorMap = new HashMap<>();
 		selectorMap.put("JMSMessageID", messageId);
@@ -231,7 +247,7 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 	protected String getCombinedSelector(Map<String,String> selectors) {
 		StringBuilder result = new StringBuilder();
 		for (Map.Entry<String,String> entry: selectors.entrySet()) {
-			if (result.length() > 0) {
+			if (!result.isEmpty()) {
 				result.append(" AND ");
 			}
 			result.append(entry.getKey()).append("='").append(entry.getValue()).append("'");

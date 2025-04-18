@@ -23,16 +23,10 @@ export class StorageViewComponent implements OnInit {
     id: '0', //this.$state.params["messageId"],
     processing: false,
   };
-  protected metadata?: Message = {
-    id: '',
-    originalId: '',
-    correlationId: '',
-    type: '',
-    host: '',
-    insertDate: 0,
-    comment: 'Loading...',
-    message: 'Loading...',
+  protected data: Message = {
+    id: 'Loading...',
   };
+  protected extraProperties: string[] = [];
 
   private readonly storageService: StorageService = inject(StorageService);
 
@@ -51,14 +45,11 @@ export class StorageViewComponent implements OnInit {
   private readonly SweetAlert: SweetalertService = inject(SweetalertService);
   private readonly appService: AppService = inject(AppService);
 
+  private skipProperties: string[] = ['id', 'insertDate', 'correlationId', 'comment', 'message'];
+
   ngOnInit(): void {
     this.storageService.closeNotes();
-
-    this.appService.customBreadcrumbs(
-      `Adapter > ${
-        this.storageParams['storageSource'] == 'pipes' ? `Pipes > ${this.storageParams['storageSourceName']} > ` : ''
-      }${this.storageParams['processState']} List > View Message ${this.storageParams['messageId']}`,
-    );
+    this.setBreadcrumbs();
 
     if (!this.storageParams.messageId) {
       this.SweetAlert.Warning('Invalid URL', 'No message id provided!');
@@ -69,7 +60,8 @@ export class StorageViewComponent implements OnInit {
 
     this.storageService.getMessage(this.base64Service.encode(this.storageParams.messageId)).subscribe({
       next: (data) => {
-        this.metadata = data;
+        this.data = data;
+        this.extraProperties = Object.keys(data).filter((key) => !this.skipProperties.includes(key));
       },
       error: (errorData: HttpErrorResponse) => {
         const error = errorData.error ? errorData.error.error : errorData.message;
@@ -106,5 +98,15 @@ export class StorageViewComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['../..'], { relativeTo: this.route });
+  }
+
+  private setBreadcrumbs(): void {
+    this.appService.customBreadcrumbs(
+      `${this.storageParams['adapterName']} > ${
+        this.storageParams['storageSource'] == 'pipes' ? 'Pipes' : 'Receivers'
+      } > ${this.storageParams['storageSourceName']} > ${this.storageParams['processState']} List > View Message ${
+        this.storageParams['messageId']
+      }`,
+    );
   }
 }

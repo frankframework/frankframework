@@ -210,7 +210,7 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper {
 				folders[i] = folders[i - 1] + "/" + folders[i];
 			}
 			for(String f : folders) {
-				if(f.length() != 0 && !_folderExists(f)) {
+				if(!f.isEmpty() && !_folderExists(f)) {
 					ftpClient.mkdir(f);
 				}
 			}

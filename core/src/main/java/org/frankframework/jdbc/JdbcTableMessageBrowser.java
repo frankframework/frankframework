@@ -18,6 +18,8 @@ package org.frankframework.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -25,6 +27,7 @@ import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageBrowser;
+import org.frankframework.core.MessageBrowserField;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
@@ -213,4 +216,19 @@ public class JdbcTableMessageBrowser<M> extends AbstractJdbcMessageBrowser<M> {
 		indexName = string;
 	}
 
+	@Override
+	public List<MessageBrowserField> getStorageFields() {
+		return Stream.of(
+			new MessageBrowserField(getKeyField(), "id", "Storage ID", "string"),
+			new MessageBrowserField(getIdField(), "originalId", "Original ID", "string"),
+			new MessageBrowserField(getCorrelationIdField(), "correlationId", "Correlation ID", "string"),
+			new MessageBrowserField(getType(), "type", "Type", "string"),
+			new MessageBrowserField(getHostField(), "host", "Host", "string"),
+			new MessageBrowserField(getDateField(), "insertDate", "Timestamp", "date"),
+			new MessageBrowserField(getExpiryDateField(), "expiryDate", "Expires", "date"),
+			new MessageBrowserField(getCommentField(), "comment", "Comment", "string"),
+			new MessageBrowserField(getLabelField(), "label", "Label", "string")
+		).filter(field -> field.fieldName() != null).toList();
+	}
 }
+
