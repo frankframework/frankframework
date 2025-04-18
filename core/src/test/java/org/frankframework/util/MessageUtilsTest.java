@@ -175,7 +175,7 @@ public class MessageUtilsTest {
 		assertNotNull(url);
 		try (Message message = new UrlMessage(url)) {
 			MessageDataSource ds = new MessageDataSource(new Message(message.asString()));
-			assertEquals(null, ds.getName(), "filename is unknown");
+			assertNull(ds.getName(), "filename is unknown");
 			assertEquals("application/xml", ds.getContentType(), "content-type cannot be determined");
 			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "contents should be the same");
 			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
@@ -188,7 +188,7 @@ public class MessageUtilsTest {
 		assertNotNull(url);
 		try (Message message = new UrlMessage(url)) {
 			MessageDataSource ds = new MessageDataSource(new Message(message.asString()));
-			assertEquals(null, ds.getName(), "filename is unknown");
+			assertNull(ds.getName(), "filename is unknown");
 			assertEquals("application/xml", ds.getContentType(), "content-type cannot be determined");
 			assertEquals(StreamUtil.streamToString(ds.getInputStream()), StreamUtil.streamToString(url.openStream()), "contents should be the same");
 			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
