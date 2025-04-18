@@ -176,7 +176,7 @@ public class MessageUtilsTest {
 		try (Message message = new UrlMessage(url)) {
 			MessageDataSource ds = new MessageDataSource(new Message(message.asString()));
 			assertEquals(null, ds.getName(), "filename is unknown");
-			assertEquals("text/plain", ds.getContentType(), "content-type cannot be determined");
+			assertEquals("application/xml", ds.getContentType(), "content-type cannot be determined");
 			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "contents should be the same");
 			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
 		}
@@ -193,6 +193,14 @@ public class MessageUtilsTest {
 			assertEquals(StreamUtil.streamToString(ds.getInputStream()), StreamUtil.streamToString(url.openStream()), "contents should be the same");
 			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
 		}
+	}
+
+	@Test
+	public void testXmlMessage() {
+		Message json = new Message("<root><child>value</child></root>");
+		MimeType mimeType = MessageUtils.computeMimeType(json);
+		assertNotNull(mimeType);
+		assertEquals("application/xml", mimeType.toString());
 	}
 
 	@Test

@@ -19,8 +19,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
@@ -278,11 +280,9 @@ public class MessageUtils {
 			String mediaType = TIKA.detect(message.asInputStream(), name);
 			MimeType mimeType = MimeType.valueOf(mediaType);
 			if (PLAIN_TEXT_MIME_TYPE.equalsTypeAndSubtype(mimeType) && name == null) {
-				// TIKA detects JSON as text/plain when there is no filename, so manually do a check for JSON.
+				// TIKA detects XML or JSON as text/plain when there is no filename, so manually do a check for JSON.
 				// See also: https://stackoverflow.com/questions/48618629/apache-tika-detect-json-pdf-specific-mime-type#48619266
-				if (isMessageParseableAsJson(message)) {
-					mimeType = JSON_MIME_TYPE;
-				}
+				mimeType = guessMimeType(message);
 			}
 			context.withMimeType(mimeType);
 			if("text".equals(mimeType.getType()) || message.getCharset() != null) { // is of type 'text' or message has charset
@@ -301,23 +301,26 @@ public class MessageUtils {
 		}
 	}
 
-	private static boolean isMessageParseableAsJson(Message message) {
+	private static MimeType guessMimeType(Message message) {
 		// TIKA detects JSON as text/plain when there is no filename, so manually do a check for JSON.
 		// See also: https://stackoverflow.com/questions/48618629/apache-tika-detect-json-pdf-specific-mime-type#48619266
 		String firstChar;
 		try {
 			firstChar = message.peek(1);
 		} catch (IOException e) {
-			return false;
+			return PLAIN_TEXT_MIME_TYPE;
+		}
+		if ("<".equals(firstChar)) {
+			return XML_MIME_TYPE;
 		}
 		if (!"{".equals(firstChar) && !"[".equals(firstChar)) {
-			return false;
+			return PLAIN_TEXT_MIME_TYPE;
 		}
 		try {
 			Json.createParser(message.asInputStream()).next();
-			return true;
+			return JSON_MIME_TYPE;
 		} catch (JsonParsingException | IOException e) {
-			return false;
+			return PLAIN_TEXT_MIME_TYPE;
 		}
 	}
 
@@ -431,7 +434,10 @@ public class MessageUtils {
 		if (XML_MIME_TYPE.isCompatibleWith(mimeType)) {
 			try {
 				TransformerPool tpXml2Json = UtilityTransformerPools.getXml2JsonTransformerPool();
-				return tpXml2Json.transform(message);
+				Map<String, Object> parameterValues = Collections.singletonMap("includeRootElement", true);
+				Message result = tpXml2Json.transform(message, parameterValues);
+				result.getContext().withMimeType(JSON_MIME_TYPE);
+				return result;
 			} catch (ConfigurationException | TransformerException | SAXException e) {
 				throw new XmlException("Cannot convert message from XML to JSON", e);
 			}

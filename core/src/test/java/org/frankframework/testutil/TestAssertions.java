@@ -28,7 +28,9 @@ import javax.xml.transform.Transformer;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.LogUtil;
@@ -108,6 +110,10 @@ public class TestAssertions extends org.junit.jupiter.api.Assertions {
 		String result = XmlUtils.transformXml(transformer, source);
 		LOG.debug("xpath [{}] result [{}]", xpathExpr, result);
 		assertEquals(expected + "", result, xpathExpr);
+	}
+
+	public static void assertJsonEquals(String expected, String actual) throws JSONException {
+		JSONAssert.assertEquals(expected, actual, false);
 	}
 
 	@Test
