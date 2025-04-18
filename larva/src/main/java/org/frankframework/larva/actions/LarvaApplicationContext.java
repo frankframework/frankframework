@@ -39,11 +39,14 @@ public class LarvaApplicationContext extends ConfigurableApplicationContext {
 		DirectoryClassLoader directoryClassLoader = new RelativePathDirectoryClassLoader();
 		directoryClassLoader.setDirectory(scenarioDirectory);
 		directoryClassLoader.setBasePath(".");
-		directoryClassLoader.configure(ibisContext, "LarvaTool");
+		directoryClassLoader.configure(null, "LarvaTool");
 		setClassLoader(directoryClassLoader);
 
 		setId("LarvaScenario");
-		setParent(ibisContext.getApplicationContext());
+
+		if (ibisContext != null) {
+			setParent(ibisContext.getApplicationContext());
+		}
 
 		refresh();
 	}

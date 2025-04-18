@@ -31,9 +31,17 @@ public class SpringUtils {
 	}
 
 	public static Object createBean(ApplicationContext applicationContext, String className) throws ClassNotFoundException {
+		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+
 		ClassLoader classLoader = applicationContext.getClassLoader();
-		Class<?> beanClass = Class.forName(className, true, classLoader);
-		return createBean(applicationContext, beanClass);
+		Thread.currentThread().setContextClassLoader(classLoader);
+
+		try {
+			Class<?> beanClass = Class.forName(className, true, classLoader);
+			return createBean(applicationContext, beanClass);
+		} finally {
+			Thread.currentThread().setContextClassLoader(originalClassLoader);
+		}
 	}
 
 	public static void autowireByType(ApplicationContext applicationContext, Object existingBean) {

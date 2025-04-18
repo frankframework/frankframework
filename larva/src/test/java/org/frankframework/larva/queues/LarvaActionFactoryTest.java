@@ -5,44 +5,33 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.Properties;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationContext;
 
-import org.frankframework.configuration.IbisContext;
+import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.actions.LarvaActionFactory;
+import org.frankframework.larva.actions.LarvaApplicationContext;
 import org.frankframework.larva.actions.LarvaScenarioAction;
 import org.frankframework.larva.actions.SenderAction;
 import org.frankframework.stream.Message;
-import org.frankframework.util.ClassUtils;
 
 class LarvaActionFactoryTest {
 
 	private LarvaActionFactory actionFactory;
 	private LarvaTool larvaTool;
-	private IbisContext ibisContext;
+	private ApplicationContext applicationContext;
 
 	@BeforeEach
-	void setUp() {
+	void setUp() throws ClassLoaderException {
 		larvaTool = new LarvaTool();
 		actionFactory = new LarvaActionFactory(larvaTool);
-		ibisContext = mock();
-
-		// This is far from perfect but at least allows us to test simple things...
-		// At some point we should remove the IbisContext from Larva and replace it with a Spring ApplicationContext.
-		when(ibisContext.createBeanAutowireByName(any())).thenAnswer(a -> {
-			Class<?> clazz = a.getArgument(0);
-			Constructor<?> con = ClassUtils.getConstructorOnType(clazz, new Class[] {});
-			return con.newInstance();
-		});
+		applicationContext = new LarvaApplicationContext(null, "/");
 	}
 
 	@Test
@@ -52,7 +41,7 @@ class LarvaActionFactoryTest {
 		props.load(this.getClass().getResourceAsStream("/queueCreatorTest.properties"));
 
 		// Act
-		Map<String, LarvaScenarioAction> queues = actionFactory.createLarvaActions("/", props, ibisContext, "cid");
+		Map<String, LarvaScenarioAction> queues = actionFactory.createLarvaActions(props, applicationContext, "cid");
 
 		// Assert
 		assertNotNull(queues);

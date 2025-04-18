@@ -205,6 +205,8 @@ public class ScenarioRunner {
 
 			String correlationId = TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
 			Map<String, LarvaScenarioAction> larvaActions = actionFactory.createLarvaActions(properties, applicationContext, correlationId);
+			applicationContext.configure();
+			applicationContext.start();
 
 			// Start the scenario
 			StringBuilder output = new StringBuilder();

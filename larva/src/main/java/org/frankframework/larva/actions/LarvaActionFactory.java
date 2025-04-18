@@ -79,6 +79,7 @@ public class LarvaActionFactory {
 
 				Properties actionProperties = handleDeprecations(LarvaActionUtils.getSubProperties(properties, actionName), actionName);
 				LarvaScenarioAction larvaScenarioAction = create(configurable, actionProperties, defaultTimeout, correlationId);
+				SpringUtils.registerSingleton(applicationContext, actionName, larvaScenarioAction);
 				larvaActions.put(actionName, larvaScenarioAction);
 				debugMessage("Opened [" + className + "] '" + actionName + "'");
 			}
@@ -107,9 +108,6 @@ public class LarvaActionFactory {
 
 		larvaAction.invokeSetters(defaultTimeout, actionProperties);
 		larvaAction.getSession().put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-
-		larvaAction.configure();
-		larvaAction.start();
 
 		return larvaAction;
 	}
