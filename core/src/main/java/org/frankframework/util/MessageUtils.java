@@ -17,6 +17,7 @@ package org.frankframework.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -27,6 +28,8 @@ import javax.xml.transform.TransformerException;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import jakarta.json.Json;
+import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.xml.soap.AttachmentPart;
 import jakarta.xml.soap.MimeHeader;
@@ -58,8 +61,11 @@ public class MessageUtils {
 	private static final int CHARSET_CONFIDENCE_LEVEL = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
 	private static final Tika TIKA = new Tika();
 
+	private static final MimeType PLAIN_TEXT_MIME_TYPE = new MimeType("text", "plain");
 	private static final MimeType JSON_MIME_TYPE = new MimeType("application", "json");
 	private static final MimeType XML_MIME_TYPE = new MimeType("application", "xml");
+	public static final String JSON_TEMPLATE_VALUE_QUOTED = "{\"%s\": \"%s\"}";
+	public static final String JSON_TEMPLATE_VALUE_UNQUOTED = "{\"%s\": %s}";
 
 	private MessageUtils() {
 		throw new IllegalStateException("Don't construct utility class");
@@ -271,6 +277,13 @@ public class MessageUtils {
 		try {
 			String mediaType = TIKA.detect(message.asInputStream(), name);
 			MimeType mimeType = MimeType.valueOf(mediaType);
+			if (PLAIN_TEXT_MIME_TYPE.equalsTypeAndSubtype(mimeType) && name == null) {
+				// TIKA detects JSON as text/plain when there is no filename, so manually do a check for JSON.
+				// See also: https://stackoverflow.com/questions/48618629/apache-tika-detect-json-pdf-specific-mime-type#48619266
+				if (isMessageParseableAsJson(message)) {
+					mimeType = JSON_MIME_TYPE;
+				}
+			}
 			context.withMimeType(mimeType);
 			if("text".equals(mimeType.getType()) || message.getCharset() != null) { // is of type 'text' or message has charset
 				Charset charset = computeDecodingCharset(message);
@@ -285,6 +298,26 @@ public class MessageUtils {
 		} catch (Exception t) {
 			LOG.warn("error parsing message to determine mimetype", t);
 			return null;
+		}
+	}
+
+	private static boolean isMessageParseableAsJson(Message message) {
+		// TIKA detects JSON as text/plain when there is no filename, so manually do a check for JSON.
+		// See also: https://stackoverflow.com/questions/48618629/apache-tika-detect-json-pdf-specific-mime-type#48619266
+		String firstChar;
+		try {
+			firstChar = message.peek(1);
+		} catch (IOException e) {
+			return false;
+		}
+		if (!"{".equals(firstChar) && !"[".equals(firstChar)) {
+			return false;
+		}
+		try {
+			Json.createParser(message.asInputStream()).next();
+			return true;
+		} catch (JsonParsingException | IOException e) {
+			return false;
 		}
 	}
 
@@ -383,8 +416,13 @@ public class MessageUtils {
 		}
 	}
 
-	public static @Nonnull Message asJsonMessage(@Nonnull Object object) throws IOException, XmlException {
-		Message message = Message.asMessage(object);
+	public static @Nonnull Message asJsonMessage(@Nonnull Object value) throws IOException, XmlException {
+		return asJsonMessage(value, "value");
+	}
+
+	public static @Nonnull Message asJsonMessage(@Nonnull Object value, @Nonnull String valueName) throws IOException, XmlException {
+		Message message = Message.asMessage(value);
+		message.preserve();
 		MimeType mimeType = MessageUtils.computeMimeType(message);
 		if (JSON_MIME_TYPE.isCompatibleWith(mimeType)) {
 			return message;
@@ -398,9 +436,25 @@ public class MessageUtils {
 				throw new XmlException("Cannot convert message from XML to JSON", e);
 			}
 		}
-
-		Message result = new Message("{\"value\": " + message.asString() + "}");
+		String valueAsString = message.asString();
+		String jsonTemplate = isBooleanOrNumber(value, valueAsString) ? JSON_TEMPLATE_VALUE_UNQUOTED : JSON_TEMPLATE_VALUE_QUOTED;
+		Message result = new Message(jsonTemplate.formatted(valueName, valueAsString));
 		result.getContext().withMimeType(JSON_MIME_TYPE).withCharset(Charset.defaultCharset());
 		return result;
+	}
+
+	private static boolean isBooleanOrNumber(Object originalValue, String valueAsString) {
+		if (originalValue instanceof Boolean || originalValue instanceof Number) {
+			return true;
+		}
+		if ("true".equalsIgnoreCase(valueAsString) || "false".equalsIgnoreCase(valueAsString)) {
+			return true;
+		}
+		try {
+			new BigDecimal(valueAsString);
+			return true;
+		} catch (NumberFormatException e) {
+			return false;
+		}
 	}
 }

@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -201,8 +200,9 @@ public class MessageUtilsTest {
 		Message json = new Message("{\"GUID\": \"ABC\"}");
 		MimeType mimeType = MessageUtils.computeMimeType(json);
 		assertNotNull(mimeType);
-		assertEquals("text/plain", mimeType.toString()); //mime-type cannot be determined
+		assertEquals("application/json", mimeType.toString());
 	}
+
 	@Test
 	public void testJsonMessageWithName() {
 		Message json = new Message("{\"GUID\": \"ABC\"}", new MessageContext().withName("foo.json"));
@@ -217,7 +217,7 @@ public class MessageUtilsTest {
 				.stream()
 				.map(Map.Entry::getKey)
 				.filter(e -> e.startsWith(MessageContext.HEADER_PREFIX))
-				.collect(Collectors.toList())
+				.toList()
 				.toString();
 	}
 
