@@ -45,6 +45,7 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.larva.actions.LarvaActionFactory;
+import org.frankframework.larva.actions.LarvaApplicationContext;
 import org.frankframework.larva.actions.LarvaScenarioAction;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
@@ -182,6 +183,7 @@ public class ScenarioRunner {
 		// increment suffix for each scenario
 		int scenarioPassed = RESULT_ERROR;
 
+		LarvaApplicationContext applicationContext = null;
 		String scenarioFolderName = getScenarioFolder(scenarioConfigurationFile, larvaScenariosRootDirectory);
 		log.info("Running scenario [{}]", scenarioFolderName);
 		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("scenario", scenarioFolderName)) {
@@ -189,6 +191,9 @@ public class ScenarioRunner {
 			String scenarioDirectory = scenarioConfigurationFile.getParentFile().getAbsolutePath() + File.separator;
 			String longName = scenarioConfigurationFile.getAbsolutePath();
 			String shortName = longName.substring(larvaScenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
+
+			// This is far for optimal, but without refactoring the whole LarvaTool, this is the quick and dirty way to do it
+			applicationContext = new LarvaApplicationContext(ibisContext, scenarioDirectory);
 
 			larvaTool.debugMessage("Read property file " + scenarioConfigurationFile.getName());
 			Properties properties = larvaTool.readProperties(appConstants, scenarioConfigurationFile);
@@ -199,7 +204,9 @@ public class ScenarioRunner {
 			LarvaActionFactory actionFactory = new LarvaActionFactory(larvaTool);
 
 			String correlationId = TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
-			Map<String, LarvaScenarioAction> larvaActions = actionFactory.createLarvaActions(scenarioDirectory, properties, ibisContext, correlationId);
+			Map<String, LarvaScenarioAction> larvaActions = actionFactory.createLarvaActions(properties, applicationContext, correlationId);
+			applicationContext.configure();
+			applicationContext.start();
 
 			// Start the scenario
 			StringBuilder output = new StringBuilder();
@@ -296,6 +303,19 @@ public class ScenarioRunner {
 			larvaTool.writeHtml(output.toString(), true);
 			config.flushWriters();
 			return scenarioPassed;
+		} catch (Exception e) {
+			log.warn("Error occurred while creating Larva Scenario Actions", e);
+			larvaTool.errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e);
+			return RESULT_ERROR;
+		} finally {
+			// Cleanup created beans, if they are singletons, they will be closed.
+			if (applicationContext != null) {
+				try {
+					applicationContext.close();
+				} catch (Exception e) {
+					log.warn("Error occurred while closing Larva ApplicationContext", e);
+				}
+			}
 		}
 	}
 

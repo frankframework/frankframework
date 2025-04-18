@@ -20,24 +20,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.LifecycleProcessor;
-import org.springframework.context.support.GenericApplicationContext;
 
-import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
-import org.frankframework.lifecycle.ConfigurableLifecycle;
+import org.frankframework.lifecycle.ConfigurableApplicationContext;
 import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
-import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.scheduler.job.IJob;
-import org.frankframework.util.RunState;
 import org.frankframework.util.SpringUtils;
 
 /**
@@ -51,103 +42,11 @@ import org.frankframework.util.SpringUtils;
  */
 @Log4j2
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class ScheduleManager extends GenericApplicationContext implements ConfigurableLifecycle, InitializingBean, ApplicationContextAware {
-
-	private @Getter boolean isConfigured = false;
-	private @Getter RunState state = RunState.STOPPED;
-
-	@Override
-	protected void initLifecycleProcessor() {
-		ConfiguringLifecycleProcessor defaultProcessor = new ConfiguringLifecycleProcessor();
-		defaultProcessor.setBeanFactory(getBeanFactory());
-		getBeanFactory().registerSingleton(LIFECYCLE_PROCESSOR_BEAN_NAME, defaultProcessor);
-		super.initLifecycleProcessor();
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) {
-		setParent(applicationContext);
-	}
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		if (isActive()) {
-			throw new LifecycleException("unable to refresh, ScheduleManager is already active");
-		}
-
-		refresh();
-	}
-
-	@Override
-	public void configure() throws ConfigurationException {
-		log.info("configuring ScheduleManager [{}]", this::getId);
-		state = RunState.STARTING;
-
-		LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
-		if (!(lifecycle instanceof ConfigurableLifecycle configurableLifecycle)) {
-			throw new ConfigurationException("wrong lifecycle processor found, unable to configure beans");
-		}
-
-		log.debug("configuring ScheduleManager [{}]", getId());
-
-		// Trigger a configure on all (Configurable) Lifecycle beans
-		configurableLifecycle.configure();
-		isConfigured = true;
-	}
+public class ScheduleManager extends ConfigurableApplicationContext {
 
 	@Override
 	public int getPhase() {
 		return 200;
-	}
-
-	@Override
-	public boolean isRunning() {
-		return state == RunState.STARTED && super.isRunning();
-	}
-
-	/**
-	 * Configure and start, managed through the Spring Lifecyle
-	 */
-	@Override
-	public void start() {
-		log.info("starting ScheduleManager [{}]", this::getId);
-		if (!isConfigured()) {
-			throw new IllegalStateException("cannot start ScheduleManager that's not configured");
-		}
-
-		super.start();
-		state = RunState.STARTED;
-	}
-
-	/*
-	 * Opposed to close you do not need to reconfigure the manager. Allows you to stop and start Schedules.
-	 */
-	@Override
-	public void stop() {
-		log.info("stopping ScheduleManager [{}]", this::getId);
-		state = RunState.STOPPING;
-
-		try {
-			super.stop();
-		} finally {
-			state = RunState.STOPPED;
-		}
-	}
-
-
-	/**
-	 * Close this context and remove all registered jobs
-	 */
-	@Override
-	public void close() {
-		log.info("closing ScheduleManager [{}]", this::getId);
-		try {
-			state = RunState.STOPPING;
-			super.close();
-		} finally {
-			isConfigured = false;
-			state = RunState.STOPPED;
-		}
 	}
 
 	/**

@@ -21,11 +21,11 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationContext;
+
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.IbisContext;
-import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.IPullingListener;
 import org.frankframework.core.IPushingListener;
@@ -37,8 +37,8 @@ import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.ListenerMessage;
 import org.frankframework.larva.ListenerMessageHandler;
 import org.frankframework.larva.SenderThread;
-import org.frankframework.senders.FrankSender;
 import org.frankframework.stream.Message;
+import org.frankframework.util.SpringUtils;
 
 /**
  * This class is used to create and manage the lifecycle of Larva actions.
@@ -55,17 +55,11 @@ public class LarvaActionFactory {
 		this.defaultTimeout = testTool.getConfig().getTimeout();
 	}
 
-	public Map<String, LarvaScenarioAction> createLarvaActions(String scenarioDirectory, Properties properties, IbisContext ibisContext, String correlationId) {
+	public Map<String, LarvaScenarioAction> createLarvaActions(Properties properties, ApplicationContext applicationContext, String correlationId) {
 		Map<String, LarvaScenarioAction> larvaActions = new HashMap<>();
 		debugMessage("Get all action names");
 
 		try {
-			// Use DirectoryClassLoader to make it possible to retrieve resources (such as styleSheetName) relative to the scenarioDirectory.
-			DirectoryClassLoader directoryClassLoader = new RelativePathDirectoryClassLoader();
-			directoryClassLoader.setDirectory(scenarioDirectory);
-			directoryClassLoader.setBasePath(".");
-			directoryClassLoader.configure(null, "LarvaTool");
-
 			Set<String> actionNames = properties.keySet()
 					.stream()
 					.map(String.class::cast)
@@ -80,14 +74,12 @@ public class LarvaActionFactory {
 					className = "org.frankframework.jms.PullingJmsListener";
 				}
 
-				IConfigurable configurable = LarvaActionUtils.createInstance(ibisContext, directoryClassLoader, className);
+				IConfigurable configurable = (IConfigurable) SpringUtils.createBean(applicationContext, className);
 				log.debug("created FrankElement [{}]", configurable);
-				if (configurable instanceof FrankSender frankSender) {
-					frankSender.setIbisManager(ibisContext.getIbisManager());
-				}
 
 				Properties actionProperties = handleDeprecations(LarvaActionUtils.getSubProperties(properties, actionName), actionName);
 				LarvaScenarioAction larvaScenarioAction = create(configurable, actionProperties, defaultTimeout, correlationId);
+				SpringUtils.registerSingleton(applicationContext, actionName, larvaScenarioAction);
 				larvaActions.put(actionName, larvaScenarioAction);
 				debugMessage("Opened [" + className + "] '" + actionName + "'");
 			}
@@ -116,9 +108,6 @@ public class LarvaActionFactory {
 
 		larvaAction.invokeSetters(defaultTimeout, actionProperties);
 		larvaAction.getSession().put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-
-		larvaAction.configure();
-		larvaAction.start();
 
 		return larvaAction;
 	}
