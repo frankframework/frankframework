@@ -197,7 +197,7 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 		builder.append(" url(s) ").append(urlMapping);
 		builder.append(" loadOnStartup [").append(loadOnStartup).append("]");
 		builder.append(" protocol ").append(transportGuarantee==TransportGuarantee.CONFIDENTIAL?"[HTTPS]":"[HTTP]");
-		builder.append(" authenticatior [").append(authenticatorName).append("]");
+		builder.append(" authenticator [").append(authenticatorName).append("]");
 
 		if(isAuthenticationEnabled()) {
 			builder.append(" roles ").append(getSecurityRoles());

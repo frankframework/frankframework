@@ -4,10 +4,16 @@
 			<listener className="org.frankframework.http.WebServiceListener"
 				name="urn:ws" />
 		</receiver>
-		<pipeline firstPipe="EchoPipe">
+		<pipeline>
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
+
+			<!-- Verify that the spring security context integration works as intended -->
+			<IsUserInRolePipe name="verifyInRole" role="IbisTester">
+				<Forward name="notInRole" path="EXIT" />
+			</IsUserInRolePipe>
+
 			<pipe name="EchoPipe" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -95,6 +101,7 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
+
 			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="Send2WS">
 				<sender className="org.frankframework.http.WebServiceSender"
