@@ -12,7 +12,7 @@ import { ToDateDirective } from '../../components/to-date.directive';
   styleUrls: ['./iaf-update.component.scss'],
 })
 export class IafUpdateComponent implements OnInit {
-  protected release?: IAFRelease;
+  protected release: IAFRelease | null = null;
 
   constructor(
     private router: Router,
@@ -22,7 +22,7 @@ export class IafUpdateComponent implements OnInit {
   ngOnInit(): void {
     this.release = this.sessionService.get('IAF-Release');
 
-    if (this.release == undefined) {
+    if (this.release === null) {
       this.router.navigate(['/status']);
     }
   }
