@@ -25,10 +25,6 @@ import java.util.List;
 
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.components.ComponentLoader;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.SpringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -37,6 +33,10 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.ResourceUtils;
+
+import org.frankframework.components.ComponentLoader;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
 
 /**
  * Creates and maintains the (Spring) Application Context. If the context is loaded through a {@link FrankApplicationInitializer servlet}
@@ -196,14 +196,8 @@ public class IbisApplicationContext implements Closeable {
 		}
 	}
 
-	@Deprecated
-	public <T> T getBean(String beanName, Class<T> beanClass) {
+	protected <T> T getBean(String beanName, Class<T> beanClass) {
 		return applicationContext.getBean(beanName, beanClass);
-	}
-
-	@Deprecated
-	public <T> T createBeanAutowireByName(Class<T> beanClass) {
-		return SpringUtils.createBean(applicationContext, beanClass);
 	}
 
 	/**
@@ -212,7 +206,7 @@ public class IbisApplicationContext implements Closeable {
 	 *
 	 * @return Spring XML Bean Factory or NULL
 	 */
-	protected AbstractApplicationContext getApplicationContext() {
+	public AbstractApplicationContext getApplicationContext() {
 		if (applicationContext == null)
 			createApplicationContext();
 
