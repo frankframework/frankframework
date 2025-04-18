@@ -32,7 +32,11 @@
                     <tr>
                       <th>{{ column.displayName }}</th>
                       <td>
-                        <input type="checkbox" [(ngModel)]="column.display" (change)="updateFilter(column.fieldName)" />
+                        <input
+                          type="checkbox"
+                          [(ngModel)]="column.display"
+                          (change)="updateColumnDisplay(column.fieldName)"
+                        />
                       </td>
                       <td>
                         <input type="text" class="full-width" [(ngModel)]="column.filter" />

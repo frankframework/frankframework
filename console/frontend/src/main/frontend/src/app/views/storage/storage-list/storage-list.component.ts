@@ -3,7 +3,6 @@ import { MessageField, MessageStore, Note, StorageService } from '../storage.ser
 import { StorageListDtComponent } from './storage-list-dt/storage-list-dt.component';
 import { SessionService } from 'src/app/services/session.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
-import { WebStorageService } from 'src/app/services/web-storage.service';
 import { getProcessStateIcon } from 'src/app/utils';
 import { AppService } from '../../../app.service';
 import {
@@ -22,22 +21,13 @@ import { DtContentDirective } from '../../../components/datatable/dt-content.dir
 import { DropLastCharPipe } from '../../../pipes/drop-last-char.pipe';
 import { Subscription } from 'rxjs';
 
-type DisplayColumn = {
-  actions: boolean;
-  id: boolean;
-  insertDate: boolean;
-  host: boolean;
-  originalId: boolean;
-  correlationId: boolean;
-  comment: boolean;
-  expiryDate: boolean;
-  label: boolean;
-};
-
-type SearchColumn = MessageField & {
+type FieldSearchInfo = {
+  fieldName: string;
   filter: string;
   display: boolean;
 };
+
+type SearchColumn = MessageField & FieldSearchInfo;
 
 type MessageData = MessageStore['messages'][number];
 
@@ -74,17 +64,6 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   protected searching = false;
   protected clearSearchLadda = false;
   protected messagesDownloading = false;
-  protected displayColumn: DisplayColumn = {
-    actions: true,
-    id: true,
-    insertDate: true,
-    host: true,
-    originalId: true,
-    correlationId: true,
-    comment: true,
-    expiryDate: true,
-    label: true,
-  };
 
   // service bindings
   protected storageService: StorageService = inject(StorageService);
@@ -100,7 +79,6 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   protected displayedColumns: DataTableColumn<MessageData>[] = [];
   protected messageFields: SearchColumn[] = [];
 
-  private webStorageService: WebStorageService = inject(WebStorageService);
   private Session: SessionService = inject(SessionService);
   private SweetAlert: SweetalertService = inject(SweetalertService);
   private appService: AppService = inject(AppService);
@@ -132,55 +110,9 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.getDisplayedColumns();
     this.setupMessagesRequest();
-
-    const searchSession = this.Session.get<Record<string, string>>('search');
-
-    this.search = searchSession ?? {
-      id: '',
-      startDate: '',
-      endDate: '',
-      host: '',
-      messageId: '',
-      correlationId: '',
-      comment: '',
-      label: '',
-      message: '',
-    };
-
-    const search = this.search;
-    if (search) {
-      for (const column in search) {
-        const value = search[column as keyof typeof search];
-        if (value && value != '') {
-          this.filterBoxExpanded = true;
-        }
-      }
-    }
   }
 
   ngAfterViewInit(): void {
-    const filterCookie = this.webStorageService.get<DisplayColumn>(`${this.storageParams.processState}Filter`);
-    if (filterCookie) {
-      for (const column of this.displayedColumns) {
-        if (column.name && !filterCookie[column.name as keyof DisplayColumn]) {
-          column.hidden = true;
-        }
-      }
-      this.displayColumn = filterCookie;
-    } else {
-      this.displayColumn = {
-        actions: true,
-        id: true,
-        insertDate: true,
-        host: true,
-        originalId: true,
-        correlationId: true,
-        comment: true,
-        expiryDate: true,
-        label: true,
-      };
-    }
-
     const tableTriggerSubscription = this.storageService.tableUpdateTrigger$.subscribe(() =>
       this.datasource.updateTable(),
     );
@@ -192,6 +124,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   protected getDisplayedColumns(): void {
+    const searchSession = this.Session.get<FieldSearchInfo[]>('storageFiltering');
     this.storageService.getStorageFields().subscribe((response) => {
       this.displayedColumns = [
         ...this.initialDisplayedColumns,
@@ -203,6 +136,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
         })),
       ];
       this.messageFields = response.fields.map((field) => ({ ...field, display: true, filter: '' }));
+      if (searchSession) this.setInitialSearchFilters(searchSession);
     });
   }
 
@@ -211,16 +145,11 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
       (requestInfo) =>
         new Promise((resolve, reject) => {
           let queryParameters = `?max=${requestInfo.size}&skip=${requestInfo.offset}&sort=${requestInfo.sort}`;
-          const search = this.search;
-          const searchSession: Record<keyof typeof search, string> = {};
-          for (const column in search) {
-            const text = search[column as keyof typeof search];
-            if (text) {
-              queryParameters += `&${column}=${text}`;
-              searchSession[column as keyof typeof search] = text;
+          this.updateSessionStorage((column) => {
+            if (column.filter !== '') {
+              queryParameters += `&${column.property}=${encodeURIComponent(column.filter)}`;
             }
-          }
-          this.Session.set('search', searchSession);
+          });
 
           this.storageService.getStorageList(queryParameters).subscribe({
             next: (response) => {
@@ -274,6 +203,21 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     return fd;
   }
 
+  setInitialSearchFilters(searchSession: FieldSearchInfo[]): void {
+    this.filterBoxExpanded = searchSession.length > 0;
+    for (const column of searchSession) {
+      const searchColumn = this.messageFields.find((searchColumn) => searchColumn.fieldName === column.fieldName);
+      const displayedColumn = this.displayedColumns.find(
+        (displayedColumn) => displayedColumn.name === column.fieldName,
+      );
+      if (searchColumn && displayedColumn) {
+        searchColumn.filter = column.filter;
+        searchColumn.display = column.display;
+        displayedColumn.hidden = !column.display;
+      }
+    }
+  }
+
   searchUpdated(): void {
     this.searching = true;
     this.storageService.updateTable();
@@ -287,7 +231,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   clearSearch(): void {
     this.clearSearchLadda = true;
-    this.Session.remove('search');
+    this.Session.remove('storageFiltering');
 
     for (const column of this.messageFields) {
       column.filter = '';
@@ -295,13 +239,28 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.storageService.updateTable();
   }
 
-  updateFilter(column: string): void {
-    this.webStorageService.set(`${this.storageParams.processState}Filter`, this.displayColumn);
-
-    const tableColumn = this.displayedColumns.find((displayedColumn) => displayedColumn.name === column);
-    if (tableColumn) {
-      tableColumn.hidden = !this.displayColumn[column as keyof typeof this.displayColumn];
+  updateColumnDisplay(column: string): void {
+    const displayedColumn = this.displayedColumns.find((displayedColumn) => displayedColumn.name === column);
+    const searchColumn = this.messageFields.find((messageField) => messageField.fieldName === column);
+    if (displayedColumn && searchColumn) {
+      displayedColumn.hidden = !searchColumn.display;
+      this.updateSessionStorage();
     }
+  }
+
+  updateSessionStorage(onColumnUpdate?: (column: SearchColumn) => void): void {
+    const searchSession: FieldSearchInfo[] = [];
+    for (const column of this.messageFields) {
+      if (column.filter !== '' || !column.display) {
+        if (onColumnUpdate) onColumnUpdate(column);
+        searchSession.push({
+          fieldName: column.fieldName,
+          filter: column.filter,
+          display: column.display,
+        });
+      }
+    }
+    this.Session.set('storageFiltering', searchSession);
   }
 
   selectAll(): void {
