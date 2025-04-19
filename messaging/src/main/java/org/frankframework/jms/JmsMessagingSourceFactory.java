@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,56 +24,53 @@ import javax.naming.NamingException;
 
 import jakarta.jms.ConnectionFactory;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IbisException;
 
-
 /**
- * Factory for {@link JmsMessagingSource}s, to share them for JMS Objects that can use the same.
- * <p>
- * JMS related IBIS objects can obtain a MessagingSource from this class. The physical connection is shared
- * between all IBIS objects that have the same connectionFactoryName.
+ * Factory for {@link MessagingSource}s, to share them for JMS Objects that can use the same.
  *
- * @author  Gerrit van Brakel
- * @since   4.4
+ * @author Gerrit van Brakel
  */
-public class JmsMessagingSourceFactory extends AbstractMessagingSourceFactory {
-
+@Log4j2
+public class JmsMessagingSourceFactory {
+	private final JMSFacade jmsFacade;
 	/**
 	 * Global JVM-wide cache for JMS Messaging Sources, which hold reference to ConnectionFactories.
 	 */
-	private static final Map<String,MessagingSource> JMS_MESSAGING_SOURCE_MAP = new HashMap<>();
-
-	private final JMSFacade jmsFacade;
+	private static final Map<String, MessagingSource> JMS_MESSAGING_SOURCE_MAP = new HashMap<>();
 
 	public JmsMessagingSourceFactory(JMSFacade jmsFacade) {
 		this.jmsFacade = jmsFacade;
 	}
 
-	@Override
-	protected Map<String, MessagingSource> getMessagingSourceMap() {
-		return JMS_MESSAGING_SOURCE_MAP;
-	}
-
-	@Override
-	protected MessagingSource createMessagingSource(String jmsConnectionFactoryName, String authAlias, boolean createDestination) throws IbisException {
+	private JmsMessagingSource createMessagingSource(String connectionFactoryName, String authAlias, boolean createDestination) throws IbisException {
 		Context context = getContext();
-		ConnectionFactory connectionFactory = getConnectionFactory(context, jmsConnectionFactoryName, createDestination);
-		return new JmsMessagingSource(jmsConnectionFactoryName, jmsFacade.getJndiContextPrefix(), context, connectionFactory, getMessagingSourceMap(), authAlias, createDestination, jmsFacade.getProxiedDestinationNames());
+		ConnectionFactory connectionFactory = getConnectionFactory(connectionFactoryName);
+		return new JmsMessagingSource(connectionFactoryName, jmsFacade.getJndiContextPrefix(), context, connectionFactory, JMS_MESSAGING_SOURCE_MAP, authAlias, createDestination, jmsFacade.getProxiedDestinationNames());
 	}
 
-	@Override
-	protected Context createContext() throws NamingException {
-		return new InitialContext();
+	public synchronized MessagingSource getMessagingSource(String connectionFactoryName, String authAlias, boolean createDestination) throws IbisException {
+		MessagingSource result = JMS_MESSAGING_SOURCE_MAP.get(connectionFactoryName);
+		if (result == null) {
+			result = createMessagingSource(connectionFactoryName, authAlias, createDestination);
+			log.debug("created new MessagingSource-object for [{}]", connectionFactoryName);
+		}
+		result.increaseReferences();
+		return result;
 	}
 
-	/**
-	 * Removed the suggested wrap ConnectionFactory, to work around bug in JMSQueueConnectionFactoryHandle in combination with Spring.
-	 * This was a bug in WAS 6.1 in combination with Spring 2.1, taking a risk here, but I'm assuming WebSphere has fixed this by now.
-	 * see https://web.archive.org/web/20130510092515/http://forum.springsource.org/archive/index.php/t-43700.html
-	 */
-	@Override
-	protected ConnectionFactory createConnectionFactory(Context context, String cfName, boolean createDestination) throws IbisException {
+	private Context getContext() throws IbisException {
+		try {
+			return new InitialContext();
+		} catch (Throwable t) {
+			throw new IbisException("could not obtain context", t);
+		}
+	}
+
+	private ConnectionFactory getConnectionFactory(String cfName) throws IbisException {
 		IConnectionFactoryFactory connectionFactoryFactory = jmsFacade.getConnectionFactoryFactory();
 		if (connectionFactoryFactory == null) {
 			throw new ConfigurationException("No ConnectionFactoryFactory was configured");
