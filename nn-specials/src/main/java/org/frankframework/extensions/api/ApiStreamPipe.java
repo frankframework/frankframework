@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2017, 2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,15 +23,16 @@ import java.sql.SQLException;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.doc.ReferTo;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.pipes.StreamPipe;
 import org.frankframework.util.AppConstants;
@@ -61,7 +62,8 @@ import org.frankframework.util.XmlUtils;
 @Log4j2
 @Deprecated
 public class ApiStreamPipe extends StreamPipe {
-	@Getter @Setter private String jmsRealm;
+	@Getter private String datasourceName;
+	@Getter private String jmsRealm;
 
 	private FixedQuerySender dummyQuerySender;
 
@@ -190,4 +192,15 @@ public class ApiStreamPipe extends StreamPipe {
 		}
 	}
 
+	@ReferTo(FixedQuerySender.class)
+	public void setDatasourceName(String datasourceName) {
+		this.datasourceName = datasourceName;
+	}
+
+	@ReferTo(FixedQuerySender.class)
+	@ConfigurationWarning("We discourage the use of jmsRealms for datasources. To specify a datasource other then the default, use the datasourceName attribute directly, instead of referring to a realm")
+	@Deprecated(forRemoval = true)
+	public void setJmsRealm(String jmsRealmName) {
+		jmsRealm = jmsRealmName;
+	}
 }
