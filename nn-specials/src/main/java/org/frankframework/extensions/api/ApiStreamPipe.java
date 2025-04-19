@@ -23,7 +23,6 @@ import java.sql.SQLException;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -32,6 +31,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.doc.ReferTo;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.pipes.StreamPipe;
 import org.frankframework.util.AppConstants;
@@ -59,9 +59,9 @@ import org.frankframework.util.XmlUtils;
  * @author Peter Leeuwenburgh
  */
 @Log4j2
-@Deprecated
+@Deprecated(since = "7.9")
 public class ApiStreamPipe extends StreamPipe {
-	@Getter @Setter private String jmsRealm;
+	@Getter private String datasourceName;
 
 	private FixedQuerySender dummyQuerySender;
 
@@ -95,7 +95,7 @@ public class ApiStreamPipe extends StreamPipe {
 			}
 			// TODO: create dummyQuerySender should be put in configure(), but gives an error
 			dummyQuerySender = createBean(FixedQuerySender.class);
-			dummyQuerySender.setJmsRealm(jmsRealm);
+			dummyQuerySender.setDatasourceName(datasourceName);
 			dummyQuerySender.setQuery("SELECT count(*) FROM ALL_TABLES");
 			try {
 				dummyQuerySender.configure();
@@ -190,4 +190,8 @@ public class ApiStreamPipe extends StreamPipe {
 		}
 	}
 
+	@ReferTo(FixedQuerySender.class)
+	public void setDatasourceName(String datasourceName) {
+		this.datasourceName = datasourceName;
+	}
 }

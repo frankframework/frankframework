@@ -131,11 +131,4 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	public String getDatasourceName() {
 		return querySender.getDatasourceName();
 	}
-
-	@ReferTo(FixedQuerySender.class)
-	@ConfigurationWarning("We discourage the use of jmsRealms for datasources. To specify a datasource other then the default, use the datasourceName attribute directly, instead of referring to a realm")
-	@Deprecated
-	public void setJmsRealm(String jmsRealmName) {
-		querySender.setJmsRealm(jmsRealmName);
-	}
 }
