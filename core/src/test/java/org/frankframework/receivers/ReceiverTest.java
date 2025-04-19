@@ -48,7 +48,6 @@ import static org.mockito.Mockito.when;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
@@ -238,8 +237,6 @@ public class ReceiverTest {
 	}
 
 	public MessageStoreListener setupMessageStoreListener() throws Exception {
-		Connection connection = mock(Connection.class);
-
 		MessageStoreListener listener = spy(new MessageStoreListener());
 		listener.setDataSourceFactory(new DataSourceFactoryMock());
 		listener.setConnectionsArePooled(true);
@@ -247,7 +244,7 @@ public class ReceiverTest {
 		listener.setSessionKeys("ANY-KEY");
 		listener.extractSessionKeyList();
 
-		doReturn(connection).when(listener).getConnection();
+		doReturn("dummy-destination").when(listener).getPhysicalDestinationName();
 		doReturn(false).when(listener).hasRawMessageAvailable();
 		doNothing().when(listener).configure();
 		doNothing().when(listener).start();
@@ -255,8 +252,8 @@ public class ReceiverTest {
 		return listener;
 	}
 
+	@SuppressWarnings("unchecked")
 	public ITransactionalStorage<Serializable> setupErrorStorage() {
-		//noinspection unchecked
 		JdbcTransactionalStorage<Serializable> txStorage = mock(JdbcTransactionalStorage.class);
 		txStorage.setDataSourceFactory(new DataSourceFactoryMock());
 		return txStorage;
