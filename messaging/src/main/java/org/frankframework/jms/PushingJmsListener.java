@@ -109,13 +109,9 @@ public class PushingJmsListener extends AbstractJmsListener implements IPortConn
 		if (StringUtils.isNotEmpty(getAuthAlias())) {
 			credentialFactory=new CredentialFactory(getAuthAlias());
 		}
-		try {
-			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), credentialFactory,
-					destination, getExceptionListener(), getCacheMode(), getAcknowledgeMode().getAcknowledgeMode(),
-					getMessageSelector(), getTimeout(), getPollGuardInterval());
-		} catch (JmsException e) {
-			throw new ConfigurationException(e);
-		}
+		jmsConnector.configureEndpointConnection(this, getConnectionFactory(), credentialFactory,
+				destination, getExceptionListener(), getCacheMode(), getAcknowledgeMode().getAcknowledgeMode(),
+				getMessageSelector(), getTimeout(), getPollGuardInterval());
 	}
 
 	@Override

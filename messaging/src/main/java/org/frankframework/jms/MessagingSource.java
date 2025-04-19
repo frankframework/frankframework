@@ -71,7 +71,6 @@ public class MessagingSource {
 	private Queue globalDynamicReplyQueue = null;
 
 	protected MessagingSource(String id, Context context, ConnectionFactory connectionFactory, Map<String,MessagingSource> siblingMap, String authAlias, boolean createDestination) {
-		super();
 		referenceCount=0;
 		this.id=id;
 		this.context=context;
@@ -124,16 +123,8 @@ public class MessagingSource {
 		referenceCount++;
 	}
 
-	public synchronized void decreaseReferences() {
-		referenceCount--;
-	}
-
-	public Context getContext() {
+	protected Context getContext() {
 		return context;
-	}
-
-	public ConnectionFactory getConnectionFactory() {
-		return connectionFactory;
 	}
 
 	protected Connection createConnection() throws JMSException {
