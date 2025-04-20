@@ -205,8 +205,8 @@ public class IbisApplicationContext implements Closeable {
 		return applicationContext.getBean(beanName, getClassOf(reified));
 	}
 
+	@SuppressWarnings("unchecked")
 	private static <T> Class<T> getClassOf(T[] array) {
-		//noinspection unchecked
 		return (Class<T>) array.getClass().getComponentType();
 	}
 
