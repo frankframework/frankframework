@@ -31,6 +31,7 @@ import lombok.Setter;
 import org.frankframework.batch.IResultHandler;
 import org.frankframework.batch.ResultWriter;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.IDbmsSupport;
