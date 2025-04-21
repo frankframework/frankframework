@@ -55,7 +55,7 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 	private @Getter boolean streamingContents = true;
 	private @Getter boolean closeInputstreamOnExit = true;
 	private @Getter String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	private @Getter boolean processFile = false;
+	private final @Getter boolean processFile = false;
 
 	@Override
 	public void configure() throws ConfigurationException {

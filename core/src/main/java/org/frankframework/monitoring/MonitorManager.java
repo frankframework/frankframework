@@ -27,31 +27,21 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.event.ApplicationEventMulticaster;
-import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.ResolvableType;
 
-import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
-import org.frankframework.lifecycle.ConfigurableLifecycle;
-import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
+import org.frankframework.lifecycle.ConfigurableApplicationContext;
 import org.frankframework.lifecycle.LazyLoadingEventListener;
-import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.monitoring.events.Event;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.monitoring.events.RegisterMonitorEvent;
-import org.frankframework.util.RunState;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlBuilder;
 
@@ -65,92 +55,21 @@ import org.frankframework.util.XmlBuilder;
  */
 @Log4j2
 @FrankDocGroup(FrankDocGroupValue.MONITORING)
-public class MonitorManager extends GenericApplicationContext implements ConfigurableLifecycle, ApplicationContextAware, ApplicationListener<MonitorEvent>, InitializingBean {
+public class MonitorManager extends ConfigurableApplicationContext implements ApplicationListener<MonitorEvent> {
 
-	private @Getter RunState state = RunState.STOPPED;
-	private @Getter boolean configured = false;
 	private final Map<String, Event> events = new ConcurrentHashMap<>(); // All events that can be thrown
 	private ApplicationEventMulticaster applicationEventMulticaster;
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) {
-		setParent(applicationContext);
-	}
-
-	@Override
 	public void afterPropertiesSet() throws Exception {
-		if (isActive()) {
-			throw new LifecycleException("unable to refresh, MonitorManager is already active");
-		}
-
-		refresh();
+		super.afterPropertiesSet();
 
 		applicationEventMulticaster = getBeanFactory().getBean(APPLICATION_EVENT_MULTICASTER_BEAN_NAME, ApplicationEventMulticaster.class);
 	}
 
 	@Override
-	protected void initLifecycleProcessor() {
-		ConfiguringLifecycleProcessor defaultProcessor = new ConfiguringLifecycleProcessor();
-		defaultProcessor.setBeanFactory(getBeanFactory());
-		getBeanFactory().registerSingleton(LIFECYCLE_PROCESSOR_BEAN_NAME, defaultProcessor);
-		super.initLifecycleProcessor();
-	}
-
-	@Override
-	public void start() {
-		log.info("starting MonitorManager [{}]", this::getName);
-		if (!configured) {
-			throw new IllegalStateException("cannot start monitors that are not configured");
-		}
-
-		super.start();
-		state = RunState.STARTED;
-	}
-
-	/**
-	 * (re)configure all destinations and all monitors.
-	 * Monitors will register all required eventNotificationListeners.
-	 */
-	@Override
-	public void configure() throws ConfigurationException {
-		if (!isActive()) {
-			throw new LifecycleException("MonitorManager is not active");
-		}
-		state = RunState.STARTING;
-		log.debug("configuring MonitorManager [{}]", this::getName);
-
-		// Trigger a configure on all (Configurable) Lifecycle beans
-		LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
-		if (!(lifecycle instanceof ConfigurableLifecycle configurableLifecycle)) {
-			throw new ConfigurationException("wrong lifecycle processor found, unable to configure beans");
-		}
-		configurableLifecycle.configure();
-		configured = true;
-	}
-
-	@Override
-	public void stop() {
-		log.info("stopping MonitorManager [{}]", this::getName);
-		state = RunState.STOPPING;
-		try {
-			super.stop();
-		} finally {
-			state = RunState.STOPPED;
-		}
-	}
-
-	@Override
 	public int getPhase() {
 		return 300;
-	}
-
-	@Override
-	public boolean isRunning() {
-		return getState() == RunState.STARTED && super.isRunning();
-	}
-
-	private String getName() {
-		return getDisplayName();
 	}
 
 	// We do not want all listeners to be initialized upon context startup. Hence listeners implementing LazyLoadingEventListener will be excluded from the beanType[].
@@ -183,7 +102,7 @@ public class MonitorManager extends GenericApplicationContext implements Configu
 	private void registerEvent(RegisterMonitorEvent registerEvent) {
 		EventThrowing eventThrowing = registerEvent.getSource();
 		String eventCode = registerEvent.getEventCode();
-		log.debug("{} registerEvent [{}] for adapter [{}] object [{}]", this::getName, () -> eventCode, eventThrowing::getAdapter, eventThrowing::getEventSourceName);
+		log.debug("{} registerEvent [{}] for adapter [{}] object [{}]", this::getDisplayName, () -> eventCode, eventThrowing::getAdapter, eventThrowing::getEventSourceName);
 
 		Adapter adapter = eventThrowing.getAdapter();
 		if(adapter == null || StringUtils.isEmpty(adapter.getName())) {
@@ -223,13 +142,13 @@ public class MonitorManager extends GenericApplicationContext implements Configu
 	// Remove + Add monitor
 
 	public void addMonitor(Monitor monitor) {
-		log.debug("registering monitor [{}] with MonitorManager [{}]", monitor::getName, this::getName);
+		log.debug("registering monitor [{}] with MonitorManager [{}]", monitor::getName, this::getDisplayName);
 		if(monitor.getName() == null) {
 			throw new IllegalStateException("destination has no name");
 		}
 
 		SpringUtils.registerSingleton(this, monitor.getName(), monitor);
-		log.info("MonitorManager [{}] registered monitor [{}]", this::getName, monitor::getName);
+		log.info("MonitorManager [{}] registered monitor [{}]", this::getDisplayName, monitor::getName);
 	}
 
 	// Method for runtime Monitor updates
@@ -241,7 +160,7 @@ public class MonitorManager extends GenericApplicationContext implements Configu
 				.stream()
 				.filter(name::equals)
 				.forEach(cbf::destroySingleton);
-		log.debug("removing monitor [{}] from MonitorManager [{}]", monitor::getName, this::getName);
+		log.debug("removing monitor [{}] from MonitorManager [{}]", monitor::getName, this::getDisplayName);
 	}
 
 	public Optional<Monitor> findMonitor(String name) {
@@ -267,13 +186,13 @@ public class MonitorManager extends GenericApplicationContext implements Configu
 	// Add Monitor Destination
 
 	public void addDestination(IMonitorDestination monitorDestination) {
-		log.debug("registering monitor destination [{}] with MonitorManager [{}]", monitorDestination::toString, this::getName);
+		log.debug("registering monitor destination [{}] with MonitorManager [{}]", monitorDestination::toString, this::getDisplayName);
 		if(monitorDestination.getName() == null) {
 			throw new IllegalStateException("destination has no name");
 		}
 
 		SpringUtils.registerSingleton(this, monitorDestination.getName(), monitorDestination);
-		log.info("MonitorManager [{}] registered monitor destination [{}]", this::getName, monitorDestination::getName);
+		log.info("MonitorManager [{}] registered monitor destination [{}]", this::getDisplayName, monitorDestination::getName);
 	}
 
 	@Nullable

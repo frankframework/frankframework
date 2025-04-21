@@ -540,7 +540,7 @@ public class TransformerHandlerImpl
    *            an exception during processing.
    * @see org.xml.sax.ContentHandler#characters
    */
-  public void characters(char ch[], int start, int length) throws SAXException
+  public void characters(char[] ch, int start, int length) throws SAXException
   {
 
     if (DEBUG)
@@ -564,7 +564,7 @@ public class TransformerHandlerImpl
    *            an exception during processing.
    * @see org.xml.sax.ContentHandler#ignorableWhitespace
    */
-  public void ignorableWhitespace(char ch[], int start, int length)
+  public void ignorableWhitespace(char[] ch, int start, int length)
           throws SAXException
   {
 
@@ -920,7 +920,7 @@ public class TransformerHandlerImpl
    * @param length The number of characters to use from the array.
    * @throws SAXException The application may raise an exception.
    */
-  public void comment(char ch[], int start, int length) throws SAXException
+  public void comment(char[] ch, int start, int length) throws SAXException
   {
 
     if (DEBUG)

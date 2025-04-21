@@ -64,7 +64,7 @@ public class XmlToLabelFormat {
 	static String makeTagLabel(String parentLabel, Element el) {
 		StringBuilder tag = new StringBuilder(60);
 
-		if(parentLabel.length() > 0) {
+		if(!parentLabel.isEmpty()) {
 			tag.append(parentLabel).append(".");
 		}
 		tag.append(el.getTagName()).append(el.getAttribute("volgnummer"));
@@ -112,7 +112,7 @@ public class XmlToLabelFormat {
 			tagLabel = makeTagLabel(parentLabel, el);
 			children = getElementChildren(el);
 
-			if(children.size() > 0) {
+			if(!children.isEmpty()) {
 				buf.append(tagLabel).append(" : #SAMENGESTELD\n");
 				convertTagsToLabels(buf, tagLabel, children);
 			} else {

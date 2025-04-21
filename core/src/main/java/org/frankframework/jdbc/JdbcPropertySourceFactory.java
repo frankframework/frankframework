@@ -59,7 +59,7 @@ public class JdbcPropertySourceFactory implements ApplicationContextAware {
 		try (Connection conn = ibisProp.getConnection()) {
 			if (ibisProp.getDbmsSupport().isTablePresent(conn, "IBISPROP")) {
 				Properties properties = executePropertiesQuery(conn);
-				if(properties.size() > 0) {
+				if(!properties.isEmpty()) {
 					log.info("found [{}] properties in database with datasouce [{}]", properties.size(), datasourceName);
 					return properties;
 					//return new PropertiesPropertySource(name, properties);

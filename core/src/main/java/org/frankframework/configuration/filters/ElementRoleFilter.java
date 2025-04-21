@@ -28,9 +28,9 @@ import org.frankframework.xml.FullXmlFilter;
 
 public class ElementRoleFilter extends FullXmlFilter {
 
-	private static final String ELEMENTROLE_ATTRIBUTE = "elementRole";
+	private static final String ELEMENT_ROLE_ATTRIBUTE = "elementRole";
 
-	private Deque<String> elementNames = new ArrayDeque<>();
+	private final Deque<String> elementNames = new ArrayDeque<>();
 
 	public ElementRoleFilter() {
 		super();
@@ -42,12 +42,12 @@ public class ElementRoleFilter extends FullXmlFilter {
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-		String elementName = atts.getValue(ELEMENTROLE_ATTRIBUTE);
+		String elementName = atts.getValue(ELEMENT_ROLE_ATTRIBUTE);
 		if (StringUtils.isEmpty(elementName)) {
 			elementName = Character.toLowerCase(localName.charAt(0))+localName.substring(1);
 		}
 		elementNames.push(elementName);
-		super.startElement(uri, elementName, makeQName(uri, elementName), new AttributesWrapper(atts, ELEMENTROLE_ATTRIBUTE));
+		super.startElement(uri, elementName, makeQName(uri, elementName), new AttributesWrapper(atts, ELEMENT_ROLE_ATTRIBUTE));
 	}
 
 	@Override

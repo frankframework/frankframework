@@ -47,7 +47,7 @@ import org.frankframework.util.StringUtil;
  * @param <M> the payload message type as used by IMessageBrowser.
  * @param <J> the physical JMS message to carry the payload.
  *
- * {@inheritDoc}
+ * {@inheritClassDoc}
  *
  * @author  Johan Verrips
  */
@@ -247,7 +247,7 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 	protected String getCombinedSelector(Map<String,String> selectors) {
 		StringBuilder result = new StringBuilder();
 		for (Map.Entry<String,String> entry: selectors.entrySet()) {
-			if (result.length() > 0) {
+			if (!result.isEmpty()) {
 				result.append(" AND ");
 			}
 			result.append(entry.getKey()).append("='").append(entry.getValue()).append("'");

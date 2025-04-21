@@ -147,7 +147,7 @@ public class CalcboxOutputReader implements XMLReader {
 
 			AttributesImpl atts = new AttributesImpl();
 
-			if(number.length() > 0) {
+			if(!number.isEmpty()) {
 				atts.addAttribute(nsu, "volgnummer", "volgnummer", "", number);
 			}
 			handler.startElement(nsu, tag, tag, atts);

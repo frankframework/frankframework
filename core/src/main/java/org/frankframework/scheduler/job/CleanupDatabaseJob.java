@@ -56,7 +56,7 @@ import org.frankframework.util.SpringUtils;
  * Find all MessageLogs and Lockers in the current configuration and removes database
  * entries which have surpassed their corresponding {@link JdbcTransactionalStorage#getExpiryDateField() MessageLog's ExpiryDateField}. 
  * 
- * {@inheritDoc}
+ * {@inheritClassDoc}
  * 
  * @ff.info This is a default job that can be controlled with the property {@literal cleanup.database.active} and {@literal cleanup.database.cron}.
  */
@@ -141,7 +141,7 @@ public class CleanupDatabaseJob extends AbstractJobDef {
 			} catch (Exception e) {
 				String msg = "error while cleaning IBISLOCK table (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-				log.error("{}{}", getLogPrefix(), msg, e);
+				log.error(msg, e);
 			} finally {
 				if (qs != null) {
 					qs.stop();
@@ -201,7 +201,7 @@ public class CleanupDatabaseJob extends AbstractJobDef {
 			} catch (Exception e) {
 				String msg = "error while deleting expired records from table [" + mlo.getTableName() + "] (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-				log.error("{} {}", getLogPrefix(), msg);
+				log.error(msg, e);
 			} finally {
 				if (qs != null) {
 					qs.stop();

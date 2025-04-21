@@ -34,7 +34,7 @@ import org.frankframework.stream.Message;
 @BindingType(jakarta.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public class MessageProvider extends AbstractSOAPProvider {
 
-	private PushingListenerAdapter listener;
+	private final PushingListenerAdapter listener;
 
 	public MessageProvider(PushingListenerAdapter listener, String multipartXmlSessionKey) {
 		super();

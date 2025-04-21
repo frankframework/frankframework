@@ -18,7 +18,7 @@ package org.frankframework.extensions.sap;
 import org.frankframework.extensions.sap.jco3.SapSenderImpl;
 
 /**
- * {@inheritDoc}
+ * {@inheritClassDoc}
  */
 public class SapSender extends SapSenderImpl {
 }

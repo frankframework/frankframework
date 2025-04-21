@@ -24,14 +24,13 @@ import org.frankframework.xml.SaxException;
 
 public class Json2XmlHandler implements JsonEventHandler {
 
-	public static String DEFAULT_ARRAY_ELEMENT_NAME = "item";
+	private static final String DEFAULT_ARRAY_ELEMENT_NAME = "item";
 
-	private String root;
-	private ContentHandler handler;
-	private boolean prettyPrint;
+	private final String root;
+	private final ContentHandler handler;
+	private final boolean prettyPrint;
 
-	private Stack<Object> stack = new Stack<>();
-
+	private final Stack<Object> stack = new Stack<>();
 
 	public Json2XmlHandler(ContentHandler handler, boolean prettyPrint) {
 		this("root", handler, prettyPrint);

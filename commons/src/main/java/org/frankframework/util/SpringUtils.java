@@ -30,6 +30,20 @@ public class SpringUtils {
 		return (T) applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 	}
 
+	public static Object createBean(ApplicationContext applicationContext, String className) throws ClassNotFoundException {
+		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+
+		ClassLoader classLoader = applicationContext.getClassLoader();
+		Thread.currentThread().setContextClassLoader(classLoader);
+
+		try {
+			Class<?> beanClass = Class.forName(className, true, classLoader);
+			return createBean(applicationContext, beanClass);
+		} finally {
+			Thread.currentThread().setContextClassLoader(originalClassLoader);
+		}
+	}
+
 	public static void autowireByType(ApplicationContext applicationContext, Object existingBean) {
 		autowire(applicationContext, existingBean, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE);
 	}

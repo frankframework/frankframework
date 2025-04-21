@@ -32,7 +32,7 @@ import org.frankframework.unmanaged.SpringJmsConnector;
 @Log4j2
 public class SlowListenerWithPollGuard implements IPushingListener<Message>, IPortConnectedListener<Message> {
 
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter String name;
 	private @Setter int startupDelay = 10000;

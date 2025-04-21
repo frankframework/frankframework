@@ -37,12 +37,12 @@ import org.frankframework.util.LogUtil;
 public class DelphiStringRecordReader extends Reader {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private InputStream in;
-	private String charsetName;
-	private int stringLength;
-	private int stringsPerRecord; // 0 means read till end of file
-	private String separator;
-	private String separatorReplacement;
+	private final InputStream in;
+	private final String charsetName;
+	private final int stringLength;
+	private final int stringsPerRecord; // 0 means read till end of file
+	private final String separator;
+	private final String separatorReplacement;
 
 	private StringBuilder buffer;
 	private int bufferLen=0;

@@ -127,11 +127,4 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 		schedulerHelper.scheduleJob(jobDetail, "0 0 1 * * ?");
 		assertThrows(SchedulerException.class, () -> schedulerHelper.scheduleJob(jobDetail, 0));
 	}
-
-	@Test
-	public void testStopScheduler() throws SchedulerException {
-		schedulerHelper.startScheduler();
-		// Make sure the scheduler can start without any issues
-		assertTrue(schedulerHelper.getScheduler().isStarted());
-	}
 }

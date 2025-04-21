@@ -39,8 +39,8 @@ public class MessageTestUtils {
 		CHARACTER_ISO88591("/Util/MessageUtils/iso-8859-1.txt"),
 		BINARY("/Documents/doc001.pdf");
 
-		private URL url;
-		private MessageType(String resource) {
+		private final URL url;
+		MessageType(String resource) {
 			URL url = TestFileUtils.getTestFileURL(resource);
 			assertNotNull(url, "unable to find test file");
 			this.url = url;

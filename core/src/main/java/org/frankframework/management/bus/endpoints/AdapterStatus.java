@@ -30,7 +30,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.messaging.Message;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.HasPhysicalDestination;
@@ -65,16 +71,11 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.MessageKeeperMessage;
 import org.frankframework.util.RunState;
-import org.springframework.messaging.Message;
-
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import jakarta.annotation.security.RolesAllowed;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.ADAPTER)
 public class AdapterStatus extends BusEndpointBase {
-	private boolean showCountMessageLog = AppConstants.getInstance().getBoolean("messageLog.count.show", true);
+	private final boolean showCountMessageLog = AppConstants.getInstance().getBoolean("messageLog.count.show", true);
 
 	private static final String RECEIVERS="receivers";
 	private static final String PIPES="pipes";

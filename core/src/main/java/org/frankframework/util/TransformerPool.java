@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -541,11 +543,25 @@ public class TransformerPool {
 		return new TransformerFilter(getTransformerHandler(), new ThreadConnectingFilter(threadConnector, handler), false, false);
 	}
 
-	public @Nonnull Map<String, String> getConfigMap() throws TransformerException, IOException {
+	private static Map<String,String> getXsltConfig(Source source) throws TransformerException, IOException {
+		TransformerPool tp = UtilityTransformerPools.getGetXsltConfigTransformerPool();
+		String metadataString = tp.transformToString(source);
+		Map<String,String> result = new LinkedHashMap<>();
+		for (final String s : StringUtil.split(metadataString, ";")) {
+			List<String> kv = StringUtil.split(s, "=");
+			String key = kv.get(0);
+			String value = kv.get(1);
+			result.put(key, value);
+		}
+		return result;
+	}
+
+	// protected because of tests, not even package private methods should access this...
+	protected @Nonnull Map<String, String> getConfigMap() throws TransformerException, IOException {
 		// Due to lazy-loading of the config-map this can happen in multiple threads simultaneously. Hence we synchronize here, the config-source seems a logical choice that doesn't lock too much.
 		synchronized (configSource) {
 			if (configMap == null) {
-				configMap = XmlUtils.getXsltConfig(configSource);
+				configMap = getXsltConfig(configSource);
 			}
 		}
 		return configMap;

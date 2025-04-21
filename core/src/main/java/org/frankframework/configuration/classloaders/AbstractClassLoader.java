@@ -58,11 +58,11 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	protected Logger log = LogUtil.getLogger(this);
 	private ReportLevel reportLevel = ReportLevel.ERROR;
 
-	private String instanceName = AppConstants.getInstance().getProperty("instance.name");
+	private final String instanceName = AppConstants.getInstance().getProperty("instance.name");
 	private String basePath = null;
 
 	private boolean allowCustomClasses = AppConstants.getInstance().getBoolean("configurations.allowCustomClasses", false);
-	private List<String> loadedCustomClasses = new ArrayList<>();
+	private final List<String> loadedCustomClasses = new ArrayList<>();
 
 	protected AbstractClassLoader() {
 		this(Thread.currentThread().getContextClassLoader());

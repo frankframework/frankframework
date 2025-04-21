@@ -279,7 +279,7 @@ public class ClassLoaderManager {
 			iterator.remove();
 			LOG.info("removed classloader [{}]", ClassUtils.nameOf(classLoader));
 		}
-		if(classLoaders.size() > 0) {
+		if(!classLoaders.isEmpty()) {
 			LOG.warn("not all ClassLoaders where removed. Removing references to remaining classloaders {}", classLoaders);
 
 			classLoaders.clear();

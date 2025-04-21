@@ -151,8 +151,7 @@ public class StringResolver {
 			String expression = extractNextExpression(val, ctx);
 			String key = extractNextKey(val, props1, props2, ctx);
 
-			Optional<String> replacement = resolveReplacement(key, props1, props2, ctx);
-			appendReplacement(sb, key, replacement, props1, props2, expression, ctx);
+			appendReplacement(sb, key, props1, props2, expression, ctx);
 		}
 	}
 
@@ -210,7 +209,9 @@ public class StringResolver {
 		ctx.pointer = val.indexOf(ctx.delimStart, ctx.head); // index delimiter
 	}
 
-	private static void appendReplacement(StringBuilder sb, String key, Optional<String> replacement, Map<?, ?> props1, Map<?, ?> props2, String expression, SubstitutionContext ctx) {
+	private static void appendReplacement(StringBuilder sb, String key, Map<?, ?> props1, Map<?, ?> props2, String expression, SubstitutionContext ctx) {
+		Optional<String> replacement = resolveReplacement(key, props1, props2, ctx);
+
 		if (ctx.resolveWithPropertyName) {
 			sb.append(ctx.propertyComposer).append(VALUE_SEPARATOR);
 		}

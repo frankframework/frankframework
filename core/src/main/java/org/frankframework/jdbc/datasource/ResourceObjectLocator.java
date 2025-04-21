@@ -44,7 +44,7 @@ import org.frankframework.util.StreamUtil;
 @Log4j2
 public class ResourceObjectLocator implements IObjectLocator, InitializingBean {
 
-	private ObjectCreator objectCreator = new ObjectCreator();
+	private final ObjectCreator objectCreator = new ObjectCreator();
 	private final ConcurrentSkipListMap<String, FrankResources> parsedFrankResources = new ConcurrentSkipListMap<>();
 	private @Setter String resourceFile = "resources.yml";
 	private URL resourceUrl;

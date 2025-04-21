@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,25 +13,20 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.larva.queues;
+package org.frankframework.larva.actions;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
 
-public interface Queue extends Map<String,Object> {
+public interface LarvaScenarioAction extends AutoCloseable {
 
-	void configure() throws ConfigurationException;
+	void executeWrite(Message fileContent, String correlationId, Map<String, Object> xsltParameters) throws TimeoutException, SenderException, ListenerException;
 
-	void open() throws ConfigurationException;
-
-	int executeWrite(String stepDisplayName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) throws TimeoutException, SenderException, ListenerException;
-	Message executeRead(String step, String stepDisplayName, Properties properties, String fileName, Message fileContent) throws SenderException, IOException, TimeoutException, ListenerException;
-
+	Message executeRead(Properties properties) throws SenderException, IOException, TimeoutException, ListenerException;
 }
