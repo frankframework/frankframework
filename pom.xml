@@ -742,36 +742,8 @@
 				<artifactId>maven-enforcer-plugin</artifactId>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.5.3</version>
-				<configuration>
-					<redirectTestOutputToFile>true</redirectTestOutputToFile>
-					<reuseForks>true</reuseForks>
-					<argLine>@{argLine} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI</argLine>
-				</configuration>
-				<executions>
-					<execution>
-						<id>default-test</id> <!-- This ID must be default-test otherwise tests will be executed twice -->
-						<phase>test</phase>
-						<goals>
-							<goal>test</goal>
-						</goals>
-						<configuration>
-							<excludedGroups>integration,${junit.excludedTags}</excludedGroups>
-							<groups>${junit.includedTags}</groups>
-						</configuration>
-					</execution>
-					<execution>
-						<id>integration-tests</id>
-						<phase>integration-test</phase>
-						<goals>
-							<goal>test</goal>
-						</goals>
-						<configuration>
-							<groups>integration</groups>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -835,6 +807,39 @@
 							</manifestEntries>
 						</archive>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>3.5.3</version>
+					<configuration>
+						<redirectTestOutputToFile>true</redirectTestOutputToFile>
+						<reuseForks>true</reuseForks>
+						<argLine>@{argLine} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI</argLine>
+					</configuration>
+					<executions>
+						<execution>
+							<id>default-test</id> <!-- This ID must be default-test otherwise tests will be executed twice -->
+							<phase>test</phase>
+							<goals>
+								<goal>test</goal>
+							</goals>
+							<configuration>
+								<excludedGroups>integration,${junit.excludedTags}</excludedGroups>
+								<groups>${junit.includedTags}</groups>
+							</configuration>
+						</execution>
+						<execution>
+							<id>integration-tests</id>
+							<phase>integration-test</phase>
+							<goals>
+								<goal>test</goal>
+							</goals>
+							<configuration>
+								<groups>integration</groups>
+							</configuration>
+						</execution>
+					</executions>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
