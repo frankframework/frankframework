@@ -15,7 +15,6 @@
 */
 package org.frankframework.core;
 
-
 /**
  * Represents a field from the message browser item.
  * @param fieldName Configured database table column name.
