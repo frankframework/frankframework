@@ -83,6 +83,7 @@ public class InputOutputPipeProcessorTest {
 	// ensure that no files are in the 'restoreMovedElements' folder
 	@AfterEach
 	public void teardown() throws IOException {
+		session.close();
 		Path tempDirectory = TemporaryDirectoryUtils.getTempDirectory(SerializableFileReference.TEMP_MESSAGE_DIRECTORY);
 		assertEquals(0, Files.list(tempDirectory).count());
 	}

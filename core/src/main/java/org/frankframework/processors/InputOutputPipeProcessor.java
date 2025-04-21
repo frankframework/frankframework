@@ -80,6 +80,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 				message.close(); // Cleanup
 				log.debug("Pipeline of adapter [{}] replacing empty input for pipe [{}] with fixed value [{}]", owner::getName, pipe::getName, pipe::getEmptyInputReplacement);
 				message = new Message(pipe.getEmptyInputReplacement());
+				message.closeOnCloseOf(pipeLineSession); // Technically not required but prevents the CleanerProvider from complaining.
 			}
 
 			final PipeRunResult pipeRunResult;
@@ -146,7 +147,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 			log.debug("Pipeline of adapter [{}] replacing input for pipe [{}] with fixed value [{}]", owner::getName, pipe::getName, pipe::getGetInputFromFixedValue);
 			if (!Message.isNull(message)) message.closeOnCloseOf(pipeLineSession);
 			Message newMessage = new Message(pipe.getGetInputFromFixedValue());
-			newMessage.closeOnCloseOf(pipeLineSession); // Not required but prevents the CleanerProvider from complaining.
+			newMessage.closeOnCloseOf(pipeLineSession); // Technically not required but prevents the CleanerProvider from complaining.
 			return newMessage;
 		}
 
@@ -182,6 +183,8 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		InputSource inputSource = getInputSourceFromResult(result, pipe, owner);
 
 		try {
+			result.closeOnCloseOf(pipeLineSession); // Directly closing the result fails, because the message can also exist and used in the session
+
 			MessageBuilder messageBuilder = new MessageBuilder();
 
 			CompactSaxHandler handler = new CompactSaxHandler(messageBuilder.asXmlWriter());
@@ -192,8 +195,10 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 			handler.setRemoveCompactMsgNamespaces(pipe.isRemoveCompactMsgNamespaces());
 			handler.setContext(pipeLineSession);
 			XmlUtils.parseXml(inputSource, handler);
-			result.closeOnCloseOf(pipeLineSession); // Directly closing the result fails, because the message can also exist and used in the session
-			pipeRunResult.setResult(messageBuilder.build());
+
+			Message compactedResult = messageBuilder.build();
+			compactedResult.closeOnCloseOf(pipeLineSession);
+			pipeRunResult.setResult(compactedResult);
 		} catch (IOException | SAXException e) {
 			log.warn("Pipeline of adapter [{}] could not compact received message", owner.getName(), e);
 		}
