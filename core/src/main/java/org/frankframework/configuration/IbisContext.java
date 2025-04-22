@@ -118,14 +118,14 @@ public class IbisContext extends IbisApplicationContext {
 			createApplicationContext();
 			LOG.debug("Created Ibis Application Context");
 
-			ibisManager = getBean("ibisManager", IbisManager.class);
+			ibisManager = getBean("ibisManager");
 			ibisManager.setIbisContext(this);
 			LOG.debug("Loaded IbisManager Bean");
 
 			classLoaderManager = new ClassLoaderManager(this);
 
 			try {
-				flowDiagramManager = getBean("flowDiagramManager", FlowDiagramManager.class); //The FlowDiagramManager should always initialize.
+				flowDiagramManager = getBean("flowDiagramManager"); //The FlowDiagramManager should always initialize.
 			} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
 				log("failed to initalize FlowDiagramManager", MessageKeeperLevel.ERROR, e);
 			}
@@ -246,7 +246,7 @@ public class IbisContext extends IbisApplicationContext {
 	 */
 	private void load() {
 		if(AppConstants.getInstance().getBoolean(JdbcPropertySourceFactory.JDBC_PROPERTIES_KEY, false)) {
-			JdbcPropertySourceFactory propertySourceFactory = getBean("jdbcPropertySourceFactory", JdbcPropertySourceFactory.class);
+			JdbcPropertySourceFactory propertySourceFactory = getBean("jdbcPropertySourceFactory");
 			Properties properties = propertySourceFactory.createPropertySource(getApplicationName()+"-DatabaseProperties");
 			if(properties != null) {
 				AppConstants.getInstance().putAll(properties);

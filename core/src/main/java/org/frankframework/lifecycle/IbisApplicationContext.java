@@ -196,8 +196,18 @@ public class IbisApplicationContext implements Closeable {
 		}
 	}
 
-	protected <T> T getBean(String beanName, Class<T> beanClass) {
-		return applicationContext.getBean(beanName, beanClass);
+	/**
+	 * Do not pass actual argument to reified, Java will auto-detect the class of the bean type.
+	 */
+	@SafeVarargs
+	protected final <T> T getBean(String beanName, T... reified) {
+		assert reified.length == 0;
+		return applicationContext.getBean(beanName, getClassOf(reified));
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> Class<T> getClassOf(T[] array) {
+		return (Class<T>) array.getClass().getComponentType();
 	}
 
 	/**
