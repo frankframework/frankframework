@@ -270,11 +270,20 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		return senderResult;
 	}
 
+	private boolean shouldIgnoreCheckPoint(Object bean) {
+		if (bean instanceof SendMessageJobSender) {
+			return true;
+		} else if (bean instanceof HasName namedObject) {
+			return org.springframework.util.StringUtils.startsWithIgnoreCase(namedObject.getName(), "$$Larva");
+		}
+		return false;
+	}
+
 	/**
 	 * Provides advice for {@link ISender#sendMessageOrThrow(Message message, PipeLineSession session)}
 	 */
 	public Message debugSenderSendMessageOrThrow(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session) throws Throwable {
-		if (!isEnabled() || proceedingJoinPoint.getTarget() instanceof SendMessageJobSender) {
+		if (!isEnabled() || shouldIgnoreCheckPoint(proceedingJoinPoint.getTarget())) {
 			return (Message) proceedingJoinPoint.proceed();
 		}
 
