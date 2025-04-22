@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.Map;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IDataIterator;
 import org.frankframework.core.PipeLineSession;
@@ -53,7 +52,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 
 		@Override
 		public void configure() throws ConfigurationException {
-			//In case a query is specified, pass true as argument to suppress the SQL Injection warning else pass the Adapter
+			// In case a query is specified, pass true as argument to suppress the SQL Injection warning else pass the Adapter
 			if(query!=null) {
 				super.configure(true);
 			} else {
@@ -140,12 +139,6 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		return querySender.getPhysicalDestinationName();
 	}
 
-	@Deprecated(forRemoval = true, since = "7.7.0")
-	@ConfigurationWarning("We discourage the use of jmsRealms for datasources. To specify a datasource other then the default, use the datasourceName attribute directly, instead of referring to a realm")
-	public void setJmsRealm(String jmsRealmName) {
-		querySender.setJmsRealm(jmsRealmName);
-	}
-
 	/** The SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query */
 	public void setQuery(String query) {
 		querySender.setQuery(query);
@@ -188,7 +181,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 
 	@ReferTo(AbstractJdbcQuerySender.class)
 	@Deprecated(forRemoval = true, since = "7.9.0")
-	//BLOBs are binary, they should not contain character data!
+	// BLOBs are binary, they should not contain character data!
 	public void setBlobCharset(String charset) {
 		querySender.setBlobCharset(charset);
 	}
