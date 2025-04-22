@@ -9,6 +9,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,7 +20,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import org.frankframework.core.SpringSecurityHandler;
 
-class SpringSecuritayHandlerTest {
+class SpringSecurityHandlerTest {
 
 	private SpringSecurityHandler springSecurityHandler;
 
@@ -37,9 +39,10 @@ class SpringSecuritayHandlerTest {
 		return new User("testuser", "password", List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
 	}
 
-	@Test
-	void testIsUserInRole_UserHasRole_ReturnsTrue() {
-		boolean result = springSecurityHandler.isUserInRole("ADMIN");
+	@ParameterizedTest
+	@ValueSource(strings = { "admin", "ADMIN" })
+	void testIsUserInRole_UserHasRole_ReturnsTrue(String role) {
+		boolean result = springSecurityHandler.isUserInRole(role);
 
 		assertTrue(result);
 	}
