@@ -1577,6 +1577,32 @@ public class ParameterTest {
 		assertEquals("v1", result);
 	}
 
+
+	@Test
+	public void testParameterWithJsonPathExpressionConvertsFromXml() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setJsonPathExpression(".root.a");
+		parameter.setSessionKey("sessionKey");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		PipeLineSession session = new PipeLineSession();
+		session.put("sessionKey", """
+				<root>
+					<a>v1</a>
+				</root>
+				""");
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertEquals("v1", result);
+	}
+
 	@Test
 	public void testParameterCannotHaveBothXPathAndJsonPathExpression() {
 		// Arrange

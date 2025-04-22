@@ -8,12 +8,11 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import java.io.StringReader;
 import java.util.stream.Stream;
 
-import org.frankframework.stream.Message;
-
-
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import org.frankframework.stream.Message;
 
 class JsonParameterTest {
 
@@ -60,7 +59,7 @@ class JsonParameterTest {
 
 		if (!(result instanceof Message message)) {
 			fail(expected + " is not a Message");
-			return;
+			return; // "return" statement is needed for the compiler so it knows `message` is in scope later
 		}
 		assertEquals("json", message.getContext().getMimeType().getSubtype());
 		assertJsonEquals(expected, message.asString());

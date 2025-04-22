@@ -18,6 +18,7 @@ package org.frankframework.parameters;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.stream.Message;
 
 public enum ParameterType {
 
@@ -98,6 +99,13 @@ public enum ParameterType {
 	@Deprecated
 	MAP,
 
+	/**
+	 * A parameter which represents its value as a {@link Message} with mimetype {@literal application/json}. If the
+	 * derived value was of type {@literal application/xml} then it will be converted into JSON using the same rules as the
+	 * {@link org.frankframework.pipes.JsonPipe}.
+	 * If the derived value of the parameter was neither XML nor JSON format then a JSON will be constructed that looks like
+	 * {@code {"paramName":value}}. (The value will be quoted if it was not a number or boolean value).
+	 */
 	JSON(JsonParameter.class, true),
 	;
 
