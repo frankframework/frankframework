@@ -70,7 +70,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	}
 
 	@Test
-	public void testUnzippingAndCollectingResultWithPattermFromParameter() throws Exception {
+	public void testUnzippingAndCollectingResultWithPatternFromParameter() throws Exception {
 		pipe.setResultIsContent(true);
 		pipe.addParameter(new Parameter("zipEntryPattern", "filebb.log"));
 		configureAndStartPipe();

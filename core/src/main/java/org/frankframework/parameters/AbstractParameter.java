@@ -402,7 +402,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			} else if (message != null) {
 				result = getParameterValueFromInputMessage(message);
 			} else {
-				result = null;
+				return null;
 			}
 		}
 
