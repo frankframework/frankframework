@@ -76,7 +76,7 @@ public class TestIteratingBasePipe extends IteratingPipeTestBase<IteratingTestPi
 	}
 
 	protected TaskExecutor createTaskExecutor() {
-		SimpleAsyncTaskExecutor executor = SpringUtils.createBean(getConfiguration(), SimpleAsyncTaskExecutor.class);
+		SimpleAsyncTaskExecutor executor = SpringUtils.createBean(getConfiguration());
 		executor.setConcurrencyLimit(ConcurrencyThrottleSupport.UNBOUNDED_CONCURRENCY);
 		return executor;
 	}

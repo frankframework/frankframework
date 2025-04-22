@@ -15,13 +15,14 @@
 */
 package org.frankframework.ladybug.config;
 
-import nl.nn.testtool.web.ApiServlet;
-import nl.nn.testtool.web.FrontendServlet;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import nl.nn.testtool.web.ApiServlet;
+import nl.nn.testtool.web.FrontendServlet;
 
 import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.lifecycle.servlets.SecuritySettings;
@@ -41,7 +42,7 @@ public class LadybugServletConfiguration implements ApplicationContextAware {
 
 	@Bean
 	public ServletRegistration<ApiServlet> ladybugApiServletBean() {
-		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
+		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext);
 		servletConfiguration.setUrlMapping("/iaf" + ApiServlet.getDefaultMapping());
 		servletConfiguration.setSecurityRoles(DynamicRegistration.ALL_IBIS_USER_ROLES);
 		ApiServlet.getDefaultInitParameters().forEach(servletConfiguration::addInitParameter);
@@ -54,7 +55,7 @@ public class LadybugServletConfiguration implements ApplicationContextAware {
 
 	@Bean
 	public ServletRegistration<FrontendServlet> ladybugFrontendServletBean() {
-		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
+		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext);
 		servletConfiguration.setUrlMapping("/iaf" + FrontendServlet.getDefaultMapping());
 		servletConfiguration.setSecurityRoles(DynamicRegistration.ALL_IBIS_USER_ROLES);
 		servletConfiguration.setName("Ladybug-FrontendServlet");
@@ -66,7 +67,7 @@ public class LadybugServletConfiguration implements ApplicationContextAware {
 
 	@Bean
 	public ServletRegistration<TesttoolServlet> testtoolServletBean() {
-		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
+		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext);
 		servletConfiguration.setUrlMapping("/iaf/testtool");
 		servletConfiguration.setSecurityRoles(DynamicRegistration.ALL_IBIS_USER_ROLES);
 		servletConfiguration.setName("TestTool");

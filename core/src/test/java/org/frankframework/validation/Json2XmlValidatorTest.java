@@ -209,7 +209,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		initJson2XmlValidatorTest(implementation);
 		TestConfiguration config = new TestConfiguration();
 
-		Json2XmlValidator json2xml = config.createBean(Json2XmlValidator.class);
+		Json2XmlValidator json2xml = config.createBean();
 		json2xml.setDeepSearch(true);
 		json2xml.setSchema(BASE_DIR_VALIDATION+"/IncludeWithoutNamespace/main.xsd");
 		json2xml.setRoot("GetDocument_Error");
@@ -236,12 +236,12 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 
 	@MethodSource("data")
 	@ParameterizedTest
-	void nonExistingResourceImportFromSchemaWithoutNamespace(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+	void nonExistingResourceImportFromSchemaWithoutNamespace(Class<? extends AbstractXmlValidator> implementation) {
 		initJson2XmlValidatorTest(implementation);
 		ClassLoader appClassLoader = Thread.currentThread().getContextClassLoader();
 		TestConfiguration config = new TestConfiguration();
 
-		Json2XmlValidator json2xml = config.createBean(Json2XmlValidator.class);
+		Json2XmlValidator json2xml = config.createBean();
 		json2xml.setSchema(BASE_DIR_VALIDATION+"/IncludeNonExistingResource/main.xsd");
 		json2xml.setRoot("GetDocument_Request");
 		json2xml.setResponseRoot("GetDocument_Error");
@@ -278,7 +278,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		initJson2XmlValidatorTest(implementation);
 		TestConfiguration config = new TestConfiguration();
 
-		Json2XmlValidator json2xml = config.createBean(Json2XmlValidator.class);
+		Json2XmlValidator json2xml = config.createBean();
 		json2xml.setDeepSearch(true);
 		json2xml.setOutputFormat(DocumentFormat.JSON);
 		json2xml.setSchema(BASE_DIR_VALIDATION + "/ContentAlreadySetAsStringHandled/PostZgwZaak.xsd");

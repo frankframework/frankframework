@@ -101,6 +101,16 @@ public class TestConfiguration extends Configuration {
 
 	/**
 	 * Performs full initialization of the bean, including all applicable BeanPostProcessors. This is effectively a superset of what autowire provides, adding initializeBean behavior.
+	 * This method can be used when the compiler can statically determine the class from the variable to which the bean is assigned.
+	 * Do not pass actual argument to reified, Java will auto-detect the class of the bean type.
+	 */
+	@SafeVarargs
+	public final <T> T createBean(T... reified) {
+		return SpringUtils.createBean(this, reified);
+	}
+
+	/**
+	 * Performs full initialization of the bean, including all applicable BeanPostProcessors. This is effectively a superset of what autowire provides, adding initializeBean behavior.
 	 */
 	public <T> T createBean(Class<T> beanClass) {
 		return SpringUtils.createBean(this, beanClass);

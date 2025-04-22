@@ -89,7 +89,7 @@ public class TestReceiverOnError {
 		receiver.setName("receiver");
 		receiver.setStartTimeout(2);
 		receiver.setStopTimeout(2);
-		DummySender sender = configuration.createBean(DummySender.class);
+		DummySender sender = configuration.createBean();
 		receiver.setSender(sender);
 		return receiver;
 	}

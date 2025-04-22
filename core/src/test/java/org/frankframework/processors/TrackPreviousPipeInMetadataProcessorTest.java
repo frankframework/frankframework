@@ -108,7 +108,7 @@ public class TrackPreviousPipeInMetadataProcessorTest {
 
 		pipeLine.configure();
 
-		CorePipeLineProcessor cpp = configuration.createBean(CorePipeLineProcessor.class);
+		CorePipeLineProcessor cpp = configuration.createBean();
 		cpp.setPipeProcessor(processor);
 		PipeLineResult pipeLineResult = cpp.processPipeLine(pipeLine, "id", new Message(INPUT_MESSAGE_TEXT), new PipeLineSession(), "echo1");
 
@@ -117,8 +117,8 @@ public class TrackPreviousPipeInMetadataProcessorTest {
 	}
 
 	private PipeLine getPipeLine() {
-		PipeLine pipeLine = configuration.createBean(PipeLine.class);
-		Adapter owner = configuration.createBean(Adapter.class);
+		PipeLine pipeLine = configuration.createBean();
+		Adapter owner = configuration.createBean();
 		owner.setName("PipeLine owner");
 		pipeLine.setApplicationContext(owner);
 
@@ -136,7 +136,7 @@ public class TrackPreviousPipeInMetadataProcessorTest {
 	}
 
 	private EchoPipe getEchoPipe(PipeLine pipeLine, String pipeName, String forwardName, Function<EchoPipe, Void> additionalConfig) throws ConfigurationException {
-		EchoPipe pipe = configuration.createBean(EchoPipe.class);
+		EchoPipe pipe = configuration.createBean();
 		pipe.setName(pipeName);
 
 		PipeForward forward = new PipeForward();

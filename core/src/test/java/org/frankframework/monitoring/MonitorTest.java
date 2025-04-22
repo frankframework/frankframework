@@ -39,17 +39,17 @@ public class MonitorTest {
 
 	@Test
 	public void testFireSpringEvent() throws Exception {
-		Monitor monitor = SpringUtils.createBean(manager, Monitor.class);
+		Monitor monitor = SpringUtils.createBean(manager);
 		monitor.setName("monitorName");
 
-		Alarm trigger = SpringUtils.createBean(manager, Alarm.class);
+		Alarm trigger = SpringUtils.createBean(manager);
 		trigger.addEventCodeText(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
 		monitor.addTrigger(trigger);
 
 		manager.addMonitor(monitor);
 
-		MonitorDestination destination = configuration.createBean(MonitorDestination.class);
+		MonitorDestination destination = configuration.createBean();
 		destination.setName("myTestDestination");
 
 		MessageCapturingEchoSender sender = new MessageCapturingEchoSender();

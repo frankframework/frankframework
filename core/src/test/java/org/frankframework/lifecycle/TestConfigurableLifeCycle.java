@@ -25,9 +25,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 
 import org.frankframework.configuration.Configuration;
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
-import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.monitoring.AdapterFilter;
 import org.frankframework.monitoring.EventType;
@@ -98,9 +96,9 @@ public class TestConfigurableLifeCycle {
 	private Adapter createAdapter() throws Exception {
 		Adapter createdAdapter = spy(SpringUtils.createBean(configuration, Adapter.class));
 		createdAdapter.setName("adapterName");
-		IPipe pipe = SpringUtils.createBean(createdAdapter, EchoPipe.class);
+		EchoPipe pipe = SpringUtils.createBean(createdAdapter);
 		pipe.setName("test-pipe");
-		PipeLine pipeline = SpringUtils.createBean(createdAdapter, PipeLine.class);
+		PipeLine pipeline = SpringUtils.createBean(createdAdapter);
 		pipeline.addPipe(pipe);
 		createdAdapter.setPipeLine(pipeline);
 
@@ -117,8 +115,8 @@ public class TestConfigurableLifeCycle {
 		Monitor createdMonitor = spy(SpringUtils.createBean(monitorManager, Monitor.class));
 		createdMonitor.setName(TEST_MONITOR_NAME);
 		createdMonitor.setType(EventType.FUNCTIONAL);
-		Trigger trigger = SpringUtils.createBean(monitorManager, Trigger.class);
-		AdapterFilter filter = SpringUtils.createBean(monitorManager, AdapterFilter.class);
+		Trigger trigger = SpringUtils.createBean(monitorManager);
+		AdapterFilter filter = SpringUtils.createBean(monitorManager);
 		filter.setAdapter("dummyAdapterName");
 		filter.addSubObjectText("dummySubObjectName");
 		trigger.setPeriod(42);
@@ -134,7 +132,7 @@ public class TestConfigurableLifeCycle {
 			private @Getter @Setter String name = "mockDestination";
 
 			@Override
-			public void configure() throws ConfigurationException {
+			public void configure() {
 				// Nothing to configure, dummy class
 			}
 

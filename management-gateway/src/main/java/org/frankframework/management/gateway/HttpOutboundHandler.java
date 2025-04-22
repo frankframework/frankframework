@@ -65,10 +65,10 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 
 		super.doInit();
 
-		QueueChannel responseChannel = SpringUtils.createBean(getApplicationContext(), QueueChannel.class);
+		QueueChannel responseChannel = SpringUtils.createBean(getApplicationContext());
 		setOutputChannel(responseChannel);
 
-		DefaultHttpHeaderMapper headerMapper = SpringUtils.createBean(getApplicationContext(), DefaultHttpHeaderMapper.class);
+		DefaultHttpHeaderMapper headerMapper = SpringUtils.createBean(getApplicationContext());
 		headerMapper.setOutboundHeaderNames(getRequestHeaders());
 		headerMapper.setInboundHeaderNames(BusMessageUtils.HEADER_PREFIX_PATTERN);
 		setHeaderMapper(headerMapper);

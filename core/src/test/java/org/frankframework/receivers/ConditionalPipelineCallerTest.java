@@ -31,6 +31,7 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
 
+@SuppressWarnings("unchecked")
 public class ConditionalPipelineCallerTest {
 	private static final String SESSION_VALUE_ECHO_PIPE_CALLED = "echo-pipe-was-called";
 	private TestConfiguration configuration;
@@ -49,13 +50,13 @@ public class ConditionalPipelineCallerTest {
 	}
 
 	Receiver<String> setupReceiver(JavaListener<String> listener) {
-		Receiver<String> receiver = configuration.createBean(Receiver.class);
+		Receiver<String> receiver = configuration.createBean();
 		receiver.setListener(listener);
 		receiver.setName("receiver");
-		DummySender sender = configuration.createBean(DummySender.class);
+		DummySender sender = configuration.createBean();
 		receiver.setSender(sender);
 
-		NarayanaJtaTransactionManager transactionManager = configuration.createBean(NarayanaJtaTransactionManager.class);
+		NarayanaJtaTransactionManager transactionManager = configuration.createBean();
 		receiver.setTxManager(transactionManager);
 
 		return receiver;

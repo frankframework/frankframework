@@ -92,7 +92,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 
 		int amountOfDelaySendersInWrapper = 5;
 		for (int i = 0; i < 10; i++) {
-			SenderSeries wrapper = getConfiguration().createBean(SenderSeries.class);
+			SenderSeries wrapper = getConfiguration().createBean();
 			wrapper.setName("Wrapper"+i);
 			for (int j = 0; j < amountOfDelaySendersInWrapper; j++) {
 				wrapper.addSender(new TestSender("Wrapper"+i+"-Sender"+j));

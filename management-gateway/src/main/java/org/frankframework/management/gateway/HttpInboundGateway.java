@@ -123,7 +123,7 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 		gateway.setRequestTimeout(0L);
 		gateway.setReplyTimeout(0L);
 
-		DefaultHttpHeaderMapper headerMapper = SpringUtils.createBean(applicationContext, DefaultHttpHeaderMapper.class);
+		DefaultHttpHeaderMapper headerMapper = SpringUtils.createBean(applicationContext);
 		headerMapper.setInboundHeaderNames(getRequestHeaders());
 		headerMapper.setOutboundHeaderNames(BusMessageUtils.HEADER_PREFIX_PATTERN);
 		gateway.setHeaderMapper(headerMapper);
@@ -160,9 +160,9 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 	}
 
 	private SubscribableChannel getErrorChannel(ApplicationContext applicationContext) {
-		PublishSubscribeChannel channel = SpringUtils.createBean(applicationContext, PublishSubscribeChannel.class);
+		PublishSubscribeChannel channel = SpringUtils.createBean(applicationContext);
 		channel.setBeanName("ErrorMessageConvertingChannel");
-		ErrorMessageConverter errorConverter = SpringUtils.createBean(applicationContext, ErrorMessageConverter.class);
+		ErrorMessageConverter errorConverter = SpringUtils.createBean(applicationContext);
 		if(channel.subscribe(errorConverter)) {
 			log.info("created ErrorMessageConverter [{}]", errorConverter);
 		} else {
@@ -222,7 +222,7 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 			Filter requestDispatcher = SpringUtils.createBean(applicationContext, RequestContextFilter.class);
 			http.addFilterAfter(requestDispatcher, AuthorizationFilter.class);
 
-			JwtSecurityFilter securityFilter = SpringUtils.createBean(applicationContext, JwtSecurityFilter.class);
+			JwtSecurityFilter securityFilter = SpringUtils.createBean(applicationContext);
 			http.addFilterBefore(securityFilter, BasicAuthenticationFilter.class);
 
 			return http.build();

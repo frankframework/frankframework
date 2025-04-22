@@ -72,7 +72,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	}
 
 	public void wsdlValidate(String wsdl, String soapBody, String testSoap, String testXml, String testJsonStraight, String testJsonCompact, String targetContent1, String targetContent2) throws Exception {
-		WsdlXmlValidator val = configuration.createBean(WsdlXmlValidator.class);
+		WsdlXmlValidator val = configuration.createBean();
 		val.setWsdl(wsdl);
 //        val.setSoapBody("TradePriceRequest");
 		val.setThrowException(true);
@@ -125,7 +125,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	public void validatePlainText(String input, String expectedError) throws Exception {
 		String wsdl = BASE_DIR_VALIDATION + "/Wsdl/GetPolicyDetailsTravel/GetPolicyDetailsTravel.wsdl";
 		String soapBody = "GetPolicyDetailsTravel_Response";
-		WsdlXmlValidator val = configuration.createBean(WsdlXmlValidator.class);
+		WsdlXmlValidator val = configuration.createBean();
 		val.setWsdl(wsdl);
 		val.setThrowException(true);
 		val.addForward(new PipeForward("success", null));

@@ -37,6 +37,7 @@ import org.springframework.util.ResourceUtils;
 import org.frankframework.components.ComponentLoader;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.SpringUtils;
 
 /**
  * Creates and maintains the (Spring) Application Context. If the context is loaded through a {@link FrankApplicationInitializer servlet}
@@ -197,17 +198,15 @@ public class IbisApplicationContext implements Closeable {
 	}
 
 	/**
+	 * Create bean without passing the bean-class. Can be used when the compiler can statically determine the class from the variable to which the bean is assigned.
 	 * Do not pass actual argument to reified, Java will auto-detect the class of the bean type.
 	 */
 	@SafeVarargs
 	protected final <T> T getBean(String beanName, T... reified) {
-		assert reified.length == 0;
-		return applicationContext.getBean(beanName, getClassOf(reified));
-	}
-
-	@SuppressWarnings("unchecked")
-	private static <T> Class<T> getClassOf(T[] array) {
-		return (Class<T>) array.getClass().getComponentType();
+		if (reified.length > 0) {
+			throw new IllegalArgumentException("Do not pass any actual arguments to the reified parameter");
+		}
+		return applicationContext.getBean(beanName, SpringUtils.getClassOf(reified));
 	}
 
 	/**

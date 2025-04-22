@@ -31,36 +31,36 @@ public class TestDirectWrapperPipePipeLine {
 
 	@Test
 	public void testDirectWrapperPipeSuccessForward() throws ConfigurationException, PipeRunException {
-		PipeLine pipeline = configuration.createBean(PipeLine.class);
+		PipeLine pipeline = configuration.createBean();
 
-		PipeForward pf = configuration.createBean(PipeForward.class);
+		PipeForward pf = configuration.createBean();
 		pf.setName("success");
 		pf.setPath("nextPipe");
 
-		PipeForward toExit = configuration.createBean(PipeForward.class);
+		PipeForward toExit = configuration.createBean();
 		toExit.setName("success");
 		toExit.setPath("EXIT");
 
-		DirectWrapperPipe pipe = configuration.createBean(DirectWrapperPipe.class);
+		DirectWrapperPipe pipe = configuration.createBean();
 		pipe.setName("DirectWrapperPipe");
 		pipe.addForward(pf);
 		pipeline.addPipe(pipe);
 
-		EchoPipe echoPipe = configuration.createBean(EchoPipe.class);
+		EchoPipe echoPipe = configuration.createBean();
 		echoPipe.setName("nextPipe");
 		echoPipe.setPipeLine(pipeline);
 		echoPipe.addForward(toExit);
 		pipeline.addPipe(echoPipe);
 
-		PipeLineExit exit = configuration.createBean(PipeLineExit.class);
+		PipeLineExit exit = configuration.createBean();
 		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.addPipeLineExit(exit);
 
 		pipeline.configure();
 
-		CorePipeProcessor cpp = configuration.createBean(CorePipeProcessor.class);
-		PipeLineSession ps = configuration.createBean(PipeLineSession.class);
+		CorePipeProcessor cpp = configuration.createBean();
+		PipeLineSession ps = configuration.createBean();
 
 		PipeRunResult pipeRunResult=cpp.processPipe(pipeline, pipe, new Message("<dummy/>"), ps);
 

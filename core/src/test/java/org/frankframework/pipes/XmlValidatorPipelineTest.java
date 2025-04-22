@@ -67,9 +67,9 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 	}
 
 	private static XmlValidator buildXmlValidator(TestConfiguration configuration, String schemaLocation, String root) throws ConfigurationException {
-		Adapter adapter = configuration.createBean(Adapter.class);
+		Adapter adapter = configuration.createBean();
 
-		XmlValidator validator = configuration.createBean(XmlValidator.class);
+		XmlValidator validator = configuration.createBean();
 		validator.setName("validator");
 		validator.addForward(createSuccessForward());
 		validator.setRoot(root);
