@@ -454,6 +454,11 @@
         <xs:documentation>Timeout (in seconds) of transaction started to process a message. Default: &lt;code&gt;0&lt;/code&gt; (use system default)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the sender or the listener</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="datasourceName" />
     <xs:attribute name="authAlias" type="xs:string">
       <xs:annotation>
@@ -476,22 +481,6 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="connectionsArePooled" />
-    <xs:attribute ref="authentication" />
-    <xs:attribute ref="credentials" />
-    <xs:attribute ref="initialContextFactoryName" />
-    <xs:attribute ref="providerURL" />
-    <xs:attribute ref="securityProtocol" />
-    <xs:attribute ref="urlPkgPrefixes" />
-    <xs:attribute ref="jmsRealm" />
-    <xs:attribute ref="principal" />
-    <xs:attribute ref="jndiAuthAlias" />
-    <xs:attribute ref="jndiContextPrefix" />
-    <xs:attribute ref="jndiProperties" />
-    <xs:attribute name="name" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Name of the sender or the listener</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.util.Locker" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="locker" />
@@ -963,7 +952,9 @@
     <xs:attribute name="jsonPathExpression" type="xs:string">
       <xs:annotation>
         <xs:documentation>The JPath expression to extract the parameter value from the input or session-variable.
- The input should be JSON or XML formatted, if it is XML formatter a simple XML-to-JSON conversion is done.</xs:documentation>
+ The input should be JSON or XML formatted, if it is XML formatter a simple XML-to-JSON conversion is done.
+ When &lt;code&gt;jsonPathExpression&lt;/code&gt; is set, then the value of the parameter will be derived using the same order
+ of precedence as with &lt;code&gt;xpathExpression&lt;/code&gt;.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
@@ -2197,17 +2188,53 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jndi.JndiBase" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="JndiBaseDeclaredAttributeGroup">
-    <xs:attribute ref="authentication" />
-    <xs:attribute ref="credentials" />
-    <xs:attribute ref="initialContextFactoryName" />
-    <xs:attribute ref="providerURL" />
-    <xs:attribute ref="securityProtocol" />
-    <xs:attribute ref="urlPkgPrefixes" />
-    <xs:attribute ref="jmsRealm" />
-    <xs:attribute ref="principal" />
-    <xs:attribute ref="jndiAuthAlias" />
-    <xs:attribute ref="jndiContextPrefix" />
-    <xs:attribute ref="jndiProperties" />
+    <xs:attribute name="authentication" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>maps to the field context.security_authentication</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="credentials" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>username to connect to context, maps to context.security_credentials</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="initialContextFactoryName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>class to use as initial context factory</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="providerURL" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Sets the value of providerURL</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="securityProtocol" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>maps to the field context.security_protocol</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="urlPkgPrefixes" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>maps to the field context.url_pkg_prefixes</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="jmsRealm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>loads JNDI (and other) properties from a JmsRealm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="principal" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>username to connect to context, maps to context.security_principal</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="jndiAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>authentication alias, may be used to override principal and credential-settings</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="jndiContextPrefix" type="xs:string" />
+    <xs:attribute name="jndiProperties" type="xs:string" />
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
         <xs:documentation>Name of the sender or the listener</xs:documentation>
@@ -2507,13 +2534,18 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="AbstractJdbcSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="AbstractJdbcSenderDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JdbcFacadeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="JdbcFacadeDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JdbcFacadeType">
-    <xs:attributeGroup ref="JdbcFacadeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="JdbcFacadeDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.JdbcFacade" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="JdbcFacadeDeclaredAttributeGroup">
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the sender or the listener</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="datasourceName" />
     <xs:attribute name="authAlias" type="xs:string">
       <xs:annotation>
@@ -2536,10 +2568,8 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="connectionsArePooled" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="JdbcFacadeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="JdbcFacadeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
   <xs:attributeGroup name="AbstractJdbcQuerySenderDeclaredAttributeGroup">
     <xs:attribute ref="packageContent" />
@@ -4504,7 +4534,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="AbstractJdbcMessageBrowserCumulativeAttributeGroup">
     <xs:attributeGroup ref="AbstractJdbcMessageBrowserDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JdbcFacadeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="JdbcFacadeDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="MongoDbSenderType">
     <xs:sequence>
@@ -7362,7 +7392,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="JdbcListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="JdbcListenerDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JdbcFacadeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="JdbcFacadeDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JdbcQueryListenerType">
     <xs:attributeGroup ref="JdbcQueryListenerCumulativeAttributeGroup" />
@@ -7624,7 +7654,7 @@
     <xs:attribute ref="blobCharset" />
     <xs:attribute ref="additionalFields" />
     <xs:attribute ref="trace" />
-    <xs:attributeGroup ref="JdbcFacadeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="JdbcFacadeDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="MqttListenerType">
     <xs:attributeGroup ref="MqttFacadeDeclaredAttributeGroup" />
@@ -7966,7 +7996,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="SimpleJdbcListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="SimpleJdbcListenerDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JdbcFacadeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="JdbcFacadeDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="TibcoLogJmsListenerType">
     <xs:sequence>
@@ -10119,11 +10149,6 @@
         <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="jmsRealm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>loads JNDI (and other) properties from a JmsRealm</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="Result2LobWriterBaseCumulativeAttributeGroup">
     <xs:attributeGroup ref="Result2LobWriterBaseDeclaredAttributeGroup" />
@@ -11522,7 +11547,11 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.api.ApiStreamPipe" />
   </xs:complexType>
   <xs:attributeGroup name="ApiStreamPipeDeclaredAttributeGroup">
-    <xs:attribute name="jmsRealm" type="xs:string" />
+    <xs:attribute name="datasourceName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="ApiStreamPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="ApiStreamPipeDeclaredAttributeGroup" />
@@ -11917,11 +11946,6 @@
         <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="jmsRealm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>loads JNDI (and other) properties from a JmsRealm</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="BatchTransformerPipeBaseCumulativeAttributeGroup">
     <xs:attributeGroup ref="BatchTransformerPipeBaseDeclaredAttributeGroup" />
@@ -12038,7 +12062,6 @@
     <xs:attributeGroup ref="MessageSendingPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:attributeGroup name="JdbcIteratingPipeBaseDeclaredAttributeGroup">
-    <xs:attribute name="jmsRealm" type="xs:string" />
     <xs:attribute name="query" type="xs:string">
       <xs:annotation>
         <xs:documentation>The SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query</xs:documentation>
@@ -16466,53 +16489,6 @@
       <xs:documentation>If set &lt;code&gt;false&lt;/code&gt;, the destinationName is used directly instead of performing a JNDI lookup Default: true</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="authentication" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>maps to the field context.security_authentication</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="credentials" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>username to connect to context, maps to context.security_credentials</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="initialContextFactoryName" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>class to use as initial context factory</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="providerURL" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Sets the value of providerURL</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="securityProtocol" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>maps to the field context.security_protocol</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="urlPkgPrefixes" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>maps to the field context.url_pkg_prefixes</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="jmsRealm" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>loads JNDI (and other) properties from a JmsRealm</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="principal" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>username to connect to context, maps to context.security_principal</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="jndiAuthAlias" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>authentication alias, may be used to override principal and credential-settings</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="jndiContextPrefix" type="xs:string" />
-  <xs:attribute name="jndiProperties" type="xs:string" />
   <xs:attribute name="datasourceName" type="xs:string">
     <xs:annotation>
       <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>

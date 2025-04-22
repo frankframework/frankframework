@@ -419,11 +419,22 @@ public class MessageUtils {
 		}
 	}
 
-	public static @Nonnull Message asJsonMessage(@Nonnull Object value) throws IOException, XmlException {
-		return asJsonMessage(value, "value");
+	/**
+	 * Convert input value to a message in JSON format and mimetype. If the input value is already JSON, then it
+	 * is returned as-is. If the value is in XML format, it will be converted to JSON using {@link UtilityTransformerPools#getXml2JsonTransformerPool()}.
+	 * Otherwise the string-value of the input-value will be wrapped as JSON as {@code {"value": value}}.
+	 */
+	public static @Nonnull Message convertToJsonMessage(@Nonnull Object value) throws IOException, XmlException {
+		return convertToJsonMessage(value, "value");
 	}
 
-	public static @Nonnull Message asJsonMessage(@Nonnull Object value, @Nonnull String valueName) throws IOException, XmlException {
+	/**
+	 * Convert input value to a message in JSON format and mimetype. If the input value is already JSON, then it
+	 * is returned as-is. If the value is in XML format, it will be converted to JSON using {@link UtilityTransformerPools#getXml2JsonTransformerPool()}.
+	 * Otherwise the string-value of the input-value will be wrapped as JSON as {@code {"valueName": value}}, using parameter {@code valueName} as
+	 * name of the object.
+	 */
+	public static @Nonnull Message convertToJsonMessage(@Nonnull Object value, @Nonnull String valueName) throws IOException, XmlException {
 		Message message = Message.asMessage(value);
 		message.preserve();
 		MimeType mimeType = MessageUtils.computeMimeType(message);

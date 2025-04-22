@@ -79,7 +79,7 @@ import org.frankframework.util.XmlUtils;
  * A parameter resembles an attribute. However, while attributes get their value at configuration-time,
  * parameters get their value at the time of processing the message. Value can be retrieved from the message itself,
  * a fixed value, or from the pipelineSession. If this does not result in a value (or if neither of these is specified), a default value
- * can be specified. If an XPathExpression or stylesheet is specified, it will be applied to the message, the value retrieved
+ * can be specified. If an XPathExpression, XSLT stylesheet or JSONPathExpression is specified, it will be applied to the message, the value retrieved
  * from the pipelineSession or the fixed value specified. If the transformation produces no output, the default value
  * of the parameter is taken if provided.
  * <br/><br/>
@@ -504,7 +504,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 	private Object evaluateJsonPath(Object input, String jsonPathExpression) throws ParameterException {
 		try {
-			Message inputMessage = MessageUtils.asJsonMessage(input);
+			Message inputMessage = MessageUtils.convertToJsonMessage(input);
 			Object result = JsonPath.read(inputMessage.asInputStream(), jsonPathExpression);
 			return getJsonPathResult(result);
 		} catch (XmlException | IOException e) {
@@ -813,6 +813,8 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	/**
 	 * The JPath expression to extract the parameter value from the input or session-variable.
 	 * The input should be JSON or XML formatted, if it is XML formatter a simple XML-to-JSON conversion is done.
+	 * When {@code jsonPathExpression} is set, then the value of the parameter will be derived using the same order
+	 * of precedence as with {@code xpathExpression}.
 	 */
 	public void setJsonPathExpression(String jsonPathExpression) {
 		this.jsonPathExpression = jsonPathExpression;
