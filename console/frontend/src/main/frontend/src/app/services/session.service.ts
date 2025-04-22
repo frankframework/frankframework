@@ -6,9 +6,13 @@ import { Injectable } from '@angular/core';
 export class SessionService {
   constructor() {}
 
-  get<T>(key: string): T {
-    //Debug.log(key, sessionStorage.getItem(key), sessionStorage.getItem(key) == null, sessionStorage.getItem(key) == "null");
-    return JSON.parse(sessionStorage.getItem(key)!);
+  get<T>(key: string): T | null {
+    try {
+      return JSON.parse(sessionStorage.getItem(key)!);
+    } catch (error) {
+      console.error('Failed to retrieve session item', error);
+      return null;
+    }
   }
 
   set<T>(key: string, value: T): void {
