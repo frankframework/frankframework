@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,28 +19,30 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.Lifecycle;
+import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IXAEnabled;
+import org.frankframework.core.NameAware;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
-import org.frankframework.jndi.JndiBase;
+import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.LogUtil;
 
 /**
  * Provides functions for JDBC connections.
@@ -58,7 +60,13 @@ import org.frankframework.util.CredentialFactory;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled, Lifecycle {
+public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, ConfigurableLifecycle, FrankElement, NameAware {
+	protected Logger log = LogUtil.getLogger(this);
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
+
+	private @Getter String name;
+
 	private final @Getter String domain = "JDBC";
 	private String datasourceName = null;
 	@Getter private String authAlias = null;
@@ -83,7 +91,6 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 
 	@Override
 	public void configure() throws ConfigurationException {
-		super.configure();
 		if (StringUtils.isEmpty(getDatasourceName())) {
 			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getProperty(IDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY));
 		}
@@ -106,7 +113,6 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 
 	@Override
 	public void stop() {
-		super.stop();
 		started = false;
 	}
 
@@ -123,8 +129,8 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			}
 
 			try {
-				datasource = getDataSourceFactory().getDataSource(dsName, getJndiEnv());
-			} catch (NamingException | IllegalStateException e) {
+				datasource = getDataSourceFactory().getDataSource(dsName);
+			} catch (IllegalStateException e) {
 				throw new JdbcException("Could not find Datasource ["+dsName+"]", e);
 			}
 			if (datasource==null) {
@@ -162,8 +168,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	/**
 	 * Obtains a connection to the datasource.
 	 */
-	// TODO: consider making this one protected.
-	public Connection getConnection() throws JdbcException {
+	protected Connection getConnection() throws JdbcException {
 		DataSource ds = getDatasource();
 		try {
 			if (cf!=null) {
@@ -190,16 +195,6 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		}
 	}
 
-	@Override
-	@Deprecated(forRemoval = true, since = "7.7.0")
-	@ConfigurationWarning("We discourage the use of jmsRealms for datasources. To specify a datasource other then the default, use the datasourceName attribute directly, instead of referring to a realm")
-	public void setJmsRealm(String jmsRealmName) {
-		super.setJmsRealm(jmsRealmName); //super.setJmsRealm(...) sets the jmsRealmName only when a realm is found
-		if(StringUtils.isEmpty(getJmsRealmName())) { //confirm that the configured jmsRealm exists
-			throw new IllegalStateException("JmsRealm ["+jmsRealmName+"] not found");
-		}
-	}
-
 	/**
 	 * Returns the name and location of the database that this objects operates on.
 	 * If no previous connection was made or it cannot determine the destination
@@ -219,6 +214,12 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			return "no datasource found for datasourceName ["+getDatasourceName()+"]";
 		}
 		return "unknown";
+	}
+
+	/** Name of the sender or the listener */
+	@Override
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	/**

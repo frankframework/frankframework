@@ -111,6 +111,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private final Map<String,Destination> destinations = new ConcurrentHashMap<>();
 
 	private @Setter @Getter IConnectionFactoryFactory connectionFactoryFactory = null;
+	private @Setter @Getter ConnectionFactory connectionFactory;
+
 	private @Setter @Getter Map<String, String> proxiedDestinationNames;
 
 	// ---------------------------------------------------------------------
@@ -226,7 +228,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			throw new ConfigurationException("no connectionFactoryFactory set");
 		}
 		try {
-			ConnectionFactory connectionFactory = connectionFactoryFactory.getConnectionFactory(getConnectionFactoryName(), getJndiEnv());
+			connectionFactory = connectionFactoryFactory.getConnectionFactory(getConnectionFactoryName(), getJndiEnv());
 			if("com.amazon.sqs.javamessaging.SQSConnectionFactory".equals(connectionFactory.getClass().getCanonicalName()) && StringUtils.isNotBlank(getMessageSelector())) {
 				throw new ConfigurationException("Amazon SQS does not support MessageSelectors");
 			}
@@ -248,12 +250,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	protected JmsMessagingSource getJmsMessagingSource() throws JmsException {
 		return (JmsMessagingSource)getMessagingSource();
 	}
-	/*
-	 * Override this method in descender classes.
-	 */
-	protected AbstractMessagingSourceFactory getMessagingSourceFactory() {
-		return new JmsMessagingSourceFactory(this);
-	}
 
 	protected MessagingSource getMessagingSource() throws JmsException {
 		// We use double-checked locking here
@@ -265,7 +261,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			synchronized (this) {
 				if (messagingSource == null) {
 					log.debug("instantiating MessagingSourceFactory");
-					AbstractMessagingSourceFactory messagingSourceFactory = getMessagingSourceFactory();
+					JmsMessagingSourceFactory messagingSourceFactory = new JmsMessagingSourceFactory(this);
 					try {
 						String connectionFactoryName = getConnectionFactoryName();
 						log.debug("creating MessagingSource");
