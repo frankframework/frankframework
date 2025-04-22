@@ -26,6 +26,8 @@ import jakarta.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.frankframework.jdbc.datasource.IObjectLocator;
+
 /**
  * {@link MessagingSource} for JMS connections.
  *
@@ -69,6 +71,11 @@ public class JmsMessagingSource extends MessagingSource {
 		return dest;
 	}
 
+	/**
+	 * Make it so you can fetch these dynamically through an {@link IObjectLocator}.
+	 * In our tests we always 'assume' the client can create destinations.
+	 * This may not always be the case.
+	 */
 	private Destination lookupDestinationInJndi(String destinationName) throws NamingException {
 		String prefixedDestinationName = getJndiContextPrefix() + destinationName;
 		log.debug("{}looking up destination [{}]", getLogPrefix(), prefixedDestinationName);
