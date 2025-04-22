@@ -22,6 +22,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.message.StringMessage;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, TransactionalStorage.class})
@@ -99,7 +101,8 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 				.andExpect(MockMvcResultMatchers.status().isOk());
 
 		Message<Object> capturedRequest = Awaitility.await().atMost(1500, TimeUnit.MILLISECONDS).until(requestCapture::getValue, Objects::nonNull);
-		assertEquals("MESSAGE_BROWSER", capturedRequest.getHeaders().get("topic"));
+		assertEquals(BusTopic.MESSAGE_BROWSER.name(), capturedRequest.getHeaders().get("topic"));
+		assertEquals(BusAction.UPLOAD.name(), capturedRequest.getHeaders().get("action"));
 		assertEquals("1", capturedRequest.getHeaders().get("meta-messageId"));
 	}
 
@@ -113,7 +116,9 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 				.andExpect(MockMvcResultMatchers.status().isOk());
 
 		Message<Object> capturedRequest = Awaitility.await().atMost(1500, TimeUnit.MILLISECONDS).until(requestCapture::getValue, Objects::nonNull);
-		assertEquals("MESSAGE_BROWSER", capturedRequest.getHeaders().get("topic"));
+		assertEquals(BusTopic.MESSAGE_BROWSER.name(), capturedRequest.getHeaders().get("topic"));
+		assertEquals(BusAction.UPLOAD.name(), capturedRequest.getHeaders().get("action"));
+
 		// Async call will be done 3 times (for messageId 1,2, and 3). Here we'll only have access to the last call, which should be 3.
 		assertEquals("3", capturedRequest.getHeaders().get("meta-messageId"));
 	}
