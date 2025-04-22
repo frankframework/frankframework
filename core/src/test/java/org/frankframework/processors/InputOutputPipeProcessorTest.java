@@ -17,6 +17,8 @@ import jakarta.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.springframework.util.FileSystemUtils;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -81,6 +83,7 @@ public class InputOutputPipeProcessorTest {
 	// ensure that no files are in the 'restoreMovedElements' folder
 	@AfterEach
 	public void teardown() throws IOException {
+		session.close();
 		Path tempDirectory = TemporaryDirectoryUtils.getTempDirectory(SerializableFileReference.TEMP_MESSAGE_DIRECTORY);
 		assertEquals(0, Files.list(tempDirectory).count());
 	}
@@ -337,7 +340,8 @@ public class InputOutputPipeProcessorTest {
 		String expectedValue = "session-key-value";
 		session.put("the-session-key", expectedValue);
 
-		// This should be true, b/c input message is empty
+		// This should be true, b/c input message is empty, but code point
+		// should not be triggered because it is replaced by the session key.
 		assertTrue(pipe.skipPipe(input, session));
 
 		// Act
@@ -345,6 +349,66 @@ public class InputOutputPipeProcessorTest {
 
 		// Assert
 		assertEquals(expectedValue, prr.getResult().asString());
+	}
+
+	@ParameterizedTest // SessionKey exists but is empty
+	@NullAndEmptySource
+	public void testSkipOnEmptyInputAfterGetInputFromSessionKey(String sessionValue) throws Exception {
+		// Arrange
+		pipe.setGetInputFromSessionKey("the-session-key");
+		pipe.setSkipOnEmptyInput(true);
+		pipe.configure();
+		pipe.start();
+
+		Message input = Message.nullMessage();
+		session.put("the-session-key", sessionValue);
+
+		// This should be true
+		assertTrue(pipe.skipPipe(input, session));
+
+		// Act
+		PipeRunResult prr = processor.processPipe(pipeLine, pipe, input, session);
+
+		// Assert
+		assertEquals(sessionValue, prr.getResult().asString());
+	}
+
+	@Test
+	public void testGetInputFromSessionKeyAndFixedValue() throws Exception {
+		// Arrange
+		pipe.setSkipOnEmptyInput(true);
+		pipe.setGetInputFromSessionKey("the-session-key");
+		pipe.setGetInputFromFixedValue("fixed-value");
+		pipe.configure();
+		pipe.start();
+
+		Message input = Message.nullMessage();
+		session.put("the-session-key", "session-value"); // This value is overwritten by the fixed value
+
+		// Act
+		PipeRunResult prr = processor.processPipe(pipeLine, pipe, input, session);
+
+		// Assert
+		assertEquals("fixed-value", prr.getResult().asString());
+	}
+
+	@ParameterizedTest
+	@NullAndEmptySource
+	public void testGetInputFromEmptyFixedValue(String fixedValue) throws Exception {
+		// Arrange
+		pipe.setSkipOnEmptyInput(true);
+		pipe.setGetInputFromFixedValue(fixedValue);
+		pipe.setEmptyInputReplacement("tralala");
+		pipe.configure();
+		pipe.start();
+
+		Message input = Message.nullMessage();
+
+		// Act
+		PipeRunResult prr = processor.processPipe(pipeLine, pipe, input, session);
+
+		// Assert
+		assertEquals("tralala", prr.getResult().asString());
 	}
 
 	@Test
