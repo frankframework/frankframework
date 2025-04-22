@@ -31,6 +31,7 @@ import javax.xml.transform.TransformerException;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.json.Json;
+import jakarta.json.stream.JsonParser;
 import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.xml.soap.AttachmentPart;
@@ -316,8 +317,8 @@ public class MessageUtils {
 		if (!"{".equals(firstChar) && !"[".equals(firstChar)) {
 			return PLAIN_TEXT_MIME_TYPE;
 		}
-		try {
-			Json.createParser(message.asInputStream()).next();
+		try (JsonParser parser = Json.createParser(message.asInputStream())) {
+			parser.next();
 			return JSON_MIME_TYPE;
 		} catch (JsonParsingException | IOException e) {
 			return PLAIN_TEXT_MIME_TYPE;
