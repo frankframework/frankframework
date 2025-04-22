@@ -200,7 +200,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		int skipMessages = BusMessageUtils.getIntHeader(message, "skip", 0);
 		int maxMessages = BusMessageUtils.getIntHeader(message, "max", 100);
 
-		//Apply filters
+		// Apply filters
 		MessageBrowsingFilter filter = new MessageBrowsingFilter(maxMessages, skipMessages);
 		filter.setTypeMask(type);
 		filter.setHostMask(host);
