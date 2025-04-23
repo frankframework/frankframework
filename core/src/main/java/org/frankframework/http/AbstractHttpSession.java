@@ -341,6 +341,8 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 			throw new ConfigurationException("maxConnections is set to ["+getMaxConnections()+"], which is not enough for adequate operation");
 		}
 
+		credentials = getCredentialFactory();
+
 		if (oauthAuthenticationMethod == null) {
 			if (getTokenEndpoint() != null) {
 				ConfigurationWarnings.add(this, log, "Use oauthAuthenticationMethod to explicitly set the Oauth2 method to be used. This is currently automatically determined, but will be removed in the future.");
@@ -361,11 +363,9 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
 
-		if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(getClientAuthAlias()) && StringUtils.isEmpty(getClientId())) {
+		if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(getClientAuthAlias()) && StringUtils.isEmpty(getAuthAlias()) && StringUtils.isEmpty(getClientId())) {
 			throw new ConfigurationException("To obtain accessToken at tokenEndpoint ["+getTokenEndpoint()+"] a clientAuthAlias or ClientId and ClientSecret must be specified");
 		}
-
-		credentials = getCredentialFactory();
 
 		RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
 		requestConfigBuilder.setConnectTimeout(getTimeout());
