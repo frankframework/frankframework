@@ -24,6 +24,8 @@ import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.NameAware;
 import org.frankframework.http.AbstractHttpSender;
+import org.frankframework.senders.IbisJavaSender;
+import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
@@ -55,10 +57,15 @@ public class QueueUtils {
 		LOG.debug("instantiating queue [{}]", className);
 		try {
 			Class<?> clazz = ClassUtils.loadClass(className);
+			String name = "Larva "+clazz.getSimpleName();
+			if (IbisJavaSender.class.getCanonicalName().equals(className) || IbisLocalSender.class.getCanonicalName().equals(className)) {
+				name = "$$" + name;
+			}
+
 			Object obj = ibisContext.createBeanAutowireByName(clazz);
 
 			if (obj instanceof NameAware object) { // Set the name
-				object.setName("Larva "+clazz.getSimpleName());
+				object.setName(name);
 			}
 
 			if (obj instanceof AbstractHttpSender base) { // Disable SSL capabilities

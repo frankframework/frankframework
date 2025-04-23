@@ -48,6 +48,7 @@ import org.frankframework.stream.Message;
 public class QueueCreator {
 
 	public static final String CLASS_NAME_PROPERTY_SUFFIX = ".className";
+	private static final String LARVA_QUERY_SENDER_NAME = "$$Larva query sender";
 	private final TestConfig config;
 	private final LarvaTool testTool;
 
@@ -139,7 +140,7 @@ public class QueueCreator {
 				preDelete = (String)properties.get(name + ".preDel" + preDeleteIndex);
 				if (preDelete != null) {
 					FixedQuerySender deleteQuerySender = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-					deleteQuerySender.setName("Test Tool pre delete query sender");
+					deleteQuerySender.setName(LARVA_QUERY_SENDER_NAME);
 
 					try {
 						QueueUtils.invokeSetters(deleteQuerySender, queueProperties);
@@ -175,7 +176,7 @@ public class QueueCreator {
 				String prePostQuery = (String)properties.get(name + ".prePostQuery");
 				if (prePostQuery != null) {
 					FixedQuerySender prePostFixedQuerySender = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-					prePostFixedQuerySender.setName("Test Tool query sender");
+					prePostFixedQuerySender.setName(LARVA_QUERY_SENDER_NAME);
 					try {
 						QueueUtils.invokeSetters(prePostFixedQuerySender, queueProperties);
 						prePostFixedQuerySender.setQuery(prePostQuery);
@@ -220,7 +221,7 @@ public class QueueCreator {
 				String readQuery = (String)properties.get(name + ".readQuery");
 				if (readQuery != null) {
 					FixedQuerySender readQueryFixedQuerySender = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-					readQueryFixedQuerySender.setName("Test Tool query sender");
+					readQueryFixedQuerySender.setName(LARVA_QUERY_SENDER_NAME);
 
 					try {
 						readQueryFixedQuerySender.setQueryType(AbstractJdbcQuerySender.QueryType.SELECT);
