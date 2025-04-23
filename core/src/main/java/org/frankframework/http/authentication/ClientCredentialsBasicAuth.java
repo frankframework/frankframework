@@ -31,16 +31,22 @@ import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.util.CredentialFactory;
 
 public class ClientCredentialsBasicAuth extends AbstractClientCredentials {
+	private final String clientId;
+	private final String clientSecret;
+
 
 	public ClientCredentialsBasicAuth(AbstractHttpSession session) throws HttpAuthenticationException {
 		super(session);
+
+		CredentialFactory credentials = session.getCredentials();
+		this.clientId = credentials.getUsername();
+		this.clientSecret = credentials.getPassword();
 	}
 
 	private String createAuthorizationHeaderValue() {
-		CredentialFactory credentials = session.getCredentials();
-		String value = URLEncoder.encode(credentials.getUsername(), UTF8_CHARSET) +
+		String value = URLEncoder.encode(clientId, UTF8_CHARSET) +
 				':' +
-				URLEncoder.encode(credentials.getPassword(), UTF8_CHARSET);
+				URLEncoder.encode(clientSecret, UTF8_CHARSET);
 
 		return "Basic " + Base64.encode(value.getBytes(UTF8_CHARSET));
 	}

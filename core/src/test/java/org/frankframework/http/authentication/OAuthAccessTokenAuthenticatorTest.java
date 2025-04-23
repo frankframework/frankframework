@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -50,6 +51,12 @@ public class OAuthAccessTokenAuthenticatorTest {
 		httpSender.setTokenEndpoint(getEndpoint() + MockTokenServer.PATH);
 		httpSender.setTokenExpiry(-1);
 		httpSender.setScope("email");
+		httpSender.setClientId(clientId);
+		httpSender.setClientSecret(clientSecret);
+
+		httpSender.configure();
+		httpSender.start();
+
 		var authenticator = AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_QUERY_PARAMETERS.newAuthenticator(httpSender);
 
 		String accessToken = authenticator.getOrRefreshAccessToken(new UsernamePasswordCredentials(clientId, clientSecret), true);
@@ -69,6 +76,9 @@ public class OAuthAccessTokenAuthenticatorTest {
 		httpSender.setClientId(MockTokenServer.CLIENT_ID);
 		httpSender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
+		httpSender.configure();
+		httpSender.start();
+
 		Credentials credentials = new UsernamePasswordCredentials(username, password);
 		var authenticator = AbstractHttpSession.OauthAuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
 
@@ -86,6 +96,9 @@ public class OAuthAccessTokenAuthenticatorTest {
 		httpSender.setClientId(MockTokenServer.CLIENT_ID);
 		httpSender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
+		httpSender.configure();
+		httpSender.start();
+
 		var authenticator = AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
 
 		String accessToken = authenticator.getOrRefreshAccessToken(null, true);
@@ -102,6 +115,11 @@ public class OAuthAccessTokenAuthenticatorTest {
 		httpSender.setTokenEndpoint(getEndpoint() + MockTokenServer.PATH);
 		httpSender.setTokenExpiry(-1);
 		httpSender.setScope(null);
+		httpSender.setClientId(clientId);
+		httpSender.setClientSecret(clientSecret);
+		
+		httpSender.configure();
+		httpSender.start();
 
 		Credentials credentials = new UsernamePasswordCredentials(clientId, clientSecret);
 		var authenticator = AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_QUERY_PARAMETERS.newAuthenticator(httpSender);
@@ -120,6 +138,9 @@ public class OAuthAccessTokenAuthenticatorTest {
 		httpSender.setClientId(MockTokenServer.CLIENT_ID);
 		httpSender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
+		httpSender.configure();
+		httpSender.start();
+
 		var authenticator = AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_QUERY_PARAMETERS.newAuthenticator(httpSender);
 
 		assertThrows(HttpAuthenticationException.class, () -> authenticator.getOrRefreshAccessToken(null, true));
@@ -132,6 +153,9 @@ public class OAuthAccessTokenAuthenticatorTest {
 		httpSender.setScope("email");
 		httpSender.setClientId(MockTokenServer.CLIENT_ID);
 		httpSender.setClientSecret(MockTokenServer.CLIENT_SECRET);
+
+		httpSender.configure();
+		httpSender.start();
 
 		var authenticator = AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_QUERY_PARAMETERS.newAuthenticator(httpSender);
 
@@ -148,6 +172,9 @@ public class OAuthAccessTokenAuthenticatorTest {
 		httpSender.setScope("read, email");
 		httpSender.setClientId(MockTokenServer.CLIENT_ID);
 		httpSender.setClientSecret(MockTokenServer.CLIENT_SECRET);
+
+		httpSender.configure();
+		httpSender.start();
 
 		var authenticator = AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
 
@@ -167,6 +194,9 @@ public class OAuthAccessTokenAuthenticatorTest {
 		httpSender.setClientId(MockTokenServer.CLIENT_ID);
 		httpSender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
+		httpSender.configure();
+		httpSender.start();
+
 		var authenticator = AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
 
 		HttpAuthenticationException exception = assertThrows(HttpAuthenticationException.class, () -> authenticator.getOrRefreshAccessToken(null, true));
@@ -182,9 +212,12 @@ public class OAuthAccessTokenAuthenticatorTest {
 		httpSender.setClientId(MockTokenServer.CLIENT_ID);
 		httpSender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
+		httpSender.configure();
+		httpSender.start();
+
 		var authenticator = AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
 
-		String token = assertDoesNotThrow(() -> authenticator.getOrRefreshAccessToken(null, true));
+		String token = assertDoesNotThrow(() -> authenticator.getOrRefreshAccessToken(mock(Credentials.class), true));
 		assertNotNull(token);
 		assertEquals(MockTokenServer.VALID_TOKEN, token);
 	}
