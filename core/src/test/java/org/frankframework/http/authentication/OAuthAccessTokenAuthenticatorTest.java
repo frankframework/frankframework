@@ -195,7 +195,6 @@ public class OAuthAccessTokenAuthenticatorTest {
 		httpSender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
 		httpSender.configure();
-		httpSender.start();
 
 		var authenticator = AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
 
