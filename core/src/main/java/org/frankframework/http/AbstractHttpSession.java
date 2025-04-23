@@ -550,7 +550,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 		if (StringUtils.isNotEmpty(credentials.getUsername()) || StringUtils.isNotEmpty(getTokenEndpoint())) {
 
-			credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), getCredentials());
+			credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), getBasicCredentials());
 
 			AuthenticationScheme preferredAuthenticationScheme = getPreferredAuthenticationScheme();
 			requestConfigBuilder.setTargetPreferredAuthSchemes(Collections.singletonList(preferredAuthenticationScheme.getSchemeName()));
@@ -598,11 +598,11 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 				clientContext.setAttribute(HttpClientContext.TARGET_AUTH_STATE, authState);
 			}
 			authState.setState(AuthProtocolState.CHALLENGED);
-			authState.update(getPreferredAuthenticationScheme().createScheme(), getCredentials());
+			authState.update(getPreferredAuthenticationScheme().createScheme(), getBasicCredentials());
 		}
 	}
 
-	public Credentials getCredentials() {
+	public Credentials getBasicCredentials() {
 		String uname;
 		if (StringUtils.isNotEmpty(getAuthDomain())) {
 			uname = getAuthDomain() + "\\" + credentials.getUsername();
