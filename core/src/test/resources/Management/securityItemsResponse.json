@@ -53,6 +53,11 @@
             "username": null
         },
         {
+            "password": "******************",
+            "alias": "oauth.credentials",
+            "username": "testiaf-client"
+        },
+        {
             "password": "*** ERROR ***",
             "alias": "test",
             "username": "*** ERROR ***"
