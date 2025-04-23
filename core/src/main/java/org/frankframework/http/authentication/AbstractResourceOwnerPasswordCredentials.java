@@ -24,21 +24,30 @@ import org.apache.http.message.BasicNameValuePair;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.util.CredentialFactory;
 
 public abstract class AbstractResourceOwnerPasswordCredentials extends AbstractOauthAuthenticator {
+	private final String username;
+	private final String password;
 
 	AbstractResourceOwnerPasswordCredentials(AbstractHttpSession session) throws HttpAuthenticationException {
 		super(session);
+
+		CredentialFactory credentials = new CredentialFactory(session.getClientAuthAlias(), session.getClientId(), session.getClientSecret());
+		this.username = credentials.getUsername();
+		this.password = credentials.getPassword();
 	}
 
 	@Override
 	public final void configure() throws ConfigurationException {
-		if (session.getClientId() == null) {
-			throw new ConfigurationException("clientId is required");
+		CredentialFactory credentials = new CredentialFactory(session.getClientAuthAlias(), session.getClientId(), session.getClientSecret());
+
+		if (username == null) {
+			throw new ConfigurationException("Username is required");
 		}
 
-		if (session.getClientSecret() == null) {
-			throw new ConfigurationException("clientSecret is required");
+		if (password == null) {
+			throw new ConfigurationException("Password is required");
 		}
 	}
 

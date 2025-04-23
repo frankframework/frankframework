@@ -28,6 +28,7 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import com.nimbusds.jose.util.Base64;
 
 import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.util.CredentialFactory;
 
 public class ResourceOwnerPasswordCredentialsBasicAuth extends AbstractResourceOwnerPasswordCredentials {
 
@@ -36,9 +37,10 @@ public class ResourceOwnerPasswordCredentialsBasicAuth extends AbstractResourceO
 	}
 
 	private String createAuthorizationHeaderValue() {
-		String value = URLEncoder.encode(session.getClientId(), UTF8_CHARSET) +
+		CredentialFactory credentials = session.getCredentials();
+		String value = URLEncoder.encode(credentials.getUsername(), UTF8_CHARSET) +
 				':' +
-				URLEncoder.encode(session.getClientSecret(), UTF8_CHARSET);
+				URLEncoder.encode(credentials.getPassword(), UTF8_CHARSET);
 
 		return "Basic " + Base64.encode(value.getBytes(UTF8_CHARSET));
 	}

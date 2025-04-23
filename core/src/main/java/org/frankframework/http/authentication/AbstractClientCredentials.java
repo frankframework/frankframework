@@ -27,21 +27,28 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.util.CredentialFactory;
 
 @Log4j2
 public abstract class AbstractClientCredentials extends AbstractOauthAuthenticator {
+	private final String clientId;
+	private final String clientSecret;
 
 	AbstractClientCredentials(AbstractHttpSession session) throws HttpAuthenticationException {
 		super(session);
+
+		CredentialFactory credentials = session.getCredentials();
+		this.clientId = credentials.getUsername();
+		this.clientSecret = credentials.getPassword();
 	}
 
 	@Override
 	public final void configure() throws ConfigurationException {
-		if (session.getClientId() == null) {
+		if (clientId == null) {
 			throw new ConfigurationException("clientId is required");
 		}
 
-		if (session.getClientSecret() == null) {
+		if (clientSecret == null) {
 			throw new ConfigurationException("clientSecret is required");
 		}
 

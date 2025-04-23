@@ -305,7 +305,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 	private boolean disableCookies = false;
 
-	private CredentialFactory credentials;
+	private @Getter CredentialFactory credentials;
 
 	/**
 	 * Makes sure only http(s) requests can be performed.
