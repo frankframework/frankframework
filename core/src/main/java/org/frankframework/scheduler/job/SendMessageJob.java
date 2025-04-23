@@ -53,7 +53,7 @@ public class SendMessageJob extends AbstractJobDef {
 
 		super.configure();
 
-		localSender = SpringUtils.createBean(getApplicationContext());
+		localSender = SpringUtils.createBean(getApplicationContext(), SendMessageJobSender.class);
 		localSender.setJavaListener(getJavaListener());
 		localSender.setIsolated(false);
 		localSender.setName("Job " + getName());
