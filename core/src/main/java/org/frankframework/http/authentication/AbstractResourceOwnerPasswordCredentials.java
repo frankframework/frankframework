@@ -33,15 +33,13 @@ public abstract class AbstractResourceOwnerPasswordCredentials extends AbstractO
 	AbstractResourceOwnerPasswordCredentials(AbstractHttpSession session) throws HttpAuthenticationException {
 		super(session);
 
-		CredentialFactory credentials = new CredentialFactory(session.getClientAuthAlias(), session.getClientId(), session.getClientSecret());
+		CredentialFactory credentials = session.getCredentials();
 		this.username = credentials.getUsername();
 		this.password = credentials.getPassword();
 	}
 
 	@Override
 	public final void configure() throws ConfigurationException {
-		CredentialFactory credentials = new CredentialFactory(session.getClientAuthAlias(), session.getClientId(), session.getClientSecret());
-
 		if (username == null) {
 			throw new ConfigurationException("Username is required");
 		}
