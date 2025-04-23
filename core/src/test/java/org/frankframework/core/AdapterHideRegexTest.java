@@ -70,14 +70,12 @@ public class AdapterHideRegexTest {
 	}
 
 	public JavaListener<String> setupJavaListener(String name) {
-		@SuppressWarnings("unchecked")
 		JavaListener<String> listener = configuration.createBean();
 		listener.setName(name);
 		return listener;
 	}
 
 	private  <M> Receiver<M> setupReceiver(IListener<M> listener, String hideRegex) {
-		@SuppressWarnings("unchecked")
 		Receiver<M> receiver = configuration.createBean();
 		receiver.setListener(listener);
 		receiver.setName("receiver");
