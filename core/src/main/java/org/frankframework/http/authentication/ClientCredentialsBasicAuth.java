@@ -27,7 +27,6 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
 import com.nimbusds.jose.util.Base64;
 
-import org.frankframework.credentialprovider.ICredentials;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.util.CredentialFactory;
 
