@@ -36,9 +36,9 @@ public class ClientCredentialsBasicAuth extends AbstractClientCredentials {
 	}
 
 	private String createAuthorizationHeaderValue() {
-		String value = URLEncoder.encode(this.clientId, UTF8_CHARSET) +
+		String value = URLEncoder.encode(clientId, UTF8_CHARSET) +
 				':' +
-				URLEncoder.encode(this.clientSecret, UTF8_CHARSET);
+				URLEncoder.encode(clientSecret, UTF8_CHARSET);
 
 		return "Basic " + Base64.encode(value.getBytes(UTF8_CHARSET));
 	}

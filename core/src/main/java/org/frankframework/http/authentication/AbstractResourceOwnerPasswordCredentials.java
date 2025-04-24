@@ -24,24 +24,10 @@ import org.apache.http.message.BasicNameValuePair;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.http.AbstractHttpSession;
-import org.frankframework.util.CredentialFactory;
 
 public abstract class AbstractResourceOwnerPasswordCredentials extends AbstractOauthAuthenticator {
-	protected final String username;
-	protected final String password;
-	protected final String clientId;
-	protected final String clientSecret;
-
 	AbstractResourceOwnerPasswordCredentials(AbstractHttpSession session) throws HttpAuthenticationException {
 		super(session);
-
-		CredentialFactory userCredentials = session.getCredentials();
-		this.username = userCredentials.getUsername();
-		this.password = userCredentials.getPassword();
-
-		CredentialFactory clientCredentials = new CredentialFactory(session.getClientAuthAlias(), session.getClientId(), session.getClientSecret());
-		this.clientId = clientCredentials.getUsername();
-		this.clientSecret = clientCredentials.getPassword();
 	}
 
 	@Override

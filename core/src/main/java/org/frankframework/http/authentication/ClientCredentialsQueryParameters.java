@@ -31,8 +31,8 @@ public class ClientCredentialsQueryParameters extends AbstractClientCredentials 
 
 	@Override
 	protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials, List<NameValuePair> parameters) throws HttpAuthenticationException {
-		parameters.add(new BasicNameValuePair("client_secret", this.clientSecret));
-		parameters.add(new BasicNameValuePair("client_id", this.clientId));
+		parameters.add(new BasicNameValuePair("client_secret", clientSecret));
+		parameters.add(new BasicNameValuePair("client_id", clientId));
 
 		return super.createRequest(credentials, parameters);
 	}
