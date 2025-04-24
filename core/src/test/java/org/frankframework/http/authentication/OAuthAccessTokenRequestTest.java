@@ -107,7 +107,6 @@ public class OAuthAccessTokenRequestTest {
 	void testRetrieveAccessTokenWithResourceOwnerPasswordGrantUsingBasicAuthentication() throws Exception {
 		final String username = "fakeCredentialUserName";
 		final String password = "fakeCredentialPassword";
-		final String AUTH_BASE_64 = "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
 
 		httpSender.setScope("email");
 		httpSender.setClientId(CLIENT_ID);
@@ -122,7 +121,7 @@ public class OAuthAccessTokenRequestTest {
 		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getBasicCredentials(), new ArrayList<>());
 
 		assertEquals("POST", request.getMethod());
-		assertHeaderPresent(request, "Authorization", AUTH_BASE_64);
+		assertHeaderPresent(request, "Authorization", BASE_64);
 		assertHeaderPresent(request, "Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
 		assertEquals("grant_type=password&scope=email&username=fakeCredentialUserName&password=fakeCredentialPassword", StreamUtil.streamToString(request.getEntity()
 				.getContent(), "\n", "UTF-8"));

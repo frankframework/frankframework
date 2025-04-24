@@ -26,22 +26,22 @@ import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.util.CredentialFactory;
 
 public class ResourceOwnerPasswordCredentialsQueryParameters extends AbstractResourceOwnerPasswordCredentials {
-	private final String username;
-	private final String password;
+	private final String clientId;
+	private final String clientSecret;
 
 
 	public ResourceOwnerPasswordCredentialsQueryParameters(AbstractHttpSession session) throws HttpAuthenticationException {
 		super(session);
 
-		CredentialFactory credentials = session.getCredentials();
-		this.username = credentials.getUsername();
-		this.password = credentials.getPassword();
+		CredentialFactory clientCredentials = new CredentialFactory(session.getClientAuthAlias(), session.getClientId(), session.getClientSecret());
+		this.clientId = clientCredentials.getUsername();
+		this.clientSecret = clientCredentials.getPassword();
 	}
 
 	@Override
 	protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials, List<NameValuePair> parameters) throws HttpAuthenticationException {
-		parameters.add(new BasicNameValuePair("client_id", username));
-		parameters.add(new BasicNameValuePair("client_secret", password));
+		parameters.add(new BasicNameValuePair("client_id", clientId));
+		parameters.add(new BasicNameValuePair("client_secret", clientSecret));
 
 		return super.createRequest(credentials, parameters);
 	}
