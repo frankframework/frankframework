@@ -105,14 +105,11 @@ public class OAuthAccessTokenRequestTest {
 
 	@Test
 	void testRetrieveAccessTokenWithResourceOwnerPasswordGrantUsingBasicAuthentication() throws Exception {
-		final String username = "fakeCredentialUserName";
-		final String password = "fakeCredentialPassword";
-
 		httpSender.setScope("email");
 		httpSender.setClientId(CLIENT_ID);
 		httpSender.setClientSecret(CLIENT_SECRET);
-		httpSender.setUsername(username);
-		httpSender.setPassword(password);
+		httpSender.setUsername("fakeCredentialUserName");
+		httpSender.setPassword("fakeCredentialPassword");
 
 		httpSender.configure();
 		httpSender.start();
