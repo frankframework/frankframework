@@ -2,7 +2,7 @@ package org.frankframework.parameters;
 
 import static org.frankframework.testutil.TestAssertions.assertJsonEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.io.StringReader;
@@ -57,10 +57,7 @@ class JsonParameterTest {
 
 		Object result = param.getValueAsType(input, false);
 
-		if (!(result instanceof Message message)) {
-			fail(expected + " is not a Message");
-			return; // "return" statement is needed for the compiler so it knows `message` is in scope later
-		}
+		Message message = assertInstanceOf(Message.class, result);
 		assertEquals("json", message.getContext().getMimeType().getSubtype());
 		assertJsonEquals(expected, message.asString());
 	}

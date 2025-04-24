@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -459,9 +460,7 @@ public class MessageUtils {
 			try {
 				TransformerPool tpXml2Json = UtilityTransformerPools.getXml2JsonTransformerPool();
 				Map<String, Object> parameterValues = Collections.singletonMap("includeRootElement", true);
-				Message result = tpXml2Json.transform(message, parameterValues);
-				result.getContext().withMimeType(MediaType.APPLICATION_JSON);
-				return result;
+				return tpXml2Json.transform(message, parameterValues);
 			} catch (ConfigurationException | TransformerException | SAXException e) {
 				throw new XmlException("Cannot convert message from XML to JSON", e);
 			}
@@ -469,7 +468,7 @@ public class MessageUtils {
 		String valueAsString = message.asString();
 		String jsonTemplate = isBooleanOrNumber(value, valueAsString) ? JSON_TEMPLATE_VALUE_UNQUOTED : JSON_TEMPLATE_VALUE_QUOTED;
 		Message result = new Message(jsonTemplate.formatted(valueName, valueAsString));
-		result.getContext().withMimeType(MediaType.APPLICATION_JSON).withCharset(Charset.defaultCharset());
+		result.getContext().withMimeType(MediaType.APPLICATION_JSON).withCharset(StandardCharsets.UTF_8);
 		return result;
 	}
 
