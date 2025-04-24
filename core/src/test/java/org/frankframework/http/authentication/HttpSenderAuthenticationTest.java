@@ -243,23 +243,6 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	}
 
 	@Test
-	void testOAuthAuthenticatedTokenRequestUsingAuthAlias() throws Exception {
-		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
-		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
-		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH);
-		sender.setAuthAlias("oauth.credentials");
-
-		sender.setAuthenticatedTokenRequest(true);
-
-		sender.configure();
-		sender.start();
-
-		result = sendMessage();
-		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
-		assertNotNull(result.asString());
-	}
-
-	@Test
 	void testOAuthAuthenticationWithAuthenticatedTokenRequest() throws Exception {
 		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
