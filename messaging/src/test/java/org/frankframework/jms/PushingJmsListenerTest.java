@@ -86,7 +86,7 @@ public class PushingJmsListenerTest {
 	}
 
 	protected SlowListenerWithPollGuard createSlowListenerWithPollGuard(int startupDelay, int shutdownDelay) {
-		SlowListenerWithPollGuard listener = configuration.createBean(SlowListenerWithPollGuard.class);
+		SlowListenerWithPollGuard listener = configuration.createBean();
 		listener.setStartupDelay(startupDelay);
 		listener.setShutdownDelay(shutdownDelay);
 		return listener;

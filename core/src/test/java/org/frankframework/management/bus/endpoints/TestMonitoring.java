@@ -69,11 +69,11 @@ public class TestMonitoring extends BusTestBase {
 
 	private void createMonitor() throws Exception {
 		MonitorManager manager = getMonitorManager();
-		Monitor monitor = SpringUtils.createBean(manager, Monitor.class);
+		Monitor monitor = SpringUtils.createBean(manager);
 		monitor.setName(TEST_MONITOR_NAME);
 		monitor.setType(EventType.FUNCTIONAL);
-		Trigger trigger = SpringUtils.createBean(manager, Trigger.class);
-		AdapterFilter filter = SpringUtils.createBean(manager, AdapterFilter.class);
+		Trigger trigger = SpringUtils.createBean(manager);
+		AdapterFilter filter = SpringUtils.createBean(manager);
 		filter.setAdapter("dummyAdapterName");
 		filter.addSubObjectText("dummySubObjectName");
 		trigger.setPeriod(42);

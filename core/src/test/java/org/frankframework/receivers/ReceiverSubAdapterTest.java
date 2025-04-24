@@ -79,7 +79,7 @@ public class ReceiverSubAdapterTest {
 	}
 
 	private PipeLine createPipeLine(TestConfiguration configuration, IPipe testPipe) throws ConfigurationException {
-		PipeLine pl = configuration.createBean(PipeLine.class);
+		PipeLine pl = configuration.createBean();
 		pl.setFirstPipe(testPipe.getName());
 		pl.addPipe(testPipe);
 		PipeLineExit success = new PipeLineExit();
@@ -102,8 +102,7 @@ public class ReceiverSubAdapterTest {
 	}
 
 	private JavaListener<Serializable> createJavaListener(TestConfiguration configuration, Receiver<Serializable> receiver) {
-		@SuppressWarnings("unchecked")
-		JavaListener<Serializable> listener = configuration.createBean(JavaListener.class);
+		JavaListener<Serializable> listener = configuration.createBean();
 		listener.setName(receiver.getName());
 		listener.setHandler(receiver);
 
@@ -115,9 +114,8 @@ public class ReceiverSubAdapterTest {
 	}
 
 	private Receiver<Serializable> createReceiver(TestConfiguration configuration, PipeLine pipeline, String name, NarayanaJtaTransactionManager txManager) throws Exception {
-		Adapter adapter = configuration.createBean(Adapter.class);
-		@SuppressWarnings("unchecked")
-		Receiver<Serializable> receiver = configuration.createBean(Receiver.class);
+		Adapter adapter = configuration.createBean();
+		Receiver<Serializable> receiver = configuration.createBean();
 		receiver.setName(name);
 		adapter.setName(name);
 
@@ -133,7 +131,7 @@ public class ReceiverSubAdapterTest {
 	}
 
 	private MessageSendingPipe createMessageSendingPipe(TestConfiguration configuration, JavaListener<?> javaListener) {
-		IbisLocalSender sender = configuration.createBean(IbisLocalSender.class);
+		IbisLocalSender sender = configuration.createBean();
 		sender.setIsolated(false);
 		sender.setSynchronous(true);
 		sender.setJavaListener(javaListener.getName());
@@ -192,7 +190,7 @@ public class ReceiverSubAdapterTest {
 	@Test
 	void testManualRetryWithSubAdapter() throws Exception {
 		// Arrange
-		NarayanaJtaTransactionManager txManager = configuration.createBean(NarayanaJtaTransactionManager.class);
+		NarayanaJtaTransactionManager txManager = configuration.createBean();
 
 		FailurePipe failurePipe = createFailurePipe();
 		PipeLine subAdapterPipeLine = createPipeLine(configuration, failurePipe);

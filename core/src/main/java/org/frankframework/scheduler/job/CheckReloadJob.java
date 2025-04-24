@@ -76,7 +76,7 @@ public class CheckReloadJob extends AbstractJobDef {
 		List<String> configNames = new ArrayList<>();
 		List<String> configsToReload = new ArrayList<>();
 
-		FixedQuerySender qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
+		FixedQuerySender qs = SpringUtils.createBean(getApplicationContext());
 		qs.setDatasourceName(getDataSource());
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);

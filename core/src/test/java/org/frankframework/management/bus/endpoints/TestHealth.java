@@ -27,7 +27,7 @@ public class TestHealth extends BusTestBase {
 	}
 
 	protected Adapter registerAdapter(Configuration configuration) throws Exception {
-		Adapter adapter = SpringUtils.createBean(configuration, Adapter.class);
+		Adapter adapter = SpringUtils.createBean(configuration);
 		adapter.setName("TestAdapter");
 
 		JavaListener listener = new JavaListener();
@@ -37,7 +37,7 @@ public class TestHealth extends BusTestBase {
 		receiver.setListener(listener);
 		adapter.addReceiver(receiver);
 		PipeLine pipeline = new PipeLine();
-		EchoPipe pipe = SpringUtils.createBean(configuration, EchoPipe.class);
+		EchoPipe pipe = SpringUtils.createBean(configuration);
 		pipe.setName("EchoPipe");
 		pipeline.addPipe(pipe);
 		adapter.setPipeLine(pipeline);

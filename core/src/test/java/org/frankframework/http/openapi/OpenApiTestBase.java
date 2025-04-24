@@ -281,7 +281,7 @@ public class OpenApiTestBase extends Mockito {
 		public Adapter build(boolean start) throws ConfigurationException {
 			PipeLine pipeline = spy(SpringUtils.createBean(configuration, PipeLine.class));
 
-			Receiver receiver = SpringUtils.createBean(configuration, Receiver.class);
+			Receiver receiver = SpringUtils.createBean(configuration);
 			receiver.setName("receiver");
 			receiver.setListener(listener);
 

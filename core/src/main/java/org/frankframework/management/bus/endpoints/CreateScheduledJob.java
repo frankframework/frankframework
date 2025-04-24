@@ -114,7 +114,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 		SchedulerHelper sh = getSchedulerHelper();
 
 		//First try to create the schedule and run it on the local ibis before storing it in the database
-		DatabaseJob jobdef = SpringUtils.createBean(applicationContext, DatabaseJob.class);
+		DatabaseJob jobdef = SpringUtils.createBean(applicationContext);
 		jobdef.setCronExpression(cronExpression);
 		jobdef.setName(name);
 		jobdef.setAdapterName(adapterName);
@@ -125,7 +125,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 		jobdef.setInterval(interval);
 
 		if(hasLocker) {
-			Locker locker = SpringUtils.createBean(applicationContext, Locker.class);
+			Locker locker = SpringUtils.createBean(applicationContext);
 			locker.setName(lockKey);
 			locker.setObjectId(lockKey);
 			locker.setDatasourceName(IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);

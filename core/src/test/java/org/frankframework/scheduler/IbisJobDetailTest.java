@@ -21,12 +21,12 @@ public class IbisJobDetailTest {
 	public void setup() {
 		Configuration configuration = new TestConfiguration();
 
-		jobDef1 = SpringUtils.createBean(configuration, SendMessageJob.class);
+		jobDef1 = SpringUtils.createBean(configuration);
 		jobDef1.setName("fakeName");
 		jobDef1.setJavaListener("fakeListener");
 		configuration.addScheduledJob(jobDef1);
 
-		jobDef2 = SpringUtils.createBean(configuration, SendMessageJob.class);
+		jobDef2 = SpringUtils.createBean(configuration);
 		jobDef2.setName("fakeName2");
 		jobDef2.setJavaListener("fakeListener");
 		configuration.addScheduledJob(jobDef2);

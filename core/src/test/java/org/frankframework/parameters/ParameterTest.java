@@ -938,9 +938,9 @@ public class ParameterTest {
 	// results in "Content is not allowed in prolog"
 	public void testPutInSessionPipeWithDomdocParamsUsedMoreThanOnce() throws Exception {
 		try(TestConfiguration configuration = new TestConfiguration()) {
-			Adapter adapter = configuration.createBean(Adapter.class);
+			Adapter adapter = configuration.createBean();
 			adapter.setName("testAdapter"); // Required for Metrics
-			PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
+			PipeLine pipeline = SpringUtils.createBean(adapter);
 			String firstPipe = "PutInSession under test";
 			String secondPipe = "PutInSession next pipe";
 
@@ -954,7 +954,7 @@ public class ParameterTest {
 
 			String testMessageChild1 = "<Child><name>X</name></Child>";
 
-			PutInSession pipe = configuration.createBean(PutInSession.class);
+			PutInSession pipe = configuration.createBean();
 			pipe.setName(firstPipe);
 			pipe.setPipeLine(pipeline);
 			Parameter p = new Parameter();
@@ -964,7 +964,7 @@ public class ParameterTest {
 			pipe.addParameter(p);
 			pipeline.addPipe(pipe);
 
-			PutInSession pipe2 = configuration.createBean(PutInSession.class);
+			PutInSession pipe2 = configuration.createBean();
 			pipe2.setName(secondPipe);
 			pipe2.setPipeLine(pipeline);
 			Parameter p2 = new Parameter();
@@ -980,10 +980,10 @@ public class ParameterTest {
 			pipeline.addPipeLineExit(exit);
 			pipeline.configure();
 
-			CorePipeLineProcessor cpp = configuration.createBean(CorePipeLineProcessor.class);
-			CorePipeProcessor pipeProcessor = configuration.createBean(CorePipeProcessor.class);
+			CorePipeLineProcessor cpp = configuration.createBean();
+			CorePipeProcessor pipeProcessor = configuration.createBean();
 			cpp.setPipeProcessor(pipeProcessor);
-			PipeLineSession session = configuration.createBean(PipeLineSession.class);
+			PipeLineSession session = configuration.createBean();
 			PipeLineResult pipeRunResult = cpp.processPipeLine(pipeline, "messageId", new Message(testMessage), session, firstPipe);
 
 			assertEquals(ExitState.SUCCESS, pipeRunResult.getState());

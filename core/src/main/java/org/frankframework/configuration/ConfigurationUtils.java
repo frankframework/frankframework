@@ -156,7 +156,7 @@ public class ConfigurationUtils {
 
 		if(log.isInfoEnabled()) log.info("trying to fetch all active configurations from database with dataSourceName [{}]", workdataSourceName);
 
-		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
+		FixedQuerySender qs = SpringUtils.createBean(applicationContext);
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
@@ -189,7 +189,7 @@ public class ConfigurationUtils {
 		}
 		if(log.isInfoEnabled()) log.info("trying to fetch configuration [{}] version [{}] from database with dataSourceName [{}]", name, version, workdataSourceName);
 
-		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
+		FixedQuerySender qs = SpringUtils.createBean(applicationContext);
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
@@ -297,7 +297,7 @@ public class ConfigurationUtils {
 		}
 
 		Connection conn = null;
-		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
+		FixedQuerySender qs = SpringUtils.createBean(applicationContext);
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
@@ -358,7 +358,7 @@ public class ConfigurationUtils {
 			workdataSourceName = IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 
-		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
+		FixedQuerySender qs = SpringUtils.createBean(applicationContext);
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
@@ -389,7 +389,7 @@ public class ConfigurationUtils {
 		}
 
 		Connection conn = null;
-		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
+		FixedQuerySender qs = SpringUtils.createBean(applicationContext);
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
@@ -440,7 +440,7 @@ public class ConfigurationUtils {
 			workdataSourceName = IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 
-		FixedQuerySender qs =  SpringUtils.createBean(applicationContext, FixedQuerySender.class);
+		FixedQuerySender qs =  SpringUtils.createBean(applicationContext);
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
@@ -573,7 +573,7 @@ public class ConfigurationUtils {
 
 	@Nonnull
 	public static List<String> retrieveConfigNamesFromDatabase(ApplicationContext applicationContext) throws ConfigurationException {
-		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
+		FixedQuerySender qs = SpringUtils.createBean(applicationContext);
 		qs.setDatasourceName(IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();

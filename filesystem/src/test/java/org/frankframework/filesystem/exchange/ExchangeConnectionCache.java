@@ -63,7 +63,7 @@ public class ExchangeConnectionCache {
 		try {
 			log.debug("Creating new GraphClient and FS test helper");
 			configuration = new TestConfiguration();
-			MsalClientAdapter adapter = configuration.createBean(MsalClientAdapter.class);
+			MsalClientAdapter adapter = configuration.createBean();
 			adapter.setTimeout(30_000);
 			adapter.configure();
 			adapter.start();

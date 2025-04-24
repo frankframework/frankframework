@@ -34,8 +34,8 @@ public abstract class ConfiguredTestBase {
 
 	@BeforeEach
 	public void setUp() throws Exception {
-		adapter = getConfiguration().createBean(Adapter.class);
-		pipeline = SpringUtils.createBean(adapter, PipeLine.class);
+		adapter = getConfiguration().createBean();
+		pipeline = SpringUtils.createBean(adapter);
 		adapter.setName("TestAdapter of "+getClass().getSimpleName());
 		adapter.setPipeLine(pipeline);
 		session = new PipeLineSession();

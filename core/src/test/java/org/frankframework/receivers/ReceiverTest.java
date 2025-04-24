@@ -185,7 +185,7 @@ public class ReceiverTest {
 		receiver.setStopTimeout(2);
 		// To speed up test, we don't actually sleep
 		doNothing().when(receiver).suspendReceiverThread(anyInt());
-		DummySender sender = configuration.createBean(DummySender.class);
+		DummySender sender = configuration.createBean();
 		receiver.setSender(sender);
 		return receiver;
 	}
@@ -532,7 +532,7 @@ public class ReceiverTest {
 		when(destination.getName()).thenReturn("dummy-destination-name");
 
 		MonitorManager monitorManager = configuration.getBean("monitorManager", MonitorManager.class);
-		Monitor monitor = SpringUtils.createBean(monitorManager, Monitor.class);
+		Monitor monitor = SpringUtils.createBean(monitorManager);
 		monitor.setName("test-monitor");
 		monitor.setType(EventType.TECHNICAL);
 
@@ -712,7 +712,7 @@ public class ReceiverTest {
 		pipeLineResult.setResult(testMessage);
 		doReturn(pipeLineResult).when(pipeLine).process(any(), any(), any());
 
-		NarayanaJtaTransactionManager transactionManager = configuration.createBean(NarayanaJtaTransactionManager.class);
+		NarayanaJtaTransactionManager transactionManager = configuration.createBean();
 		receiver.setTxManager(transactionManager);
 
 		// start adapter
@@ -1172,7 +1172,7 @@ public class ReceiverTest {
 
 		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), any());
 
-		NarayanaJtaTransactionManager transactionManager = configuration.createBean(NarayanaJtaTransactionManager.class);
+		NarayanaJtaTransactionManager transactionManager = configuration.createBean();
 		receiver.setTxManager(transactionManager);
 
 		configuration.configure();
@@ -1198,7 +1198,7 @@ public class ReceiverTest {
 	public void testMaxBackoffDelayAdjustment(Integer maxBackoffDelay, int expectedBackoffDelay, boolean expectConfigWarning) {
 		// Arrange
 		configuration = buildDataSourceTransactionManagerConfiguration();
-		Adapter adapter = configuration.createBean(Adapter.class);
+		Adapter adapter = configuration.createBean();
 		adapter.setName("adapter");
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 

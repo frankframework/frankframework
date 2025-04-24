@@ -24,7 +24,7 @@
 		<cxf.version>4.1.1</cxf.version>
 		<spring.version>6.2.6</spring.version>
 		<spring-security.version>6.4.5</spring-security.version>
-		<spring-integration.version>6.4.3</spring-integration.version>
+		<spring-integration.version>6.4.4</spring-integration.version>
 		<spring.boot.version>3.4.4</spring.boot.version>
 		<tomcat.version>10.1.40</tomcat.version>
 		<bouncycastle.version>1.80</bouncycastle.version>
@@ -504,7 +504,7 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-collections4</artifactId>
-				<version>4.4</version>
+				<version>4.5.0</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-net</groupId>
@@ -679,7 +679,7 @@
 			<dependency>
 				<groupId>org.testcontainers</groupId>
 				<artifactId>testcontainers-bom</artifactId>
-				<version>1.20.6</version>
+				<version>1.21.0</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
