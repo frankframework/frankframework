@@ -29,7 +29,7 @@ public class DatabaseSchedulerTest extends Mockito {
 		configuration = new TestConfiguration();
 		configuration.getIbisManager(); //Sets a dummy IbisManager if non is found
 
-		job = configuration.createBean(LoadDatabaseSchedulesJob.class);
+		job = configuration.createBean();
 		job.setName("testJob");
 		job.configure();
 	}
@@ -50,7 +50,7 @@ public class DatabaseSchedulerTest extends Mockito {
 		builder.setValue("CRON", "");
 		builder.setValue("EXECUTIONINTERVAL", "10");
 		builder.setValue("MESSAGE", "dummy message");
-		Adapter adapter = configuration.createBean(Adapter.class);
+		Adapter adapter = configuration.createBean();
 		adapter.setName("testAdapter");
 		configuration.addAdapter(adapter);
 

@@ -61,7 +61,7 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		querySender = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
+		querySender = SpringUtils.createBean(applicationContext);
 		querySender.setName("querySender of "+getName());
 		querySender.configure();
 	}

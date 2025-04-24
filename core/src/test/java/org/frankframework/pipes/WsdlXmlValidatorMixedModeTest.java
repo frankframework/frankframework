@@ -35,7 +35,7 @@ public class WsdlXmlValidatorMixedModeTest {
 	private final TestConfiguration configuration = new TestConfiguration();
 
 	public WsdlXmlValidator getInputValidator() throws Exception {
-		WsdlXmlValidator val = configuration.createBean(WsdlXmlValidator.class);
+		WsdlXmlValidator val = configuration.createBean();
 		val.setAddNamespaceToSchema(true);
 		val.setWsdl(WSDL);
 		val.setSoapBody(REQUEST_SOAP_BODY);
@@ -47,7 +47,7 @@ public class WsdlXmlValidatorMixedModeTest {
 		return val;
 	}
 	public WsdlXmlValidator getOutputValidator() throws Exception {
-		WsdlXmlValidator val = configuration.createBean(WsdlXmlValidator.class);
+		WsdlXmlValidator val = configuration.createBean();
 		val.setAddNamespaceToSchema(true);
 		val.setWsdl(WSDL);
 		val.setSoapBody(RESPONSE_SOAP_BODY);
@@ -59,7 +59,7 @@ public class WsdlXmlValidatorMixedModeTest {
 		return val;
 	}
 	public WsdlXmlValidator getMixedValidator() throws Exception  {
-		WsdlXmlValidator val = configuration.createBean(WsdlXmlValidator.class);
+		WsdlXmlValidator val = configuration.createBean();
 		val.setAddNamespaceToSchema(true);
 		val.setWsdl(WSDL);
 		val.setSoapBody(REQUEST_SOAP_BODY);
@@ -166,4 +166,3 @@ public class WsdlXmlValidatorMixedModeTest {
 		testPipeLineProcessorProcessOutputValidation(inputValidator,outputValidator,RESPONSE,"Illegal element");
 	}
 }
-

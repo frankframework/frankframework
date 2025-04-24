@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.Adapter;
-import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.testutil.TestConfiguration;
@@ -28,10 +27,10 @@ public class TestConfigurableLifeCycle {
 	@BeforeEach
 	public void setUp() throws Exception {
 		configuration = new TestConfiguration();
-		adapter = configuration.createBean(Adapter.class);
+		adapter = configuration.createBean();
 		adapter.setName("testAdapter");
-		PipeLine pipeline = configuration.createBean(PipeLine.class);
-		IPipe pipe = configuration.createBean(EchoPipe.class);
+		PipeLine pipeline = configuration.createBean();
+		EchoPipe pipe = configuration.createBean();
 		pipe.setName("echo");
 		pipeline.addPipe(pipe);
 		adapter.setPipeLine(pipeline);

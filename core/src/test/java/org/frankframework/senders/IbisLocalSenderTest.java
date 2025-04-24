@@ -72,8 +72,8 @@ class IbisLocalSenderTest {
 	}
 
 	private static IbisLocalSender setupIbisLocalSender(TestConfiguration configuration, JavaListener<?> listener, boolean callByServiceName, boolean callIsolated, boolean callSynchronous) throws ConfigurationException {
-		IsolatedServiceCaller serviceCaller = configuration.createBean(IsolatedServiceCaller.class);
-		IbisLocalSender ibisLocalSender = configuration.createBean(IbisLocalSender.class);
+		IsolatedServiceCaller serviceCaller = configuration.createBean();
+		IbisLocalSender ibisLocalSender = configuration.createBean();
 		ibisLocalSender.setCheckDependency(true);
 		ibisLocalSender.setIsolatedServiceCaller(serviceCaller);
 		ibisLocalSender.setIsolated(callIsolated);
@@ -293,7 +293,7 @@ class IbisLocalSenderTest {
 	public void testSendMessageIsolatedWithException() throws Exception {
 		// Arrange
 		configuration = new TestConfiguration();
-		IsolatedServiceCaller serviceCaller = configuration.createBean(IsolatedServiceCaller.class);
+		IsolatedServiceCaller serviceCaller = configuration.createBean();
 
 		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient(false);
 		sender.setIsolatedServiceCaller(serviceCaller);
@@ -348,9 +348,9 @@ class IbisLocalSenderTest {
 	}
 
 	private JavaListener<?> setupJavaListener(TestConfiguration configuration, PipeLine pipeline, boolean callByServiceName) throws Exception {
-		Adapter adapter = configuration.createBean(Adapter.class);
-		Receiver<String> receiver = configuration.createBean(Receiver.class);
-		JavaListener<String> listener = configuration.createBean(JavaListener.class);
+		Adapter adapter = configuration.createBean();
+		Receiver<String> receiver = configuration.createBean();
+		JavaListener<String> listener = configuration.createBean();
 		listener.setName("TEST");
 		listener.setServiceName(SERVICE_NAME);
 		receiver.setName("TEST");
@@ -376,7 +376,7 @@ class IbisLocalSenderTest {
 	}
 
 	private PipeLine createPipeLine(IPipe testPipe, TestConfiguration configuration) throws ConfigurationException {
-		PipeLine pl = configuration.createBean(PipeLine.class);
+		PipeLine pl = configuration.createBean();
 		pl.setFirstPipe("read-stream");
 		pl.addPipe(testPipe);
 		PipeLineExit ple = new PipeLineExit();
@@ -431,7 +431,7 @@ class IbisLocalSenderTest {
 		sender.setReturnedSessionKeys("my-parameter1,key-to-copy,this-doesnt-exist");
 		if (isolated) {
 			configuration = new TestConfiguration(false);
-			IsolatedServiceCaller isolatedServiceCaller = configuration.createBean(IsolatedServiceCaller.class);
+			IsolatedServiceCaller isolatedServiceCaller = configuration.createBean();
 			sender.setIsolatedServiceCaller(isolatedServiceCaller);
 		}
 

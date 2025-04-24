@@ -45,7 +45,7 @@ public class ExecuteQueryJob extends AbstractJobDef {
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
+		qs = SpringUtils.createBean(getApplicationContext());
 		qs.setQuery(getQuery());
 		qs.setName("executeQueryJob");
 		qs.setDatasourceName(getDatasourceName());

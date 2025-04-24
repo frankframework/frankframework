@@ -52,14 +52,14 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 		String cmhVersion = getParameterValue(pvl, CMHVERSION);
 		String addOutputNamespace = getParameterValue(pvl, ADDOUTPUTNAMESPACE);
 
-		EsbSoapWrapperPipe eswPipe = SpringUtils.createBean(getApplicationContext(), EsbSoapWrapperPipe.class);
+		EsbSoapWrapperPipe eswPipe = SpringUtils.createBean(getApplicationContext());
 		if (addOutputNamespace != null) {
 			if ("on".equalsIgnoreCase(addOutputNamespace)) {
 				eswPipe.setAddOutputNamespace(true);
 			}
 		}
 		if (destination != null) {
-			Parameter destinationParameter = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			Parameter destinationParameter = SpringUtils.createBean(getApplicationContext());
 			destinationParameter.setName(DESTINATION);
 			destinationParameter.setValue(destination);
 			eswPipe.addParameter(destinationParameter);

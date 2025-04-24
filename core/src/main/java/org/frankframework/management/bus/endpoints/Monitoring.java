@@ -45,13 +45,13 @@ import org.frankframework.monitoring.AdapterFilter;
 import org.frankframework.monitoring.EventThrowing;
 import org.frankframework.monitoring.EventType;
 import org.frankframework.monitoring.ITrigger;
+import org.frankframework.monitoring.ITrigger.TriggerType;
 import org.frankframework.monitoring.Monitor;
 import org.frankframework.monitoring.MonitorException;
 import org.frankframework.monitoring.MonitorManager;
 import org.frankframework.monitoring.Severity;
 import org.frankframework.monitoring.SourceFiltering;
 import org.frankframework.monitoring.Trigger;
-import org.frankframework.monitoring.ITrigger.TriggerType;
 import org.frankframework.monitoring.events.ConsoleMonitorEvent;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.JacksonUtils;
@@ -112,15 +112,15 @@ public class Monitoring extends BusEndpointBase {
 		MonitorManager mm = getMonitorManager(configurationName);
 
 		Monitor monitor;
-		ITrigger trigger;
+		Trigger trigger;
 		if(name != null) {
 			monitor = getMonitor(mm, name);
-			trigger = SpringUtils.createBean(mm, Trigger.class);
+			trigger = SpringUtils.createBean(mm);
 			updateTrigger(trigger, message);
 			monitor.addTrigger(trigger);
 		} else {
 			trigger = null;
-			monitor = SpringUtils.createBean(mm, Monitor.class);
+			monitor = SpringUtils.createBean(mm);
 			updateMonitor(monitor, message, true);
 			mm.addMonitor(monitor);
 		}

@@ -105,7 +105,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		handleAttributeRule = SpringUtils.createBean(getCurrentApplicationContext(), ValidateAttributeRule.class);
+		handleAttributeRule = SpringUtils.createBean(getCurrentApplicationContext());
 		handleAttributeRule.setDigester(this);
 	}
 

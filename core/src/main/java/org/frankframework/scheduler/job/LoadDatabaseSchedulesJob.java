@@ -80,7 +80,7 @@ public class LoadDatabaseSchedulesJob extends AbstractJobDef {
 		}
 
 		// Get all IbisSchedules that have been stored in the database
-		FixedQuerySender qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
+		FixedQuerySender qs = SpringUtils.createBean(getApplicationContext());
 		qs.setDatasourceName(IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 
@@ -112,7 +112,7 @@ public class LoadDatabaseSchedulesJob extends AbstractJobDef {
 							}
 
 							//Create a new JobDefinition so we can compare it with existing jobs
-							DatabaseJob jobdef = SpringUtils.createBean(adapter.getApplicationContext(), DatabaseJob.class);
+							DatabaseJob jobdef = SpringUtils.createBean(adapter.getApplicationContext());
 							jobdef.setCronExpression(cronExpression);
 							jobdef.setName(jobName);
 							jobdef.setInterval(interval);
@@ -122,7 +122,7 @@ public class LoadDatabaseSchedulesJob extends AbstractJobDef {
 							jobdef.setMessage(message);
 
 							if(hasLocker) {
-								Locker locker = SpringUtils.createBean(getApplicationContext(), Locker.class);
+								Locker locker = SpringUtils.createBean(getApplicationContext());
 
 								locker.setName(lockKey);
 								locker.setObjectId(lockKey);

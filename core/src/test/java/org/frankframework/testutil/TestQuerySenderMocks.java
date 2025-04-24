@@ -31,7 +31,7 @@ public class TestQuerySenderMocks {
 		ResultSet mockedResultSet = FixedQuerySenderMock.ResultSetBuilder.create().build();
 		configuration.mockQuery("SELECT COUNT(*) FROM FAKE_DATABASE_TABLE", mockedResultSet);
 
-		FixedQuerySender qs = SpringUtils.createBean(configuration, FixedQuerySender.class);
+		FixedQuerySender qs = SpringUtils.createBean(configuration);
 		qs.setQuery("SELECT COUNT(*) FROM FAKE_DATABASE_TABLE");
 		qs.configure();
 		qs.start();

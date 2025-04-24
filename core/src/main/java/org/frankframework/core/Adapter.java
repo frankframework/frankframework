@@ -202,7 +202,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 		refresh();
 
-		SpringContextFlowDiagramProvider bean = SpringUtils.createBean(this, SpringContextFlowDiagramProvider.class);
+		SpringContextFlowDiagramProvider bean = SpringUtils.createBean(this);
 		getBeanFactory().registerSingleton("FlowGenerator", bean);
 	}
 

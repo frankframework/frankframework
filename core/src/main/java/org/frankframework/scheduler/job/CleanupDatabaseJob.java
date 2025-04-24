@@ -116,7 +116,7 @@ public class CleanupDatabaseJob extends AbstractJobDef {
 		for (String datasourceName : datasourceNames) {
 			FixedQuerySender qs = null;
 			try(PipeLineSession session = new PipeLineSession()) {
-				qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
+				qs = SpringUtils.createBean(getApplicationContext());
 				qs.setDatasourceName(datasourceName);
 				qs.setName("cleanupDatabase-IBISLOCK");
 				qs.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);
@@ -162,7 +162,7 @@ public class CleanupDatabaseJob extends AbstractJobDef {
 		for (MessageLogObject mlo : messageLogs) {
 			FixedQuerySender qs = null;
 			try {
-				qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
+				qs = SpringUtils.createBean(getApplicationContext());
 				qs.setDatasourceName(mlo.getDatasourceName());
 				qs.setName("cleanupDatabase-" + mlo.getTableName());
 				qs.setQueryType(AbstractJdbcQuerySender.QueryType.OTHER);

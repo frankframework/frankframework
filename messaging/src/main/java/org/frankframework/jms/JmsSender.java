@@ -111,7 +111,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isNotEmpty(getSoapAction()) && !paramList.hasParameter("SoapAction")) {
-			Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			Parameter p = SpringUtils.createBean(getApplicationContext());
 			p.setName("SoapAction");
 			p.setValue(getSoapAction());
 			addParameter(p);

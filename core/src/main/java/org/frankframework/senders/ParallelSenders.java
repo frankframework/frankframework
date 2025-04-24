@@ -152,7 +152,7 @@ public class ParallelSenders extends SenderSeries {
 	}
 
 	protected TaskExecutor createTaskExecutor() {
-		SimpleAsyncTaskExecutor executor = SpringUtils.createBean(getApplicationContext(), SimpleAsyncTaskExecutor.class);
+		SimpleAsyncTaskExecutor executor = SpringUtils.createBean(getApplicationContext());
 
 		if (getMaxConcurrentThreads() > 0) { //ConcurrencyLimit defaults to NONE so only this technically limits it!
 			executor.setConcurrencyLimit(getMaxConcurrentThreads());

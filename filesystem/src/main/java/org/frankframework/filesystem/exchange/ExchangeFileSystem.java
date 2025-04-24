@@ -131,7 +131,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 			proxyCredentials = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
 		}
 
-		msalClientAdapter = SpringUtils.createBean(applicationContext, MsalClientAdapter.class);
+		msalClientAdapter = SpringUtils.createBean(applicationContext);
 		msalClientAdapter.setProxyHost(getProxyHost());
 		msalClientAdapter.setProxyPort(getProxyPort());
 		CredentialFactory proxyCf = getProxyCredentials();

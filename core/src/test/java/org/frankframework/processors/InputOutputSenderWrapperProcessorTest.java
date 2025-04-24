@@ -31,7 +31,7 @@ public class InputOutputSenderWrapperProcessorTest {
 		session = new PipeLineSession();
 		secondSenderOutput = null;
 
-		sender = configuration.createBean(SenderSeries.class);
+		sender = configuration.createBean();
 		sender.addSender(new AbstractSender() {
 			@Override
 			public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {

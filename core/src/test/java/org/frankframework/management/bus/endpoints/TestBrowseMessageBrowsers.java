@@ -89,7 +89,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	}
 
 	protected Adapter registerAdapter(Configuration configuration) throws Exception {
-		Adapter adapter = SpringUtils.createBean(configuration, Adapter.class);
+		Adapter adapter = SpringUtils.createBean(configuration);
 		adapter.setName("TestAdapter");
 
 		DummyListenerWithMessageBrowsers listener = new DummyListenerWithMessageBrowsers();
@@ -99,8 +99,8 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		receiver.setListener(listener);
 		doAnswer(p -> { throw new ListenerException("testing message ->"+p.getArgument(0)); }).when(receiver).retryMessage(anyString()); //does not actually test the retry mechanism
 		adapter.addReceiver(receiver);
-		PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
-		SenderPipe pipe = SpringUtils.createBean(adapter, SenderPipe.class);
+		PipeLine pipeline = SpringUtils.createBean(adapter);
+		SenderPipe pipe = SpringUtils.createBean(adapter);
 		pipe.setMessageLog(getTransactionalStorage());
 		pipe.setSender(new EchoSender());
 		pipe.setName("PipeName");

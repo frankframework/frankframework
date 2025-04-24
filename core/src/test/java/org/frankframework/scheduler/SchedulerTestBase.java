@@ -39,7 +39,7 @@ public abstract class SchedulerTestBase {
 
 	@BeforeEach
 	public void setUp() throws SchedulerException {
-		schedulerHelper = configuration.createBean(SchedulerHelper.class);
+		schedulerHelper = configuration.createBean();
 		schedulerHelper.setScheduler(StdSchedulerFactory.getDefaultScheduler());
 		schedulerHelper.getScheduler().clear();
 	}

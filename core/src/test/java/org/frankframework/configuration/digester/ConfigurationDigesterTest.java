@@ -207,7 +207,7 @@ public class ConfigurationDigesterTest {
 		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/original.xml");
 
 		Configuration configuration = new TestConfiguration();
-		ConfigurationDigester digester = SpringUtils.createBean(configuration, ConfigurationDigester.class);
+		ConfigurationDigester digester = SpringUtils.createBean(configuration);
 		ContentHandler filter = digester.getStub4TesttoolContentHandler(xmlWriter, configuration, properties);
 
 		XmlUtils.parseXml(originalConfiguration, filter);
@@ -233,7 +233,7 @@ public class ConfigurationDigesterTest {
 		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/original.xml");
 
 		Configuration configuration = new TestConfiguration();
-		ConfigurationDigester digester = SpringUtils.createBean(configuration, ConfigurationDigester.class);
+		ConfigurationDigester digester = SpringUtils.createBean(configuration);
 		ContentHandler filter = digester.getStub4TesttoolContentHandler(xmlWriter, configuration, properties);
 
 		XmlUtils.parseXml(originalConfiguration, filter);
@@ -264,7 +264,7 @@ public class ConfigurationDigesterTest {
 		doReturn(url).when(classLoader).getResource("xml/xsl/stub4testtool.xsl");
 
 		Configuration configuration = new TestConfiguration();
-		ConfigurationDigester digester = SpringUtils.createBean(configuration, ConfigurationDigester.class);
+		ConfigurationDigester digester = SpringUtils.createBean(configuration);
 		ContentHandler filter = digester.getStub4TesttoolContentHandler(xmlWriter, () -> classLoader, properties);
 
 		XmlUtils.parseXml(originalConfiguration, filter);
@@ -307,7 +307,7 @@ public class ConfigurationDigesterTest {
 		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/original.xml");
 
 		Configuration configuration = new TestConfiguration();
-		ConfigurationDigester digester = SpringUtils.createBean(configuration, ConfigurationDigester.class);
+		ConfigurationDigester digester = SpringUtils.createBean(configuration);
 		ContentHandler filter = digester.getStub4TesttoolContentHandler(xmlWriter, configuration, properties);
 
 		XmlUtils.parseXml(originalConfiguration, filter);

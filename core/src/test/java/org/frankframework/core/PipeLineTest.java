@@ -46,10 +46,10 @@ public class PipeLineTest {
 
 	@Test
 	public void testDuplicateExits() {
-		Adapter adapter = configuration.createBean(Adapter.class);
+		Adapter adapter = configuration.createBean();
 		adapter.setName("testAdapter");
-		PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
-		PipeLineExit exit = SpringUtils.createBean(adapter, PipeLineExit.class);
+		PipeLine pipeline = SpringUtils.createBean(adapter);
+		PipeLineExit exit = SpringUtils.createBean(adapter);
 		exit.setName("success");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.addPipeLineExit(exit);
@@ -64,15 +64,15 @@ public class PipeLineTest {
 
 	@Test
 	public void testFixedForwardPipesWithNoForwardShouldDefaultToNextPipe() throws ConfigurationException {
-		PipeLine pipeline = configuration.createBean(PipeLine.class);
+		PipeLine pipeline = configuration.createBean();
 		String pipeForwardName = "EchoPipe next pipe";
 
-		EchoPipe pipe = configuration.createBean(EchoPipe.class);
+		EchoPipe pipe = configuration.createBean();
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
 
-		EchoPipe pipe2 = configuration.createBean(EchoPipe.class);
+		EchoPipe pipe2 = configuration.createBean();
 		pipe2.setName(pipeForwardName);
 		pipe2.setPipeLine(pipeline);
 		pipeline.addPipe(pipe2);
@@ -94,15 +94,15 @@ public class PipeLineTest {
 	@Test
 	void testFixedForwardAsLastPipeForwardsToFirstSuccessfulExit() throws ConfigurationException {
 		// Arrange
-		PipeLine pipeline = configuration.createBean(PipeLine.class);
+		PipeLine pipeline = configuration.createBean();
 		String pipeForwardName = "EchoPipe next pipe";
 
-		IPipe pipe = configuration.createBean(EchoPipe.class);
+		EchoPipe pipe = configuration.createBean();
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
 
-		IPipe pipe2 = configuration.createBean(EchoPipe.class);
+		EchoPipe pipe2 = configuration.createBean();
 		pipe2.setName(pipeForwardName);
 		pipe2.setPipeLine(pipeline);
 		pipeline.addPipe(pipe2);
@@ -134,16 +134,16 @@ public class PipeLineTest {
 
 	@Test
 	public void testPipesWithNormalForwardToNextPipe() throws ConfigurationException {
-		PipeLine pipeline = configuration.createBean(PipeLine.class);
+		PipeLine pipeline = configuration.createBean();
 		String pipeForwardName = "EchoPipe next pipe";
 
-		IPipe pipe = configuration.createBean(EchoPipe.class);
+		EchoPipe pipe = configuration.createBean();
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
 		pipe.addForward(new PipeForward("success", pipeForwardName));
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
 
-		IPipe pipe2 = configuration.createBean(EchoPipe.class);
+		EchoPipe pipe2 = configuration.createBean();
 		pipe2.setName(pipeForwardName);
 		pipe.addForward(new PipeForward("success", "exit"));
 		pipe2.setPipeLine(pipeline);
@@ -165,17 +165,17 @@ public class PipeLineTest {
 
 	@Test
 	public void giveWarningWhenForwardIsAlreadyDefined() throws ConfigurationException {
-		PipeLine pipeline = configuration.createBean(PipeLine.class);
+		PipeLine pipeline = configuration.createBean();
 		String pipeForwardName = "EchoPipe next pipe";
 
-		EchoPipe pipe = configuration.createBean(EchoPipe.class);
+		EchoPipe pipe = configuration.createBean();
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
 		pipe.addForward(new PipeForward("success", pipeForwardName));
 		pipe.addForward(new PipeForward("success", pipeForwardName));
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
 
-		EchoPipe pipe2 = configuration.createBean(EchoPipe.class);
+		EchoPipe pipe2 = configuration.createBean();
 		pipe2.setName(pipeForwardName);
 		pipe.addForward(new PipeForward("success", "exit"));
 		pipe.addForward(new PipeForward("success", "exit"));
@@ -201,16 +201,16 @@ public class PipeLineTest {
 
 	@Test
 	public void giveWarningWhenForwardToNonExistingPipe() throws ConfigurationException {
-		PipeLine pipeline = configuration.createBean(PipeLine.class);
+		PipeLine pipeline = configuration.createBean();
 		String pipeForwardName = "EchoPipe next pipe";
 
-		EchoPipe pipe = configuration.createBean(EchoPipe.class);
+		EchoPipe pipe = configuration.createBean();
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
 		pipe.addForward(new PipeForward("success", "the next pipe"));
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
 
-		EchoPipe pipe2 = configuration.createBean(EchoPipe.class);
+		EchoPipe pipe2 = configuration.createBean();
 		pipe2.setName(pipeForwardName);
 		pipe2.setPipeLine(pipeline);
 		pipeline.addPipe(pipe2);
@@ -239,15 +239,15 @@ public class PipeLineTest {
 
 	@Test
 	public void testNonFixedForwardPipesWithNoForwardToNextPipe() throws ConfigurationException {
-		PipeLine pipeline = configuration.createBean(PipeLine.class);
+		PipeLine pipeline = configuration.createBean();
 		String pipeForwardName = "EchoPipe next pipe";
 
-		IPipe pipe = configuration.createBean(NonFixedForwardPipe.class);
+		NonFixedForwardPipe pipe = configuration.createBean();
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
 
-		IPipe pipe2 = configuration.createBean(NonFixedForwardPipe.class);
+		NonFixedForwardPipe pipe2 = configuration.createBean();
 		pipe2.setName(pipeForwardName);
 		pipe2.setPipeLine(pipeline);
 		pipeline.addPipe(pipe2);
@@ -316,9 +316,9 @@ public class PipeLineTest {
 	}
 
 	private void buildDummyPipeLine(Adapter adapter) throws ConfigurationException {
-		PipeLine pipeLine = SpringUtils.createBean(adapter, PipeLine.class);
+		PipeLine pipeLine = SpringUtils.createBean(adapter);
 		pipeLine.setConfigurationMetrics(configuration.getBean(MetricsInitializer.class));
-		CorePipeLineProcessor pipeLineProcessor = configuration.createBean(CorePipeLineProcessor.class);
+		CorePipeLineProcessor pipeLineProcessor = configuration.createBean();
 		pipeLineProcessor.setPipeProcessor(configuration.createBean(CorePipeProcessor.class));
 		pipeLine.setPipeLineProcessor(pipeLineProcessor);
 		EchoPipe pipe = buildTestPipe(pipeLine);

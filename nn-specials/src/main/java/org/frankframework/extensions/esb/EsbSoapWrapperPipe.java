@@ -419,7 +419,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 				destination = pd.getValue();
 			}
 		}
-		IParameter p;
+		Parameter p;
 		if (StringUtils.isNotEmpty(destination)) {
 			if(destination.startsWith("ESB.") || destination.startsWith("P2P.")
 					|| (StringUtils.isNotEmpty(esbAlias) && destination.startsWith(esbAlias + "."))
@@ -434,7 +434,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 				int count = 0;
 				for (final String str : StringUtil.split(destination, ".")) {
 					count++;
-					p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+					p = SpringUtils.createBean(getApplicationContext());
 					switch (count) {
 						case 1:
 							if ("P2P".equals(str)
@@ -507,27 +507,27 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 					addParameter(p);
 				}
 			} else {
-				p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+				p = SpringUtils.createBean(getApplicationContext());
 				p.setName(MESSAGINGLAYER_PARAMETER_NAME);
 				p.setValue("P2P");
 				addParameter(p);
 				//
-				p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+				p = SpringUtils.createBean(getApplicationContext());
 				p.setName(BUSINESSDOMAIN_PARAMETER_NAME);
 				p.setValue("?");
 				addParameter(p);
 				//
-				p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+				p = SpringUtils.createBean(getApplicationContext());
 				p.setName(APPLICATIONNAME_PARAMETER_NAME);
 				p.setValue("?");
 				addParameter(p);
 				//
-				p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+				p = SpringUtils.createBean(getApplicationContext());
 				p.setName(APPLICATIONFUNCTION_PARAMETER_NAME);
 				p.setValue(destination.replaceAll("\\W", "_"));
 				addParameter(p);
 				//
-				p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+				p = SpringUtils.createBean(getApplicationContext());
 				p.setName(PARADIGM_PARAMETER_NAME);
 				p.setValue("?");
 				addParameter(p);
@@ -539,13 +539,13 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 		ParameterList parameterList = getParameterList();
 		Parameter p;
 		if (!parameterList.hasParameter(FROMID_PARAMETER_NAME)) {
-			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			p = SpringUtils.createBean(getApplicationContext());
 			p.setName(FROMID_PARAMETER_NAME);
 			p.setValue(AppConstants.getInstance().getProperty("instance.name", ""));
 			addParameter(p);
 		}
 		if (getMode() != Mode.BIS && !parameterList.hasParameter(CPAID_PARAMETER_NAME)) {
-			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			p = SpringUtils.createBean(getApplicationContext());
 			p.setName(CPAID_PARAMETER_NAME);
 			p.setSessionKey(getSoapHeaderSessionKey());
 			p.setXpathExpression("MessageHeader/HeaderFields/CPAId");
@@ -554,7 +554,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 			addParameter(p);
 		}
 		if (!parameterList.hasParameter(CONVERSATIONID_PARAMETER_NAME)) {
-			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			p = SpringUtils.createBean(getApplicationContext());
 			p.setName(CONVERSATIONID_PARAMETER_NAME);
 			p.setSessionKey(getSoapHeaderSessionKey());
 			p.setXpathExpression("MessageHeader/HeaderFields/ConversationId");
@@ -568,7 +568,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 			addParameter(p);
 		}
 		if (!parameterList.hasParameter(MESSAGEID_PARAMETER_NAME)) {
-			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			p = SpringUtils.createBean(getApplicationContext());
 			p.setName(MESSAGEID_PARAMETER_NAME);
 			if (isUseFixedValues()) {
 				p.setPattern("{fixedhostname}_{fixeduid}");
@@ -578,7 +578,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 			addParameter(p);
 		}
 		if (!parameterList.hasParameter(EXTERNALREFTOMESSAGEID_PARAMETER_NAME)) {
-			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			p = SpringUtils.createBean(getApplicationContext());
 			p.setName(EXTERNALREFTOMESSAGEID_PARAMETER_NAME);
 			p.setSessionKey(getSoapHeaderSessionKey());
 			if (getMode() == Mode.BIS) {
@@ -595,7 +595,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 			if (ppn!=null) {
 				paradigm = ppn.getValue();
 				if ("Response".equals(paradigm)) {
-					p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+					p = SpringUtils.createBean(getApplicationContext());
 					p.setName(CORRELATIONID_PARAMETER_NAME);
 					p.setSessionKey(getSoapHeaderSessionKey());
 					p.setXpathExpression("MessageHeader/HeaderFields/MessageId");
@@ -605,7 +605,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 			}
 		}
 		if (!parameterList.hasParameter(TIMESTAMP_PARAMETER_NAME)) {
-			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			p = SpringUtils.createBean(getApplicationContext());
 			p.setName(TIMESTAMP_PARAMETER_NAME);
 			if (isUseFixedValues()) {
 				p.setPattern("{fixeddate,date,yyyy-MM-dd'T'HH:mm:ss}");
@@ -615,25 +615,25 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 			addParameter(p);
 		}
 		if (!parameterList.hasParameter(FIXRESULTNAMESPACE_PARAMETER_NAME)) {
-			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			p = SpringUtils.createBean(getApplicationContext());
 			p.setName(FIXRESULTNAMESPACE_PARAMETER_NAME);
 			p.setValue(String.valueOf(isFixResultNamespace()));
 			addParameter(p);
 		}
 		if (!parameterList.hasParameter(TRANSACTIONID_PARAMETER_NAME)) {
-			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			p = SpringUtils.createBean(getApplicationContext());
 			p.setName(TRANSACTIONID_PARAMETER_NAME);
 			p.setSessionKey(getSoapHeaderSessionKey());
 			p.setXpathExpression("MessageHeader/HeaderFields/TransactionId");
 			p.setRemoveNamespaces(true);
 			addParameter(p);
 		}
-		p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+		p = SpringUtils.createBean(getApplicationContext());
 		p.setName(MODE_PARAMETER_NAME);
 		p.setValue(getMode().toString());
 		addParameter(p);
 
-		p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+		p = SpringUtils.createBean(getApplicationContext());
 		p.setName(CMHVERSION_PARAMETER_NAME);
 		p.setValue(String.valueOf(getCmhVersion()));
 		addParameter(p);
@@ -665,7 +665,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 			if (physicalDestination==null) {
 				physicalDestination="?";
 			}
-			Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			Parameter p = SpringUtils.createBean(getApplicationContext());
 			p.setName(PHYSICALDESTINATION_PARAMETER_NAME);
 			p.setValue(physicalDestination);
 			addParameter(p);
@@ -700,7 +700,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 					physicalDestination = physicalDestination + ".?";
 				}
 			}
-			Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			Parameter p = SpringUtils.createBean(getApplicationContext());
 			p.setName(PHYSICALDESTINATION_PARAMETER_NAME);
 			p.setValue(physicalDestination);
 			addParameter(p);

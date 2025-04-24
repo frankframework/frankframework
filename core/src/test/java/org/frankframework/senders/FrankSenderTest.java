@@ -51,7 +51,6 @@ import org.frankframework.pipes.ExceptionPipe;
 import org.frankframework.pipes.GetFromSession;
 import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.CorePipeProcessor;
-import org.frankframework.processors.PipeProcessor;
 import org.frankframework.receivers.FrankListener;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.Receiver;
@@ -223,13 +222,13 @@ class FrankSenderTest {
 	void findAdapterSuccess(String target) throws SenderException, ConfigurationException {
 		// Arrange
 		configuration = new TestConfiguration(false);
-		FrankSender sender = configuration.createBean(FrankSender.class);
+		FrankSender sender = configuration.createBean();
 		sender.setTarget(target);
 		IPipe pipe = new EchoPipe();
 		pipe.setName("test-pipe");
-		PipeLine pipeline = configuration.createBean(PipeLine.class);
+		PipeLine pipeline = configuration.createBean();
 		pipeline.addPipe(pipe);
-		Adapter adapter = configuration.createBean(Adapter.class);
+		Adapter adapter = configuration.createBean();
 		adapter.setName("adapterName");
 		configuration.addAdapter(adapter);
 
@@ -282,11 +281,11 @@ class FrankSenderTest {
 	void getFrankListenerSuccess(String target) throws Exception {
 		// Arrange
 		configuration = new TestConfiguration(false);
-		FrankSender sender = configuration.createBean(FrankSender.class);
+		FrankSender sender = configuration.createBean();
 		sender.setScope(Scope.LISTENER);
 		sender.setTarget(target);
 
-		frankListener = configuration.createBean(FrankListener.class);
+		frankListener = configuration.createBean();
 		frankListener.setName("ListenerName");
 
 		// Act
@@ -506,7 +505,7 @@ class FrankSenderTest {
 	}
 
 	private @Nonnull FrankSender createFrankSender(FrankSender.Scope scope, boolean callSync, IPipe pipe) throws ConfigurationException, ListenerException {
-		FrankSender sender = configuration.createBean(FrankSender.class);
+		FrankSender sender = configuration.createBean();
 		sender.setTarget(TARGET_SERVICE_NAME);
 		sender.setScope(scope);
 		sender.setSynchronous(callSync);
@@ -532,12 +531,11 @@ class FrankSenderTest {
 		return sender;
 	}
 
-	private void createFrankListener(TestConfiguration configuration, Adapter targetAdapter) throws ListenerException {
-		@SuppressWarnings("unchecked")
-		Receiver<Message> receiver = configuration.createBean(Receiver.class);
+	private void createFrankListener(TestConfiguration configuration, Adapter targetAdapter) {
+		Receiver<Message> receiver = configuration.createBean();
 		receiver.setName("TargetAdapter-receiver");
 
-		FrankListener listener = configuration.createBean(FrankListener.class);
+		FrankListener listener = configuration.createBean();
 		listener.setHandler(receiver);
 
 		receiver.setListener(listener);
@@ -550,13 +548,11 @@ class FrankSenderTest {
 		listener.start();
 	}
 
-	private void createJavaListener(TestConfiguration configuration, Adapter targetAdapter) throws ListenerException {
-		@SuppressWarnings("unchecked")
-		Receiver<String> receiver = configuration.createBean(Receiver.class);
+	private void createJavaListener(TestConfiguration configuration, Adapter targetAdapter) {
+		Receiver<String> receiver = configuration.createBean();
 		receiver.setName("TargetAdapter-receiver");
 
-		@SuppressWarnings("unchecked")
-		JavaListener<String> listener = configuration.createBean(JavaListener.class);
+		JavaListener<String> listener = configuration.createBean();
 		listener.setName(receiver.getName());
 		listener.setServiceName(TARGET_SERVICE_NAME);
 		listener.setHandler(receiver);
@@ -571,11 +567,11 @@ class FrankSenderTest {
 	}
 
 	private Adapter createAdapter(TestConfiguration configuration, IPipe pipe) throws ConfigurationException {
-		Adapter adapter = configuration.createBean(Adapter.class);
+		Adapter adapter = configuration.createBean();
 		adapter.setName(TARGET_SERVICE_NAME);
 
-		CorePipeLineProcessor plp = configuration.createBean(CorePipeLineProcessor.class);
-		PipeProcessor pp = configuration.createBean(CorePipeProcessor.class);
+		CorePipeLineProcessor plp = configuration.createBean();
+		CorePipeProcessor pp = configuration.createBean();
 		plp.setPipeProcessor(pp);
 		PipeLine pl = configuration.createBean(PipeLine.class);
 		pl.setPipeLineProcessor(plp);
