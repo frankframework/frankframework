@@ -22,8 +22,6 @@ import org.apache.http.auth.Credentials;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.message.BasicNameValuePair;
 
-import org.apache.wss4j.dom.validate.Credential;
-
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.util.CredentialFactory;
 
