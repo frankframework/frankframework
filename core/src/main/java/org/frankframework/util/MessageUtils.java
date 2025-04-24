@@ -46,6 +46,7 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.logging.log4j.Logger;
 import org.apache.tika.Tika;
+import org.springframework.http.MediaType;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.MimeType;
 import org.xml.sax.SAXException;
@@ -64,9 +65,6 @@ public class MessageUtils {
 	private static final int CHARSET_CONFIDENCE_LEVEL = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
 	private static final Tika TIKA = new Tika();
 
-	private static final MimeType PLAIN_TEXT_MIME_TYPE = new MimeType("text", "plain");
-	private static final MimeType JSON_MIME_TYPE = new MimeType("application", "json");
-	private static final MimeType XML_MIME_TYPE = new MimeType("application", "xml");
 	public static final String JSON_TEMPLATE_VALUE_QUOTED = "{\"%s\": \"%s\"}";
 	public static final String JSON_TEMPLATE_VALUE_UNQUOTED = "{\"%s\": %s}";
 
@@ -285,7 +283,7 @@ public class MessageUtils {
 		try {
 			String mediaType = TIKA.detect(message.asInputStream(), name);
 			MimeType mimeType = MimeType.valueOf(mediaType);
-			if (PLAIN_TEXT_MIME_TYPE.equalsTypeAndSubtype(mimeType) && name == null) {
+			if (MediaType.TEXT_PLAIN.equalsTypeAndSubtype(mimeType) && name == null) {
 				// TIKA detects XML or JSON as text/plain when there is no filename, so manually do a check for JSON.
 				// See also: https://stackoverflow.com/questions/48618629/apache-tika-detect-json-pdf-specific-mime-type#48619266
 				mimeType = guessMimeType(message);
@@ -323,19 +321,19 @@ public class MessageUtils {
 		try {
 			firstChar = message.peek(1);
 		} catch (IOException e) {
-			return PLAIN_TEXT_MIME_TYPE;
+			return MediaType.TEXT_PLAIN;
 		}
 		if ("<".equals(firstChar)) {
-			return XML_MIME_TYPE;
+			return MediaType.APPLICATION_XML;
 		}
 		if (!"{".equals(firstChar) && !"[".equals(firstChar)) {
-			return PLAIN_TEXT_MIME_TYPE;
+			return MediaType.TEXT_PLAIN;
 		}
 		try (JsonParser parser = Json.createParser(message.asInputStream())) {
 			parser.next();
-			return JSON_MIME_TYPE;
+			return MediaType.APPLICATION_JSON;
 		} catch (JsonParsingException | IOException e) {
-			return PLAIN_TEXT_MIME_TYPE;
+			return MediaType.TEXT_PLAIN;
 		}
 	}
 
@@ -453,16 +451,16 @@ public class MessageUtils {
 		Message message = Message.asMessage(value);
 		message.preserve();
 		MimeType mimeType = MessageUtils.computeMimeType(message);
-		if (JSON_MIME_TYPE.isCompatibleWith(mimeType)) {
+		if (MediaType.APPLICATION_JSON.isCompatibleWith(mimeType)) {
 			return message;
 		}
 
-		if (XML_MIME_TYPE.isCompatibleWith(mimeType)) {
+		if (MediaType.APPLICATION_XML.isCompatibleWith(mimeType)) {
 			try {
 				TransformerPool tpXml2Json = UtilityTransformerPools.getXml2JsonTransformerPool();
 				Map<String, Object> parameterValues = Collections.singletonMap("includeRootElement", true);
 				Message result = tpXml2Json.transform(message, parameterValues);
-				result.getContext().withMimeType(JSON_MIME_TYPE);
+				result.getContext().withMimeType(MediaType.APPLICATION_JSON);
 				return result;
 			} catch (ConfigurationException | TransformerException | SAXException e) {
 				throw new XmlException("Cannot convert message from XML to JSON", e);
@@ -471,7 +469,7 @@ public class MessageUtils {
 		String valueAsString = message.asString();
 		String jsonTemplate = isBooleanOrNumber(value, valueAsString) ? JSON_TEMPLATE_VALUE_UNQUOTED : JSON_TEMPLATE_VALUE_QUOTED;
 		Message result = new Message(jsonTemplate.formatted(valueName, valueAsString));
-		result.getContext().withMimeType(JSON_MIME_TYPE).withCharset(Charset.defaultCharset());
+		result.getContext().withMimeType(MediaType.APPLICATION_JSON).withCharset(Charset.defaultCharset());
 		return result;
 	}
 
