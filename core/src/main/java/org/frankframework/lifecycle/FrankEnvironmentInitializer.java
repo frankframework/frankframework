@@ -18,7 +18,6 @@ package org.frankframework.lifecycle;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
-import jakarta.servlet.ServletException;
 
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.logging.log4j.Logger;
@@ -52,12 +51,16 @@ public class FrankEnvironmentInitializer implements WebApplicationInitializer {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 
 	@Override
-	public void onStartup(ServletContext servletContext) throws ServletException {
+	public void onStartup(ServletContext servletContext) {
 		WebApplicationContext applicationContext = createApplicationContext();
 		ContextLoader contextLoader = new ContextLoader(applicationContext);
 
 		try {
+			// NOTE this doesn't work yet because the `org.springframework.boot.autoconfigure.jersey.JerseyAutoConfiguration.JerseyWebApplicationInitializer`
+			// is _always_ loaded, even when there is no Jersey. To test this, you must run in debug mode and make sure that `configLocationParam` is set to
+			// null in `org.springframework.web.context.ContextLoader.configureAndRefreshWebApplicationContext` (line 381) instead of "<NONE>".
 			WebApplicationContext wac = contextLoader.initWebApplicationContext(servletContext);
+
 			SpringBus bus = (SpringBus) wac.getBean("cxf");
 			log.info("Successfully started Frank EnvironmentContext with SpringBus [{}]", bus::getId);
 			APPLICATION_LOG.info("Successfully started Frank EnvironmentContext");
