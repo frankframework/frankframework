@@ -27,15 +27,21 @@ import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.util.CredentialFactory;
 
 public abstract class AbstractResourceOwnerPasswordCredentials extends AbstractOauthAuthenticator {
-	private final String username;
-	private final String password;
+	protected final String username;
+	protected final String password;
+	protected final String clientId;
+	protected final String clientSecret;
 
 	AbstractResourceOwnerPasswordCredentials(AbstractHttpSession session) throws HttpAuthenticationException {
 		super(session);
 
-		CredentialFactory credentials = session.getCredentials();
-		this.username = credentials.getUsername();
-		this.password = credentials.getPassword();
+		CredentialFactory userCredentials = session.getCredentials();
+		this.username = userCredentials.getUsername();
+		this.password = userCredentials.getPassword();
+
+		CredentialFactory clientCredentials = new CredentialFactory(session.getClientAuthAlias(), session.getClientId(), session.getClientSecret());
+		this.clientId = clientCredentials.getUsername();
+		this.clientSecret = clientCredentials.getPassword();
 	}
 
 	@Override
@@ -46,6 +52,14 @@ public abstract class AbstractResourceOwnerPasswordCredentials extends AbstractO
 
 		if (password == null) {
 			throw new ConfigurationException("Password is required");
+		}
+
+		if (clientId == null) {
+			throw new ConfigurationException("ClientId is required");
+		}
+
+		if (clientSecret == null) {
+			throw new ConfigurationException("ClientSecret is required");
 		}
 	}
 

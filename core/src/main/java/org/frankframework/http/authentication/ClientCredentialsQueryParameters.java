@@ -26,21 +26,14 @@ import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.util.CredentialFactory;
 
 public class ClientCredentialsQueryParameters extends AbstractClientCredentials {
-	private final String clientId;
-	private final String clientSecret;
-
 	public ClientCredentialsQueryParameters(AbstractHttpSession session) throws HttpAuthenticationException {
 		super(session);
-
-		CredentialFactory credentials = session.getCredentials();
-		this.clientId = credentials.getUsername();
-		this.clientSecret = credentials.getPassword();
 	}
 
 	@Override
 	protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials, List<NameValuePair> parameters) throws HttpAuthenticationException {
-		parameters.add(new BasicNameValuePair("client_secret", clientSecret));
-		parameters.add(new BasicNameValuePair("client_id", clientId));
+		parameters.add(new BasicNameValuePair("client_secret", this.clientSecret));
+		parameters.add(new BasicNameValuePair("client_id", this.clientId));
 
 		return super.createRequest(credentials, parameters);
 	}

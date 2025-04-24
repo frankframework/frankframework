@@ -31,8 +31,8 @@ import org.frankframework.util.CredentialFactory;
 
 @Log4j2
 public abstract class AbstractClientCredentials extends AbstractOauthAuthenticator {
-	private final String clientId;
-	private final String clientSecret;
+	protected final String clientId;
+	protected final String clientSecret;
 
 	AbstractClientCredentials(AbstractHttpSession session) throws HttpAuthenticationException {
 		super(session);

@@ -22,20 +22,14 @@ import org.apache.http.auth.Credentials;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.message.BasicNameValuePair;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.util.CredentialFactory;
 
 public class ResourceOwnerPasswordCredentialsQueryParameters extends AbstractResourceOwnerPasswordCredentials {
-	private final String clientId;
-	private final String clientSecret;
-
 
 	public ResourceOwnerPasswordCredentialsQueryParameters(AbstractHttpSession session) throws HttpAuthenticationException {
 		super(session);
-
-		CredentialFactory clientCredentials = new CredentialFactory(session.getClientAuthAlias(), session.getClientId(), session.getClientSecret());
-		this.clientId = clientCredentials.getUsername();
-		this.clientSecret = clientCredentials.getPassword();
 	}
 
 	@Override
