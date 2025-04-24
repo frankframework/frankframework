@@ -59,6 +59,10 @@ public abstract class AbstractClientCredentials extends AbstractOauthAuthenticat
 		if (session.getPassword() != null) {
 			ConfigurationWarnings.add(session, log, "Password should not be set");
 		}
+
+		if (session.getAuthAlias() != null) {
+			ConfigurationWarnings.add(session, log, "AuthAlias should not be set");
+		}
 	}
 
 	@Override

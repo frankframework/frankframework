@@ -34,7 +34,6 @@ public class ClientCredentialsBasicAuth extends AbstractClientCredentials {
 	private final String clientId;
 	private final String clientSecret;
 
-
 	public ClientCredentialsBasicAuth(AbstractHttpSession session) throws HttpAuthenticationException {
 		super(session);
 
