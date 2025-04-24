@@ -23,7 +23,6 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.message.BasicNameValuePair;
 
 import org.frankframework.http.AbstractHttpSession;
-import org.frankframework.util.CredentialFactory;
 
 public class ClientCredentialsQueryParameters extends AbstractClientCredentials {
 	public ClientCredentialsQueryParameters(AbstractHttpSession session) throws HttpAuthenticationException {

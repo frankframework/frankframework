@@ -28,7 +28,6 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import com.nimbusds.jose.util.Base64;
 
 import org.frankframework.http.AbstractHttpSession;
-import org.frankframework.util.CredentialFactory;
 
 public class ResourceOwnerPasswordCredentialsBasicAuth extends AbstractResourceOwnerPasswordCredentials {
 
