@@ -341,14 +341,14 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 			throw new ConfigurationException("maxConnections is set to ["+getMaxConnections()+"], which is not enough for adequate operation");
 		}
 
-		credentials = getCredentialFactory();
-
 		if (oauthAuthenticationMethod == null) {
 			if (getTokenEndpoint() != null) {
 				ConfigurationWarnings.add(this, log, "Use oauthAuthenticationMethod to explicitly set the Oauth2 method to be used. This is currently automatically determined, but will be removed in the future.");
 			}
 			oauthAuthenticationMethod = OauthAuthenticationMethod.determineOauthAuthenticationMethod(this);
 		}
+
+		credentials = getCredentialFactory(oauthAuthenticationMethod);
 
 		if (oauthAuthenticationMethod != null) {
 			try {
@@ -363,7 +363,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
 
-		if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(getClientAuthAlias()) && StringUtils.isEmpty(getAuthAlias()) && StringUtils.isEmpty(getClientId())) {
+		if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(credentials.getUsername()) && StringUtils.isEmpty(credentials.getPassword())) {
 			throw new ConfigurationException("To obtain accessToken at tokenEndpoint ["+getTokenEndpoint()+"] a clientAuthAlias or ClientId and ClientSecret must be specified");
 		}
 
@@ -431,12 +431,22 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		}
 	}
 
-	private CredentialFactory getCredentialFactory() {
-		if (StringUtils.isNotEmpty(getAuthAlias()) || StringUtils.isNotEmpty(getUsername())) {
+	private CredentialFactory getCredentialFactory(OauthAuthenticationMethod oauthAuthenticationMethod) {
+		if (oauthAuthenticationMethod == OauthAuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH
+		|| oauthAuthenticationMethod == OauthAuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS) {
+			if (StringUtils.isNotEmpty(getAuthAlias()) || StringUtils.isNotEmpty(getUsername())) {
+				return new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+			}
+
+			return new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
+		}
+		else {
+			if (StringUtils.isNotEmpty(getClientAuthAlias()) || StringUtils.isNotEmpty(getClientId())) {
+				return new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
+			}
+
 			return new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		}
-
-		return new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
 	}
 
 	/** The redirect strategy used to only redirect GET, DELETE and HEAD. */

@@ -31,16 +31,21 @@ import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.util.CredentialFactory;
 
 public class ResourceOwnerPasswordCredentialsBasicAuth extends AbstractResourceOwnerPasswordCredentials {
+	private final String username;
+	private final String password;
 
 	public ResourceOwnerPasswordCredentialsBasicAuth(AbstractHttpSession session) throws HttpAuthenticationException {
 		super(session);
+
+		CredentialFactory credentials = session.getCredentials();
+		this.username = credentials.getUsername();
+		this.password = credentials.getPassword();
 	}
 
 	private String createAuthorizationHeaderValue() {
-		CredentialFactory credentials = session.getCredentials();
-		String value = URLEncoder.encode(credentials.getUsername(), UTF8_CHARSET) +
+		String value = URLEncoder.encode(username, UTF8_CHARSET) +
 				':' +
-				URLEncoder.encode(credentials.getPassword(), UTF8_CHARSET);
+				URLEncoder.encode(password, UTF8_CHARSET);
 
 		return "Basic " + Base64.encode(value.getBytes(UTF8_CHARSET));
 	}

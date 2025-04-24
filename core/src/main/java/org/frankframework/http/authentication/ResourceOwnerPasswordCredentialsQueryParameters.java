@@ -22,18 +22,28 @@ import org.apache.http.auth.Credentials;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.message.BasicNameValuePair;
 
+import org.apache.wss4j.dom.validate.Credential;
+
 import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.util.CredentialFactory;
 
 public class ResourceOwnerPasswordCredentialsQueryParameters extends AbstractResourceOwnerPasswordCredentials {
+	private final String username;
+	private final String password;
+
 
 	public ResourceOwnerPasswordCredentialsQueryParameters(AbstractHttpSession session) throws HttpAuthenticationException {
 		super(session);
+
+		CredentialFactory credentials = session.getCredentials();
+		this.username = credentials.getUsername();
+		this.password = credentials.getPassword();
 	}
 
 	@Override
 	protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials, List<NameValuePair> parameters) throws HttpAuthenticationException {
-		parameters.add(new BasicNameValuePair("client_id", session.getClientId()));
-		parameters.add(new BasicNameValuePair("client_secret", session.getClientSecret()));
+		parameters.add(new BasicNameValuePair("client_id", username));
+		parameters.add(new BasicNameValuePair("client_secret", password));
 
 		return super.createRequest(credentials, parameters);
 	}

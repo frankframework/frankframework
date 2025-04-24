@@ -23,17 +23,24 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.message.BasicNameValuePair;
 
 import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.util.CredentialFactory;
 
 public class ClientCredentialsQueryParameters extends AbstractClientCredentials {
+	private final String clientId;
+	private final String clientSecret;
 
 	public ClientCredentialsQueryParameters(AbstractHttpSession session) throws HttpAuthenticationException {
 		super(session);
+
+		CredentialFactory credentials = session.getCredentials();
+		this.clientId = credentials.getUsername();
+		this.clientSecret = credentials.getPassword();
 	}
 
 	@Override
 	protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials, List<NameValuePair> parameters) throws HttpAuthenticationException {
-		parameters.add(new BasicNameValuePair("client_secret", session.getClientSecret()));
-		parameters.add(new BasicNameValuePair("client_id", session.getClientId()));
+		parameters.add(new BasicNameValuePair("client_secret", clientSecret));
+		parameters.add(new BasicNameValuePair("client_id", clientId));
 
 		return super.createRequest(credentials, parameters);
 	}
