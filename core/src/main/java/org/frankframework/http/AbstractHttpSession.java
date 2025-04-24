@@ -431,21 +431,45 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		}
 	}
 
+	/**
+	 * Determines and returns the appropriate {@link CredentialFactory} based on the provided
+	 * {@link OauthAuthenticationMethod}.
+	 * <p>
+	 * This method selects either user credentials (username/password or resolved via alias) or client credentials
+	 * (client ID/secret or resolved via alias) based on the specified OAuth flow.
+	 * <p>
+	 * Supported behavior:
+	 * <ul>
+	 *     <li><b>Client Credentials Flow</b>: If {@code oauthAuthenticationMethod} is
+	 *     {@code CLIENT_CREDENTIALS_QUERY_PARAMETERS} or {@code CLIENT_CREDENTIALS_BASIC_AUTH},
+	 *     client credentials are preferred. If unavailable, user credentials are used as a fallback.</li>
+	 *     <li><b>Other OAuth Flows</b>: If the OAuth method is one of {@code RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH}
+	 *     or {@code RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS}, user credentials are preferred.</li>
+	 *     <li><b>No OAuth (null method)</b>: Treated as a fallback scenario — user credentials are preferred.
+	 *     This typically occurs when the request is authenticated using basic auth directly, not an OAuth token.</li>
+	 * </ul>
+	 * <p>
+	 * Credential presence is determined based on resolved values from {@link CredentialFactory#getUsername()}
+	 * and {@link CredentialFactory#getPassword()}, which may extract credentials from aliases if set.
+	 *
+	 * @param oauthAuthenticationMethod the OAuth authentication method determining credential preference;
+	 *                                  may be {@code null} if no OAuth is required
+	 * @return a {@link CredentialFactory} containing either the user or client credentials, based on availability and flow type
+	 */
 	private CredentialFactory getCredentialFactory(OauthAuthenticationMethod oauthAuthenticationMethod) {
-		if (oauthAuthenticationMethod == OauthAuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH
-		|| oauthAuthenticationMethod == OauthAuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS) {
-			if (StringUtils.isNotEmpty(getAuthAlias()) || StringUtils.isNotEmpty(getUsername())) {
-				return new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-			}
+		boolean clientCredentialsRequired = oauthAuthenticationMethod == OauthAuthenticationMethod.CLIENT_CREDENTIALS_QUERY_PARAMETERS
+			|| oauthAuthenticationMethod == OauthAuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH;
 
-			return new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
-		}
-		else {
-			if (StringUtils.isNotEmpty(getClientAuthAlias()) || StringUtils.isNotEmpty(getClientId())) {
-				return new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
-			}
+		CredentialFactory clientCredentials = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
+		CredentialFactory userCredentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 
-			return new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+		boolean hasUserCredentials = StringUtils.isNotEmpty(userCredentials.getUsername()) || StringUtils.isNotEmpty(userCredentials.getPassword());
+		boolean hasClientCredentials = StringUtils.isNotEmpty(clientCredentials.getUsername()) || StringUtils.isNotEmpty(clientCredentials.getPassword());
+
+		if (clientCredentialsRequired) {
+			return hasClientCredentials ? clientCredentials : userCredentials;
+		} else {
+			return hasUserCredentials ? userCredentials : clientCredentials;
 		}
 	}
 
