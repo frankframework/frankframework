@@ -36,8 +36,6 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.ObjectId;
 import org.apache.chemistry.opencmis.client.api.ObjectType;
@@ -130,8 +128,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SpringSecurityHandler;
 import org.frankframework.extensions.cmis.server.CmisSecurityHandler;
-import org.frankframework.http.HttpSecurityHandler;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
@@ -158,8 +156,7 @@ public class CmisUtils {
 			session.put(CMIS_BINDING_KEY, callContext.getBinding());
 
 			if("basic".equalsIgnoreCase(CMIS_SECURITYHANDLER)) {
-				HttpServletRequest request = (HttpServletRequest) callContext.get(CallContext.HTTP_SERVLET_REQUEST);
-				session.setSecurityHandler(new HttpSecurityHandler(request));
+				session.setSecurityHandler(new SpringSecurityHandler());
 			} else if("wsse".equalsIgnoreCase(CMIS_SECURITYHANDLER)) {
 				session.setSecurityHandler(new CmisSecurityHandler(callContext));
 			}
@@ -217,7 +214,7 @@ public class CmisUtils {
 				propertyType = PropertyType.DATETIME;
 			}
 		}
-		//If it's not a property, what would it be? assume it's a string...
+		// If it's not a property, what would it be? assume it's a string...
 
 		propertyXml.addAttribute("type", propertyType.value());
 
@@ -572,7 +569,7 @@ public class CmisUtils {
 		definition.setIsRequired(CmisUtils.parseBooleanAttr(propertyDefinitionXml, "required"));
 
 		if(propertyDefinitionXml.hasAttribute("defaultValue")) {
-			//TODO: turn this into a list
+			// TODO: turn this into a list
 			List defaultValues = new ArrayList();
 			String defaultValue = propertyDefinitionXml.getAttribute("defaultValue");
 			defaultValues.add(defaultValue);
