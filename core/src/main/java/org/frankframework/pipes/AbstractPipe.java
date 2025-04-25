@@ -34,7 +34,6 @@ import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.Adapter;
-import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IWithParameters;
 import org.frankframework.core.PipeForward;

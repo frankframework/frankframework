@@ -120,7 +120,7 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 
 			// Transform result string to SOAP message
 			log.debug("transforming to SOAP message");
-			String soapProtocol = pipelineSession.getString(SOAP_PROTOCOL_KEY);
+			String soapProtocol = pipelineSession.get(SOAP_PROTOCOL_KEY, SOAPConstants.SOAP_1_1_PROTOCOL);
 			SOAPMessage soapMessage = convertResponseToSoapMessage(response, soapProtocol);
 
 			try {
