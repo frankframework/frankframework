@@ -230,7 +230,7 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 			log.debug("processing message");
 			return processRequest(soapMessage, pipelineSession);
 		} catch (ListenerException e) {
-			String m = "could not process SOAP message: " + e.getMessage();
+			String m = "Could not process SOAP message: " + e.getMessage();
 			log.error(m);
 			throw new WebServiceException(m, e);
 		}
