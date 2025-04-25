@@ -18,6 +18,7 @@ package org.frankframework.parameters;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.stream.Message;
 
 public enum ParameterType {
 
@@ -96,7 +97,17 @@ public enum ParameterType {
 
 	/** (Used in larva only) Converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;) */
 	@Deprecated
-	MAP;
+	MAP,
+
+	/**
+	 * A parameter which represents its value as a {@link Message} with mimetype {@literal application/json}. If the
+	 * derived value was of type {@literal application/xml} then it will be converted into JSON using the same rules as the
+	 * {@link org.frankframework.pipes.JsonPipe}.
+	 * If the derived value of the parameter was neither XML nor JSON format then a JSON will be constructed that looks like
+	 * {@code {"paramName":value}}. (The value will be quoted if it was not a number or boolean value).
+	 */
+	JSON(JsonParameter.class, true),
+	;
 
 	private final @Getter Class<? extends IParameter> typeClass;
 	public final boolean requiresTypeConversion;
@@ -105,12 +116,12 @@ public enum ParameterType {
 		this(false);
 	}
 
-	ParameterType(boolean requiresTypeConverion) {
-		this(Parameter.class, requiresTypeConverion);
+	ParameterType(boolean requiresTypeConversion) {
+		this(Parameter.class, requiresTypeConversion);
 	}
 
-	ParameterType(Class<? extends IParameter> typeClass, boolean requiresTypeConverion) {
-		this.requiresTypeConversion = requiresTypeConverion;
+	ParameterType(Class<? extends IParameter> typeClass, boolean requiresTypeConversion) {
+		this.requiresTypeConversion = requiresTypeConversion;
 		this.typeClass = typeClass;
 	}
 }

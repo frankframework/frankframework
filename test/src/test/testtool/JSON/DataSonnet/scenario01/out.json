@@ -1,4 +1,7 @@
 {
     "uid": "123",
-    "uname": "DataSonnet"
+    "uname": "DataSonnet",
+    "originalMessage": {
+        "test": "value"
+    }
 }

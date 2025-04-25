@@ -35,6 +35,7 @@ import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.StreamUtil;
 
+@SuppressWarnings("removal")
 public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	private static final String DUMMY_STRING = "dummyString";
 	private static final String DUMMY_STRING_SEMI_COLON = DUMMY_STRING + ";";
@@ -70,7 +71,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	}
 
 	@Test
-	public void testUnzippingAndCollectingResultWithPattermFromParameter() throws Exception {
+	public void testUnzippingAndCollectingResultWithPatternFromParameter() throws Exception {
 		pipe.setResultIsContent(true);
 		pipe.addParameter(new Parameter("zipEntryPattern", "filebb.log"));
 		configureAndStartPipe();

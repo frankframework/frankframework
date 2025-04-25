@@ -17,12 +17,23 @@ package org.frankframework.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
+import javax.xml.transform.TransformerException;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import jakarta.json.Json;
+import jakarta.json.stream.JsonParser;
+import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.xml.soap.AttachmentPart;
 import jakarta.xml.soap.MimeHeader;
@@ -36,12 +47,15 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.logging.log4j.Logger;
 import org.apache.tika.Tika;
+import org.springframework.http.MediaType;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.MimeType;
+import org.xml.sax.SAXException;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
@@ -51,6 +65,9 @@ public class MessageUtils {
 	private static final Logger LOG = LogUtil.getLogger(MessageUtils.class);
 	private static final int CHARSET_CONFIDENCE_LEVEL = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
 	private static final Tika TIKA = new Tika();
+
+	public static final String JSON_TEMPLATE_VALUE_QUOTED = "{\"%s\": \"%s\"}";
+	public static final String JSON_TEMPLATE_VALUE_UNQUOTED = "{\"%s\": %s}";
 
 	private MessageUtils() {
 		throw new IllegalStateException("Don't construct utility class");
@@ -239,7 +256,12 @@ public class MessageUtils {
 	/**
 	 * Computes the {@link MimeType} when not already available, attempts to resolve the Charset when of type TEXT.
 	 * <p>
-	 * NOTE: This might be a resource intensive operation, the first kilobytes of the message are potentially being read and stored in memory.
+	 *    When there is no filename for the Message and Apache TIKA deduces mime type {@literal text/plain}, a heuristic is
+	 *    applied. If the message starts with {@literal '<'} the mime type {@literal application/xml} is returned.
+	 *    If the message starts with {@literal '['} or {@literal '{'} the mime type {@literal application/json} is returned.
+	 *    Otherwise it will be {@literal text/plain} as Apache TIKA returned.
+ *     </p>
+	 * @ff.note This might be a resource intensive operation, the first kilobytes of the message are potentially being read and stored in memory.
 	 */
 	public static MimeType computeMimeType(Message message, String filename) {
 		if(Message.isEmpty(message)) {
@@ -262,6 +284,11 @@ public class MessageUtils {
 		try {
 			String mediaType = TIKA.detect(message.asInputStream(), name);
 			MimeType mimeType = MimeType.valueOf(mediaType);
+			if (MediaType.TEXT_PLAIN.equalsTypeAndSubtype(mimeType) && name == null) {
+				// TIKA detects XML or JSON as text/plain when there is no filename, so manually do a check for JSON.
+				// See also: https://stackoverflow.com/questions/48618629/apache-tika-detect-json-pdf-specific-mime-type#48619266
+				mimeType = guessMimeType(message);
+			}
 			context.withMimeType(mimeType);
 			if("text".equals(mimeType.getType()) || message.getCharset() != null) { // is of type 'text' or message has charset
 				Charset charset = computeDecodingCharset(message);
@@ -276,6 +303,38 @@ public class MessageUtils {
 		} catch (Exception t) {
 			LOG.warn("error parsing message to determine mimetype", t);
 			return null;
+		}
+	}
+
+	/**
+	 * Make an educated guess at a message's mimetype if Apache TIKA cannot determine it. This
+	 * is an internal method of {@link #computeMimeType(Message)}, called with assumption that
+	 * TIKA computed {@literal text/plain} and the message has been preserved.
+	 * @param message Message for which to make educated guess of the mimetype.
+	 * @return {@literal application/json} if the message started with {@literal '{'} or {@literal '['},
+	 * {@literal application/xml} if the message started with {@literal '<'}, otherwise {@literal text/plain}.
+	 *
+	 */
+	private static MimeType guessMimeType(Message message) {
+		// TIKA detects JSON as text/plain when there is no filename, so manually do a check for JSON.
+		// See also: https://stackoverflow.com/questions/48618629/apache-tika-detect-json-pdf-specific-mime-type#48619266
+		String firstChar;
+		try {
+			firstChar = message.peek(1);
+		} catch (IOException e) {
+			return MediaType.TEXT_PLAIN;
+		}
+		if ("<".equals(firstChar)) {
+			return MediaType.APPLICATION_XML;
+		}
+		if (!"{".equals(firstChar) && !"[".equals(firstChar)) {
+			return MediaType.TEXT_PLAIN;
+		}
+		try (JsonParser parser = Json.createParser(message.asInputStream())) {
+			parser.next();
+			return MediaType.APPLICATION_JSON;
+		} catch (JsonParsingException | IOException e) {
+			return MediaType.TEXT_PLAIN;
 		}
 	}
 
@@ -354,7 +413,7 @@ public class MessageUtils {
 	 * Convert an object to a string. Does not close object when it is of type Message or MessageWrapper.
 	 */
 	@Deprecated
-	public static String asString(Object object) throws IOException {
+	public static @Nullable String asString(@Nullable Object object) throws IOException {
 		if (object == null) {
 			return null;
 		}
@@ -371,6 +430,60 @@ public class MessageUtils {
 		// In other cases, message can be closed directly after converting to String.
 		try (Message message = Message.asMessage(object)) {
 			return message.asString();
+		}
+	}
+
+	/**
+	 * Convert input value to a message in JSON format and mimetype. If the input value is already JSON, then it
+	 * is returned as-is. If the value is in XML format, it will be converted to JSON using {@link UtilityTransformerPools#getXml2JsonTransformerPool()}.
+	 * Otherwise the string-value of the input-value will be wrapped as JSON as {@code {"value": value}}.
+	 */
+	public static @Nonnull Message convertToJsonMessage(@Nonnull Object value) throws IOException, XmlException {
+		return convertToJsonMessage(value, "value");
+	}
+
+	/**
+	 * Convert input value to a message in JSON format and mimetype. If the input value is already JSON, then it
+	 * is returned as-is. If the value is in XML format, it will be converted to JSON using {@link UtilityTransformerPools#getXml2JsonTransformerPool()}.
+	 * Otherwise the string-value of the input-value will be wrapped as JSON as {@code {"valueName": value}}, using parameter {@code valueName} as
+	 * name of the object.
+	 */
+	public static @Nonnull Message convertToJsonMessage(@Nonnull Object value, @Nonnull String valueName) throws IOException, XmlException {
+		Message message = Message.asMessage(value);
+		message.preserve();
+		MimeType mimeType = MessageUtils.computeMimeType(message);
+		if (MediaType.APPLICATION_JSON.isCompatibleWith(mimeType)) {
+			return message;
+		}
+
+		if (MediaType.APPLICATION_XML.isCompatibleWith(mimeType)) {
+			try {
+				TransformerPool tpXml2Json = UtilityTransformerPools.getXml2JsonTransformerPool();
+				Map<String, Object> parameterValues = Collections.singletonMap("includeRootElement", true);
+				return tpXml2Json.transform(message, parameterValues);
+			} catch (ConfigurationException | TransformerException | SAXException e) {
+				throw new XmlException("Cannot convert message from XML to JSON", e);
+			}
+		}
+		String valueAsString = message.asString();
+		String jsonTemplate = isBooleanOrNumber(value, valueAsString) ? JSON_TEMPLATE_VALUE_UNQUOTED : JSON_TEMPLATE_VALUE_QUOTED;
+		Message result = new Message(jsonTemplate.formatted(valueName, valueAsString));
+		result.getContext().withMimeType(MediaType.APPLICATION_JSON).withCharset(StandardCharsets.UTF_8);
+		return result;
+	}
+
+	private static boolean isBooleanOrNumber(Object originalValue, String valueAsString) {
+		if (originalValue instanceof Boolean || originalValue instanceof Number) {
+			return true;
+		}
+		if ("true".equalsIgnoreCase(valueAsString) || "false".equalsIgnoreCase(valueAsString)) {
+			return true;
+		}
+		try {
+			new BigDecimal(valueAsString);
+			return true;
+		} catch (NumberFormatException e) {
+			return false;
 		}
 	}
 }
