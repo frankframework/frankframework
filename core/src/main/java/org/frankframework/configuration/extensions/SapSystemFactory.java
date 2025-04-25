@@ -75,7 +75,7 @@ public class SapSystemFactory {
 
 	public void addSapSystem(Object sapSystem, String name) {
 		sapSystems.put(name, sapSystem);
-		log.debug("SapSystemFactory registered sapSystem [{}]", sapSystem.toString());
+		log.debug("SapSystemFactory registered sapSystem [{}]", sapSystem);
 	}
 
 	@Override
