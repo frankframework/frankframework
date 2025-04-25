@@ -34,6 +34,7 @@ import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IWithParameters;
 import org.frankframework.core.PipeForward;
@@ -270,6 +271,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 * <li>All pipe names with their (identical) path.</li>
 	 * </ul>
 	 */
+	// TODO: this method should be tested and refactored...
 	@Nullable
 	public PipeForward findForward(@Nullable String forward) {
 		if (StringUtils.isEmpty(forward)) {
@@ -281,7 +283,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		if (pipeLine == null) {
 			return null;
 		}
-		PipeForward result = pipeLine.getGlobalForwards().get(forward);
+		PipeForward result = pipeLine.findGlobalForward(forward);
 		if (result == null) {
 			IPipe pipe = pipeLine.getPipe(forward);
 			if (pipe!=null) {
@@ -289,7 +291,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 			}
 		}
 		if (result == null) {
-			PipeLineExit exit = pipeLine.getPipeLineExits().get(forward);
+			PipeLineExit exit = pipeLine.findPipeLineExits(forward);
 			if (exit != null) {
 				result = new PipeForward(forward, forward);
 			}
