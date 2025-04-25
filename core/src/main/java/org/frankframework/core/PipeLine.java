@@ -104,7 +104,7 @@ import org.frankframework.util.StringUtil;
 public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, FrankElement, ConfigurationAware {
 	private @Getter ApplicationContext applicationContext;
 	private @Getter @Setter Configuration configuration;
-	private @Getter final ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	public static final String PIPELINE_NAME = "pipeline";
 	public static final String INPUT_VALIDATOR_NAME  = "- pipeline inputValidator";
@@ -127,20 +127,20 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private Message transformNullMessage = null;
 	private @Getter String adapterToRunBeforeOnEmptyInput = null;
 
-	private @Getter IValidator inputValidator  = null;
+	private @Getter IValidator inputValidator = null;
 	private @Getter IValidator outputValidator = null;
-	private @Getter IWrapperPipe inputWrapper    = null;
-	private @Getter IWrapperPipe outputWrapper   = null;
-	private @Getter final Map<String, PipeLineExit> pipeLineExits = new LinkedHashMap<>();
-	private @Getter final Map<String, PipeForward> globalForwards = new HashMap<>();
+	private @Getter IWrapperPipe inputWrapper = null;
+	private @Getter IWrapperPipe outputWrapper = null;
+	private final @Getter Map<String, PipeLineExit> pipeLineExits = new LinkedHashMap<>();
+	private final @Getter Map<String, PipeForward> globalForwards = new HashMap<>();
 	private @Getter Locker locker;
 	private @Getter ICache<String,String> cache;
 
 	private final Map<String, IPipe> pipesByName = new LinkedHashMap<>();
-	private @Getter final List<IPipe> pipes	  = new ArrayList<>();
+	private final @Getter List<IPipe> pipes = new ArrayList<>();
 
-	private @Getter Adapter adapter;    // For transaction managing
-	@Deprecated @Getter private HasName owner; // LEGACy :: For logging purposes in pipe- and pipeline-processors
+	private @Getter Adapter adapter; // For transaction managing
+	@Deprecated @Getter private HasName owner; // LEGACY :: For logging purposes in pipe- and pipeline-processors
 	private @Setter PipeLineProcessor pipeLineProcessor;
 
 	private @Getter DistributionSummary requestSizeStats;
