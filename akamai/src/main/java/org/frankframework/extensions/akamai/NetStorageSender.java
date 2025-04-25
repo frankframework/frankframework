@@ -73,6 +73,8 @@ public class NetStorageSender extends AbstractHttpSender {
 	public static final String MTIME_PARAM_KEY = "mtime";
 	public static final String HASHVALUE_PARAM_KEY = "hashValue";
 
+	private static final DateFormat DATE_HEADER_FORMAT = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
+
 	private static final String PATH_SEPARATOR = "/";
 
 	private @Getter Action action = null;
@@ -205,22 +207,7 @@ public class NetStorageSender extends AbstractHttpSender {
 	public Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
 		final int statusCode = responseHandler.getStatusLine().getStatusCode();
 
-		boolean ok = false;
-		if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey())) {
-			session.put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
-			ok = true;
-		} else {
-			if (statusCode==HttpServletResponse.SC_OK) {
-				ok = true;
-			} else if (isFollowRedirects() &&
-					statusCode == HttpServletResponse.SC_MOVED_PERMANENTLY ||
-					statusCode == HttpServletResponse.SC_MOVED_TEMPORARILY ||
-					statusCode == HttpServletResponse.SC_TEMPORARY_REDIRECT) {
-				ok = true;
-			}
-		}
-
-		if (!ok) {
+		if (!super.validateResponseCode(statusCode)) {
 			throw new SenderException("httpstatus "
 					+ statusCode + ": " + responseHandler.getStatusLine().getReasonPhrase()
 					+ " body: " + getResponseBodyAsString(responseHandler, false));
@@ -246,15 +233,7 @@ public class NetStorageSender extends AbstractHttpSender {
 				String dateString = responseHandler.getHeader("Date");
 				if(!StringUtils.isEmpty(dateString)) {
 					Date currentDate = new Date();
-					DateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
-					long responseDate = 0;
-
-					try {
-						Date date = format.parse(dateString);
-						responseDate = date.getTime();
-					}
-					catch (Exception e) {}
-
+					long responseDate = parseDateHeader(dateString);
 					if (responseDate != 0 && currentDate.getTime() - responseDate > 30*1000)
 						throw new SenderException("Local server Date is more than 30s out of sync with Remote server");
 				}
@@ -267,6 +246,17 @@ public class NetStorageSender extends AbstractHttpSender {
 		}
 
 		return result.asMessage();
+	}
+
+	private long parseDateHeader(String dateString) {
+		try {
+			Date date = DATE_HEADER_FORMAT.parse(dateString);
+			return date.getTime();
+		}
+		catch (Exception e) {
+			log.warn("Unable to parse Date header [{}] from response: {}", dateString, e.getMessage());
+			return 0L;
+		}
 	}
 
 	private String getSanitizedResponseBodyAsString(HttpResponseHandler responseHandler) throws IOException {
