@@ -107,6 +107,7 @@ import org.frankframework.util.XmlUtils;
  * @author Gerrit van Brakel
  * @ff.parameters Parameters themselves can have parameters too, for instance if a XSLT transformation is used, that transformation can have parameters.
  */
+@SuppressWarnings("removal")
 public abstract class AbstractParameter implements IConfigurable, IWithParameters, IParameter {
 	private static final Logger LOG = LogManager.getLogger(Parameter.class);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
@@ -264,6 +265,9 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			} catch (Exception e) {
 				throw new ParameterException(getName(), "SessionKey for parameter [" + getName() + "] exception on transformation to get name", e);
 			}
+		} else if (sessionKeyJPath != null) {
+			Object o = evaluateJsonPath(message, sessionKeyJPath);
+			requestedSessionKey = o != null ? o.toString() : null;
 		} else {
 			requestedSessionKey = getSessionKey();
 		}

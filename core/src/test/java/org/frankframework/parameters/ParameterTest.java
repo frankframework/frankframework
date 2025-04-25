@@ -60,6 +60,97 @@ import org.frankframework.util.XmlUtils;
 public class ParameterTest {
 
 	@Test
+	public void testParameterWithHiddenValue() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("hiddenParam");
+		p.setValue("secretValue");
+		p.setHidden(true);
+		p.configure();
+
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+
+		// The hidden flag doesn't affect the actual value, only how it's logged
+		assertEquals("secretValue", p.getValue(alreadyResolvedParameters, null, session, false));
+		assertTrue(p.isHidden());
+	}
+
+	@Test
+	public void testParameterWithMode() throws Exception {
+		// Test INPUT mode (default)
+		Parameter inputParam = new Parameter();
+		inputParam.setName("inputParam");
+		inputParam.setValue("inputValue");
+		inputParam.configure();
+		assertEquals(AbstractParameter.ParameterMode.INPUT, inputParam.getMode());
+
+		// Test OUTPUT mode
+		Parameter outputParam = new Parameter();
+		outputParam.setName("outputParam");
+		outputParam.setMode(AbstractParameter.ParameterMode.OUTPUT);
+		outputParam.configure();
+		assertEquals(AbstractParameter.ParameterMode.OUTPUT, outputParam.getMode());
+
+		// Test INOUT mode
+		Parameter inoutParam = new Parameter();
+		inoutParam.setName("inoutParam");
+		inoutParam.setValue("inoutValue");
+		inoutParam.setMode(AbstractParameter.ParameterMode.INOUT);
+		inoutParam.configure();
+		assertEquals(AbstractParameter.ParameterMode.INOUT, inoutParam.getMode());
+	}
+
+	@Test
+	public void testParameterWithSessionKeyXPath() throws Exception {
+		// Create an XML message with a session key name
+		String xmlMessage = "<root><sessionKeyName>dynamicKey</sessionKeyName></root>";
+		Message message = new Message(xmlMessage);
+
+		// Create a parameter with sessionKeyXPath to extract the key name
+		Parameter p = new Parameter();
+		p.setName("dynamicSessionKeyParam");
+		p.setSessionKeyXPath("root/sessionKeyName");
+		p.configure();
+
+		// Set up session with the dynamic key
+		PipeLineSession session = new PipeLineSession();
+		session.put("dynamicKey", "dynamicValue");
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+
+		// The parameter should use the XPath to get the session key name, then use that to get the value
+		assertEquals("dynamicValue", p.getValue(alreadyResolvedParameters, message, session, false));
+
+		// Verify it doesn't require input value for resolution (since it uses the message for XPath)
+		assertTrue(p.requiresInputValueForResolution());
+	}
+
+	@Test
+	public void testParameterWithSessionKeyJPath() throws Exception {
+		// Create a JSON message with a session key name
+		String jsonMessage = "{\"root\":{\"sessionKeyName\":\"jsonDynamicKey\"}}";
+		Message message = new Message(jsonMessage);
+
+		// Create a parameter with sessionKeyJPath to extract the key name
+		Parameter p = new Parameter();
+		p.setName("dynamicJsonSessionKeyParam");
+		p.setSessionKeyJPath("$.root.sessionKeyName");
+		p.configure();
+
+		// Set up session with the dynamic key
+		PipeLineSession session = new PipeLineSession();
+		session.put("jsonDynamicKey", "jsonDynamicValue");
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+
+		// The parameter should use the JSONPath to get the session key name, then use that to get the value
+		assertEquals("jsonDynamicValue", p.getValue(alreadyResolvedParameters, message, session, false));
+
+		// Verify it requires input value for resolution (since it uses the message for JSONPath)
+		assertTrue(p.requiresInputValueForResolution());
+	}
+
+	@Test
 	public void testPatternUsername() throws ConfigurationException, ParameterException {
 		Parameter p = new Parameter();
 		p.setName("dummy");
