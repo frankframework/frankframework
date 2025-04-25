@@ -517,14 +517,15 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	}
 
+	// Method may not be called getGlobalForwards, because of the FrankDoc...
 	@Nullable
 	public PipeForward findGlobalForward(String forward) {
 		return globalForwards.get(forward);
 	}
 
-	@Nullable
-	public PipeLineExit findPipeLineExits(String forward) {
-		return pipeLineExits.get(forward);
+	// Method may not be called getPipeLineExits, because of the FrankDoc...
+	public Map<String, PipeLineExit> getAllPipeLineExits() {
+		return Collections.unmodifiableMap(pipeLineExits);
 	}
 
 	protected void stopPipe(String type, IPipe pipe) {

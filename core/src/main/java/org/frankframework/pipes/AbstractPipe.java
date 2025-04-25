@@ -290,7 +290,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 			}
 		}
 		if (result == null) {
-			PipeLineExit exit = pipeLine.findPipeLineExits(forward);
+			PipeLineExit exit = pipeLine.getAllPipeLineExits().get(forward);
 			if (exit != null) {
 				result = new PipeForward(forward, forward);
 			}
