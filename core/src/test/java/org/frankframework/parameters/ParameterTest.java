@@ -61,6 +61,7 @@ public class ParameterTest {
 
 	@Test
 	public void testParameterWithHiddenValue() throws Exception {
+		// NB: This test has been AI Generated
 		Parameter p = new Parameter();
 		p.setName("hiddenParam");
 		p.setValue("secretValue");
@@ -77,6 +78,7 @@ public class ParameterTest {
 
 	@Test
 	public void testParameterWithMode() throws Exception {
+		// NB: This test has been AI Generated
 		// Test INPUT mode (default)
 		Parameter inputParam = new Parameter();
 		inputParam.setName("inputParam");
@@ -102,6 +104,7 @@ public class ParameterTest {
 
 	@Test
 	public void testParameterWithSessionKeyXPath() throws Exception {
+		// NB: This test has been AI Generated
 		// Create an XML message with a session key name
 		String xmlMessage = "<root><sessionKeyName>dynamicKey</sessionKeyName></root>";
 		Message message = new Message(xmlMessage);
@@ -127,6 +130,7 @@ public class ParameterTest {
 
 	@Test
 	public void testParameterWithSessionKeyJPath() throws Exception {
+		// NB: This test has been AI Generated
 		// Create a JSON message with a session key name
 		String jsonMessage = "{\"root\":{\"sessionKeyName\":\"jsonDynamicKey\"}}";
 		Message message = new Message(jsonMessage);
