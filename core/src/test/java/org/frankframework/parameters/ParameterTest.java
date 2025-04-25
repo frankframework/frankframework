@@ -121,7 +121,7 @@ public class ParameterTest {
 		// The parameter should use the XPath to get the session key name, then use that to get the value
 		assertEquals("dynamicValue", p.getValue(alreadyResolvedParameters, message, session, false));
 
-		// Verify it doesn't require input value for resolution (since it uses the message for XPath)
+		// Verify it requires input value for resolution (since it uses the message for XPath)
 		assertTrue(p.requiresInputValueForResolution());
 	}
 
