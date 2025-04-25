@@ -54,7 +54,7 @@ import org.frankframework.util.UUIDUtil;
  * </ul>
  * </p>
  *
- * {@inheritDoc}
+ * {@inheritClassDoc}
  *
  * @author Peter Leeuwenburgh
  */

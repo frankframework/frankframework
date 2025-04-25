@@ -24,26 +24,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.logging.log4j.Logger;
-
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.IbisContext;
-import org.frankframework.core.IConfigurable;
-import org.frankframework.core.NameAware;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.http.AbstractHttpSender;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DomBuilderException;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 
 /**
- * Reflection helper to create Larva Queues'
+ * Reflection helper to create Larva Actions
  *
  * When a class is created it will attempt to set the name and disable HTTP SSL capabilities by default
  * When setting the bean properties it loops through the available setter methods and looks for a matching property.
@@ -51,41 +44,6 @@ import org.frankframework.util.XmlUtils;
  * @author Niels Meijer
  */
 public class LarvaActionUtils {
-	private static final Logger LOG = LogUtil.getLogger(LarvaActionUtils.class);
-
-	public static IConfigurable createInstance(IbisContext ibisContext, ClassLoader classLoader, String className) {
-		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-		Thread.currentThread().setContextClassLoader(classLoader);
-		try {
-			return createInstance(ibisContext, className);
-		} finally {
-			if (originalClassLoader != null) {
-				Thread.currentThread().setContextClassLoader(originalClassLoader);
-			}
-		}
-	}
-
-	private static IConfigurable createInstance(IbisContext ibisContext, String className) {
-		LOG.debug("instantiating queue [{}]", className);
-		try {
-			Class<?> clazz = ClassUtils.loadClass(className);
-			Object obj = ibisContext.createBeanAutowireByName(clazz);
-
-			if (obj instanceof NameAware object) { // Set the name
-				object.setName("Larva "+clazz.getSimpleName());
-			}
-
-			if (obj instanceof AbstractHttpSender base) { // Disable SSL capabilities
-				base.setAllowSelfSignedCertificates(true);
-				base.setVerifyHostname(false);
-			}
-
-			return (IConfigurable) obj;
-		}
-		catch (Exception e) {
-			throw new IllegalStateException("unable to initialize class ["+className+"]", e);
-		}
-	}
 
 	public static Properties getSubProperties(Properties properties, String keyBase) {
 		if(!keyBase.endsWith("."))
@@ -102,20 +60,20 @@ public class LarvaActionUtils {
 		return filteredProperties;
 	}
 
-	public static void invokeSetters(Object clazz, Properties queueProperties) {
-		for(Method method: clazz.getClass().getMethods()) {
+	public static void invokeSetters(Object clazz, Properties actionProperties) {
+		for (Method method : clazz.getClass().getMethods()) {
 			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
 				continue;
 
 			String setter = StringUtil.lcFirst(method.getName().substring(3));
-			String value = queueProperties.getProperty(setter);
+			String value = actionProperties.getProperty(setter);
 			if(value == null)
 				continue;
 
 			try {
 				ClassUtils.invokeSetter(clazz, method, value);
 			} catch (Exception e) {
-				throw new IllegalArgumentException("unable to set method ["+setter+"] on Class ["+ClassUtils.nameOf(clazz)+"]: "+e.getMessage(), e);
+				throw new IllegalArgumentException("unable to set method [" + setter + "] on Class [" + ClassUtils.nameOf(clazz) + "]: " + e.getMessage(), e);
 			}
 		}
 	}

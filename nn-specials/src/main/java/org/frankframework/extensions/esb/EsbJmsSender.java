@@ -29,7 +29,7 @@ import org.frankframework.util.SpringUtils;
 /**
  * ESB (Enterprise Service Bus) extension of @{codeJmsSender}.
  *
- * @{inheritDoc}
+ * @{inheritClassDoc}
  *
  * @author  Peter Leeuwenburgh
  */
@@ -62,7 +62,7 @@ public class EsbJmsSender extends JmsSender {
 			}
 		}
 		if (StringUtils.isEmpty(getSoapAction()) && !paramList.hasParameter("SoapAction")) {
-			Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			Parameter p = SpringUtils.createBean(getApplicationContext());
 			p.setName("SoapAction");
 			p.setStyleSheetName("/xml/xsl/esb/soapAction.xsl");
 			p.setXsltVersion(2);

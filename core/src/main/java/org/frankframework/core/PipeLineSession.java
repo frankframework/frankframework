@@ -183,8 +183,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * @return {@code true} if {@code value} is not a {@link Message}, or if it is a Message with a request that is not a scalar or array type. Returns {@code false} otherwise.
 	 */
 	private static boolean isValueToBeClosed(AutoCloseable value) {
-		if (!(value instanceof Message message)) return true; // Should be closed, but is not a message
-		if (message.isNull()) return false; // Null message doesn't have to be closed
+		if (!(value instanceof Message message)) return true; // Should be closed, value is not a message.
+		if (message.isNull()) return false; // NULL message doesn't have to be closed.
+
 		return !(message.isRequestOfType(String.class) ||
 				message.isRequestOfType(Number.class) ||
 				message.isRequestOfType(Date.class) ||

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021, 2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		querySender = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
+		querySender = SpringUtils.createBean(applicationContext);
 		querySender.setName("querySender of "+getName());
 		querySender.configure();
 	}
@@ -140,10 +140,4 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 	public String getPhysicalDestinationName() {
 		return querySender.getPhysicalDestinationName();
 	}
-
-	@ReferTo(FixedQuerySender.class)
-	public void setJmsRealm(String jmsRealmName) {
-		querySender.setJmsRealm(jmsRealmName);
-	}
-
 }

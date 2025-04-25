@@ -65,7 +65,7 @@ import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlException;
 
 /**
- * {@inheritDoc}
+ * {@inheritClassDoc}
  *
  * @ff.parameters All parameters present are set as message-properties.
  * @ff.parameter SoapAction Automatically filled from attribute <code>soapAction</code>
@@ -111,7 +111,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isNotEmpty(getSoapAction()) && !paramList.hasParameter("SoapAction")) {
-			Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			Parameter p = SpringUtils.createBean(getApplicationContext());
 			p.setName("SoapAction");
 			p.setValue(getSoapAction());
 			addParameter(p);

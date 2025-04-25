@@ -58,17 +58,17 @@ public class TestInlineStorage extends BusTestBase {
 	}
 
 	protected Adapter registerAdapter(Configuration configuration) throws Exception {
-		Adapter adapter = SpringUtils.createBean(configuration, Adapter.class);
+		Adapter adapter = SpringUtils.createBean(configuration);
 		adapter.setName("TestAdapter");
 
 		DummyListenerWithMessageBrowsers listener = new DummyListenerWithMessageBrowsers();
 		listener.setName("ListenerName");
-		Receiver<String> receiver = SpringUtils.createBean(configuration, Receiver.class);
+		Receiver<String> receiver = SpringUtils.createBean(configuration);
 		receiver.setName("ReceiverName");
 		receiver.setListener(listener);
 		adapter.addReceiver(receiver);
-		PipeLine pipeline = SpringUtils.createBean(configuration, PipeLine.class);
-		EchoPipe pipe = SpringUtils.createBean(configuration, EchoPipe.class);
+		PipeLine pipeline = SpringUtils.createBean(configuration);
+		EchoPipe pipe = SpringUtils.createBean(configuration);
 		pipe.setName("EchoPipe");
 		pipeline.addPipe(pipe);
 		adapter.setPipeLine(pipeline);

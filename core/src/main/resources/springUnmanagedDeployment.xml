@@ -15,7 +15,6 @@
 		>
 		<!-- Auto-wiring wires up bean named taskExecutor as threadpool implementation -->
 		<property name="configLocation" value="classpath:quartz.properties"/>
-		<property name="autoStartup" value="false"/>
 		<property name="waitForJobsToCompleteOnShutdown" value="true"/>
 	</bean>
 

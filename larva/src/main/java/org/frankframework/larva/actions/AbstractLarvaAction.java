@@ -29,18 +29,19 @@ import org.frankframework.core.IWithParameters;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.jdbc.AbstractJdbcQuerySender.QueryType;
 import org.frankframework.jdbc.FixedQuerySender;
+import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.util.EnumUtils;
 
 /**
- * This class is used to create and manage the lifecycle of Larva queues.
+ * This class is used to create and manage the lifecycle of Larva actions.
  * 
  * This class is a wrapper around the IConfigurable interface and handles the read and write operations.
  * 
  * @author Niels Meijer
  */
 @Log4j2
-public abstract class AbstractLarvaAction<T extends IConfigurable> implements Lifecycle, IConfigurable, LarvaScenarioAction {
+public abstract class AbstractLarvaAction<T extends IConfigurable> implements ConfigurableLifecycle, LarvaScenarioAction {
 
 	private static final String CONVERT_MESSAGE_TO_EXCEPTION_PROPERTY_KEY = "convertExceptionToMessage";
 	private final T configurable;
@@ -48,7 +49,7 @@ public abstract class AbstractLarvaAction<T extends IConfigurable> implements Li
 	private @Getter boolean convertExceptionToMessage = false;
 	private @Getter PipeLineSession session = new PipeLineSession();
 
-	public AbstractLarvaAction(T configurable) {
+	protected AbstractLarvaAction(T configurable) {
 		this.configurable = configurable;
 	}
 
@@ -91,7 +92,12 @@ public abstract class AbstractLarvaAction<T extends IConfigurable> implements Li
 
 	@Override
 	public boolean isRunning() {
-		return session != null;
+		log.trace("checking if [{}] is running", configurable);
+		if (configurable instanceof Lifecycle lifecycle) {
+			return lifecycle.isRunning();
+		}
+
+		return false; // Since it's not a lifecycle, always assume false so start is called. Stop is called in close()
 	}
 
 	public void invokeSetters(int defaultTimeout, Properties properties) {
@@ -99,7 +105,7 @@ public abstract class AbstractLarvaAction<T extends IConfigurable> implements Li
 		LarvaActionUtils.invokeSetters(configurable, properties);
 
 		String convertException = properties.getProperty(CONVERT_MESSAGE_TO_EXCEPTION_PROPERTY_KEY);
-		convertExceptionToMessage = Boolean.valueOf(convertException);
+		convertExceptionToMessage = Boolean.parseBoolean(convertException);
 
 		mapParameters(properties);
 

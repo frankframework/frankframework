@@ -6,6 +6,7 @@ import { MiscService } from 'src/app/services/misc.service';
 import { Base64Service } from '../../services/base64.service';
 
 export type MessageStore = {
+  fields: MessageField[];
   totalMessages: number;
   skipMessages: number;
   messageCount: number;
@@ -16,21 +17,24 @@ export type MessageStore = {
 
 export type Message = {
   id: string; //StorageId
-  originalId: string;
-  correlationId: string;
-  type: string;
-  host: string;
-  insertDate: number;
-  comment: string;
-  message?: string;
-  expiryDate?: number;
-  label?: string;
-  position?: number;
+  insertDate?: number;
+  [key: string]: unknown;
 };
 
 export type PartialMessage = {
   id: string;
   processing: boolean;
+};
+
+export type MessageField = {
+  fieldName: string;
+  property: keyof Message;
+  displayName: string;
+  type: string;
+};
+
+export type StorageMetadata = {
+  fields: MessageField[];
 };
 
 export type StorageParams = {
@@ -166,6 +170,10 @@ export class StorageService {
 
   getStorageList(queryParameters: string): Observable<MessageStore> {
     return this.http.get<MessageStore>(this.baseUrl + queryParameters);
+  }
+
+  getStorageFields(): Observable<StorageMetadata> {
+    return this.http.get<StorageMetadata>(`${this.baseUrl}/fields`);
   }
 
   getMessage(messageId: string): Observable<Message> {

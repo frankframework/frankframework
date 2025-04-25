@@ -475,9 +475,9 @@ export class AppComponent implements OnInit, OnDestroy {
         continue;
       }
 
-      adapter.hasSender = false;
       adapter.sendersMessageLogCount = 0;
       adapter.senderTransactionalStorageMessageCount = 0;
+      adapter.hasSender = false;
       adapter.state ??= existingAdapter.state ?? 'error';
 
       this.processAdapterReceivers(adapter, existingAdapter);
@@ -528,11 +528,10 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   processAdapterReceivers(adapter: Partial<Adapter>, existingAdapter?: Adapter): void {
+    if (existingAdapter?.receivers) {
+      adapter.receivers = deepMerge([], existingAdapter.receivers, adapter.receivers);
+    }
     if (adapter.receivers) {
-      if (existingAdapter?.receivers) {
-        adapter.receivers = deepMerge([], existingAdapter.receivers, adapter.receivers);
-      }
-
       for (const index in adapter.receivers) {
         const adapterReceiver = adapter.receivers[+index];
         if (adapterReceiver.state != 'started') adapter.status = 'warning';
@@ -548,11 +547,10 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   processAdapterPipes(adapter: Partial<Adapter>, existingAdapter?: Adapter): void {
+    if (existingAdapter?.pipes) {
+      adapter.pipes = deepMerge([], existingAdapter.pipes, adapter.pipes);
+    }
     if (adapter.pipes) {
-      if (existingAdapter?.pipes) {
-        adapter.pipes = deepMerge([], existingAdapter.pipes, adapter.pipes);
-      }
-
       for (const index in adapter.pipes) {
         const pipe = adapter.pipes[+index];
 

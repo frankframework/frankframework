@@ -45,7 +45,7 @@ class FrankListenerTest {
 		receiver = mock();
 		when(receiver.getAdapter()).thenReturn(adapter);
 		when(adapter.getName()).thenReturn(ADAPTER_NAME);
-		listener = configuration.createBean(FrankListener.class);
+		listener = configuration.createBean();
 		listener.setHandler(receiver);
 		message = new Message("Tada");
 		session = new PipeLineSession();
@@ -137,7 +137,7 @@ class FrankListenerTest {
 	@Test
 	void startAlreadyRegistered() {
 		// Arrange
-		FrankListener otherListener = configuration.createBean(FrankListener.class);
+		FrankListener otherListener = configuration.createBean();
 		otherListener.setHandler(receiver);
 		otherListener.setName(LISTENER_NAME);
 		otherListener.configure();

@@ -16,6 +16,7 @@
 package org.frankframework.core;
 
 import java.util.Date;
+import java.util.List;
 
 import org.frankframework.receivers.RawMessageWrapper;
 
@@ -103,5 +104,10 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 	 */
 	void setHideMethod(HideMethod hideMethod);
 	HideMethod getHideMethod();
+
+	/**
+	 * Retrieves the field names of the storage
+	 */
+	List<MessageBrowserField> getStorageFields();
 
 }

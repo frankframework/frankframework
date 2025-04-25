@@ -17,6 +17,7 @@ package org.frankframework.management.bus.endpoints;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -40,6 +41,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandlingException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
@@ -87,7 +89,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	}
 
 	protected Adapter registerAdapter(Configuration configuration) throws Exception {
-		Adapter adapter = SpringUtils.createBean(configuration, Adapter.class);
+		Adapter adapter = SpringUtils.createBean(configuration);
 		adapter.setName("TestAdapter");
 
 		DummyListenerWithMessageBrowsers listener = new DummyListenerWithMessageBrowsers();
@@ -97,8 +99,8 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		receiver.setListener(listener);
 		doAnswer(p -> { throw new ListenerException("testing message ->"+p.getArgument(0)); }).when(receiver).retryMessage(anyString()); //does not actually test the retry mechanism
 		adapter.addReceiver(receiver);
-		PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
-		SenderPipe pipe = SpringUtils.createBean(adapter, SenderPipe.class);
+		PipeLine pipeline = SpringUtils.createBean(adapter);
+		SenderPipe pipe = SpringUtils.createBean(adapter);
 		pipe.setMessageLog(getTransactionalStorage());
 		pipe.setSender(new EchoSender());
 		pipe.setName("PipeName");
@@ -253,7 +255,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 	@Test
 	public void resendMessageById() {
-		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.UPLOAD);
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
 		request.setHeader("receiver", "ReceiverName");
@@ -289,6 +291,40 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 			assertTrue(TransactionManagerMock.peek().isCompleted());
 			assertTrue(TransactionManagerMock.peek().hasBeenRolledBack());
 		}
+	}
+
+	@Test
+	public void getBrowserFieldsWithoutStorage() {
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+
+		Exception exception = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
+		assertInstanceOf(BusException.class, exception.getCause());
+		assertEquals("no StorageSource provided", exception.getCause().getMessage());
+	}
+
+	@Test
+	public void getBrowserFieldsWithPipe() {
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader(BusMessageUtils.HEADER_PIPE_NAME_KEY, adapter.getPipeLine().getPipe(0).getName());
+
+		Message<?> response = callSyncGateway(request);
+		MatchUtils.assertJsonEquals("{\"fields\":[]}", (String) response.getPayload());
+	}
+
+	@Test
+	public void getBrowserFieldsWithReceiver() {
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, adapter.getReceivers().iterator().next().getName());
+		request.setHeader(BusMessageUtils.HEADER_PROCESSSTATE_KEY, ProcessState.AVAILABLE);
+
+		Message<?> response = callSyncGateway(request);
+		MatchUtils.assertJsonEquals("{\"fields\":[]}", (String) response.getPayload());
 	}
 
 	/**

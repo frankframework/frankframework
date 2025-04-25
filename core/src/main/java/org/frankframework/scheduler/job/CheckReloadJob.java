@@ -69,14 +69,14 @@ public class CheckReloadJob extends AbstractJobDef {
 		if (ibisManager.getIbisContext().isLoadingConfigs()) {
 			String msg = "skipping checkReload because one or more configurations are currently loading";
 			getMessageKeeper().add(msg, MessageKeeperLevel.INFO);
-			log.info("{}{}", getLogPrefix(), msg);
+			log.info(msg);
 			return;
 		}
 
 		List<String> configNames = new ArrayList<>();
 		List<String> configsToReload = new ArrayList<>();
 
-		FixedQuerySender qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
+		FixedQuerySender qs = SpringUtils.createBean(getApplicationContext());
 		qs.setDatasourceName(getDataSource());
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
@@ -93,12 +93,12 @@ public class CheckReloadJob extends AbstractJobDef {
 						try (ResultSet rs = stmt.executeQuery()) {
 							if (rs.next()) {
 								String ibisConfigVersion = rs.getString(1);
-								String configVersion = configuration.getVersion(); //DatabaseClassLoader configurations always have a version
-								if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
-									log.warn("{}skipping autoreload for configuration [{}] unable to determine [configuration.version]", getLogPrefix(), configName);
+								String configVersion = configuration.getVersion(); // DatabaseClassLoader configurations always have a version
+								if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { // If config hasn't loaded yet, don't skip it!
+									log.warn("skipping autoreload for configuration [{}] unable to determine [configuration.version]", configName);
 								}
 								else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
-									log.info("{}configuration [{}] with version [{}] will be reloaded with new version [{}]", getLogPrefix(), configName, configVersion, ibisConfigVersion);
+									log.info("configuration [{}] with version [{}] will be reloaded with new version [{}]", configName, configVersion, ibisConfigVersion);
 									configsToReload.add(configName);
 								}
 							}

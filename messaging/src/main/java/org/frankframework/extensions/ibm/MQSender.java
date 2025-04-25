@@ -35,7 +35,7 @@ import org.frankframework.util.ClassUtils;
  * JMS sender which will call IBM WebSphere MQ specific {@code setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ)} on the destination prior to sending a message.
  * This is needed when the MQ destination is not a JMS receiver otherwise format errors occur (e.g. dots are added after every character in the message).
  *
- * {@inheritDoc}
+ * {@inheritClassDoc}
  *
  * @author Jaco de Groot
  */

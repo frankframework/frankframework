@@ -50,6 +50,7 @@ import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
 
 @WithLiquibase(tableName = StoredProcedureQuerySenderTest.TABLE_NAME, file = "Jdbc/StoredProcedureQuerySender/DatabaseChangelog-StoredProcedures.xml")
@@ -69,7 +70,7 @@ public class StoredProcedureQuerySenderTest {
 	public void setUp(DatabaseTestEnvironment databaseTestEnvironment) {
 		databaseUnderTest = databaseTestEnvironment.getDbmsSupport().getDbms();
 
-		sender = databaseTestEnvironment.getConfiguration().createBean(StoredProcedureQuerySender.class);
+		sender = databaseTestEnvironment.getConfiguration().createBean();
 		sender.setSqlDialect("Oracle");
 		sender.setDatasourceName(databaseTestEnvironment.getDataSourceName());
 
@@ -78,9 +79,7 @@ public class StoredProcedureQuerySenderTest {
 
 	@AfterEach
 	public void tearDown(DatabaseTestEnvironment databaseTestEnvironment) {
-		if (session != null) {
-			session.close();
-		}
+		CloseUtils.closeSilently(session);
 	}
 
 	@DatabaseTest

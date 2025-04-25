@@ -1078,65 +1078,65 @@ public class LarvaTool {
 		properties.putAll(absolutePathProperties);
 	}
 
-	private int executeQueueWrite(String stepDisplayName, Map<String, LarvaScenarioAction> queues, String queueName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
-		LarvaScenarioAction queue = queues.get(queueName);
-		if (queue==null) {
-			errorMessage("Property '" + queueName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
+	private int executeActionWriteStep(String stepDisplayName, Map<String, LarvaScenarioAction> actions, String actionName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
+		LarvaScenarioAction scenarioAction = actions.get(actionName);
+		if (scenarioAction == null) {
+			errorMessage("Property '" + actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
 			return RESULT_ERROR;
 		}
 		try {
-			queue.executeWrite(fileContent, correlationId, xsltParameters);
-			debugPipelineMessage(stepDisplayName, "Successfully wrote message to '" + queueName + "':", fileContent);
-			logger.debug("Successfully wrote message to '{}'", queueName);
+			scenarioAction.executeWrite(fileContent, correlationId, xsltParameters);
+			debugPipelineMessage(stepDisplayName, "Successfully wrote message to '" + actionName + "':", fileContent);
+			logger.debug("Successfully wrote message to '{}'", actionName);
 			return RESULT_OK;
 		} catch(TimeoutException e) {
-			errorMessage("Timeout sending message to '" + queueName + "': " + e.getMessage(), e);
+			errorMessage("Timeout sending message to '" + actionName + "': " + e.getMessage(), e);
 		} catch(Exception e) {
-			errorMessage("Could not send message to '" + queueName + "' ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e);
+			errorMessage("Could not send message to '" + actionName + "' ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e);
 		}
 		return RESULT_ERROR;
 	}
 
-	private int executeQueueRead(String step, String stepDisplayName, Properties properties, Map<String, LarvaScenarioAction> queues, String queueName, String fileName, Message expected) {
-		LarvaScenarioAction queue = queues.get(queueName);
-		if (queue == null) {
-			errorMessage("Property '" + queueName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
+	private int executeActionReadStep(String step, String stepDisplayName, Properties properties, Map<String, LarvaScenarioAction> actions, String actionName, String fileName, Message expected) {
+		LarvaScenarioAction scenarioAction = actions.get(actionName);
+		if (scenarioAction == null) {
+			errorMessage("Property '" + actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
 			return RESULT_ERROR;
 		}
 		try {
-			Message message = queue.executeRead(properties); // cannot close this message because of FrankSender (JSON scenario02)
+			Message message = scenarioAction.executeRead(properties); // cannot close this message because of FrankSender (JSON scenario02)
 			if (message == null) {
 				if ("".equals(fileName)) {
 					return RESULT_OK;
 				} else {
-					errorMessage("Could not read from ["+queueName+"] (null returned)");
+					errorMessage("Could not read from ["+actionName+"] (null returned)");
 				}
 			} else {
 				if ("".equals(fileName)) {
-					debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
+					debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + actionName + "':", message);
 				} else {
 					return compareResult(step, stepDisplayName, fileName, expected, message, properties);
 				}
 			}
 		} catch (Exception e) {
-			errorMessage("Could not read from ["+queueName+"] ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e);
+			errorMessage("Could not read from ["+actionName+"] ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e);
 		}
 
 		return RESULT_ERROR;
 	}
 
 	// Ideally this should be moved to it's own class. But for now it's a bridge too far because of `stepOutputFilename`.
-	protected int executeStep(String step, Properties properties, String stepDisplayName, Map<String, LarvaScenarioAction> queues, String correlationId) {
+	protected int executeStep(String step, Properties properties, String stepDisplayName, Map<String, LarvaScenarioAction> actions, String correlationId) {
 		String fileName = properties.getProperty(step);
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
 		int i = step.indexOf('.');
-		String queueName;
+		String actionName;
 		Message fileContent;
 		// Set output filename, dirty old solution to pass the name on to the HTML-generating functions.
 		stepOutputFilename = fileNameAbsolutePath;
 
 		// Read the scenario file for this step
-		if ("".equals(fileName)) {
+		if (StringUtils.isBlank(fileName)) {
 			errorMessage("No file specified for step '" + step + "'");
 			return RESULT_ERROR;
 		}
@@ -1144,7 +1144,7 @@ public class LarvaTool {
 			fileContent = new Message(fileName);
 		} else {
 			if (fileName.endsWith("ignore")) {
-				debugMessage("creating dummy expected file for filename '"+fileName+"'");
+				debugMessage("creating dummy expected file for filename '" + fileName + "'");
 				fileContent = new Message("ignore");
 			} else {
 				debugMessage("Read file " + fileName);
@@ -1157,15 +1157,15 @@ public class LarvaTool {
 		}
 
 		try (Message closeable = fileContent) {
-			queueName = step.substring(i + 1, step.lastIndexOf("."));
-			Object queueCreatorClassname = properties.get(queueName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX);
+			actionName = step.substring(i + 1, step.lastIndexOf("."));
+			Object actionFactoryClassname = properties.get(actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX);
 			if (step.endsWith(".read") || (allowReadlineSteps && step.endsWith(".readline"))) {
-				if ("org.frankframework.larva.XsltProviderListener".equals(queueCreatorClassname)) {
+				if ("org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname)) {
 					Properties scenarioStepProperties = LarvaActionUtils.getSubProperties(properties, step);
 					Map<String, Object> xsltParameters = createParametersMapFromParamProperties(scenarioStepProperties);
-					return executeQueueWrite(stepDisplayName, queues, queueName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
+					return executeActionWriteStep(stepDisplayName, actions, actionName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
 				} else {
-					return executeQueueRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
+					return executeActionReadStep(step, stepDisplayName, properties, actions, actionName, fileName, fileContent);
 				}
 			} else {
 				// TODO: Try if anything breaks when this block is moved to `readFile()` method.
@@ -1179,10 +1179,10 @@ public class LarvaTool {
 					AppConstants appConstants = AppConstants.getInstance();
 					fileContent = new Message(StringResolver.substVars(fileData, appConstants), fileContent.copyContext());
 				}
-				if ("org.frankframework.larva.XsltProviderListener".equals(queueCreatorClassname)) {
-					return executeQueueRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);  // XsltProviderListener has .read and .write reversed
+				if ("org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname)) {
+					return executeActionReadStep(step, stepDisplayName, properties, actions, actionName, fileName, fileContent);  // XsltProviderListener has .read and .write reversed
 				} else {
-					return executeQueueWrite(stepDisplayName, queues, queueName, fileContent, correlationId, null);
+					return executeActionWriteStep(stepDisplayName, actions, actionName, fileContent, correlationId, null);
 				}
 			}
 		}

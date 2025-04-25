@@ -20,18 +20,18 @@
 		<junit.excludedTags></junit.excludedTags>
 		<junit.includedTags></junit.includedTags>
 
-		<jackson.version>2.18.3</jackson.version>
+		<jackson.version>2.19.0</jackson.version>
 		<cxf.version>4.1.1</cxf.version>
-		<spring.version>6.2.5</spring.version>
-		<spring-security.version>6.4.4</spring-security.version>
-		<spring-integration.version>6.4.3</spring-integration.version>
-		<spring.boot.version>3.4.4</spring.boot.version>
+		<spring.version>6.2.6</spring.version>
+		<spring-security.version>6.4.5</spring-security.version>
+		<spring-integration.version>6.4.4</spring-integration.version>
+		<spring.boot.version>3.4.5</spring.boot.version>
 		<tomcat.version>10.1.40</tomcat.version>
 		<bouncycastle.version>1.80</bouncycastle.version>
 
 		<narayana.version>7.2.1.Final</narayana.version>
 		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
-		<micrometer.version>1.14.5</micrometer.version>
+		<micrometer.version>1.14.6</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>4.0-SNAPSHOT</frankdoc.version>
@@ -59,7 +59,7 @@
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.17.0</mockito.version>
-		<junit.version>5.12.1</junit.version>
+		<junit.version>5.12.2</junit.version>
 	</properties>
 
 	<name>Frank!Framework parent</name>
@@ -164,7 +164,7 @@
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>33.4.7-jre</version>
+				<version>33.4.8-jre</version>
 			</dependency>
 			<dependency><!-- needed for io.fabric8:kubernetes-client transitive deps -->
 				<groupId>com.squareup.okhttp3</groupId>
@@ -504,7 +504,7 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-collections4</artifactId>
-				<version>4.4</version>
+				<version>4.5.0</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-net</groupId>
@@ -679,7 +679,7 @@
 			<dependency>
 				<groupId>org.testcontainers</groupId>
 				<artifactId>testcontainers-bom</artifactId>
-				<version>1.20.6</version>
+				<version>1.21.0</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -742,36 +742,8 @@
 				<artifactId>maven-enforcer-plugin</artifactId>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.5.3</version>
-				<configuration>
-					<redirectTestOutputToFile>true</redirectTestOutputToFile>
-					<reuseForks>true</reuseForks>
-					<argLine>@{argLine} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI</argLine>
-				</configuration>
-				<executions>
-					<execution>
-						<id>default-test</id> <!-- This ID must be default-test otherwise tests will be executed twice -->
-						<phase>test</phase>
-						<goals>
-							<goal>test</goal>
-						</goals>
-						<configuration>
-							<excludedGroups>integration,${junit.excludedTags}</excludedGroups>
-							<groups>${junit.includedTags}</groups>
-						</configuration>
-					</execution>
-					<execution>
-						<id>integration-tests</id>
-						<phase>integration-test</phase>
-						<goals>
-							<goal>test</goal>
-						</goals>
-						<configuration>
-							<groups>integration</groups>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -835,6 +807,39 @@
 							</manifestEntries>
 						</archive>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>3.5.3</version>
+					<configuration>
+						<redirectTestOutputToFile>true</redirectTestOutputToFile>
+						<reuseForks>true</reuseForks>
+						<argLine>@{argLine} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI</argLine>
+					</configuration>
+					<executions>
+						<execution>
+							<id>default-test</id> <!-- This ID must be default-test otherwise tests will be executed twice -->
+							<phase>test</phase>
+							<goals>
+								<goal>test</goal>
+							</goals>
+							<configuration>
+								<excludedGroups>integration,${junit.excludedTags}</excludedGroups>
+								<groups>${junit.includedTags}</groups>
+							</configuration>
+						</execution>
+						<execution>
+							<id>integration-tests</id>
+							<phase>integration-test</phase>
+							<goals>
+								<goal>test</goal>
+							</goals>
+							<configuration>
+								<groups>integration</groups>
+							</configuration>
+						</execution>
+					</executions>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>

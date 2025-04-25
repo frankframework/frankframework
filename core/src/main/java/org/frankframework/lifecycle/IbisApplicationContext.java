@@ -25,10 +25,6 @@ import java.util.List;
 
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.components.ComponentLoader;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.SpringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -37,6 +33,11 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.ResourceUtils;
+
+import org.frankframework.components.ComponentLoader;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.SpringUtils;
 
 /**
  * Creates and maintains the (Spring) Application Context. If the context is loaded through a {@link FrankApplicationInitializer servlet}
@@ -196,23 +197,27 @@ public class IbisApplicationContext implements Closeable {
 		}
 	}
 
-	@Deprecated
-	public <T> T getBean(String beanName, Class<T> beanClass) {
-		return applicationContext.getBean(beanName, beanClass);
-	}
-
-	@Deprecated
-	public <T> T createBeanAutowireByName(Class<T> beanClass) {
-		return SpringUtils.createBean(applicationContext, beanClass);
+	/**
+	 * Create bean without passing the bean-class. Can be used when the compiler can statically determine the class from the variable to which the bean is assigned.
+	 * Do not pass actual argument to reified, Java will auto-detect the class of the bean type.
+	 */
+	@SafeVarargs
+	protected final <T> T getBean(String beanName, T... reified) {
+		if (reified.length > 0) {
+			throw new IllegalArgumentException("Do not pass any actual arguments to the reified parameter");
+		}
+		return applicationContext.getBean(beanName, SpringUtils.getClassOf(reified));
 	}
 
 	/**
 	 * Returns the Spring XML Bean Factory If non exists yet it will create one.
-	 * If initializing the context fails, it will return null
+	 * If initializing the context fails, it will return null.
+	 * 
+	 * Ideally this method should not be exposed....
 	 *
 	 * @return Spring XML Bean Factory or NULL
 	 */
-	protected AbstractApplicationContext getApplicationContext() {
+	public AbstractApplicationContext getApplicationContext() {
 		if (applicationContext == null)
 			createApplicationContext();
 

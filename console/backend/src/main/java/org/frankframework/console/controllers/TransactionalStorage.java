@@ -72,12 +72,19 @@ public class TransactionalStorage {
 		return getMessageResponseEntity(path, decodeBase64(path.messageId), RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.GET));
 	}
 
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/fields", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getFields(TransactionStoragePathVariables path) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
+		addHeaders(path, builder);
+		return frankApiService.callSyncGateway(builder);
+	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<?> downloadMessage(TransactionStoragePathVariables path) {
 		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
-		return getMessageResponseEntity(path, decodeBase64(path.messageId),	RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD));
+		return getMessageResponseEntity(path, decodeBase64(path.messageId), RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD));
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -155,7 +162,7 @@ public class TransactionalStorage {
 	@PutMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error/messages/{messageId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> resendReceiverMessage(TransactionStoragePathVariables path) {
 
-		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.UPLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, path.adapterName);
 		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, path.receiverName);
@@ -170,7 +177,7 @@ public class TransactionalStorage {
 	@PostMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> resendReceiverMessages(TransactionStoragePathVariables path,
 													@RequestPart("messageIds") String messageIdsPart) {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.UPLOAD);
 
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, path.adapterName);

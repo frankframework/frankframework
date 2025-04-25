@@ -18,7 +18,7 @@ package org.frankframework.extensions.sap;
 import org.frankframework.extensions.sap.jco3.SapSystemImpl;
 
 /**
- * {@inheritDoc}
+ * {@inheritClassDoc}
  */
 public class SapSystem extends SapSystemImpl implements ISapSystem {
 }

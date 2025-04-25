@@ -38,6 +38,8 @@ public class BusMessageUtils {
 	public static final String HEADER_CONFIGURATION_NAME_KEY = "configuration";
 	public static final String HEADER_ADAPTER_NAME_KEY = "adapter";
 	public static final String HEADER_RECEIVER_NAME_KEY = "receiver";
+	public static final String HEADER_PIPE_NAME_KEY = "pipe";
+	public static final String HEADER_PROCESSSTATE_KEY = "processState";
 	public static final String HEADER_TARGET_KEY = "target";
 
 	private static final Logger LOG = LogManager.getLogger(BusMessageUtils.class);

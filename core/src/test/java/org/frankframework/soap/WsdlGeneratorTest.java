@@ -26,14 +26,14 @@ public class WsdlGeneratorTest {
 	private final TestConfiguration configuration = new TestConfiguration();
 
 	private PipeLine createPipeline() throws Exception {
-		Adapter adapter = configuration.createBean(Adapter.class);
-		EchoPipe pipe = SpringUtils.createBean(adapter, EchoPipe.class);
+		Adapter adapter = configuration.createBean();
+		EchoPipe pipe = SpringUtils.createBean(adapter);
 		pipe.addForward(new PipeForward("success",null));
 		pipe.setName(pipe.getClass().getSimpleName().concat("4WsdlGeneratorTest"));
-		PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
+		PipeLine pipeline = SpringUtils.createBean(adapter);
 		pipeline.addPipe(pipe);
 
-		PipeLineExit exit = SpringUtils.createBean(adapter, PipeLineExit.class);
+		PipeLineExit exit = SpringUtils.createBean(adapter);
 		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.addPipeLineExit(exit);
@@ -66,7 +66,7 @@ public class WsdlGeneratorTest {
 	public void testWsdlXmlValidatorWithWsdl() throws Exception {
 		PipeLine pipeline = createPipeline();
 
-		WsdlXmlValidator inputValidator = configuration.createBean(WsdlXmlValidator.class);
+		WsdlXmlValidator inputValidator = configuration.createBean();
 		inputValidator.setWsdl(validateResource("/WsdlGenerator/HelloWorld.wsdl"));
 		inputValidator.setSoapBody("HelloWorld_Request");
 		inputValidator.setOutputSoapBody("HelloWorld_Response");

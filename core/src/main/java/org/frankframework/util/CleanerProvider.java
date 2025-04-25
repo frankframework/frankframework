@@ -133,7 +133,7 @@ public class CleanerProvider {
 			this.cleaningAction = cleaningAction;
 			actionId = getActionId(cleaningAction);
 			owningClassName = owner.getClass().getName();
-			isProxyClass = Proxy.isProxyClass(owner.getClass()) || owningClassName.contains("$$");
+			isProxyClass = Proxy.isProxyClass(owner.getClass()) || owningClassName.contains(org.springframework.util.ClassUtils.CGLIB_CLASS_SEPARATOR);
 			creationTrace = new LeakedResourceException(owner);
 		}
 

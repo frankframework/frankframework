@@ -48,7 +48,6 @@ import static org.mockito.Mockito.when;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
@@ -186,7 +185,7 @@ public class ReceiverTest {
 		receiver.setStopTimeout(2);
 		// To speed up test, we don't actually sleep
 		doNothing().when(receiver).suspendReceiverThread(anyInt());
-		DummySender sender = configuration.createBean(DummySender.class);
+		DummySender sender = configuration.createBean();
 		receiver.setSender(sender);
 		return receiver;
 	}
@@ -238,8 +237,6 @@ public class ReceiverTest {
 	}
 
 	public MessageStoreListener setupMessageStoreListener() throws Exception {
-		Connection connection = mock(Connection.class);
-
 		MessageStoreListener listener = spy(new MessageStoreListener());
 		listener.setDataSourceFactory(new DataSourceFactoryMock());
 		listener.setConnectionsArePooled(true);
@@ -247,7 +244,7 @@ public class ReceiverTest {
 		listener.setSessionKeys("ANY-KEY");
 		listener.extractSessionKeyList();
 
-		doReturn(connection).when(listener).getConnection();
+		doReturn("dummy-destination").when(listener).getPhysicalDestinationName();
 		doReturn(false).when(listener).hasRawMessageAvailable();
 		doNothing().when(listener).configure();
 		doNothing().when(listener).start();
@@ -255,8 +252,8 @@ public class ReceiverTest {
 		return listener;
 	}
 
+	@SuppressWarnings("unchecked")
 	public ITransactionalStorage<Serializable> setupErrorStorage() {
-		//noinspection unchecked
 		JdbcTransactionalStorage<Serializable> txStorage = mock(JdbcTransactionalStorage.class);
 		txStorage.setDataSourceFactory(new DataSourceFactoryMock());
 		return txStorage;
@@ -535,7 +532,7 @@ public class ReceiverTest {
 		when(destination.getName()).thenReturn("dummy-destination-name");
 
 		MonitorManager monitorManager = configuration.getBean("monitorManager", MonitorManager.class);
-		Monitor monitor = SpringUtils.createBean(monitorManager, Monitor.class);
+		Monitor monitor = SpringUtils.createBean(monitorManager);
 		monitor.setName("test-monitor");
 		monitor.setType(EventType.TECHNICAL);
 
@@ -715,7 +712,7 @@ public class ReceiverTest {
 		pipeLineResult.setResult(testMessage);
 		doReturn(pipeLineResult).when(pipeLine).process(any(), any(), any());
 
-		NarayanaJtaTransactionManager transactionManager = configuration.createBean(NarayanaJtaTransactionManager.class);
+		NarayanaJtaTransactionManager transactionManager = configuration.createBean();
 		receiver.setTxManager(transactionManager);
 
 		// start adapter
@@ -1175,7 +1172,7 @@ public class ReceiverTest {
 
 		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), any());
 
-		NarayanaJtaTransactionManager transactionManager = configuration.createBean(NarayanaJtaTransactionManager.class);
+		NarayanaJtaTransactionManager transactionManager = configuration.createBean();
 		receiver.setTxManager(transactionManager);
 
 		configuration.configure();
@@ -1201,7 +1198,7 @@ public class ReceiverTest {
 	public void testMaxBackoffDelayAdjustment(Integer maxBackoffDelay, int expectedBackoffDelay, boolean expectConfigWarning) {
 		// Arrange
 		configuration = buildDataSourceTransactionManagerConfiguration();
-		Adapter adapter = configuration.createBean(Adapter.class);
+		Adapter adapter = configuration.createBean();
 		adapter.setName("adapter");
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 

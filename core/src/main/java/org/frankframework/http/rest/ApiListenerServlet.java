@@ -43,6 +43,7 @@ import org.apache.http.HttpEntity;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
+import org.springframework.http.HttpHeaders;
 import org.springframework.util.InvalidMimeTypeException;
 import org.springframework.util.MimeType;
 
@@ -298,7 +299,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 						}
 						break;
 					case HEADER:
-						authorizationToken = request.getHeader("Authorization");
+						authorizationToken = request.getHeader(HttpHeaders.AUTHORIZATION);
 						break;
 					case AUTHROLE:
 						List<String> roles = listener.getAuthenticationRoleList();
@@ -311,9 +312,11 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 						break;
 					case JWT:
 						String authorizationHeader = request.getHeader(listener.getJwtHeader());
-						if (StringUtils.isNotEmpty(authorizationHeader) && authorizationHeader.contains("Bearer")) {
+						boolean isNonStandardJwtAuthHeader = !HttpHeaders.AUTHORIZATION.equalsIgnoreCase(listener.getJwtHeader());
+						if (StringUtils.isNotEmpty(authorizationHeader) && (authorizationHeader.startsWith("Bearer") || isNonStandardJwtAuthHeader)) {
 							try {
-								Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(authorizationHeader.substring(7));
+								String jwtToken = StringUtils.removeStartIgnoreCase(authorizationHeader, "Bearer ");
+								Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(jwtToken);
 								pipelineSession.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim(), listener.getPrincipalNameClaim()));
 								pipelineSession.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
 							} catch (Exception e) {

@@ -3,8 +3,12 @@ package org.frankframework.management.bus.endpoints;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.quartz.Scheduler;
 import org.springframework.messaging.Message;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -34,20 +38,21 @@ public class TestManageSchedule extends BusTestBase {
 	@BeforeEach
 	public void setUp() throws Exception {
 		registerAdapter(getConfiguration());
+		getConfiguration().getBean(Scheduler.class, "scheduler").standby();
 	}
 
 	protected Adapter registerAdapter(Configuration configuration) throws Exception {
-		Adapter adapter = SpringUtils.createBean(configuration, Adapter.class);
+		Adapter adapter = SpringUtils.createBean(configuration);
 		adapter.setName("TestAdapter");
 
-		JavaListener listener = new JavaListener();
+		JavaListener<String> listener = new JavaListener<>();
 		listener.setName("ListenerName");
 		Receiver<String> receiver = new Receiver<>();
 		receiver.setName("ReceiverName");
 		receiver.setListener(listener);
 		adapter.addReceiver(receiver);
 		PipeLine pipeline = new PipeLine();
-		EchoPipe pipe = SpringUtils.createBean(configuration, EchoPipe.class);
+		EchoPipe pipe = SpringUtils.createBean(configuration);
 		pipe.setName("EchoPipe");
 		pipeline.addPipe(pipe);
 		adapter.setPipeLine(pipeline);
@@ -61,7 +66,12 @@ public class TestManageSchedule extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.SCHEDULER, BusAction.GET);
 		Message<?> response = callSyncGateway(request);
 
-		String result = response.getPayload().toString();
+		String rawResult = response.getPayload().toString();
+		Pattern pattern = Pattern.compile("(\"runningSince\":)([0-9]*)");
+		Matcher matcher = pattern.matcher(rawResult);
+		matcher.find();
+		String time = matcher.group(2);
+		String result = rawResult.replace(time, "0"); // Replace the time string with `0` for easy assertions.
 
 		String expectedJson = TestFileUtils.getTestFile("/Management/GetSchedules.json");
 		MatchUtils.assertJsonEquals(expectedJson, result);

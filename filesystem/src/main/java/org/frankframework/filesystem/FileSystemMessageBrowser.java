@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
@@ -29,6 +30,7 @@ import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
+import org.frankframework.core.MessageBrowserField;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -138,6 +140,15 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 			throw new ListenerException(e);
 		}
 		return count;
+	}
+
+	@Override
+	public List<MessageBrowserField> getStorageFields() {
+		return List.of(
+			new MessageBrowserField(null, "id", "Storage ID", "string"),
+			new MessageBrowserField(null, "originalId", "Original ID", "string"),
+			new MessageBrowserField(null, "insertDate", "Timestamp", "date")
+		);
 	}
 
 }

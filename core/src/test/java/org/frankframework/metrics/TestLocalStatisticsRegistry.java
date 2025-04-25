@@ -56,19 +56,18 @@ public class TestLocalStatisticsRegistry {
 		assertEquals(1, configuration.getRegisteredAdapters().size());
 	}
 
-	@SuppressWarnings("unchecked")
 	private <M> void createAndRegisterAdapter() throws ConfigurationException {
-		adapter = configuration.createBean(Adapter.class);
+		adapter = configuration.createBean();
 		adapter.setName("myAdapter");
 
-		PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
+		PipeLine pipeline = SpringUtils.createBean(adapter);
 
-		EchoPipe echoPipe = SpringUtils.createBean(adapter, EchoPipe.class);
+		EchoPipe echoPipe = SpringUtils.createBean(adapter);
 		echoPipe.setName("echoPipe");
 		pipeline.addPipe(echoPipe);
 
-		SenderPipe senderPipe = SpringUtils.createBean(adapter, SenderPipe.class);
-		HttpSender httpSender = SpringUtils.createBean(adapter, HttpSender.class);
+		SenderPipe senderPipe = SpringUtils.createBean(adapter);
+		HttpSender httpSender = SpringUtils.createBean(adapter);
 		senderPipe.setSender(httpSender);
 		httpSender.setUrl("http://dummy.url");
 		httpSender.setName("httpSender");
@@ -77,9 +76,9 @@ public class TestLocalStatisticsRegistry {
 
 		adapter.setPipeLine(pipeline);
 
-		Receiver<M> receiver = SpringUtils.createBean(adapter, Receiver.class);
+		Receiver<M> receiver = SpringUtils.createBean(adapter);
 		receiver.setName("myReceiver");
-		JavaListener<M> listener = SpringUtils.createBean(adapter, JavaListener.class);
+		JavaListener<M> listener = SpringUtils.createBean(adapter);
 		receiver.setListener(listener);
 		adapter.addReceiver(receiver);
 

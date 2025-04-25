@@ -41,10 +41,9 @@ public class CleanupDatabaseJobTest {
 	protected static final String txStorageTableName = "NOT_IBISLOCK_TABLE";
 
 	@BeforeEach
-	@SuppressWarnings("unchecked")
 	public void setUp(DatabaseTestEnvironment database) throws Exception {
 		TestConfiguration configuration = database.getConfiguration();
-		storage = configuration.createBean(JdbcTransactionalStorage.class);
+		storage = configuration.createBean();
 		storage.setName("test-cleanupDB");
 		storage.setType("A");
 		storage.setSlotId("dummySlotId");
@@ -53,8 +52,8 @@ public class CleanupDatabaseJobTest {
 		storage.setDatasourceName(database.getDataSourceName());
 
 		if (configuration.getScheduledJob("MockJob") == null) {
-			IJob mockJob = mock(IJob.class);
-			Locker mockLocker = mock(Locker.class);
+			IJob mockJob = mock();
+			Locker mockLocker = mock();
 			when(mockLocker.getDatasourceName()).thenAnswer(invocation -> database.getDataSourceName());
 			when(mockJob.getLocker()).thenReturn(mockLocker);
 			when(mockJob.getName()).thenReturn("MockJob");
@@ -63,12 +62,12 @@ public class CleanupDatabaseJobTest {
 		}
 
 		if (configuration.getRegisteredAdapter("MockAdapter") == null) {
-			Adapter mockAdapter = mock(Adapter.class);
+			Adapter mockAdapter = mock();
 			when(mockAdapter.getName()).thenReturn("MockAdapter");
 
 			PipeLine pipeLine = new PipeLine();
-			MessageSendingPipe mockPipe = mock(MessageSendingPipe.class);
-			Locker mockLocker = mock(Locker.class);
+			MessageSendingPipe mockPipe = mock();
+			Locker mockLocker = mock();
 			when(mockLocker.getDatasourceName()).thenAnswer(invocation -> database.getDataSourceName());
 			when(mockPipe.getLocker()).thenReturn(mockLocker);
 			when(mockPipe.getName()).thenReturn("MockPipe");
@@ -76,7 +75,7 @@ public class CleanupDatabaseJobTest {
 			pipeLine.addPipe(mockPipe);
 			when(mockAdapter.getPipeLine()).thenReturn(pipeLine);
 
-			Receiver<?> mockReceiver = mock(Receiver.class);
+			Receiver<?> mockReceiver = mock();
 			when(mockReceiver.getMessageLog()).thenReturn(storage);
 			when(mockReceiver.getName()).thenReturn("MockReceiver");
 			when(mockAdapter.getReceivers()).thenReturn(Collections.singletonList(mockReceiver));
@@ -86,7 +85,7 @@ public class CleanupDatabaseJobTest {
 		// Ensure we have an IbisManager via side effects of method
 		//noinspection ResultOfMethodCallIgnored
 		configuration.getIbisManager();
-		jobDef = configuration.createBean(CleanupDatabaseJob.class);
+		jobDef = configuration.createBean();
 	}
 
 	@DatabaseTest

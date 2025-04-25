@@ -42,7 +42,6 @@
 				className="org.frankframework.pipes.SenderPipe">
 				<sender className="org.frankframework.senders.EchoSender" />
 				<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage"
-						jmsRealm="jdbc"
 						slotId="${applicationId}/ResultSetIteratingPipe/sent-message"/>
 				<forward name="success" path="Update policy status to processed" />
 			</pipe>

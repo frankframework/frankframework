@@ -25,10 +25,10 @@ public class SharedResourceFactoryTest {
 	private static final String TEST_RESOURCE_VALUE = "mySharedDummyResourceValue";
 
 	@Test
-	public void testLowercaseClassname() throws Exception {
+	public void testLowercaseClassname() {
 		try (TestConfiguration config = new TestConfiguration()) {
-			SharedResourceFactory factory = config.createBean(SharedResourceFactory.class);
-			Digester digester = mock(Digester.class);
+			SharedResourceFactory factory = config.createBean();
+			Digester digester = mock();
 			factory.setDigester(digester);
 			Map<String, String> attributes = new HashMap<>();
 			attributes.put("name", TEST_RESOURCE_NAME);
@@ -39,10 +39,10 @@ public class SharedResourceFactoryTest {
 	}
 
 	@Test
-	public void testNoBeanName() throws Exception {
+	public void testNoBeanName() {
 		try (TestConfiguration config = new TestConfiguration()) {
-			SharedResourceFactory factory = config.createBean(SharedResourceFactory.class);
-			Digester digester = mock(Digester.class);
+			SharedResourceFactory factory = config.createBean();
+			Digester digester = mock();
 			factory.setDigester(digester);
 			Map<String, String> attributes = new HashMap<>();
 			attributes.put("className", SharedClass.class.getTypeName());
@@ -54,8 +54,8 @@ public class SharedResourceFactoryTest {
 	@Test
 	public void testBeanRegisteredWithConfiguration() throws Exception {
 		try (TestConfiguration config = new TestConfiguration()) {
-			SharedResourceFactory factory = config.createBean(SharedResourceFactory.class);
-			Digester digester = mock(Digester.class);
+			SharedResourceFactory factory = config.createBean();
+			Digester digester = mock();
 			factory.setDigester(digester);
 			Map<String, String> attributes = new HashMap<>();
 			attributes.put("name", TEST_RESOURCE_NAME);
@@ -72,8 +72,8 @@ public class SharedResourceFactoryTest {
 	@Test
 	public void testSharedResourceWithWrongType() throws Exception {
 		try (TestConfiguration config = new TestConfiguration()) {
-			SharedResourceFactory factory = config.createBean(SharedResourceFactory.class);
-			Digester digester = mock(Digester.class);
+			SharedResourceFactory factory = config.createBean();
+			Digester digester = mock();
 			factory.setDigester(digester);
 			Map<String, String> attributes = new HashMap<>();
 			attributes.put("name", TEST_RESOURCE_NAME);
@@ -85,7 +85,7 @@ public class SharedResourceFactoryTest {
 
 			assertEquals(TEST_RESOURCE_VALUE, ((SharedClass) sharedResource).getSharedResource()); // String
 
-			DummyClass2 dummyClass2 = config.createBean(DummyClass2.class);
+			DummyClass2 dummyClass2 = config.createBean();
 			IllegalStateException e = assertThrows(IllegalStateException.class, () -> dummyClass2.getSharedResource(TEST_RESOURCE_NAME));
 			assertEquals("Shared Resource ["+TEST_RESOURCE_NAME+"] may not be used here", e.getMessage());
 		}

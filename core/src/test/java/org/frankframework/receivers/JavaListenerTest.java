@@ -63,13 +63,13 @@ public class JavaListenerTest {
 	}
 
 	Receiver<String> setupReceiver(JavaListener<String> listener) {
-		Receiver<String> receiver = configuration.createBean(Receiver.class);
+		Receiver<String> receiver = configuration.createBean();
 		receiver.setListener(listener);
 		receiver.setName("receiver");
-		DummySender sender = configuration.createBean(DummySender.class);
+		DummySender sender = configuration.createBean();
 		receiver.setSender(sender);
 
-		NarayanaJtaTransactionManager transactionManager = configuration.createBean(NarayanaJtaTransactionManager.class);
+		NarayanaJtaTransactionManager transactionManager = configuration.createBean();
 		receiver.setTxManager(transactionManager);
 
 		return receiver;

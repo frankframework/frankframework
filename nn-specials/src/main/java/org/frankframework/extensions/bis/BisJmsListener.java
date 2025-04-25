@@ -150,7 +150,7 @@ import org.frankframework.util.XmlUtils;
  * <tr><td>{@link #setActionName(String) actionName}</td><td>name of the operation; used in the error reply</td><td>&nbsp;</td></tr>
  * </p>
  *
- * {@inheritDoc}
+ * {@inheritClassDoc}
  *
  * @author  Peter Leeuwenburgh
  * @deprecated Please use JmsListener combined with BisWrapperPipe

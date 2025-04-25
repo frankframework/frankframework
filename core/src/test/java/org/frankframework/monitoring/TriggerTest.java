@@ -51,11 +51,11 @@ public class TriggerTest implements EventThrowing {
 
 	@BeforeEach
 	public void setup() {
-		destination = mock(IMonitorDestination.class);
+		destination = mock();
 		when(destination.getName()).thenReturn("dummy destination");
 		when(destination.toXml()).thenReturn(new XmlBuilder("destination"));
 
-		manager = spy(MonitorManager.class);
+		manager = spy();
 		manager.refresh();
 		monitor = spy(SpringUtils.createBean(manager, Monitor.class));
 		monitor.setApplicationContext(manager);

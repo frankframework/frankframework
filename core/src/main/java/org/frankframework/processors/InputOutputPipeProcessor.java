@@ -74,47 +74,23 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		HasName owner = pipeLine.getOwner();
 
 		try (CloseableThreadContext.Instance ignored = CloseableThreadContext.put(LogUtil.MDC_PIPE_KEY, pipe.getName())) {
-			if (StringUtils.isNotEmpty(pipe.getGetInputFromSessionKey())) {
-				log.debug("Pipeline of adapter [{}] replacing input for pipe [{}] with contents of sessionKey [{}]", owner::getName, pipe::getName, pipe::getGetInputFromSessionKey);
-				if (!Message.isNull(message)) message.closeOnCloseOf(pipeLineSession);
-				if (!pipeLineSession.containsKey(pipe.getGetInputFromSessionKey()) && StringUtils.isEmpty(pipe.getEmptyInputReplacement())) {
-					boolean throwOnMissingSessionKey;
-					if (pipe instanceof FixedForwardPipe ffp) {
-						throwOnMissingSessionKey = !ffp.getGetInputFromSessionKey().equals(ffp.getOnlyIfSessionKey());
-					} else {
-						throwOnMissingSessionKey = true;
-					}
-
-					if (throwOnMissingSessionKey) {
-						throw new PipeRunException(pipe, "getInputFromSessionKey [" + pipe.getGetInputFromSessionKey() + "] is not present in session");
-					}
-				} else {
-					message = pipeLineSession.getMessage(pipe.getGetInputFromSessionKey());
-				}
-			}
-			if (StringUtils.isNotEmpty(pipe.getGetInputFromFixedValue())) {
-				log.debug("Pipeline of adapter [{}] replacing input for pipe [{}] with fixed value [{}]", owner::getName, pipe::getName, pipe::getGetInputFromFixedValue);
-				if (!Message.isNull(message)) message.closeOnCloseOf(pipeLineSession);
-				message = new Message(pipe.getGetInputFromFixedValue());
-			}
+			message = getInputFrom(owner, pipe, message, pipeLineSession);
 
 			if (Message.isEmpty(message) && StringUtils.isNotEmpty(pipe.getEmptyInputReplacement())) {
+				message.close(); // Cleanup
 				log.debug("Pipeline of adapter [{}] replacing empty input for pipe [{}] with fixed value [{}]", owner::getName, pipe::getName, pipe::getEmptyInputReplacement);
 				message = new Message(pipe.getEmptyInputReplacement());
+				message.closeOnCloseOf(pipeLineSession); // Technically not required but prevents the CleanerProvider from complaining.
 			}
 
-			PipeRunResult pipeRunResult = null;
-			if (pipe instanceof FixedForwardPipe ffPipe) {
-				if (ffPipe.skipPipe(message, pipeLineSession)) {
-					log.info("skipped pipe processing");
-					pipeRunResult = new PipeRunResult(ffPipe.getSuccessForward(), message);
-				}
-			}
-
-			if (pipeRunResult == null) {
+			final PipeRunResult pipeRunResult;
+			if (pipe instanceof FixedForwardPipe ffPipe && ffPipe.skipPipe(message, pipeLineSession)) {
+				log.info("skipped pipe processing");
+				pipeRunResult = new PipeRunResult(ffPipe.getSuccessForward(), message);
+			} else {
 				pipeRunResult = chain.apply(message);
 			}
-			if (pipeRunResult == null) {
+			if (pipeRunResult == null) { // It is still possible for a PipeProcessor to return NULL?
 				throw new PipeRunException(pipe, "Pipeline of [" + owner.getName() + "] received null result from pipe [" + pipe.getName() + "]d");
 			}
 
@@ -160,6 +136,44 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		}
 	}
 
+	/**
+	 * Handles getInputFrom -SessionKey and -FixedValue.
+	 * Registers the original message to be closed, as we're not using it.
+	 */
+	@Nonnull
+	private Message getInputFrom(HasName owner, @Nonnull final IPipe pipe, @Nullable final Message message, @Nonnull final PipeLineSession pipeLineSession) throws PipeRunException {
+		// The order of these two methods has been changed to make it backwards compatible.
+		if (StringUtils.isNotEmpty(pipe.getGetInputFromFixedValue())) {
+			log.debug("Pipeline of adapter [{}] replacing input for pipe [{}] with fixed value [{}]", owner::getName, pipe::getName, pipe::getGetInputFromFixedValue);
+			if (!Message.isNull(message)) message.closeOnCloseOf(pipeLineSession);
+			Message newMessage = new Message(pipe.getGetInputFromFixedValue());
+			newMessage.closeOnCloseOf(pipeLineSession); // Technically not required but prevents the CleanerProvider from complaining.
+			return newMessage;
+		}
+
+		if (StringUtils.isNotEmpty(pipe.getGetInputFromSessionKey())) {
+			log.debug("Pipeline of adapter [{}] replacing input for pipe [{}] with contents of sessionKey [{}]", owner::getName, pipe::getName, pipe::getGetInputFromSessionKey);
+			if (!Message.isNull(message)) message.closeOnCloseOf(pipeLineSession);
+			if (!pipeLineSession.containsKey(pipe.getGetInputFromSessionKey()) && StringUtils.isEmpty(pipe.getEmptyInputReplacement())) {
+				boolean throwOnMissingSessionKey;
+				if (pipe instanceof FixedForwardPipe ffp) {
+					throwOnMissingSessionKey = !ffp.getGetInputFromSessionKey().equals(ffp.getOnlyIfSessionKey());
+				} else {
+					throwOnMissingSessionKey = true;
+				}
+
+				if (throwOnMissingSessionKey) {
+					throw new PipeRunException(pipe, "getInputFromSessionKey [" + pipe.getGetInputFromSessionKey() + "] is not present in session");
+				}
+			} else {
+				// Message fetched from session is already in closeables.
+				return pipeLineSession.getMessage(pipe.getGetInputFromSessionKey());
+			}
+		}
+
+		return message;
+	}
+
 	private void processMessageCompaction(IPipe pipe, PipeLineSession pipeLineSession, HasName owner, PipeRunResult pipeRunResult) throws PipeRunException {
 		log.debug("Pipeline of adapter [{}] compact received message", owner::getName);
 		Message result = pipeRunResult.getResult();
@@ -169,6 +183,8 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		InputSource inputSource = getInputSourceFromResult(result, pipe, owner);
 
 		try {
+			result.closeOnCloseOf(pipeLineSession); // Directly closing the result fails, because the message can also exist and used in the session
+
 			MessageBuilder messageBuilder = new MessageBuilder();
 
 			CompactSaxHandler handler = new CompactSaxHandler(messageBuilder.asXmlWriter());
@@ -179,8 +195,10 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 			handler.setRemoveCompactMsgNamespaces(pipe.isRemoveCompactMsgNamespaces());
 			handler.setContext(pipeLineSession);
 			XmlUtils.parseXml(inputSource, handler);
-			result.closeOnCloseOf(pipeLineSession); // Directly closing the result fails, because the message can also exist and used in the session
-			pipeRunResult.setResult(messageBuilder.build());
+
+			Message compactedResult = messageBuilder.build();
+			compactedResult.closeOnCloseOf(pipeLineSession);
+			pipeRunResult.setResult(compactedResult);
 		} catch (IOException | SAXException e) {
 			log.warn("Pipeline of adapter [{}] could not compact received message", owner.getName(), e);
 		}

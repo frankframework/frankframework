@@ -25,6 +25,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
+import org.frankframework.util.CloseUtils;
 
 @WithLiquibase(tableName = MessageStoreSenderTest.TABLE_NAME)
 public class MessageStoreSenderTest {
@@ -38,7 +39,7 @@ public class MessageStoreSenderTest {
 	public void setUp(DatabaseTestEnvironment databaseTestEnvironment) {
 		env = databaseTestEnvironment;
 
-		sender = databaseTestEnvironment.getConfiguration().createBean(MessageStoreSender.class);
+		sender = databaseTestEnvironment.getConfiguration().createBean();
 		sender.setDatasourceName(databaseTestEnvironment.getDataSourceName());
 		sender.setTableName(TABLE_NAME);
 		sender.setSequenceName("SEQ_" + TABLE_NAME);
@@ -48,9 +49,7 @@ public class MessageStoreSenderTest {
 
 	@AfterEach
 	public void tearDown(DatabaseTestEnvironment databaseTestEnvironment) {
-		if (session != null) {
-			session.close();
-		}
+		CloseUtils.closeSilently(session);
 	}
 
 	@DatabaseTest

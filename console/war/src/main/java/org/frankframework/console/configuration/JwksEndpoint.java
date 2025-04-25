@@ -33,7 +33,6 @@ import org.springframework.context.annotation.Configuration;
 import lombok.Setter;
 
 import org.frankframework.management.security.JwtKeyGenerator;
-
 import org.frankframework.util.SpringUtils;
 
 @Configuration
@@ -44,7 +43,7 @@ public class JwksEndpoint implements ApplicationContextAware {
 
 	@Bean
 	public ServletRegistrationBean<JwksServlet> createJkwsEndpoint() {
-		JwksServlet servlet = SpringUtils.createBean(applicationContext, JwksServlet.class);
+		JwksServlet servlet = SpringUtils.createBean(applicationContext);
 		log.info("registering servlet [{}]", servlet::getName);
 
 		ServletRegistrationBean<JwksServlet> bean = new ServletRegistrationBean<>(servlet);

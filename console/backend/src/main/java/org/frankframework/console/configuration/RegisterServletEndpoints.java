@@ -43,7 +43,7 @@ public class RegisterServletEndpoints implements ApplicationContextAware {
 
 	@Bean
 	public ServletRegistration<DispatcherServlet> backendServletBean() {
-		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
+		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext);
 		servletConfiguration.setName("IAF-API");
 		servletConfiguration.setUrlMapping("iaf/api/*");
 		servletConfiguration.setSecurityRoles(DynamicRegistration.ALL_IBIS_USER_ROLES);
@@ -58,7 +58,7 @@ public class RegisterServletEndpoints implements ApplicationContextAware {
 
 	@Bean
 	public ServletRegistration<ConsoleFrontend> frontendServletBean() {
-		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
+		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext);
 		servletConfiguration.setName("IAF-GUI");
 		servletConfiguration.setUrlMapping("iaf/gui/*");
 		servletConfiguration.setSecurityRoles(DynamicRegistration.ALL_IBIS_USER_ROLES);

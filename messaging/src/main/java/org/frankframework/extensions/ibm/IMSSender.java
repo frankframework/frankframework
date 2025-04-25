@@ -41,7 +41,7 @@ import org.frankframework.util.StreamUtil;
  *
  * <p>See {@link JmsSender} for configuration</p>
  *
- * {@inheritDoc}
+ * {@inheritClassDoc}
  *
  * @author Ricardo van Holst
  */
