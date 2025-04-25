@@ -45,7 +45,6 @@ import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DateFormatUtils;
 
-
 /**
  * Basic implementation of <code>PipeLineSession</code>.
  *

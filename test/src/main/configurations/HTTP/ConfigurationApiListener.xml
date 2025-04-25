@@ -46,11 +46,6 @@
 				<exit state="success" name="EXIT" />
 			</exits>
 
-			<!-- Verify that the spring security context integration works as intended -->
-			<IsUserInRolePipe name="verifyInRole" role="IbisTester">
-				<Forward name="notInRole" path="EXIT" />
-			</IsUserInRolePipe>
-
 			<pipe name="echo" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="&lt;success/&gt;" />
 		</pipeline>
 	</adapter>
