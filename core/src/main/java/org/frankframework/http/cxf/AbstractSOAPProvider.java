@@ -48,6 +48,7 @@ import org.xml.sax.SAXException;
 
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SpringSecurityHandler;
 import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.http.mime.MultipartUtils.MultipartMessages;
 import org.frankframework.stream.Message;
@@ -222,7 +223,7 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 		}
 
 		// Process message via WebServiceListener
-		pipelineSession.setSecurityHandler(new WebServiceContextSecurityHandler(webServiceContext));
+		pipelineSession.setSecurityHandler(new SpringSecurityHandler());
 		pipelineSession.put(PipeLineSession.HTTP_REQUEST_KEY, webServiceContext.getMessageContext().get(MessageContext.SERVLET_REQUEST));
 		pipelineSession.put(PipeLineSession.HTTP_RESPONSE_KEY, webServiceContext.getMessageContext().get(MessageContext.SERVLET_RESPONSE));
 
