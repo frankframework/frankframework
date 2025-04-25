@@ -231,7 +231,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	 */
 	@Override
 	public boolean requiresInputValueForResolution() {
-		if (tpDynamicSessionKey != null || sessionKeyJPath != null) { // tpDynamicSessionKey is applied to the input message to retrieve the session key
+		if (tpDynamicSessionKey != null || sessionKeyJPath != null) { // tpDynamicSessionKey or sessionKeyJPath are applied to the input message to retrieve the session key
 			return true;
 		}
 		return StringUtils.isEmpty(getContextKey()) &&
