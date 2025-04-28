@@ -154,7 +154,6 @@ jobs:
         echo "sha: $COMMIT_SHA"
 
     - name: Call [Compare Frank!Doc] workflow
-      if: false
       uses: benc-uk/workflow-dispatch@v1
       if: ${{ github.event_name == 'pull_request_disabled'}}
       with:
