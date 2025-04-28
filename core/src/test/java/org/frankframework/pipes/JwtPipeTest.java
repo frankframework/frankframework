@@ -12,21 +12,20 @@ import java.util.Date;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import com.nimbusds.jose.JWSVerifier;
-import com.nimbusds.jose.crypto.MACVerifier;
-import com.nimbusds.jwt.SignedJWT;
-
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.JWSKeySelector;
 import com.nimbusds.jose.proc.JWSVerificationKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
@@ -38,6 +37,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	private static final String DUMMY_SECRET = "PotatoSecretMustBeAtLeast265Bits";
 	private static final String DUMMY_INPUT = "InputMessage";
 	private static final String BASE64_HEADER_HS256 = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9";
+	private static final String RIGHT_PADDED_SHORT_SECRET = "Potato\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 
 	private static ConfigurableJWTProcessor<SecurityContext> JWT_PROCESSOR;
 
@@ -93,7 +93,8 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 		configureAndStartPipe();
 		String jwt2 = doPipe(DUMMY_INPUT).getResult().asString();
 
-		assertJwtSignaturesEqual(jwt1, jwt2);
+		assertValidTokenSignature(jwt1, RIGHT_PADDED_SHORT_SECRET);
+		assertValidTokenSignature(jwt2, RIGHT_PADDED_SHORT_SECRET);
 	}
 
 	@Test
@@ -137,7 +138,8 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 		String jwt2 = doPipe(DUMMY_INPUT).getResult().asString();
 
 		// The resulting JWT signatures should be identical
-		assertJwtSignaturesEqual(jwt1, jwt2);
+		assertValidTokenSignature(jwt1, RIGHT_PADDED_SHORT_SECRET);
+		assertValidTokenSignature(jwt2, RIGHT_PADDED_SHORT_SECRET);;
 	}
 
 	@Test
@@ -155,7 +157,8 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 
 		// Assert
 		assertThat(jwt2, Matchers.startsWith(BASE64_HEADER_HS256));
-		assertJwtSignaturesEqual(jwt1, jwt2);
+		assertValidTokenSignature(jwt1, DUMMY_SECRET);
+		assertValidTokenSignature(jwt2, DUMMY_SECRET);
 	}
 
 	@Test
@@ -191,8 +194,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 		assertThat(jwt, Matchers.startsWith(BASE64_HEADER_HS256));
 
 		// Verify the JWT signature with the secret from the parameter
-		JWSVerifier verifier = new MACVerifier(DUMMY_SECRET.getBytes());
-		assertTrue(SignedJWT.parse(jwt).verify(verifier));
+		assertValidTokenSignature(jwt, DUMMY_SECRET);
 	}
 
 	@Test
@@ -210,8 +212,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 		assertThat(jwt, Matchers.startsWith(BASE64_HEADER_HS256));
 
 		// Verify the JWT signature with the secret from the parameter (priority should be given to the parameter)
-		JWSVerifier verifier = new MACVerifier(DUMMY_SECRET.getBytes());
-		assertTrue(SignedJWT.parse(jwt).verify(verifier));
+		assertValidTokenSignature(jwt, DUMMY_SECRET);
 	}
 
 	@Test
@@ -267,14 +268,8 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 		assertNull(claimSet.getExpirationTime());
 	}
 
-	private void assertJwtSignaturesEqual(String expectedJwt, String actualJwt) {
-		String expectedSig = getSignature(expectedJwt);
-		String actualSig = getSignature(actualJwt);
-		assertEquals(expectedSig, actualSig, "JWT signatures are not equal");
-	}
-
-	private String getSignature(String jwt) {
-		String[] parts = jwt.split("\\.");
-		return parts.length == 3 ? parts[2] : "";
+	private void assertValidTokenSignature(String jwt, String secret) throws Exception {
+		JWSVerifier verifier = new MACVerifier(secret.getBytes());
+		assertTrue(SignedJWT.parse(jwt).verify(verifier));
 	}
 }
