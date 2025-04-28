@@ -6,7 +6,9 @@ name: Java CI with Maven
 env:
   JDK_VERSION: 17
   PROFILES: frankframework,codecoverage,ci
-  USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'frankframework') && github.actor != 'dependabot[bot]' }}
+  IS_GITHUB_DEPENDABOT: ${{ github.actor == 'dependabot[bot]' }}
+  # Don't allow credentials on forks, secrets are not available when using forks or GH bot
+  USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'frankframework') && !IS_GITHUB_BOT }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   PR_NUMBER: ${{ github.event.number || '' }}
   MAVEN_GOALS: verify
@@ -93,13 +95,13 @@ jobs:
       run: |
         echo "PROFILES=${{ env.PROFILES }},proprietary" >> $GITHUB_ENV
 
-    - name: FrankDoc only on Java ${{ env.JDK_VERSION }} Full Build
+    - name: FrankDoc only on Java ${{ env.JDK_VERSION }} Build
       run: |
         echo "PROFILES=${{ env.PROFILES }},attachFrankDoc" >> $GITHUB_ENV
 
       # Secrets are not available when commits are made by Dependabot or from GH forks
     - name: Update environment to run on SonarSource
-      if: ${{ env.USE_PROPRIETARY == 'true' }}
+      if: ${{ env.USE_PROPRIETARY == 'true' || env.IS_GITHUB_DEPENDABOT == 'true' }}
       run: |
         echo "MAVEN_GOALS=${{ env.MAVEN_GOALS }} org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_ENV
 
@@ -125,7 +127,7 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
 
     - name: Upload coverage to Codacy
-      if: ${{ env.USE_PROPRIETARY == 'true' }}
+      if: ${{ env.USE_PROPRIETARY == 'true' || env.IS_GITHUB_DEPENDABOT == 'true' }}
       uses: codacy/codacy-coverage-reporter-action@v1
       continue-on-error: true #ignore failure when unable to upload the artifacts
       with:
@@ -152,6 +154,7 @@ jobs:
         echo "sha: $COMMIT_SHA"
 
     - name: Call [Compare Frank!Doc] workflow
+      if: false
       uses: benc-uk/workflow-dispatch@v1
       if: ${{ github.event_name == 'pull_request_disabled'}}
       with:
