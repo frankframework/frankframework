@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.integration.support.MessageBuilder;
@@ -80,14 +81,13 @@ public class RequestMessageBuilder {
 		customHeaders.put(key, value);
 	}
 
-	public RequestMessageBuilder setJsonPayload(Object payload) {
-		this.payload = JacksonUtils.convertToJson(payload);
-		return this;
-	}
-
 	public RequestMessageBuilder setPayload(InputStream payload) {
 		this.payload = payload;
 		return this;
+	}
+
+	public RequestMessageBuilder setJsonPayload(Object payload) {
+		return setPayload(JacksonUtils.convertToJson(payload));
 	}
 
 	public RequestMessageBuilder setPayload(String payload) {
@@ -122,7 +122,8 @@ public class RequestMessageBuilder {
 
 			SEC_LOG.debug("created bus request [{}:{}] with headers [{}]", action, topic, headers);
 		} else {
-			SEC_LOG.info("created bus request [{}:{}] with headers [{}] payload [{}]", action, topic, headers, payload);
+			String safePayload = payload instanceof String payloadString ? StringEscapeUtils.escapeJava(payloadString) : "";
+			SEC_LOG.info("created bus request [{}:{}] with headers [{}] payload [{}]", action, topic, headers, safePayload);
 		}
 	}
 

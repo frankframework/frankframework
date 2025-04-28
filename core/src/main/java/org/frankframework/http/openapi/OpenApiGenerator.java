@@ -212,7 +212,7 @@ public class OpenApiGenerator {
 
 		JsonObjectBuilder schema = Json.createObjectBuilder();
 
-		for (Map.Entry<String, PipeLineExit> entry : pipeline.getPipeLineExits().entrySet()) {
+		for (Map.Entry<String, PipeLineExit> entry : pipeline.getAllPipeLineExits().entrySet()) {
 			PipeLineExit pipeLineExit = entry.getValue();
 
 			int exitCode = pipeLineExit.getExitCode();

@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2024 WeAreFrank!
+   Copyright 2017-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,8 +55,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
 
-// TODO: Link to https://swagger.io/specification/ when anchors are supported by the Frank!Doc.
-
 /**
  * Listener that allows a {@link Receiver} to receive messages as a REST webservice.
  * Prepends the configured URI pattern with <code>api/</code>. The structure of REST messages is described
@@ -83,6 +81,8 @@ import org.frankframework.util.StringUtil;
  * <li><code>etag.cache.password</code></li>
  * <li><code>etag.cache.authalias</code></li>
  * </ul>
+ * 
+ * @see <a href="https://swagger.io/specification/">OpenAPI Reference Specification</a>
  * 
  * @ff.tip The OPTIONS verb will automatically be handled by the framework.
  *

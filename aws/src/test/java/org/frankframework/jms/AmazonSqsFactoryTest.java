@@ -83,7 +83,7 @@ class AmazonSqsFactoryTest {
 
 		Session senderSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		Queue senderQueue = senderSession.createQueue(queueName);
-		log.info("queue ["+senderQueue+"]");
+		log.info("queue [{}]", senderQueue);
 
 		log.debug("reading all messages from queue");
 		TextMessage message;
@@ -132,7 +132,7 @@ class AmazonSqsFactoryTest {
 
 		Session senderSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		Queue senderQueue = senderSession.createQueue(queueName);
-		log.info("queue ["+senderQueue+"]");
+		log.info("queue [{}]", senderQueue);
 
 		log.debug("reading all messages from queue");
 		TextMessage message;
@@ -187,7 +187,7 @@ class AmazonSqsFactoryTest {
 		MessageConsumer consumer = receiverSsession.createConsumer(receiverQueue);
 		TextMessage received = (TextMessage)consumer.receive(1000);
 		if (received!=null) {
-			log.debug("read messageid ["+received.getJMSMessageID()+"]");
+			log.debug("read messageid [{}]", received.getJMSMessageID());
 		}
 		receiverSsession.close();
 		connection.close();

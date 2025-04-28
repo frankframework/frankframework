@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2023 WeAreFrank!
+   Copyright 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.util.LogUtil;
 
-public class TransactionAttributes implements HasTransactionAttribute {
+public class TransactionAttributes implements HasTransactionAttribute, IConfigurable {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter @Setter TransactionAttribute transactionAttribute = TransactionAttribute.SUPPORTS;
@@ -34,13 +34,13 @@ public class TransactionAttributes implements HasTransactionAttribute {
 
 	private @Getter TransactionDefinition txDef = null;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		txDef = configureTransactionAttributes(log, getTransactionAttribute(), getTransactionTimeout());
 	}
 
 	public static TransactionDefinition configureTransactionAttributes(Logger log, TransactionAttribute transactionAttribute, int transactionTimeoutInSeconds) {
-		if (log.isDebugEnabled())
-			log.debug("creating TransactionDefinition for transactionAttribute [{}], timeout [{}] seconds", transactionAttribute, transactionTimeoutInSeconds);
+		log.debug("creating TransactionDefinition for transactionAttribute [{}], timeout [{}] seconds", transactionAttribute, transactionTimeoutInSeconds);
 		return SpringTxManagerProxy.getTransactionDefinition(transactionAttribute.getTransactionAttributeNum(), transactionTimeoutInSeconds);
 	}
 
