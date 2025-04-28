@@ -124,7 +124,7 @@ public class LegacyLoader {
 	public static class DefaultModule implements Module {
 		private final ModuleInformation moduleInformation;
 
-		public DefaultModule(String artifactId, Manifest manifest) throws IOException {
+		public DefaultModule(String artifactId, Manifest manifest) {
 			moduleInformation = new ModuleInformation(manifest);
 			moduleInformation.setArtifactId(artifactId);
 			moduleInformation.setGroupId("org.frankframework");

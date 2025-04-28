@@ -30,7 +30,7 @@ public class PartMessage extends Message {
 
 	private static final long serialVersionUID = 4740404985426114492L;
 
-	private static final Logger LOG = LogManager.getLogger(Message.class);
+	private static final Logger LOG = LogManager.getLogger(PartMessage.class);
 
 	public PartMessage(Part part) throws MessagingException {
 		this(part, MultipartUtils.getContext(part));
@@ -44,7 +44,7 @@ public class PartMessage extends Message {
 		super(part::getInputStream, context, part.getClass());
 
 		String charset = (String)context.get(MessageContext.METADATA_CHARSET);
-		if (StringUtils.isEmpty(charset)) { //if not explicitly set
+		if (StringUtils.isEmpty(charset)) { // If not explicitly set
 			try {
 				context.withMimeType(part.getContentType());
 			} catch (Exception e) {

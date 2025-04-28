@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import java.io.OutputStream;
 import jakarta.activation.DataHandler;
 import jakarta.activation.DataSource;
 
+import org.frankframework.util.CloseUtils;
+
 public class SourceClosingDataHandler extends DataHandler {
 
 	public SourceClosingDataHandler(DataSource ds) {
@@ -32,8 +34,8 @@ public class SourceClosingDataHandler extends DataHandler {
 	public void writeTo(OutputStream os) throws IOException {
 		super.writeTo(os);
 
-		if(getDataSource() instanceof Closeable) {
-			((Closeable)getDataSource()).close();
+		if(getDataSource() instanceof Closeable closeable) {
+			CloseUtils.closeSilently(closeable);
 		}
 	}
 }

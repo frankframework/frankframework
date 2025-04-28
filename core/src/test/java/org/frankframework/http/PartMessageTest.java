@@ -116,7 +116,7 @@ public class PartMessageTest {
 
 		//assertEquals(testStringLength, in.size());
 		byte[] wire = serializationTester.serialize(in);
-		log.debug("wire "+Hex.encodeHexString(wire));
+		log.debug("wire {}", () -> Hex.encodeHexString(wire));
 		MessageTest.writeContentsToFile(source, "fakeContentAsReplacementOfThePrevious");
 		Message out = serializationTester.deserialize(wire);
 
@@ -130,7 +130,7 @@ public class PartMessageTest {
 
 		for (int i=0; i< wires.length; i++) {
 			String label = wires[i][0];
-			log.debug("testDeserializationCompatibility() "+label);
+			log.debug("testDeserializationCompatibility() {}", label);
 			byte[] wire = Hex.decodeHex(wires[i][1]);
 			Message out = serializationTester.deserialize(wire);
 

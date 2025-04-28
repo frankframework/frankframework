@@ -79,7 +79,7 @@ public class ClassLoaderUtils {
 			classLoader = scopeProvider.getConfigurationClassLoader();
 		}
 
-		String resourceToUse = resource; //Don't change the original resource name for logging purposes
+		String resourceToUse = resource; // Don't change the original resource name for logging purposes
 		if (resource.startsWith(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME)) {
 			resourceToUse = resource.substring(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME.length());
 		}
@@ -120,7 +120,7 @@ public class ClassLoaderUtils {
 		log.debug("determined protocol [{}] for resource [{}]", protocol, resource);
 
 		if(!allowedProtocols.contains(protocol)) {
-			log.debug("Cannot lookup resource [{}] protocol [{}] not in allowedProtocols {}", resource, protocol, allowedProtocols.toString());
+			log.debug("Cannot lookup resource [{}] protocol [{}] not in allowedProtocols {}", resource, protocol, allowedProtocols);
 			return null;
 		}
 
