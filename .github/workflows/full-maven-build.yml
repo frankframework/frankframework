@@ -8,7 +8,7 @@ env:
   PROFILES: frankframework,codecoverage,ci
   IS_GITHUB_DEPENDABOT: ${{ github.actor == 'dependabot[bot]' }}
   # Don't allow credentials on forks, secrets are not available when using forks or GH bot
-  USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'frankframework') && !IS_GITHUB_BOT }}
+  USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'frankframework') && !IS_GITHUB_DEPENDABOT }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   PR_NUMBER: ${{ github.event.number || '' }}
   MAVEN_GOALS: verify
