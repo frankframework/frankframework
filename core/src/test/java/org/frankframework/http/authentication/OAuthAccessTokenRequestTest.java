@@ -1,7 +1,9 @@
 package org.frankframework.http.authentication;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URLDecoder;
@@ -17,6 +19,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.http.HttpSender;
 import org.frankframework.util.StreamUtil;
@@ -124,6 +127,32 @@ public class OAuthAccessTokenRequestTest {
 				.getContent(), "\n", "UTF-8"));
 		assertEquals("[Content-Type: application/x-www-form-urlencoded; charset=UTF-8,Content-Length: 95,Chunked: false]", request.getEntity()
 				.toString());
+	}
+
+	@Test
+	void testRetrieveAccessTokenWithResourceOwnerPasswordGrantWithMissingParamsShouldThrow() throws ConfigurationException {
+		httpSender.setScope("email");
+
+		httpSender.setOauthAuthenticationMethod(AbstractHttpSession.OauthAuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS);
+
+		// Set each required field sequentially and check if an exception is thrown until all required fields are set
+		ConfigurationException missingUsername = assertThrows(ConfigurationException.class, () -> httpSender.configure(), "Expected ConfigurationException when username is missing");
+		assertTrue(missingUsername.getMessage().toLowerCase().contains("username"), "Expected exception message to mention 'username'");
+		httpSender.setUsername("fakeCredentialUserName");
+
+		ConfigurationException missingPassword = assertThrows(ConfigurationException.class, () -> httpSender.configure(), "Expected ConfigurationException when password is missing");
+		assertTrue(missingPassword.getMessage().toLowerCase().contains("password"), "Expected exception message to mention 'password'");
+		httpSender.setPassword("fakeCredentialPassword");
+
+		ConfigurationException missingClientId = assertThrows(ConfigurationException.class, () -> httpSender.configure(), "Expected ConfigurationException when clientId is missing");
+		assertTrue(missingClientId.getMessage().toLowerCase().contains("clientid"), "Expected exception message to mention 'clientId'");
+		httpSender.setClientId(CLIENT_ID);
+
+		ConfigurationException missingClientSecret = assertThrows(ConfigurationException.class, () -> httpSender.configure(), "Expected ConfigurationException when clientSecret is missing");
+		assertTrue(missingClientSecret.getMessage().toLowerCase().contains("clientsecret"), "Expected exception message to mention 'clientSecret'");
+		httpSender.setClientSecret(CLIENT_SECRET);
+
+		assertDoesNotThrow(() -> httpSender.configure());
 	}
 
 	@Test
