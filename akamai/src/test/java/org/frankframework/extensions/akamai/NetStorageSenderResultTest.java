@@ -43,7 +43,7 @@ import org.frankframework.util.StreamUtil;
 
 @Log4j2
 public class NetStorageSenderResultTest {
-	private final String BASEDIR = "/Http/Responses/";
+	private final String BASEDIR = "/http/responses/";
 
 	private NetStorageSender createHttpSender(CloseableHttpResponse httpResponse) throws IOException {
 		CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
