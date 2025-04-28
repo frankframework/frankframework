@@ -1,9 +1,7 @@
 package org.frankframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import java.util.NoSuchElementException;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
 
@@ -25,11 +23,9 @@ public class CredentialFactoryTest {
 
 	@Test
 	public void testCredentialFactoryUnknownAliasNoDefaults() {
-		assertThrows(NoSuchElementException.class, () -> {
-			CredentialFactory cf = new CredentialFactory("unknown");
-			assertEquals("fakeDefaultUsername", cf.getUsername());
-			assertEquals("fakeDefaultPassword", cf.getPassword());
-		});
+		CredentialFactory cf = new CredentialFactory("unknown");
+		assertNull(cf.getUsername());
+		assertNull(cf.getPassword());
 	}
 
 	@Test
