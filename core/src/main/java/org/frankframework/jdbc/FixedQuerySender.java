@@ -33,9 +33,37 @@ import org.frankframework.util.DB2XMLWriter;
 
 /**
  * QuerySender that assumes a fixed query, possibly with attributes.
+ * 
+ * Example of a {@code XML} result:
+ * <pre>{@code
+ * <result>
+ *     <fielddefinition>
+ *         <field name="FIELDNAME"
+ *             type="columnType"
+ *             columnDisplaySize=""
+ *             precision=""
+ *             scale=""
+ *             isCurrency=""
+ *             columnTypeName=""
+ *             columnClassName=""/>
+ *         <field ...../>
+ *     </fielddefinition>
+ *     <rowset>
+ *         <row number="1">
+ *             <field name="FIELDNAME">value</field>
+ *             <field name="FIELDNAME" null="true"></field>
+ *             <field name="FIELDNAME">value</field>
+ *             <field name="FIELDNAME">value</field>
+ *         </row>
+ *     </rowset>
+ * </result>
+ * }</pre>
+ * 
+ * See {@link DB2XMLWriter} for more information about the ResultSet!
  *
- * @ff.info See {@link DB2XMLWriter} for ResultSet!
- * @ff.info Please note that the default value of {@code trimSpaces} is {@literal true}
+ * @ff.info The result {@code fieldname} and {@code columntype} are always capital case.
+ * @ff.tip The default value of {@code trimSpaces} is {@literal true}.
+ * @ff.tip The default value of {@code useNamedParams} is determined by the presence of <code>?&#123;...&#125;</code> in the query.
  * @ff.parameters All parameters present are applied to the query to be executed.
  *
  * @author  Gerrit van Brakel
