@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
@@ -122,9 +123,13 @@ public class CredentialFactory {
 	public static ICredentials getCredentials(String rawAlias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
 		final String alias = extractAlias(rawAlias);
 		for (ICredentialFactory factory : getInstance().delegates) {
-			ICredentials result = factory.getCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
-			if (result != null) {
-				return result;
+			try {
+				if (factory.hasCredentials(alias)) {
+					return factory.getCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
+				}
+			} catch (NoSuchElementException e) {
+				// The alias was not found in this factory, continue searching
+				log.info(alias + " not found in credential factory [" + factory.getClass().getName() + "]");
 			}
 		}
 		return new Credentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);

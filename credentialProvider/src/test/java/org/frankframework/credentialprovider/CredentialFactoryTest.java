@@ -74,6 +74,25 @@ class CredentialFactoryTest {
 		assertEquals("fakePassword", c.getPassword());
 	}
 
+	/**
+	 * Account2 doesn't exist in the first provider, but does exist in the second. This test verifies that querying the first provider doesn't
+	 * break the lookup by not handling an exception.
+	 */
+	@Test
+	void testMultipleFactoriesWithNotExistingItem() {
+		// Init setting on purpose with extra whitespaces, commas etc.
+		CredentialConstants.getInstance().setProperty("credentialFactory.class", " java.util.doesNotExist , nl.nn.credentialprovider.PropertyFileCredentialFactory,,  , nl.nn.credentialprovider.MockCredentialFactory");
+		CredentialFactory.getCredentials(null, null, null); // Make sure the factories are initialized and class loading is done
+		MockCredentialFactory.getInstance().add("account2", "mockUsername", "mockPassword");
+
+		// Act
+		ICredentials c = CredentialFactory.getCredentials("account2", null, null);
+
+		// Assert values are from the second factory
+		assertEquals("mockUsername", c.getUsername());
+		assertEquals("mockPassword", c.getPassword());
+	}
+
 	@Test
 	void testRightOrderMockFirst() throws Exception {
 		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.MockCredentialFactory, org.frankframework.credentialprovider.PropertyFileCredentialFactory");
