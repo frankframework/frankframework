@@ -53,9 +53,9 @@
             "username": null
         },
         {
-            "password": "*** ERROR ***",
+            "password": "no password found",
             "alias": "test",
-            "username": "*** ERROR ***"
+            "username": null
         }
     ],
     "jmsRealms": {
