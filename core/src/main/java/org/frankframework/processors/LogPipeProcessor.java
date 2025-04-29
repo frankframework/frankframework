@@ -33,29 +33,28 @@ import org.frankframework.util.AppConstants;
 
 @Log4j2
 public class LogPipeProcessor extends AbstractPipeProcessor {
+	private static final boolean LOG_INTERMEDIARY_RESULTS = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", false);
 
 	@Override
 	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
-		if (!log.isDebugEnabled()) {
-			doDebugLogging(pipeLine, pipe, message, pipeLineSession);
+		if (log.isDebugEnabled() && logIntermediaryResults(pipe)) {
+			log.debug("pipeline process is about to call pipe [{}] current result [{}]", pipe::getName, () -> (message == null ? "<null>" : message.toString()));
+		} else {
+			log.info("pipeline process is about to call pipe [{}]", pipe::getName);
 		}
 
 		return chain.apply(message);
 	}
 
-	private void doDebugLogging(final PipeLine pipeLine, final IPipe pipe, Message message, PipeLineSession pipeLineSession) {
-		String ownerName = pipeLine.getOwner() == null ? "<null>" : pipeLine.getOwner().getName();
-		StringBuilder sb = new StringBuilder();
-		sb.append("Pipeline of adapter [").append(ownerName).append("] messageId [").append(pipeLineSession.getMessageId()).append("] is about to call pipe [").append(pipe.getName()).append("]");
 
-		boolean lir = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", false);
+	/**
+	 * Indicates whether the results between calling pipes have to be logged.
+	 * Only used if the log level is set to DEBUG.
+	 */
+	private boolean logIntermediaryResults(IPipe pipe) {
 		if (StringUtils.isNotEmpty(pipe.getLogIntermediaryResults())) {
-			lir = Boolean.parseBoolean(pipe.getLogIntermediaryResults());
+			return Boolean.parseBoolean(pipe.getLogIntermediaryResults());
 		}
-		if (lir) {
-			sb.append(" current result ").append(message == null ? "<null>" : "(" + message.getClass().getSimpleName() + ") [" + message + "]").append(" ");
-		}
-		log.debug(sb.toString());
+		return LOG_INTERMEDIARY_RESULTS;
 	}
-
 }

@@ -56,7 +56,7 @@ public class TransactionAttributePipeProcessor extends AbstractPipeProcessor {
 
 		IbisTransaction itx = new IbisTransaction(txManager, txDef, "pipe [" + pipe.getName() + "]");
 		boolean isTxCapable = hasTxCapableSender(pipe);
-		log.debug("executing pipe with transaction definition [{}] in {} TX environment", txDef, isTxCapable ? "GLOBAL (XA)" : "LOCAL");
+		log.debug("executing pipe with transaction definition [{}] in {} TX environment with timeout [{}]", txDef, (isTxCapable ? "global" : "local"), txTimeout);
 		try {
 			if(isTxCapable && itx.isRollbackOnly()) {
 				throw new PipeRunException(pipe, "unable to execute SQL statement, transaction has been marked as failed by an earlier sender");
