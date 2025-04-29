@@ -9,6 +9,7 @@ body:
       value: |
         > [!CAUTION]
         > Please do not add sensitive information in issues, you can provide extra information via email using the issue number as reference.
+        
         > [!NOTE]
         > This issue can be transfered, if it has more relevance for the [Frank!Doc](https://github.com/frankframework/frank-doc) project.
   - type: textarea
