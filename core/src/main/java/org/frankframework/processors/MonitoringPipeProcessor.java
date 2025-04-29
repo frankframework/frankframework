@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2024 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import org.frankframework.util.LogUtil;
  * @author Jaco de Groot
  */
 public class MonitoringPipeProcessor extends AbstractPipeProcessor {
-	private final Logger durationLog = LogUtil.getLogger("LongDurationMessages");
+	private static final Logger DURATION_LOG = LogUtil.getLogger("LongDurationMessages");
 
 	@Override
 	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
@@ -51,14 +51,14 @@ public class MonitoringPipeProcessor extends AbstractPipeProcessor {
 			throw pre;
 		} catch (RuntimeException re) {
 			pipe.throwEvent(IPipe.PIPE_EXCEPTION_MONITORING_EVENT);
-			throw new PipeRunException(pipe, "Uncaught runtime exception running pipe '" + pipe.getName() + "'", re);
+			throw new PipeRunException(pipe, "uncaught runtime exception while executing pipe", re);
 		} finally {
 			long pipeDuration = System.currentTimeMillis() - pipeStartTime;
 			DistributionSummary summary = pipeLine.getPipeStatistics(pipe);
 			summary.record(pipeDuration);
 
 			if (pipe.getDurationThreshold() >= 0 && pipeDuration > pipe.getDurationThreshold()) {
-				durationLog.info("Pipe [{}] of [{}] duration [{}] ms exceeds max [{}], message [{}]", pipe::getName, () -> pipeLine.getOwner().getName(), () -> pipeDuration, pipe::getDurationThreshold, () -> message);
+				DURATION_LOG.info("Pipe [{}] of [{}] duration [{}] ms exceeds max [{}], message [{}]", pipe::getName, () -> pipeLine.getOwner().getName(), () -> pipeDuration, pipe::getDurationThreshold, () -> message);
 				pipe.throwEvent(IPipe.LONG_DURATION_MONITORING_EVENT);
 			}
 		}

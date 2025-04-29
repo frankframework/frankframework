@@ -21,6 +21,8 @@ import java.util.Map;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.HasName;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeForward;
@@ -33,6 +35,7 @@ import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.pipes.ExceptionPipe;
 import org.frankframework.stream.Message;
 
+@Log4j2
 public class ExceptionHandlingPipeProcessor extends AbstractPipeProcessor {
 
 	@Override

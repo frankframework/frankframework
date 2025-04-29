@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package org.frankframework.processors;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import org.apache.logging.log4j.Logger;
-
 import lombok.Setter;
 
 import org.frankframework.core.IPipe;
@@ -30,7 +28,6 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.stream.Message;
-import org.frankframework.util.LogUtil;
 
 /**
  * Baseclass for PipeProcessors.
@@ -39,7 +36,6 @@ import org.frankframework.util.LogUtil;
  * @since   4.11
  */
 public abstract class AbstractPipeProcessor implements PipeProcessor {
-	protected Logger log = LogUtil.getLogger(this);
 
 	@Setter private PipeProcessor pipeProcessor;
 

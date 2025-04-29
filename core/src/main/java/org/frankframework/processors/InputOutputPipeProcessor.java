@@ -27,6 +27,8 @@ import org.apache.logging.log4j.Logger;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
@@ -51,6 +53,7 @@ import org.frankframework.xml.XmlWriter;
  *
  * @author Jaco de Groot
  */
+@Log4j2
 public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 	private static final Logger SEC_LOG = LogUtil.getLogger("SEC");
 
@@ -68,6 +71,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 	 * @throws PipeRunException if there is an error during processing.
 	 */
 	// Message should not be nullable?
+	// Should the skipPipe be handled before getInputFrom?
 	@Override
 	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable final Message inputMessage, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		Message originalMessage = inputMessage;
@@ -117,6 +121,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 				Collectors.joining(",")) + "]";
 	}
 
+	// TODO restore MessageContext#CONTEXT_PREVIOUS_PIPE && MessageContext#CONTEXT_PIPELINE_CALLER
 	private PipeRunResult postProcessPipeResult(IPipe pipe, PipeLineSession pipeLineSession, PipeRunResult pipeRunResult, Message originalMessage) throws PipeRunException {
 		if (pipe.isRestoreMovedElements()) {
 			processRestoreMovedElements(pipe, pipeLineSession, pipeRunResult);
@@ -246,7 +251,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		try {
 			// Preserve the message so that it can be read again, in case there was an error during compacting
 			result.preserve();
- 			return result.asInputSource();
+			return result.asInputSource();
 		} catch (IOException e) {
 			throw new PipeRunException(pipe, "could not read received message during restoring/compaction of moved elements", e);
 		}

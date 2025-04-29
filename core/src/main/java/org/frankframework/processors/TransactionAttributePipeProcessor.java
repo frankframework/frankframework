@@ -36,10 +36,9 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
-/**
- * @author Jaco de Groot
- */
+@Log4j2
 public class TransactionAttributePipeProcessor extends AbstractPipeProcessor {
 
 	private @Getter @Setter PlatformTransactionManager txManager;
@@ -54,14 +53,16 @@ public class TransactionAttributePipeProcessor extends AbstractPipeProcessor {
 		} else {
 			txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS, txTimeout);
 		}
+
 		IbisTransaction itx = new IbisTransaction(txManager, txDef, "pipe [" + pipe.getName() + "]");
 		boolean isTxCapable = hasTxCapableSender(pipe);
+		log.debug("executing pipe with transaction definition [{}] in {} TX environment", txDef, isTxCapable ? "GLOBAL (XA)" : "LOCAL");
 		try {
 			if(isTxCapable && itx.isRollbackOnly()) {
 				throw new PipeRunException(pipe, "unable to execute SQL statement, transaction has been marked as failed by an earlier sender");
 			}
 
-			return execute(pipeline, pipe, message, chain, txTimeout);
+			return executePipeProcess(pipe, message, chain, txTimeout);
 
 		} catch (Error | RuntimeException | PipeRunException ex) {
 			if(isTxCapable) {
@@ -72,7 +73,7 @@ public class TransactionAttributePipeProcessor extends AbstractPipeProcessor {
 			if(isTxCapable) {
 				itx.setRollbackOnly();
 			}
-			throw new PipeRunException(pipe, "Caught unknown checked exception", e);
+			throw new PipeRunException(pipe, "caught unknown checked exception", e);
 		} finally {
 			itx.complete();
 		}
@@ -86,8 +87,8 @@ public class TransactionAttributePipeProcessor extends AbstractPipeProcessor {
 		return false;
 	}
 
-	private PipeRunResult execute(PipeLine pipeLine, IPipe pipe, Message message, ThrowingFunction<Message, PipeRunResult, PipeRunException> chain, int txTimeout) throws Exception {
-		TimeoutGuard tg = new TimeoutGuard("pipeline of adapter [" + pipeLine.getOwner().getName() + "] running pipe ["+pipe.getName()+"]");
+	private PipeRunResult executePipeProcess(IPipe pipe, Message message, ThrowingFunction<Message, PipeRunResult, PipeRunException> chain, int txTimeout) throws Exception {
+		TimeoutGuard tg = new TimeoutGuard("transactional timeout guard for pipe [" + pipe.getName() + "]");
 		Exception tCaught = null;
 		try {
 			tg.activateGuard(txTimeout);
