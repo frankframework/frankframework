@@ -261,6 +261,10 @@ public class NetStorageSender extends AbstractHttpSender {
 
 	private String getSanitizedResponseBodyAsString(HttpResponseHandler responseHandler) throws IOException {
 		String responseString = getResponseBodyAsString(responseHandler, true);
+		if (responseString == null) {
+			return ""; // No response body, return empty string
+		}
+
 		responseString = XmlUtils.skipDocTypeDeclaration(responseString.trim());
 		responseString = XmlUtils.skipXmlDeclaration(responseString);
 		return responseString;

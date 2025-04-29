@@ -16,6 +16,7 @@
 package org.frankframework.extensions.akamai;
 
 import static org.frankframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.spy;
 
@@ -33,6 +34,7 @@ import org.frankframework.http.HttpSenderTestBase;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
+import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.AppConstants;
 
 public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
@@ -59,6 +61,13 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 				return new Message( getResponseBodyAsString(responseHandler, true) );
 			}
 		});
+	}
+
+	@Override
+	protected String getFile(String file) throws IOException {
+		String content = TestFileUtils.getTestFile("/http/requests/"+file);
+		assertNotNull(content, "file ["+"/http/requests/"+file+"] not found");
+		return content;
 	}
 
 	@Override
