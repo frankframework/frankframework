@@ -1,5 +1,5 @@
 name: Documentation change
-description: Request a change in the documentation.
+description: Request a change for the documentation.
 labels: ['Needs Triage', 'Documentation']
 type: Task
 projects: ['frankframework/2']
