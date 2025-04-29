@@ -18,7 +18,6 @@ package org.frankframework.processors;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import io.micrometer.core.instrument.DistributionSummary;
@@ -30,7 +29,6 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.stream.Message;
-import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 
 /**
@@ -42,7 +40,6 @@ public class MonitoringPipeProcessor extends AbstractPipeProcessor {
 	@Override
 	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
 		long pipeStartTime = System.currentTimeMillis();
-		doDebugLogging(pipeLine, pipe, message, pipeLineSession);
 
 		try {
 			return chain.apply(message);
@@ -63,23 +60,4 @@ public class MonitoringPipeProcessor extends AbstractPipeProcessor {
 			}
 		}
 	}
-
-	private void doDebugLogging(final PipeLine pipeLine, final IPipe pipe, Message message, PipeLineSession pipeLineSession) {
-		if (!log.isDebugEnabled()) {
-			return;
-		}
-		String ownerName = pipeLine.getOwner() == null ? "<null>" : pipeLine.getOwner().getName();
-		StringBuilder sb = new StringBuilder();
-		sb.append("Pipeline of adapter [").append(ownerName).append("] messageId [").append(pipeLineSession.getMessageId()).append("] is about to call pipe [").append(pipe.getName()).append("]");
-
-		boolean lir = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", false);
-		if (StringUtils.isNotEmpty(pipe.getLogIntermediaryResults())) {
-			lir = Boolean.parseBoolean(pipe.getLogIntermediaryResults());
-		}
-		if (lir) {
-			sb.append(" current result ").append(message == null ? "<null>" : "(" + message.getClass().getSimpleName() + ") [" + message + "]").append(" ");
-		}
-		log.debug(sb.toString());
-	}
-
 }
