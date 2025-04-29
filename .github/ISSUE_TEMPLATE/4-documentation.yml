@@ -18,7 +18,7 @@ body:
       label: Context Information
       description: For troubleshooting we need to know the version, and on which page the change should be made. If you want to add more context information, please go ahead.
       placeholder: |
-        Please go to the Frank!Doc, and click on the "Request a change" button at the bottom right, to prefill this section. It is possible to select text if it has relevance.
+         To prefill this section: Go to the Frank!Doc, and click on the "Request a change" button at the bottom right. It is possible to select text if it has relevance.
     validations:
       required: true
   - type: textarea
