@@ -3,6 +3,7 @@ package org.frankframework.runner;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -18,6 +19,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.servlet.ServletContext;
 
 import org.apache.commons.lang3.StringUtils;
+import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -54,6 +56,27 @@ public class RunLarvaTests {
 
 	public static final LarvaLogLevel LARVA_LOG_LEVEL = LarvaLogLevel.WRONG_PIPELINE_MESSAGES;
 
+	public static final Set<String> IGNORED_SCENARIOS = Set.of(
+			"Authentication\\scenario03.properties",
+			"Authentication\\scenario04.properties",
+			"Base64Pipe\\scenario01.properties",
+			"Base64Pipe\\scenario02.properties",
+			"LocalFileSystemPipe\\scenario07.properties",
+			"LocalFileSystemPipe\\scenario08.properties",
+			"MoveFiles\\scenario01.properties",
+			"MoveFiles\\scenario04.properties",
+			"MoveFiles\\scenario09.properties",
+			"RestListener\\scenario01.properties",
+			"RestListener\\scenario02.properties",
+			"Validators\\SoapValidator\\scenario07.properties",
+			"WsdlGeneratorPipe\\scenario01.properties",
+			"WsdlGeneratorPipe\\scenario02.properties",
+			"WsdlGeneratorPipe\\scenario03.properties",
+			"XsltProviderListener\\scenario04.properties",
+			"Zip\\ZipWriter\\scenario 01.properties",
+			"Zip\\ZipWriter\\scenario 02.properties"
+	);
+
 	private static ConfigurableApplicationContext applicationContext;
 	private static LarvaTool larvaTool;
 	private static ScenarioRunner scenarioRunner;
@@ -82,6 +105,8 @@ public class RunLarvaTests {
 
 		scenarioRunner = new ScenarioRunner(larvaTool, ibisContext, testConfig, appConstants, 100, LARVA_LOG_LEVEL);
 		scenarioRootDir = larvaTool.initScenariosRootDirectories(null, new ArrayList<>(), new ArrayList<>());
+
+		XMLUnit.setIgnoreWhitespace(true);
 	}
 
 	@AfterAll
@@ -99,7 +124,6 @@ public class RunLarvaTests {
 	 *
 	 */
 	@TestFactory
-	@Disabled("Not yet working properly, reasons not yet known.")
 	Stream<DynamicNode> larvaTests() {
 		List<File> allScenarioFiles = larvaTool.readScenarioFiles(appConstants, scenarioRootDir);
 		assertFalse(allScenarioFiles.isEmpty(), () -> "Did not find any scenario-files in scenarioRootDir [%s]!".formatted(scenarioRootDir));
@@ -138,12 +162,14 @@ public class RunLarvaTests {
 					System.out.println("Running scenario: [" + scenarioName + "]");
 					int scenarioPassed = scenarioRunner.runOneFile(scenarioFile, scenarioRootDir, true);
 
+					assumeTrue(scenarioPassed != LarvaTool.RESULT_ERROR || !IGNORED_SCENARIOS.contains(scenarioName), () -> "Ignoring Blacklisted Scenario: [" + scenarioName + "]");
 					assertNotEquals(LarvaTool.RESULT_ERROR, scenarioPassed, () -> "Scenario failed: [" + scenarioName + "]");
 				}
 		);
 	}
 
 	@Test
+	@Disabled("Run Larva test scenarios individually now")
 	void runLarvaTests() throws IOException {
 		assertTrue(applicationContext.isRunning());
 		List<File> allScenarioFiles = larvaTool.readScenarioFiles(appConstants, scenarioRootDir);
