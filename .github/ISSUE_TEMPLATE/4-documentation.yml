@@ -1,0 +1,33 @@
+name: Documentation change
+description: Request a change for the documentation.
+labels: ['Needs Triage', 'Documentation']
+type: Task
+projects: ['frankframework/2']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > [!CAUTION]
+        > Please do not add sensitive information in issues, you can provide extra information via email using the issue number as reference.
+        
+        > [!NOTE]
+        > This issue can be transferred, if it has more relevance for the [Frank!Doc](https://github.com/frankframework/frank-doc) project.
+  - type: textarea
+    id: context
+    attributes:
+      label: Context Information
+      description: For troubleshooting we need to know the version, and on which page the change should be made. If you want to add more context information, please go ahead.
+      placeholder: |
+         To prefill this section: Go to the Frank!Doc, and click on the "Request a change" button at the bottom right. It is possible to select text if it has relevance.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: What would you like to change?
+      description: |
+        Please give a clear and concise description of the requested change. Please give an example if possible.
+
+        > [!TIP]
+        > You can attach images or text files by clicking this area to highlight it and then dragging files in.
+    validations:
+      required: true
