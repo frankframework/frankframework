@@ -24,10 +24,6 @@ body:
   - type: textarea
     attributes:
       label: What would you like to change?
-      description: |
-        Please give a clear and concise description of the requested change. Please give an example if possible.
-
-        > [!TIP]
-        > You can attach images or text files by clicking this area to highlight it and then dragging files in.
+      description: Please give a clear and concise description of the requested change. Please give an example if possible.
     validations:
       required: true
