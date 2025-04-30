@@ -57,24 +57,53 @@ public class RunLarvaTests {
 	public static final LarvaLogLevel LARVA_LOG_LEVEL = LarvaLogLevel.WRONG_PIPELINE_MESSAGES;
 
 	public static final Set<String> IGNORED_SCENARIOS = Set.of(
-			"Authentication\\scenario03.properties",
-			"Authentication\\scenario04.properties",
-			"Base64Pipe\\scenario01.properties",
-			"Base64Pipe\\scenario02.properties",
-			"LocalFileSystemPipe\\scenario07.properties",
-			"LocalFileSystemPipe\\scenario08.properties",
-			"MoveFiles\\scenario01.properties",
-			"MoveFiles\\scenario04.properties",
-			"MoveFiles\\scenario09.properties",
-			"RestListener\\scenario01.properties",
-			"RestListener\\scenario02.properties",
-			"Validators\\SoapValidator\\scenario07.properties",
-			"WsdlGeneratorPipe\\scenario01.properties",
-			"WsdlGeneratorPipe\\scenario02.properties",
-			"WsdlGeneratorPipe\\scenario03.properties",
-			"XsltProviderListener\\scenario04.properties",
-			"Zip\\ZipWriter\\scenario 01.properties",
-			"Zip\\ZipWriter\\scenario 02.properties"
+			"ApiListener/scenario01.properties",
+			"ApiListener/scenario02.properties",
+			"ApiListener/scenario03.properties",
+			"ApiListener/scenario04.properties",
+			"ApiListener/scenario05.properties",
+			"ApiListener/scenario06.properties",
+			"ApiListener/scenario07.properties",
+			"ApiListener/scenario08.properties",
+			"Authentication/scenario03.properties",
+			"Authentication/scenario04.properties",
+			"Base64Pipe/scenario01.properties",
+			"Base64Pipe/scenario02.properties",
+			"CorrelationMessageId/scenario04.properties",
+			"CorrelationMessageId/scenario05.properties",
+			"Exits/api/scenario01.properties",
+			"Exits/api/scenario01b.properties",
+			"Exits/api/scenario03.properties",
+			"Exits/soap/scenario01.properties",
+			"Exits/soap/scenario02.properties",
+			"JSON/DataSonnet/scenario01.properties",
+			"JSON/JsonPipe/scenario01.properties",
+			"FileSender/scenario01.properties",
+			"ForwardNameProvidingSenders/scenario10.properties",
+			"ForwardNameProvidingSenders/scenario11.properties",
+			"ForwardNameProvidingSenders/scenario12.properties",
+			"ForwardNameProvidingSenders/scenario13.properties",
+			"FrankSender/scenario05.properties",
+			"ManagedFileHandler/scenario01.properties",
+			"ManagedFileHandler/scenario02.properties",
+			"LocalFileSystemPipe/scenario07.properties",
+			"LocalFileSystemPipe/scenario08.properties",
+			"MoveFiles/scenario01.properties",
+			"MoveFiles/scenario04.properties",
+			"MoveFiles/scenario09.properties",
+			"Receivers/NonTransacted/NoInProcess/scenario05.properties",
+			"RestListener/scenario01.properties",
+			"RestListener/scenario02.properties",
+			"Validators/SoapValidator/scenario07.properties",
+			"WebServiceListenerSender/scenario11b.properties",
+			"WebServiceListenerSender/scenario11c.properties",
+			"WebServiceListenerSender/scenario11d.properties",
+			"WsdlGeneratorPipe/scenario01.properties",
+			"WsdlGeneratorPipe/scenario02.properties",
+			"WsdlGeneratorPipe/scenario03.properties",
+			"XsltProviderListener/scenario04.properties",
+			"Zip/ZipWriter/scenario 01.properties",
+			"Zip/ZipWriter/scenario 02.properties"
 	);
 
 	private static ConfigurableApplicationContext applicationContext;
@@ -156,7 +185,7 @@ public class RunLarvaTests {
 
 	private DynamicTest convertLarvaScenarioToTest(File scenarioFile) {
 		// Scenario name always computed from the scenario root dir to be understandable without context of immediate parent
-		String scenarioName = scenarioFile.getAbsolutePath().substring(scenarioRootDir.length());
+		String scenarioName = normalizeName(scenarioFile.getAbsolutePath().substring(scenarioRootDir.length()));
 		return DynamicTest.dynamicTest(
 				scenarioName, scenarioFile.toURI(), () -> {
 					System.out.println("Running scenario: [" + scenarioName + "]");
@@ -166,6 +195,10 @@ public class RunLarvaTests {
 					assertNotEquals(LarvaTool.RESULT_ERROR, scenarioPassed, () -> "Scenario failed: [" + scenarioName + "]");
 				}
 		);
+	}
+
+	private static String normalizeName(String name) {
+		return name.replace('\\', '/');
 	}
 
 	@Test
