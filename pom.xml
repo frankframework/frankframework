@@ -50,7 +50,7 @@
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>6.1.6</activemq.driver.version>
-		<artemis.driver.version>2.40.0</artemis.driver.version>
+		<artemis.driver.version>2.41.0</artemis.driver.version>
 
 		<rabbitmq.driver.version>5.25.0</rabbitmq.driver.version>
 		<rabbitmq.jms.version>3.4.0</rabbitmq.jms.version>
