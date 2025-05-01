@@ -18,9 +18,8 @@ package org.frankframework.processors;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import org.apache.logging.log4j.Logger;
-
 import io.micrometer.core.instrument.DistributionSummary;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
@@ -29,13 +28,9 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.stream.Message;
-import org.frankframework.util.LogUtil;
 
-/**
- * @author Jaco de Groot
- */
+@Log4j2
 public class MonitoringPipeProcessor extends AbstractPipeProcessor {
-	private static final Logger DURATION_LOG = LogUtil.getLogger("LongDurationMessages");
 
 	@Override
 	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
@@ -55,8 +50,8 @@ public class MonitoringPipeProcessor extends AbstractPipeProcessor {
 			summary.record(pipeDuration);
 
 			if (pipe.getDurationThreshold() >= 0 && pipeDuration > pipe.getDurationThreshold()) {
-				DURATION_LOG.info("Pipe [{}] of [{}] duration [{}] ms exceeds max [{}], message [{}]", pipe::getName, () -> pipeLine.getOwner().getName(), () -> pipeDuration, pipe::getDurationThreshold, () -> message);
-				pipe.throwEvent(IPipe.LONG_DURATION_MONITORING_EVENT);
+				log.warn("message [{}] duration [{}] ms exceeds maximum allowed threshold of [{}]", message::getObjectId, () -> pipeDuration, pipe::getDurationThreshold);
+				pipe.throwEvent(IPipe.LONG_DURATION_MONITORING_EVENT, message);
 			}
 		}
 	}
