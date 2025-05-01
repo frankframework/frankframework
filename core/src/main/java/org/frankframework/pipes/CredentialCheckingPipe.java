@@ -59,6 +59,9 @@ public class CredentialCheckingPipe extends FixedForwardPipe {
 			result += "username does not match target";
 		}
 		if (!getTargetPassword().equals(cf.getPassword())) {
+			if (!StringUtils.isEmpty(result)) {
+				result += ", ";
+			}
 			result += "password does not match target";
 		}
 		if (StringUtils.isEmpty(result)) {

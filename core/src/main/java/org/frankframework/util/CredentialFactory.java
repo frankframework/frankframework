@@ -48,7 +48,6 @@ public class CredentialFactory  {
 		credentials = org.frankframework.credentialprovider.CredentialFactory.getCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
 	}
 
-
 	@Override
 	public String toString() {
 		return credentials.toString();

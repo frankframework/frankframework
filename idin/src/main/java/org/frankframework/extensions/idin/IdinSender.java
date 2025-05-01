@@ -60,7 +60,6 @@ import org.frankframework.doc.Mandatory;
 import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassLoaderUtils;
-import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.XmlBuilder;
@@ -80,7 +79,6 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 
 	private @Getter boolean tls12Enabled=true;
 	private @Getter String keyStoreLocation = null;
-	private CredentialFactory keyStoreCredentials = null;
 
 	private @Getter String iDinConfigurationXML = null;
 	private @Getter String merchantReturnUrl = null;
@@ -91,11 +89,9 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	private @Getter String acquirerStatusUrl = null;
 
 	private @Getter String merchantCertificateAlias = null;
-	private @Getter CredentialFactory merchantCertificateCredentials = null;
 	private @Getter String acquirerCertificateAlias = null;
 	private @Getter String acquirerAlternativeCertificateAlias = null;
 	private @Getter String samlCertificateAlias = null;
-	private @Getter CredentialFactory samlCertificateCredentials = null;
 
 	private @Getter boolean logsEnabled = false;
 	private @Getter boolean serviceLogsEnabled = false;
@@ -103,6 +99,12 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	private @Getter String serviceLogsPattern = "%Y-%M-%D\\%h%m%s.%f-%a.xml";
 
 	private Action action = Action.DIRECTORY;
+	private @Getter String merchantCertificatePassword;
+	private @Getter String merchantCertificateAuthAlias;
+	private @Getter String SAMLCertificatePassword;
+	private @Getter String SAMLCertificateAuthAlias;
+	private @Getter String keyStorePassword;
+	private @Getter String keyStoreAuthAlias;
 
 	public enum Action {
 		DIRECTORY, RESPONSE, AUTHENTICATE
@@ -575,20 +577,15 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	 * @param keyStorePassword The password for the keystore
 	 */
 	public void setKeyStorePassword(String keyStorePassword) {
-		this.keyStoreCredentials = new CredentialFactory(null, null, keyStorePassword);
+		this.keyStorePassword = keyStorePassword;
 	}
+
 	/**
 	 * The AuthAlias used to access the keystore
 	 * @param keyStoreAuthAlias The AuthAlias that contains the password for the keystore
 	 */
 	public void setKeyStoreAuthAlias(String keyStoreAuthAlias) {
-		this.keyStoreCredentials = new CredentialFactory(keyStoreAuthAlias);
-	}
-	public String getKeyStorePassword() {
-		if(keyStoreCredentials == null)
-			return null;
-
-		return keyStoreCredentials.getPassword();
+		this.keyStoreAuthAlias = keyStoreAuthAlias;
 	}
 
 	/**
@@ -610,20 +607,15 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	 * @param merchantCertificatePassword The password for the Merchant Certificate
 	 */
 	public void setMerchantCertificatePassword(String merchantCertificatePassword) {
-		this.merchantCertificateCredentials = new CredentialFactory(null, null, merchantCertificatePassword);
+		this.merchantCertificatePassword = merchantCertificatePassword;
 	}
+
 	/**
 	 * In case the merchant certificate has been password protected
 	 * @param merchantCertificateAuthAlias The AuthAlias that contains the password for the Merchant Certificate
 	 */
 	public void setMerchantCertificateAuthAlias(String merchantCertificateAuthAlias) {
-		this.merchantCertificateCredentials = new CredentialFactory(merchantCertificateAuthAlias);
-	}
-	public String getMerchantCertificatePassword() {
-		if(merchantCertificateCredentials == null)
-			return null;
-
-		return merchantCertificateCredentials.getPassword();
+		this.merchantCertificateAuthAlias = merchantCertificateAuthAlias;
 	}
 
 	/**
@@ -670,22 +662,15 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	 * @param samlCertificatePassword The password for the SAML Certificate
 	 */
 	public void setSAMLCertificatePassword(String samlCertificatePassword) {
-		this.samlCertificateCredentials = new CredentialFactory(null, null, samlCertificatePassword);
+		this.SAMLCertificatePassword = samlCertificatePassword;
 	}
 	/**
 	 * In case the SAML certificate has been password protected
-	 * @param samlCertificateAuthAlias The AuthAlias that contains the password for the SAML Certificate
+	 * @param SAMLCertificateAuthAlias The AuthAlias that contains the password for the SAML Certificate
 	 */
 	public void setSAMLCertificateAuthAlias(String samlCertificateAuthAlias) {
-		this.samlCertificateCredentials = new CredentialFactory(samlCertificateAuthAlias);
+		this.SAMLCertificateAuthAlias = samlCertificateAuthAlias;
 	}
-	public String getSAMLCertificatePassword() {
-		if(samlCertificateCredentials == null)
-			return null;
-
-		return samlCertificateCredentials.getPassword();
-	}
-
 
 	public void setLogsEnabled(boolean logsEnabled) {
 		this.logsEnabled = logsEnabled;

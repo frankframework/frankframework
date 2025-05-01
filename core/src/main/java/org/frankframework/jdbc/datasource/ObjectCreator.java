@@ -30,7 +30,6 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StringResolver;
 import org.frankframework.util.StringUtil;
 
@@ -117,33 +116,13 @@ public class ObjectCreator {
 				}
 			}
 		}
-		CredentialFactory cf = getCredentials(resource);
-		if(StringUtils.isNotEmpty(cf.getUsername())) {
-			mergedProps.setProperty("user", cf.getUsername());
+
+		if(StringUtils.isNotEmpty(resource.getUsername())) {
+			mergedProps.setProperty("user", StringResolver.substVars(resource.getUsername(), APP_CONSTANTS));
 		}
-		if(StringUtils.isNotEmpty(cf.getPassword())) {
-			mergedProps.setProperty("password", cf.getPassword());
+		if(StringUtils.isNotEmpty(resource.getPassword())) {
+			mergedProps.setProperty("password", StringResolver.substVars(resource.getPassword(), APP_CONSTANTS));
 		}
 		return mergedProps;
-	}
-
-	/**
-	 * Performs a 'safe' lookup of credentials.
-	 */
-	private CredentialFactory getCredentials(FrankResource resource) {
-		String alias = resource.getAuthalias();
-		if(StringUtils.isNotEmpty(alias)) {
-			alias = StringResolver.substVars(alias, APP_CONSTANTS);
-		}
-		String username = resource.getUsername();
-		if(StringUtils.isNotEmpty(username)) {
-			username = StringResolver.substVars(username, APP_CONSTANTS);
-		}
-		String password = resource.getPassword();
-		if(StringUtils.isNotEmpty(password)) {
-			password = StringResolver.substVars(password, APP_CONSTANTS);
-		}
-
-		return new CredentialFactory(alias, username, password);
 	}
 }

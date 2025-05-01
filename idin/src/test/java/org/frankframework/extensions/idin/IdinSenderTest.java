@@ -43,6 +43,7 @@ import net.bankid.merchant.library.Configuration;
 import net.bankid.merchant.library.IMessenger;
 import net.bankid.merchant.library.SigningKeyPair;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.extensions.idin.IdinSender.Action;
 import org.frankframework.stream.Message;
@@ -145,6 +146,35 @@ public class IdinSenderTest {
 				</result>\
 				""";
 		assertEquals(expected, result);
+	}
+
+	/**
+	 * Previously, this relied on (invalid) use of CredentialFactory, which is now changed and results in unexpected exceptions. All these
+	 * setters should work without any exceptions.
+	 *
+	 * @throws ConfigurationException
+	 */
+	@Test
+	void testCertificateSettingsCanBeSet() throws ConfigurationException {
+		sender.setConfigurationXML("configs/minimal-config.xml"); // A minimal config with log setting is required
+
+		// These were never set
+		sender.setMerchantID("1234567890");
+		sender.setMerchantReturnUrl("http://localhost");
+		sender.setAcquirerStatusUrl("http://example.com/status");
+
+		// Override the keystore and password
+		sender.setKeyStoreLocation("certificates/BankID2020.Libs.sha256.2048.csp.jks");
+		sender.setKeyStorePassword("123456");
+
+		sender.setMerchantCertificatePassword("123456");
+		sender.setMerchantCertificateAuthAlias("bankid");
+
+		sender.setSAMLCertificatePassword("123456");
+		sender.setSAMLCertificateAuthAlias("bankid");
+
+		sender.setAction(Action.RESPONSE);
+		sender.configure();
 	}
 
 	@Test
