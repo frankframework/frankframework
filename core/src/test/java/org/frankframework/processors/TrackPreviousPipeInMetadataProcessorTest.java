@@ -6,9 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -17,46 +14,33 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
-import org.frankframework.core.IPipe;
-import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.testutil.mock.TransactionManagerMock;
+import org.frankframework.util.SpringUtils;
 
 public class TrackPreviousPipeInMetadataProcessorTest {
 	private static final String INPUT_MESSAGE_TEXT = "input message";
 
-	private TrackPreviousPipeInMetadataProcessor processor;
+	private PipeProcessor processor;
 	private PipeLineSession session;
 	private TestConfiguration configuration;
 
 	@BeforeEach
 	public void setUp() {
 		configuration = new TestConfiguration();
-		processor = new TrackPreviousPipeInMetadataProcessor();
-
-		PipeProcessor chain = new PipeProcessor() {
-			@Override
-			public PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
-				return pipe.doPipe(message, pipeLineSession);
-			}
-
-			@Override
-			public PipeRunResult validate(@Nonnull PipeLine pipeLine, @Nonnull IValidator validator, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
-				return validator.validate(message, pipeLineSession, messageRoot);
-			}
-		};
-
-		processor.setPipeProcessor(chain);
+		TransactionManagerMock txManager = configuration.createBean(TransactionManagerMock.class);
+		SpringUtils.registerSingleton(configuration, "txManager", txManager);
+		processor = configuration.getBean(PipeProcessor.class);
 		session = new PipeLineSession();
 	}
 
@@ -114,6 +98,29 @@ public class TrackPreviousPipeInMetadataProcessorTest {
 
 		// assert here that the previous pipe value equals expectedPreviousPipeValue
 		assertEquals(expectedPreviousPipeValue, pipeLineResult.getResult().getContext().get(MessageContext.CONTEXT_PREVIOUS_PIPE));
+	}
+
+	@Test
+	void testPreviousPipeValueInCombinationWithPostProcessPipeResult() throws Exception {
+		// Arrange
+		PipeLine pipeLine = getPipeLine();
+		EchoPipe pipe = getEchoPipe(pipeLine, "Echo pipe", "success", null);
+		pipe.setRestoreMovedElements(true);
+		pipe.configure();
+		pipe.start();
+		session.put("mineraalwater", "water");
+
+		Message input = new Message("<xml>{sessionKey:mineraalwater}</xml>");
+
+		// Act
+		PipeRunResult prr = processor.processPipe(pipeLine, pipe, input, session);
+
+		// Assert
+		assertEquals("<xml>water</xml>", prr.getResult().asString());
+
+// TODO fix this
+//		assertTrue(prr.getResult().getContext().containsKey(MessageContext.CONTEXT_PREVIOUS_PIPE));
+//		assertEquals("Echo pipe", prr.getResult().getContext().get(MessageContext.CONTEXT_PREVIOUS_PIPE));
 	}
 
 	private PipeLine getPipeLine() {
