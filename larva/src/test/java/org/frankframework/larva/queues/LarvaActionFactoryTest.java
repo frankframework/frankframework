@@ -29,7 +29,7 @@ class LarvaActionFactoryTest {
 
 	@BeforeEach
 	void setUp() throws ClassLoaderException {
-		larvaTool = new LarvaTool();
+		larvaTool = new LarvaTool(ibisContext);
 		actionFactory = new LarvaActionFactory(larvaTool);
 		applicationContext = new LarvaApplicationContext(null, "/");
 	}

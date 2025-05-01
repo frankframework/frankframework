@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.net.URL;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,6 +32,9 @@ import lombok.Getter;
 
 import org.frankframework.core.SenderException;
 import org.frankframework.http.AbstractHttpServlet;
+import org.frankframework.larva.output.HtmlScenarioOutputRenderer;
+import org.frankframework.larva.output.LarvaHtmlWriter;
+import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
@@ -142,10 +146,20 @@ public class LarvaServlet extends AbstractHttpServlet {
 		resp.setContentType("text/html");
 		writer.append(getTemplate("Larva Test Tool"));
 
-		LarvaTool.runScenarios(getServletContext(), req, writer);
+		LarvaHtmlConfig config = new LarvaHtmlConfig(req);
+		LarvaTool larvaTool = createLarvaTool(config, writer);
+		larvaTool.runScenarios(config.getExecute());
 
 		writer.append("</body></html>");
 		resp.flushBuffer();
+	}
+
+	@Nonnull
+	private LarvaTool createLarvaTool(LarvaHtmlConfig config, Writer writer) {
+		LarvaHtmlWriter larvaWriter = new LarvaHtmlWriter(config, writer);
+		HtmlScenarioOutputRenderer renderer = new HtmlScenarioOutputRenderer(config, larvaWriter);
+		LarvaTool larvaTool = new LarvaTool(FrankApplicationInitializer.getIbisContext(getServletContext()), config, larvaWriter, renderer);
+		return larvaTool;
 	}
 
 	private String getTemplate(String title) throws IOException {
@@ -174,7 +188,9 @@ public class LarvaServlet extends AbstractHttpServlet {
 				writer.append("<p>Comparing actual result with expected result...</p>");
 				writer.flush();
 				try {
-					new LarvaTool().windiff(request.getParameter("expectedFileName"), request.getParameter("expectedBox"), request.getParameter("resultBox"));
+					LarvaHtmlConfig config = new LarvaHtmlConfig(request);
+					LarvaTool larvaTool = createLarvaTool(config, writer);
+					larvaTool.windiff(request.getParameter("expectedFileName"), request.getParameter("expectedBox"), request.getParameter("resultBox"));
 				} catch (SenderException e) {
 					log.warn("unable to execute windiff command", e);
 					resp.sendError(500, "unable to save file");

@@ -16,8 +16,6 @@
 package org.frankframework.pipes;
 
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -32,8 +30,12 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Forward;
+import org.frankframework.larva.LarvaConfig;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
+import org.frankframework.larva.output.LarvaWriter;
+import org.frankframework.larva.output.PlainTextScenarioOutputRenderer;
+import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.stream.Message;
 
 /**
@@ -77,24 +79,26 @@ public class LarvaPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) {
 		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
-		List<String> scenariosRootDirectories = new ArrayList<>();
-		List<String> scenariosRootDescriptions = new ArrayList<>();
-		LarvaTool larvaTool = new LarvaTool();
+		LogWriter out = new LogWriter(log, isWriteToLog(), isWriteToSystemOut());
+		LarvaConfig larvaConfig = new LarvaConfig();
+		larvaConfig.setLogLevel(getLogLevel());
+		if (StringUtils.isNotBlank(getWaitBeforeCleanup())) {
+			larvaConfig.setWaitBeforeCleanup(Integer.parseInt(getWaitBeforeCleanup()));
+		}
+		if (getTimeout() > 0) {
+			larvaConfig.setTimeout(getTimeout());
+		}
 
-		String currentScenariosRootDirectory = larvaTool.initScenariosRootDirectories(
-				null, scenariosRootDirectories,
-				scenariosRootDescriptions);
+		LarvaWriter larvaWriter = new LarvaWriter(larvaConfig, out);
+		TestExecutionObserver testExecutionObserver = new PlainTextScenarioOutputRenderer(larvaWriter);
+		LarvaTool larvaTool = new LarvaTool(ibisContext, larvaConfig, larvaWriter, testExecutionObserver);
+
+		String currentScenariosRootDirectory = larvaConfig.initScenarioDirectories(larvaWriter);
 		String paramExecute = currentScenariosRootDirectory;
 		if (StringUtils.isNotEmpty(getExecute())) {
 			paramExecute = paramExecute + getExecute();
 		}
-		String paramWaitBeforeCleanUp = getWaitBeforeCleanup();
-		LogWriter out = new LogWriter(log, isWriteToLog(), isWriteToSystemOut());
-		boolean silent = true;
-		LarvaTool.setTimeout(getTimeout());
-		int numScenariosFailed = larvaTool.runScenarios(ibisContext, getLogLevel().getName(), "true", "false", paramExecute,
-				paramWaitBeforeCleanUp, getTimeout(), currentScenariosRootDirectory, out, silent
-		);
+		int numScenariosFailed = larvaTool.runScenarios(paramExecute);
 		PipeForward forward = numScenariosFailed==0 ? getSuccessForward() : failureForward;
 		return new PipeRunResult(forward, out.toString());
 	}

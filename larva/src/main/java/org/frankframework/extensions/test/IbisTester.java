@@ -47,7 +47,11 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.Adapter;
+import org.frankframework.larva.LarvaConfig;
 import org.frankframework.larva.LarvaTool;
+import org.frankframework.larva.output.LarvaWriter;
+import org.frankframework.larva.output.PlainTextScenarioOutputRenderer;
+import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
@@ -78,6 +82,7 @@ public class IbisTester {
 
 		@Override
 		public String call() throws Exception {
+			LarvaConfig larvaConfig = new LarvaConfig();
 			MockHttpServletRequest request = new MockHttpServletRequest();
 			request.setServletPath("/iaf/larva/index.jsp");
 			boolean silent;
@@ -94,7 +99,9 @@ public class IbisTester {
 				request.setParameter("scenariosrootdirectory", scenariosRootDir);
 			}
 			Writer writer = new StringWriter();
-			LarvaTool.runScenarios(ibisContext, request, writer, silent);
+			LarvaWriter larvaWriter = new LarvaWriter(larvaConfig, writer);
+			TestExecutionObserver testExecutionObserver = new PlainTextScenarioOutputRenderer(larvaWriter);
+			LarvaTool.runScenarios(ibisContext, larvaConfig, larvaWriter, testExecutionObserver, scenario);
 			if (scenario == null) {
 				String htmlString = "<html><head/><body>" + writer + "</body></html>";
 				try (Message message = new Message(htmlString)) {

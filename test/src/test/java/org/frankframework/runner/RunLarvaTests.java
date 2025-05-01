@@ -4,14 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
@@ -29,13 +26,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.mock.web.MockHttpServletRequest;
 
 import org.frankframework.configuration.IbisContext;
+import org.frankframework.larva.LarvaConfig;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.ScenarioRunner;
 import org.frankframework.larva.TestConfig;
+import org.frankframework.larva.output.LarvaWriter;
+import org.frankframework.larva.output.PlainTextScenarioOutputRenderer;
+import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CloseUtils;
@@ -71,7 +71,10 @@ public class RunLarvaTests {
 		IbisContext ibisContext = FrankApplicationInitializer.getIbisContext(servletContext);
 		appConstants = AppConstants.getInstance();
 
-		larvaTool = new LarvaTool();
+		LarvaConfig larvaConfig = new LarvaConfig();
+		LarvaWriter larvaWriter = new LarvaWriter(larvaConfig, System.out);
+		TestExecutionObserver observer = new PlainTextScenarioOutputRenderer(larvaWriter);
+		larvaTool = new LarvaTool(ibisContext, larvaConfig, larvaWriter, observer);
 		TestConfig testConfig = larvaTool.getConfig();
 		testConfig.setTimeout(10_000);
 		testConfig.setSilent(false);
@@ -80,8 +83,8 @@ public class RunLarvaTests {
 		testConfig.setMultiThreaded(false);
 		testConfig.setOut(new HtmlTagStrippingWriter(System.out));
 
-		scenarioRunner = new ScenarioRunner(larvaTool, ibisContext, testConfig, appConstants, 100, LARVA_LOG_LEVEL);
-		scenarioRootDir = larvaTool.initScenariosRootDirectories(null, new ArrayList<>(), new ArrayList<>());
+		scenarioRunner = larvaTool.createScenarioRunner();
+		scenarioRootDir = larvaConfig.initScenarioDirectories(larvaWriter);
 	}
 
 	@AfterAll
@@ -146,31 +149,22 @@ public class RunLarvaTests {
 	@Test
 	void runLarvaTests() throws IOException {
 		assertTrue(applicationContext.isRunning());
-		List<File> allScenarioFiles = larvaTool.readScenarioFiles(appConstants, scenarioRootDir);
+		LarvaConfig larvaConfig = larvaTool.getLarvaConfig();
+		List<File> allScenarioFiles = larvaConfig.readScenarioFiles(larvaTool.getWriter());
 		assertFalse(allScenarioFiles.isEmpty(), () -> "Did not find any scenario-files in scenarioRootDir [%s]!".formatted(scenarioRootDir));
 
-		ServletContext servletContext = applicationContext.getBean(ServletContext.class);
-
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.setParameter("execute", scenarioRootDir);
-		request.setParameter("loglevel", LarvaLogLevel.SCENARIO_FAILED.getName());
-
-		// Invoke Larva tests
-		ByteArrayOutputStream boas = new ByteArrayOutputStream();
-		HtmlTagStrippingWriter htmlStrippingWriter = new HtmlTagStrippingWriter(boas, Set.of("form"));
+		larvaConfig.setLogLevel(LarvaLogLevel.SCENARIO_FAILED);
 
 		System.err.printf("Starting Scenarios, should have %d scenarios to run loaded from directory [%s].%n", allScenarioFiles.size(), scenarioRootDir);
 		long start = System.currentTimeMillis();
-		int result = LarvaTool.runScenarios(servletContext, request, htmlStrippingWriter);
+		int result = larvaTool.runScenarios(scenarioRootDir);
 		long end = System.currentTimeMillis();
 		System.err.printf("Scenarios executed; duration: %dms%n", end - start);
-		boas.close();
 
-		String larvaOutput = boas.toString();
-		assertFalse(result < 0, () -> "Error in LarvaTool execution, result is [%d] instead of 0; output from LarvaTool:%n%n%s".formatted(result, larvaOutput));
+		assertFalse(result < 0, () -> "Error in LarvaTool execution, result is [%d] instead of 0".formatted(result));
 
 		if (result > 0) {
-			System.err.printf("%d Larva tests failed, duration: %dms; %n%n%s%n", result, end - start, larvaOutput);
+			System.err.printf("%d Larva tests failed, duration: %dms; %n%n", result, end - start);
 		} else {
 			System.err.printf("All Larva tests succeeded in %dms%n", end - start);
 		}

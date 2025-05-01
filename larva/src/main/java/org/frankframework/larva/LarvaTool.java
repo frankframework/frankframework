@@ -36,21 +36,17 @@ import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -83,6 +79,10 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.larva.actions.LarvaActionFactory;
 import org.frankframework.larva.actions.LarvaActionUtils;
 import org.frankframework.larva.actions.LarvaScenarioAction;
+import org.frankframework.larva.output.HtmlScenarioOutputRenderer;
+import org.frankframework.larva.output.LarvaHtmlWriter;
+import org.frankframework.larva.output.LarvaWriter;
+import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
@@ -115,8 +115,13 @@ public class LarvaTool {
 	private static final String CURRENT_PACKAGE_NAME_LARVA = "org.frankframework.larva.";
 	// dirty solution by Marco de Reus:
 	private String stepOutputFilename = "";
-	private static boolean autoSaveDiffs = false;
-	private final @Getter TestConfig config = new TestConfig();
+	private final @Deprecated @Getter TestConfig config = new TestConfig();
+
+	private final @Getter IbisContext ibisContext;
+	private final @Getter LarvaConfig larvaConfig;
+	private final @Getter LarvaWriter writer;
+	private final @Getter TestExecutionObserver testExecutionObserver;
+	private final @Getter LarvaTestRunStatus testRunStatus = new LarvaTestRunStatus();
 
 	/*
 	 * if allowReadlineSteps is set to true, actual results can be compared in line by using .readline steps.
@@ -126,11 +131,20 @@ public class LarvaTool {
 
 	protected static int globalTimeoutMillis = AppConstants.getInstance().getInt("larva.timeout", 10_000);
 
-	private static final String TR_STARTING_TAG="<tr>";
-	private static final String TR_CLOSING_TAG="</tr>";
-	private static final String TD_STARTING_TAG="<td>";
-	private static final String TD_CLOSING_TAG="</td>";
-	private static final String TABLE_CLOSING_TAG="</table>";
+	public LarvaTool(IbisContext ibisContext, LarvaConfig larvaConfig, LarvaWriter writer, TestExecutionObserver testExecutionObserver) {
+		this.ibisContext = ibisContext;
+		this.larvaConfig = larvaConfig;
+		this.writer = writer;
+		this.testExecutionObserver = testExecutionObserver;
+
+		XMLUnit.setIgnoreWhitespace(true);
+
+		// TODO: Temp code while migrating from old to new config class
+		config.setSilent(larvaConfig.isSilent());
+		config.setTimeout(larvaConfig.getTimeout());
+		config.setLogLevel(larvaConfig.getLogLevel());
+		config.setMultiThreaded(larvaConfig.isMultiThreaded());
+	}
 
 	public static void setTimeout(int newTimeout) {
 		globalTimeoutMillis = newTimeout;
@@ -142,29 +156,15 @@ public class LarvaTool {
 
 	// Invoked by LarvaServlet
 	public static int runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
-		return runScenarios(getIbisContext(application), request, out, false);
+		LarvaHtmlConfig larvaHtmlConfig = new LarvaHtmlConfig(request);
+		LarvaHtmlWriter larvaHtmlWriter = new LarvaHtmlWriter(larvaHtmlConfig, out);
+		HtmlScenarioOutputRenderer renderer = new HtmlScenarioOutputRenderer(larvaHtmlConfig, larvaHtmlWriter);
+		return runScenarios(getIbisContext(application), larvaHtmlConfig, larvaHtmlWriter, renderer, larvaHtmlConfig.getExecute());
 	}
 
-	// Invoked by the IbisTester class
-	public static int runScenarios(IbisContext ibisContext, HttpServletRequest request, Writer out, boolean silent) {
-		String paramLogLevel = request.getParameter("loglevel");
-		String paramAutoScroll = request.getParameter("autoscroll");
-		String paramMultiThreaded = request.getParameter("multithreaded");
-		String paramExecute = request.getParameter("execute");
-		String paramWaitBeforeCleanUp = request.getParameter("waitbeforecleanup");
-		String paramGlobalTimeout = request.getParameter("timeout");
-		int timeout = globalTimeoutMillis;
-		if(paramGlobalTimeout != null) {
-			try {
-				timeout = Integer.parseInt(paramGlobalTimeout);
-			} catch(NumberFormatException e) {
-				// Ignore error, use default
-			}
-		}
-		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
-		LarvaTool larvaTool = new LarvaTool();
-		return larvaTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, paramMultiThreaded, paramExecute, paramWaitBeforeCleanUp, timeout,
-				paramScenariosRootDirectory, out, silent);
+	public static int runScenarios(IbisContext ibisContext, LarvaConfig config, LarvaWriter out, TestExecutionObserver testExecutionObserver, String execute) {
+		LarvaTool larvaTool = new LarvaTool(ibisContext, config, out, testExecutionObserver);
+		return larvaTool.runScenarios(execute);
 	}
 
 	/**
@@ -172,377 +172,118 @@ public class LarvaTool {
 	 * 		   0: all scenarios passed
 	 * 		   positive: number of scenarios that failed
 	 */
-	public int runScenarios(IbisContext ibisContext, String paramLogLevel, String paramAutoScroll, String paramMultithreaded, String paramExecute,
-							String paramWaitBeforeCleanUp, int timeout, String paramScenariosRootDirectory, Writer out, boolean silent) {
-		config.setTimeout(timeout);
-		config.setSilent(silent);
-		AppConstants appConstants = AppConstants.getInstance();
-		LarvaLogLevel logLevel = config.getLogLevel();
-		if (paramLogLevel != null) {
-			logLevel = LarvaLogLevel.parse(paramLogLevel, logLevel);
-		}
-		if (paramAutoScroll == null && paramLogLevel != null) {
-			config.setAutoScroll(false);
-		}
-		if (StringUtils.isNotEmpty(paramMultithreaded) && Boolean.parseBoolean(paramMultithreaded) && paramLogLevel != null) {
-			config.setMultiThreaded(true);
-		}
-
-		if (!silent) {
-			config.setOut(out);
-			config.setLogLevel(logLevel);
-		} else {
-			config.setSilentOut(out);
-		}
-
-		debugMessage("Start logging to logbuffer until form is written");
-		String autoSave = appConstants.getProperty("larva.diffs.autosave");
-		if (autoSave!=null) {
-			autoSaveDiffs = Boolean.parseBoolean(autoSave);
-		}
+	public int runScenarios(String execute) {
 		debugMessage("Initialize scenarios root directories");
-		List<String> scenariosRootDirectories = new ArrayList<>();
-		List<String> scenariosRootDescriptions = new ArrayList<>();
-		String currentScenariosRootDirectory = initScenariosRootDirectories(
-				paramScenariosRootDirectory, scenariosRootDirectories,
-				scenariosRootDescriptions);
-		if (scenariosRootDirectories.isEmpty()) {
-			debugMessage("Stop logging to logbuffer");
-			if (!config.isSilent()) {
-				config.setUseLogBuffer(false);
-			}
+		String currentScenariosRootDirectory = larvaConfig.initScenarioDirectories(writer);
+
+		if (larvaConfig.getScenarioDirectories().isEmpty()) {
 			errorMessage("No scenarios root directories found");
 			return ERROR_NO_SCENARIO_DIRECTORIES_FOUND;
 		}
-
 		debugMessage("Read scenarios from directory '" + StringEscapeUtils.escapeJava(currentScenariosRootDirectory) + "'");
-		List<File> allScenarioFiles = readScenarioFiles(appConstants, currentScenariosRootDirectory);
-		debugMessage("Initialize 'wait before cleanup' variable");
-		int waitBeforeCleanUp = 100;
-		if (paramWaitBeforeCleanUp != null) {
-			try {
-				waitBeforeCleanUp = Integer.parseInt(paramWaitBeforeCleanUp);
-			} catch(NumberFormatException e) {
-				// Ignore the error, use default
-			}
-		}
+		List<File> allScenarioFiles = larvaConfig.readScenarioFiles(writer);
 
-		debugMessage("Write html form");
-		printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, timeout, paramExecute);
-		debugMessage("Stop logging to logbuffer");
-		config.setUseLogBuffer(false);
-		debugMessage("Start debugging to out");
-		debugMessage("Execute scenario(s) if execute parameter present and scenarios root directory did not change");
-		if (paramExecute == null) {
-			config.flushWriters();
+		testExecutionObserver.startTestSuiteExecution();
+
+		if (execute == null) {
 			return 0;
 		}
-		int scenariosFailed = 0;
-		String paramExecuteCanonicalPath;
-		String scenariosRootDirectoryCanonicalPath;
-		try {
-			paramExecuteCanonicalPath = new File(paramExecute).getCanonicalPath();
-			scenariosRootDirectoryCanonicalPath = new File(currentScenariosRootDirectory).getCanonicalPath();
-		} catch(IOException e) {
-			paramExecuteCanonicalPath = paramExecute;
-			scenariosRootDirectoryCanonicalPath = currentScenariosRootDirectory;
-			errorMessage("Could not get canonical path: " + e.getMessage(), e);
-		}
-		if (paramExecuteCanonicalPath.startsWith(scenariosRootDirectoryCanonicalPath)) {
-			debugMessage("Initialize XMLUnit");
-			XMLUnit.setIgnoreWhitespace(true);
-			debugMessage("Initialize 'scenario files' variable");
-			debugMessage("Param execute: " + paramExecute);
-			List<File> scenarioFiles;
-			if (paramExecute.endsWith(".properties")) {
-				debugMessage("Read one scenario");
-				scenarioFiles = new ArrayList<>();
-				scenarioFiles.add(new File(paramExecute));
-			} else if (paramExecute.equals(currentScenariosRootDirectory)) {
-				debugMessage("Executing all scenario files from root directory '" + currentScenariosRootDirectory + "'");
-				scenarioFiles = allScenarioFiles;
-			} else {
-				debugMessage("Read all scenarios from directory '" + paramExecute + "'");
-				scenarioFiles = readScenarioFiles(appConstants, paramExecute);
-			}
-			debugMessage("Initialize statistics variables");
-			long startTime = System.currentTimeMillis();
-			debugMessage("Execute scenario('s)");
-			ScenarioRunner scenarioRunner = new ScenarioRunner(this, ibisContext, config, appConstants, waitBeforeCleanUp, logLevel);
-			// If only one scenario is executed, do not use multithreading, because they mostly use the same resources
-			if (paramScenariosRootDirectory != null && !paramScenariosRootDirectory.equals(paramExecute)) {
-				scenarioRunner.setMultipleThreads(false);
-			}
-			scenarioRunner.runScenario(scenarioFiles, currentScenariosRootDirectory);
-			config.flushWriters();
-			scenariosFailed = scenarioRunner.getScenariosFailed().get();
 
-			long executeTime = System.currentTimeMillis() - startTime;
-			debugMessage("Print statistics information");
-			int scenariosTotal = scenarioRunner.getScenariosPassed().get() + scenarioRunner.getScenariosAutosaved().get() + scenarioRunner.getScenariosFailed().get();
-			if (scenariosTotal == 0) {
-				scenariosTotalMessage("No scenarios found");
-				config.flushWriters();
-				return 0;
-			}
-			if (!config.isSilent() && logLevel.shouldLog(LarvaLogLevel.SCENARIO_PASSED_FAILED)) {
-				writeHtml("<br/><br/>", false);
-			}
-			debugMessage("Print statistics information");
-			String formattedTime = getFormattedTime(executeTime);
-			if (scenarioRunner.getScenariosPassed().get() == scenariosTotal) {
-				if (scenariosTotal == 1) {
-					scenariosPassedTotalMessage("All scenarios passed (1 scenario executed in " + formattedTime + ")");
-				} else {
-					scenariosPassedTotalMessage("All scenarios passed (" + scenariosTotal + " scenarios executed in " + formattedTime + ")");
-				}
-			} else if (scenarioRunner.getScenariosFailed().get() == scenariosTotal) {
-				if (scenariosTotal == 1) {
-					scenariosFailedTotalMessage("All scenarios failed (1 scenario executed in " + formattedTime + ")");
-				} else {
-					scenariosFailedTotalMessage("All scenarios failed (" + scenariosTotal + " scenarios executed in " + formattedTime + ")");
-				}
-			} else {
-				if (scenariosTotal == 1) {
-					scenariosTotalMessage("1 scenario executed in " + formattedTime);
-				} else {
-					scenariosTotalMessage(scenariosTotal + " scenarios executed in " + formattedTime);
-				}
-				if (scenarioRunner.getScenariosPassed().get() == 1) {
-					scenariosPassedTotalMessage("1 scenario passed");
-				} else {
-					scenariosPassedTotalMessage(scenarioRunner.getScenariosPassed() + " scenarios passed");
-				}
-				if (autoSaveDiffs) {
-					if (scenarioRunner.getScenariosAutosaved().get() == 1) {
-						scenariosAutosavedTotalMessage("1 scenario passed after autosave");
-					} else {
-						scenariosAutosavedTotalMessage(scenarioRunner.getScenariosAutosaved() + " scenarios passed after autosave");
-					}
-				}
-				if (scenarioRunner.getScenariosFailed().get() == 1) {
-					scenariosFailedTotalMessage("1 scenario failed");
-				} else {
-					scenariosFailedTotalMessage(scenarioRunner.getScenariosFailed() + " scenarios failed");
-				}
-			}
+		List<File> scenarioFiles;
+		if (execute.endsWith(".properties")) {
+			debugMessage("Read one scenario");
+			scenarioFiles = List.of(new File(execute));
+		} else {
+			debugMessage("Executing all scenario files from root directory '" + currentScenariosRootDirectory + "'");
+			scenarioFiles = allScenarioFiles;
 		}
-		debugMessage("Start logging to htmlbuffer until form is written");
-		if (!config.isSilent())
-			config.setUseHtmlBuffer(true);
-		writeHtml("<br/><br/>",  false);
-		printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, timeout, paramExecute);
-		debugMessage("Stop logging to htmlbuffer");
-		if (!config.isSilent())
-			config.setUseHtmlBuffer(false);
-		writeHtml("",  true);
+
+		if (scenarioFiles.isEmpty()) {
+			errorMessage("No scenarios found");
+		}
+
+		debugMessage("Initialize statistics variables");
+		long startTime = System.currentTimeMillis();
+		debugMessage("Execute scenario('s)");
+		ScenarioRunner scenarioRunner = createScenarioRunner();
+		// If only one scenario is executed, do not use multithreading, because they mostly use the same resources
+		if (scenarioFiles.size() == 1) {
+			scenarioRunner.setMultipleThreads(false);
+		}
+		scenarioRunner.runScenario(scenarioFiles, currentScenariosRootDirectory);
 		config.flushWriters();
+		int scenariosFailed = scenarioRunner.getScenariosFailed().get();
+
+		long executeTime = System.currentTimeMillis() - startTime;
+		int scenariosTotal = scenarioRunner.getScenariosPassed().get() + scenarioRunner.getScenariosAutosaved().get() + scenarioRunner.getScenariosFailed().get();
+
+		printScenarioExecutionStatistics(executeTime, scenarioRunner, scenariosTotal);
+
+		testExecutionObserver.endTestSuiteExecution();
 		CleanerProvider.logLeakStatistics();
+
 		return scenariosFailed;
 	}
 
-	private static String getFormattedTime(long executeTime) {
-		Duration duration = Duration.ofMillis(executeTime);
-		if (duration.toMinutesPart() == 0 && duration.toSecondsPart() == 0) {
-			// Only milliseconds (e.g. 123ms)
-			return duration.toMillisPart() + "ms";
-		} else if (duration.toMinutesPart() == 0) {
-			// Seconds and milliseconds (e.g. 1s 123ms)
-			return duration.toSecondsPart() + "s " + duration.toMillisPart() + "ms";
-		} else {
-			// Minutes, seconds and milliseconds (e.g. 1m 1s 123ms)
-			return duration.toMinutesPart() + "m " + duration.toSecondsPart() + "s " + duration.toMillisPart() + "ms";
-		}
+	public ScenarioRunner createScenarioRunner() {
+		return new ScenarioRunner(this);
 	}
 
-	public void printHtmlForm(List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants, List<File> scenarioFiles, int waitBeforeCleanUp, int timeout, String paramExecute) {
-		if (config.isSilent())
-			return;
-
-		writeHtml("<form action=\"index.jsp\" method=\"post\">", false);
-
-		// scenario root directory drop down
-		writeHtml("<table style=\"float:left;height:50px\">", false);
-		writeHtml(TR_STARTING_TAG, false);
-		writeHtml("<td>Scenarios root directory</td>", false);
-		writeHtml(TR_CLOSING_TAG, false);
-		writeHtml(TR_STARTING_TAG, false);
-		writeHtml(TD_STARTING_TAG, false);
-		writeHtml("<select name=\"scenariosrootdirectory\" onchange=\"updateScenarios()\">", false);
-		Iterator<String> scenariosRootDirectoriesIterator = scenariosRootDirectories.iterator();
-		Iterator<String> scenariosRootDescriptionsIterator = scenariosRootDescriptions.iterator();
-		while (scenariosRootDirectoriesIterator.hasNext()) {
-			String directory = scenariosRootDirectoriesIterator.next();
-			String description = scenariosRootDescriptionsIterator.next();
-			String option = "<option value=\"" + XmlEncodingUtils.encodeChars(directory) + "\"";
-			if (scenariosRootDirectory.equals(directory)) {
-				option = option + " selected";
+	private void printScenarioExecutionStatistics(long executeTime, ScenarioRunner scenarioRunner, int scenariosTotal) {
+		debugMessage("Print statistics information");
+		String formattedTime = LarvaUtil.formatDuration(executeTime);
+		int scenariosPassed = scenarioRunner.getScenariosPassed().get();
+		int scenariosFailed = scenarioRunner.getScenariosFailed().get();
+		int scenariosAutoSaved = scenarioRunner.getScenariosAutosaved().get();
+		String scenariosPassedMessage;
+		String scenariosFailedMessage;
+		String scenariosAutoSavedMessage;
+		String scenariosTotalMessage;
+		if (scenariosPassed == scenariosTotal) {
+			if (scenariosTotal == 1) {
+				scenariosPassedMessage = "All scenarios passed (1 scenario executed in " + formattedTime + ")";
+			} else {
+				scenariosPassedMessage = "All scenarios passed (" + scenariosTotal + " scenarios executed in " + formattedTime + ")";
 			}
-			option = option + ">" + XmlEncodingUtils.encodeChars(description) + "</option>";
-			writeHtml(option, false);
-		}
-		writeHtml("</select>", false);
-		writeHtml(TD_CLOSING_TAG, false);
-		writeHtml(TR_CLOSING_TAG, false);
-		writeHtml(TABLE_CLOSING_TAG, false);
-
-		// Use a span to make IE put table on next line with a smaller window width
-		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", false);
-		writeHtml("<table style=\"float:left;height:50px\">", false);
-		writeHtml(TR_STARTING_TAG, false);
-		writeHtml("<td>Wait before clean up (ms)</td>", false);
-		writeHtml(TR_CLOSING_TAG, false);
-		writeHtml(TR_STARTING_TAG, false);
-		writeHtml(TD_STARTING_TAG, false);
-		writeHtml("<input type=\"text\" name=\"waitbeforecleanup\" value=\"" + waitBeforeCleanUp + "\"/>", false);
-		writeHtml(TD_CLOSING_TAG, false);
-		writeHtml(TR_CLOSING_TAG, false);
-		writeHtml(TABLE_CLOSING_TAG, false);
-
-		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", false);
-		// timeout box
-		writeHtml("<table style=\"float:left;height:50px\">", false);
-		writeHtml(TR_STARTING_TAG, false);
-		writeHtml("<td>Default timeout (ms)</td>", false);
-		writeHtml(TR_CLOSING_TAG, false);
-		writeHtml(TR_STARTING_TAG, false);
-		writeHtml(TD_STARTING_TAG, false);
-		writeHtml("<input type=\"text\" name=\"timeout\" value=\"" + (timeout != globalTimeoutMillis ? timeout : globalTimeoutMillis) + "\" title=\"Global timeout for larva scenarios.\"/>", false);
-		writeHtml(TD_CLOSING_TAG, false);
-		writeHtml(TR_CLOSING_TAG, false);
-		writeHtml(TABLE_CLOSING_TAG, false);
-
-		// log level dropdown
-		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", false);
-		writeHtml("<table style=\"float:left;height:50px\">", false);
-		writeHtml(TR_STARTING_TAG, false);
-		writeHtml("<td>Log level</td>", false);
-		writeHtml(TR_CLOSING_TAG, false);
-		writeHtml(TR_STARTING_TAG, false);
-		writeHtml(TD_STARTING_TAG, false);
-		writeHtml("<select name=\"loglevel\">", false);
-		for (LarvaLogLevel level : LarvaLogLevel.values()) {
-			String option = "<option value=\"" + XmlEncodingUtils.encodeChars(level.getName()) + "\"";
-			if (config.getLogLevel() == level) {
-				option = option + " selected";
-			}
-			option = option + ">" + XmlEncodingUtils.encodeChars(level.getName()) + "</option>";
-			writeHtml(option, false);
-		}
-		writeHtml("</select>", false);
-		writeHtml(TD_CLOSING_TAG, false);
-		writeHtml(TR_CLOSING_TAG, false);
-		writeHtml(TABLE_CLOSING_TAG, false);
-
-		// Auto scroll checkbox
-		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", false);
-		writeHtml("<table style=\"float:left;height:50px\">", false);
-		writeHtml(TR_STARTING_TAG, false);
-		writeHtml("<td>Auto scroll</td>", false);
-		writeHtml(TR_CLOSING_TAG, false);
-		writeHtml(TR_STARTING_TAG, false);
-		writeHtml(TD_STARTING_TAG, false);
-		writeHtml("<input type=\"checkbox\" name=\"autoscroll\" value=\"true\"", false);
-		if (config.isAutoScroll()) {
-			writeHtml(" checked", false);
-		}
-		writeHtml("/>", false);
-		writeHtml(TD_CLOSING_TAG, false);
-		writeHtml(TR_CLOSING_TAG, false);
-		writeHtml(TABLE_CLOSING_TAG, false);
-
-		// Multithreaded checkbox
-		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", false);
-		writeHtml("<table style=\"float:left;height:50px\">", false);
-		writeHtml(TR_STARTING_TAG, false);
-		writeHtml("<td>Multi Threaded (experimental)</td>", false);
-		writeHtml(TR_CLOSING_TAG, false);
-		writeHtml(TR_STARTING_TAG, false);
-		writeHtml(TD_STARTING_TAG, false);
-		writeHtml("<input type=\"checkbox\" name=\"multithreaded\" value=\"true\"", false);
-		if (config.isMultiThreaded()) {
-			writeHtml(" checked", false);
-		}
-		writeHtml("/>", false);
-		writeHtml(TD_CLOSING_TAG, false);
-		writeHtml(TR_CLOSING_TAG, false);
-		writeHtml(TABLE_CLOSING_TAG, false);
-
-		// Scenario(s)
-		writeHtml("<table style=\"clear:both;float:left;height:50px\">", false);
-		writeHtml(TR_STARTING_TAG, false);
-		writeHtml("<td>Scenario(s)</td>", false);
-		writeHtml(TR_CLOSING_TAG, false);
-		writeHtml(TR_STARTING_TAG, false);
-		writeHtml(TD_STARTING_TAG, false);
-		writeHtml("<select name=\"execute\">", false);
-		debugMessage("Fill execute select box.");
-		Set<String> addedDirectories = new HashSet<>();
-		for (File scenarioFile : scenarioFiles) {
-			String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
-			Properties properties = readProperties(appConstants, scenarioFile);
-			debugMessage("Add parent directories of '" + scenarioDirectory + "'");
-			int i;
-			String scenarioDirectoryCanonicalPath;
-			String scenariosRootDirectoryCanonicalPath;
-			try {
-				scenarioDirectoryCanonicalPath = new File(scenarioDirectory).getCanonicalPath();
-				scenariosRootDirectoryCanonicalPath = new File(scenariosRootDirectory).getCanonicalPath();
-			} catch (IOException e) {
-				scenarioDirectoryCanonicalPath = scenarioDirectory;
-				scenariosRootDirectoryCanonicalPath = scenariosRootDirectory;
-				errorMessage("Could not get canonical path: " + e.getMessage(), e);
-			}
-			if (scenarioDirectoryCanonicalPath.startsWith(scenariosRootDirectoryCanonicalPath)) {
-				i = scenariosRootDirectory.length() - 1;
-				while (i != -1) {
-					String longName = scenarioDirectory.substring(0, i + 1);
-					debugMessage("longName: '" + longName + "'");
-					if (!addedDirectories.contains(longName)) {
-						String shortName = scenarioDirectory.substring(scenariosRootDirectory.length() - 1, i + 1);
-						String option = "<option value=\"" + XmlEncodingUtils.encodeChars(longName) + "\"";
-						debugMessage("paramExecute: '" + paramExecute + "'");
-						if (paramExecute != null && paramExecute.equals(longName)) {
-							option = option + " selected";
-						}
-						option = option + ">" + XmlEncodingUtils.encodeChars(shortName) + "</option>";
-						writeHtml(option, false);
-						addedDirectories.add(longName);
-					}
-					i = scenarioDirectory.indexOf(File.separator, i + 1);
+			scenariosFailedMessage = null;
+			scenariosAutoSavedMessage = null;
+			scenariosTotalMessage = null;
+		} else if (scenariosFailed == scenariosTotal) {
+				if (scenariosTotal == 1) {
+					scenariosFailedMessage = "All scenarios failed (1 scenario executed in " + formattedTime + ")";
+				} else {
+					scenariosFailedMessage = "All scenarios failed (" + scenariosTotal + " scenarios executed in " + formattedTime + ")";
 				}
-				String longName = scenarioFile.getAbsolutePath();
-				String shortName = longName.substring(scenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
-				debugMessage("shortName: '" + shortName + "'");
-				String option = "<option value=\"" + XmlEncodingUtils.encodeChars(longName) + "\"";
-				if (paramExecute != null && paramExecute.equals(longName)) {
-					option = option + " selected";
+				scenariosPassedMessage = null;
+				scenariosAutoSavedMessage = null;
+				scenariosTotalMessage = null;
+		} else {
+			if (scenariosTotal == 1) {
+				scenariosTotalMessage = "1 scenario executed in " + formattedTime;
+			} else {
+				scenariosTotalMessage = scenariosTotal + " scenarios executed in " + formattedTime;
+			}
+			if (scenariosPassed == 1) {
+				scenariosPassedMessage = "1 scenario passed";
+			} else {
+				scenariosPassedMessage = scenariosPassed + " scenarios passed";
+			}
+			if (larvaConfig.isAutoSaveDiffs()) {
+				if (scenariosAutoSaved == 1) {
+					scenariosAutoSavedMessage = "1 scenario passed after autosave";
+				} else {
+					scenariosAutoSavedMessage = scenariosAutoSaved + " scenarios passed after autosave";
 				}
-				option = option + ">" + XmlEncodingUtils.encodeChars(shortName + " - " + properties.getProperty("scenario.description")) + "</option>";
-				writeHtml(option, false);
+			} else {
+				scenariosAutoSavedMessage = null;
+			}
+			if (scenariosFailed == 1) {
+				scenariosFailedMessage = "1 scenario failed";
+			} else {
+				scenariosFailedMessage = scenariosFailed + " scenarios failed";
 			}
 		}
-		writeHtml("</select>", false);
-		writeHtml(TD_CLOSING_TAG, false);
-		writeHtml(TR_CLOSING_TAG, false);
-		writeHtml(TABLE_CLOSING_TAG, false);
-
-		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", false);
-		// submit button
-		writeHtml("<table style=\"float:left;height:50px\">", false);
-		writeHtml(TR_STARTING_TAG, false);
-		writeHtml("<td>&nbsp;</td>", false);
-		writeHtml(TR_CLOSING_TAG, false);
-		writeHtml(TR_STARTING_TAG, false);
-		writeHtml("<td align=\"right\">", false);
-		writeHtml("<input type=\"submit\" name=\"submit\" value=\"start\" id=\"submit\"/>", false);
-		writeHtml(TD_CLOSING_TAG, false);
-		writeHtml(TR_CLOSING_TAG, false);
-		writeHtml(TABLE_CLOSING_TAG, false);
-
-		writeHtml("</form>", false);
-		writeHtml("<br clear=\"all\"/>", false);
-		config.flushWriters();
+		testExecutionObserver.executionStatistics(scenariosTotalMessage, scenariosPassedMessage, scenariosFailedMessage, scenariosAutoSavedMessage, scenariosTotal, scenariosPassed, scenariosFailed, scenariosAutoSaved);
 	}
 
 	public void write(String html, boolean isHtmlType, LarvaLogLevel logLevel, boolean scroll) {
@@ -597,6 +338,7 @@ public class LarvaTool {
 
 	public void debugMessage(String message) {
 		logger.debug(message);
+		writer.debugMessage(message);
 		writeLog(XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(message)) + "<br/>", LarvaLogLevel.DEBUG, false);
 	}
 
@@ -764,44 +506,16 @@ public class LarvaTool {
 		return commands.toString();
 	}
 
-	public void scenariosTotalMessage(String message) {
-		if (config.isSilent()) {
-			config.writeSilent(message);
-		} else {
-			writeLog("<h1 class='total'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", LarvaLogLevel.TOTALS, true);
-		}
-	}
-
-	public void scenariosPassedTotalMessage(String message) {
-		if (config.isSilent()) {
-			config.writeSilent(message);
-		} else {
-			writeLog("<h1 class='passed'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", LarvaLogLevel.TOTALS, true);
-		}
-	}
-
-	public void scenariosAutosavedTotalMessage(String message) {
-		if (config.isSilent()) {
-			config.writeSilent(message);
-		} else {
-			writeLog("<h1 class='autosaved'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", LarvaLogLevel.TOTALS, true);
-		}
-	}
-
-	public void scenariosFailedTotalMessage(String message) {
-		if (config.isSilent()) {
-			config.writeSilent(message);
-		} else {
-			writeLog("<h1 class='failed'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", LarvaLogLevel.TOTALS, true);
-		}
-	}
-
 	public void errorMessage(String message) {
+		logger.error(message);
+		writer.errorMessage(message);
 		writeLog("<h1 class='error'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", LarvaLogLevel.ERROR, true);
 		config.writeSilent(message);
 	}
 
 	public void warningMessage(String message) {
+		logger.warn(message);
+		writer.warningMessage(message);
 		writeLog("<h2 class='warning'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", LarvaLogLevel.ERROR, true);
 		config.writeSilent(message);
 	}
@@ -825,93 +539,6 @@ public class LarvaTool {
 			writeLog("</div>", method, false);
 			throwable = throwable.getCause();
 		}
-	}
-
-	public String initScenariosRootDirectories(String paramScenariosRootDirectory, List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions) {
-		AppConstants appConstants = AppConstants.getInstance();
-		String currentScenariosRootDirectory = null;
-
-		String realPath = getParentOfWebappRoot();
-
-		if (realPath == null) {
-			errorMessage("Could not read webapp real path");
-			return null;
-		}
-		if (!realPath.endsWith(File.separator)) {
-			realPath = realPath + File.separator;
-		}
-		Map<String, String> scenariosRoots = new HashMap<>();
-		Map<String, String> scenariosRootsBroken = new HashMap<>();
-		int j = 1;
-		String directory = appConstants.getProperty("scenariosroot" + j + ".directory");
-		String description = appConstants.getProperty("scenariosroot" + j + ".description");
-		while (directory != null) {
-			if (description == null) {
-				errorMessage("Could not find description for root directory '" + directory + "'");
-			} else if (scenariosRoots.get(description) != null) {
-				errorMessage("A root directory named '" + description + "' already exist");
-			} else {
-				String parent = realPath;
-				String m2eFileName = appConstants.getProperty("scenariosroot" + j + ".m2e.pom.properties");
-				if (m2eFileName != null) {
-					File m2eFile = new File(realPath, m2eFileName);
-					if (m2eFile.exists()) {
-						debugMessage("Read m2e pom.properties: " + m2eFileName);
-						Properties m2eProperties = readProperties(null, m2eFile, false);
-						parent = m2eProperties.getProperty("m2e.projectLocation");
-						debugMessage("Use m2e parent: " + parent);
-					}
-				}
-				directory = getAbsolutePath(parent, directory, true);
-				if (new File(directory).exists()) {
-					debugMessage("directory for [" + description + "] exists: " + directory);
-					scenariosRoots.put(description, directory);
-				} else {
-					debugMessage("directory [" + directory + "] for [" + description + "] does not exist, parent [" + parent + "]");
-					scenariosRootsBroken.put(description, directory);
-				}
-			}
-			j++;
-			directory = appConstants.getProperty("scenariosroot" + j + ".directory");
-			description = appConstants.getProperty("scenariosroot" + j + ".description");
-		}
-		TreeSet<String> treeSet = new TreeSet<>(new CaseInsensitiveComparator());
-		treeSet.addAll(scenariosRoots.keySet());
-		Iterator<String> iterator = treeSet.iterator();
-		while (iterator.hasNext()) {
-			description = iterator.next();
-			scenariosRootDescriptions.add(description);
-			scenariosRootDirectories.add(scenariosRoots.get(description));
-		}
-		treeSet.clear();
-		treeSet.addAll(scenariosRootsBroken.keySet());
-		iterator = treeSet.iterator();
-		while (iterator.hasNext()) {
-			description = iterator.next();
-			scenariosRootDescriptions.add("X " + description);
-			scenariosRootDirectories.add(scenariosRootsBroken.get(description));
-		}
-		debugMessage("Read scenariosrootdirectory parameter");
-		debugMessage("Get current scenarios root directory");
-		if (paramScenariosRootDirectory == null || paramScenariosRootDirectory.isEmpty()) {
-			String scenariosRootDefault = appConstants.getProperty("scenariosroot.default");
-			if (scenariosRootDefault != null) {
-				currentScenariosRootDirectory = scenariosRoots.get(scenariosRootDefault);
-			}
-			if (currentScenariosRootDirectory == null
-					&& !scenariosRootDirectories.isEmpty()) {
-				currentScenariosRootDirectory = scenariosRootDirectories.get(0);
-			}
-		} else {
-			currentScenariosRootDirectory = paramScenariosRootDirectory;
-		}
-		return currentScenariosRootDirectory;
-	}
-
-	private String getParentOfWebappRoot() {
-		String realPath = this.getClass().getResource("/").getPath();
-
-		return new File(realPath).getParent();
 	}
 
 	public List<File> readScenarioFiles(AppConstants appConstants, String scenariosDirectory) {
@@ -1229,11 +856,7 @@ public class LarvaTool {
 		AppConstants appConstants = AppConstants.getInstance();
 		String windiffCommand = appConstants.getProperty("larva.windiff.command");
 		if (windiffCommand == null) {
-			List<String> scenariosRootDirectories = new ArrayList<>();
-			List<String> scenariosRootDescriptions = new ArrayList<>();
-			String currentScenariosRootDirectory = initScenariosRootDirectories(
-					null, scenariosRootDirectories,
-					scenariosRootDescriptions);
+			String currentScenariosRootDirectory = larvaConfig.initScenarioDirectories(writer);
 			windiffCommand = currentScenariosRootDirectory + "..\\..\\IbisAlgemeenWasbak\\WinDiff\\WinDiff.Exe";
 		}
 		File tempFileResult = writeTempFile(expectedFileName, result);
@@ -1382,7 +1005,6 @@ public class LarvaTool {
 		String preparedExpectedResult = prepareResultForCompare(printableExpectedResult, properties, ignoreMap);
 		String preparedActualResult = prepareResultForCompare(printableActualResult, properties, ignoreMap);
 
-
 		if (".xml".equals(diffType) || ".wsdl".equals(diffType)
 				|| diffType == null && (fileName.endsWith(".xml") || fileName.endsWith(".wsdl"))) {
 			// xml diff
@@ -1411,7 +1033,7 @@ public class LarvaTool {
 				}
 				wrongPipelineMessage(stepDisplayName, message, printableActualResult, printableExpectedResult);
 				wrongPipelineMessagePreparedForDiff(stepDisplayName, preparedActualResult, preparedExpectedResult);
-				if (autoSaveDiffs) {
+				if (larvaConfig.isAutoSaveDiffs()) {
 					String filenameAbsolutePath = (String)properties.get(step + ".absolutepath");
 					debugMessage("Copy actual result to ["+filenameAbsolutePath+"]");
 					try {
@@ -1465,7 +1087,7 @@ public class LarvaTool {
 				message = message + " actual result is '" + diffActual + "' and expected result is '" + diffExcpected + "'";
 				wrongPipelineMessage(stepDisplayName, message, printableActualResult, printableExpectedResult);
 				wrongPipelineMessagePreparedForDiff(stepDisplayName, preparedActualResult, preparedExpectedResult);
-				if (autoSaveDiffs) {
+				if (larvaConfig.isAutoSaveDiffs()) {
 					String filenameAbsolutePath = (String)properties.get(step + ".absolutepath");
 					debugMessage("Copy actual result to ["+filenameAbsolutePath+"]");
 					try {
@@ -1906,7 +1528,6 @@ public class LarvaTool {
 	 * param2, param3 etc.
 	 *
 	 * @param properties Properties object from which to create the map
-	 * @param property   Property name to use as base name
 	 * @return A map with parameters
 	 */
 	// Replace or merge this with LarvaActionUtils.createParametersMapFromParamProperties
