@@ -114,6 +114,18 @@ public class IdinSenderTest {
 	}
 
 	@Test
+	public void testCredentialsAliasesToPasswordMappings() {
+			sender.setKeyStoreAuthAlias("alias1");
+			assertEquals("password1", sender.getKeyStorePassword());
+
+			sender.setMerchantCertificateAuthAlias("alias1");
+			assertEquals("password1", sender.getMerchantCertificatePassword());
+
+			sender.setSAMLCertificateAuthAlias("alias1");
+			assertEquals("password1", sender.getSAMLCertificatePassword());
+	}
+
+	@Test
 	public void testXmlConfigurationFile() throws Exception {
 		String message = "<idin><transactionID>1111111111111111</transactionID></idin>";
 
