@@ -22,7 +22,6 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -76,39 +75,36 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable final Message inputMessage, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		Message originalMessage = inputMessage;
 
-		Message message;
-		try (CloseableThreadContext.Instance ignored = CloseableThreadContext.put(LogUtil.MDC_PIPE_KEY, pipe.getName())) {
-			// Get the input message for the pipe to be processed, does not return null.
-			message = getInputFrom(pipe, inputMessage, pipeLineSession);
+		// Get the input message for the pipe to be processed, does not return null.
+		Message message = getInputFrom(pipe, inputMessage, pipeLineSession);
 
-			// If the input is empty and the pipe has a replacement value, replace the input with the (fixed) value.
-			if (Message.isEmpty(message) && StringUtils.isNotEmpty(pipe.getEmptyInputReplacement())) {
-				message.close(); // Cleanup
-				log.debug("replacing empty input with fixed value [{}]", pipe::getEmptyInputReplacement);
-				message = new Message(pipe.getEmptyInputReplacement());
-				message.closeOnCloseOf(pipeLineSession); // Technically not required but prevents the CleanerProvider from complaining.
-			}
+		// If the input is empty and the pipe has a replacement value, replace the input with the (fixed) value.
+		if (Message.isEmpty(message) && StringUtils.isNotEmpty(pipe.getEmptyInputReplacement())) {
+			message.close(); // Cleanup
+			log.debug("replacing empty input with fixed value [{}]", pipe::getEmptyInputReplacement);
+			message = new Message(pipe.getEmptyInputReplacement());
+			message.closeOnCloseOf(pipeLineSession); // Technically not required but prevents the CleanerProvider from complaining.
+		}
 
-			// Do the actual pipe processing.
-			final PipeRunResult pipeRunResult;
-			if (pipe instanceof FixedForwardPipe ffPipe && ffPipe.skipPipe(message, pipeLineSession)) {
-				log.info("skipped pipe processing");
-				pipeRunResult = new PipeRunResult(ffPipe.getSuccessForward(), message);
-			} else {
-				pipeRunResult = chain.apply(message);
-			}
+		// Do the actual pipe processing.
+		final PipeRunResult pipeRunResult;
+		if (pipe instanceof FixedForwardPipe ffPipe && ffPipe.skipPipe(message, pipeLineSession)) {
+			log.info("skipped pipe processing");
+			pipeRunResult = new PipeRunResult(ffPipe.getSuccessForward(), message);
+		} else {
+			pipeRunResult = chain.apply(message);
+		}
 
-			if (pipeRunResult == null) { // It is still possible for a PipeProcessor to return NULL?
-				throw new PipeRunException(pipe, "received null result from pipe");
-			}
+		if (pipeRunResult == null) { // It is still possible for a PipeProcessor to return NULL?
+			throw new PipeRunException(pipe, "received null result from pipe");
+		}
 
-			// Post processing.
-			try {
-				return postProcessPipeResult(pipe, pipeLineSession, pipeRunResult, originalMessage);
-			} finally {
-				if (pipe.isWriteToSecLog()) {
-					SEC_LOG.info("adapter [{}] pipe [{}]{}", () -> pipeLine.getOwner().getName(), pipe::getName, () -> computeSessionKeys(pipeLineSession, pipe));
-				}
+		// Post processing.
+		try {
+			return postProcessPipeResult(pipe, pipeLineSession, pipeRunResult, originalMessage);
+		} finally {
+			if (pipe.isWriteToSecLog()) {
+				SEC_LOG.info("adapter [{}] pipe [{}]{}", () -> pipeLine.getOwner().getName(), pipe::getName, () -> computeSessionKeys(pipeLineSession, pipe));
 			}
 		}
 	}

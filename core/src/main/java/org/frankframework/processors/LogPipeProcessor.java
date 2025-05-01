@@ -19,6 +19,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.CloseableThreadContext;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -30,7 +31,15 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
 
+/**
+ * Logs the pipe name and the message before calling the pipe.
+ * <p>
+ * Sets the LogContext with the pipe name, so it can be used in all subsequent log messages.
+ * <p>
+ * Also used to log the intermediary results between pipes, when enabled (either on pipe or global level).
+ */
 @Log4j2
 public class LogPipeProcessor extends AbstractPipeProcessor {
 	private static final boolean LOG_INTERMEDIARY_RESULTS = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true);
@@ -43,7 +52,10 @@ public class LogPipeProcessor extends AbstractPipeProcessor {
 			log.info("pipeline process is about to call pipe [{}]", pipe::getName);
 		}
 
-		return chain.apply(message);
+
+		try (CloseableThreadContext.Instance ignored = CloseableThreadContext.put(LogUtil.MDC_PIPE_KEY, pipe.getName())) {
+			return chain.apply(message);
+		}
 	}
 
 
