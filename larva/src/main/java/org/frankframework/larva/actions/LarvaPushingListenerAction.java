@@ -81,17 +81,17 @@ public class LarvaPushingListenerAction extends AbstractLarvaAction<IPushingList
 			context = getSession();
 		}
 
-		ListenerMessage listenerMessage = new ListenerMessage(fileContent, context);
-		listenerMessageHandler.putResponseMessage(listenerMessage);
+		ListenerMessage message = new ListenerMessage(fileContent, context);
+		listenerMessageHandler.putResponseMessage(message);
 	}
 
 	@Override
 	public Message executeRead(Properties properties) throws TimeoutException, ListenerException {
-		ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessageWithDefaultTimeout();
+		ListenerMessage message = listenerMessageHandler.getRequestMessageWithDefaultTimeout();
 
-		if (listenerMessage != null) {
-			this.listenerMessage = listenerMessage;
-			return listenerMessage.getMessage();
+		if (message != null) {
+			this.listenerMessage = message;
+			return message.getMessage();
 		}
 		throw new ListenerException("no message found in queue [" + peek() + "]");
 	}

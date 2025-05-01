@@ -54,9 +54,9 @@ public class SenderAction extends AbstractLarvaAction<ISender> {
 			return;
 		}
 
-		SenderThread senderThread = new SenderThread(peek(), fileContent, getSession(), isConvertExceptionToMessage(), correlationId);
-		senderThread.start();
-		this.senderThread = senderThread;
+		SenderThread thread = new SenderThread(peek(), fileContent, getSession(), isConvertExceptionToMessage(), correlationId);
+		thread.start();
+		this.senderThread = thread;
 	}
 
 	@Override
