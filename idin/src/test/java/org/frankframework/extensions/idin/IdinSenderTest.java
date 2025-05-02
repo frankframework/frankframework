@@ -2,6 +2,7 @@ package org.frankframework.extensions.idin;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
@@ -13,6 +14,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.crypto.dsig.DigestMethod;
@@ -115,6 +117,18 @@ public class IdinSenderTest {
 	}
 
 	@Test
+	public void testCredentialsAliasesToPasswordMappings() {
+		sender.setKeyStoreAuthAlias("alias1");
+		assertEquals("password1", sender.getKeyStorePassword());
+
+		sender.setMerchantCertificateAuthAlias("alias1");
+		assertEquals("password1", sender.getMerchantCertificatePassword());
+
+		sender.setSAMLCertificateAuthAlias("alias1");
+		assertEquals("password1", sender.getSAMLCertificatePassword());
+	}
+
+	@Test
 	public void testXmlConfigurationFile() throws Exception {
 		String message = "<idin><transactionID>1111111111111111</transactionID></idin>";
 
@@ -168,10 +182,14 @@ public class IdinSenderTest {
 		sender.setKeyStorePassword("123456");
 
 		sender.setMerchantCertificatePassword("123456");
-		sender.setMerchantCertificateAuthAlias("bankid");
+
+		// Alias doesn't exist
+		assertThrows(NoSuchElementException.class, () -> sender.setMerchantCertificateAuthAlias("bankid"));
 
 		sender.setSAMLCertificatePassword("123456");
-		sender.setSAMLCertificateAuthAlias("bankid");
+
+		// Alias does exist
+		sender.setSAMLCertificateAuthAlias("alias1");
 
 		sender.setAction(Action.RESPONSE);
 		sender.configure();
