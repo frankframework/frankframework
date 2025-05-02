@@ -32,7 +32,7 @@ public class LarvaHtmlConfig extends LarvaConfig {
 
 		setLogLevel(LarvaLogLevel.parse(paramLogLevel, LarvaLogLevel.WRONG_PIPELINE_MESSAGES));
 		setAutoScroll(paramAutoScroll != null || paramLogLevel == null);
-		setMultiThreaded(paramMultiThreaded != null || paramLogLevel == null);
+		setMultiThreaded(paramMultiThreaded != null && paramLogLevel != null);
 		if (paramWaitBeforeCleanUp != null) {
 			setWaitBeforeCleanup(Integer.parseInt(paramWaitBeforeCleanUp));
 		}

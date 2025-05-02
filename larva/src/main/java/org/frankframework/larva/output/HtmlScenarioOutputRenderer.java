@@ -183,7 +183,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 		writeHtml("<select name=\"scenariosrootdirectory\" onchange=\"updateScenarios()\">");
 
 		String scenariosRootDirectory = config.getActiveScenariosDirectory();
-		config.getScenarioDirectories().forEach((directory, description) -> {
+		config.getScenarioDirectories().forEach((description, directory) -> {
 			String option = "<option value=\"" + XmlEncodingUtils.encodeChars(directory) + "\"";
 			if (scenariosRootDirectory.equals(directory)) {
 				option = option + " selected";

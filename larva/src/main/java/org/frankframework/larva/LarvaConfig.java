@@ -94,7 +94,7 @@ public class LarvaConfig {
 		if (StringUtils.isEmpty(activeScenariosDirectory)) {
 			String currentScenariosRootDirectory;
 			String scenariosRootDefault = appConstants.getProperty("scenariosroot.default");
-			if (scenariosRoots.containsKey(scenariosRootDefault)) {
+			if (StringUtils.isNotEmpty(scenariosRootDefault) && scenariosRoots.containsKey(scenariosRootDefault)) {
 				currentScenariosRootDirectory = scenariosRoots.get(scenariosRootDefault);
 			} else if (!scenariosRoots.isEmpty()) {
 				currentScenariosRootDirectory = scenariosRoots.get(scenariosRoots.firstKey());

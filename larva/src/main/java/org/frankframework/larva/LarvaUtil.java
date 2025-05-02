@@ -94,7 +94,7 @@ public class LarvaUtil {
 			if (root) {
 				properties.putAll(appConstants);
 				for (Map.Entry<Object, Object> entry: properties.entrySet()) {
-					properties.put(entry.getKey(), StringResolver.substVars((String)properties.get(entry.getValue()), properties));
+					properties.put(entry.getKey(), StringResolver.substVars((String)entry.getValue(), properties));
 				}
 				addAbsolutePathProperties(directory, properties);
 			}

@@ -14,11 +14,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 
 import org.frankframework.configuration.ClassLoaderException;
+import org.frankframework.larva.LarvaConfig;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.actions.LarvaActionFactory;
 import org.frankframework.larva.actions.LarvaApplicationContext;
 import org.frankframework.larva.actions.LarvaScenarioAction;
 import org.frankframework.larva.actions.SenderAction;
+import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.stream.Message;
 
 class LarvaActionFactoryTest {
@@ -29,7 +31,7 @@ class LarvaActionFactoryTest {
 
 	@BeforeEach
 	void setUp() throws ClassLoaderException {
-		larvaTool = new LarvaTool(ibisContext);
+		larvaTool = new LarvaTool(null, new LarvaConfig(), new LarvaWriter(new LarvaConfig(), System.out), null);
 		actionFactory = new LarvaActionFactory(larvaTool);
 		applicationContext = new LarvaApplicationContext(null, "/");
 	}
