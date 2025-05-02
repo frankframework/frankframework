@@ -32,7 +32,6 @@ import org.frankframework.larva.LarvaConfig;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.ScenarioRunner;
-import org.frankframework.larva.TestConfig;
 import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.larva.output.PlainTextScenarioOutputRenderer;
 import org.frankframework.larva.output.TestExecutionObserver;
@@ -75,13 +74,9 @@ public class RunLarvaTests {
 		LarvaWriter larvaWriter = new LarvaWriter(larvaConfig, System.out);
 		TestExecutionObserver observer = new PlainTextScenarioOutputRenderer(larvaWriter);
 		larvaTool = new LarvaTool(ibisContext, larvaConfig, larvaWriter, observer);
-		TestConfig testConfig = larvaTool.getConfig();
-		testConfig.setTimeout(10_000);
-		testConfig.setSilent(false);
-		testConfig.setLogLevel(LARVA_LOG_LEVEL);
-		testConfig.setAutoScroll(false);
-		testConfig.setMultiThreaded(false);
-		testConfig.setOut(new HtmlTagStrippingWriter(System.out));
+		larvaConfig.setTimeout(10_000);
+		larvaConfig.setLogLevel(LARVA_LOG_LEVEL);
+		larvaConfig.setMultiThreaded(false);
 
 		scenarioRunner = larvaTool.createScenarioRunner();
 		scenarioRootDir = larvaConfig.initScenarioDirectories(larvaWriter);
@@ -104,7 +99,7 @@ public class RunLarvaTests {
 	@TestFactory
 	@Disabled("Not yet working properly, reasons not yet known.")
 	Stream<DynamicNode> larvaTests() {
-		List<File> allScenarioFiles = larvaTool.readScenarioFiles(appConstants, scenarioRootDir);
+		List<File> allScenarioFiles = larvaTool.getLarvaConfig().readScenarioFiles(larvaTool.getWriter());
 		assertFalse(allScenarioFiles.isEmpty(), () -> "Did not find any scenario-files in scenarioRootDir [%s]!".formatted(scenarioRootDir));
 		System.err.printf("Creating JUnit tests from %d scenarios loaded from [%s]%n", allScenarioFiles.size(), scenarioRootDir);
 		return createScenarios(scenarioRootDir, "", allScenarioFiles);

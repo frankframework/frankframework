@@ -13,6 +13,8 @@ public interface TestExecutionObserver {
 
 	void startStep(String stepName);
 	void finishStep(String stepName, int stepResult, String stepResultMessage);
+	void stepMessage(String stepName, String description, String stepMessage);
 	void stepMessageSuccess(String stepName, String description, String stepResultMessage, String stepResultMessagePreparedForDiff);
-	void stepMessageFailed(String stepName, String description, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff);
+	void stepMessageFailed(String stepName, String description, String stepSaveFileName, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff);
+	void messageError(String description, String messageError);
 }

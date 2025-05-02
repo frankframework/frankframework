@@ -55,16 +55,14 @@ public class ScenarioRunner {
 	private static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
 	public final List<String> parallelBlacklistDirs;
 
-	private @Getter final AtomicInteger scenariosFailed = new AtomicInteger();
-	private @Getter final AtomicInteger scenariosPassed = new AtomicInteger();
-	private @Getter final AtomicInteger scenariosAutosaved = new AtomicInteger();
+	private final @Getter AtomicInteger scenariosFailed = new AtomicInteger();
+	private final @Getter AtomicInteger scenariosPassed = new AtomicInteger();
+	private final @Getter AtomicInteger scenariosAutosaved = new AtomicInteger();
 	private @Getter int scenariosTotal;
 
 	private final LarvaTool larvaTool;
 	private final IbisContext ibisContext;
-	private final @Deprecated TestConfig config;
 	private final AppConstants appConstants;
-	private @Deprecated boolean evenStep;
 	private final int waitBeforeCleanUp;
 	private final LarvaLogLevel logLevel;
 	private @Setter boolean multipleThreads;
@@ -81,7 +79,6 @@ public class ScenarioRunner {
 		this.testExecutionObserver = larvaTool.getTestExecutionObserver();
 		this.out = larvaTool.getWriter();
 
-		this.config = larvaTool.getConfig();
 		this.logLevel = larvaConfig.getLogLevel();
 		this.waitBeforeCleanUp = larvaConfig.getWaitBeforeCleanup();
 		this.multipleThreads = larvaConfig.isMultiThreaded();

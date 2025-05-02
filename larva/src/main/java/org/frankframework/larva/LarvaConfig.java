@@ -28,7 +28,6 @@ public class LarvaConfig {
 	private @Getter @Setter boolean multiThreaded = false;
 	private @Getter @Setter LarvaLogLevel logLevel = LarvaLogLevel.WRONG_PIPELINE_MESSAGES;
 	private @Getter @Setter boolean autoSaveDiffs = AppConstants.getInstance().getBoolean("larva.diffs.autosave", false);
-	private @Getter @Setter boolean silent = false; // TODO: Do we still need this flag?
 
 	private @Getter SortedMap<String, String> scenarioDirectories = new TreeMap<>();
 	private @Getter @Setter String activeScenariosDirectory;

@@ -23,10 +23,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -36,8 +34,6 @@ import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -49,7 +45,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
 
 import javax.xml.stream.XMLInputFactory;
@@ -66,13 +61,12 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
-import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.ClassNameRewriter;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
@@ -94,7 +88,6 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.ProcessUtil;
-import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringResolver;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TemporaryDirectoryUtils;
@@ -104,18 +97,12 @@ import org.frankframework.util.XmlUtils;
 /**
  * @author Jaco de Groot
  */
+@Log4j2
 public class LarvaTool {
-	private static final Logger logger = LogUtil.getLogger(LarvaTool.class);
 	public static final int ERROR_NO_SCENARIO_DIRECTORIES_FOUND = -1;
-	protected static final Message TESTTOOL_CLEAN_UP_REPLY = new Message("<LarvaTool>Clean up reply</LarvaTool>");
 	public static final int RESULT_ERROR = 0;
 	public static final int RESULT_OK = 1;
 	public static final int RESULT_AUTOSAVED = 2;
-	private static final String LEGACY_PACKAGE_NAME_LARVA = "org.frankframework.testtool.";
-	private static final String CURRENT_PACKAGE_NAME_LARVA = "org.frankframework.larva.";
-	// dirty solution by Marco de Reus:
-	private String stepOutputFilename = "";
-	private final @Deprecated @Getter TestConfig config = new TestConfig();
 
 	private final @Getter IbisContext ibisContext;
 	private final @Getter LarvaConfig larvaConfig;
@@ -138,12 +125,6 @@ public class LarvaTool {
 		this.testExecutionObserver = testExecutionObserver;
 
 		XMLUnit.setIgnoreWhitespace(true);
-
-		// TODO: Temp code while migrating from old to new config class
-		config.setSilent(larvaConfig.isSilent());
-		config.setTimeout(larvaConfig.getTimeout());
-		config.setLogLevel(larvaConfig.getLogLevel());
-		config.setMultiThreaded(larvaConfig.isMultiThreaded());
 	}
 
 	public static void setTimeout(int newTimeout) {
@@ -211,7 +192,7 @@ public class LarvaTool {
 			scenarioRunner.setMultipleThreads(false);
 		}
 		scenarioRunner.runScenario(scenarioFiles, currentScenariosRootDirectory);
-		config.flushWriters();
+		writer.flush();
 		int scenariosFailed = scenarioRunner.getScenariosFailed().get();
 
 		long executeTime = System.currentTimeMillis() - startTime;
@@ -286,423 +267,23 @@ public class LarvaTool {
 		testExecutionObserver.executionStatistics(scenariosTotalMessage, scenariosPassedMessage, scenariosFailedMessage, scenariosAutoSavedMessage, scenariosTotal, scenariosPassed, scenariosFailed, scenariosAutoSaved);
 	}
 
-	public void write(String html, boolean isHtmlType, LarvaLogLevel logLevel, boolean scroll) {
-		if (config.isSilent()) {
-			return;
-		}
-
-		if (isHtmlType && !config.isUseHtmlBuffer()) {
-			try {
-				config.getOut().write(config.getHtmlBuffer().toString());
-			} catch (IOException ignored) {
-				// Ignore
-			}
-			config.setUseHtmlBuffer(false);
-		}
-
-		Writer writer = config.getOut();
-		if (!isHtmlType && config.isUseLogBuffer()) {
-			writer = config.getLogBuffer();
-		} else if (isHtmlType && config.isUseHtmlBuffer()) {
-			writer = config.getHtmlBuffer();
-		}
-		if (logLevel == null || config.getLogLevel().shouldLog(logLevel)) {
-			try {
-				if (config.isMultiThreaded()) {
-					synchronized (writer) { // Needs to be synced to prevent interleaving of messages or that the output stops
-						doWriteHtml(html, scroll, writer);
-					}
-				} else {
-					doWriteHtml(html, scroll, writer);
-				}
-			} catch (IOException ignored) {
-				// Ignore
-			}
-		}
-	}
-
-	private void doWriteHtml(String html, boolean scroll, Writer writer) throws IOException {
-		writer.write(html + "\n");
-		if (scroll && config.isAutoScroll()) {
-			writer.write("<script type=\"text/javascript\"><!--\nscrollToBottom();\n--></script>\n");
-		}
-	}
-
-	public void writeHtml(String html, boolean scroll) {
-		write(html, true, null, scroll);
-	}
-
-	public void writeLog(String html, LarvaLogLevel logLevel, boolean scroll) {
-		write(html, false, logLevel, scroll);
-	}
-
 	public void debugMessage(String message) {
-		logger.debug(message);
+		log.debug(message);
 		writer.debugMessage(message);
-		writeLog(XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(message)) + "<br/>", LarvaLogLevel.DEBUG, false);
-	}
-
-	public void debugPipelineMessage(String stepDisplayName, String message, Message pipelineMessage) {
-		if (config.isSilent()) return;
-		String pipelineMessageString;
-		try {
-			pipelineMessageString = pipelineMessage.asString();
-		} catch (IOException e) {
-			errorMessage("Step %s Message %s; error: Cannot read pipeline message for debug".formatted(stepDisplayName, message), e);
-			return;
-		}
-		debugPipelineMessage(stepDisplayName, message, pipelineMessageString);
-	}
-	public void debugPipelineMessage(String stepDisplayName, String message, String pipelineMessage) {
-		if (config.isSilent()) return;
-		config.incrementMessageCounter();
-
-		writeLog("<div class='message container'>", LarvaLogLevel.PIPELINE_MESSAGES, false);
-		writeLog("<h4>Step '" + stepDisplayName + "'</h4>", LarvaLogLevel.PIPELINE_MESSAGES, false);
-		writeLog(writeCommands("messagebox" + config.getMessageCounter(), true, null), LarvaLogLevel.PIPELINE_MESSAGES, false);
-		writeLog("<h5>" + XmlEncodingUtils.encodeChars(message) + "</h5>", LarvaLogLevel.PIPELINE_MESSAGES, false);
-		writeLog("<textarea cols='100' rows='10' id='messagebox" + config.getMessageCounter() + "'>" + XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", LarvaLogLevel.PIPELINE_MESSAGES, false);
-		writeLog("</div>", LarvaLogLevel.PIPELINE_MESSAGES, false);
-	}
-
-	public void debugPipelineMessagePreparedForDiff(String stepDisplayName, String message, String pipelineMessage) {
-		if (config.isSilent()) return;
-		config.incrementMessageCounter();
-
-		writeLog("<div class='message container'>", LarvaLogLevel.PIPELINE_MESSAGES_PREPARED_FOR_DIFF, false);
-		writeLog("<h4>Step '" + stepDisplayName + "'</h4>", LarvaLogLevel.PIPELINE_MESSAGES_PREPARED_FOR_DIFF, false);
-		writeLog(writeCommands("messagebox" + config.getMessageCounter(), true, null), LarvaLogLevel.PIPELINE_MESSAGES_PREPARED_FOR_DIFF, false);
-		writeLog("<h5>" + XmlEncodingUtils.encodeChars(message) + "</h5>", LarvaLogLevel.PIPELINE_MESSAGES_PREPARED_FOR_DIFF, false);
-		writeLog("<textarea cols='100' rows='10' id='messagebox" + config.getMessageCounter() + "'>" + XmlEncodingUtils.encodeChars(pipelineMessage) + "</textarea>", LarvaLogLevel.PIPELINE_MESSAGES_PREPARED_FOR_DIFF, false);
-		writeLog("</div>", LarvaLogLevel.PIPELINE_MESSAGES_PREPARED_FOR_DIFF, false);
-	}
-
-	public void wrongPipelineMessage(String message, Message pipelineMessage) {
-		if (config.isSilent()) return;
-		config.incrementMessageCounter();
-
-		writeLog("<div class='message container'>", LarvaLogLevel.WRONG_PIPELINE_MESSAGES, false);
-		writeLog(writeCommands("messagebox" + config.getMessageCounter(), true, null), LarvaLogLevel.WRONG_PIPELINE_MESSAGES, false);
-		writeLog("<h5>" + XmlEncodingUtils.encodeChars(message) + "</h5>", LarvaLogLevel.WRONG_PIPELINE_MESSAGES, false);
-		writeLog("<textarea cols='100' rows='10' id='messagebox" + config.getMessageCounter() + "'>" + XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(messageToString(pipelineMessage))) + "</textarea>", LarvaLogLevel.WRONG_PIPELINE_MESSAGES, false);
-		writeLog("</div>", LarvaLogLevel.WRONG_PIPELINE_MESSAGES, false);
-	}
-
-	public void wrongPipelineMessage(String stepDisplayName, String message, String pipelineMessage, String pipelineMessageExpected) {
-		if (config.isSilent()) {
-			config.writeSilent(message);
-			return;
-		}
-		LarvaLogLevel method = LarvaLogLevel.WRONG_PIPELINE_MESSAGES;
-		String formName = "scenario" + config.getScenarioCounter() + "Wpm";
-		String resultBoxId = formName + "ResultBox";
-		String expectedBoxId = formName + "ExpectedBox";
-		String diffBoxId = formName + "DiffBox";
-
-		writeLog("<div class='error container'>", method, false);
-		writeLog("<form name='" + formName + "' action='saveResultToFile.jsp' method='post' target='saveResultWindow' accept-charset='UTF-8'>", method, false);
-		writeLog("<input type='hidden' name='iehack' value='&#9760;' />", method, false); // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
-		writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, false);
-
-		writeLog("<hr/>", method, false);
-
-		writeLog("<div class='resultContainer'>", method, false);
-		writeLog(writeCommands(resultBoxId, true, "<a href='javascript:void(0);' class='" + formName + "|saveResults'>save</a>"), method, false);
-		writeLog("<h5>Result (raw):</h5>", method, false);
-		writeLog("<textarea name='resultBox' id='" + resultBoxId + "'>" + XmlEncodingUtils.encodeChars(pipelineMessage) + "</textarea>", method, false);
-		writeLog("</div>", method, false);
-
-		writeLog("<div class='expectedContainer'>", method, false);
-		writeLog(writeCommands(expectedBoxId, true, null), method, true);
-		writeLog("<input type='hidden' name='expectedFileName' value='" + stepOutputFilename + "' />", method, false);
-		writeLog("<input type='hidden' name='cmd' />", method, false);
-		writeLog("<h5>Expected (raw):</h5>", method, false);
-		writeLog("<textarea name='expectedBox' id='" + expectedBoxId + "'>" + XmlEncodingUtils.encodeChars(pipelineMessageExpected) + "</textarea>", method, false);
-		writeLog("</div>", method, false);
-
-		writeLog("<hr/>", method, false);
-
-		writeLog("<div class='differenceContainer'>", method, false);
-		String btn1 = "<a class=\"['" + resultBoxId + "','" + expectedBoxId + "']|indentCompare|" + diffBoxId + "\" href=\"javascript:void(0)\">compare</a>";
-		String btn2 = "<a href='javascript:void(0);' class='" + formName + "|indentWindiff'>windiff</a>";
-		writeLog(writeCommands(diffBoxId, false, btn1 + btn2), method, false);
-		writeLog("<h5>Differences:</h5>", method, false);
-		writeLog("<pre id='" + diffBoxId + "' class='diffBox'></pre>", method, false);
-		writeLog("</div>", method, false);
-
-		if (config.getLogLevel() == LarvaLogLevel.SCENARIO_PASSED_FAILED) {
-			writeLog("<h5 hidden='true'>Difference description:</h5>", LarvaLogLevel.SCENARIO_PASSED_FAILED, false);
-			writeLog("<p class='diffMessage' hidden='true'>" + XmlEncodingUtils.encodeChars(message) + "</p>",
-					LarvaLogLevel.SCENARIO_PASSED_FAILED, true);
-		} else {
-			writeLog("<h5>Difference description:</h5>", method, false);
-			writeLog("<p class='diffMessage'>" + XmlEncodingUtils.encodeChars(message)	+ "</p>", method, true);
-			writeLog("</form>", method, false);
-			writeLog("</div>", method, false);
-		}
-		config.incrementScenarioCounter();
-	}
-
-	public void wrongPipelineMessagePreparedForDiff(String stepDisplayName, String pipelineMessagePreparedForDiff, String pipelineMessageExpectedPreparedForDiff) {
-		if (config.isSilent()) return;
-		LarvaLogLevel method = LarvaLogLevel.WRONG_PIPELINE_MESSAGES_PREPARED_FOR_DIFF;
-		String formName = "scenario" + config.getScenarioCounter() + "Wpmpfd";
-		String resultBoxId = formName + "ResultBox";
-		String expectedBoxId = formName + "ExpectedBox";
-		String diffBoxId = formName + "DiffBox";
-
-		writeLog("<div class='error container'>", method, false);
-		writeLog("<form name='" + formName + "' action='saveResultToFile.jsp' method='post' target='saveResultWindow' accept-charset='UTF-8'>", method, false);
-		writeLog("<input type='hidden' name='iehack' value='&#9760;' />", method, false); // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
-		writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, false);
-		config.incrementMessageCounter();
-
-		writeLog("<hr/>", method, false);
-
-		writeLog("<div class='resultContainer'>", method, false);
-		writeLog(writeCommands(resultBoxId, true, null), method, false);
-		writeLog("<h5>Result (prepared for diff):</h5>", method, false);
-		writeLog("<textarea name='resultBox' id='" + resultBoxId + "'>" + XmlEncodingUtils.encodeChars(pipelineMessagePreparedForDiff) + "</textarea>", method, false);
-		writeLog("</div>", method, false);
-
-		config.incrementMessageCounter();
-		writeLog("<div class='expectedContainer'>", method, false);
-		writeLog(writeCommands(expectedBoxId, true, null), method, false);
-		writeLog("<input type='hidden' name='expectedFileName' value='" + stepOutputFilename + "' />", method, false);
-		writeLog("<input type='hidden' name='cmd' />", method, false);
-		writeLog("<h5>Expected (prepared for diff):</h5>", method, false);
-		writeLog("<textarea name='expectedBox' id='" + expectedBoxId + "'>" + XmlEncodingUtils.encodeChars(pipelineMessageExpectedPreparedForDiff) + "</textarea>", method, false);
-		writeLog("</div>", method, false);
-
-		writeLog("<hr/>", method, false);
-
-		config.incrementMessageCounter();
-		writeLog("<div class='differenceContainer'>", method, false);
-
-		String btn1 = "<a class=\"['" + resultBoxId + "','" + expectedBoxId + "']|indentCompare|" + diffBoxId + "\" href=\"javascript:void(0)\">compare</a>";
-		String btn2 = "<a href='javascript:void(0);' class='" + formName + "|indentWindiff'>windiff</a>";
-		writeLog(writeCommands(diffBoxId, false, btn1 + btn2), method, false);
-		writeLog("<h5>Differences:</h5>", method, false);
-		writeLog("<pre id='" + diffBoxId + "' class='diffBox'></pre>", method, false);
-		writeLog("</div>", method, false);
-
-		writeLog("</form>", method, false);
-		writeLog("</div>", method, false);
-	}
-
-	private static String writeCommands(String target, boolean textArea, String customCommand) {
-		StringBuilder commands = new StringBuilder();
-		commands.append("<div class='commands'>");
-		commands.append("<span class='widthCommands'><a href='javascript:void(0);' class='").append(target).append("|widthDown'>-</a><a href='javascript:void(0);' class='").append(target).append("|widthExact'>width</a><a href='javascript:void(0);' class='").append(target).append("|widthUp'>+</a></span>");
-		commands.append("<span class='heightCommands'><a href='javascript:void(0);' class='").append(target).append("|heightDown'>-</a><a href='javascript:void(0);' class='").append(target).append("|heightExact'>height</a><a href='javascript:void(0);' class='").append(target).append("|heightUp'>+</a></span>");
-		if (textArea) {
-			commands.append("<a href='javascript:void(0);' class='").append(target).append("|copy'>copy</a> ");
-			commands.append("<a href='javascript:void(0);' class='").append(target).append("|xmlFormat'>indent</a>");
-		}
-		if (customCommand != null) {
-			commands.append(" ").append(customCommand);
-		}
-		commands.append("</div>");
-		return commands.toString();
 	}
 
 	public void errorMessage(String message) {
-		logger.error(message);
+		log.error(message);
 		writer.errorMessage(message);
-		writeLog("<h1 class='error'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", LarvaLogLevel.ERROR, true);
-		config.writeSilent(message);
 	}
 
 	public void warningMessage(String message) {
-		logger.warn(message);
+		log.warn(message);
 		writer.warningMessage(message);
-		writeLog("<h2 class='warning'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", LarvaLogLevel.ERROR, true);
-		config.writeSilent(message);
 	}
 
 	public void errorMessage(String message, Exception exception) {
-		errorMessage(message);
-		if (config.isSilent()) return;
-
-		LarvaLogLevel method = LarvaLogLevel.ERROR;
-		Throwable throwable = exception;
-		while (throwable != null) {
-			StringWriter stringWriter = new StringWriter();
-			PrintWriter printWriter = new PrintWriter(stringWriter);
-			throwable.printStackTrace(printWriter);
-			printWriter.close();
-			config.incrementMessageCounter();
-			writeLog("<div class='container'>", method, false);
-			writeLog(writeCommands("messagebox" + config.getMessageCounter(), true, null), method, false);
-			writeLog("<h5>Stack trace:</h5>", method, false);
-			writeLog("<textarea cols='100' rows='10' id='messagebox" + config.getMessageCounter() + "'>" + XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(stringWriter.toString())) + "</textarea>", method, false);
-			writeLog("</div>", method, false);
-			throwable = throwable.getCause();
-		}
-	}
-
-	public List<File> readScenarioFiles(AppConstants appConstants, String scenariosDirectory) {
-		List<File> scenarioFiles = new ArrayList<>();
-		debugMessage("List all files in directory '" + scenariosDirectory + "'");
-
-		File directory = new File(scenariosDirectory);
-		Path targetPath = directory.toPath().normalize();
-
-		if (!directory.toPath().normalize().startsWith(targetPath)) {
-			String message = "Scenarios directory is outside of the target directory";
-			logger.warn(message);
-			errorMessage(message);
-
-			return scenarioFiles;
-		}
-
-		File[] files = directory.listFiles();
-
-		if (files == null) {
-			debugMessage("Could not read files from directory '" + scenariosDirectory + "'");
-			return scenarioFiles;
-		}
-		debugMessage("Sort files");
-		Arrays.sort(files);
-		debugMessage("Filter out property files containing a 'scenario.description' property");
-		for (File file : files) {
-			if (file.getName().endsWith(".properties")) {
-				Properties properties = readProperties(appConstants, file);
-				if (properties != null && properties.get("scenario.description") != null) {
-					String active = properties.getProperty("scenario.active", "true");
-					String unstable = properties.getProperty("adapter.unstable", "false");
-					if ("true".equalsIgnoreCase(active) && "false".equalsIgnoreCase(unstable)) {
-						scenarioFiles.add(file);
-					}
-				}
-			} else if (file.isDirectory() && (!"CVS".equals(file.getName()))) {
-				scenarioFiles.addAll(readScenarioFiles(appConstants, file.getAbsolutePath()));
-			}
-		}
-		debugMessage(scenarioFiles.size() + " scenario files found");
-		return scenarioFiles;
-	}
-
-	@Nullable
-	public Properties readProperties(AppConstants appConstants, File propertiesFile) {
-		return readProperties(appConstants, propertiesFile, true);
-	}
-
-	@Nullable
-	public Properties readProperties(AppConstants appConstants, File propertiesFile, boolean root) {
-		String directory = new File(propertiesFile.getAbsolutePath()).getParent();
-		Properties properties = new Properties();
-		try {
-			try(FileInputStream fis = new FileInputStream(propertiesFile); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(fis)) {
-				properties.load(reader);
-			}
-
-			Properties includedProperties = new Properties();
-			int i = 0;
-			String includeFilename = properties.getProperty("include");
-			if (includeFilename == null) {
-				i++;
-				includeFilename = properties.getProperty("include" + i);
-			}
-			while (includeFilename != null) {
-				debugMessage("Load include file: " + includeFilename);
-				File includeFile = new File(getAbsolutePath(directory, includeFilename));
-				Properties includeProperties = readProperties(appConstants, includeFile, false);
-				if (includeProperties != null) {
-					includedProperties.putAll(includeProperties);
-				}
-				i++;
-				includeFilename = properties.getProperty("include" + i);
-			}
-			properties.putAll(includedProperties);
-			if (root) {
-				properties.putAll(appConstants);
-				for (Object key : properties.keySet()) {
-					properties.put(key, StringResolver.substVars((String)properties.get(key), properties));
-				}
-				addAbsolutePathProperties(directory, properties);
-			}
-			debugMessage(properties.size() + " properties found");
-		} catch(Exception e) {
-			properties = null;
-			errorMessage("Could not read properties file: " + e.getMessage(), e);
-		}
-		return fixLegacyClassnames(properties);
-	}
-
-	@Nullable
-	private static Properties fixLegacyClassnames(@Nullable Properties properties) {
-		if (properties == null) {
-			return null;
-		}
-		Map<Object, Object> collected = properties.entrySet().stream()
-				.map(LarvaTool::rewriteClassName)
-				.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-		Properties result = new Properties();
-		result.putAll(collected);
-		return result;
-	}
-
-	private static Entry<Object, Object> rewriteClassName(Entry<Object, Object> e) {
-		Object propertyName = e.getKey();
-		if (e.getValue() == null || !propertyName.toString().endsWith(LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX)) {
-			return e;
-		}
-		String newClassName = e.getValue()
-				.toString()
-				.replace(ClassNameRewriter.LEGACY_PACKAGE_NAME, ClassNameRewriter.ORG_FRANKFRAMEWORK_PACKAGE_NAME)
-				.replace(LEGACY_PACKAGE_NAME_LARVA, CURRENT_PACKAGE_NAME_LARVA);
-		return Map.entry(propertyName, newClassName);
-	}
-
-	public static String getAbsolutePath(String parent, String child) {
-		return getAbsolutePath(parent, child, false);
-	}
-
-	/**
-	 * Returns the absolute pathname for the child pathname. The parent pathname
-	 * is used as a prefix when the child pathname is an not absolute.
-	 *
-	 * @param parent  the parent pathname to use
-	 * @param child   the child pathname to convert to a absolute pathname
-	 */
-	public static String getAbsolutePath(String parent, String child,
-			boolean addFileSeparator) {
-		File result;
-		File file = new File(child);
-		if (file.isAbsolute()) {
-			result = file;
-		} else {
-			result = new File(parent, child);
-		}
-		String absPath = FilenameUtils.normalize(result.getAbsolutePath());
-		if (addFileSeparator) {
-			return absPath + File.separator;
-		} else {
-			return absPath;
-		}
-	}
-
-	public static void addAbsolutePathProperties(String propertiesDirectory, Properties properties) {
-		Properties absolutePathProperties = new Properties();
-		for (Object o : properties.keySet()) {
-			String property = (String) o;
-			if ("configurations.directory".equalsIgnoreCase(property))
-				continue;
-
-			if (property.endsWith(".read") || property.endsWith(".write")
-					|| property.endsWith(".directory")
-					|| property.endsWith(".filename")
-					|| property.endsWith(".valuefile")
-					|| property.endsWith(".valuefileinputstream")) {
-				String absolutePathProperty = property + ".absolutepath";
-				String value = getAbsolutePath(propertiesDirectory, (String) properties.get(property));
-				if (value != null) {
-					absolutePathProperties.put(absolutePathProperty, value);
-				}
-			}
-		}
-		properties.putAll(absolutePathProperties);
+		writer.errorMessage(message, exception);
 	}
 
 	private int executeActionWriteStep(String stepDisplayName, Map<String, LarvaScenarioAction> actions, String actionName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
@@ -713,8 +294,8 @@ public class LarvaTool {
 		}
 		try {
 			scenarioAction.executeWrite(fileContent, correlationId, xsltParameters);
-			debugPipelineMessage(stepDisplayName, "Successfully wrote message to '" + actionName + "':", fileContent);
-			logger.debug("Successfully wrote message to '{}'", actionName);
+			testExecutionObserver.stepMessage(stepDisplayName, "Successfully wrote message to '" + actionName + "':", messageToString(fileContent));
+			log.debug("Successfully wrote message to '{}'", actionName);
 			return RESULT_OK;
 		} catch(TimeoutException e) {
 			errorMessage("Timeout sending message to '" + actionName + "': " + e.getMessage(), e);
@@ -724,7 +305,7 @@ public class LarvaTool {
 		return RESULT_ERROR;
 	}
 
-	private int executeActionReadStep(String step, String stepDisplayName, Properties properties, Map<String, LarvaScenarioAction> actions, String actionName, String fileName, Message expected) {
+	private int executeActionReadStep(String step, String stepDisplayName, Properties properties, Map<String, LarvaScenarioAction> actions, String actionName, String fileName, String stepSaveFileName, Message expected) {
 		LarvaScenarioAction scenarioAction = actions.get(actionName);
 		if (scenarioAction == null) {
 			errorMessage("Property '" + actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
@@ -740,9 +321,9 @@ public class LarvaTool {
 				}
 			} else {
 				if ("".equals(fileName)) {
-					debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + actionName + "':", message);
+					testExecutionObserver.stepMessage(stepDisplayName, "Unexpected message read from '" + actionName + "':", messageToString(message));
 				} else {
-					return compareResult(step, stepDisplayName, fileName, expected, message, properties);
+					return compareResult(step, stepDisplayName, fileName, stepSaveFileName, expected, message, properties);
 				}
 			}
 		} catch (Exception e) {
@@ -752,15 +333,13 @@ public class LarvaTool {
 		return RESULT_ERROR;
 	}
 
-	// Ideally this should be moved to it's own class. But for now it's a bridge too far because of `stepOutputFilename`.
+	// Ideally, this should be moved to its own class. But for now it's a bridge too far because of `stepOutputFilename`.
 	protected int executeStep(String step, Properties properties, String stepDisplayName, Map<String, LarvaScenarioAction> actions, String correlationId) {
 		String fileName = properties.getProperty(step);
-		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
+		String stepDataFileAbsolutePath = properties.getProperty(step + ".absolutepath");
 		int i = step.indexOf('.');
 		String actionName;
 		Message fileContent;
-		// Set output filename, dirty old solution to pass the name on to the HTML-generating functions.
-		stepOutputFilename = fileNameAbsolutePath;
 
 		// Read the scenario file for this step
 		if (StringUtils.isBlank(fileName)) {
@@ -775,7 +354,7 @@ public class LarvaTool {
 				fileContent = new Message("ignore");
 			} else {
 				debugMessage("Read file " + fileName);
-				fileContent = readFile(fileNameAbsolutePath);
+				fileContent = readFile(stepDataFileAbsolutePath);
 			}
 		}
 		if (fileContent == null) {
@@ -783,7 +362,7 @@ public class LarvaTool {
 			return RESULT_ERROR;
 		}
 
-		try (Message closeable = fileContent) {
+		try (Message ignored = fileContent) {
 			actionName = step.substring(i + 1, step.lastIndexOf("."));
 			Object actionFactoryClassname = properties.get(actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX);
 			if (step.endsWith(".read") || (allowReadlineSteps && step.endsWith(".readline"))) {
@@ -792,7 +371,7 @@ public class LarvaTool {
 					Map<String, Object> xsltParameters = createParametersMapFromParamProperties(scenarioStepProperties);
 					return executeActionWriteStep(stepDisplayName, actions, actionName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
 				} else {
-					return executeActionReadStep(step, stepDisplayName, properties, actions, actionName, fileName, fileContent);
+					return executeActionReadStep(step, stepDisplayName, properties, actions, actionName, fileName, stepDataFileAbsolutePath, fileContent);
 				}
 			} else {
 				// TODO: Try if anything breaks when this block is moved to `readFile()` method.
@@ -807,7 +386,7 @@ public class LarvaTool {
 					fileContent = new Message(StringResolver.substVars(fileData, appConstants), fileContent.copyContext());
 				}
 				if ("org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname)) {
-					return executeActionReadStep(step, stepDisplayName, properties, actions, actionName, fileName, fileContent);  // XsltProviderListener has .read and .write reversed
+					return executeActionReadStep(step, stepDisplayName, properties, actions, actionName, fileName, stepDataFileAbsolutePath, fileContent);  // XsltProviderListener has .read and .write reversed
 				} else {
 					return executeActionWriteStep(stepDisplayName, actions, actionName, fileContent, correlationId, null);
 				}
@@ -952,7 +531,7 @@ public class LarvaTool {
 	 * @param message Message to read
 	 * @return Message data, or "" if the message was empty. Returns NULL if there was an error reading the message.
 	 */
-	private @Nullable String messageToString(Message message) {
+	public @Nullable String messageToString(Message message) {
 		try {
 			message.preserve();
 			String r = message.asString();
@@ -966,7 +545,7 @@ public class LarvaTool {
 		}
 	}
 
-	public int compareResult(String step, String stepDisplayName, String fileName, Message expectedResultMessage, Message actualResultMessage, Properties properties) {
+	public int compareResult(String step, String stepDisplayName, String fileName, String stepSaveFileName, Message expectedResultMessage, Message actualResultMessage, Properties properties) {
 		if (fileName.endsWith("ignore")) {
 			debugMessage("ignoring compare for filename '"+fileName+"'");
 			return RESULT_OK;
@@ -1000,7 +579,7 @@ public class LarvaTool {
 		}
 
 		// Map all identifier based properties once
-		HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap = mapPropertiesToIgnores(properties);
+		Map<String, Map<String, Map<String, String>>> ignoreMap = mapPropertiesToIgnores(properties);
 
 		String preparedExpectedResult = prepareResultForCompare(printableExpectedResult, properties, ignoreMap);
 		String preparedActualResult = prepareResultForCompare(printableActualResult, properties, ignoreMap);
@@ -1020,8 +599,7 @@ public class LarvaTool {
 			if (identical) {
 				ok = RESULT_OK;
 				debugMessage("Strings are identical");
-				debugPipelineMessage(stepDisplayName, "Result", printableActualResult);
-				debugPipelineMessagePreparedForDiff(stepDisplayName, "Result as prepared for diff", preparedActualResult);
+				testExecutionObserver.stepMessageSuccess(stepDisplayName, "Result", printableActualResult, preparedActualResult);
 			} else {
 				debugMessage("Strings are not identical");
 				String message;
@@ -1031,8 +609,7 @@ public class LarvaTool {
 					message = "Exception during XML diff: " + diffException.getMessage();
 					errorMessage("Exception during XML diff: ", diffException);
 				}
-				wrongPipelineMessage(stepDisplayName, message, printableActualResult, printableExpectedResult);
-				wrongPipelineMessagePreparedForDiff(stepDisplayName, preparedActualResult, preparedExpectedResult);
+				testExecutionObserver.stepMessageFailed(stepDisplayName, message, stepSaveFileName, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult);
 				if (larvaConfig.isAutoSaveDiffs()) {
 					String filenameAbsolutePath = (String)properties.get(step + ".absolutepath");
 					debugMessage("Copy actual result to ["+filenameAbsolutePath+"]");
@@ -1051,8 +628,9 @@ public class LarvaTool {
 			if (formattedPreparedExpectedResult.equals(formattedPreparedActualResult)) {
 				ok = RESULT_OK;
 				debugMessage("Strings are identical");
-				debugPipelineMessage(stepDisplayName, "Result", printableActualResult);
-				debugPipelineMessagePreparedForDiff(stepDisplayName, "Result as prepared for diff", preparedActualResult);
+				testExecutionObserver.stepMessageSuccess(stepDisplayName, "Result", printableActualResult, preparedActualResult);
+//				debugPipelineMessage(stepDisplayName, "Result", printableActualResult);
+//				debugPipelineMessagePreparedForDiff(stepDisplayName, "Result as prepared for diff", preparedActualResult);
 			} else {
 				debugMessage("Strings are not identical");
 				String message = null;
@@ -1085,8 +663,7 @@ public class LarvaTool {
 					diffExcpected.append(" ...");
 				}
 				message = message + " actual result is '" + diffActual + "' and expected result is '" + diffExcpected + "'";
-				wrongPipelineMessage(stepDisplayName, message, printableActualResult, printableExpectedResult);
-				wrongPipelineMessagePreparedForDiff(stepDisplayName, preparedActualResult, preparedExpectedResult);
+				testExecutionObserver.stepMessageFailed(stepDisplayName, message, stepSaveFileName, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult);
 				if (larvaConfig.isAutoSaveDiffs()) {
 					String filenameAbsolutePath = (String)properties.get(step + ".absolutepath");
 					debugMessage("Copy actual result to ["+filenameAbsolutePath+"]");
@@ -1102,7 +679,7 @@ public class LarvaTool {
 		return ok;
 	}
 
-	public String prepareResultForCompare(String input, Properties properties, Map<String, HashMap<String, HashMap<String, String>>> ignoreMap) {
+	public String prepareResultForCompare(String input, Properties properties, Map<String, Map<String, Map<String, String>>> ignoreMap) {
 		String result = input;
 		result = doActionBetweenKeys("decodeUnzipContentBetweenKeys", result, properties, ignoreMap, (value, pp, key1, key2)-> {
 			boolean replaceNewlines = !"true".equals(pp.apply("replaceNewlines"));
@@ -1144,7 +721,7 @@ public class LarvaTool {
 		String format(String value, Function<String, String> propertyProvider, String key1);
 	}
 
-	public String doActionBetweenKeys(String key, String value, Properties properties, Map<String, HashMap<String, HashMap<String, String>>> ignoreMap, BetweenKeysAction action) {
+	public String doActionBetweenKeys(String key, String value, Properties properties, Map<String, Map<String, Map<String, String>>> ignoreMap, BetweenKeysAction action) {
 		String result = value;
 		debugMessage("Check " + key + " properties");
 		boolean lastKeyIndexProcessed = false;
@@ -1164,10 +741,10 @@ public class LarvaTool {
 			}
 		}
 
-		HashMap<String, HashMap<String, String>> keySpecMap = ignoreMap.get(key);
+		Map<String, Map<String, String>> keySpecMap = ignoreMap.get(key);
 		if (keySpecMap != null) {
-			for (Entry<String, HashMap<String, String>> spec : keySpecMap.entrySet()) {
-				HashMap<String, String> keyPair = spec.getValue();
+			for (Entry<String, Map<String, String>> spec : keySpecMap.entrySet()) {
+				Map<String, String> keyPair = spec.getValue();
 
 				String key1 = keyPair.get("key1");
 				String key2 = keyPair.get("key2");
@@ -1184,7 +761,7 @@ public class LarvaTool {
 		return result;
 	}
 
-	public String doActionWithSingleKey(String keyName, String value, Properties properties, Map<String, HashMap<String, HashMap<String, String>>> ignoreMap, SingleKeyAction action) {
+	public String doActionWithSingleKey(String keyName, String value, Properties properties, Map<String, Map<String, Map<String, String>>> ignoreMap, SingleKeyAction action) {
 		String result = value;
 		debugMessage("Check " + keyName + " properties");
 		boolean lastKeyIndexProcessed = false;
@@ -1204,12 +781,12 @@ public class LarvaTool {
 			}
 		}
 
-		HashMap<String, HashMap<String, String>> keySpecMap = ignoreMap.get(keyName);
+		Map<String, Map<String, String>> keySpecMap = ignoreMap.get(keyName);
 		if (keySpecMap != null) {
-			Iterator<Entry<String,HashMap<String,String>>> keySpecIt = keySpecMap.entrySet().iterator();
+			Iterator<Entry<String,Map<String,String>>> keySpecIt = keySpecMap.entrySet().iterator();
 			while (keySpecIt.hasNext()) {
-				Entry<String,HashMap<String,String>> spec = keySpecIt.next();
-				HashMap<String, String> keyPair = spec.getValue();
+				Entry<String,Map<String,String>> spec = keySpecIt.next();
+				Map<String, String> keyPair = spec.getValue();
 
 				String key = keyPair.get("key");
 
@@ -1598,6 +1175,9 @@ public class LarvaTool {
 		return result;
 	}
 
+	/**
+	 * Replace all linefeed-characters with the platform-specific linefeed-character for the current platform.
+	 */
 	public String formatString(String string) {
 		StringBuilder sb = new StringBuilder();
 		try {
@@ -1626,10 +1206,10 @@ public class LarvaTool {
 	 *
 	 * @param properties Properties to be checked
 	 *
-	 * @return HashMap<String, HashMap<String, HashMap<String, String>>> as HashMap<'ignoreContentBetweenKeys', Hashmap<'fieldA', HashMap<'key1', '<field name="A">'>
+	 * @return Map<String, Map<String, Map<String, String>>> as Map<'ignoreContentBetweenKeys', Map<'fieldA', Map<'key1', '<field name="A">'>
 	*/
-	public static HashMap<String, HashMap<String, HashMap<String, String>>> mapPropertiesToIgnores(Properties properties){
-		HashMap<String, HashMap<String, HashMap<String, String>>> returnMap = new HashMap<>();
+	public static Map<String, Map<String, Map<String, String>>> mapPropertiesToIgnores(Properties properties){
+		Map<String, Map<String, Map<String, String>>> returnMap = new HashMap<>();
 		Enumeration<String> enums = (Enumeration<String>) properties.propertyNames();
 
 		// Loop through all properties
@@ -1647,12 +1227,12 @@ public class LarvaTool {
 
 				// Find return map for ignore
 				// Create return map for ignore if not exist
-				HashMap<String, HashMap<String, String>> ignoreMap = returnMap.computeIfAbsent(ignore, k -> new HashMap<>());
+				Map<String, Map<String, String>> ignoreMap = returnMap.computeIfAbsent(ignore, k -> new HashMap<>());
 
 
 				// Find return map for identifier
 				// Create return map for identifier if not exist
-				HashMap<String, String> idMap = ignoreMap.computeIfAbsent(id, k -> new HashMap<>());
+				Map<String, String> idMap = ignoreMap.computeIfAbsent(id, k -> new HashMap<>());
 
 
 				// Check attributes are provided

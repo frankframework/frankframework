@@ -9,8 +9,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import lombok.Getter;
-
 import org.frankframework.larva.LarvaHtmlConfig;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.util.XmlEncodingUtils;
@@ -20,7 +18,7 @@ public class LarvaHtmlWriter extends LarvaWriter {
 	/**
 	 * Counter to make unique IDs for the HTML message boxes
 	 */
-	private final @Getter AtomicInteger messageCounter = new AtomicInteger();
+	private final AtomicInteger messageCounter = new AtomicInteger();
 
 	public LarvaHtmlWriter(LarvaHtmlConfig larvaHtmlConfig, Writer writer) {
 		super(larvaHtmlConfig, writer);
@@ -75,23 +73,99 @@ public class LarvaHtmlWriter extends LarvaWriter {
 		PrintWriter printWriter = new PrintWriter(stringWriter);
 		t.printStackTrace(printWriter);
 		printWriter.close();
-		int messageNr = messageCounter.incrementAndGet();
-		writeHtml(LarvaLogLevel.ERROR, "<div class='container'>", false);
-		writeHtml(LarvaLogLevel.ERROR, writeCommands("messagebox" + messageNr, true, null), false);
-		writeHtml(LarvaLogLevel.ERROR, "<h5>Stack trace:</h5>", false);
-		writeHtml(LarvaLogLevel.ERROR, "<textarea cols='100' rows='10' id='messagebox" + messageNr + "'>" + XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(stringWriter.toString())) + "</textarea>", false);
-		writeHtml(LarvaLogLevel.ERROR, "</div>", true);
+		String id = "messagebox";
+		writeMessageBox(LarvaLogLevel.ERROR, "container", "Stack trace", id, stringWriter.toString());
 	}
 
-	public void writeMessageBox(LarvaLogLevel logLevel, String cssClass, String header, String inputId, String message) {
-		if (!getLarvaConfig().getLogLevel().shouldLog(logLevel)) {
+	public int getNextMessageNr() {
+		return messageCounter.incrementAndGet();
+	}
+
+	public void writeMessageBox(LarvaLogLevel logLevel, String cssClass, String header, String inputIdPrefix, String message) {
+		if (!shouldWriteLevel(logLevel)) {
 			return;
 		}
-		writeHtml(logLevel, "<div class='"+cssClass+"'>", false);
-		writeHtml(logLevel, writeCommands(inputId, true, null), false);
-		writeHtml(logLevel, "<h5>"+header+":</h5>", false);
-		writeHtml(logLevel, "<textarea cols='100' rows='10' id='" + inputId + "'>" + XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(message)) + "</textarea>", false);
-		writeHtml(logLevel, "</div>", true);
+		String inputId = inputIdPrefix + getNextMessageNr();
+		String template = """
+				<div class='%s'>
+				  %s
+				  <h5>%s:</h5>
+				  <textarea cols='100' rows='10' id='%s'>%s</textarea>
+				</div>
+				""";
+		writeHtml(logLevel, template.formatted(cssClass,
+				writeCommands(inputId, true, null), encodeForHtml(header), inputId,
+				encodeForHtml(message)), true);
+	}
+
+	public void writeStepMessageBox(LarvaLogLevel logLevel, String cssClass, String stepName, String header, String inputIdPrefix, String message) {
+		if (!shouldWriteLevel(logLevel)) {
+			return;
+		}
+		String inputId = inputIdPrefix + getNextMessageNr();
+		String template = """
+				<div class='%s'>
+				  <h4>Step '%s'</h4>
+				  %s
+				  <h5>%s:</h5>
+				  <textarea cols='100' rows='10' id='%s'>%s</textarea>
+				</div>
+				""";
+		writeHtml(logLevel, template.formatted(cssClass, encodeForHtml(stepName),
+				writeCommands(inputId, true, null), encodeForHtml(header), inputId,
+				encodeForHtml(message)), true);
+	}
+
+	public void writeStepMessageWithDiffBox(LarvaLogLevel logLevel, String cssClass, String stepName, String stepOutputFilename, String inputIdPrefix, String headerExtra, String description, String actualMessage, String expectedMessage) {
+		if (!shouldWriteLevel(logLevel)) {
+			return;
+		}
+		String formName = inputIdPrefix + getNextMessageNr() + "Wpm";
+		String resultBoxId = formName + "ResultBox";
+		String expectedBoxId = formName + "ExpectedBox";
+		String diffBoxId = formName + "DiffBox";
+
+		// For iehack in form, see: // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
+		String template = """
+				<div class='%s'>
+				  <form name='%s' method='post' action='saveResultToFile.jsp' target='saveResultWindow' accept-charset='UTF-8'>
+				    <input type='hidden' name='iehack' value='&#9760;' />
+				    <h4>Step '%s'</h4>
+				    <hr/>
+				    <div class='resultContainer'>
+				      %s
+				      <h5>Result (%s):</h5>
+				      <textarea name='resultBox' id='%s'>%s</textarea>
+				    </div>
+				    <div class='expectedContainer'>
+				      %s
+				      <input type='hidden' name='expectedFileName' value='%s' />"
+				      <input type='hidden' name='cmd' />
+				      <h5>Expected (%s):</h5>
+				      <textarea name='expectedBox' id='%s'>%s</textarea>
+				    </div>
+				    <hr/>
+				    <div class='differenceContainer'>
+				      %s
+				      <h5>Differences:</h5>
+				      <pre id='%s' class='diffBox'></pre>
+				    </div>
+				    <h5>Difference description:</h5>
+				    <p class='diffMessage'>%s</p>
+				  </form>
+				</div>
+				""";
+		String btn1 = "<a class=\"['" + resultBoxId + "','" + expectedBoxId + "']|indentCompare|" + diffBoxId + "\" href=\"javascript:void(0)\">compare</a>";
+		String btn2 = "<a href='javascript:void(0);' class='" + formName + "|indentWindiff'>windiff</a>";
+		writeHtml(logLevel, template.formatted(cssClass, formName, encodeForHtml(stepName),
+				writeCommands(resultBoxId, true, "<a href='javascript:void(0);' class='" + formName + "|saveResults'>save</a>"),
+				encodeForHtml(headerExtra), resultBoxId, encodeForHtml(actualMessage),
+				writeCommands(expectedBoxId, true, null),
+				stepOutputFilename,
+				encodeForHtml(headerExtra), expectedBoxId, encodeForHtml(expectedMessage),
+				writeCommands(diffBoxId, false, btn1 + btn2),
+				diffBoxId, encodeForHtml(description)
+		), true);
 	}
 
 	@Override

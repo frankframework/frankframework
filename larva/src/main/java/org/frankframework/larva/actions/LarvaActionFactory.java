@@ -37,6 +37,8 @@ import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.ListenerMessage;
 import org.frankframework.larva.ListenerMessageHandler;
 import org.frankframework.larva.SenderThread;
+import org.frankframework.larva.output.LarvaWriter;
+import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
 
@@ -49,10 +51,14 @@ public class LarvaActionFactory {
 	public static final String CLASS_NAME_PROPERTY_SUFFIX = ".className";
 	private final int defaultTimeout;
 	private final LarvaTool testTool;
+	private final LarvaWriter larvaWriter;
+	private final TestExecutionObserver testExecutionObserver;
 
 	public LarvaActionFactory(LarvaTool testTool) {
 		this.testTool = testTool;
-		this.defaultTimeout = testTool.getConfig().getTimeout();
+		this.larvaWriter = testTool.getWriter();
+		this.testExecutionObserver = testTool.getTestExecutionObserver();
+		this.defaultTimeout = testTool.getLarvaConfig().getTimeout();
 	}
 
 	public Map<String, LarvaScenarioAction> createLarvaActions(Properties properties, ApplicationContext applicationContext, String correlationId) {
@@ -191,18 +197,19 @@ public class LarvaActionFactory {
 	}
 
 	private void wrongPipelineMessage(String message, Message pipelineMessage) {
-		testTool.wrongPipelineMessage(message, pipelineMessage);
+		String messageAsString = testTool.messageToString(pipelineMessage);
+		testExecutionObserver.messageError(message, messageAsString != null ? messageAsString : "Unreadable message: [" + pipelineMessage + "]");
 	}
 
 	private void debugMessage(String message) {
-		testTool.debugMessage(message);
+		larvaWriter.debugMessage(message);
 	}
 
 	private void warningMessage(String message) {
-		testTool.warningMessage(message);
+		larvaWriter.warningMessage(message);
 	}
 
 	private void errorMessage(String message, Exception e) {
-		testTool.errorMessage(message, e);
+		larvaWriter.errorMessage(message, e);
 	}
 }
