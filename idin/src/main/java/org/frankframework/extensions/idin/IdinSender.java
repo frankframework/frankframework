@@ -632,7 +632,7 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	 * only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically
 	 * has the file extension .cer,.crt or .pem.
 	 *
-	 * @param acquirerCertificateAlias : The alias assigned to the Acquirer's certificate in the keystore.
+	 * @param acquirerCertificateAlias: The alias assigned to the Acquirer's certificate in the keystore.
 	 * This could be the alias you supplied explicitly when importing an existing certificate in the keystore,
 	 * or it could be an alias automatically assigned by the keytool application.
 	 */
@@ -645,7 +645,7 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	 * only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically
 	 * has the file extension .cer,.crt or .pem.
 	 *
-	 * @param acquirerAlternativeCertificateAlias : The alias assigned to the Acquirer's certificate in the keystore.
+	 * @param acquirerAlternativeCertificateAlias: The alias assigned to the Acquirer's certificate in the keystore.
 	 * This could be the alias you supplied explicitly when importing an existing certificate in the keystore,
 	 * or it could be an alias automatically assigned by the keytool application.
 	 */
@@ -723,7 +723,7 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	 * Container class for the credential settings. Please note that when using an alias, a credential factory will be used.
 	 * This takes precedence over the password if set.
 	 */
-	private class CredentialSettings {
+	private static class CredentialSettings {
 		private CredentialFactory credentialFactory;
 		private @Setter String password;
 		private @Getter String authAlias;
