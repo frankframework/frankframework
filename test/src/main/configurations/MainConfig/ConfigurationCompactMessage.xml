@@ -44,7 +44,7 @@
 				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="echo" className="org.frankframework.pipes.EchoPipe"
-				  elementToMoveChain="AuditLog_Action;Message;Text" durationThreshold="1">
+				  elementToMoveChain="AuditLog_Action;Message;Text">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

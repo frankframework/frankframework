@@ -33,14 +33,15 @@ public class PipeProcessorTestBase {
 		SpringUtils.registerSingleton(configuration, "txManager", txManager);
 		processor = configuration.getBean(PipeProcessor.class);
 
-		pipeLine = createPipeLine();
+		createAdapterAndPipeLine();
 		session = new PipeLineSession();
 	}
 
-	private PipeLine createPipeLine() {
+	@SuppressWarnings("deprecation")
+	private void createAdapterAndPipeLine() {
 		adapter = configuration.createBean();
 		adapter.setName("Adapter Name");
-		PipeLine pipeLine = SpringUtils.createBean(adapter);
+		pipeLine = SpringUtils.createBean(adapter);
 		adapter.setPipeLine(pipeLine);
 
 		PipeLineExit errorExit = new PipeLineExit();
@@ -52,8 +53,10 @@ public class PipeProcessorTestBase {
 		successExit.setName("exit");
 		successExit.setState(PipeLine.ExitState.SUCCESS);
 		pipeLine.addPipeLineExit(successExit);
+	}
 
-		return pipeLine;
+	protected final void configurePipeLine(Consumer<PipeLine> additionalConfig) {
+		additionalConfig.accept(pipeLine);
 	}
 
 	protected final Message processPipeLine(Message inputMessage) throws PipeRunException, ConfigurationException {
