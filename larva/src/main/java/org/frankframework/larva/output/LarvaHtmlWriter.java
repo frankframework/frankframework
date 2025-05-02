@@ -139,7 +139,7 @@ public class LarvaHtmlWriter extends LarvaWriter {
 				    </div>
 				    <div class='expectedContainer'>
 				      %s
-				      <input type='hidden' name='expectedFileName' value='%s' />"
+				      <input type='hidden' name='expectedFileName' value='%s' />
 				      <input type='hidden' name='cmd' />
 				      <h5>Expected (%s):</h5>
 				      <textarea name='expectedBox' id='%s'>%s</textarea>

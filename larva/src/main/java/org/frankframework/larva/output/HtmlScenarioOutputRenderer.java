@@ -52,16 +52,16 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 			@Nullable String scenariosAutosavedMessage, int scenariosTotal, int scenariosPassed, int scenariosFailed, int scenariosAutosaved) {
 
 		if (scenariosPassedMessage != null) {
-			writeHtml(LarvaLogLevel.TOTALS, "<div class='passed'>" + LarvaHtmlWriter.encodeForHtml(scenariosPassedMessage) + "</div>", true);
+			writeHtml(LarvaLogLevel.TOTALS, "<h1 class='passed'>" + LarvaHtmlWriter.encodeForHtml(scenariosPassedMessage) + "</h1>", true);
 		}
 		if (scenariosFailedMessage != null) {
-			writeHtml(LarvaLogLevel.TOTALS, "<div class='failed'>" + LarvaHtmlWriter.encodeForHtml(scenariosFailedMessage) + "</div>", true);
+			writeHtml(LarvaLogLevel.TOTALS, "<h1 class='failed'>" + LarvaHtmlWriter.encodeForHtml(scenariosFailedMessage) + "</h1>", true);
 		}
 		if (scenariosAutosavedMessage != null) {
-			writeHtml(LarvaLogLevel.TOTALS, "<div class='autosaved'>" + LarvaHtmlWriter.encodeForHtml(scenariosAutosavedMessage) + "</div>", true);
+			writeHtml(LarvaLogLevel.TOTALS, "<h1 class='autosaved'>" + LarvaHtmlWriter.encodeForHtml(scenariosAutosavedMessage) + "</h1>", true);
 		}
 		if (scenariosTotalMessage != null) {
-			writeHtml(LarvaLogLevel.TOTALS, "<div class='total'>" + LarvaHtmlWriter.encodeForHtml(scenariosTotalMessage) + "</div>", true);
+			writeHtml(LarvaLogLevel.TOTALS, "<h1 class='total'>" + LarvaHtmlWriter.encodeForHtml(scenariosTotalMessage) + "</h1>", true);
 		}
 	}
 

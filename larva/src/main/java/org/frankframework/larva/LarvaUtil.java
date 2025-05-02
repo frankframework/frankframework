@@ -93,9 +93,7 @@ public class LarvaUtil {
 			properties.putAll(includedProperties);
 			if (root) {
 				properties.putAll(appConstants);
-				for (Map.Entry<Object, Object> entry: properties.entrySet()) {
-					properties.put(entry.getKey(), StringResolver.substVars((String)entry.getValue(), properties));
-				}
+				applyStringSubstitutions(properties, appConstants);
 				addAbsolutePathProperties(directory, properties);
 			}
 			out.debugMessage(properties.size() + " properties found");
@@ -104,6 +102,12 @@ public class LarvaUtil {
 			out.errorMessage("Could not read properties file: " + e.getMessage(), e);
 		}
 		return fixLegacyClassnames(properties);
+	}
+
+	public static void applyStringSubstitutions(Properties properties, AppConstants appConstants) {
+		for (Map.Entry<Object, Object> entry: properties.entrySet()) {
+			properties.put(entry.getKey(), StringResolver.substVars((String)entry.getValue(), properties, appConstants));
+		}
 	}
 
 	private static void addAbsolutePathProperties(@Nonnull String propertiesDirectory, @Nonnull Properties properties) {

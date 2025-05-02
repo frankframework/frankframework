@@ -108,11 +108,11 @@ public class LarvaConfig {
 	}
 
 	public List<File> readScenarioFiles(LarvaWriter out) {
-		this.scenarioFiles = readScenarioFiles(out, activeScenariosDirectory);
+		this.scenarioFiles = readScenarioFiles(out, activeScenariosDirectory, AppConstants.getInstance());
 		return this.scenarioFiles.keySet().stream().toList();
 	}
 
-	public Map<File, String> readScenarioFiles(LarvaWriter out, String scenariosDirectory) {
+	public Map<File, String> readScenarioFiles(LarvaWriter out, String scenariosDirectory, AppConstants appConstants) {
 		Map <File, String> scenarioFiles = new LinkedHashMap<>();
 		out.debugMessage("List all files in directory '" + scenariosDirectory + "'");
 
@@ -138,6 +138,7 @@ public class LarvaConfig {
 		for (File file : files) {
 			if (file.isFile() && file.getName().endsWith(".properties") && !file.getName().equalsIgnoreCase("common.properties")) {
 				Properties properties = LarvaUtil.readProperties(out, file);
+				LarvaUtil.applyStringSubstitutions(properties, appConstants);
 				Object description = properties.get("scenario.description");
 				if (description == null) {
 					continue;
@@ -148,7 +149,7 @@ public class LarvaConfig {
 					scenarioFiles.put(file, description.toString());
 				}
 			} else if (file.isDirectory() && (!file.getName().startsWith(".") && !"CVS".equals(file.getName()))) {
-				scenarioFiles.putAll(readScenarioFiles(out, file.getAbsolutePath()));
+				scenarioFiles.putAll(readScenarioFiles(out, file.getAbsolutePath(), appConstants));
 			}
 		}
 		out.debugMessage(scenarioFiles.size() + " scenario files found");

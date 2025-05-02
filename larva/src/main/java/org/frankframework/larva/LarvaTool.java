@@ -174,9 +174,11 @@ public class LarvaTool {
 		if (execute.endsWith(".properties")) {
 			debugMessage("Read one scenario");
 			scenarioFiles = List.of(new File(execute));
-		} else {
+		} else if (execute.equals(currentScenariosRootDirectory)){
 			debugMessage("Executing all scenario files from root directory '" + currentScenariosRootDirectory + "'");
 			scenarioFiles = allScenarioFiles;
+		} else {
+			scenarioFiles = larvaConfig.readScenarioFiles(writer, execute, AppConstants.getInstance()).keySet().stream().toList();
 		}
 
 		if (scenarioFiles.isEmpty()) {
