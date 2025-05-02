@@ -30,6 +30,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StringResolver;
 import org.frankframework.util.StringUtil;
 
@@ -117,12 +118,45 @@ public class ObjectCreator {
 			}
 		}
 
-		if(StringUtils.isNotEmpty(resource.getUsername())) {
-			mergedProps.setProperty("user", StringResolver.substVars(resource.getUsername(), APP_CONSTANTS));
+		String alias = substituteVariables(resource.getAuthalias());
+		String username = substituteVariables(resource.getUsername());
+		String password = substituteVariables(resource.getPassword());
+
+		// if alias is null, use username and password directly
+		if (StringUtils.isEmpty(alias)) {
+			setPropertyIfNotEmpty(mergedProps, "user", username);
+			setPropertyIfNotEmpty(mergedProps, "password", password);
+		} else {
+			CredentialFactory credentialFactory = new CredentialFactory(alias, username, password);
+			setPropertyIfNotEmpty(mergedProps, "user", credentialFactory.getUsername());
+			setPropertyIfNotEmpty(mergedProps, "password", credentialFactory.getPassword());
 		}
-		if(StringUtils.isNotEmpty(resource.getPassword())) {
-			mergedProps.setProperty("password", StringResolver.substVars(resource.getPassword(), APP_CONSTANTS));
-		}
+
 		return mergedProps;
+	}
+
+	/**
+	 * Sets the property in the merged properties if the value is not empty.
+	 * @param mergedProps The merged properties.
+	 * @param propertyName The name of the property to set.
+	 * @param propertyValue The value of the property to set.
+	 */
+	private void setPropertyIfNotEmpty(Properties mergedProps, String propertyName, String propertyValue) {
+		if (StringUtils.isNotEmpty(propertyValue)) {
+			mergedProps.setProperty(propertyName, propertyValue);
+		}
+	}
+
+	/**
+	 * Substitutes the variables in the given value using the AppConstants.
+	 * @param value The value to substitute.
+	 * @return The substituted value, or null if the input was null.
+	 */
+	private String substituteVariables(String value) {
+		if (StringUtils.isNotEmpty(value)) {
+			return StringResolver.substVars(value, APP_CONSTANTS);
+		}
+
+		return value;
 	}
 }
