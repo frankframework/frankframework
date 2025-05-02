@@ -87,7 +87,7 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 	protected Connection createSharedConnection() throws JMSException {
 		Connection conn = super.createSharedConnection();
 		if (log.isTraceEnabled())
-			log.trace("createSharedConnection() - ackMode[{}] connection[{}]", getSessionAcknowledgeMode(), conn.toString());
+			log.trace("createSharedConnection() - ackMode[{}] connection[{}]", getSessionAcknowledgeMode(), conn);
 		return conn;
 	}
 

@@ -92,7 +92,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 			}
 		}
 
-		log.info("[{}] created classloader [{}] basepath [{}]", getConfigurationName(), this.toString(), getBasePath());
+		log.info("[{}] created classloader [{}] basepath [{}]", getConfigurationName(), this, getBasePath());
 	}
 
 	/**
@@ -339,7 +339,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 
 	@Override
 	public void destroy() {
-		log.debug("removing classloader [{}]", this.toString());
+		log.debug("removing classloader [{}]", this);
 
 		AppConstants.removeInstance(this);
 	}

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.parameters.JsonParameter;
 import org.frankframework.pipes.DataSonnetPipe.DataSonnetOutputType;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.DateParameterBuilder;
@@ -63,10 +64,46 @@ public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 	}
 
 	@Test
+	public void mappingWithJsonParams1() throws Exception {
+		pipe.setStyleSheetName("/Pipes/DataSonnet/one-param.jsonnet");
+		JsonParameter jsonParameter = new JsonParameter();
+		jsonParameter.setName("foo");
+		jsonParameter.setValue("123");
+		pipe.addParameter(jsonParameter); // Value to be converted to JSON
+		configureAndStartPipe();
+
+		// Act
+		Message result = doPipe("Hello World").getResult();
+
+		// Assert
+		assertEquals(MediaType.APPLICATION_JSON, result.getContext().getMimeType());
+		assertEquals("""
+				{"greetings":"Hello World","param-one":{"foo":123}}""", result.asString());
+	}
+
+	@Test
+	public void mappingWithJsonParams2() throws Exception {
+		pipe.setStyleSheetName("/Pipes/DataSonnet/one-param.jsonnet");
+		JsonParameter jsonParameter = new JsonParameter();
+		jsonParameter.setName("foo");
+		jsonParameter.setValue("{\"bar\":123}");
+		pipe.addParameter(jsonParameter); // Value to be converted to JSON
+		configureAndStartPipe();
+
+		// Act
+		Message result = doPipe("Hello World").getResult();
+
+		// Assert
+		assertEquals(MediaType.APPLICATION_JSON, result.getContext().getMimeType());
+		assertEquals("""
+				{"greetings":"Hello World","param-one":{"bar":123}}""", result.asString());
+	}
+
+	@Test
 	public void computeMappingWithParams() throws Exception {
 		pipe.setComputeMimeType(true);
 		pipe.setStyleSheetName("/Pipes/DataSonnet/one-param.jsonnet");
-		pipe.addParameter(ParameterBuilder.create("foo", "{\"bar\":123}")); // text, not interpreted as JSON
+		pipe.addParameter(ParameterBuilder.create("foo", "{\"bar\":123}")); // text, but b/c computeMimeType=true will be interpreted as JSON
 		configureAndStartPipe();
 		Message input = new Message("{\"foo\":456}");
 		input.getContext().withMimeType(MediaType.APPLICATION_JSON);
@@ -77,7 +114,7 @@ public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 		// Assert
 		assertEquals(MediaType.APPLICATION_JSON, result.getContext().getMimeType());
 		assertEquals("""
-				{"greetings":{"foo":456},"param-one":"{\\"bar\\":123}"}""", result.asString());
+				{"greetings":{"foo":456},"param-one":{"bar":123}}""", result.asString());
 	}
 
 	@Test

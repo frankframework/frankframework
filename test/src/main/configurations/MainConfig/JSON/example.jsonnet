@@ -1,4 +1,5 @@
 {
    "uid": payload.userId,
-   "uname": payload.name
+   "uname": payload.name,
+   "originalMessage": originalMessage
 }

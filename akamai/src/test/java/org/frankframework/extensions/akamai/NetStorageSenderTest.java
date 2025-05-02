@@ -16,6 +16,7 @@
 package org.frankframework.extensions.akamai;
 
 import static org.frankframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.spy;
 
@@ -33,6 +34,7 @@ import org.frankframework.http.HttpSenderTestBase;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
+import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.AppConstants;
 
 public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
@@ -47,6 +49,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Override
 	@AfterEach
 	public void tearDown() {
+		super.tearDown();
 		AppConstants.getInstance().remove("http.headers.messageid");
 	}
 
@@ -58,6 +61,13 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 				return new Message( getResponseBodyAsString(responseHandler, true) );
 			}
 		});
+	}
+
+	@Override
+	protected String getFile(String file) throws IOException {
+		String content = TestFileUtils.getTestFile("/http/requests/"+file);
+		assertNotNull(content, "file ["+"/http/requests/"+file+"] not found");
+		return content;
 	}
 
 	@Override
@@ -83,21 +93,11 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setAction(Action.DU);
 		Message input = new Message("my/special/path/"); // Last slash should be removed!
 
-		try {
-			PipeLineSession pls = new PipeLineSession(session);
+		sender.configure();
+		sender.start();
 
-			sender.configure();
-			sender.start();
-
-			String result = sender.sendMessageOrThrow(input, pls).asString();
-			assertEqualsIgnoreCRLF(getFile("duAction.txt"), result.trim());
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.stop();
-			}
-		}
+		String result = sender.sendMessageOrThrow(input, session).asString();
+		assertEqualsIgnoreCRLF(getFile("duAction.txt"), result.trim());
 	}
 
 	@Test
@@ -107,21 +107,11 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setRootDir("/my/special/"); // Start and end with a slash!
 		Message input = new Message("path/"); // Last slash should be removed!
 
-		try {
-			PipeLineSession pls = new PipeLineSession(session);
+		sender.configure();
+		sender.start();
 
-			sender.configure();
-			sender.start();
-
-			String result = sender.sendMessageOrThrow(input, pls).asString();
-			assertEqualsIgnoreCRLF(getFile("duAction.txt"), result.trim());
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.stop();
-			}
-		}
+		String result = sender.sendMessageOrThrow(input, session).asString();
+		assertEqualsIgnoreCRLF(getFile("duAction.txt"), result.trim());
 	}
 
 	@Test
@@ -130,21 +120,11 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setAction(Action.DIR);
 		Message input = new Message("my/special/path/");
 
-		try {
-			PipeLineSession pls = new PipeLineSession(session);
+		sender.configure();
+		sender.start();
 
-			sender.configure();
-			sender.start();
-
-			String result = sender.sendMessageOrThrow(input, pls).asString();
-			assertEqualsIgnoreCRLF(getFile("dirAction.txt"), result.trim());
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.stop();
-			}
-		}
+		String result = sender.sendMessageOrThrow(input, session).asString();
+		assertEqualsIgnoreCRLF(getFile("dirAction.txt"), result.trim());
 	}
 
 	@Test
@@ -153,21 +133,11 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setAction(Action.DELETE);
 		Message input = new Message("my/special/path/");
 
-		try {
-			PipeLineSession pls = new PipeLineSession(session);
+		sender.configure();
+		sender.start();
 
-			sender.configure();
-			sender.start();
-
-			String result = sender.sendMessageOrThrow(input, pls).asString();
-			assertEqualsIgnoreCRLF(getFile("deleteAction.txt"), result.trim());
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.stop();
-			}
-		}
+		String result = sender.sendMessageOrThrow(input, session).asString();
+		assertEqualsIgnoreCRLF(getFile("deleteAction.txt"), result.trim());
 	}
 
 	@Test
@@ -177,23 +147,14 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		Message input = new Message("my/special/path/");
 
 		sender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("fileMessage"));
-		try {
-			Message file = new Message("<dummyFile>");
-			PipeLineSession pls = new PipeLineSession(session);
-			pls.put("fileMessage", file);
+		Message file = new Message("<dummyFile>");
+		session.put("fileMessage", file);
 
-			sender.configure();
-			sender.start();
+		sender.configure();
+		sender.start();
 
-			String result = sender.sendMessageOrThrow(input, pls).asString();
-			assertEqualsIgnoreCRLF(getFile("uploadAction.txt"), result.trim());
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.stop();
-			}
-		}
+		String result = sender.sendMessageOrThrow(input, session).asString();
+		assertEqualsIgnoreCRLF(getFile("uploadAction.txt"), result.trim());
 	}
 
 	@Test
@@ -204,23 +165,14 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		Message input = new Message("my/special/path/");
 
 		sender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("fileMessage"));
-		try {
-			Message file = new Message("<dummyFile>");
-			PipeLineSession pls = new PipeLineSession(session);
-			pls.put("fileMessage", file);
+		Message file = new Message("<dummyFile>");
+		session.put("fileMessage", file);
 
 			sender.configure();
 			sender.start();
 
-			String result = sender.sendMessageOrThrow(input, pls).asString();
-			assertEqualsIgnoreCRLF(getFile("uploadActionMD5.txt"), result.trim());
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.stop();
-			}
-		}
+		String result = sender.sendMessageOrThrow(input, session).asString();
+		assertEqualsIgnoreCRLF(getFile("uploadActionMD5.txt"), result.trim());
 	}
 
 	@Test
@@ -232,23 +184,14 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 
 		sender.addParameter(ParameterBuilder.create().withName("md5").withValue("a1658c154b6af0fba9d93aa86e5be06f")); // Matches response file but uses a different input message
 		sender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("fileMessage"));
-		try {
-			Message file = new Message("<dummyFile>----");
-			PipeLineSession pls = new PipeLineSession(session);
-			pls.put("fileMessage", file);
+		Message file = new Message("<dummyFile>----");
+		session.put("fileMessage", file);
 
-			sender.configure();
-			sender.start();
+		sender.configure();
+		sender.start();
 
-			String result = sender.sendMessageOrThrow(input, pls).asString();
-			assertEqualsIgnoreCRLF(getFile("uploadActionMD5.txt"), result.replace("----", "").trim());
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.stop();
-			}
-		}
+		String result = sender.sendMessageOrThrow(input, session).asString();
+		assertEqualsIgnoreCRLF(getFile("uploadActionMD5.txt"), result.replace("----", "").trim());
 	}
 
 	@Test
@@ -259,23 +202,14 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		Message input = new Message("my/special/path/");
 
 		sender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("fileMessage"));
-		try {
-			Message file = new Message("<dummyFile>");
-			PipeLineSession pls = new PipeLineSession(session);
-			pls.put("fileMessage", file);
+		Message file = new Message("<dummyFile>");
+		session.put("fileMessage", file);
 
-			sender.configure();
-			sender.start();
+		sender.configure();
+		sender.start();
 
-			String result = sender.sendMessageOrThrow(input, pls).asString();
-			assertEqualsIgnoreCRLF(getFile("uploadActionSHA1.txt"), result.trim());
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.stop();
-			}
-		}
+		String result = sender.sendMessageOrThrow(input, session).asString();
+		assertEqualsIgnoreCRLF(getFile("uploadActionSHA1.txt"), result.trim());
 	}
 
 	@Test
@@ -287,23 +221,14 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 
 		sender.addParameter(ParameterBuilder.create().withName("sha1").withValue("51e8bbf813bdbcede109d13b863a58132e80b2e2")); // Matches response file but uses a different input message
 		sender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("fileMessage"));
-		try {
-			Message file = new Message("<dummyFile>----");
-			PipeLineSession pls = new PipeLineSession(session);
-			pls.put("fileMessage", file);
+		Message file = new Message("<dummyFile>----");
+		session.put("fileMessage", file);
 
-			sender.configure();
-			sender.start();
+		sender.configure();
+		sender.start();
 
-			String result = sender.sendMessageOrThrow(input, pls).asString();
-			assertEqualsIgnoreCRLF(getFile("uploadActionSHA1.txt"), result.replace("----", "").trim());
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.stop();
-			}
-		}
+		String result = sender.sendMessageOrThrow(input, session).asString();
+		assertEqualsIgnoreCRLF(getFile("uploadActionSHA1.txt"), result.replace("----", "").trim());
 	}
 
 	@Test
@@ -314,23 +239,14 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		Message input = new Message("my/special/path/");
 
 		sender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("fileMessage"));
-		try {
-			Message file = new Message("<dummyFile>");
-			PipeLineSession pls = new PipeLineSession(session);
-			pls.put("fileMessage", file);
+		Message file = new Message("<dummyFile>");
+		session.put("fileMessage", file);
 
-			sender.configure();
-			sender.start();
+		sender.configure();
+		sender.start();
 
-			String result = sender.sendMessageOrThrow(input, pls).asString();
-			assertEqualsIgnoreCRLF(getFile("uploadActionSHA256.txt"), result.trim());
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.stop();
-			}
-		}
+		String result = sender.sendMessageOrThrow(input, session).asString();
+		assertEqualsIgnoreCRLF(getFile("uploadActionSHA256.txt"), result.trim());
 	}
 
 	@Test
@@ -342,23 +258,14 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		// Matches response file but uses a different input message
 		sender.addParameter(ParameterBuilder.create().withName("sha256").withValue("71d1503b5afba60e212a46e4112fba56503e281224957ad8dee6034ad25f12dc"));
 		sender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("fileMessage"));
-		try {
 			Message file = new Message("<dummyFile>----");
-			PipeLineSession pls = new PipeLineSession(session);
-			pls.put("fileMessage", file);
+			session.put("fileMessage", file);
 
 			sender.configure();
 			sender.start();
 
-			String result = sender.sendMessageOrThrow(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, session).asString();
 			assertEqualsIgnoreCRLF(getFile("uploadActionSHA256.txt"), result.replace("----", "").trim());
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.stop();
-			}
-		}
 	}
 
 	@Test
@@ -367,21 +274,11 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setAction(Action.MKDIR);
 		Message input = new Message("my/special/path/");
 
-		try {
-			PipeLineSession pls = new PipeLineSession(session);
+		sender.configure();
+		sender.start();
 
-			sender.configure();
-			sender.start();
-
-			String result = sender.sendMessageOrThrow(input, pls).asString();
-			assertEqualsIgnoreCRLF(getFile("mkdirAction.txt"), result.trim());
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.stop();
-			}
-		}
+		String result = sender.sendMessageOrThrow(input, session).asString();
+		assertEqualsIgnoreCRLF(getFile("mkdirAction.txt"), result.trim());
 	}
 
 	@Test
@@ -390,21 +287,11 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setAction(Action.RMDIR);
 		Message input = new Message("my/special/path/");
 
-		try {
-			PipeLineSession pls = new PipeLineSession(session);
+		sender.configure();
+		sender.start();
 
-			sender.configure();
-			sender.start();
-
-			String result = sender.sendMessageOrThrow(input, pls).asString();
-			assertEqualsIgnoreCRLF(getFile("rmdirAction.txt"), result.trim());
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.stop();
-			}
-		}
+		String result = sender.sendMessageOrThrow(input, session).asString();
+		assertEqualsIgnoreCRLF(getFile("rmdirAction.txt"), result.trim());
 	}
 
 	@Test
@@ -414,21 +301,11 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		Message input = new Message("my/special/path/file1.txt");
 
 		sender.addParameter(new Parameter("destination", "my/other/special/path/file2.txt"));
-		try {
-			PipeLineSession pls = new PipeLineSession(session);
+		sender.configure();
+		sender.start();
 
-			sender.configure();
-			sender.start();
-
-			String result = sender.sendMessageOrThrow(input, pls).asString();
-			assertEqualsIgnoreCRLF(getFile("renameAction.txt"), result.trim());
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.stop();
-			}
-		}
+		String result = sender.sendMessageOrThrow(input, session).asString();
+		assertEqualsIgnoreCRLF(getFile("renameAction.txt"), result.trim());
 	}
 
 	@Test
@@ -438,21 +315,12 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		Message input = new Message("my/special/path/");
 
 		sender.addParameter(new Parameter("mtime", "1633945058"));
-		try {
-			PipeLineSession pls = new PipeLineSession(session);
 
-			sender.configure();
-			sender.start();
+		sender.configure();
+		sender.start();
 
-			String result = sender.sendMessageOrThrow(input, pls).asString();
-			assertEqualsIgnoreCRLF(getFile("mtimeAction.txt"), result.trim());
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.stop();
-			}
-		}
+		String result = sender.sendMessageOrThrow(input, session).asString();
+		assertEqualsIgnoreCRLF(getFile("mtimeAction.txt"), result.trim());
 	}
 
 	@Test
@@ -461,20 +329,10 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setAction(Action.DOWNLOAD);
 		Message input = new Message("my/special/path/");
 
-		try {
-			PipeLineSession pls = new PipeLineSession(session);
+		sender.configure();
+		sender.start();
 
-			sender.configure();
-			sender.start();
-
-			String result = sender.sendMessageOrThrow(input, pls).asString();
-			assertEqualsIgnoreCRLF(getFile("downloadAction.txt"), result.trim());
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.stop();
-			}
-		}
+		String result = sender.sendMessageOrThrow(input, session).asString();
+		assertEqualsIgnoreCRLF(getFile("downloadAction.txt"), result.trim());
 	}
 }

@@ -63,7 +63,7 @@ public class SoapProviderServlet extends AbstractHttpServlet implements DynamicR
 	@Override
 	public Map<String, String> getParameters() {
 		Map<String, String> parameters = new HashMap<>();
-		parameters.put("bus", "cxf"); //Default bus
+		parameters.put("bus", "cxf"); // Default bus
 		return parameters;
 	}
 

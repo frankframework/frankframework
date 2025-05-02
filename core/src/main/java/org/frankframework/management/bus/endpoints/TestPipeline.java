@@ -37,6 +37,7 @@ import lombok.Data;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SpringSecurityHandler;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -96,6 +97,9 @@ public class TestPipeline extends BusEndpointBase {
 	private BinaryMessage processMessage(Adapter adapter, String payload, Map<String, String> threadContext, boolean expectsReply) {
 		String messageId = "testmessage" + UUIDUtil.createSimpleUUID();
 		try (PipeLineSession pls = new PipeLineSession()) {
+			// Make sure the pipeline session has a security handler
+			pls.setSecurityHandler(new SpringSecurityHandler());
+
 			if(threadContext != null) {
 				pls.putAll(threadContext);
 			}

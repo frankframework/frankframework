@@ -152,7 +152,7 @@ public class PipeLineSessionBaseTest {
 
 		@Override
 		public void close() {
-			log.debug("closing inputstream ["+name+"]");
+			log.debug("closing inputstream [{}]", name);
 			closes++;
 		}
 
@@ -179,7 +179,7 @@ public class PipeLineSessionBaseTest {
 		ma.closeOnCloseOf(session);
 		InputStream q = ma.asInputStream();
 
-    	assertSame(p, q, "scheduling a resource twice must yield the same object");
+		assertSame(p, q, "scheduling a resource twice must yield the same object");
 
 		mb.closeOnCloseOf(session);
 		mc.closeOnCloseOf(session);

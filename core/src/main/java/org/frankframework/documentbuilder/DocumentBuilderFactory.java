@@ -17,7 +17,6 @@ package org.frankframework.documentbuilder;
 
 import java.io.Writer;
 
-import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import org.frankframework.stream.MessageBuilder;
@@ -25,33 +24,17 @@ import org.frankframework.stream.MessageBuilder;
 public class DocumentBuilderFactory {
 
 	public static IDocumentBuilder startDocument(DocumentFormat format, String rootElement, MessageBuilder messageBuilder, boolean prettyPrint) throws SAXException {
-		switch (format) {
-		case XML:
-			return new XmlDocumentBuilder(rootElement, messageBuilder.asXmlWriter(), prettyPrint);
-		case JSON:
-			return new JsonDocumentBuilder(messageBuilder.asJsonWriter());
-		default:
-			throw new IllegalArgumentException("Unknown document format ["+format+"]");
-		}
+		return switch (format) {
+			case XML -> new XmlDocumentBuilder(rootElement, messageBuilder.asXmlWriter(), prettyPrint);
+			case JSON -> new JsonDocumentBuilder(messageBuilder.asJsonWriter());
+		};
 	}
 
 	public static IDocumentBuilder startDocument(DocumentFormat format, String rootElement, Writer writer) throws SAXException {
-		switch (format) {
-		case XML:
-			return new XmlDocumentBuilder(rootElement, writer);
-		case JSON:
-			return new JsonDocumentBuilder(writer);
-		default:
-			throw new IllegalArgumentException("Unknown document format ["+format+"]");
-		}
-	}
-
-	public static IDocumentBuilder startDocument(String rootElement, ContentHandler handler, boolean prettyPrint) throws SAXException {
-		return new XmlDocumentBuilder(rootElement, handler, prettyPrint);
-	}
-
-	public static IDocumentBuilder startDocument(JsonEventHandler handler) throws SAXException {
-		return new JsonDocumentBuilder(handler);
+		return switch (format) {
+			case XML -> new XmlDocumentBuilder(rootElement, writer);
+			case JSON -> new JsonDocumentBuilder(writer);
+		};
 	}
 
 	public static ObjectBuilder startObjectDocument(DocumentFormat format, String rootElement, MessageBuilder outputStream, boolean prettyPrint) throws SAXException {
@@ -61,5 +44,4 @@ public class DocumentBuilderFactory {
 	public static ArrayBuilder startArrayDocument(DocumentFormat format, String rootElement, String elementName, MessageBuilder outputStream, boolean prettyPrint) throws SAXException {
 		return startDocument(format, rootElement, outputStream, prettyPrint).asArrayBuilder(elementName);
 	}
-
 }

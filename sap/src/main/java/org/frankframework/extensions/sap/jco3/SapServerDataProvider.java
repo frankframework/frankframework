@@ -89,7 +89,7 @@ public class SapServerDataProvider implements ServerDataProvider {
 
 	@Override
 	public void setServerDataEventListener(ServerDataEventListener serverDataEventListener) {
-		log.debug("setting new serverDataEventListener [{}]", serverDataEventListener.toString());
+		log.debug("setting new serverDataEventListener [{}]", serverDataEventListener);
 		this.serverDataEventListener = serverDataEventListener;
 	}
 

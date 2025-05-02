@@ -104,7 +104,7 @@ import org.frankframework.util.StringUtil;
 public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, FrankElement, ConfigurationAware {
 	private @Getter ApplicationContext applicationContext;
 	private @Getter @Setter Configuration configuration;
-	private @Getter final ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	public static final String PIPELINE_NAME = "pipeline";
 	public static final String INPUT_VALIDATOR_NAME  = "- pipeline inputValidator";
@@ -127,20 +127,20 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private Message transformNullMessage = null;
 	private @Getter String adapterToRunBeforeOnEmptyInput = null;
 
-	private @Getter IValidator inputValidator  = null;
+	private @Getter IValidator inputValidator = null;
 	private @Getter IValidator outputValidator = null;
-	private @Getter IWrapperPipe inputWrapper    = null;
-	private @Getter IWrapperPipe outputWrapper   = null;
-	private @Getter final Map<String, PipeLineExit> pipeLineExits = new LinkedHashMap<>();
-	private @Getter final Map<String, PipeForward> globalForwards = new HashMap<>();
+	private @Getter IWrapperPipe inputWrapper = null;
+	private @Getter IWrapperPipe outputWrapper = null;
+	private final Map<String, PipeLineExit> pipeLineExits = new LinkedHashMap<>();
+	private final Map<String, PipeForward> globalForwards = new HashMap<>();
 	private @Getter Locker locker;
 	private @Getter ICache<String,String> cache;
 
 	private final Map<String, IPipe> pipesByName = new LinkedHashMap<>();
-	private @Getter final List<IPipe> pipes	  = new ArrayList<>();
+	private final @Getter List<IPipe> pipes = new ArrayList<>();
 
-	private @Getter Adapter adapter;    // For transaction managing
-	@Deprecated @Getter private HasName owner; // LEGACy :: For logging purposes in pipe- and pipeline-processors
+	private @Getter Adapter adapter; // For transaction managing
+	@Deprecated @Getter private HasName owner; // LEGACY :: For logging purposes in pipe- and pipeline-processors
 	private @Setter PipeLineProcessor pipeLineProcessor;
 
 	private @Getter DistributionSummary requestSizeStats;
@@ -352,7 +352,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			for(PipeForward forward : pipe.getForwards().values()) {
 				String path=forward.getPath();
 				if (path!=null) {
-					PipeLineExit plExit= getPipeLineExits().get(path);
+					PipeLineExit plExit = pipeLineExits.get(path);
 					if (plExit==null && getPipe(path)==null){
 						ConfigurationWarnings.add(pipe, log, "has a forward of which the pipe to execute ["+path+"] is not defined");
 					}
@@ -451,7 +451,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		if (StringUtils.isEmpty(path)){
 			throw new PipeRunException(pipe, "Pipeline of [%s] got a forward [%s] with a path that equals null or has a zero-length value from pipe [%s]. Check the configuration, probably forwards are not defined for this pipe.".formatted(adapter.getName(), forward.getName(), pipe.getName()));
 		}
-		PipeLineExit plExit= getPipeLineExits().get(path);
+		PipeLineExit plExit = pipeLineExits.get(path);
 		if (plExit != null ) {
 			return plExit;
 		}
@@ -515,6 +515,17 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		}
 		log.debug("successfully closed pipeline");
 
+	}
+
+	// Method may not be called getGlobalForwards, because of the FrankDoc...
+	@Nullable
+	public PipeForward findGlobalForward(String forward) {
+		return globalForwards.get(forward);
+	}
+
+	// Method may not be called getPipeLineExits, because of the FrankDoc...
+	public Map<String, PipeLineExit> getAllPipeLineExits() {
+		return Collections.unmodifiableMap(pipeLineExits);
 	}
 
 	protected void stopPipe(String type, IPipe pipe) {
@@ -600,6 +611,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * Optional global forwards that will be added to every pipe, when the forward name has not been explicitly set.
 	 * For example the <code>&lt;forward name="exception" path="error_exception" /&gt;</code>, which will add the <code>exception</code> forward to every pipe in the pipeline.
 	 */
+	// Here for the FrankDoc documentation
 	public void setGlobalForwards(PipeForwards forwards){
 		for(PipeForward forward: forwards.getForwards()) {
 			addForward(forward);

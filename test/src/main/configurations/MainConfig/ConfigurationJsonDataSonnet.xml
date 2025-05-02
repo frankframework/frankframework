@@ -9,7 +9,9 @@
 			<SenderPipe name="Fetch Data From Larva">
 				<FrankSender target="TestTool/DataSonnetTest" scope="LISTENER"/>
 			</SenderPipe>
-			<DataSonnetPipe name="JSON Transform" styleSheetName="JSON/example.jsonnet" computeMimeType="true"/>
+			<DataSonnetPipe name="JSON Transform" styleSheetName="JSON/example.jsonnet" computeMimeType="true">
+				<JsonParam name="originalMessage" sessionKey="originalMessage"/>
+			</DataSonnetPipe>
 		</Pipeline>
 	</Adapter>
 </Module>

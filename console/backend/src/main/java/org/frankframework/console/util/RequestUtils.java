@@ -93,7 +93,7 @@ public class RequestUtils {
 			String encoding = StringUtils.isNotEmpty(defaultEncoding) ? defaultEncoding : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 			String messageContentType = message.getContentType();
 			if (messageContentType != null) {
-				MediaType contentType = MediaType.valueOf(message.getContentType());
+				MediaType contentType = MediaType.valueOf(messageContentType);
 				Charset charset = contentType.getCharset();
 				if(charset != null) {
 					encoding = charset.toString();

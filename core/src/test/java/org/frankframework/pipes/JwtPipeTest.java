@@ -17,12 +17,15 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.JWSKeySelector;
 import com.nimbusds.jose.proc.JWSVerificationKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
@@ -33,6 +36,8 @@ import org.frankframework.parameters.Parameter;
 public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	private static final String DUMMY_SECRET = "PotatoSecretMustBeAtLeast265Bits";
 	private static final String DUMMY_INPUT = "InputMessage";
+	private static final String BASE64_HEADER_HS256 = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9";
+	private static final String RIGHT_PADDED_SHORT_SECRET = "Potato\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 
 	private static ConfigurableJWTProcessor<SecurityContext> JWT_PROCESSOR;
 
@@ -59,6 +64,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 
 	@Test
 	void secretTooShortShouldThrow() {
+		// Secrets need to be 256 bits when JwtAllowWeakSecrets is false
 		pipe.setSharedSecret("Potato");
 		ConfigurationException ex = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
 		assertThat(ex.getMessage(), Matchers.containsString("must be at least 256 bits"));
@@ -66,6 +72,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 
 	@Test
 	void secretParamTooShortShouldThrow() throws ConfigurationException {
+		// Secrets as parameter need to be 256 bits when JwtAllowWeakSecrets is false
 		pipe.addParameter(new Parameter(JwtPipe.SHARED_SECRET_PARAMETER_NAME, "Potato"));
 		configureAndStartPipe();
 
@@ -75,15 +82,19 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 
 	@Test
 	void secretTooShortShouldBePadded() throws Exception {
+		// When jwtAllowWeakSecrets is true, short secrets should be padded to meet minimum length
 		pipe.setJwtAllowWeakSecrets(true);
 		pipe.setSharedSecret("Potato");
 		configureAndStartPipe();
 		String jwt1 = doPipe(DUMMY_INPUT).getResult().asString();
 
+		// A manually padded secret should produce the same signature as the auto-padded secret
 		pipe.setSharedSecret("Potato\0\0\0\0");
 		configureAndStartPipe();
 		String jwt2 = doPipe(DUMMY_INPUT).getResult().asString();
-		assertEquals(jwt1, jwt2);
+
+		assertValidTokenSignature(jwt1, RIGHT_PADDED_SHORT_SECRET);
+		assertValidTokenSignature(jwt2, RIGHT_PADDED_SHORT_SECRET);
 	}
 
 	@Test
@@ -111,19 +122,24 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 
 	@Test
 	void secretParamTooShortShouldBePadded() throws Exception {
+		// Generate JWT using a short secret (passed as a parameter) with padding allowed
 		pipe.setJwtAllowWeakSecrets(true);
 		Parameter potatoParam = new Parameter(JwtPipe.SHARED_SECRET_PARAMETER_NAME, "Potato");
 		pipe.addParameter(potatoParam);
 		configureAndStartPipe();
 		String jwt1 = doPipe(DUMMY_INPUT).getResult().asString();
 
+		// Generate JWT using a manually padded version of the same secret (also as parameter)
 		pipe.setSharedSecret(null);
 		pipe.getParameterList().clear();
 		potatoParam.setValue("Potato\0\0\0\0");
 		pipe.addParameter(potatoParam);
 		configureAndStartPipe();
 		String jwt2 = doPipe(DUMMY_INPUT).getResult().asString();
-		assertEquals(jwt1, jwt2);
+
+		// The resulting JWT signatures should be identical
+		assertValidTokenSignature(jwt1, RIGHT_PADDED_SHORT_SECRET);
+		assertValidTokenSignature(jwt2, RIGHT_PADDED_SHORT_SECRET);;
 	}
 
 	@Test
@@ -132,7 +148,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 		pipe.setSharedSecret(DUMMY_SECRET);
 		configureAndStartPipe();
 		String jwt1 = doPipe(DUMMY_INPUT).getResult().asString();
-		assertThat(jwt1, Matchers.startsWith("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9."));
+		assertThat(jwt1, Matchers.startsWith(BASE64_HEADER_HS256));
 
 		// Run with padded secret, 34 chars long (OK)
 		pipe.setSharedSecret(DUMMY_SECRET + "\0\0");
@@ -140,8 +156,9 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 		String jwt2 = doPipe(DUMMY_INPUT).getResult().asString();
 
 		// Assert
-		assertThat(jwt2, Matchers.startsWith("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9."));
-		assertEquals(jwt1, jwt2);
+		assertThat(jwt2, Matchers.startsWith(BASE64_HEADER_HS256));
+		assertValidTokenSignature(jwt1, DUMMY_SECRET);
+		assertValidTokenSignature(jwt2, DUMMY_SECRET);
 	}
 
 	@Test
@@ -150,7 +167,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 		configureAndStartPipe();
 
 		String jwt = doPipe(DUMMY_INPUT).getResult().asString();
-		assertThat(jwt, Matchers.startsWith("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9."));
+		assertThat(jwt, Matchers.startsWith(BASE64_HEADER_HS256));
 	}
 
 	@Test
@@ -159,17 +176,43 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 		configureAndStartPipe();
 
 		String jwt = doPipe(DUMMY_INPUT).getResult().asString();
-		assertThat(jwt, Matchers.startsWith("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9."));
+		assertThat(jwt, Matchers.startsWith(BASE64_HEADER_HS256));
 	}
 
 	@Test
 	void attributeAndParameter() throws Exception {
+		// Add a parameter for the shared secret (this should take priority)
+		pipe.addParameter(new Parameter("sharedSecret", DUMMY_SECRET)); // Priority should be given to parameter
+
+		// Set a different shared secret attribute (should not overwrite the parameter)
 		pipe.setSharedSecret("asjdfjkadslfkjlsadfjlk;adsjflk;asjklfjaslkjfl;kasjld;aksfjl");
-		pipe.addParameter(new Parameter("sharedSecret", DUMMY_SECRET)); //Should overwrite the attribute
+
 		configureAndStartPipe();
 
+		// Ensure the JWT starts with the correct header
 		String jwt = doPipe(DUMMY_INPUT).getResult().asString();
-		assertThat(jwt, Matchers.startsWith("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9."));
+		assertThat(jwt, Matchers.startsWith(BASE64_HEADER_HS256));
+
+		// Verify the JWT signature with the secret from the parameter
+		assertValidTokenSignature(jwt, DUMMY_SECRET);
+	}
+
+	@Test
+	void attributeAndParameterOrderShouldNotAffectPriority() throws Exception {
+		// Set a shared secret (this should not take priority over the parameter)
+		pipe.setSharedSecret("asjdfjkadslfkjlsadfjlk;adsjflk;asjklfjaslkjfl;kasjld;aksfjl");
+
+		// Add a parameter with the shared secret (this should overwrite the attribute)
+		pipe.addParameter(new Parameter("sharedSecret", DUMMY_SECRET));
+
+		configureAndStartPipe();
+
+		// Ensure the JWT starts with the correct header
+		String jwt = doPipe(DUMMY_INPUT).getResult().asString();
+		assertThat(jwt, Matchers.startsWith(BASE64_HEADER_HS256));
+
+		// Verify the JWT signature with the secret from the parameter (priority should be given to the parameter)
+		assertValidTokenSignature(jwt, DUMMY_SECRET);
 	}
 
 	@Test
@@ -223,5 +266,10 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 		assertEquals("Free", claimSet.getStringClaim("Sugar"));
 		assertNull(claimSet.getStringClaim("sharedSecret"));
 		assertNull(claimSet.getExpirationTime());
+	}
+
+	private void assertValidTokenSignature(String jwt, String secret) throws Exception {
+		JWSVerifier verifier = new MACVerifier(secret.getBytes());
+		assertTrue(SignedJWT.parse(jwt).verify(verifier));
 	}
 }

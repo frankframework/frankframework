@@ -40,7 +40,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 	private final @Getter Map<String, Object> claimsSet;
 	private final @Getter String roleClaim;
-	private final @Getter String principalNameClaim; //Defaults to JWTClaimNames#SUBJECT
+	private final @Getter String principalNameClaim; // Defaults to JWTClaimNames#SUBJECT
 
 	public JwtSecurityHandler(Map<String, Object> claimsSet, String roleClaim, String principalNameClaim) {
 		this.claimsSet = claimsSet;
@@ -48,16 +48,18 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		this.principalNameClaim = principalNameClaim;
 	}
 
-	//JWTClaimNames#AUDIENCE claim may be a String or List<String>. Others are either a String or Long (epoch date)
+	// JWTClaimNames#AUDIENCE claim may be a String or List<String>. Others are either a String or Long (epoch date)
 	@Override
 	public boolean isUserInRole(String role) {
 		Object claim = claimsSet.get(roleClaim);
-		if(claim instanceof String) {
+
+		if (claim instanceof String) {
 			return role.equals(claim);
-		} else if(claim instanceof List) {
+		} else if (claim instanceof List) {
 			List<String> claimList = (List<String>) claim;
 			return claimList.stream().anyMatch(role::equals);
 		}
+
 		return false;
 	}
 
@@ -86,9 +88,9 @@ public class JwtSecurityHandler implements ISecurityHandler {
 	void validateRequiredClaims(@Nonnull String requiredClaims) throws AuthorizationException {
 		List<String> missingClaims = StringUtil.splitToStream(requiredClaims)
 				.filter(claim -> !claimsSet.containsKey(claim))
-				.collect(Collectors.toList());
+				.toList();
 
-		if(!missingClaims.isEmpty()){
+		if (!missingClaims.isEmpty()){
 			throw new AuthorizationException("JWT missing required claims: " + missingClaims);
 		}
 	}

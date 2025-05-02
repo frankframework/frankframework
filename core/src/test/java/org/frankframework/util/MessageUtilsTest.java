@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -176,8 +175,8 @@ public class MessageUtilsTest {
 		assertNotNull(url);
 		try (Message message = new UrlMessage(url)) {
 			MessageDataSource ds = new MessageDataSource(new Message(message.asString()));
-			assertEquals(null, ds.getName(), "filename is unknown");
-			assertEquals("text/plain", ds.getContentType(), "content-type cannot be determined");
+			assertNull(ds.getName(), "filename is unknown");
+			assertEquals("application/xml", ds.getContentType(), "content-type cannot be determined");
 			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "contents should be the same");
 			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
 		}
@@ -189,7 +188,7 @@ public class MessageUtilsTest {
 		assertNotNull(url);
 		try (Message message = new UrlMessage(url)) {
 			MessageDataSource ds = new MessageDataSource(new Message(message.asString()));
-			assertEquals(null, ds.getName(), "filename is unknown");
+			assertNull(ds.getName(), "filename is unknown");
 			assertEquals("application/xml", ds.getContentType(), "content-type cannot be determined");
 			assertEquals(StreamUtil.streamToString(ds.getInputStream()), StreamUtil.streamToString(url.openStream()), "contents should be the same");
 			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
@@ -197,12 +196,21 @@ public class MessageUtilsTest {
 	}
 
 	@Test
+	public void testXmlMessage() {
+		Message json = new Message("<root><child>value</child></root>");
+		MimeType mimeType = MessageUtils.computeMimeType(json);
+		assertNotNull(mimeType);
+		assertEquals("application/xml", mimeType.toString());
+	}
+
+	@Test
 	public void testJsonMessage() {
 		Message json = new Message("{\"GUID\": \"ABC\"}");
 		MimeType mimeType = MessageUtils.computeMimeType(json);
 		assertNotNull(mimeType);
-		assertEquals("text/plain", mimeType.toString()); //mime-type cannot be determined
+		assertEquals("application/json", mimeType.toString());
 	}
+
 	@Test
 	public void testJsonMessageWithName() {
 		Message json = new Message("{\"GUID\": \"ABC\"}", new MessageContext().withName("foo.json"));
@@ -217,7 +225,7 @@ public class MessageUtilsTest {
 				.stream()
 				.map(Map.Entry::getKey)
 				.filter(e -> e.startsWith(MessageContext.HEADER_PREFIX))
-				.collect(Collectors.toList())
+				.toList()
 				.toString();
 	}
 
