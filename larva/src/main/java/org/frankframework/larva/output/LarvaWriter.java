@@ -36,12 +36,14 @@ public class LarvaWriter {
 	}
 
 	public void flush() {
-		flushBuffer(outputBuffer);
-		flushBuffer(logBuffer);
-		try {
-			writer.flush();
-		} catch (IOException e) {
-			log.error("Cannot flush writer", e);
+		synchronized (writer) {
+			flushBuffer(outputBuffer);
+			flushBuffer(logBuffer);
+			try {
+				writer.flush();
+			} catch (IOException e) {
+				log.error("Cannot flush writer", e);
+			}
 		}
 	}
 

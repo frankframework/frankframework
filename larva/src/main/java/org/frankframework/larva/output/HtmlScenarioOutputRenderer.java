@@ -122,8 +122,6 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 			}
 			outputMessage.append(LarvaHtmlWriter.encodeForHtml(stepResultMessage)).append("</h2>");
 			writeHtml(LarvaLogLevel.STEP_PASSED_FAILED, outputMessage.toString(), false);
-
-			writeHtml(outputMessage.toString());
 		}
 		// Close the div created when startStep was called.
 		writeHtml("</div>");
