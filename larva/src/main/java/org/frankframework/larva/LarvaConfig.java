@@ -137,7 +137,7 @@ public class LarvaConfig {
 		out.debugMessage("Filter out property files containing a 'scenario.description' property");
 		for (File file : files) {
 			if (file.isFile() && file.getName().endsWith(".properties") && !file.getName().equalsIgnoreCase("common.properties")) {
-				Properties properties = LarvaUtil.readProperties(out, file);
+				Properties properties = LarvaUtil.readScenarioProperties(out, file, appConstants);
 				LarvaUtil.applyStringSubstitutions(properties, appConstants);
 				Object description = properties.get("scenario.description");
 				if (description == null) {
