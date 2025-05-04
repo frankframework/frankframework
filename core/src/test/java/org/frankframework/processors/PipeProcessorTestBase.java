@@ -20,7 +20,6 @@ import org.frankframework.util.SpringUtils;
 
 public class PipeProcessorTestBase {
 
-	private PipeProcessor processor;
 	protected PipeLineSession session;
 	private TestConfiguration configuration;
 	private PipeLine pipeLine;
@@ -31,7 +30,6 @@ public class PipeProcessorTestBase {
 		configuration = new TestConfiguration();
 		TransactionManagerMock txManager = configuration.createBean(TransactionManagerMock.class);
 		SpringUtils.registerSingleton(configuration, "txManager", txManager);
-		processor = configuration.getBean(PipeProcessor.class);
 
 		createAdapterAndPipeLine();
 		session = new PipeLineSession();
@@ -60,12 +58,13 @@ public class PipeProcessorTestBase {
 	}
 
 	protected final Message processPipeLine(Message inputMessage) throws PipeRunException, ConfigurationException {
-		adapter.configure();
+		if (!adapter.isConfigured()) {
+			adapter.configure();
+		}
 
-		CorePipeLineProcessor cpp = configuration.createBean();
-		cpp.setPipeProcessor(processor);
+		PipeLineProcessor cpp = configuration.getBean("pipeLineProcessor", PipeLineProcessor.class);
 		String firstPipe = pipeLine.getPipe(0).getName();
-		PipeLineResult plr = cpp.processPipeLine(pipeLine, "mid", inputMessage, session, firstPipe);
+		PipeLineResult plr = cpp.processPipeLine(pipeLine, "fake-mid", inputMessage, session, firstPipe);
 		return plr.getResult();
 	}
 

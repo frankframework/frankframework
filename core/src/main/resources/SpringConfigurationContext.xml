@@ -87,7 +87,7 @@
 		</bean>
 
 		<bean
-			name="pipeProcessor,inputValidatorProcessor,outputValidatorProcessor,inputWrapperProcessor,outputWrapperProcessor"
+			name="pipeProcessor"
 			class="org.frankframework.processors.LogPipeProcessor"
 			autowire="byName"
 			scope="prototype"

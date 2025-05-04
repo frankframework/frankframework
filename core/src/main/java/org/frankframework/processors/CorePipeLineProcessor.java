@@ -50,6 +50,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 	private @Setter PipeProcessor pipeProcessor;
 	private Configuration configuration;
 
+	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) {
 		if (applicationContext instanceof Configuration config) {
 			configuration = config;

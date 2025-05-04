@@ -59,7 +59,7 @@ public class ExceptionHandlingPipeProcessor extends AbstractPipeProcessor {
 					HasName location = exception.getPipeInError();
 					errorMessage = emf.format(null, e.getCause(), location, message, pipeLineSession.getMessageId(), tsReceivedLong);
 				} else {
-					errorMessage = emf.format(null, e, pipeLine.getOwner(), message, pipeLineSession.getMessageId(), tsReceivedLong);
+					errorMessage = emf.format(null, e, pipeLine.getAdapter(), message, pipeLineSession.getMessageId(), tsReceivedLong);
 				}
 
 				log.info("exception occurred, forwarding to exception-forward [{}]", PipeForward.EXCEPTION_FORWARD_NAME, e);

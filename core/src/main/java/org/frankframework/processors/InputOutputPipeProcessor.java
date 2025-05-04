@@ -104,7 +104,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 			return postProcessPipeResult(pipe, pipeLineSession, pipeRunResult, originalMessage);
 		} finally {
 			if (pipe.isWriteToSecLog()) {
-				SEC_LOG.info("adapter [{}] pipe [{}]{}", () -> pipeLine.getOwner().getName(), pipe::getName, () -> computeSessionKeys(pipeLineSession, pipe));
+				SEC_LOG.info("adapter [{}] pipe [{}]{}", () -> pipeLine.getAdapter(), pipe::getName, () -> computeSessionKeys(pipeLineSession, pipe));
 			}
 		}
 	}

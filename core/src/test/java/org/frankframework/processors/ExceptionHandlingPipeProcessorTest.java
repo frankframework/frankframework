@@ -23,19 +23,30 @@ import org.frankframework.util.DateFormatUtils;
 public class ExceptionHandlingPipeProcessorTest extends PipeProcessorTestBase {
 
 	@Test
-	void testWithoutExceptionExit() throws Exception {
+	void piperunExceptionWithoutExceptionForward() throws Exception {
 		createPipe(EchoPipe.class, "Echo pipe", "Exception pipe");
-		createPipe(ExceptionPipe.class, "Exception pipe", "success");
+		createPipe(ThrowExceptionPipe.class, "Exception pipe", "success");
 
-		PipeRunException ex = assertThrows(PipeRunException.class, () -> processPipeLine(new Message("i'm an exception!")));
+		PipeRunException ex = assertThrows(PipeRunException.class, () -> processPipeLine(new Message("PipeRun")));
 
-		assertEquals("Pipe [Exception pipe] i'm an exception!", ex.getMessage());
+		assertEquals("Pipe [Exception pipe] PipeRun", ex.getMessage());
 	}
 
 	@Test
-	void testWithExceptionExitAndExceptionPipe() throws Exception {
+	void runtimeExceptionWithoutExceptionForward() throws Exception {
+		createPipe(EchoPipe.class, "Echo pipe", "Exception pipe");
+		createPipe(ThrowExceptionPipe.class, "Exception pipe", "success");
+
+		PipeRunException ex = assertThrows(PipeRunException.class, () -> processPipeLine(new Message("Runtime")));
+
+		assertEquals("Pipe [Exception pipe] uncaught runtime exception while executing pipe: (RuntimeException) Runtime", ex.getMessage());
+	}
+
+	@Test
+	void exceptionWithExceptionForward() throws Exception {
 		createPipe(EchoPipe.class, "Echo pipe", "Exception pipe");
 		createPipe(ExceptionPipe.class, "Exception pipe", "success", pipe -> {
+			// There is an exception forward, but since it's the ExceptionPipe it should directly throw
 			PipeForward exceptionForward = new PipeForward("exception", "exit");
 			pipe.addForward(exceptionForward);
 		});
@@ -50,6 +61,7 @@ public class ExceptionHandlingPipeProcessorTest extends PipeProcessorTestBase {
 	void testWithPipeRunExceptionExitAndNormalPipe() throws Exception {
 		createPipe(EchoPipe.class, "Echo pipe", "Exception pipe");
 		createPipe(ThrowExceptionPipe.class, "Exception pipe", "success", pipe -> {
+			// There is an exception forward, but since it's the ExceptionPipe it should catch and convert
 			PipeForward exceptionForward = new PipeForward("exception", "exit");
 			pipe.addForward(exceptionForward);
 		});
@@ -57,9 +69,9 @@ public class ExceptionHandlingPipeProcessorTest extends PipeProcessorTestBase {
 		Message result = processPipeLine(new Message("PipeRun"));
 
 		assertEquals("""
-				<errorMessage timestamp="IGNORE" originator="IAF " message="ThrowExceptionPipe [Exception pipe]">
+				<errorMessage timestamp="IGNORE" originator="IAF " message="ThrowExceptionPipe [Exception pipe] msgId [fake-mid]">
 					<location class="org.frankframework.processors.ExceptionHandlingPipeProcessorTest$ThrowExceptionPipe" name="Exception pipe"/>
-					<originalMessage>PipeRun</originalMessage>
+					<originalMessage messageId="fake-mid">PipeRun</originalMessage>
 				</errorMessage>""", result.asString().replaceAll("timestamp=\"[A-Za-z0-9: ]+\"", "timestamp=\"IGNORE\""));
 	}
 
@@ -76,9 +88,9 @@ public class ExceptionHandlingPipeProcessorTest extends PipeProcessorTestBase {
 		Message result = processPipeLine(new Message("PipeRun"));
 
 		assertEquals("""
-				<errorMessage timestamp="IGNORE" originator="IAF " message="ThrowExceptionPipe [Exception pipe]">
+				<errorMessage timestamp="IGNORE" originator="IAF " message="ThrowExceptionPipe [Exception pipe] msgId [fake-mid]">
 					<location class="org.frankframework.processors.ExceptionHandlingPipeProcessorTest$ThrowExceptionPipe" name="Exception pipe"/>
-					<originalMessage receivedTime="Thu Jan 15 07:56:07 CET 1970">PipeRun</originalMessage>
+					<originalMessage messageId="fake-mid" receivedTime="Thu Jan 15 07:56:07 CET 1970">PipeRun</originalMessage>
 				</errorMessage>""", result.asString().replaceAll("timestamp=\"[A-Za-z0-9: ]+\"", "timestamp=\"IGNORE\""));
 	}
 
@@ -97,10 +109,10 @@ public class ExceptionHandlingPipeProcessorTest extends PipeProcessorTestBase {
 		String result = cleaned.replaceAll("timestamp=\"[A-Za-z0-9: ]+\"", "timestamp=\"IGNORE\"");
 
 		assertEquals("""
-				<errorMessage timestamp="IGNORE" originator="IAF " message="Adapter [Adapter Name]: Runtime">
+				<errorMessage timestamp="IGNORE" originator="IAF " message="Adapter [Adapter Name] msgId [fake-mid]: Runtime">
 					<location class="org.frankframework.core.Adapter" name="Adapter Name"/>
 					<details>...</details>
-					<originalMessage>Runtime</originalMessage>
+					<originalMessage messageId="fake-mid">Runtime</originalMessage>
 				</errorMessage>""", result);
 	}
 
@@ -115,6 +127,7 @@ public class ExceptionHandlingPipeProcessorTest extends PipeProcessorTestBase {
 				}
 				throw new RuntimeException(messageString);
 			} catch (IOException e) {
+				// should never happen...
 				throw new PipeRunException(this, "cannot open stream", e);
 			}
 		}
