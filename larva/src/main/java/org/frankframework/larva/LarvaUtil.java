@@ -16,9 +16,10 @@
 package org.frankframework.larva;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
 import java.time.Duration;
 import java.util.Properties;
 
@@ -91,8 +92,8 @@ public class LarvaUtil {
 
 	protected static @Nonnull Properties readProperties(LarvaWriter out, File propertyFile) {
 		Properties properties = new Properties();
-		try {
-			properties.load(new FileInputStream(propertyFile));
+		try (InputStream in = Files.newInputStream(propertyFile.toPath())) {
+			properties.load(in);
 		} catch (IOException e) {
 			out.errorMessage("Cannot read property file: " + propertyFile.getAbsolutePath(), e);
 		}
