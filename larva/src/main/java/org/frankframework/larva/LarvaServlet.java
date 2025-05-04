@@ -146,9 +146,7 @@ public class LarvaServlet extends AbstractHttpServlet {
 		resp.setContentType("text/html");
 		writer.append(getTemplate("Larva Test Tool"));
 
-		LarvaHtmlConfig config = new LarvaHtmlConfig(req);
-		LarvaTool larvaTool = createLarvaTool(config, writer);
-		larvaTool.runScenarios(config.getExecute());
+		LarvaTool.runScenarios(getServletContext(), req, writer);
 
 		writer.append("</body></html>");
 		resp.flushBuffer();
@@ -189,7 +187,7 @@ public class LarvaServlet extends AbstractHttpServlet {
 				writer.flush();
 				try {
 					LarvaHtmlConfig config = new LarvaHtmlConfig(request);
-					LarvaTool larvaTool = createLarvaTool(config, writer);
+					LarvaTool larvaTool = LarvaTool.createInstance(getServletContext(), request, writer);
 					larvaTool.windiff(request.getParameter("expectedFileName"), request.getParameter("expectedBox"), request.getParameter("resultBox"));
 				} catch (SenderException e) {
 					log.warn("unable to execute windiff command", e);

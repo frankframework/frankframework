@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
@@ -76,6 +77,7 @@ import org.frankframework.larva.actions.LarvaScenarioAction;
 import org.frankframework.larva.output.HtmlScenarioOutputRenderer;
 import org.frankframework.larva.output.LarvaHtmlWriter;
 import org.frankframework.larva.output.LarvaWriter;
+import org.frankframework.larva.output.PlainTextScenarioOutputRenderer;
 import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.stream.FileMessage;
@@ -108,21 +110,39 @@ public class LarvaTool {
 	private final @Getter LarvaConfig larvaConfig;
 	private final @Getter LarvaWriter writer;
 	private final @Getter TestExecutionObserver testExecutionObserver;
-	private final @Getter LarvaTestRunStatus testRunStatus = new LarvaTestRunStatus();
-
-	/*
-	 * if allowReadlineSteps is set to true, actual results can be compared in line by using .readline steps.
-	 * Those results cannot be saved to the inline expected value, however.
-	 */
-	protected final boolean allowReadlineSteps = false;
+	private final @Getter TestRunStatus testRunStatus;
+	private final @Getter ScenarioLoader scenarioLoader;
 
 	protected static int globalTimeoutMillis = AppConstants.getInstance().getInt("larva.timeout", 10_000);
+
+	public static LarvaTool createInstance(IbisContext ibisContext, OutputStream out) {
+		LarvaConfig larvaConfig = new LarvaConfig();
+		LarvaWriter larvaWriter = new LarvaWriter(larvaConfig, out);
+		TestExecutionObserver testExecutionObserver = new PlainTextScenarioOutputRenderer(larvaWriter);
+		return new LarvaTool(ibisContext, larvaConfig, larvaWriter, testExecutionObserver);
+	}
+
+	public static LarvaTool createInstance(IbisContext ibisContext, Writer out) {
+		LarvaConfig larvaConfig = new LarvaConfig();
+		LarvaWriter larvaWriter = new LarvaWriter(larvaConfig, out);
+		TestExecutionObserver testExecutionObserver = new PlainTextScenarioOutputRenderer(larvaWriter);
+		return new LarvaTool(ibisContext, larvaConfig, larvaWriter, testExecutionObserver);
+	}
+
+	public static LarvaTool createInstance(ServletContext servletContext, HttpServletRequest request, Writer out) {
+		LarvaHtmlConfig larvaHtmlConfig = new LarvaHtmlConfig(request);
+		LarvaHtmlWriter larvaHtmlWriter = new LarvaHtmlWriter(larvaHtmlConfig, out);
+		TestExecutionObserver testExecutionObserver = new HtmlScenarioOutputRenderer(larvaHtmlConfig, larvaHtmlWriter);
+		return new LarvaTool(getIbisContext(servletContext), larvaHtmlConfig, larvaHtmlWriter, testExecutionObserver);
+	}
 
 	public LarvaTool(IbisContext ibisContext, LarvaConfig larvaConfig, LarvaWriter writer, TestExecutionObserver testExecutionObserver) {
 		this.ibisContext = ibisContext;
 		this.larvaConfig = larvaConfig;
 		this.writer = writer;
 		this.testExecutionObserver = testExecutionObserver;
+		this.testRunStatus = new TestRunStatus(larvaConfig, writer);
+		this.scenarioLoader = new ScenarioLoader(writer);
 
 		XMLUnit.setIgnoreWhitespace(true);
 	}
@@ -137,10 +157,8 @@ public class LarvaTool {
 
 	// Invoked by LarvaServlet
 	public static int runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
-		LarvaHtmlConfig larvaHtmlConfig = new LarvaHtmlConfig(request);
-		LarvaHtmlWriter larvaHtmlWriter = new LarvaHtmlWriter(larvaHtmlConfig, out);
-		HtmlScenarioOutputRenderer renderer = new HtmlScenarioOutputRenderer(larvaHtmlConfig, larvaHtmlWriter);
-		return runScenarios(getIbisContext(application), larvaHtmlConfig, larvaHtmlWriter, renderer, larvaHtmlConfig.getExecute());
+		LarvaTool larvaTool = createInstance(application, request, out);
+		return larvaTool.runScenarios(request.getParameter(LarvaHtmlConfig.REQUEST_PARAM_EXECUTE));
 	}
 
 	public static int runScenarios(IbisContext ibisContext, LarvaConfig config, LarvaWriter out, TestExecutionObserver testExecutionObserver, String execute) {
@@ -155,34 +173,22 @@ public class LarvaTool {
 	 */
 	public int runScenarios(String execute) {
 		debugMessage("Initialize scenarios root directories");
-		String currentScenariosRootDirectory = larvaConfig.initScenarioDirectories(writer);
+		String currentScenariosRootDirectory = testRunStatus.initScenarioDirectories();
 
-		if (larvaConfig.getScenarioDirectories().isEmpty()) {
+		if (testRunStatus.getScenarioDirectories().isEmpty()) {
 			errorMessage("No scenarios root directories found");
 			return ERROR_NO_SCENARIO_DIRECTORIES_FOUND;
 		}
 		debugMessage("Read scenarios from directory '" + StringEscapeUtils.escapeJava(currentScenariosRootDirectory) + "'");
-		List<File> allScenarioFiles = larvaConfig.readScenarioFiles(writer);
+		testRunStatus.readScenarioFiles(scenarioLoader);
 
-		testExecutionObserver.startTestSuiteExecution();
+		testExecutionObserver.startTestSuiteExecution(testRunStatus);
 
 		if (execute == null) {
 			return 0;
 		}
 
-		List<File> scenarioFiles;
-		if (execute.endsWith(".properties")) {
-			debugMessage("Read one scenario");
-			scenarioFiles = List.of(new File(execute));
-		} else if (execute.equals(currentScenariosRootDirectory)){
-			debugMessage("Executing all scenario files from root directory '" + currentScenariosRootDirectory + "'");
-			scenarioFiles = allScenarioFiles;
-		} else {
-			scenarioFiles = allScenarioFiles.stream()
-					.filter(f -> f.getAbsolutePath().startsWith(execute))
-					.toList();
-		}
-
+		List<File> scenarioFiles = testRunStatus.getScenariosToRun(execute);
 		if (scenarioFiles.isEmpty()) {
 			errorMessage("No scenarios found");
 		}
@@ -195,16 +201,14 @@ public class LarvaTool {
 		if (scenarioFiles.size() == 1) {
 			scenarioRunner.setMultipleThreads(false);
 		}
-		scenarioRunner.runScenario(scenarioFiles, currentScenariosRootDirectory);
+		scenarioRunner.runScenarios(scenarioFiles, currentScenariosRootDirectory);
 		writer.flush();
-		int scenariosFailed = scenarioRunner.getScenariosFailed().get();
+		int scenariosFailed = testRunStatus.getScenariosFailed().get();
 
-		long executeTime = System.currentTimeMillis() - startTime;
-		int scenariosTotal = scenarioRunner.getScenariosPassed().get() + scenarioRunner.getScenariosAutosaved().get() + scenarioRunner.getScenariosFailed().get();
+		long executionTime = System.currentTimeMillis() - startTime;
+		printScenarioExecutionStatistics(executionTime);
 
-		printScenarioExecutionStatistics(executeTime, scenarioRunner, scenariosTotal);
-
-		testExecutionObserver.endTestSuiteExecution();
+		testExecutionObserver.endTestSuiteExecution(testRunStatus);
 		CleanerProvider.logLeakStatistics();
 
 		return scenariosFailed;
@@ -214,61 +218,9 @@ public class LarvaTool {
 		return new ScenarioRunner(this);
 	}
 
-	private void printScenarioExecutionStatistics(long executeTime, ScenarioRunner scenarioRunner, int scenariosTotal) {
+	private void printScenarioExecutionStatistics(long executionTime) {
 		debugMessage("Print statistics information");
-		String formattedTime = LarvaUtil.formatDuration(executeTime);
-		int scenariosPassed = scenarioRunner.getScenariosPassed().get();
-		int scenariosFailed = scenarioRunner.getScenariosFailed().get();
-		int scenariosAutoSaved = scenarioRunner.getScenariosAutosaved().get();
-		String scenariosPassedMessage;
-		String scenariosFailedMessage;
-		String scenariosAutoSavedMessage;
-		String scenariosTotalMessage;
-		if (scenariosPassed == scenariosTotal) {
-			if (scenariosTotal == 1) {
-				scenariosPassedMessage = "All scenarios passed (1 scenario executed in " + formattedTime + ")";
-			} else {
-				scenariosPassedMessage = "All scenarios passed (" + scenariosTotal + " scenarios executed in " + formattedTime + ")";
-			}
-			scenariosFailedMessage = null;
-			scenariosAutoSavedMessage = null;
-			scenariosTotalMessage = null;
-		} else if (scenariosFailed == scenariosTotal) {
-				if (scenariosTotal == 1) {
-					scenariosFailedMessage = "All scenarios failed (1 scenario executed in " + formattedTime + ")";
-				} else {
-					scenariosFailedMessage = "All scenarios failed (" + scenariosTotal + " scenarios executed in " + formattedTime + ")";
-				}
-				scenariosPassedMessage = null;
-				scenariosAutoSavedMessage = null;
-				scenariosTotalMessage = null;
-		} else {
-			if (scenariosTotal == 1) {
-				scenariosTotalMessage = "1 scenario executed in " + formattedTime;
-			} else {
-				scenariosTotalMessage = scenariosTotal + " scenarios executed in " + formattedTime;
-			}
-			if (scenariosPassed == 1) {
-				scenariosPassedMessage = "1 scenario passed";
-			} else {
-				scenariosPassedMessage = scenariosPassed + " scenarios passed";
-			}
-			if (larvaConfig.isAutoSaveDiffs()) {
-				if (scenariosAutoSaved == 1) {
-					scenariosAutoSavedMessage = "1 scenario passed after autosave";
-				} else {
-					scenariosAutoSavedMessage = scenariosAutoSaved + " scenarios passed after autosave";
-				}
-			} else {
-				scenariosAutoSavedMessage = null;
-			}
-			if (scenariosFailed == 1) {
-				scenariosFailedMessage = "1 scenario failed";
-			} else {
-				scenariosFailedMessage = scenariosFailed + " scenarios failed";
-			}
-		}
-		testExecutionObserver.executionStatistics(scenariosTotalMessage, scenariosPassedMessage, scenariosFailedMessage, scenariosAutoSavedMessage, scenariosTotal, scenariosPassed, scenariosFailed, scenariosAutoSaved);
+		testExecutionObserver.executionStatistics(testRunStatus, executionTime);
 	}
 
 	public void debugMessage(String message) {
@@ -369,7 +321,7 @@ public class LarvaTool {
 		try (Message ignored = fileContent) {
 			actionName = step.substring(i + 1, step.lastIndexOf("."));
 			Object actionFactoryClassname = properties.get(actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX);
-			if (step.endsWith(".read") || (allowReadlineSteps && step.endsWith(".readline"))) {
+			if (step.endsWith(".read") || (larvaConfig.isAllowReadlineSteps() && step.endsWith(".readline"))) {
 				if ("org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname)) {
 					Properties scenarioStepProperties = LarvaActionUtils.getSubProperties(properties, step);
 					Map<String, Object> xsltParameters = createParametersMapFromParamProperties(scenarioStepProperties);
@@ -439,7 +391,7 @@ public class LarvaTool {
 		AppConstants appConstants = AppConstants.getInstance();
 		String windiffCommand = appConstants.getProperty("larva.windiff.command");
 		if (windiffCommand == null) {
-			String currentScenariosRootDirectory = larvaConfig.initScenarioDirectories(writer);
+			String currentScenariosRootDirectory = testRunStatus.initScenarioDirectories();
 			windiffCommand = currentScenariosRootDirectory + "..\\..\\IbisAlgemeenWasbak\\WinDiff\\WinDiff.Exe";
 		}
 		File tempFileResult = writeTempFile(expectedFileName, result);

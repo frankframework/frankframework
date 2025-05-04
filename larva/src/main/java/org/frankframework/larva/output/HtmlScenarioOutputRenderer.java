@@ -5,11 +5,10 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import jakarta.annotation.Nullable;
-
 import org.frankframework.larva.LarvaHtmlConfig;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
+import org.frankframework.larva.TestRunStatus;
 import org.frankframework.util.XmlEncodingUtils;
 
 public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
@@ -32,25 +31,24 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 
 
 	@Override
-	public void startTestSuiteExecution() {
-		printHtmlForm();
+	public void startTestSuiteExecution(TestRunStatus testRunStatus) {
+		printHtmlForm(testRunStatus);
 	}
 
 	@Override
-	public void endTestSuiteExecution() {
+	public void endTestSuiteExecution(TestRunStatus testRunStatus) {
 		writeHtml("<br/><br/>");
-		printHtmlForm();
+		printHtmlForm(testRunStatus);
 		writeHtml("",  true);
 		writer.flush();
 	}
 
 	@Override
-	public void executionStatistics(
-			@Nullable String scenariosTotalMessage,
-			@Nullable String scenariosPassedMessage,
-			@Nullable String scenariosFailedMessage,
-			@Nullable String scenariosAutosavedMessage, int scenariosTotal, int scenariosPassed, int scenariosFailed, int scenariosAutosaved) {
-
+	public void executionStatistics(TestRunStatus testRunStatus, long executionTime) {
+		String scenariosPassedMessage = testRunStatus.buildScenariosPassedMessage(executionTime);
+		String scenariosFailedMessage = testRunStatus.buildScenariosFailedMessage(executionTime);
+		String scenariosAutosavedMessage = testRunStatus.buildScenariosAutoSavedMessage(executionTime);
+		String scenariosTotalMessage = testRunStatus.buildScenariosTotalMessage(executionTime);
 		if (scenariosPassedMessage != null) {
 			writeHtml(LarvaLogLevel.TOTALS, "<h1 class='passed'>" + LarvaHtmlWriter.encodeForHtml(scenariosPassedMessage) + "</h1>", true);
 		}
@@ -66,7 +64,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 	}
 
 	@Override
-	public void startScenario(String scenarioName) {
+	public void startScenario(TestRunStatus testRunStatus, String scenarioName) {
 		evenStep = false;
 
 		writer.setBufferOutputMessages(true);
@@ -77,7 +75,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 	}
 
 	@Override
-	public void finishScenario(String scenarioName, int scenarioResult, String scenarioResultMessage) {
+	public void finishScenario(TestRunStatus testRunStatus, String scenarioName, int scenarioResult, String scenarioResultMessage) {
 
 		LarvaLogLevel resultLogLevel;
 		StringBuilder outputMessage = new StringBuilder();
@@ -98,7 +96,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 	}
 
 	@Override
-	public void startStep(String stepName) {
+	public void startStep(TestRunStatus testRunStatus, String stepName) {
 		// Create a div for the step. Will be closed in finishStep().
 		if (evenStep) {
 			writeHtml("<div class='even'>");
@@ -110,7 +108,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 	}
 
 	@Override
-	public void finishStep(String stepName, int stepResult, String stepResultMessage) {
+	public void finishStep(TestRunStatus testRunStatus, String stepName, int stepResult, String stepResultMessage) {
 		if (shouldWriteLevel(LarvaLogLevel.STEP_PASSED_FAILED)) {
 			StringBuilder outputMessage = new StringBuilder();
 			if (stepResult == LarvaTool.RESULT_OK) {
@@ -165,7 +163,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 		writer.writeHtml(logLevel, html, scroll);
 	}
 
-	private void printHtmlForm() {
+	private void printHtmlForm(TestRunStatus testRunStatus) {
 		writer.setBufferLogMessages(true);
 		writer.setBufferOutputMessages(true);
 
@@ -181,7 +179,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 		writeHtml("<select name=\"scenariosrootdirectory\" onchange=\"updateScenarios()\">");
 
 		String scenariosRootDirectory = config.getActiveScenariosDirectory();
-		config.getScenarioDirectories().forEach((description, directory) -> {
+		testRunStatus.getScenarioDirectories().forEach((description, directory) -> {
 			String option = "<option value=\"" + XmlEncodingUtils.encodeChars(directory) + "\"";
 			if (scenariosRootDirectory.equals(directory)) {
 				option = option + " selected";
@@ -287,7 +285,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 		writeHtml("<select name=\"execute\">");
 		writer.debugMessage("Fill execute select box.");
 		Set<String> addedDirectories = new HashSet<>();
-		config.getScenarioFiles().forEach((scenarioFile, description) -> {
+		testRunStatus.getScenarioFiles().forEach((scenarioFile, description) -> {
 			String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
 			writer.debugMessage("Add parent directories of '" + scenarioDirectory + "'");
 			int i;

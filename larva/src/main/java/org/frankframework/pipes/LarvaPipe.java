@@ -33,9 +33,6 @@ import org.frankframework.doc.Forward;
 import org.frankframework.larva.LarvaConfig;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
-import org.frankframework.larva.output.LarvaWriter;
-import org.frankframework.larva.output.PlainTextScenarioOutputRenderer;
-import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.stream.Message;
 
 /**
@@ -89,12 +86,8 @@ public class LarvaPipe extends FixedForwardPipe {
 			larvaConfig.setTimeout(getTimeout());
 		}
 
-		LarvaWriter larvaWriter = new LarvaWriter(larvaConfig, out);
-		TestExecutionObserver testExecutionObserver = new PlainTextScenarioOutputRenderer(larvaWriter);
-		LarvaTool larvaTool = new LarvaTool(ibisContext, larvaConfig, larvaWriter, testExecutionObserver);
-
-		String currentScenariosRootDirectory = larvaConfig.initScenarioDirectories(larvaWriter);
-		String paramExecute = currentScenariosRootDirectory;
+		LarvaTool larvaTool = LarvaTool.createInstance(ibisContext, out);
+		String paramExecute = larvaTool.getTestRunStatus().initScenarioDirectories();
 		if (StringUtils.isNotEmpty(getExecute())) {
 			paramExecute = paramExecute + getExecute();
 		}

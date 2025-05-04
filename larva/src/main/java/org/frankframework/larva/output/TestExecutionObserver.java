@@ -1,18 +1,18 @@
 package org.frankframework.larva.output;
 
-import jakarta.annotation.Nullable;
+import org.frankframework.larva.TestRunStatus;
 
 public interface TestExecutionObserver {
 
-	void startTestSuiteExecution();
-	void endTestSuiteExecution();
-	void executionStatistics(@Nullable String scenariosTotalMessage, @Nullable String scenariosPassedMessage, @Nullable String scenariosFailedMessage, @Nullable String scenariosAutosavedMessage, int scenariosTotal, int scenariosPassed, int scenariosFailed, int scenariosAutosaved);
+	void startTestSuiteExecution(TestRunStatus testRunStatus);
+	void endTestSuiteExecution(TestRunStatus testRunStatus);
+	void executionStatistics(TestRunStatus testRunStatus, long executionTime);
 
-	void startScenario(String scenarioName);
-	void finishScenario(String scenarioName, int scenarioResult, String scenarioResultMessage);
+	void startScenario(TestRunStatus testRunStatus, String scenarioName);
+	void finishScenario(TestRunStatus testRunStatus, String scenarioName, int scenarioResult, String scenarioResultMessage);
 
-	void startStep(String stepName);
-	void finishStep(String stepName, int stepResult, String stepResultMessage);
+	void startStep(TestRunStatus testRunStatus, String stepName);
+	void finishStep(TestRunStatus testRunStatus, String stepName, int stepResult, String stepResultMessage);
 	void stepMessage(String stepName, String description, String stepMessage);
 	void stepMessageSuccess(String stepName, String description, String stepResultMessage, String stepResultMessagePreparedForDiff);
 	void stepMessageFailed(String stepName, String description, String stepSaveFileName, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff);

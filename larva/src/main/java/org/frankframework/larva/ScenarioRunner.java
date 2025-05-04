@@ -29,13 +29,11 @@ import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.CloseableThreadContext;
 
-import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
@@ -55,14 +53,10 @@ public class ScenarioRunner {
 	private static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
 	public final List<String> parallelBlacklistDirs;
 
-	private final @Getter AtomicInteger scenariosFailed = new AtomicInteger();
-	private final @Getter AtomicInteger scenariosPassed = new AtomicInteger();
-	private final @Getter AtomicInteger scenariosAutosaved = new AtomicInteger();
-	private @Getter int scenariosTotal;
-
 	private final LarvaTool larvaTool;
 	private final IbisContext ibisContext;
 	private final AppConstants appConstants;
+	private final TestRunStatus testRunStatus;
 	private final int waitBeforeCleanUp;
 	private final LarvaLogLevel logLevel;
 	private @Setter boolean multipleThreads;
@@ -77,6 +71,7 @@ public class ScenarioRunner {
 		this.ibisContext = larvaTool.getIbisContext();
 		this.larvaConfig = larvaTool.getLarvaConfig();
 		this.testExecutionObserver = larvaTool.getTestExecutionObserver();
+		this.testRunStatus = larvaTool.getTestRunStatus();
 		this.out = larvaTool.getWriter();
 
 		this.logLevel = larvaConfig.getLogLevel();
@@ -91,8 +86,7 @@ public class ScenarioRunner {
 		threads = AppConstants.getInstance().getInt("larva.parallel.threads", 4);
 	}
 
-	public void runScenario(List<File> scenarioConfigurationFiles, String larvaScenarioRootDirectory) {
-		scenariosTotal = scenarioConfigurationFiles.size();
+	public void runScenarios(List<File> scenarioConfigurationFiles, String larvaScenarioRootDirectory) {
 		Map<String, List<File>> filesByFolder = groupFilesByFolder(scenarioConfigurationFiles, larvaScenarioRootDirectory);
 		log.debug("Found: {} folders", filesByFolder.size());
 
@@ -104,7 +98,7 @@ public class ScenarioRunner {
 		}
 
 		runScenariosSingleThreaded(singleThreadedScenarios, larvaScenarioRootDirectory);
-		log.info("Summary Larva run Scenario's: {} passed, {} failed. Total: {}", scenariosPassed, scenariosFailed, scenarioConfigurationFiles.size());
+		log.info("Summary Larva run Scenario's: {} passed, {} failed. Total: {}", testRunStatus.getScenariosPassed(), testRunStatus.getScenariosFailed(), testRunStatus.getScenarioCount());
 	}
 
 	private List<File> runScenariosMultithreaded(String currentScenariosRootDirectory, Map<String, List<File>> filesByFolder) {
@@ -181,13 +175,13 @@ public class ScenarioRunner {
 		String longName = scenarioConfigurationFile.getAbsolutePath();
 		String scenarioName = longName.substring(larvaScenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
 		log.info("Running scenario [{}]", scenarioName);
-		testExecutionObserver.startScenario(scenarioName);
+		testExecutionObserver.startScenario(testRunStatus, scenarioName);
 		try (CloseableThreadContext.Instance ignored = CloseableThreadContext.put("scenario", scenarioName);
 			 // This is far from optimal, but without refactoring the whole LarvaTool, this is the quick and dirty way to do it
 			 LarvaApplicationContext applicationContext = new LarvaApplicationContext(ibisContext, scenarioDirectory)
 		) {
 			larvaTool.debugMessage("Read property file " + scenarioConfigurationFile.getName());
-			Properties properties = LarvaUtil.readScenarioProperties(out, scenarioConfigurationFile, appConstants);
+			Properties properties = larvaTool.getScenarioLoader().readScenarioProperties(scenarioConfigurationFile, appConstants);
 			String scenarioDescription = properties.getProperty("scenario.description");
 
 			larvaTool.debugMessage("Open actions");
@@ -198,8 +192,8 @@ public class ScenarioRunner {
 			String correlationId = TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
 			Map<String, LarvaScenarioAction> larvaActions = actionFactory.createLarvaActions(properties, applicationContext, correlationId);
 			if (larvaActions == null || larvaActions.isEmpty()) {
-				scenariosFailed.incrementAndGet();
-				testExecutionObserver.finishScenario(scenarioName, RESULT_ERROR, "Could not create LarvaActions");
+				testRunStatus.getScenariosFailed().incrementAndGet();
+				testExecutionObserver.finishScenario(testRunStatus, scenarioName, RESULT_ERROR, "Could not create LarvaActions");
 				return RESULT_ERROR;
 			}
 			applicationContext.configure();
@@ -210,8 +204,8 @@ public class ScenarioRunner {
 			larvaTool.debugMessage("Read steps from property file");
 			List<String> stepList = getSteps(properties);
 			if (stepList.isEmpty()) {
-				scenariosFailed.incrementAndGet();
-				testExecutionObserver.finishScenario(scenarioName, RESULT_ERROR, "No steps found");
+				testRunStatus.getScenariosFailed().incrementAndGet();
+				testExecutionObserver.finishScenario(testRunStatus, scenarioName, RESULT_ERROR, "No steps found");
 				return RESULT_ERROR;
 			}
 			larvaTool.debugMessage("Execute steps");
@@ -221,11 +215,11 @@ public class ScenarioRunner {
 			while (allStepsPassed && steps.hasNext()) {
 				String step = steps.next();
 				String stepDisplayName = scenarioName + " - " + step + " - " + properties.get(step);
-				testExecutionObserver.startStep(stepDisplayName);
+				testExecutionObserver.startStep(testRunStatus, stepDisplayName);
 				long start = System.currentTimeMillis();
 				int stepPassed = larvaTool.executeStep(step, properties, stepDisplayName, larvaActions, correlationId);
 				long end = System.currentTimeMillis();
-				testExecutionObserver.finishStep(stepDisplayName, stepPassed, buildStepFinishedMessage(stepDisplayName, stepPassed, (end - start)));
+				testExecutionObserver.finishStep(testRunStatus, stepDisplayName, stepPassed, buildStepFinishedMessage(stepDisplayName, stepPassed, (end - start)));
 				if (stepPassed == RESULT_ERROR) {
 					allStepsPassed = false;
 				} else if (stepPassed == RESULT_AUTOSAVED) {
@@ -252,24 +246,24 @@ public class ScenarioRunner {
 			boolean remainingMessagesFound = actionFactory.closeLarvaActions(larvaActions);
 			if (remainingMessagesFound) {
 				if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED)) {
-					testExecutionObserver.finishStep(scenarioName + " - Remaining messages found", RESULT_ERROR, "Found one or more messages on actions or in database after scenario executed");
+					testExecutionObserver.finishStep(testRunStatus, scenarioName + " - Remaining messages found", RESULT_ERROR, "Found one or more messages on actions or in database after scenario executed");
 				}
 				scenarioPassed = RESULT_ERROR;
 			}
 
 			if (scenarioPassed == RESULT_OK) {
-				scenariosPassed.incrementAndGet();
+				testRunStatus.getScenariosPassed().incrementAndGet();
 			} else if (scenarioPassed == RESULT_AUTOSAVED) {
-				scenariosAutosaved.incrementAndGet();
+				testRunStatus.getScenariosAutosaved().incrementAndGet();
 			} else {
-				scenariosFailed.incrementAndGet();
+				testRunStatus.getScenariosFailed().incrementAndGet();
 			}
-			testExecutionObserver.finishScenario(scenarioName, scenarioPassed, buildScenarioFinishedMessage(scenarioName, scenarioDescription, scenarioPassed, 0, scenariosTotal, scenariosPassed.get(), scenariosFailed.get(), scenariosAutosaved.get()));
+			testExecutionObserver.finishScenario(testRunStatus, scenarioName, scenarioPassed, buildScenarioFinishedMessage(scenarioName, scenarioDescription, scenarioPassed, 0));
 			return scenarioPassed;
 		} catch (Exception e) {
 			log.warn("Error occurred while creating Larva Scenario Actions", e);
-			scenariosFailed.incrementAndGet();
-			testExecutionObserver.finishScenario(scenarioName, RESULT_ERROR, "Error occurred while executing Larva Scenario: " + e.getMessage());
+			testRunStatus.getScenariosFailed().incrementAndGet();
+			testExecutionObserver.finishScenario(testRunStatus, scenarioName, RESULT_ERROR, "Error occurred while executing Larva Scenario: " + e.getMessage());
 			larvaTool.errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e);
 			return RESULT_ERROR;
 		}
@@ -284,7 +278,7 @@ public class ScenarioRunner {
 			Enumeration<?> enumeration = properties.propertyNames();
 			while (enumeration.hasMoreElements()) {
 				String key = (String) enumeration.nextElement();
-				if (key.startsWith("step" + i + ".") && (key.endsWith(".read") || key.endsWith(".write") || (larvaTool.allowReadlineSteps && key.endsWith(".readline")) || key.endsWith(".writeline"))) {
+				if (key.startsWith("step" + i + ".") && (key.endsWith(".read") || key.endsWith(".write") || (larvaConfig.isAllowReadlineSteps() && key.endsWith(".readline")) || key.endsWith(".writeline"))) {
 					if (!stepFound) {
 						steps.add(key);
 						stepFound = true;
@@ -319,7 +313,7 @@ public class ScenarioRunner {
 		return stepResultMessage.toString();
 	}
 
-	private String buildScenarioFinishedMessage(String scenarioName, String scenarioDescription, int scenarioResult, long scenarioDurationMs, int scenariosTotal, int scenariosPassed, int scenariosFailed, int scenariosAutosaved) {
+	private String buildScenarioFinishedMessage(String scenarioName, String scenarioDescription, int scenarioResult, long scenarioDurationMs) {
 		StringBuilder scenarioResultMessage = new StringBuilder("Scenario '");
 		scenarioResultMessage.append(scenarioName).append(" - ").append(scenarioDescription).append("' ");
 		if (scenarioResult == LarvaTool.RESULT_OK) {
@@ -332,7 +326,7 @@ public class ScenarioRunner {
 		if (larvaConfig.getLogLevel().shouldLog(LarvaLogLevel.DEBUG)) {
 			scenarioResultMessage.append(". Duration: ").append(scenarioDurationMs).append(" ms");
 		}
-		scenarioResultMessage.append(" (").append(scenariosFailed).append('/').append(scenariosAutosaved + scenariosPassed).append('/').append(scenariosTotal).append(')');
+		scenarioResultMessage.append(" (").append(testRunStatus.getScenariosFailed()).append('/').append(testRunStatus.getScenariosAutosaved().get() + testRunStatus.getScenariosPassed().get()).append('/').append(testRunStatus.getScenarioCount()).append(')');
 		return scenarioResultMessage.toString();
 	}
 }

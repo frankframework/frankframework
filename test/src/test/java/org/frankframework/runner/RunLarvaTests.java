@@ -32,9 +32,6 @@ import org.frankframework.larva.LarvaConfig;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.ScenarioRunner;
-import org.frankframework.larva.output.LarvaWriter;
-import org.frankframework.larva.output.PlainTextScenarioOutputRenderer;
-import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CloseUtils;
@@ -70,16 +67,15 @@ public class RunLarvaTests {
 		IbisContext ibisContext = FrankApplicationInitializer.getIbisContext(servletContext);
 		appConstants = AppConstants.getInstance();
 
-		LarvaConfig larvaConfig = new LarvaConfig();
-		LarvaWriter larvaWriter = new LarvaWriter(larvaConfig, System.out);
-		TestExecutionObserver observer = new PlainTextScenarioOutputRenderer(larvaWriter);
-		larvaTool = new LarvaTool(ibisContext, larvaConfig, larvaWriter, observer);
+		larvaTool = LarvaTool.createInstance(ibisContext, System.out);
+
+		LarvaConfig larvaConfig = larvaTool.getLarvaConfig();
 		larvaConfig.setTimeout(10_000);
 		larvaConfig.setLogLevel(LARVA_LOG_LEVEL);
 		larvaConfig.setMultiThreaded(false);
 
 		scenarioRunner = larvaTool.createScenarioRunner();
-		scenarioRootDir = larvaConfig.initScenarioDirectories(larvaWriter);
+		scenarioRootDir = larvaTool.getTestRunStatus().initScenarioDirectories();
 	}
 
 	@AfterAll
@@ -99,7 +95,8 @@ public class RunLarvaTests {
 	@TestFactory
 	@Disabled("Not yet working properly, reasons not yet known.")
 	Stream<DynamicNode> larvaTests() {
-		List<File> allScenarioFiles = larvaTool.getLarvaConfig().readScenarioFiles(larvaTool.getWriter());
+		larvaTool.getTestRunStatus().readScenarioFiles(larvaTool.getScenarioLoader());
+		List<File> allScenarioFiles = larvaTool.getTestRunStatus().getScenariosToRun(larvaTool.getLarvaConfig().getActiveScenariosDirectory());
 		assertFalse(allScenarioFiles.isEmpty(), () -> "Did not find any scenario-files in scenarioRootDir [%s]!".formatted(scenarioRootDir));
 		System.err.printf("Creating JUnit tests from %d scenarios loaded from [%s]%n", allScenarioFiles.size(), scenarioRootDir);
 		return createScenarios(scenarioRootDir, "", allScenarioFiles);
@@ -142,15 +139,11 @@ public class RunLarvaTests {
 	}
 
 	@Test
-	void runLarvaTests() throws IOException {
+	void runLarvaTests() {
 		assertTrue(applicationContext.isRunning());
 		LarvaConfig larvaConfig = larvaTool.getLarvaConfig();
-		List<File> allScenarioFiles = larvaConfig.readScenarioFiles(larvaTool.getWriter());
-		assertFalse(allScenarioFiles.isEmpty(), () -> "Did not find any scenario-files in scenarioRootDir [%s]!".formatted(scenarioRootDir));
-
 		larvaConfig.setLogLevel(LarvaLogLevel.SCENARIO_FAILED);
 
-		System.err.printf("Starting Scenarios, should have %d scenarios to run loaded from directory [%s].%n", allScenarioFiles.size(), scenarioRootDir);
 		long start = System.currentTimeMillis();
 		int result = larvaTool.runScenarios(scenarioRootDir);
 		long end = System.currentTimeMillis();

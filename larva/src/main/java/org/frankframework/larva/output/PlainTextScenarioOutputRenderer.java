@@ -1,6 +1,6 @@
 package org.frankframework.larva.output;
 
-import jakarta.annotation.Nullable;
+import org.frankframework.larva.TestRunStatus;
 
 public class PlainTextScenarioOutputRenderer implements TestExecutionObserver {
 	private final LarvaWriter out;
@@ -10,41 +10,37 @@ public class PlainTextScenarioOutputRenderer implements TestExecutionObserver {
 	}
 
 	@Override
-	public void startTestSuiteExecution() {
+	public void startTestSuiteExecution(TestRunStatus testRunStatus) {
 
 	}
 
 	@Override
-	public void endTestSuiteExecution() {
+	public void endTestSuiteExecution(TestRunStatus testRunStatus) {
 
 	}
 
 	@Override
-	public void executionStatistics(
-			@Nullable String scenariosTotalMessage,
-			@Nullable String scenariosPassedMessage,
-			@Nullable String scenariosFailedMessage,
-			@Nullable String scenariosAutosavedMessage, int scenariosTotal, int scenariosPassed, int scenariosFailed, int scenariosAutosaved) {
+	public void executionStatistics(TestRunStatus testRunStatus, long executionTime) {
 
 	}
 
 	@Override
-	public void startScenario(String scenarioName) {
+	public void startScenario(TestRunStatus testRunStatus, String scenarioName) {
 
 	}
 
 	@Override
-	public void finishScenario(String scenarioName, int scenarioResult, String scenarioResultMessage) {
+	public void finishScenario(TestRunStatus testRunStatus, String scenarioName, int scenarioResult, String scenarioResultMessage) {
 
 	}
 
 	@Override
-	public void startStep(String stepName) {
+	public void startStep(TestRunStatus testRunStatus, String stepName) {
 
 	}
 
 	@Override
-	public void finishStep(String stepName, int stepResult, String stepResultMessage) {
+	public void finishStep(TestRunStatus testRunStatus, String stepName, int stepResult, String stepResultMessage) {
 
 	}
 
