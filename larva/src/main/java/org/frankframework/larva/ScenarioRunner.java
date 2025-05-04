@@ -15,10 +15,6 @@
  */
 package org.frankframework.larva;
 
-import static org.frankframework.larva.LarvaTool.RESULT_AUTOSAVED;
-import static org.frankframework.larva.LarvaTool.RESULT_ERROR;
-import static org.frankframework.larva.LarvaTool.RESULT_OK;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -169,7 +165,7 @@ public class ScenarioRunner {
 	 * @param flushLogsForEveryScenarioStep if true, the log will be flushed after every scenario step
 	 */
 	public int runOneFile(File scenarioConfigurationFile, String larvaScenariosRootDirectory, boolean flushLogsForEveryScenarioStep) {
-		int scenarioPassed = RESULT_ERROR;
+		int scenarioPassed = LarvaTool.RESULT_ERROR;
 
 		String scenarioDirectory = scenarioConfigurationFile.getParentFile().getAbsolutePath() + File.separator;
 		String longName = scenarioConfigurationFile.getAbsolutePath();
@@ -193,8 +189,8 @@ public class ScenarioRunner {
 			Map<String, LarvaScenarioAction> larvaActions = actionFactory.createLarvaActions(properties, applicationContext, correlationId);
 			if (larvaActions == null || larvaActions.isEmpty()) {
 				testRunStatus.getScenariosFailed().incrementAndGet();
-				testExecutionObserver.finishScenario(testRunStatus, scenarioName, RESULT_ERROR, "Could not create LarvaActions");
-				return RESULT_ERROR;
+				testExecutionObserver.finishScenario(testRunStatus, scenarioName, LarvaTool.RESULT_ERROR, "Could not create LarvaActions");
+				return LarvaTool.RESULT_ERROR;
 			}
 			applicationContext.configure();
 			applicationContext.start();
@@ -205,8 +201,8 @@ public class ScenarioRunner {
 			List<String> stepList = getSteps(properties);
 			if (stepList.isEmpty()) {
 				testRunStatus.getScenariosFailed().incrementAndGet();
-				testExecutionObserver.finishScenario(testRunStatus, scenarioName, RESULT_ERROR, "No steps found");
-				return RESULT_ERROR;
+				testExecutionObserver.finishScenario(testRunStatus, scenarioName, LarvaTool.RESULT_ERROR, "No steps found");
+				return LarvaTool.RESULT_ERROR;
 			}
 			larvaTool.debugMessage("Execute steps");
 			boolean allStepsPassed = true;
@@ -220,9 +216,9 @@ public class ScenarioRunner {
 				int stepPassed = larvaTool.executeStep(step, properties, stepDisplayName, larvaActions, correlationId);
 				long end = System.currentTimeMillis();
 				testExecutionObserver.finishStep(testRunStatus, stepDisplayName, stepPassed, buildStepFinishedMessage(stepDisplayName, stepPassed, (end - start)));
-				if (stepPassed == RESULT_ERROR) {
+				if (stepPassed == LarvaTool.RESULT_ERROR) {
 					allStepsPassed = false;
-				} else if (stepPassed == RESULT_AUTOSAVED) {
+				} else if (stepPassed == LarvaTool.RESULT_AUTOSAVED) {
 					autoSaved = true;
 				}
 				if (flushLogsForEveryScenarioStep) {
@@ -231,9 +227,9 @@ public class ScenarioRunner {
 			}
 			if (allStepsPassed) {
 				if (autoSaved) {
-					scenarioPassed = RESULT_AUTOSAVED;
+					scenarioPassed = LarvaTool.RESULT_AUTOSAVED;
 				} else {
-					scenarioPassed = RESULT_OK;
+					scenarioPassed = LarvaTool.RESULT_OK;
 				}
 			}
 			larvaTool.debugMessage("Wait " + waitBeforeCleanUp + " ms before clean up");
@@ -246,14 +242,14 @@ public class ScenarioRunner {
 			boolean remainingMessagesFound = actionFactory.closeLarvaActions(larvaActions);
 			if (remainingMessagesFound) {
 				if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED)) {
-					testExecutionObserver.finishStep(testRunStatus, scenarioName + " - Remaining messages found", RESULT_ERROR, "Found one or more messages on actions or in database after scenario executed");
+					testExecutionObserver.finishStep(testRunStatus, scenarioName + " - Remaining messages found", LarvaTool.RESULT_ERROR, "Found one or more messages on actions or in database after scenario executed");
 				}
-				scenarioPassed = RESULT_ERROR;
+				scenarioPassed = LarvaTool.RESULT_ERROR;
 			}
 
-			if (scenarioPassed == RESULT_OK) {
+			if (scenarioPassed == LarvaTool.RESULT_OK) {
 				testRunStatus.getScenariosPassed().incrementAndGet();
-			} else if (scenarioPassed == RESULT_AUTOSAVED) {
+			} else if (scenarioPassed == LarvaTool.RESULT_AUTOSAVED) {
 				testRunStatus.getScenariosAutosaved().incrementAndGet();
 			} else {
 				testRunStatus.getScenariosFailed().incrementAndGet();
@@ -263,9 +259,9 @@ public class ScenarioRunner {
 		} catch (Exception e) {
 			log.warn("Error occurred while creating Larva Scenario Actions", e);
 			testRunStatus.getScenariosFailed().incrementAndGet();
-			testExecutionObserver.finishScenario(testRunStatus, scenarioName, RESULT_ERROR, "Error occurred while executing Larva Scenario: " + e.getMessage());
+			testExecutionObserver.finishScenario(testRunStatus, scenarioName, LarvaTool.RESULT_ERROR, "Error occurred while executing Larva Scenario: " + e.getMessage());
 			larvaTool.errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e);
-			return RESULT_ERROR;
+			return LarvaTool.RESULT_ERROR;
 		}
 	}
 
