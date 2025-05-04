@@ -33,7 +33,6 @@ import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.ScenarioRunner;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
-import org.frankframework.util.AppConstants;
 import org.frankframework.util.CloseUtils;
 
 /**
@@ -53,7 +52,6 @@ public class RunLarvaTests {
 	private static ConfigurableApplicationContext applicationContext;
 	private static LarvaTool larvaTool;
 	private static ScenarioRunner scenarioRunner;
-	private static AppConstants appConstants;
 	private static String scenarioRootDir;
 
 	/**
@@ -65,7 +63,6 @@ public class RunLarvaTests {
 		applicationContext = springApplication.run();
 		ServletContext servletContext = applicationContext.getBean(ServletContext.class);
 		IbisContext ibisContext = FrankApplicationInitializer.getIbisContext(servletContext);
-		appConstants = AppConstants.getInstance();
 
 		larvaTool = LarvaTool.createInstance(ibisContext, System.out);
 
