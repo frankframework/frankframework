@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.ServletContext;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.jupiter.api.AfterAll;
@@ -188,7 +189,7 @@ public class RunLarvaTests {
 
 	private DynamicTest convertLarvaScenarioToTest(File scenarioFile) {
 		// Scenario name always computed from the scenario root dir to be understandable without context of immediate parent
-		String scenarioName = normalizeName(scenarioFile.getAbsolutePath().substring(scenarioRootDir.length()));
+		String scenarioName = FilenameUtils.normalize(scenarioFile.getAbsolutePath().substring(scenarioRootDir.length()), true);
 		return DynamicTest.dynamicTest(
 				scenarioName, scenarioFile.toURI(), () -> {
 					System.out.println("Running scenario: [" + scenarioName + "]");
@@ -198,10 +199,6 @@ public class RunLarvaTests {
 					assertNotEquals(LarvaTool.RESULT_ERROR, scenarioPassed, () -> "Scenario failed: [" + scenarioName + "]");
 				}
 		);
-	}
-
-	private static String normalizeName(String name) {
-		return name.replace('\\', '/');
 	}
 
 	@Test
