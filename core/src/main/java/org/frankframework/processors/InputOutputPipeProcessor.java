@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -72,7 +71,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 	// Message should not be nullable?
 	// Should the skipPipe be handled before getInputFrom?
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable final Message inputMessage, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull final Message inputMessage, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		Message originalMessage = inputMessage;
 
 		// Get the input message for the pipe to be processed, does not return null.
@@ -104,7 +103,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 			return postProcessPipeResult(pipe, pipeLineSession, pipeRunResult, originalMessage);
 		} finally {
 			if (pipe.isWriteToSecLog()) {
-				SEC_LOG.info("adapter [{}] pipe [{}]{}", () -> pipeLine.getAdapter(), pipe::getName, () -> computeSessionKeys(pipeLineSession, pipe));
+				SEC_LOG.info("adapter [{}] pipe [{}]{}", pipeLine::getAdapter, pipe::getName, () -> computeSessionKeys(pipeLineSession, pipe));
 			}
 		}
 	}
@@ -153,7 +152,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 	 * Registers the original message to be closed, as we're not using it.
 	 */
 	@Nonnull
-	private Message getInputFrom(@Nonnull final IPipe pipe, @Nullable final Message message, @Nonnull final PipeLineSession pipeLineSession) throws PipeRunException {
+	private Message getInputFrom(@Nonnull final IPipe pipe, @Nonnull final Message message, @Nonnull final PipeLineSession pipeLineSession) throws PipeRunException {
 		// The order of these two methods has been changed to make it backwards compatible.
 		if (StringUtils.isNotEmpty(pipe.getGetInputFromFixedValue())) {
 			log.debug("replacing input with fixed value [{}]", pipe::getGetInputFromFixedValue);
@@ -183,7 +182,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 			}
 		}
 
-		return message == null ? Message.nullMessage() : message;
+		return message;
 	}
 
 	private void processMessageCompaction(IPipe pipe, PipeLineSession pipeLineSession, PipeRunResult pipeRunResult) throws PipeRunException {
@@ -254,7 +253,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 	}
 
 	@Override // method needs to be overridden to enable AOP for debugger
-	public PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
 		return super.processPipe(pipeLine, pipe, message, pipeLineSession);
 	}
 

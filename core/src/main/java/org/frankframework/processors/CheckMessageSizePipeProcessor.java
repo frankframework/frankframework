@@ -32,7 +32,7 @@ import org.frankframework.util.Misc;
 public class CheckMessageSizePipeProcessor extends AbstractPipeProcessor {
 
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		checkMessageSize(message.size(), pipeLine, pipe, true);
 		PipeRunResult pipeRunResult = chain.apply(message);
 

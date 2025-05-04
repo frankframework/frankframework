@@ -16,7 +16,6 @@
 package org.frankframework.processors;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
@@ -45,9 +44,9 @@ public class LogPipeProcessor extends AbstractPipeProcessor {
 	private static final boolean LOG_INTERMEDIARY_RESULTS = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true);
 
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
 		if (log.isDebugEnabled() && logIntermediaryResults(pipe)) {
-			log.debug("pipeline process is about to call pipe [{}] current result [{}]", pipe::getName, () -> (message == null ? "<null>" : message.toString()));
+			log.debug("pipeline process is about to call pipe [{}] current result [{}]", pipe::getName, message::toString);
 		} else {
 			log.info("pipeline process is about to call pipe [{}]", pipe::getName);
 		}

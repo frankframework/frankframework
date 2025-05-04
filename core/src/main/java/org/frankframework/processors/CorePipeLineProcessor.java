@@ -18,6 +18,8 @@ package org.frankframework.processors;
 
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -60,7 +62,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 	}
 
 	@Override
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
+	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, @Nonnull Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 
 		if (message.isEmpty() && StringUtils.isNotEmpty(pipeLine.getAdapterToRunBeforeOnEmptyInput())) {
 			log.debug("running adapterBeforeOnEmptyInput");
