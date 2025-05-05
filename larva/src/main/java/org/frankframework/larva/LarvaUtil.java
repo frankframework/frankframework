@@ -18,6 +18,7 @@ package org.frankframework.larva;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.net.URL;
 import java.nio.file.Files;
 import java.time.Duration;
@@ -31,6 +32,7 @@ import org.apache.commons.io.FilenameUtils;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.larva.output.LarvaWriter;
+import org.frankframework.util.StreamUtil;
 
 @Log4j2
 public class LarvaUtil {
@@ -92,8 +94,8 @@ public class LarvaUtil {
 
 	protected static @Nonnull Properties readProperties(LarvaWriter out, File propertyFile) {
 		Properties properties = new Properties();
-		try (InputStream in = Files.newInputStream(propertyFile.toPath())) {
-			properties.load(in);
+		try (InputStream in = Files.newInputStream(propertyFile.toPath()); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(in)) {
+			properties.load(reader);
 		} catch (IOException e) {
 			out.errorMessage("Cannot read property file: " + propertyFile.getAbsolutePath(), e);
 		}
