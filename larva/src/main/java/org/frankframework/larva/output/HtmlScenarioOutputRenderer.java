@@ -61,6 +61,12 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 
 	@Override
 	public void executionStatistics(TestRunStatus testRunStatus, long executionTime) {
+		if (testRunStatus.getScenariosFailedCount() > 0) {
+			writeHtml(LarvaLogLevel.SCENARIO_FAILED, "<br/><br/><div><h1 class='failed'>Failed Scenarios</h1>", false);
+			testRunStatus.getFailedScenarios().forEach(scenario -> writeHtml(LarvaLogLevel.SCENARIO_FAILED, "<h2><a href='#" + scenario.getId() + "'>" + LarvaHtmlWriter.encodeForHtml(scenario.getName() + " - " + scenario.getDescription()) + "</a></h2>", false));
+			writeHtml(LarvaLogLevel.SCENARIO_FAILED, "</div>", true);
+		}
+		writeHtml(LarvaLogLevel.TOTALS, "<br/><br/>", false);
 		String scenariosPassedMessage = testRunStatus.buildScenariosPassedMessage(executionTime);
 		String scenariosFailedMessage = testRunStatus.buildScenariosFailedMessage(executionTime);
 		String scenariosAutosavedMessage = testRunStatus.buildScenariosAutoSavedMessage(executionTime);
@@ -84,10 +90,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 		evenStep = false;
 
 		writer.setBufferOutputMessages(true);
-		if (!shouldWriteLevel(LarvaLogLevel.SCENARIO_PASSED_FAILED)) {
-			return;
-		}
-		writeHtml(LarvaLogLevel.SCENARIO_PASSED_FAILED, "<br/><br/><div class='scenario'>", false);
+		writeHtml(LarvaLogLevel.SCENARIO_FAILED, "<br/><br/><div id='" + scenario.getId() + "' class='scenario'>", false);
 	}
 
 	@Override
@@ -109,7 +112,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 		writeHtml(resultLogLevel, outputMessage.toString(), false);
 
 		// Close the <div> tag created in #startScenario
-		writeHtml(LarvaLogLevel.SCENARIO_PASSED_FAILED,"</div>", true);
+		writeHtml(LarvaLogLevel.SCENARIO_FAILED,"</div>", true);
 		writer.setBufferOutputMessages(false);
 	}
 
