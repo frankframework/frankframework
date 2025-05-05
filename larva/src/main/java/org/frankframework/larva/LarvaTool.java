@@ -188,7 +188,7 @@ public class LarvaTool {
 			return 0;
 		}
 
-		List<File> scenarioFiles = testRunStatus.getScenariosToRun(execute);
+		List<Scenario> scenarioFiles = testRunStatus.getScenariosToRun(execute);
 		if (scenarioFiles.isEmpty()) {
 			errorMessage("No scenarios found");
 		}
@@ -210,7 +210,7 @@ public class LarvaTool {
 		testExecutionObserver.endTestSuiteExecution(testRunStatus);
 		CleanerProvider.logLeakStatistics();
 
-		return testRunStatus.getScenariosFailed();
+		return testRunStatus.getScenariosFailedCount();
 	}
 
 	public ScenarioRunner createScenarioRunner() {
@@ -241,7 +241,7 @@ public class LarvaTool {
 		writer.errorMessage(message, exception);
 	}
 
-	private int executeActionWriteStep(String stepDisplayName, Map<String, LarvaScenarioAction> actions, String actionName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
+	private int executeActionWriteStep(Scenario scenario, String stepDisplayName, Map<String, LarvaScenarioAction> actions, String actionName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
 		LarvaScenarioAction scenarioAction = actions.get(actionName);
 		if (scenarioAction == null) {
 			errorMessage("Property '" + actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
@@ -249,7 +249,7 @@ public class LarvaTool {
 		}
 		try {
 			scenarioAction.executeWrite(fileContent, correlationId, xsltParameters);
-			testExecutionObserver.stepMessage(stepDisplayName, "Successfully wrote message to '" + actionName + "':", messageToString(fileContent));
+			testExecutionObserver.stepMessage(scenario, stepDisplayName, "Successfully wrote message to '" + actionName + "':", messageToString(fileContent));
 			log.debug("Successfully wrote message to '{}'", actionName);
 			return RESULT_OK;
 		} catch(TimeoutException e) {
@@ -260,7 +260,7 @@ public class LarvaTool {
 		return RESULT_ERROR;
 	}
 
-	private int executeActionReadStep(String step, String stepDisplayName, Properties properties, Map<String, LarvaScenarioAction> actions, String actionName, String fileName, String stepSaveFileName, Message expected) {
+	private int executeActionReadStep(Scenario scenario, String step, String stepDisplayName, Properties properties, Map<String, LarvaScenarioAction> actions, String actionName, String fileName, String stepSaveFileName, Message expected) {
 		LarvaScenarioAction scenarioAction = actions.get(actionName);
 		if (scenarioAction == null) {
 			errorMessage("Property '" + actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
@@ -276,9 +276,9 @@ public class LarvaTool {
 				}
 			} else {
 				if ("".equals(fileName)) {
-					testExecutionObserver.stepMessage(stepDisplayName, "Unexpected message read from '" + actionName + "':", messageToString(message));
+					testExecutionObserver.stepMessage(scenario, stepDisplayName, "Unexpected message read from '" + actionName + "':", messageToString(message));
 				} else {
-					return compareResult(step, stepDisplayName, fileName, stepSaveFileName, expected, message, properties);
+					return compareResult(scenario, step, stepDisplayName, fileName, stepSaveFileName, expected, message, properties);
 				}
 			}
 		} catch (Exception e) {
@@ -289,7 +289,7 @@ public class LarvaTool {
 	}
 
 	// Ideally, this should be moved to its own class. But for now it's a bridge too far because of `stepOutputFilename`.
-	protected int executeStep(String step, Properties properties, String stepDisplayName, Map<String, LarvaScenarioAction> actions, String correlationId) {
+	protected int executeStep(Scenario scenario, String step, Properties properties, String stepDisplayName, Map<String, LarvaScenarioAction> actions, String correlationId) {
 		String fileName = properties.getProperty(step);
 		String stepDataFileAbsolutePath = properties.getProperty(step + ".absolutepath");
 		int i = step.indexOf('.');
@@ -324,9 +324,9 @@ public class LarvaTool {
 				if ("org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname)) {
 					Properties scenarioStepProperties = LarvaActionUtils.getSubProperties(properties, step);
 					Map<String, Object> xsltParameters = createParametersMapFromParamProperties(scenarioStepProperties);
-					return executeActionWriteStep(stepDisplayName, actions, actionName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
+					return executeActionWriteStep(scenario, stepDisplayName, actions, actionName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
 				} else {
-					return executeActionReadStep(step, stepDisplayName, properties, actions, actionName, fileName, stepDataFileAbsolutePath, fileContent);
+					return executeActionReadStep(scenario, step, stepDisplayName, properties, actions, actionName, fileName, stepDataFileAbsolutePath, fileContent);
 				}
 			} else {
 				// TODO: Try if anything breaks when this block is moved to `readFile()` method.
@@ -341,9 +341,9 @@ public class LarvaTool {
 					fileContent = new Message(StringResolver.substVars(fileData, appConstants), fileContent.copyContext());
 				}
 				if ("org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname)) {
-					return executeActionReadStep(step, stepDisplayName, properties, actions, actionName, fileName, stepDataFileAbsolutePath, fileContent);  // XsltProviderListener has .read and .write reversed
+					return executeActionReadStep(scenario, step, stepDisplayName, properties, actions, actionName, fileName, stepDataFileAbsolutePath, fileContent);  // XsltProviderListener has .read and .write reversed
 				} else {
-					return executeActionWriteStep(stepDisplayName, actions, actionName, fileContent, correlationId, null);
+					return executeActionWriteStep(scenario, stepDisplayName, actions, actionName, fileContent, correlationId, null);
 				}
 			}
 		}
@@ -500,7 +500,7 @@ public class LarvaTool {
 		}
 	}
 
-	public int compareResult(String step, String stepDisplayName, String fileName, String stepSaveFileName, Message expectedResultMessage, Message actualResultMessage, Properties properties) {
+	public int compareResult(Scenario scenario, String step, String stepDisplayName, String fileName, String stepSaveFileName, Message expectedResultMessage, Message actualResultMessage, Properties properties) {
 		if (fileName.endsWith("ignore")) {
 			debugMessage("ignoring compare for filename '"+fileName+"'");
 			return RESULT_OK;
@@ -554,7 +554,7 @@ public class LarvaTool {
 			if (identical) {
 				ok = RESULT_OK;
 				debugMessage("Strings are identical");
-				testExecutionObserver.stepMessageSuccess(stepDisplayName, "Result", printableActualResult, preparedActualResult);
+				testExecutionObserver.stepMessageSuccess(scenario, stepDisplayName, "Result", printableActualResult, preparedActualResult);
 			} else {
 				debugMessage("Strings are not identical");
 				String message;
@@ -564,7 +564,7 @@ public class LarvaTool {
 					message = "Exception during XML diff: " + diffException.getMessage();
 					errorMessage("Exception during XML diff: ", diffException);
 				}
-				testExecutionObserver.stepMessageFailed(stepDisplayName, message, stepSaveFileName, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult);
+				testExecutionObserver.stepMessageFailed(scenario, stepDisplayName, message, stepSaveFileName, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult);
 				if (larvaConfig.isAutoSaveDiffs()) {
 					String filenameAbsolutePath = (String)properties.get(step + ".absolutepath");
 					debugMessage("Copy actual result to ["+filenameAbsolutePath+"]");
@@ -583,7 +583,7 @@ public class LarvaTool {
 			if (formattedPreparedExpectedResult.equals(formattedPreparedActualResult)) {
 				ok = RESULT_OK;
 				debugMessage("Strings are identical");
-				testExecutionObserver.stepMessageSuccess(stepDisplayName, "Result", printableActualResult, preparedActualResult);
+				testExecutionObserver.stepMessageSuccess(scenario, stepDisplayName, "Result", printableActualResult, preparedActualResult);
 //				debugPipelineMessage(stepDisplayName, "Result", printableActualResult);
 //				debugPipelineMessagePreparedForDiff(stepDisplayName, "Result as prepared for diff", preparedActualResult);
 			} else {
@@ -618,7 +618,7 @@ public class LarvaTool {
 					diffExcpected.append(" ...");
 				}
 				message = message + " actual result is '" + diffActual + "' and expected result is '" + diffExcpected + "'";
-				testExecutionObserver.stepMessageFailed(stepDisplayName, message, stepSaveFileName, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult);
+				testExecutionObserver.stepMessageFailed(scenario, stepDisplayName, message, stepSaveFileName, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult);
 				if (larvaConfig.isAutoSaveDiffs()) {
 					String filenameAbsolutePath = (String)properties.get(step + ".absolutepath");
 					debugMessage("Copy actual result to ["+filenameAbsolutePath+"]");

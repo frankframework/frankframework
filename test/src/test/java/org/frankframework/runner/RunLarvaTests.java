@@ -31,6 +31,7 @@ import org.frankframework.configuration.IbisContext;
 import org.frankframework.larva.LarvaConfig;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
+import org.frankframework.larva.Scenario;
 import org.frankframework.larva.ScenarioRunner;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.util.CloseUtils;
@@ -93,13 +94,13 @@ public class RunLarvaTests {
 	@Disabled("Not yet working properly, reasons not yet known.")
 	Stream<DynamicNode> larvaTests() {
 		larvaTool.getTestRunStatus().readScenarioFiles(larvaTool.getScenarioLoader());
-		List<File> allScenarioFiles = larvaTool.getTestRunStatus().getScenariosToRun(larvaTool.getLarvaConfig().getActiveScenariosDirectory());
-		assertFalse(allScenarioFiles.isEmpty(), () -> "Did not find any scenario-files in scenarioRootDir [%s]!".formatted(scenarioRootDir));
-		System.err.printf("Creating JUnit tests from %d scenarios loaded from [%s]%n", allScenarioFiles.size(), scenarioRootDir);
-		return createScenarios(scenarioRootDir, "", allScenarioFiles);
+		List<Scenario> allScenarios = larvaTool.getTestRunStatus().getScenariosToRun(larvaTool.getLarvaConfig().getActiveScenariosDirectory());
+		assertFalse(allScenarios.isEmpty(), () -> "Did not find any scenario-files in scenarioRootDir [%s]!".formatted(scenarioRootDir));
+		System.err.printf("Creating JUnit tests from %d scenarios loaded from [%s]%n", allScenarios.size(), scenarioRootDir);
+		return createScenarios(scenarioRootDir, "", allScenarios);
 	}
 
-	private @Nonnull Stream<DynamicNode> createScenarioContainer(@Nonnull String baseFolder, @Nonnull Map.Entry<String, List<File>> scenarioFolder) {
+	private @Nonnull Stream<DynamicNode> createScenarioContainer(@Nonnull String baseFolder, @Nonnull Map.Entry<String, List<Scenario>> scenarioFolder) {
 		String scenarioFolderName = scenarioFolder.getKey();
 		if (StringUtils.isBlank(scenarioFolderName)) {
 			return createScenarios(baseFolder, scenarioFolderName, scenarioFolder.getValue());
@@ -107,9 +108,9 @@ public class RunLarvaTests {
 		return Stream.of(DynamicContainer.dynamicContainer(scenarioFolderName, new File(baseFolder, scenarioFolderName).toURI(), createScenarios(baseFolder, scenarioFolderName, scenarioFolder.getValue())));
 	}
 
-	private @Nonnull Stream<DynamicNode> createScenarios(@Nonnull String baseFolder, @Nonnull String subFolder, @Nonnull List<File> scenarioFiles) {
+	private @Nonnull Stream<DynamicNode> createScenarios(@Nonnull String baseFolder, @Nonnull String subFolder, @Nonnull List<Scenario> scenarioFiles) {
 		String commonFolder = StringUtils.isBlank(subFolder) ? baseFolder : Paths.get(baseFolder, subFolder).toString();
-		Map<String, List<File>> scenariosByFolder = ScenarioRunner.groupFilesByFolder(scenarioFiles, commonFolder);
+		Map<String, List<Scenario>> scenariosByFolder = ScenarioRunner.groupScenariosByFolder(scenarioFiles, commonFolder);
 
 		if (scenariosByFolder.size() == 1) {
 			return scenarioFiles.stream()
@@ -118,17 +119,17 @@ public class RunLarvaTests {
 			return scenariosByFolder.entrySet()
 					.stream()
 					.sorted(Map.Entry.comparingByKey())
-					.flatMap((Map.Entry<String, List<File>> nestedSubFolder) -> createScenarioContainer(commonFolder, nestedSubFolder));
+					.flatMap((Map.Entry<String, List<Scenario>> nestedSubFolder) -> createScenarioContainer(commonFolder, nestedSubFolder));
 		}
 	}
 
-	private DynamicTest convertLarvaScenarioToTest(File scenarioFile) {
+	private DynamicTest convertLarvaScenarioToTest(Scenario scenario) {
 		// Scenario name always computed from the scenario root dir to be understandable without context of immediate parent
-		String scenarioName = scenarioFile.getAbsolutePath().substring(scenarioRootDir.length());
+		String scenarioName = scenario.getName();
 		return DynamicTest.dynamicTest(
-				scenarioName, scenarioFile.toURI(), () -> {
+				scenarioName, scenario.getScenarioFile().toURI(), () -> {
 					System.out.println("Running scenario: [" + scenarioName + "]");
-					int scenarioPassed = scenarioRunner.runOneFile(scenarioFile, scenarioRootDir, true);
+					int scenarioPassed = scenarioRunner.runOneFile(scenario, true);
 
 					assertNotEquals(LarvaTool.RESULT_ERROR, scenarioPassed, () -> "Scenario failed: [" + scenarioName + "]");
 				}

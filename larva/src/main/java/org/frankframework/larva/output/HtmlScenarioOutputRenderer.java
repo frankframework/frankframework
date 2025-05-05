@@ -23,6 +23,7 @@ import java.util.Set;
 import org.frankframework.larva.LarvaHtmlConfig;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
+import org.frankframework.larva.Scenario;
 import org.frankframework.larva.TestRunStatus;
 import org.frankframework.util.XmlEncodingUtils;
 
@@ -79,7 +80,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 	}
 
 	@Override
-	public void startScenario(TestRunStatus testRunStatus, String scenarioName) {
+	public void startScenario(TestRunStatus testRunStatus, Scenario scenario) {
 		evenStep = false;
 
 		writer.setBufferOutputMessages(true);
@@ -90,7 +91,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 	}
 
 	@Override
-	public void finishScenario(TestRunStatus testRunStatus, String scenarioName, int scenarioResult, String scenarioResultMessage) {
+	public void finishScenario(TestRunStatus testRunStatus, Scenario scenario, int scenarioResult, String scenarioResultMessage) {
 
 		LarvaLogLevel resultLogLevel;
 		StringBuilder outputMessage = new StringBuilder();
@@ -113,7 +114,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 	}
 
 	@Override
-	public void startStep(TestRunStatus testRunStatus, String stepName) {
+	public void startStep(TestRunStatus testRunStatus, Scenario scenario, String stepName) {
 		// Create a div for the step. Will be closed in finishStep().
 		if (evenStep) {
 			writeHtml("<div class='even'>");
@@ -125,7 +126,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 	}
 
 	@Override
-	public void finishStep(TestRunStatus testRunStatus, String stepName, int stepResult, String stepResultMessage) {
+	public void finishStep(TestRunStatus testRunStatus, Scenario scenario, String stepName, int stepResult, String stepResultMessage) {
 		if (shouldWriteLevel(LarvaLogLevel.STEP_PASSED_FAILED)) {
 			StringBuilder outputMessage = new StringBuilder();
 			if (stepResult == LarvaTool.RESULT_OK) {
@@ -143,18 +144,18 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 	}
 
 	@Override
-	public void stepMessage(String stepName, String description, String stepMessage) {
+	public void stepMessage(Scenario scenario, String stepName, String description, String stepMessage) {
 		writer.writeStepMessageBox(LarvaLogLevel.PIPELINE_MESSAGES, "message container", stepName, description, "messagebox", stepMessage);
 	}
 
 	@Override
-	public void stepMessageSuccess(String stepName, String description, String stepResultMessage, String stepResultMessagePreparedForDiff) {
+	public void stepMessageSuccess(Scenario scenario, String stepName, String description, String stepResultMessage, String stepResultMessagePreparedForDiff) {
 		writer.writeStepMessageBox(LarvaLogLevel.PIPELINE_MESSAGES, "message container", stepName, description, "messagebox", stepResultMessage);
 		writer.writeStepMessageBox(LarvaLogLevel.PIPELINE_MESSAGES_PREPARED_FOR_DIFF, "message container", stepName, description + " as prepared for diff", "messagebox", stepResultMessagePreparedForDiff);
 	}
 
 	@Override
-	public void stepMessageFailed(String stepName, String description, String stepSaveFileName, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff) {
+	public void stepMessageFailed(Scenario scenario, String stepName, String description, String stepSaveFileName, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff) {
 		writer.writeStepMessageWithDiffBox(LarvaLogLevel.WRONG_PIPELINE_MESSAGES, "error container", stepName, stepSaveFileName, "scenario", "raw", description, stepActualResultMessage, stepExpectedResultMessage);
 		writer.writeStepMessageWithDiffBox(LarvaLogLevel.WRONG_PIPELINE_MESSAGES_PREPARED_FOR_DIFF, "error container", stepName, stepSaveFileName, "scenario", "prepared for diff", description, stepActualResultMessagePreparedForDiff, stepExpectedResultMessagePreparedForDiff);
 	}
@@ -302,8 +303,8 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 		writeHtml("<select name=\"execute\">");
 		writer.debugMessage("Fill execute select box.");
 		Set<String> addedDirectories = new HashSet<>();
-		testRunStatus.getScenarioFiles().forEach((scenarioFile, description) -> {
-			String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
+		testRunStatus.getAllScenarios().forEach((scenarioId, scenario) -> {
+			String scenarioDirectory = scenario.getScenarioFile().getParentFile().getAbsolutePath() + File.separator;
 			writer.debugMessage("Add parent directories of '" + scenarioDirectory + "'");
 			int i;
 			String scenarioDirectoryCanonicalPath;
@@ -335,14 +336,14 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 					}
 					i = scenarioDirectory.indexOf(File.separator, i + 1);
 				}
-				String longName = scenarioFile.getAbsolutePath();
-				String shortName = longName.substring(scenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
+				String longName = scenario.getLongName();
+				String shortName = scenario.getName();
 				writer.debugMessage("shortName: '" + shortName + "'");
 				String option = "<option value=\"" + XmlEncodingUtils.encodeChars(longName) + "\"";
 				if (paramExecute != null && paramExecute.equals(longName)) {
 					option = option + " selected";
 				}
-				option = option + ">" + XmlEncodingUtils.encodeChars(shortName + " - " + description) + "</option>";
+				option = option + ">" + XmlEncodingUtils.encodeChars(shortName + " - " + scenario.getDescription()) + "</option>";
 				writeHtml(option);
 			}
 		});
@@ -371,5 +372,4 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 		writer.setBufferLogMessages(false);
 		writer.flush();
 	}
-
 }

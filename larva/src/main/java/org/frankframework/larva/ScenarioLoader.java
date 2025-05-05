@@ -50,12 +50,20 @@ public class ScenarioLoader {
 	}
 
 
-	public Map<File, String> readScenarioFiles(String scenariosDirectory) {
-		return readScenarioFiles(scenariosDirectory, AppConstants.getInstance());
+	public Map<Scenario.ID, Scenario> readScenarioFiles(String scenariosDirectory) {
+		long start = System.currentTimeMillis();
+		try {
+			return readScenarioFiles(scenariosDirectory, scenariosDirectory, AppConstants.getInstance());
+		} finally {
+			long end = System.currentTimeMillis();
+			String duration = LarvaUtil.formatDuration(end - start);
+			log.debug("Reading scenario files took {}", duration);
+			out.debugMessage("Reading scenario files took " + duration);
+		}
 	}
 
-	public Map<File, String> readScenarioFiles(String scenariosDirectory, AppConstants appConstants) {
-		Map <File, String> scenarioFiles = new LinkedHashMap<>();
+	private Map<Scenario.ID, Scenario> readScenarioFiles(String baseDirectory, String scenariosDirectory, AppConstants appConstants) {
+		Map <Scenario.ID, Scenario> scenarioFiles = new LinkedHashMap<>();
 		out.debugMessage("List all files in directory '" + scenariosDirectory + "'");
 
 		File directory = new File(scenariosDirectory);
@@ -77,21 +85,24 @@ public class ScenarioLoader {
 		out.debugMessage("Sort files");
 		Arrays.sort(files);
 		out.debugMessage("Filter out property files containing a 'scenario.description' property");
-		for (File file : files) {
-			if (file.isFile() && file.getName().endsWith(".properties") && !file.getName().equalsIgnoreCase("common.properties")) {
-				Properties properties = readScenarioProperties(file, appConstants);
-				applyStringSubstitutions(properties, appConstants);
-				Object description = properties.get("scenario.description");
-				if (description == null) {
+		for (File scenarioFile : files) {
+			if (scenarioFile.isFile() && scenarioFile.getName().endsWith(".properties") && !scenarioFile.getName().equalsIgnoreCase("common.properties")) {
+				Properties properties = readScenarioProperties(scenarioFile, appConstants);
+				String scenarioFilePath = scenarioFile.getAbsolutePath();
+				if (properties == null || properties.getProperty("scenario.description") == null) {
+					log.warn("Could not read properties file: [{}]", scenarioFilePath);
 					continue;
 				}
+				String description = properties.getProperty("scenario.description");
 				String active = properties.getProperty("scenario.active", "true");
 				String unstable = properties.getProperty("adapter.unstable", "false");
 				if ("true".equalsIgnoreCase(active) && "false".equalsIgnoreCase(unstable)) {
-					scenarioFiles.put(file, description.toString());
+					String name = scenarioFilePath.substring(baseDirectory.length(), scenarioFilePath.length() - ".properties".length());
+					Scenario scenario = new Scenario(scenarioFile, name, description);
+					scenarioFiles.put(scenario.getId(), scenario);
 				}
-			} else if (file.isDirectory() && (!file.getName().startsWith(".") && !"CVS".equals(file.getName()))) {
-				scenarioFiles.putAll(readScenarioFiles(file.getAbsolutePath(), appConstants));
+			} else if (scenarioFile.isDirectory() && (!scenarioFile.getName().startsWith(".") && !"CVS".equals(scenarioFile.getName()))) {
+				scenarioFiles.putAll(readScenarioFiles(baseDirectory, scenarioFile.getAbsolutePath(), appConstants));
 			}
 		}
 		out.debugMessage(scenarioFiles.size() + " scenario files found");

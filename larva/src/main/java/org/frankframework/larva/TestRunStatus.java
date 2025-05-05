@@ -39,15 +39,14 @@ public class TestRunStatus {
 	private final @Getter LarvaConfig larvaConfig;
 	private final @Getter LarvaWriter out;
 
-	// TODO: Make a class 'Scenario' to make the scenario its own thing that can be passed around
 	private @Getter SortedMap<String, String> scenarioDirectories = new TreeMap<>();
-	private @Getter Map<File, String> scenarioFiles = Map.of();
+	private @Getter Map<Scenario.ID, Scenario> allScenarios = Map.of();
 
-	private @Getter List<File> scenariosToRun = List.of();
+	private @Getter List<Scenario> scenariosToRun = List.of();
 
-	private final @Getter List<File> failedScenarios = Collections.synchronizedList(new ArrayList<>());
-	private final @Getter List<File> passedScenarios = Collections.synchronizedList(new ArrayList<>());
-	private final @Getter List<File> autoSavedScenarios = Collections.synchronizedList(new ArrayList<>());
+	private final @Getter List<Scenario> failedScenarios = Collections.synchronizedList(new ArrayList<>());
+	private final @Getter List<Scenario> passedScenarios = Collections.synchronizedList(new ArrayList<>());
+	private final @Getter List<Scenario> autoSavedScenarios = Collections.synchronizedList(new ArrayList<>());
 
 	public TestRunStatus(LarvaConfig larvaConfig, LarvaWriter out) {
 		this.larvaConfig = larvaConfig;
@@ -119,45 +118,46 @@ public class TestRunStatus {
 		return larvaConfig.getActiveScenariosDirectory();
 	}
 
-	public List<File> getScenariosToRun(String execute) {
+	public List<Scenario> getScenariosToRun(String execute) {
 
-		List<File> scenarios;
+		List<Scenario> scenarios;
 		if (execute.endsWith(".properties")) {
 			out.debugMessage("Read one scenario");
-			scenarios = List.of(new File(execute));
+			Scenario scenario = allScenarios.get(new Scenario.ID(execute));
+			scenarios = List.of(scenario);
 		} else if (execute.equals(larvaConfig.getActiveScenariosDirectory())) {
 			out.debugMessage("Executing all scenario files from root directory '" + larvaConfig.getActiveScenariosDirectory() + "'");
-			scenarios = List.copyOf(scenarioFiles.keySet());
+			scenarios = List.copyOf(allScenarios.values());
 		} else {
-			scenarios = scenarioFiles.keySet().stream()
-					.filter(f -> f.getAbsolutePath().startsWith(execute))
+			scenarios = allScenarios.values().stream()
+					.filter(s -> s.getScenarioFile().getAbsolutePath().startsWith(execute))
 					.toList();
 		}
 		this.scenariosToRun = scenarios;
 		return scenariosToRun;
 	}
 
-	public void scenarioFailed(File scenarioFile) {
-		failedScenarios.add(scenarioFile);
+	public void scenarioFailed(Scenario scenario) {
+		failedScenarios.add(scenario);
 	}
 
-	public void scenarioPassed(File scenarioFile) {
-		passedScenarios.add(scenarioFile);
+	public void scenarioPassed(Scenario scenario) {
+		passedScenarios.add(scenario);
 	}
 
-	public void scenarioAutosaved(File scenarioFile) {
-		autoSavedScenarios.add(scenarioFile);
+	public void scenarioAutosaved(Scenario scenario) {
+		autoSavedScenarios.add(scenario);
 	}
 
-	public int getScenariosFailed() {
+	public int getScenariosFailedCount() {
 		return failedScenarios.size();
 	}
 
-	public int getScenariosPassed() {
+	public int getScenariosPassedCount() {
 		return passedScenarios.size();
 	}
 
-	public int getScenariosAutosaved() {
+	public int getScenariosAutosavedCount() {
 		return autoSavedScenarios.size();
 	}
 
@@ -166,14 +166,14 @@ public class TestRunStatus {
 	}
 
 	public void readScenarioFiles(ScenarioLoader scenarioLoader) {
-		scenarioFiles = scenarioLoader.readScenarioFiles(larvaConfig.getActiveScenariosDirectory());
+		allScenarios = scenarioLoader.readScenarioFiles(larvaConfig.getActiveScenariosDirectory());
 	}
 
 	public @Nullable String buildScenariosPassedMessage(long executionTime) {
 		String formattedTime = LarvaUtil.formatDuration(executionTime);
 
 		int scenariosTotal = getScenarioExecuteCount();
-		int scenariosPassed = getScenariosPassed();
+		int scenariosPassed = getScenariosPassedCount();
 
 		if (scenariosPassed == scenariosTotal) {
 			if (scenariosTotal == 1) {
@@ -194,7 +194,7 @@ public class TestRunStatus {
 		String formattedTime = LarvaUtil.formatDuration(executionTime);
 
 		int scenariosTotal = getScenarioExecuteCount();
-		int scenariosFailed = getScenariosFailed();
+		int scenariosFailed = getScenariosFailedCount();
 
 		if (scenariosFailed == scenariosTotal) {
 			if (scenariosTotal == 1) {
@@ -215,7 +215,7 @@ public class TestRunStatus {
 		String formattedTime = LarvaUtil.formatDuration(executionTime);
 
 		int scenariosTotal = getScenarioExecuteCount();
-		int scenariosAutoSaved = getScenariosAutosaved();
+		int scenariosAutoSaved = getScenariosAutosavedCount();
 
 		if (scenariosAutoSaved == scenariosTotal) {
 			if (scenariosTotal == 1) {
@@ -236,9 +236,9 @@ public class TestRunStatus {
 		String formattedTime = LarvaUtil.formatDuration(executionTime);
 
 		int scenariosTotal = getScenarioExecuteCount();
-		int scenariosPassed = getScenariosPassed();
-		int scenariosFailed = getScenariosFailed();
-		int scenariosAutoSaved = getScenariosAutosaved();
+		int scenariosPassed = getScenariosPassedCount();
+		int scenariosFailed = getScenariosFailedCount();
+		int scenariosAutoSaved = getScenariosAutosavedCount();
 
 		if (scenariosPassed == scenariosTotal ||
 				scenariosFailed == scenariosTotal ||

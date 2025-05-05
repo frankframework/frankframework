@@ -17,6 +17,7 @@ package org.frankframework.larva.output;
 
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
+import org.frankframework.larva.Scenario;
 import org.frankframework.larva.TestRunStatus;
 
 public class PlainTextScenarioOutputRenderer implements TestExecutionObserver {
@@ -58,39 +59,39 @@ public class PlainTextScenarioOutputRenderer implements TestExecutionObserver {
 	}
 
 	@Override
-	public void startScenario(TestRunStatus testRunStatus, String scenarioName) {
+	public void startScenario(TestRunStatus testRunStatus, Scenario scenario) {
 		// No-op
 	}
 
 	@Override
-	public void finishScenario(TestRunStatus testRunStatus, String scenarioName, int scenarioResult, String scenarioResultMessage) {
+	public void finishScenario(TestRunStatus testRunStatus, Scenario scenario, int scenarioResult, String scenarioResultMessage) {
 		LarvaLogLevel logLevel = scenarioResult == LarvaTool.RESULT_ERROR ? LarvaLogLevel.SCENARIO_FAILED : LarvaLogLevel.SCENARIO_PASSED_FAILED;
 		out.writeOutputMessage(logLevel, scenarioResultMessage);
 	}
 
 	@Override
-	public void startStep(TestRunStatus testRunStatus, String stepName) {
+	public void startStep(TestRunStatus testRunStatus, Scenario scenario, String stepName) {
 		// No-op
 	}
 
 	@Override
-	public void finishStep(TestRunStatus testRunStatus, String stepName, int stepResult, String stepResultMessage) {
+	public void finishStep(TestRunStatus testRunStatus, Scenario scenario, String stepName, int stepResult, String stepResultMessage) {
 		out.writeOutputMessage(LarvaLogLevel.STEP_PASSED_FAILED, stepResultMessage);
 	}
 
 	@Override
-	public void stepMessage(String stepName, String description, String stepMessage) {
+	public void stepMessage(Scenario scenario, String stepName, String description, String stepMessage) {
 		out.writeOutputMessage(LarvaLogLevel.PIPELINE_MESSAGES, "Step " + stepName + ": " + description + "\n" + stepMessage);
 	}
 
 	@Override
-	public void stepMessageSuccess(String stepName, String description, String stepResultMessage, String stepResultMessagePreparedForDiff) {
+	public void stepMessageSuccess(Scenario scenario, String stepName, String description, String stepResultMessage, String stepResultMessagePreparedForDiff) {
 		out.writeOutputMessage(LarvaLogLevel.PIPELINE_MESSAGES, "Step " + stepName + ": " + description + "\n" + stepResultMessage);
 		out.writeOutputMessage(LarvaLogLevel.PIPELINE_MESSAGES_PREPARED_FOR_DIFF, stepResultMessagePreparedForDiff);
 	}
 
 	@Override
-	public void stepMessageFailed(String stepName, String description, String stepSaveFileName, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff) {
+	public void stepMessageFailed(Scenario scenario, String stepName, String description, String stepSaveFileName, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff) {
 		String template = """
 				Step: %s %s
 				Actual%s:
