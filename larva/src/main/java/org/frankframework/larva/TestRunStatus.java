@@ -16,12 +16,13 @@
 package org.frankframework.larva;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.annotation.Nullable;
 
@@ -35,17 +36,18 @@ import org.frankframework.util.AppConstants;
 
 @Log4j2
 public class TestRunStatus {
-	private final @Getter AtomicInteger scenariosFailed = new AtomicInteger();
-	private final @Getter AtomicInteger scenariosPassed = new AtomicInteger();
-	private final @Getter AtomicInteger scenariosAutosaved = new AtomicInteger();
-
 	private final @Getter LarvaConfig larvaConfig;
 	private final @Getter LarvaWriter out;
 
+	// TODO: Make a class 'Scenario' to make the scenario its own thing that can be passed around
 	private @Getter SortedMap<String, String> scenarioDirectories = new TreeMap<>();
 	private @Getter Map<File, String> scenarioFiles = Map.of();
 
 	private @Getter List<File> scenariosToRun = List.of();
+
+	private final @Getter List<File> failedScenarios = Collections.synchronizedList(new ArrayList<>());
+	private final @Getter List<File> passedScenarios = Collections.synchronizedList(new ArrayList<>());
+	private final @Getter List<File> autoSavedScenarios = Collections.synchronizedList(new ArrayList<>());
 
 	public TestRunStatus(LarvaConfig larvaConfig, LarvaWriter out) {
 		this.larvaConfig = larvaConfig;
@@ -135,7 +137,31 @@ public class TestRunStatus {
 		return scenariosToRun;
 	}
 
-	public int getScenarioCount() {
+	public void scenarioFailed(File scenarioFile) {
+		failedScenarios.add(scenarioFile);
+	}
+
+	public void scenarioPassed(File scenarioFile) {
+		passedScenarios.add(scenarioFile);
+	}
+
+	public void scenarioAutosaved(File scenarioFile) {
+		autoSavedScenarios.add(scenarioFile);
+	}
+
+	public int getScenariosFailed() {
+		return failedScenarios.size();
+	}
+
+	public int getScenariosPassed() {
+		return passedScenarios.size();
+	}
+
+	public int getScenariosAutosaved() {
+		return autoSavedScenarios.size();
+	}
+
+	public int getScenarioExecuteCount() {
 		return scenariosToRun.size();
 	}
 
@@ -146,8 +172,8 @@ public class TestRunStatus {
 	public @Nullable String buildScenariosPassedMessage(long executionTime) {
 		String formattedTime = LarvaUtil.formatDuration(executionTime);
 
-		int scenariosTotal = getScenarioCount();
-		int scenariosPassed = getScenariosPassed().get();
+		int scenariosTotal = getScenarioExecuteCount();
+		int scenariosPassed = getScenariosPassed();
 
 		if (scenariosPassed == scenariosTotal) {
 			if (scenariosTotal == 1) {
@@ -167,8 +193,8 @@ public class TestRunStatus {
 	public @Nullable String buildScenariosFailedMessage(long executionTime) {
 		String formattedTime = LarvaUtil.formatDuration(executionTime);
 
-		int scenariosTotal = getScenarioCount();
-		int scenariosFailed = getScenariosFailed().get();
+		int scenariosTotal = getScenarioExecuteCount();
+		int scenariosFailed = getScenariosFailed();
 
 		if (scenariosFailed == scenariosTotal) {
 			if (scenariosTotal == 1) {
@@ -188,8 +214,8 @@ public class TestRunStatus {
 	public @Nullable String buildScenariosAutoSavedMessage(long executionTime) {
 		String formattedTime = LarvaUtil.formatDuration(executionTime);
 
-		int scenariosTotal = getScenarioCount();
-		int scenariosAutoSaved = getScenariosAutosaved().get();
+		int scenariosTotal = getScenarioExecuteCount();
+		int scenariosAutoSaved = getScenariosAutosaved();
 
 		if (scenariosAutoSaved == scenariosTotal) {
 			if (scenariosTotal == 1) {
@@ -209,10 +235,10 @@ public class TestRunStatus {
 	public @Nullable String buildScenariosTotalMessage(long executionTime) {
 		String formattedTime = LarvaUtil.formatDuration(executionTime);
 
-		int scenariosTotal = getScenarioCount();
-		int scenariosPassed = getScenariosPassed().get();
-		int scenariosFailed = getScenariosFailed().get();
-		int scenariosAutoSaved = getScenariosAutosaved().get();
+		int scenariosTotal = getScenarioExecuteCount();
+		int scenariosPassed = getScenariosPassed();
+		int scenariosFailed = getScenariosFailed();
+		int scenariosAutoSaved = getScenariosAutosaved();
 
 		if (scenariosPassed == scenariosTotal ||
 				scenariosFailed == scenariosTotal ||

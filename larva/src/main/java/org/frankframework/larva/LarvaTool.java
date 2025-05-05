@@ -203,7 +203,6 @@ public class LarvaTool {
 		}
 		scenarioRunner.runScenarios(scenarioFiles, currentScenariosRootDirectory);
 		writer.flush();
-		int scenariosFailed = testRunStatus.getScenariosFailed().get();
 
 		long executionTime = System.currentTimeMillis() - startTime;
 		printScenarioExecutionStatistics(executionTime);
@@ -211,7 +210,7 @@ public class LarvaTool {
 		testExecutionObserver.endTestSuiteExecution(testRunStatus);
 		CleanerProvider.logLeakStatistics();
 
-		return scenariosFailed;
+		return testRunStatus.getScenariosFailed();
 	}
 
 	public ScenarioRunner createScenarioRunner() {

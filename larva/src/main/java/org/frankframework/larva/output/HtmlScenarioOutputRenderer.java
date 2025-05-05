@@ -106,7 +106,9 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 		}
 		outputMessage.append(LarvaHtmlWriter.encodeForHtml(scenarioResultMessage)).append("</h2>");
 		writeHtml(resultLogLevel, outputMessage.toString(), false);
-		writeHtml("</div>", true);
+
+		// Close the <div> tag created in #startScenario
+		writeHtml(LarvaLogLevel.SCENARIO_PASSED_FAILED,"</div>", true);
 		writer.setBufferOutputMessages(false);
 	}
 

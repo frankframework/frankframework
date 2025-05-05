@@ -94,7 +94,7 @@ public class ScenarioRunner {
 		}
 
 		runScenariosSingleThreaded(singleThreadedScenarios, larvaScenarioRootDirectory);
-		log.info("Summary Larva run Scenario's: {} passed, {} failed. Total: {}", testRunStatus.getScenariosPassed(), testRunStatus.getScenariosFailed(), testRunStatus.getScenarioCount());
+		log.info("Summary Larva run Scenario's: {} passed, {} failed. Total: {}", testRunStatus.getScenariosPassed(), testRunStatus.getScenariosFailed(), testRunStatus.getScenarioExecuteCount());
 	}
 
 	private List<File> runScenariosMultithreaded(String currentScenariosRootDirectory, Map<String, List<File>> filesByFolder) {
@@ -188,7 +188,7 @@ public class ScenarioRunner {
 			String correlationId = TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
 			Map<String, LarvaScenarioAction> larvaActions = actionFactory.createLarvaActions(properties, applicationContext, correlationId);
 			if (larvaActions == null || larvaActions.isEmpty()) {
-				testRunStatus.getScenariosFailed().incrementAndGet();
+				testRunStatus.scenarioFailed(scenarioConfigurationFile);
 				testExecutionObserver.finishScenario(testRunStatus, scenarioName, LarvaTool.RESULT_ERROR, "Could not create LarvaActions");
 				return LarvaTool.RESULT_ERROR;
 			}
@@ -200,7 +200,7 @@ public class ScenarioRunner {
 			larvaTool.debugMessage("Read steps from property file");
 			List<String> stepList = getSteps(properties);
 			if (stepList.isEmpty()) {
-				testRunStatus.getScenariosFailed().incrementAndGet();
+				testRunStatus.scenarioFailed(scenarioConfigurationFile);
 				testExecutionObserver.finishScenario(testRunStatus, scenarioName, LarvaTool.RESULT_ERROR, "No steps found");
 				return LarvaTool.RESULT_ERROR;
 			}
@@ -248,17 +248,17 @@ public class ScenarioRunner {
 			}
 
 			if (scenarioPassed == LarvaTool.RESULT_OK) {
-				testRunStatus.getScenariosPassed().incrementAndGet();
+				testRunStatus.scenarioPassed(scenarioConfigurationFile);
 			} else if (scenarioPassed == LarvaTool.RESULT_AUTOSAVED) {
-				testRunStatus.getScenariosAutosaved().incrementAndGet();
+				testRunStatus.scenarioAutosaved(scenarioConfigurationFile);
 			} else {
-				testRunStatus.getScenariosFailed().incrementAndGet();
+				testRunStatus.scenarioFailed(scenarioConfigurationFile);
 			}
 			testExecutionObserver.finishScenario(testRunStatus, scenarioName, scenarioPassed, buildScenarioFinishedMessage(scenarioName, scenarioDescription, scenarioPassed, 0));
 			return scenarioPassed;
 		} catch (Exception e) {
 			log.warn("Error occurred while creating Larva Scenario Actions", e);
-			testRunStatus.getScenariosFailed().incrementAndGet();
+			testRunStatus.scenarioFailed(scenarioConfigurationFile);
 			testExecutionObserver.finishScenario(testRunStatus, scenarioName, LarvaTool.RESULT_ERROR, "Error occurred while executing Larva Scenario: " + e.getMessage());
 			larvaTool.errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e);
 			return LarvaTool.RESULT_ERROR;
@@ -322,7 +322,7 @@ public class ScenarioRunner {
 		if (larvaConfig.getLogLevel().shouldLog(LarvaLogLevel.DEBUG)) {
 			scenarioResultMessage.append(". Duration: ").append(scenarioDurationMs).append(" ms");
 		}
-		scenarioResultMessage.append(" (").append(testRunStatus.getScenariosFailed()).append('/').append(testRunStatus.getScenariosAutosaved().get() + testRunStatus.getScenariosPassed().get()).append('/').append(testRunStatus.getScenarioCount()).append(')');
+		scenarioResultMessage.append(" (").append(testRunStatus.getScenariosFailed()).append('/').append(testRunStatus.getScenariosAutosaved() + testRunStatus.getScenariosPassed()).append('/').append(testRunStatus.getScenarioExecuteCount()).append(')');
 		return scenarioResultMessage.toString();
 	}
 }
