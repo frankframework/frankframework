@@ -219,7 +219,7 @@ public class LarvaTool {
 
 	private void printScenarioExecutionStatistics(long executionTime) {
 		debugMessage("Print statistics information");
-		testExecutionObserver.executionStatistics(testRunStatus, executionTime);
+		testExecutionObserver.executionOverview(testRunStatus, executionTime);
 	}
 
 	public void debugMessage(String message) {

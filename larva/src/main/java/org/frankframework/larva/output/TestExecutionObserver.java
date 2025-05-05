@@ -22,7 +22,7 @@ public interface TestExecutionObserver {
 
 	void startTestSuiteExecution(TestRunStatus testRunStatus);
 	void endTestSuiteExecution(TestRunStatus testRunStatus);
-	void executionStatistics(TestRunStatus testRunStatus, long executionTime);
+	void executionOverview(TestRunStatus testRunStatus, long executionTime);
 
 	void startScenario(TestRunStatus testRunStatus, Scenario scenario);
 	void finishScenario(TestRunStatus testRunStatus, Scenario scenario, int scenarioResult, String scenarioResultMessage);

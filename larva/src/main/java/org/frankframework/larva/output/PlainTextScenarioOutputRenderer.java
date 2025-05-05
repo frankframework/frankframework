@@ -38,7 +38,7 @@ public class PlainTextScenarioOutputRenderer implements TestExecutionObserver {
 	}
 
 	@Override
-	public void executionStatistics(TestRunStatus testRunStatus, long executionTime) {
+	public void executionOverview(TestRunStatus testRunStatus, long executionTime) {
 		String scenariosPassedMessage = testRunStatus.buildScenariosPassedMessage(executionTime);
 		String scenariosFailedMessage = testRunStatus.buildScenariosFailedMessage(executionTime);
 		String scenariosAutosavedMessage = testRunStatus.buildScenariosAutoSavedMessage(executionTime);

@@ -60,7 +60,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 	}
 
 	@Override
-	public void executionStatistics(TestRunStatus testRunStatus, long executionTime) {
+	public void executionOverview(TestRunStatus testRunStatus, long executionTime) {
 		if (testRunStatus.getScenariosFailedCount() > 0) {
 			writeHtml(LarvaLogLevel.SCENARIO_FAILED, "<br/><br/><div><h1 class='failed'>Failed Scenarios</h1>", false);
 			testRunStatus.getFailedScenarios().forEach(scenario -> writeHtml(LarvaLogLevel.SCENARIO_FAILED, "<h2><a href='#" + scenario.getId() + "'>" + LarvaHtmlWriter.encodeForHtml(scenario.getName() + " - " + scenario.getDescription()) + "</a></h2>", false));
