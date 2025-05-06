@@ -13,10 +13,13 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.SenderException;
 import org.frankframework.management.bus.BusTestEndpoints.ExceptionTestTypes;
 import org.frankframework.testutil.SpringRootInitializer;
 
+@Log4j2
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 public class TestSpringBusExceptionHandling extends BusTestBase {
 
@@ -28,6 +31,7 @@ public class TestSpringBusExceptionHandling extends BusTestBase {
 
 		// Act
 		MessageHandlingException e = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
+		log.debug("testEndpointMessageException exception", e);
 
 		// Assert
 		assertInstanceOf(BusException.class, e.getCause());
@@ -42,6 +46,7 @@ public class TestSpringBusExceptionHandling extends BusTestBase {
 
 		// Act
 		MessageHandlingException e = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
+		log.debug("testEndpointNotFoundException exception", e);
 
 		// Assert
 		assertInstanceOf(BusException.class, e.getCause());
@@ -57,6 +62,7 @@ public class TestSpringBusExceptionHandling extends BusTestBase {
 
 		// Act
 		MessageHandlingException e = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
+		log.debug("testEndpointMessageWithCauseException exception", e);
 
 		// Assert
 		assertInstanceOf(BusException.class, e.getCause());
@@ -71,6 +77,7 @@ public class TestSpringBusExceptionHandling extends BusTestBase {
 
 		// Act
 		MessageHandlingException e = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
+		log.debug("testEndpointCauseException exception", e);
 
 		// Assert
 		assertInstanceOf(SenderException.class, e.getCause());
@@ -85,6 +92,7 @@ public class TestSpringBusExceptionHandling extends BusTestBase {
 
 		// Act
 		MessageHandlingException e = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
+		log.debug("testEndpointMessageWithAuthenticationError exception", e);
 
 		// Assert
 		assertInstanceOf(AuthenticationException.class, e.getCause());
@@ -99,6 +107,7 @@ public class TestSpringBusExceptionHandling extends BusTestBase {
 
 		// Act
 		MessageHandlingException e = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
+		log.debug("testEndpointMessageWithAuthorizationError exception", e);
 
 		// Assert
 		assertInstanceOf(AccessDeniedException.class, e.getCause());
