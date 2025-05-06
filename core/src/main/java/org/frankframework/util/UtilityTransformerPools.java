@@ -29,47 +29,9 @@ import org.frankframework.configuration.ConfigurationException;
 
 public class UtilityTransformerPools {
 
-	private static final String DETECT_VERSION_XSLT = """
-			<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">\
-			<xsl:output method="text"/>\
-			<xsl:template match="/">\
-			<xsl:value-of select="xsl:stylesheet/@version"/>\
-			</xsl:template>\
-			</xsl:stylesheet>\
-			""";
-
-	private static final String MAKE_GET_XSLT_CONFIG_XSLT = """
-			<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">\
-			<xsl:output method="text"/>\
-			<xsl:template match="/">\
-			<xsl:for-each select="/xsl:stylesheet/@*">\
-			<xsl:value-of select="concat(name(),'=',.,';')"/>\
-			</xsl:for-each>\
-			<xsl:for-each select="/xsl:transform/@*">\
-			<xsl:value-of select="concat(name(),'=',.,';')"/>\
-			</xsl:for-each>\
-			<xsl:for-each select="/xsl:stylesheet/xsl:output/@*">\
-			<xsl:value-of select="concat('output-',name(),'=',.,';')"/>\
-			</xsl:for-each>\
-			disable-output-escaping=<xsl:choose>\
-			<xsl:when test="//*[@disable-output-escaping='yes']">yes</xsl:when>\
-			<xsl:otherwise>no</xsl:otherwise>\
-			</xsl:choose>;\
-			</xsl:template>\
-			</xsl:stylesheet>\
-			""";
-
-	private static final String MAKE_GET_ROOT_NAMESPACE_XSLT = """
-			<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">\
-			<xsl:output method="text"/>\
-			<xsl:template match="*">\
-			<xsl:value-of select="namespace-uri()"/>\
-			</xsl:template>\
-			</xsl:stylesheet>\
-			""";
-
 	/** JsonPipe transformation xslt classpath resource */
 	private static final String XML_TO_JSON_XSLT = "/xml/xsl/xml2json.xsl";
+
 	/** Map with utility pools so they can be reused */
 	private static final ConcurrentHashMap<String, TransformerPool> utilityTPs = new ConcurrentHashMap<>();
 
@@ -110,102 +72,150 @@ public class UtilityTransformerPools {
 		return getUtilityTransformerPool(() -> getXsltFromClasspath(XML_TO_JSON_XSLT), "xml2json", true, true, 2);
 	}
 
+	private static String makeDetectXsltVersionXslt() {
+		return
+		"""
+		<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">\
+		<xsl:output method="text"/>\
+		<xsl:template match="/">\
+		<xsl:value-of select="xsl:stylesheet/@version"/>\
+		</xsl:template>\
+		</xsl:stylesheet>\
+		""";
+	}
+
 	public static TransformerPool getDetectXsltVersionTransformerPool() throws TransformerException {
 		try {
-			return getUtilityTransformerPool(() -> UtilityTransformerPools.DETECT_VERSION_XSLT, "DetectXsltVersion", true, false, 2);
+			return getUtilityTransformerPool(UtilityTransformerPools::makeDetectXsltVersionXslt,"DetectXsltVersion",true,false,2);
 		} catch (ConfigurationException e) {
 			throw new TransformerException(e);
 		}
 	}
 
+	private static String makeGetXsltConfigXslt() {
+		return
+		"""
+		<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">\
+		<xsl:output method="text"/>\
+		<xsl:template match="/">\
+		<xsl:for-each select="/xsl:stylesheet/@*">\
+		<xsl:value-of select="concat(name(),'=',.,';')"/>\
+		</xsl:for-each>\
+		<xsl:for-each select="/xsl:transform/@*">\
+		<xsl:value-of select="concat(name(),'=',.,';')"/>\
+		</xsl:for-each>\
+		<xsl:for-each select="/xsl:stylesheet/xsl:output/@*">\
+		<xsl:value-of select="concat('output-',name(),'=',.,';')"/>\
+		</xsl:for-each>\
+		disable-output-escaping=<xsl:choose>\
+		<xsl:when test="//*[@disable-output-escaping='yes']">yes</xsl:when>\
+		<xsl:otherwise>no</xsl:otherwise>\
+		</xsl:choose>;\
+		</xsl:template>\
+		</xsl:stylesheet>\
+		""";
+	}
+
 	public static TransformerPool getGetXsltConfigTransformerPool() throws TransformerException {
 		try {
-			return getUtilityTransformerPool(() -> UtilityTransformerPools.MAKE_GET_XSLT_CONFIG_XSLT, "detectXsltOutputType", true, false, 2);
+			return getUtilityTransformerPool(UtilityTransformerPools::makeGetXsltConfigXslt,"detectXsltOutputType",true,false,2);
 		} catch (ConfigurationException e) {
 			throw new TransformerException(e);
 		}
 	}
 
 	public static TransformerPool getGetRootNodeNameTransformerPool() throws ConfigurationException {
-		return getUtilityTransformerPool(() -> XmlUtils.createXPathEvaluatorSource(XmlUtils.XPATH_GETROOTNODENAME), "GetRootNodeName", true, false, XmlUtils.DEFAULT_XSLT_VERSION);
+		return getUtilityTransformerPool(()->XmlUtils.createXPathEvaluatorSource(XmlUtils.XPATH_GETROOTNODENAME),"GetRootNodeName",true, false, XmlUtils.DEFAULT_XSLT_VERSION);
+	}
+
+	private static String makeGetRootNamespaceXslt() {
+		return
+		"""
+		<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">\
+		<xsl:output method="text"/>\
+		<xsl:template match="*">\
+		<xsl:value-of select="namespace-uri()"/>\
+		</xsl:template>\
+		</xsl:stylesheet>\
+		""";
 	}
 
 	public static TransformerPool getGetRootNamespaceTransformerPool() throws ConfigurationException {
-		return getUtilityTransformerPool(() -> UtilityTransformerPools.MAKE_GET_ROOT_NAMESPACE_XSLT, "GetRootNamespace", true, false, 2);
+		return getUtilityTransformerPool(UtilityTransformerPools::makeGetRootNamespaceXslt,"GetRootNamespace",true,false, 2);
 	}
 
 	private static String makeAddRootNamespaceXslt(String namespace, boolean omitXmlDeclaration, boolean indent) {
 		return
-				"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\" xmlns=\"" + namespace + "\">"
-						+ "<xsl:output method=\"xml\" indent=\"" + (indent ? "yes" : "no") + "\" omit-xml-declaration=\"" + (omitXmlDeclaration ? "yes" : "no") + "\"/>"
-						+ "<xsl:template match=\"/*\">"
-						+ "<xsl:element name=\"{local-name()}\">"
-						+ "<xsl:apply-templates select=\"@* | comment() | node()\"/>"
-						+ "</xsl:element>"
-						+ "</xsl:template>"
-						+ "<xsl:template match=\"*\">"
-						+ "<xsl:choose>"
-						+ "<xsl:when test=\"namespace-uri() = namespace-uri(/*)\">"
-						+ "<xsl:element name=\"{local-name()}\">"
-						+ "<xsl:apply-templates select=\"@* | comment() | node()\"/>"
-						+ "</xsl:element>"
-						+ "</xsl:when>"
-						+ "<xsl:otherwise>"
-						+ "<xsl:element namespace=\"{namespace-uri()}\" name=\"{local-name()}\">"
-						+ "<xsl:apply-templates select=\"@* | comment() | node()\"/>"
-						+ "</xsl:element>"
-						+ "</xsl:otherwise>"
-						+ "</xsl:choose>"
-						+ "</xsl:template>"
-						+ "<xsl:template match=\"@*\">"
-						+ "<xsl:copy-of select=\".\"/>"
-						+ "</xsl:template>"
-						+ "<xsl:template match=\"comment()\">"
-						+ "<xsl:copy-of select=\".\"/>"
-						+ "</xsl:template>"
-						+ "</xsl:stylesheet>";
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\" xmlns=\""+namespace+"\">"
+			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
+			+ "<xsl:template match=\"/*\">"
+			+ "<xsl:element name=\"{local-name()}\">"
+			+ "<xsl:apply-templates select=\"@* | comment() | node()\"/>"
+			+ "</xsl:element>"
+			+ "</xsl:template>"
+			+ "<xsl:template match=\"*\">"
+			+ "<xsl:choose>"
+			+ "<xsl:when test=\"namespace-uri() = namespace-uri(/*)\">"
+			+ "<xsl:element name=\"{local-name()}\">"
+			+ "<xsl:apply-templates select=\"@* | comment() | node()\"/>"
+			+ "</xsl:element>"
+			+ "</xsl:when>"
+			+ "<xsl:otherwise>"
+			+ "<xsl:element namespace=\"{namespace-uri()}\" name=\"{local-name()}\">"
+			+ "<xsl:apply-templates select=\"@* | comment() | node()\"/>"
+			+ "</xsl:element>"
+			+ "</xsl:otherwise>"
+			+ "</xsl:choose>"
+			+ "</xsl:template>"
+			+ "<xsl:template match=\"@*\">"
+			+ "<xsl:copy-of select=\".\"/>"
+			+ "</xsl:template>"
+			+ "<xsl:template match=\"comment()\">"
+			+ "<xsl:copy-of select=\".\"/>"
+			+ "</xsl:template>"
+			+ "</xsl:stylesheet>";
 	}
 
 	public static TransformerPool getAddRootNamespaceTransformerPool(String namespace, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
-		return getUtilityTransformerPool(() -> UtilityTransformerPools.makeAddRootNamespaceXslt(namespace, omitXmlDeclaration, indent), "AddRootNamespace[" + namespace + "]", omitXmlDeclaration, indent, 1);
+		return getUtilityTransformerPool(()->UtilityTransformerPools.makeAddRootNamespaceXslt(namespace,omitXmlDeclaration,indent),"AddRootNamespace["+namespace+"]",omitXmlDeclaration,indent, 1);
 	}
 
 	private static String makeChangeRootXslt(String root, boolean omitXmlDeclaration, boolean indent) {
 		return
-				"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
-						+ "<xsl:output method=\"xml\" indent=\"" + (indent ? "yes" : "no") + "\" omit-xml-declaration=\"" + (omitXmlDeclaration ? "yes" : "no") + "\"/>"
-						+ "<xsl:template match=\"/*\">"
-						+ "<xsl:element name=\"" + root + "\" namespace=\"{namespace-uri()}\">"
-						+ "<xsl:for-each select=\"@*\">"
-						+ "<xsl:attribute name=\"{name()}\"><xsl:value-of select=\".\"/></xsl:attribute>"
-						+ "</xsl:for-each>"
-						+ "<xsl:copy-of select=\"*\"/>"
-						+ "</xsl:element>"
-						+ "</xsl:template>"
-						+ "</xsl:stylesheet>";
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
+			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
+			+ "<xsl:template match=\"/*\">"
+			+ "<xsl:element name=\""+root+"\" namespace=\"{namespace-uri()}\">"
+			+ "<xsl:for-each select=\"@*\">"
+			+ "<xsl:attribute name=\"{name()}\"><xsl:value-of select=\".\"/></xsl:attribute>"
+			+ "</xsl:for-each>"
+			+ "<xsl:copy-of select=\"*\"/>"
+			+ "</xsl:element>"
+			+ "</xsl:template>"
+			+ "</xsl:stylesheet>";
 	}
 
 	public static TransformerPool getChangeRootTransformerPool(String root, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
-		return getUtilityTransformerPool(() -> UtilityTransformerPools.makeChangeRootXslt(root, omitXmlDeclaration, indent), "ChangeRoot[" + root + "]", omitXmlDeclaration, indent, 1);
+		return getUtilityTransformerPool(()->UtilityTransformerPools.makeChangeRootXslt(root,omitXmlDeclaration,indent),"ChangeRoot["+root+"]",omitXmlDeclaration,indent, 1);
 	}
 
 	private static String makeRemoveUnusedNamespacesXslt(boolean omitXmlDeclaration, boolean indent) {
 		return
-				"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
-						+ "<xsl:output method=\"xml\" indent=\"" + (indent ? "yes" : "no") + "\" omit-xml-declaration=\"" + (omitXmlDeclaration ? "yes" : "no") + "\"/>"
-						+ "<xsl:template match=\"*\">"
-						+ "<xsl:element name=\"{local-name()}\" namespace=\"{namespace-uri()}\">"
-						+ "<xsl:apply-templates select=\"@* | node()\"/>"
-						+ "</xsl:element>"
-						+ "</xsl:template>"
-						+ "<xsl:template match=\"@* | comment() | processing-instruction() | text()\">"
-						+ "<xsl:copy/>"
-						+ "</xsl:template>"
-						+ "</xsl:stylesheet>";
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
+			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
+			+ "<xsl:template match=\"*\">"
+			+ "<xsl:element name=\"{local-name()}\" namespace=\"{namespace-uri()}\">"
+			+ "<xsl:apply-templates select=\"@* | node()\"/>"
+			+ "</xsl:element>"
+			+ "</xsl:template>"
+			+ "<xsl:template match=\"@* | comment() | processing-instruction() | text()\">"
+			+ "<xsl:copy/>"
+			+ "</xsl:template>"
+			+ "</xsl:stylesheet>";
 	}
 
 	public static TransformerPool getRemoveUnusedNamespacesTransformerPool(boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
-		return getUtilityTransformerPool(() -> UtilityTransformerPools.makeRemoveUnusedNamespacesXslt(omitXmlDeclaration, indent), "RemoveUnusedNamespaces", omitXmlDeclaration, indent, 1);
+		return getUtilityTransformerPool(()->UtilityTransformerPools.makeRemoveUnusedNamespacesXslt(omitXmlDeclaration,indent),"RemoveUnusedNamespaces",omitXmlDeclaration,indent, 1);
 	}
 
 	private static String makeRemoveUnusedNamespacesXslt2(boolean omitXmlDeclaration, boolean indent) {
@@ -246,7 +256,7 @@ public class UtilityTransformerPools {
 	}
 
 	public static TransformerPool getRemoveUnusedNamespacesXslt2TransformerPool(boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
-		return getUtilityTransformerPool(() -> makeRemoveUnusedNamespacesXslt2(omitXmlDeclaration, indent), "RemoveUnusedNamespacesXslt2", omitXmlDeclaration, indent, 2);
+		return getUtilityTransformerPool(()->makeRemoveUnusedNamespacesXslt2(omitXmlDeclaration,indent),"RemoveUnusedNamespacesXslt2",omitXmlDeclaration,indent, 2);
 	}
 
 	private static String makeCopyOfSelectXslt(String xpath, boolean omitXmlDeclaration, boolean indent) {
@@ -263,7 +273,7 @@ public class UtilityTransformerPools {
 	}
 
 	public static TransformerPool getCopyOfSelectTransformerPool(String xpath, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
-		return getUtilityTransformerPool(() -> UtilityTransformerPools.makeCopyOfSelectXslt(xpath, omitXmlDeclaration, indent), "CopyOfSelect[" + xpath + "]", omitXmlDeclaration, indent, 2);
+		return getUtilityTransformerPool(()->UtilityTransformerPools.makeCopyOfSelectXslt(xpath,omitXmlDeclaration,indent),"CopyOfSelect["+xpath+"]",omitXmlDeclaration,indent, 2);
 	}
 
 }

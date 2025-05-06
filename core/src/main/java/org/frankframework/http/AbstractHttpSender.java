@@ -319,8 +319,16 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 
 	protected boolean validateResponseCode(int statusCode) {
 		return StringUtils.isNotEmpty(getResultStatusCodeSessionKey())
-				|| (statusCode == 200 || statusCode == 201 || statusCode == 202 || statusCode == 204 || statusCode == 206)
-				|| (isIgnoreRedirects() && (statusCode == HttpServletResponse.SC_MOVED_PERMANENTLY || statusCode == HttpServletResponse.SC_MOVED_TEMPORARILY || statusCode == HttpServletResponse.SC_TEMPORARY_REDIRECT));
+				|| isStatus2xx(statusCode)
+				|| isIgnoreRedirect(statusCode);
+	}
+
+	private boolean isStatus2xx(int statusCode) {
+		return statusCode == 200 || statusCode == 201 || statusCode == 202 || statusCode == 204 || statusCode == 206;
+	}
+
+	private boolean isIgnoreRedirect(int statusCode) {
+		return isIgnoreRedirects() && (statusCode == HttpServletResponse.SC_MOVED_PERMANENTLY || statusCode == HttpServletResponse.SC_MOVED_TEMPORARILY || statusCode == HttpServletResponse.SC_TEMPORARY_REDIRECT);
 	}
 
 	@Override
