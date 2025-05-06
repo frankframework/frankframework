@@ -34,6 +34,17 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.util.AppConstants;
 
+/**
+ * Keep track of the status of a test-run.
+ * <p>
+ * This class also tracks the scenario directories and all scenarios found, and the scenarios to run.
+ * The actual loading of scenario data is delegated to the {@link ScenarioLoader}.
+ * </p>>
+ * <p>
+ *     The TestRunStatus uses the {@link LarvaConfig} to find the configured {@link LarvaConfig#getActiveScenariosDirectory()}
+ *     and the {@link LarvaWriter} for debug messages.
+ * </p>
+ */
 @Log4j2
 public class TestRunStatus {
 	private final @Getter LarvaConfig larvaConfig;

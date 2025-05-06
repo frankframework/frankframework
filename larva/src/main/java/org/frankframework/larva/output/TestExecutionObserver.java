@@ -18,6 +18,13 @@ package org.frankframework.larva.output;
 import org.frankframework.larva.Scenario;
 import org.frankframework.larva.TestRunStatus;
 
+/**
+ * Interface to allow an observer to act on events during the execution of Larva tests.
+ * Typically, this will be rendering some form of output for a particular output medium -- such as HTML, or plaintext, or different.
+ * <p>
+ *     The current LarvaTool allows for only a single TestExecutionObserver per LarvaTool instance, which is passed to it as a constructor parameter.
+ * </p>
+ */
 public interface TestExecutionObserver {
 
 	void startTestSuiteExecution(TestRunStatus testRunStatus);

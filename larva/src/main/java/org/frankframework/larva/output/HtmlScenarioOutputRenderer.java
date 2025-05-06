@@ -27,6 +27,16 @@ import org.frankframework.larva.Scenario;
 import org.frankframework.larva.TestRunStatus;
 import org.frankframework.util.XmlEncodingUtils;
 
+/**
+ * The HtmlScenarioOutputRenderer class is responsible for rendering HTML output during the execution
+ * of tests in the Larva test tool. It implements the {@link TestExecutionObserver}
+ * interface to observe and react to different phases and events of test execution. This class is primarily used to
+ * provide detailed, structured HTML output for a given test suite, scenarios, steps, and their results.
+ * <p>
+ * The renderer operates based on the provided configuration and handles writing HTML content
+ * using an accompanying LarvaHtmlWriter instance.
+ * </p>
+ */
 public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 
 	private static final String TR_STARTING_TAG="<tr>";

@@ -21,6 +21,13 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.AppConstants;
 
+/**
+ * Larva Configuration options to control Larva behaviour.
+ * <p>
+ *     Most classes will need access to the configuration for settings of the Larva instance.
+ *     The configuration can always be accessed from the {@link LarvaTool} instance.
+ * </p>
+ */
 @Log4j2
 public class LarvaConfig {
 	static final int GLOBAL_TIMEOUT_MILLIS = AppConstants.getInstance().getInt("larva.timeout", 10_000);

@@ -28,6 +28,25 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.larva.LarvaConfig;
 import org.frankframework.larva.LarvaLogLevel;
 
+/**
+ * Output specific for Larva. Wraps around an {@link OutputStream}, or a {@link Writer}.
+ * <p>
+ * Output can be regular output messages, or log-output that should be shown to the user.
+ * Both are written to the same output stream,
+ * but each can be temporarily written to a buffer instead of the output stream in order not
+ * to mix up log messages with regular messages when that would not be appropriate. (This feature
+ * is copied from the old Larva code).
+ * </p>
+ * <p>
+ *     Most classes in Larva will need the LarvaWriter in order to write log messages that are used in user-feedback.
+ *     Some classes will need access to the LarvaWriter to write regular messages -- mostly these will be
+ *     implementations of {@link TestExecutionObserver} that will write user-output about
+ *     the status of test execution.
+ * </p>
+ * <p>
+ *     The LarvaWriter can always be access from the {@link org.frankframework.larva.LarvaTool} instance if required.
+ * </p>
+ */
 @Log4j2
 public class LarvaWriter {
 	private final @Getter LarvaConfig larvaConfig;

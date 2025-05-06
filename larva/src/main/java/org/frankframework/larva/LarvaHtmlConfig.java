@@ -20,6 +20,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Larva extra configuration options for HTML output and will parse all the LarvaConfig options from the HTTP Servlet Request.
+ */
 public class LarvaHtmlConfig extends LarvaConfig {
 	public static final String REQUEST_PARAM_LOG_LEVEL = "loglevel";
 	public static final String REQUEST_PARAM_AUTO_SCROLL = "autoscroll";

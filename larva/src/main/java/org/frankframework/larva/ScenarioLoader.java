@@ -36,12 +36,20 @@ import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringResolver;
 
+/**
+ * Load scenario data for a given scenario file.
+ * <p>
+ *     Scenario files can include other files. Included files are cached
+ *     per instance of the ScenarioLoader.
+ * </p>
+ */
 @Log4j2
 public class ScenarioLoader {
 	private static final String LEGACY_PACKAGE_NAME_LARVA = "org.frankframework.testtool.";
 	private static final String CURRENT_PACKAGE_NAME_LARVA = "org.frankframework.larva.";
+	public static final int SCENARIO_CACHE_SIZE = 20;
 
-	private final Map<File, Properties> scenarioFileCache = new LRUMap<>(20);
+	private final Map<File, Properties> scenarioFileCache = new LRUMap<>(SCENARIO_CACHE_SIZE);
 
 	private final LarvaWriter out;
 

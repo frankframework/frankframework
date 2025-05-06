@@ -28,6 +28,10 @@ import org.frankframework.larva.LarvaHtmlConfig;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.util.XmlEncodingUtils;
 
+/**
+ * Writer for Larva output that has HTML specific features and encodes output for HTML
+ * when it's not marked HTML already.
+ */
 public class LarvaHtmlWriter extends LarvaWriter {
 
 	/**
