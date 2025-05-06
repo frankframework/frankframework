@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.frankframework.processors;
 import jakarta.annotation.Nonnull;
 
 import io.micrometer.core.instrument.DistributionSummary;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
@@ -27,13 +28,11 @@ import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.stream.Message;
 import org.frankframework.util.Misc;
 
-/**
- * @author Jaco de Groot
- */
+@Log4j2
 public class CheckMessageSizePipeProcessor extends AbstractPipeProcessor {
 
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		checkMessageSize(message.size(), pipeLine, pipe, true);
 		PipeRunResult pipeRunResult = chain.apply(message);
 
@@ -55,7 +54,7 @@ public class CheckMessageSizePipeProcessor extends AbstractPipeProcessor {
 			}
 
 			if (pipeLine.getMessageSizeWarnNum() >= 0 && messageLength >= pipeLine.getMessageSizeWarnNum()) {
-				log.warn("pipe [{}] of adapter [{}], {} message size [{}] exceeds [{}]", pipe.getName(), pipeLine.getOwner().getName(), (input ? "input" : "result"), Misc.toFileSize(messageLength), Misc.toFileSize(pipeLine.getMessageSizeWarnNum()));
+				log.warn("{} message size [{}] exceeds [{}]", ()-> (input ? "input" : "result"), () -> Misc.toFileSize(messageLength), () -> Misc.toFileSize(pipeLine.getMessageSizeWarnNum()));
 				pipe.throwEvent(IPipe.MESSAGE_SIZE_MONITORING_EVENT);
 			}
 		}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package org.frankframework.processors;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
@@ -33,8 +32,7 @@ import org.frankframework.util.Locker;
 public class LockerPipeProcessor extends AbstractPipeProcessor {
 
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
-		PipeRunResult pipeRunResult;
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
 		String objectId;
 		Locker locker = pipe.getLocker();
 		if (locker == null) {
@@ -50,7 +48,7 @@ public class LockerPipeProcessor extends AbstractPipeProcessor {
 			throw new PipeRunException(pipe, "could not obtain lock [" + locker + "]");
 		}
 		try {
-			pipeRunResult = chain.apply(message);
+			return chain.apply(message);
 		} finally {
 			try {
 				locker.release(objectId);
@@ -58,7 +56,6 @@ public class LockerPipeProcessor extends AbstractPipeProcessor {
 				throw new PipeRunException(pipe, "error while removing lock", e);
 			}
 		}
-		return pipeRunResult;
 	}
 
 }
