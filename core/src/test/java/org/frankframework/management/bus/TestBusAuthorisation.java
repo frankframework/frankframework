@@ -1,11 +1,12 @@
 package org.frankframework.management.bus;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
@@ -34,20 +35,14 @@ public class TestBusAuthorisation extends BusTestBase {
 	@WithMockUser(authorities = { "ROLE_IbisObserver" })
 	public void callTestEndpointUnAuthorised() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.MANAGE);
-		try {
-			callSyncGateway(request);
-		} catch (Exception e) {
-			assertTrue(e.getCause() instanceof AccessDeniedException);
-		}
+		Exception e = assertThrows(Exception.class, () -> callSyncGateway(request));
+		assertTrue(e.getCause() instanceof AuthorizationDeniedException);
 	}
 
 	@Test
 	public void callTestEndpointNoUser() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.MANAGE);
-		try {
-			callSyncGateway(request);
-		} catch (Exception e) {
-			assertTrue(e.getCause() instanceof AuthenticationCredentialsNotFoundException);
-		}
+		Exception e = assertThrows(Exception.class, () -> callSyncGateway(request));
+		assertTrue(e.getCause() instanceof AuthenticationCredentialsNotFoundException);
 	}
 }
