@@ -15,12 +15,16 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.testutil.QuerySenderPostProcessor;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.StringUtil;
 
+@Log4j2
 public class BusTestBase {
 
 	private Configuration configuration;
@@ -95,8 +99,11 @@ public class BusTestBase {
 	}
 
 	public final Message<?> callSyncGateway(MessageBuilder<?> input) {
+		log.info("sending request: {}", input);
 		OutboundGateway gateway = getParentContext().getBean("gateway", LocalGateway.class);
 		Message<?> response = gateway.sendSyncMessage(input.build());
+		log.info("received response: {}", () -> StringUtil.reflectionToString(response));
+
 		if(response != null) {
 			return response;
 		}
@@ -145,6 +152,11 @@ public class BusTestBase {
 
 		public Message<T> build() {
 			return new GenericMessage<>(payload, headers);
+		}
+
+		@Override
+		public String toString() {
+			return StringUtil.reflectionToString(this);
 		}
 	}
 }
