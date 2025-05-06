@@ -1,6 +1,7 @@
 package org.frankframework.management.bus;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -36,13 +37,13 @@ public class TestBusAuthorisation extends BusTestBase {
 	public void callTestEndpointUnAuthorised() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.MANAGE);
 		Exception e = assertThrows(Exception.class, () -> callSyncGateway(request));
-		assertTrue(e.getCause() instanceof AuthorizationDeniedException);
+		assertInstanceOf(AuthorizationDeniedException.class, e.getCause());
 	}
 
 	@Test
 	public void callTestEndpointNoUser() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.MANAGE);
 		Exception e = assertThrows(Exception.class, () -> callSyncGateway(request));
-		assertTrue(e.getCause() instanceof AuthenticationCredentialsNotFoundException);
+		assertInstanceOf(AuthenticationCredentialsNotFoundException.class, e.getCause());
 	}
 }
