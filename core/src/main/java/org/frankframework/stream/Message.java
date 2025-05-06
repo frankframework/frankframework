@@ -856,7 +856,7 @@ public class Message implements Serializable, Closeable {
 		}
 	}
 
-	public static boolean isNull(Message message) {
+	public static boolean isNull(@Nullable Message message) {
 		return message == null || message.isNull();
 	}
 

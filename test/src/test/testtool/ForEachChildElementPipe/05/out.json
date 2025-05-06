@@ -1,6 +1,7 @@
 {
     "message": "<results>\n<result item=\"1\">\n<reply>goodbye</reply>\n</result>\n<result item=\"2\">\n<request>mdc local</request>\n</result>\n<result item=\"3\">\n<request>mdc export</request>\n</result>\n<result item=\"4\">\n<request>mdc local</request>\n</result>\n</results>",
 	"messageContext": {
+        "Pipeline.PreviousPipe": "ForEachChildElementPipe_Record"
 	},
     "logContext": {
         "listener.type": "JavaListener",
@@ -9,6 +10,7 @@
         "pipeline.duration": "3",
         "mdc1": "mdc1_value_export",
         "listener": "listener of [JavaListener]",
+        "mid": "synthetic-message-id-0a000a6f-65f825e8_1968bf8b863_-7ad3",
         "mdc_export": "mdc_export_value",
         "pipe": "echo",
         "cid": "Test Tool correlation id(5)"
