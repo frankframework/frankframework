@@ -16,7 +16,6 @@ import java.util.stream.Stream;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.ServletContext;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -180,7 +179,7 @@ public class RunLarvaTests {
 
 	private DynamicTest convertLarvaScenarioToTest(Scenario scenario) {
 		// Scenario name always computed from the scenario root dir to be understandable without context of immediate parent
-		String scenarioName = FilenameUtils.normalize(scenario.getName(), true);
+		String scenarioName = scenario.getName();
 		return DynamicTest.dynamicTest(
 				scenarioName, scenario.getScenarioFile().toURI(), () -> {
 					System.out.println("Running scenario: [" + scenarioName + "]");

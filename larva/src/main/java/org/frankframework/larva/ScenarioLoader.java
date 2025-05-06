@@ -16,7 +16,6 @@
 package org.frankframework.larva;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -27,6 +26,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.collections4.map.LRUMap;
+import org.apache.commons.io.FilenameUtils;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -58,10 +58,13 @@ public class ScenarioLoader {
 	}
 
 
-	public Map<Scenario.ID, Scenario> readScenarioFiles(String scenariosDirectory) {
+	public @Nonnull Map<Scenario.ID, Scenario> readScenarioFiles(@Nonnull String scenariosDirectory) {
 		long start = System.currentTimeMillis();
 		try {
-			return readScenarioFiles(scenariosDirectory, scenariosDirectory, AppConstants.getInstance());
+			// Suffix with file-separator for getting the right length for stripping down scenario names.
+			String dirNameToUse = scenariosDirectory.endsWith(File.separator) ? scenariosDirectory : scenariosDirectory + File.separator;
+
+			return readScenarioFiles(dirNameToUse, dirNameToUse, AppConstants.getInstance());
 		} finally {
 			long end = System.currentTimeMillis();
 			String duration = LarvaUtil.formatDuration(end - start);
@@ -75,16 +78,6 @@ public class ScenarioLoader {
 		out.debugMessage("List all files in directory '" + scenariosDirectory + "'");
 
 		File directory = new File(scenariosDirectory);
-		Path targetPath = directory.toPath().normalize();
-
-		if (!directory.toPath().normalize().startsWith(targetPath)) {
-			String message = "Scenarios directory is outside of the target directory";
-			log.warn(message);
-			out.errorMessage(message);
-
-			return scenarioFiles;
-		}
-
 		File[] files = directory.listFiles();
 		if (files == null) {
 			out.debugMessage("Could not read files from directory '" + scenariosDirectory + "'");
@@ -105,7 +98,7 @@ public class ScenarioLoader {
 				String active = properties.getProperty("scenario.active", "true");
 				String unstable = properties.getProperty("adapter.unstable", "false");
 				if ("true".equalsIgnoreCase(active) && "false".equalsIgnoreCase(unstable)) {
-					String name = scenarioFilePath.substring(baseDirectory.length(), scenarioFilePath.length() - ".properties".length());
+					String name = FilenameUtils.normalize(scenarioFilePath.substring(baseDirectory.length(), scenarioFilePath.length() - ".properties".length()), true);
 					Scenario scenario = new Scenario(scenarioFile, name, description);
 					scenarioFiles.put(scenario.getId(), scenario);
 				}
@@ -117,17 +110,23 @@ public class ScenarioLoader {
 		return scenarioFiles;
 	}
 
-	public @Nullable Properties readScenarioProperties(@Nonnull File propertyFile, @Nonnull AppConstants appConstants) {
-		return readScenarioProperties(propertyFile, appConstants, true);
+	/**
+	 * Read the properties of a scenario file.
+	 * @param scenarioFile The scenario file to read
+	 * @param appConstants {@link AppConstants} to be used for resolving propertes in scenarios
+	 * @return The properties read from the scenario file.
+	 */
+	public @Nullable Properties readScenarioProperties(@Nonnull File scenarioFile, @Nonnull AppConstants appConstants) {
+		return readScenarioProperties(scenarioFile, appConstants, true);
 	}
 
-	public @Nullable Properties readScenarioProperties(@Nonnull File propertiesFile, @Nullable AppConstants appConstants, boolean root) {
-		if (scenarioFileCache.containsKey(propertiesFile)) {
-			return scenarioFileCache.get(propertiesFile);
+	private @Nullable Properties readScenarioProperties(@Nonnull File scenarioFile, @Nullable AppConstants appConstants, boolean root) {
+		if (scenarioFileCache.containsKey(scenarioFile)) {
+			return scenarioFileCache.get(scenarioFile);
 		}
-		String directory = new File(propertiesFile.getAbsolutePath()).getParent();
+		String directory = scenarioFile.getParentFile().getAbsolutePath();
 		try {
-			Properties properties = LarvaUtil.readProperties(out, propertiesFile);
+			Properties properties = LarvaUtil.readProperties(out, scenarioFile);
 			Properties includedProperties = new Properties();
 			int i = 0;
 			String includeFilename = properties.getProperty("include");
@@ -154,7 +153,7 @@ public class ScenarioLoader {
 				return fixLegacyClassnames(properties);
 			} else {
 				// Only cache included files since they are most likely to be frequently read. Root files would just pollute the cache.
-				scenarioFileCache.put(propertiesFile, properties);
+				scenarioFileCache.put(scenarioFile, properties);
 				return properties;
 			}
 		} catch(Exception e) {
@@ -189,11 +188,7 @@ public class ScenarioLoader {
 		}
 	}
 
-	@Nullable
-	private static Properties fixLegacyClassnames(@Nullable Properties properties) {
-		if (properties == null) {
-			return null;
-		}
+	private static @Nonnull Properties fixLegacyClassnames(@Nonnull Properties properties) {
 		Map<Object, Object> collected = properties.entrySet().stream()
 				.map(ScenarioLoader::rewriteClassName)
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
