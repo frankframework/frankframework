@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -26,15 +25,15 @@ import org.frankframework.testutil.SpringRootInitializer;
 @Log4j2
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 public class TestSpringBusExceptionHandling extends BusTestBase {
-	private static final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
+	private static final SecurityContextHolderStrategy SECURITY_CONTEXT_HOLDER = SecurityContextHolder.getContextHolderStrategy();
 
 	/**
 	 * Clean up the Spring SecurityContext before all tests.
+	 * See ThreadLocalSecurityContextHolderStrategy.clearContext() for details.
 	 */
 	@BeforeAll
 	static void beforeAll() {
-		SecurityContext context = securityContextHolderStrategy.createEmptyContext();
-		securityContextHolderStrategy.setContext(context);
+		SECURITY_CONTEXT_HOLDER.clearContext();
 	}
 
 	@Test
