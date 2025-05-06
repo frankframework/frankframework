@@ -15,6 +15,8 @@
 */
 package org.frankframework.core;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import lombok.Getter;
@@ -70,6 +72,7 @@ public class PipeRunResult implements AutoCloseable {
 		this.result = result;
 	}
 
+	@Nonnull
 	public Message getResult() {
 		if (result == null) {
 			return Message.nullMessage();
