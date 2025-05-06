@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package org.frankframework.processors;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IValidator;
@@ -31,7 +30,7 @@ import org.frankframework.stream.Message;
  */
 public interface PipeProcessor {
 
-	PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException;
-	PipeRunResult validate(@Nonnull PipeLine pipeLine, @Nonnull IValidator validator, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException;
+	PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException;
+	PipeRunResult validate(@Nonnull PipeLine pipeLine, @Nonnull IValidator validator, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException;
 
 }
