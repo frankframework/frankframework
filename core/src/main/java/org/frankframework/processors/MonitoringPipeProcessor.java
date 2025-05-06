@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2024 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,12 +16,9 @@
 package org.frankframework.processors;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 import io.micrometer.core.instrument.DistributionSummary;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
@@ -30,19 +27,13 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.stream.Message;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
 
-/**
- * @author Jaco de Groot
- */
+@Log4j2
 public class MonitoringPipeProcessor extends AbstractPipeProcessor {
-	private final Logger durationLog = LogUtil.getLogger("LongDurationMessages");
 
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
 		long pipeStartTime = System.currentTimeMillis();
-		doDebugLogging(pipeLine, pipe, message, pipeLineSession);
 
 		try {
 			return chain.apply(message);
@@ -51,35 +42,16 @@ public class MonitoringPipeProcessor extends AbstractPipeProcessor {
 			throw pre;
 		} catch (RuntimeException re) {
 			pipe.throwEvent(IPipe.PIPE_EXCEPTION_MONITORING_EVENT);
-			throw new PipeRunException(pipe, "Uncaught runtime exception running pipe '" + pipe.getName() + "'", re);
+			throw new PipeRunException(pipe, "uncaught runtime exception while executing pipe", re);
 		} finally {
 			long pipeDuration = System.currentTimeMillis() - pipeStartTime;
 			DistributionSummary summary = pipeLine.getPipeStatistics(pipe);
 			summary.record(pipeDuration);
 
 			if (pipe.getDurationThreshold() >= 0 && pipeDuration > pipe.getDurationThreshold()) {
-				durationLog.info("Pipe [{}] of [{}] duration [{}] ms exceeds max [{}], message [{}]", pipe::getName, () -> pipeLine.getOwner().getName(), () -> pipeDuration, pipe::getDurationThreshold, () -> message);
-				pipe.throwEvent(IPipe.LONG_DURATION_MONITORING_EVENT);
+				log.warn("message [{}] duration [{}] ms exceeds maximum allowed threshold of [{}]", message::getObjectId, () -> pipeDuration, pipe::getDurationThreshold);
+				pipe.throwEvent(IPipe.LONG_DURATION_MONITORING_EVENT, message);
 			}
 		}
 	}
-
-	private void doDebugLogging(final PipeLine pipeLine, final IPipe pipe, Message message, PipeLineSession pipeLineSession) {
-		if (!log.isDebugEnabled()) {
-			return;
-		}
-		String ownerName = pipeLine.getOwner() == null ? "<null>" : pipeLine.getOwner().getName();
-		StringBuilder sb = new StringBuilder();
-		sb.append("Pipeline of adapter [").append(ownerName).append("] messageId [").append(pipeLineSession.getMessageId()).append("] is about to call pipe [").append(pipe.getName()).append("]");
-
-		boolean lir = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", false);
-		if (StringUtils.isNotEmpty(pipe.getLogIntermediaryResults())) {
-			lir = Boolean.parseBoolean(pipe.getLogIntermediaryResults());
-		}
-		if (lir) {
-			sb.append(" current result ").append(message == null ? "<null>" : "(" + message.getClass().getSimpleName() + ") [" + message + "]").append(" ");
-		}
-		log.debug(sb.toString());
-	}
-
 }
