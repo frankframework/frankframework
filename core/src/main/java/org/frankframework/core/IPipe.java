@@ -148,7 +148,7 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 	void setRestoreMovedElements(boolean restoreMovedElements);
 	boolean isRestoreMovedElements();
 
-	/** If durationThreshold >=0 and the duration of the message processing exceeded the value specified (in milliseconds) the message is logged informatory to be analyzed
+	/** If durationThreshold >=0 and the duration of the message processing exceeded the value specified (in milliseconds) the message will be logged and a monitor event will be fired.
 	 * @ff.default -1
 	 */
 	void setDurationThreshold(long maxDuration);

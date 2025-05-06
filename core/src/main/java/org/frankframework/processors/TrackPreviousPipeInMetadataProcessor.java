@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package org.frankframework.processors;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
@@ -24,7 +23,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
-import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 
@@ -37,23 +35,12 @@ import org.frankframework.stream.MessageContext;
 public class TrackPreviousPipeInMetadataProcessor extends AbstractPipeProcessor {
 
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession,
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession,
 										@Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
-		PipeRunResult pipeRunResult = chain.apply(message);
 
-		if (message != null && logPreviousPipe(pipe, message, pipeLineSession)) {
-			message.getContext().put(MessageContext.CONTEXT_PREVIOUS_PIPE, pipe.getName());
-		}
+		PipeRunResult pipeRunResult = chain.apply(message);
+		pipeRunResult.getResult().getContext().put(MessageContext.CONTEXT_PREVIOUS_PIPE, pipe.getName());
 
 		return pipeRunResult;
-	}
-
-	private boolean logPreviousPipe(IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
-		// FixedForwardPipe pipes can be skipped, if it's skipped, we don't need to update the 'previous pipe' value
-		if (pipe instanceof FixedForwardPipe ffPipe) {
-			return !ffPipe.skipPipe(message, pipeLineSession);
-		} else {
-			return true;
-		}
 	}
 }

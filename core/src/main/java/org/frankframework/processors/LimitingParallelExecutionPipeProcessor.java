@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2024 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
 import io.micrometer.core.instrument.DistributionSummary;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IValidator;
@@ -35,44 +35,49 @@ import org.frankframework.stream.Message;
 
 /**
  * Processor that limits the number of parallel pipe threads.
- * @author Jaco de Groot
  */
+@Log4j2
 public class LimitingParallelExecutionPipeProcessor extends AbstractPipeProcessor {
 
 	private final Map<IPipe, ResourceLimiter> pipeThreadCounts = new ConcurrentHashMap<>();
 
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
 		ResourceLimiter threadCountLimiter = getThreadLimiter(pipe);
 		if (threadCountLimiter == null) { // no restrictions on the maximum number of threads
 			return chain.apply(message);
 		}
-		long waitingDuration;
+
+		final long waitingDuration;
 		try {
 			// keep waiting statistics for thread-limited pipes
 			long startWaiting = System.currentTimeMillis();
 			threadCountLimiter.acquire();
+
+			// If a ResourceLimiter is present, we need to wait for the thread to be available.
+			log.trace("ResourceLimiter acquired a thread");
 			waitingDuration = System.currentTimeMillis() - startWaiting;
 			DistributionSummary summary = pipeLine.getPipeWaitStatistics(pipe);
 			summary.record(waitingDuration);
 			return chain.apply(message);
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
-			throw new PipeRunException(pipe, "Interrupted acquiring Pipe thread count limiter", e);
+			throw new PipeRunException(pipe, "interrupted acquiring pipe thread count limiter", e);
 		} finally {
 			threadCountLimiter.release();
+			log.trace("ResourceLimiter released a thread");
 		}
 	}
 
-	// method needs to be overridden to enable AOP for debugger
 	@Override
-	public PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
+	@SuppressWarnings("java:S1185") // method needs to be overridden to enable AOP for debugger
+	public PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
 		return super.processPipe(pipeLine, pipe, message, pipeLineSession);
 	}
 
-	// method needs to be overridden to enable AOP for debugger
 	@Override
-	public PipeRunResult validate(@Nonnull PipeLine pipeLine, @Nonnull IValidator validator, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
+	@SuppressWarnings("java:S1185") // method needs to be overridden to enable AOP for debugger
+	public PipeRunResult validate(@Nonnull PipeLine pipeLine, @Nonnull IValidator validator, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
 		return super.validate(pipeLine, validator, message, pipeLineSession, messageRoot);
 	}
 
