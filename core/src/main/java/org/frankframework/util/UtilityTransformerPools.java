@@ -35,16 +35,22 @@ public class UtilityTransformerPools {
 	/** Map with utility pools so they can be reused */
 	private static final ConcurrentHashMap<String, TransformerPool> utilityTPs = new ConcurrentHashMap<>();
 
+	private UtilityTransformerPools() {
+		// Don't construct utility class
+	}
+
 	private static TransformerPool getUtilityTransformerPool(Supplier<String> xsltSupplier, String key, boolean omitXmlDeclaration, boolean indent, int xsltVersion) throws ConfigurationException {
 		String fullKey = key + "-" + omitXmlDeclaration + "-" + indent;
 		try {
-			return utilityTPs.computeIfAbsent(fullKey, ignored -> {
-				try {
-					return TransformerPool.getUtilityInstance(xsltSupplier.get(), xsltVersion);
-				} catch (TransformerConfigurationException te) {
-					throw Lombok.sneakyThrow(te);
-				}
-			});
+			return utilityTPs.computeIfAbsent(
+					fullKey, ignored -> {
+						try {
+							return TransformerPool.getUtilityInstance(xsltSupplier.get(), xsltVersion);
+						} catch (TransformerConfigurationException te) {
+							throw Lombok.sneakyThrow(te);
+						}
+					}
+			);
 		} catch (Exception e) {
 			throw new ConfigurationException("Could not create TransformerPool for [" + key + "]", e);
 		}

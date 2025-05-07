@@ -40,17 +40,17 @@
 		<!-- DB Driver Versions -->
 		<h2.driver.version>2.3.232</h2.driver.version>
 		<db2.driver.version>11.5.9.0</db2.driver.version>
-		<oracle.driver.version>23.7.0.25.01</oracle.driver.version>
+		<oracle.driver.version>23.8.0.25.04</oracle.driver.version>
 		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
 		<mssql.driver.version>12.10.0.jre11</mssql.driver.version>
-		<mysql.driver.version>9.1.0</mysql.driver.version>
+		<mysql.driver.version>9.3.0</mysql.driver.version>
 		<mariadb.driver.version>3.5.3</mariadb.driver.version>
 		<postgresql.driver.version>42.7.5</postgresql.driver.version>
-		<mongodb.driver.version>5.4.0</mongodb.driver.version>
+		<mongodb.driver.version>5.5.0</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>6.1.6</activemq.driver.version>
-		<artemis.driver.version>2.40.0</artemis.driver.version>
+		<artemis.driver.version>2.41.0</artemis.driver.version>
 
 		<rabbitmq.driver.version>5.25.0</rabbitmq.driver.version>
 		<rabbitmq.jms.version>3.4.0</rabbitmq.jms.version>
@@ -408,7 +408,7 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-bom</artifactId>
-				<version>4.2.0.Final</version>
+				<version>4.2.1.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -811,7 +811,8 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>3.5.3</version>
+					<!-- Surefire 3.5.3 has a bug and does not report properly on dynamic larva tests -->
+					<version>3.5.2</version>
 					<configuration>
 						<redirectTestOutputToFile>true</redirectTestOutputToFile>
 						<reuseForks>true</reuseForks>
@@ -1049,7 +1050,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>10.23.0</version>
+							<version>10.23.1</version>
 						</dependency>
 					</dependencies>
 				</plugin>

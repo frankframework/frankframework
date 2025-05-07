@@ -181,7 +181,7 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 
 	@Override
 	public SecurityFilterChain configureHttpSecurity(HttpSecurity http) throws Exception {
-		Set<String> endpointSet = new HashSet(privateEndpoints);
+		Set<String> endpointSet = new HashSet<>(privateEndpoints);
 		endpointSet.addAll(publicEndpoints);
 
 		RequestMatcher securityRequestMatcher = new URLRequestMatcher(endpointSet);
@@ -190,7 +190,7 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 		http.securityMatcher(securityRequestMatcher);
 
 		// STATELESS prevents session from leaking over multiple servlets.
-		// The Ladybug (echo2) however requires cookie persistence. Hence it's set to NEVER
+		// The Ladybug (echo2) however requires cookie persistence. Hence, it's set to NEVER
 		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.NEVER));
 
 		if (!publicEndpoints.isEmpty()) { // Enable anonymous access on public endpoints

@@ -81,11 +81,11 @@ public class LarvaPushingListenerAction extends AbstractLarvaAction<IPushingList
 			context = getSession();
 		}
 
-		ListenerMessage listenerMessage = new ListenerMessage(fileContent, context);
-		listenerMessageHandler.putResponseMessage(listenerMessage);
+		listenerMessageHandler.putResponseMessage(new ListenerMessage(fileContent, context));
 	}
 
 	@Override
+	@SuppressWarnings("java:S1117")
 	public Message executeRead(Properties properties) throws TimeoutException, ListenerException {
 		ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessageWithDefaultTimeout();
 

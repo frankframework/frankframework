@@ -15,6 +15,15 @@
 */
 package org.frankframework.processors;
 
+import jakarta.annotation.Nonnull;
+
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.HasSender;
 import org.frankframework.core.HasTransactionAttribute;
 import org.frankframework.core.IPipe;
@@ -29,23 +38,14 @@ import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.stream.Message;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.ClassUtils;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import lombok.Getter;
-import lombok.Setter;
-
-/**
- * @author Jaco de Groot
- */
+@Log4j2
 public class TransactionAttributePipeProcessor extends AbstractPipeProcessor {
 
 	private @Getter @Setter PlatformTransactionManager txManager;
 
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeline, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeline, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		TransactionDefinition txDef;
 		int txTimeout = 0;
 		if(pipe instanceof HasTransactionAttribute taPipe) {
@@ -54,14 +54,16 @@ public class TransactionAttributePipeProcessor extends AbstractPipeProcessor {
 		} else {
 			txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS, txTimeout);
 		}
+
 		IbisTransaction itx = new IbisTransaction(txManager, txDef, "pipe [" + pipe.getName() + "]");
 		boolean isTxCapable = hasTxCapableSender(pipe);
+		log.debug("executing pipe with transaction definition [{}] in {} TX environment with timeout [{}]", txDef, (isTxCapable ? "global" : "local"), txTimeout);
 		try {
 			if(isTxCapable && itx.isRollbackOnly()) {
 				throw new PipeRunException(pipe, "unable to execute SQL statement, transaction has been marked as failed by an earlier sender");
 			}
 
-			return execute(pipeline, pipe, message, chain, txTimeout);
+			return executePipeProcess(pipe, message, chain, txTimeout);
 
 		} catch (Error | RuntimeException | PipeRunException ex) {
 			if(isTxCapable) {
@@ -72,7 +74,7 @@ public class TransactionAttributePipeProcessor extends AbstractPipeProcessor {
 			if(isTxCapable) {
 				itx.setRollbackOnly();
 			}
-			throw new PipeRunException(pipe, "Caught unknown checked exception", e);
+			throw new PipeRunException(pipe, "caught unknown checked exception", e);
 		} finally {
 			itx.complete();
 		}
@@ -86,8 +88,8 @@ public class TransactionAttributePipeProcessor extends AbstractPipeProcessor {
 		return false;
 	}
 
-	private PipeRunResult execute(PipeLine pipeLine, IPipe pipe, Message message, ThrowingFunction<Message, PipeRunResult, PipeRunException> chain, int txTimeout) throws Exception {
-		TimeoutGuard tg = new TimeoutGuard("pipeline of adapter [" + pipeLine.getOwner().getName() + "] running pipe ["+pipe.getName()+"]");
+	private PipeRunResult executePipeProcess(IPipe pipe, Message message, ThrowingFunction<Message, PipeRunResult, PipeRunException> chain, int txTimeout) throws Exception {
+		TimeoutGuard tg = new TimeoutGuard("transactional timeout guard for pipe [" + pipe.getName() + "]");
 		Exception tCaught = null;
 		try {
 			tg.activateGuard(txTimeout);

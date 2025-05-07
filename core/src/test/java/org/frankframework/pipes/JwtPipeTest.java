@@ -139,7 +139,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 
 		// The resulting JWT signatures should be identical
 		assertValidTokenSignature(jwt1, RIGHT_PADDED_SHORT_SECRET);
-		assertValidTokenSignature(jwt2, RIGHT_PADDED_SHORT_SECRET);;
+		assertValidTokenSignature(jwt2, RIGHT_PADDED_SHORT_SECRET);
 	}
 
 	@Test

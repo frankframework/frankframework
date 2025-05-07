@@ -1,0 +1,9 @@
+<result>
+	<statuscode>200</statuscode>
+	<message>
+		<du directory="/[CP code]/sampledir" du-info="unknown">
+			<files files="1524068379"/>
+			<bytes bytes="1524110333"/>
+		</du>
+	</message>
+</result>

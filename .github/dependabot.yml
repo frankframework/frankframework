@@ -8,8 +8,6 @@ updates:
     labels:
       - "Dependencies"
       - "Java"
-    reviewers:
-      - frankframework/maintainers
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
