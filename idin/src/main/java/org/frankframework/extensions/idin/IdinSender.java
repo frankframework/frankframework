@@ -80,6 +80,7 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 
 	private @Getter boolean tls12Enabled=true;
 	private @Getter String keyStoreLocation = null;
+	private CredentialFactory keyStoreCredentials = null;
 
 	private @Getter String iDinConfigurationXML = null;
 	private @Getter String merchantReturnUrl = null;
@@ -90,9 +91,11 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	private @Getter String acquirerStatusUrl = null;
 
 	private @Getter String merchantCertificateAlias = null;
+	private @Getter CredentialFactory merchantCertificateCredentials = null;
 	private @Getter String acquirerCertificateAlias = null;
 	private @Getter String acquirerAlternativeCertificateAlias = null;
 	private @Getter String samlCertificateAlias = null;
+	private @Getter CredentialFactory samlCertificateCredentials = null;
 
 	private @Getter boolean logsEnabled = false;
 	private @Getter boolean serviceLogsEnabled = false;
@@ -100,22 +103,6 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	private @Getter String serviceLogsPattern = "%Y-%M-%D\\%h%m%s.%f-%a.xml";
 
 	private Action action = Action.DIRECTORY;
-
-	private CredentialSettings keysStoreCredentialSettings = new CredentialSettings();
-	private CredentialSettings merchantCredentialSettings = new CredentialSettings();
-	private CredentialSettings samlCredentialSettings = new CredentialSettings();
-
-	public String getKeyStorePassword() {
-		return keysStoreCredentialSettings.getPassword();
-	}
-
-	public String getMerchantCertificatePassword() {
-		return merchantCredentialSettings.getPassword();
-	}
-
-	public String getSAMLCertificatePassword() {
-		return samlCredentialSettings.getPassword();
-	}
 
 	public enum Action {
 		DIRECTORY, RESPONSE, AUTHENTICATE
@@ -169,14 +156,14 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 
 		if(StringUtils.isNotEmpty(getKeyStoreLocation())) {
 			idinConfig.setKeyStoreLocation(getKeyStoreLocation());
-			if(StringUtils.isNotEmpty(keysStoreCredentialSettings.getPassword()))
-				idinConfig.setKeyStorePassword(keysStoreCredentialSettings.getPassword());
+			if(StringUtils.isNotEmpty(getKeyStorePassword()))
+				idinConfig.setKeyStorePassword(getKeyStorePassword());
 		}
 
 		if(StringUtils.isNotEmpty(getMerchantCertificateAlias())) {
 			idinConfig.setMerchantCertificateAlias(getMerchantCertificateAlias());
-			if(StringUtils.isNotEmpty(merchantCredentialSettings.getPassword()))
-				idinConfig.setMerchantCertificatePassword(merchantCredentialSettings.getPassword());
+			if(StringUtils.isNotEmpty(getMerchantCertificatePassword()))
+				idinConfig.setMerchantCertificatePassword(getMerchantCertificatePassword());
 		}
 
 		if(StringUtils.isNotEmpty(getAcquirerCertificateAlias()))
@@ -186,8 +173,8 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 
 		if(StringUtils.isNotEmpty(getSamlCertificateAlias())) {
 			idinConfig.setSamlCertificateAlias(getSamlCertificateAlias());
-			if(StringUtils.isNotEmpty(samlCredentialSettings.getPassword()))
-				idinConfig.setSamlCertificatePassword(samlCredentialSettings.getPassword());
+			if(StringUtils.isNotEmpty(getSAMLCertificatePassword()))
+				idinConfig.setSamlCertificatePassword(getSAMLCertificatePassword());
 		}
 
 		if(isLogsEnabled())
@@ -202,7 +189,7 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 		idinConfig.setTls12Enabled(isTls12Enabled());
 
 		try {
-			idinConfig.Setup(idinConfig); // Somehow required to set up the KeyStoreKeyProviderFactory.
+			idinConfig.Setup(idinConfig); // Somehow required to setup the KeyStoreKeyProviderFactory.
 		} catch (IOException e) {
 			throw new ConfigurationException("unable to setup keyProvider");
 		}
@@ -226,23 +213,23 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 			}
 		} else {
 			config = new Configuration(getMerchantID(),
-										getMerchantSubID(),
-										getMerchantReturnUrl(),
-										getKeyStoreLocation(),
-										keysStoreCredentialSettings.getPassword(),
-										getMerchantCertificateAlias(),
-										merchantCredentialSettings.getPassword(),
-										getAcquirerCertificateAlias(),
-										getAcquirerAlternativeCertificateAlias(),
-										getAcquirerDirectoryUrl(),
-										getAcquirerTransactionUrl(),
-										getAcquirerStatusUrl(),
-										isLogsEnabled(),
-										isServiceLogsEnabled(),
-										getServiceLogsLocation(),
-										getServiceLogsPattern(),
-										isTls12Enabled(),
-										null);
+					getMerchantSubID(),
+					getMerchantReturnUrl(),
+					getKeyStoreLocation(),
+					getKeyStorePassword(),
+					getMerchantCertificateAlias(),
+					getMerchantCertificatePassword(),
+					getAcquirerCertificateAlias(),
+					getAcquirerAlternativeCertificateAlias(),
+					getAcquirerDirectoryUrl(),
+					getAcquirerTransactionUrl(),
+					getAcquirerStatusUrl(),
+					isLogsEnabled(),
+					isServiceLogsEnabled(),
+					getServiceLogsLocation(),
+					getServiceLogsPattern(),
+					isTls12Enabled(),
+					null);
 		}
 		return config;
 	}
@@ -546,6 +533,7 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 		this.merchantReturnUrl = merchantReturnUrl;
 	}
 
+
 	/**
 	 * @param acquirerDirectoryUrl The web address of the Acquirer's Routing service platform from where the
 	 * list of Issuers is retrieved (using a directory request).
@@ -570,6 +558,7 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 		this.acquirerStatusUrl = acquirerStatusUrl;
 	}
 
+
 	/**
 	 * The Java iDIN Software Library needs to access a keystore located in the Java classpath to
 	 * store all the required certificates
@@ -586,15 +575,20 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	 * @param keyStorePassword The password for the keystore
 	 */
 	public void setKeyStorePassword(String keyStorePassword) {
-		this.keysStoreCredentialSettings.setPassword(keyStorePassword);
+		this.keyStoreCredentials = new CredentialFactory(null, null, keyStorePassword);
 	}
-
 	/**
 	 * The AuthAlias used to access the keystore
 	 * @param keyStoreAuthAlias The AuthAlias that contains the password for the keystore
 	 */
 	public void setKeyStoreAuthAlias(String keyStoreAuthAlias) {
-		this.keysStoreCredentialSettings.setAuthAlias(keyStoreAuthAlias);
+		this.keyStoreCredentials = new CredentialFactory(keyStoreAuthAlias);
+	}
+	public String getKeyStorePassword() {
+		if(keyStoreCredentials == null)
+			return null;
+
+		return keyStoreCredentials.getPassword();
 	}
 
 	/**
@@ -616,15 +610,20 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	 * @param merchantCertificatePassword The password for the Merchant Certificate
 	 */
 	public void setMerchantCertificatePassword(String merchantCertificatePassword) {
-		this.merchantCredentialSettings.setPassword(merchantCertificatePassword);
+		this.merchantCertificateCredentials = new CredentialFactory(null, null, merchantCertificatePassword);
 	}
-
 	/**
 	 * In case the merchant certificate has been password protected
 	 * @param merchantCertificateAuthAlias The AuthAlias that contains the password for the Merchant Certificate
 	 */
 	public void setMerchantCertificateAuthAlias(String merchantCertificateAuthAlias) {
-		this.merchantCredentialSettings.setAuthAlias(merchantCertificateAuthAlias);
+		this.merchantCertificateCredentials = new CredentialFactory(merchantCertificateAuthAlias);
+	}
+	public String getMerchantCertificatePassword() {
+		if(merchantCertificateCredentials == null)
+			return null;
+
+		return merchantCertificateCredentials.getPassword();
 	}
 
 	/**
@@ -632,7 +631,7 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	 * only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically
 	 * has the file extension .cer,.crt or .pem.
 	 *
-	 * @param acquirerCertificateAlias: The alias assigned to the Acquirer's certificate in the keystore.
+	 * @param acquirerCertificateAlias : The alias assigned to the Acquirer's certificate in the keystore.
 	 * This could be the alias you supplied explicitly when importing an existing certificate in the keystore,
 	 * or it could be an alias automatically assigned by the keytool application.
 	 */
@@ -645,7 +644,7 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	 * only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically
 	 * has the file extension .cer,.crt or .pem.
 	 *
-	 * @param acquirerAlternativeCertificateAlias: The alias assigned to the Acquirer's certificate in the keystore.
+	 * @param acquirerAlternativeCertificateAlias : The alias assigned to the Acquirer's certificate in the keystore.
 	 * This could be the alias you supplied explicitly when importing an existing certificate in the keystore,
 	 * or it could be an alias automatically assigned by the keytool application.
 	 */
@@ -671,15 +670,22 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	 * @param samlCertificatePassword The password for the SAML Certificate
 	 */
 	public void setSAMLCertificatePassword(String samlCertificatePassword) {
-		this.samlCredentialSettings.setPassword(samlCertificatePassword);
+		this.samlCertificateCredentials = new CredentialFactory(null, null, samlCertificatePassword);
 	}
 	/**
 	 * In case the SAML certificate has been password protected
 	 * @param samlCertificateAuthAlias The AuthAlias that contains the password for the SAML Certificate
 	 */
 	public void setSAMLCertificateAuthAlias(String samlCertificateAuthAlias) {
-		this.samlCredentialSettings.setAuthAlias(samlCertificateAuthAlias);
+		this.samlCertificateCredentials = new CredentialFactory(samlCertificateAuthAlias);
 	}
+	public String getSAMLCertificatePassword() {
+		if(samlCertificateCredentials == null)
+			return null;
+
+		return samlCertificateCredentials.getPassword();
+	}
+
 
 	public void setLogsEnabled(boolean logsEnabled) {
 		this.logsEnabled = logsEnabled;
@@ -717,28 +723,5 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	@Mandatory
 	public void setConfigurationXML(String iDinConfigurationXML) {
 		this.iDinConfigurationXML = iDinConfigurationXML;
-	}
-
-	/**
-	 * Container class for the credential settings. Please note that when using an alias, a credential factory will be used.
-	 * This takes precedence over the password if set.
-	 */
-	private static class CredentialSettings {
-		private CredentialFactory credentialFactory;
-		private @Setter String password;
-		private @Getter String authAlias;
-
-		public void setAuthAlias(String authAlias) {
-			this.authAlias = authAlias;
-			this.credentialFactory = new CredentialFactory(authAlias);
-		}
-
-		public String getPassword() {
-			if (credentialFactory == null) {
-				return password;
-			}
-
-			return credentialFactory.getPassword();
-		}
 	}
 }
