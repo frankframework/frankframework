@@ -195,11 +195,12 @@ public class SecurityItems extends BusEndpointBase {
 			Map<String, Object> ae = new HashMap<>();
 
 			ae.put("alias", authAlias);
-			CredentialFactory cf = new CredentialFactory(authAlias);
 
 			String userName;
 			String passWord;
 			try {
+				CredentialFactory cf = new CredentialFactory(authAlias);
+
 				userName = cf.getUsername();
 				passWord = cf.getPassword();
 				passWord = passWord==null ? "no password found" : StringUtils.repeat("*", cf.getPassword().length());
