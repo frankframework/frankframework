@@ -36,6 +36,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.Resource;
 import org.frankframework.doc.Category;
+import org.frankframework.doc.Mandatory;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
@@ -43,8 +44,6 @@ import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 
 /**
  * Pipe that validates the input message against a JSON Schema. 
- * If no schema is provided, the pipe will only check whether the input is valid JSON, without applying any schema validation. 
- *
  * @author Gerrit van Brakel
  */
 @Category(Category.Type.BASIC)
@@ -119,7 +118,6 @@ public class JsonValidator extends AbstractValidator {
 		}
 	}
 
-
 	protected JsonSchema getJsonSchema() throws IOException {
 		String schemaName = getSchema();
 		Resource schemaRes = Resource.getResource(this, schemaName);
@@ -131,6 +129,7 @@ public class JsonValidator extends AbstractValidator {
 	}
 
 	/** The JSON Schema to validate to */
+	@Mandatory
 	public void setSchema(String schema) {
 		this.schema=schema;
 	}
