@@ -91,7 +91,7 @@ public class KubernetesCredentialFactory implements ICredentialFactory {
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
+	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) throws NoSuchElementException {
 		if (StringUtils.isEmpty(alias)) {
 			return new Credentials(null, defaultUsernameSupplier, defaultPasswordSupplier);
 		}
