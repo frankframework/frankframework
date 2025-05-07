@@ -42,7 +42,8 @@ import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 
 
 /**
- * Pipe that validates the input message against a JSON Schema.
+ * Pipe that validates the input message against a JSON Schema. 
+ * If no schema is provided, the pipe will only check whether the input is valid JSON, without applying any schema validation. 
  *
  * @author Gerrit van Brakel
  */
@@ -135,7 +136,8 @@ public class JsonValidator extends AbstractValidator {
 	}
 
 	/**
-	 * Prefix to element name to find subschema in schema
+	 * The subSchemaPrefix is an optional attribute used when referencing a subschema located in a nested structure, such as $defs or definitions. 
+	 * Adding only the subSchema attribute is not enough if your schema organizes definitions in nested objects. Add root attribute to complete the process.
 	 * @ff.default /definitions/
 	 */
 	public void setSubSchemaPrefix(String prefix) {
@@ -143,7 +145,7 @@ public class JsonValidator extends AbstractValidator {
 	}
 
 	/**
-	 * If set: key of session variable to store reasons of mis-validation in
+	 * If set: creates a sessionKey to store any errors when validating the json output
 	 * @ff.default failureReason
 	 */
 	public void setReasonSessionKey(String reasonSessionKey) {
