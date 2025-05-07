@@ -65,7 +65,7 @@ public class WildFlyCredentialFactory implements ICredentialFactory {
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
+	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) throws NoSuchElementException {
 		CredentialStore cs = getCredentialStore(credentialStore);
 		if (cs==null) {
 			throw new NoSuchElementException("CredentialStore [" + credentialStore + "] not found");

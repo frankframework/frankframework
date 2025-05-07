@@ -221,7 +221,7 @@ Performance enhancements
 - Add log settings page
 - Add validator and wrapper statistics
 - Auto detect namedParameters in the query
-- Add plugable CredentialProviders, including FileSystemCredentialProvider/AnsibleVaultCredentialFactory
+- Add pluggable CredentialProviders, including FileSystemCredentialProvider/AnsibleVaultCredentialFactory
 - Fix default datasource support for JdbcTableListener
 - Refactor Monitoring
 - Support programmatic retry

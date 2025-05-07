@@ -70,8 +70,7 @@ public class FileSystemCredentials extends Credentials {
 					throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: alias not found");
 				}
 			} catch (IOException e) {
-				NoSuchElementException nsee = new NoSuchElementException("cannot obtain credentials from authentication alias [" + getAlias() + "]", e);
-				throw nsee;
+				throw new NoSuchElementException("cannot obtain credentials from authentication alias [" + getAlias() + "]", e);
 			}
 		}
 	}

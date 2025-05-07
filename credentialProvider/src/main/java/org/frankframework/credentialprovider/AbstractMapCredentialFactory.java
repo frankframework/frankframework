@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -83,7 +84,7 @@ public abstract class AbstractMapCredentialFactory implements ICredentialFactory
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
+	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) throws NoSuchElementException {
 		return new MapCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier, usernameSuffix, passwordSuffix, aliases);
 	}
 
