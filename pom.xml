@@ -812,7 +812,7 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
 					<!-- Surefire 3.5.3 has a bug and does not report properly on dynamic larva tests -->
-					<version>3.5.2</version>
+					<version>3.5.3</version>
 					<configuration>
 						<redirectTestOutputToFile>true</redirectTestOutputToFile>
 						<reuseForks>true</reuseForks>
