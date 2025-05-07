@@ -50,29 +50,29 @@ public class ConditionalPipelineCallerTest {
 	}
 
 	Receiver<String> setupReceiver(JavaListener<String> listener) {
-		Receiver<String> receiver = configuration.createBean();
-		receiver.setListener(listener);
-		receiver.setName("receiver");
+		Receiver<String> receiverBean = configuration.createBean();
+		receiverBean.setListener(listener);
+		receiverBean.setName("receiver");
 		DummySender sender = configuration.createBean();
-		receiver.setSender(sender);
+		receiverBean.setSender(sender);
 
 		NarayanaJtaTransactionManager transactionManager = configuration.createBean();
-		receiver.setTxManager(transactionManager);
+		receiverBean.setTxManager(transactionManager);
 
-		return receiver;
+		return receiverBean;
 	}
 
 	JavaListener<String> setupJavaListener() {
-		JavaListener<String> listener = spy(configuration.createBean(JavaListener.class));
-		listener.setReturnedSessionKeys(SESSION_VALUE_ECHO_PIPE_CALLED);
-		listener.setThrowException(true);
+		JavaListener<String> listenerBean = spy(configuration.createBean(JavaListener.class));
+		listenerBean.setReturnedSessionKeys(SESSION_VALUE_ECHO_PIPE_CALLED);
+		listenerBean.setThrowException(true);
 
-		return listener;
+		return listenerBean;
 	}
 
 	<M> Adapter setupAdapter(Receiver<M> receiver) throws Exception {
-		Adapter adapter = spy(configuration.createBean(Adapter.class));
-		adapter.setName("ReceiverTestAdapterName");
+		Adapter adapterBean = spy(configuration.createBean(Adapter.class));
+		adapterBean.setName("ReceiverTestAdapterName");
 
 		// Correctly chain the pipe processors
 		CorePipeLineProcessor pipeLineProcessor = new CorePipeLineProcessor();
@@ -100,11 +100,11 @@ public class ConditionalPipelineCallerTest {
 		ple.setName("success");
 		ple.setState(PipeLine.ExitState.SUCCESS);
 		pl.addPipeLineExit(ple);
-		adapter.setPipeLine(pl);
+		adapterBean.setPipeLine(pl);
 
-		adapter.addReceiver(receiver);
-		configuration.addAdapter(adapter);
-		return adapter;
+		adapterBean.addReceiver(receiver);
+		configuration.addAdapter(adapterBean);
+		return adapterBean;
 	}
 
 	void startAdapter() throws ConfigurationException {
@@ -116,7 +116,7 @@ public class ConditionalPipelineCallerTest {
 	}
 
 	@AfterEach
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		CloseUtils.closeSilently(session, configuration);
 	}
 

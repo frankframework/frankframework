@@ -25,7 +25,6 @@ import org.springframework.context.ApplicationContext;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.IPullingListener;
 import org.frankframework.core.IPushingListener;
@@ -100,7 +99,7 @@ public class LarvaActionFactory {
 		return larvaActions;
 	}
 
-	private static LarvaScenarioAction create(IConfigurable configurable, Properties actionProperties, int defaultTimeout, String correlationId) throws ConfigurationException {
+	private static LarvaScenarioAction create(IConfigurable configurable, Properties actionProperties, int defaultTimeout, String correlationId) {
 		final AbstractLarvaAction<?> larvaAction;
 		if (configurable instanceof IPullingListener pullingListener) {
 			larvaAction = new PullingListenerAction(pullingListener);
