@@ -54,7 +54,7 @@ public class OAuthAccessTokenRequestTest {
 		httpSender.start();
 
 		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_QUERY_PARAMETERS.newAuthenticator(httpSender);
-		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getBasicCredentials(), new ArrayList<>());
+		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getDomainAwareCredentials(), new ArrayList<>());
 
 		assertEquals("POST", request.getMethod());
 		assertHeaderPresent(request, "Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
@@ -74,7 +74,7 @@ public class OAuthAccessTokenRequestTest {
 		httpSender.start();
 
 		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
-		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getBasicCredentials(), new ArrayList<>());
+		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getDomainAwareCredentials(), new ArrayList<>());
 
 		assertEquals("POST", request.getMethod());
 		assertHeaderPresent(request, "Authorization", BASE_64);
@@ -96,7 +96,7 @@ public class OAuthAccessTokenRequestTest {
 		httpSender.start();
 
 		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS.newAuthenticator(httpSender);
-		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getBasicCredentials(), new ArrayList<>());
+		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getDomainAwareCredentials(), new ArrayList<>());
 
 		assertEquals("POST", request.getMethod());
 		assertHeaderPresent(request, "Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
@@ -118,7 +118,7 @@ public class OAuthAccessTokenRequestTest {
 		httpSender.start();
 
 		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
-		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getBasicCredentials(), new ArrayList<>());
+		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getDomainAwareCredentials(), new ArrayList<>());
 
 		assertEquals("POST", request.getMethod());
 		assertHeaderPresent(request, "Authorization", BASE_64);
@@ -180,7 +180,7 @@ public class OAuthAccessTokenRequestTest {
 
 		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.SAML_ASSERTION.newAuthenticator(httpSender);
 		oauthAuthenticator.configure();
-		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getBasicCredentials(), new ArrayList<>());
+		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getDomainAwareCredentials(), new ArrayList<>());
 
 		final String body = StreamUtil.streamToString(request.getEntity().getContent(), "\n", "UTF-8");
 		final String decodedBody = URLDecoder.decode(body, StandardCharsets.UTF_8);
