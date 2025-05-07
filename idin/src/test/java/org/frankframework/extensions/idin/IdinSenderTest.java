@@ -2,6 +2,7 @@ package org.frankframework.extensions.idin;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
@@ -13,6 +14,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.crypto.dsig.DigestMethod;
@@ -34,11 +36,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.extensions.idin.IdinSender.Action;
-import org.frankframework.stream.Message;
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.StreamUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
@@ -47,6 +44,13 @@ import net.bankid.merchant.library.CommunicatorException;
 import net.bankid.merchant.library.Configuration;
 import net.bankid.merchant.library.IMessenger;
 import net.bankid.merchant.library.SigningKeyPair;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.extensions.idin.IdinSender.Action;
+import org.frankframework.stream.Message;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.StreamUtil;
 
 /**
  * Initially I thought, hey lets add some unittests...
@@ -113,6 +117,18 @@ public class IdinSenderTest {
 	}
 
 	@Test
+	public void testCredentialsAliasesToPasswordMappings() {
+		sender.setKeyStoreAuthAlias("alias1");
+		assertEquals("password1", sender.getKeyStorePassword());
+
+		sender.setMerchantCertificateAuthAlias("alias1");
+		assertEquals("password1", sender.getMerchantCertificatePassword());
+
+		sender.setSAMLCertificateAuthAlias("alias1");
+		assertEquals("password1", sender.getSAMLCertificatePassword());
+	}
+
+	@Test
 	public void testXmlConfigurationFile() throws Exception {
 		String message = "<idin><transactionID>1111111111111111</transactionID></idin>";
 
@@ -144,6 +160,39 @@ public class IdinSenderTest {
 				</result>\
 				""";
 		assertEquals(expected, result);
+	}
+
+	/**
+	 * Previously, this relied on (invalid) use of CredentialFactory, which is now changed and results in unexpected exceptions. All these
+	 * setters should work without any exceptions.
+	 *
+	 * @throws ConfigurationException
+	 */
+	@Test
+	void testCertificateSettingsCanBeSet() throws ConfigurationException {
+		sender.setConfigurationXML("configs/minimal-config.xml"); // A minimal config with log setting is required
+
+		// These were never set
+		sender.setMerchantID("1234567890");
+		sender.setMerchantReturnUrl("http://localhost");
+		sender.setAcquirerStatusUrl("http://example.com/status");
+
+		// Override the keystore and password
+		sender.setKeyStoreLocation("certificates/BankID2020.Libs.sha256.2048.csp.jks");
+		sender.setKeyStorePassword("123456");
+
+		sender.setMerchantCertificatePassword("123456");
+
+		// Alias doesn't exist
+		assertThrows(NoSuchElementException.class, () -> sender.setMerchantCertificateAuthAlias("bankid"));
+
+		sender.setSAMLCertificatePassword("123456");
+
+		// Alias does exist
+		sender.setSAMLCertificateAuthAlias("alias1");
+
+		sender.setAction(Action.RESPONSE);
+		sender.configure();
 	}
 
 	@Test

@@ -30,39 +30,70 @@ import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 /**
- * Factory for Kubernetes Credentials. Fetches credentials from Kubernetes secrets.
- * Adding a Kubernetes secret can be done by executing:
+ * <p>CredentialFactory for Kubernetes Credentials. Fetches credentials from Kubernetes secrets.</p>
+ *
+ * <p>The credentials are stored in Kubernetes secrets, which are base64 encoded. The keys used for the secrets are "username" and "password".</p>
+ *
+ * <p>The `KubernetesCredentialFactory` class uses several properties to configure its behavior. These properties are set in the
+ * {@code credentialproperties.properties} file and are used to customize the connection to the Kubernetes cluster and the namespace from which secrets are
+ * fetched. Here's a description of the properties:</p>
+ * <ul>
+ *     <li>{@code credentialFactory.kubernetes.username} - the username for authenticating with the Kubernetes cluster</li>
+ *     <li>{@code credentialFactory.kubernetes.password} - the password for authenticating with the Kubernetes cluster</li>
+ *     <li>{@code credentialFactory.kubernetes.masterUrl} - the master URL of the Kubernetes cluster</li>
+ *     <li>{@code credentialFactory.kubernetes.namespace} - the namespace from which secrets should be fetched (default value: 'default')</li>
+ * </ul>
+ *
+ * <p>Example configuration:</p>
+ * <pre>{@code
+ * credentialFactory.kubernetes.username=admin
+ * credentialFactory.kubernetes.password=example-password
+ * credentialFactory.kubernetes.masterUrl=http://localhost:8080
+ * credentialFactory.kubernetes.namespace=my-namespace
+ * }</pre>
+ *
+ * <p>By setting these properties, you can control how the `KubernetesCredentialFactory` interacts with the Kubernetes cluster and retrieves credentials.</p>
+ *
+ * <p>Adding a Kubernetes secret can be done by executing:
+ * <pre>{@code
  * kubectl create secret generic db-alias-name \
  * --from-literal=username=admin --from-literal=password='example-password'
- * It caches the secrets for a certain amount of time, to prevent unnecessary calls to the Kubernetes API.
+ * }</pre>
+ * </p>
+ *
+ * @ff.info The credentials are cached for 60 seconds, to prevent unnecessary calls to the Kubernetes API.
  */
 public class KubernetesCredentialFactory implements ICredentialFactory {
 	protected static final Logger log = Logger.getLogger(KubernetesCredentialFactory.class.getName());
-	public static final String K8_USERNAME = "credentialFactory.kubernetes.username";
-	public static final String K8_PASSWORD = "credentialFactory.kubernetes.password";
-	public static final String K8_MASTER_URL = "credentialFactory.kubernetes.masterUrl";
-	public static final String K8_NAMESPACE_PROPERTY = "credentialFactory.kubernetes.namespace";
-	public static final long CREDENTIALS_CACHE_DURATION_MILLIS = 60_000L;
+
+	private static final String K8_USERNAME = "credentialFactory.kubernetes.username";
+	private static final String K8_PASSWORD = "credentialFactory.kubernetes.password";
+	static final String K8_MASTER_URL = "credentialFactory.kubernetes.masterUrl";
+	private static final String K8_NAMESPACE_PROPERTY = "credentialFactory.kubernetes.namespace";
+
+	private static final long CREDENTIALS_CACHE_DURATION_MILLIS = 60_000L;
 	protected static final String USERNAME_KEY = "username";
 	protected static final String PASSWORD_KEY = "password";
 	public static final String DEFAULT_NAMESPACE = "default";
-	protected String namespace = DEFAULT_NAMESPACE;
+
+	protected String namespace;
 	private KubernetesClient client;
-	protected List<Credentials> credentials; // Refreshed every SECRETS_CACHE_TIMEOUT_MILLIS
+	private List<Credentials> credentials; // Refreshed every SECRETS_CACHE_TIMEOUT_MILLIS
 	private long lastFetch = 0;
 
 	@Override
 	public void initialize() {
 		CredentialConstants appConstants = CredentialConstants.getInstance();
-		log.info("Initializing KubernetesCredentialFactory");
+		log.info("initializing KubernetesCredentialFactory");
 		if (client == null) { // For testing purposes
 			client = new KubernetesClientBuilder().build();
 		}
 
-		String defaultNamespace = Optional.ofNullable(client.getNamespace()).orElse(namespace);
+		String defaultNamespace = Optional.ofNullable(client.getNamespace()).orElse(DEFAULT_NAMESPACE);
 		namespace = appConstants.getProperty(K8_NAMESPACE_PROPERTY, defaultNamespace);
 
 		String k8Username = appConstants.getProperty(K8_USERNAME, null);
@@ -88,14 +119,15 @@ public class KubernetesCredentialFactory implements ICredentialFactory {
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
-		if (StringUtils.isNotEmpty(alias)) {
-			return getCredentials().stream()
-					.filter(credential -> alias.equalsIgnoreCase(credential.getAlias()))
-					.findFirst()
-					.orElseThrow(() -> new NoSuchElementException("cannot obtain credentials from authentication alias [" + alias + "]: alias not found"));
+	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) throws NoSuchElementException {
+		if (StringUtils.isEmpty(alias)) {
+			return new Credentials(null, defaultUsernameSupplier, defaultPasswordSupplier);
 		}
-		return new Credentials(null, defaultUsernameSupplier, defaultPasswordSupplier);
+
+		return getCredentials().stream()
+				.filter(credential -> alias.equalsIgnoreCase(credential.getAlias()))
+				.findFirst()
+				.orElseThrow(() -> new NoSuchElementException("cannot obtain credentials from authentication alias [" + alias + "]: alias not found"));
 	}
 
 	@Override
