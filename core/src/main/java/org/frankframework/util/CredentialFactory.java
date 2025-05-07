@@ -18,6 +18,7 @@ package org.frankframework.util;
 import java.util.Collection;
 import java.util.function.Supplier;
 
+import org.frankframework.credentialprovider.Credentials;
 import org.frankframework.credentialprovider.ICredentials;
 
 /**
@@ -45,7 +46,11 @@ public class CredentialFactory  {
 	}
 
 	public CredentialFactory(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
-		credentials = org.frankframework.credentialprovider.CredentialFactory.getCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
+		if (alias == null) {
+			credentials = new Credentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
+		} else {
+			credentials = org.frankframework.credentialprovider.CredentialFactory.getCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
+		}
 	}
 
 	@Override

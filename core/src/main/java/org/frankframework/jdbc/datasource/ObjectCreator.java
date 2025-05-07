@@ -117,46 +117,33 @@ public class ObjectCreator {
 				}
 			}
 		}
-
-		String alias = substituteVariables(resource.getAuthalias());
-		String username = substituteVariables(resource.getUsername());
-		String password = substituteVariables(resource.getPassword());
-
-		// if alias is null, use username and password directly
-		if (StringUtils.isEmpty(alias)) {
-			setPropertyIfNotEmpty(mergedProps, "user", username);
-			setPropertyIfNotEmpty(mergedProps, "password", password);
-		} else {
-			CredentialFactory credentialFactory = new CredentialFactory(alias, username, password);
-			setPropertyIfNotEmpty(mergedProps, "user", credentialFactory.getUsername());
-			setPropertyIfNotEmpty(mergedProps, "password", credentialFactory.getPassword());
+		CredentialFactory cf = getCredentials(resource);
+		if(StringUtils.isNotEmpty(cf.getUsername())) {
+			mergedProps.setProperty("user", cf.getUsername());
 		}
-
+		if(StringUtils.isNotEmpty(cf.getPassword())) {
+			mergedProps.setProperty("password", cf.getPassword());
+		}
 		return mergedProps;
 	}
 
 	/**
-	 * Sets the property in the merged properties if the value is not empty.
-	 * @param mergedProps The merged properties.
-	 * @param propertyName The name of the property to set.
-	 * @param propertyValue The value of the property to set.
+	 * Performs a 'safe' lookup of credentials.
 	 */
-	private void setPropertyIfNotEmpty(Properties mergedProps, String propertyName, String propertyValue) {
-		if (StringUtils.isNotEmpty(propertyValue)) {
-			mergedProps.setProperty(propertyName, propertyValue);
+	private CredentialFactory getCredentials(FrankResource resource) {
+		String alias = resource.getAuthalias();
+		if(StringUtils.isNotEmpty(alias)) {
+			alias = StringResolver.substVars(alias, APP_CONSTANTS);
 		}
-	}
-
-	/**
-	 * Substitutes the variables in the given value using the AppConstants.
-	 * @param value The value to substitute.
-	 * @return The substituted value, or null if the input was null.
-	 */
-	private String substituteVariables(String value) {
-		if (StringUtils.isNotEmpty(value)) {
-			return StringResolver.substVars(value, APP_CONSTANTS);
+		String username = resource.getUsername();
+		if(StringUtils.isNotEmpty(username)) {
+			username = StringResolver.substVars(username, APP_CONSTANTS);
+		}
+		String password = resource.getPassword();
+		if(StringUtils.isNotEmpty(password)) {
+			password = StringResolver.substVars(password, APP_CONSTANTS);
 		}
 
-		return value;
+		return new CredentialFactory(alias, username, password);
 	}
 }
