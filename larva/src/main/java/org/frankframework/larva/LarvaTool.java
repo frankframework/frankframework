@@ -584,8 +584,6 @@ public class LarvaTool {
 				ok = RESULT_OK;
 				debugMessage("Strings are identical");
 				testExecutionObserver.stepMessageSuccess(scenario, stepDisplayName, "Result", printableActualResult, preparedActualResult);
-//				debugPipelineMessage(stepDisplayName, "Result", printableActualResult);
-//				debugPipelineMessagePreparedForDiff(stepDisplayName, "Result as prepared for diff", preparedActualResult);
 			} else {
 				debugMessage("Strings are not identical");
 				String message = null;

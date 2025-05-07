@@ -140,7 +140,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 
 	@Override
 	public void finishStep(TestRunStatus testRunStatus, Scenario scenario, String stepName, int stepResult, String stepResultMessage) {
-		if (shouldWriteLevel(LarvaLogLevel.STEP_PASSED_FAILED)) {
+		if (writer.shouldWriteLevel(LarvaLogLevel.STEP_PASSED_FAILED)) {
 			StringBuilder outputMessage = new StringBuilder();
 			if (stepResult == LarvaTool.RESULT_OK) {
 				outputMessage.append("<h3 class='passed'>");
@@ -176,10 +176,6 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 	@Override
 	public void messageError(String description, String messageError) {
 		writer.writeMessageBox(LarvaLogLevel.WRONG_PIPELINE_MESSAGES, "message container", description, "messagebox", messageError);
-	}
-
-	private boolean shouldWriteLevel(LarvaLogLevel logLevel) {
-		return config.getLogLevel().shouldLog(logLevel);
 	}
 
 	private void writeHtml(String html) {
