@@ -127,23 +127,7 @@ public class ScenarioLoader {
 		String directory = scenarioFile.getParentFile().getAbsolutePath();
 		try {
 			Properties properties = LarvaUtil.readProperties(out, scenarioFile);
-			Properties includedProperties = new Properties();
-			int i = 0;
-			String includeFilename = properties.getProperty("include");
-			if (includeFilename == null) {
-				i++;
-				includeFilename = properties.getProperty("include" + i);
-			}
-			while (includeFilename != null) {
-				out.debugMessage("Load include file: " + includeFilename);
-				File includeFile = new File(LarvaUtil.getAbsolutePath(directory, includeFilename));
-				Properties includeProperties = readScenarioProperties(includeFile, appConstants, false);
-				if (includeProperties != null) {
-					includedProperties.putAll(includeProperties);
-				}
-				i++;
-				includeFilename = properties.getProperty("include" + i);
-			}
+			Properties includedProperties = getIncludedProperties(appConstants, properties, directory);
 			properties.putAll(includedProperties);
 			out.debugMessage(properties.size() + " properties found");
 			if (root) {
@@ -162,7 +146,29 @@ public class ScenarioLoader {
 		}
 	}
 
-	public static void applyStringSubstitutions(Properties properties, AppConstants appConstants) {
+	@Nonnull
+	private Properties getIncludedProperties(@Nullable AppConstants appConstants, Properties properties, String directory) {
+		Properties includedProperties = new Properties();
+		int i = 0;
+		String includeFilename = properties.getProperty("include");
+		if (includeFilename == null) {
+			i++;
+			includeFilename = properties.getProperty("include" + i);
+		}
+		while (includeFilename != null) {
+			out.debugMessage("Load include file: " + includeFilename);
+			File includeFile = new File(LarvaUtil.getAbsolutePath(directory, includeFilename));
+			Properties includeProperties = readScenarioProperties(includeFile, appConstants, false);
+			if (includeProperties != null) {
+				includedProperties.putAll(includeProperties);
+			}
+			i++;
+			includeFilename = properties.getProperty("include" + i);
+		}
+		return includedProperties;
+	}
+
+	private static void applyStringSubstitutions(Properties properties, AppConstants appConstants) {
 		for (Map.Entry<Object, Object> entry: properties.entrySet()) {
 			properties.put(entry.getKey(), StringResolver.substVars((String)entry.getValue(), properties, appConstants));
 		}

@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
@@ -64,6 +65,23 @@ public class TestRunStatus {
 		this.out = out;
 	}
 
+	/**
+	 * Initialize the list of scenario-directories from the properties in {@link AppConstants}.
+	 * <p>
+	 *     The code looks at numbered properties {@code scenariosrootN.directory}, {@code scenariosrootN.description} and {@code scenariosrootN.m2e.pom.properties}
+	 *     starting {@code scenariosroot1.directory}.
+	 * </p>
+	 * <p>
+	 *     If {@code scenariosrootN.m2e.pom.properties} exists then it is used to determine to root path
+	 *     for that scenario directory. Otherwise, the scenario directory specified is expected to be relative
+	 *     to the web app root path.
+	 * </p>
+	 * <p>
+	 *     The map with scenario roots has the description as key and full path to the directory as value.
+	 * </p>
+	 *
+	 * @return Returns the path to the active / selected scenario root directory.
+	 */
 	public String initScenarioDirectories() {
 		String realPath = LarvaUtil.getParentOfWebappRoot();
 		if (realPath == null) {
@@ -88,21 +106,16 @@ public class TestRunStatus {
 				out.errorMessage("Could not find description for directory scenariosroot%d [%s]".formatted(j, directory));
 				continue;
 			}
-			if (scenariosRoots.containsKey(directory)) {
-				out.errorMessage("A root directory named [%s] already exists".formatted(directory));
+			if (scenariosRoots.containsKey(description)) {
+				out.errorMessage("A root directory named [%s] already exists".formatted(description));
 				continue;
 			}
-			String parent = realPath;
-			if (m2eFileName != null) {
-				File m2eFile = new File(realPath, m2eFileName);
-				if (m2eFile.exists()) {
-					out.debugMessage("Read m2e pom.properties: " + m2eFileName);
-					Properties m2eProperties = LarvaUtil.readProperties(out, m2eFile);
-					parent = m2eProperties.getProperty("m2e.projectLocation");
-					out.debugMessage("Use m2e parent: " + parent);
-				}
-			}
+			String parent = determineParentPath(realPath, m2eFileName);
 			directory = LarvaUtil.getAbsolutePath(parent, directory, true);
+			if (scenariosRoots.containsValue(directory)) {
+				out.errorMessage("A root directory with path [%s] already exists".formatted(directory));
+				continue;
+			}
 			if (new File(directory).exists()) {
 				out.debugMessage("directory for [" + description + "] exists: " + directory);
 				scenariosRoots.put(description, directory);
@@ -129,7 +142,25 @@ public class TestRunStatus {
 		return larvaConfig.getActiveScenariosDirectory();
 	}
 
-	public List<Scenario> getScenariosToRun(String execute) {
+	private String determineParentPath(String realPath, String m2eFileName) {
+		String parent = realPath;
+		if (m2eFileName != null) {
+			File m2eFile = new File(realPath, m2eFileName);
+			if (m2eFile.exists()) {
+				out.debugMessage("Read m2e pom.properties: " + m2eFileName);
+				Properties m2eProperties = LarvaUtil.readProperties(out, m2eFile);
+				parent = m2eProperties.getProperty("m2e.projectLocation");
+				out.debugMessage("Use m2e parent: " + parent);
+			}
+		}
+		return parent;
+	}
+
+	public void readScenarioFiles(ScenarioLoader scenarioLoader) {
+		allScenarios = scenarioLoader.readScenarioFiles(larvaConfig.getActiveScenariosDirectory());
+	}
+
+	public List<Scenario> getScenariosToRun(@Nonnull String execute) {
 
 		List<Scenario> scenarios;
 		if (execute.endsWith(".properties")) {
@@ -174,10 +205,6 @@ public class TestRunStatus {
 
 	public int getScenarioExecuteCount() {
 		return scenariosToRun.size();
-	}
-
-	public void readScenarioFiles(ScenarioLoader scenarioLoader) {
-		allScenarios = scenarioLoader.readScenarioFiles(larvaConfig.getActiveScenariosDirectory());
 	}
 
 	public @Nullable String buildScenariosPassedMessage(long executionTime) {

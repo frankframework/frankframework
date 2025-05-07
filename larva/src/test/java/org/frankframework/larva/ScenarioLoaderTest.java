@@ -9,8 +9,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 
-import jakarta.annotation.Nonnull;
-
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -32,9 +31,14 @@ public class ScenarioLoaderTest {
 		appConstants.setProperty("active.via.appconstants", "true");
 	}
 
+	@AfterEach
+	public void tearDown() {
+		appConstants.remove("active.via.appconstants");
+	}
+
 	@Test
 	public void testLoadActiveScenario() {
-		File scenarioFile = getFileFromResource("/scenarios/scenariodir1/active-scenario.properties");
+		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios/scenariodir1/active-scenario.properties");
 
 		Properties scenarioProperties = scenarioLoader.readScenarioProperties(scenarioFile, appConstants);
 
@@ -45,7 +49,7 @@ public class ScenarioLoaderTest {
 
 	@Test
 	public void testLoadInactiveScenario() {
-		File scenarioFile = getFileFromResource("/scenarios/scenariodir2/inactive-scenario.properties");
+		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios/scenariodir2/inactive-scenario.properties");
 
 		Properties scenarioProperties = scenarioLoader.readScenarioProperties(scenarioFile, appConstants);
 
@@ -55,24 +59,20 @@ public class ScenarioLoaderTest {
 
 	@Test
 	public  void testLoadScenarioDirectory() {
-		String scenarioDirectory = getFileFromResource("/scenarios").getAbsolutePath();
+		String scenarioDirectory = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios").getAbsolutePath();
 
 		Map<Scenario.ID, Scenario> scenarioMap = scenarioLoader.readScenarioFiles(scenarioDirectory);
 
-		assertEquals(1, scenarioMap.size());
-		File scenarioFile1 = getFileFromResource("/scenarios/scenariodir1/active-scenario.properties");
+		assertEquals(2, scenarioMap.size());
+		File scenarioFile1 = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios/scenariodir1/active-scenario.properties");
 		Scenario.ID scenarioId1 = new Scenario.ID(scenarioFile1);
 		assertTrue(scenarioMap.containsKey(scenarioId1));
-		assertFalse(scenarioMap.containsKey(new Scenario.ID(getFileFromResource("/scenarios/scenariodir2/inactive-scenario.properties"))));
+		assertFalse(scenarioMap.containsKey(new Scenario.ID(LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios/scenariodir2/inactive-scenario.properties"))));
 
 		Scenario scenario1 = scenarioMap.get(scenarioId1);
 		assertEquals("Active Scenario via variable resolved in include", scenario1.getDescription());
 		assertEquals(scenarioFile1, scenario1.getScenarioFile());
 		assertEquals("scenariodir1/active-scenario", scenario1.getName());
 		assertEquals(scenarioFile1.getAbsolutePath(), scenario1.getLongName());
-	}
-
-	private @Nonnull File getFileFromResource(String scenarioFileName) {
-		return new File(this.getClass().getResource(scenarioFileName).getFile());
 	}
 }
