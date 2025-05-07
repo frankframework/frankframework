@@ -45,6 +45,10 @@ import org.frankframework.util.XmlUtils;
  */
 public class LarvaActionUtils {
 
+	private LarvaActionUtils() {
+		// don't construct util class
+	}
+
 	public static Properties getSubProperties(Properties properties, String keyBase) {
 		if(!keyBase.endsWith("."))
 			keyBase +=".";
@@ -151,13 +155,17 @@ public class LarvaActionUtils {
 					try {
 						Parameter parameter = new Parameter();
 						parameter.setName(name);
-						if (value != null && !(value instanceof String)) {
-							parameter.setSessionKey(name);
-							session.put(name, value);
-						} else {
-							parameter.setValue((String) value);
-							parameter.setPattern(pattern);
+
+						if (value != null) {
+							if (value instanceof String string) {
+								parameter.setValue(string);
+								parameter.setPattern(pattern);
+							} else {
+								parameter.setSessionKey(name);
+								session.put(name, value);
+							}
 						}
+
 						parameter.configure();
 						result.put(name, parameter);
 					} catch (ConfigurationException e) {

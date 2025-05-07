@@ -99,7 +99,7 @@ public class RunCypressE2eTest {
 		}
 	}
 
-	public static void startTestContainer() throws IOException {
+	public static void startTestContainer() {
 		org.testcontainers.Testcontainers.exposeHostPorts(8080);
 
 		container = new CypressContainer();
