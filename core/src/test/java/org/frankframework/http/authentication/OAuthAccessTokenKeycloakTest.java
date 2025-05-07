@@ -70,15 +70,17 @@ public class OAuthAccessTokenKeycloakTest extends SenderTestBase<HttpSender> {
 		sender.setPassword("fakeCredentialPassword");
 		sender.setTimeout(120000);
 
-		sender.configure();
-		sender.start();
-
 		return sender;
 	}
 
 	@MethodSource("parameters")
 	@ParameterizedTest
 	void testGetAccessToken(AbstractHttpSession.OauthAuthenticationMethod oauthAuthenticationMethod, boolean shouldResolveSuccessfully) throws Exception {
+		sender.setOauthAuthenticationMethod(oauthAuthenticationMethod);
+
+		sender.configure();
+		sender.start();
+
 		var authenticator = oauthAuthenticationMethod.newAuthenticator(sender);
 
 		if (shouldResolveSuccessfully) {

@@ -15,6 +15,7 @@
 */
 package org.frankframework.http.authentication;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.NameValuePair;
@@ -30,27 +31,37 @@ import org.frankframework.http.AbstractHttpSession;
 
 @Log4j2
 public abstract class AbstractClientCredentials extends AbstractOauthAuthenticator {
-
 	AbstractClientCredentials(AbstractHttpSession session) throws HttpAuthenticationException {
 		super(session);
 	}
 
 	@Override
 	public final void configure() throws ConfigurationException {
-		if (session.getClientId() == null) {
-			throw new ConfigurationException("clientId is required");
+		List<String> missingFields = new ArrayList<>();
+
+		if (clientId == null) {
+			missingFields.add("ClientId");
 		}
 
-		if (session.getClientSecret() == null) {
-			throw new ConfigurationException("clientSecret is required");
+		if (clientSecret == null) {
+			missingFields.add("clientSecret");
 		}
 
+		// Log warnings if fields like username, password, and authAlias are incorrectly set
 		if (session.getUsername() != null) {
-			ConfigurationWarnings.add(session, log, "Username should not be set");
+			ConfigurationWarnings.add(session, log, "Username should not be set for this authentication method. Use clientId and clientSecret instead.");
 		}
 
 		if (session.getPassword() != null) {
-			ConfigurationWarnings.add(session, log, "Password should not be set");
+			ConfigurationWarnings.add(session, log, "Password should not be set for this authentication method. Use clientId and clientSecret instead.");
+		}
+
+		if (session.getAuthAlias() != null) {
+			ConfigurationWarnings.add(session, log, "AuthAlias should not be set for this authentication method. Use ClientAuthAlias instead.");
+		}
+
+		if (!missingFields.isEmpty()) {
+			throw new ConfigurationException("Missing required fields: " + String.join(", ", missingFields));
 		}
 	}
 

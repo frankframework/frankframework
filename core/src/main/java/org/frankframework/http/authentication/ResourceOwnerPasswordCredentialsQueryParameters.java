@@ -32,8 +32,8 @@ public class ResourceOwnerPasswordCredentialsQueryParameters extends AbstractRes
 
 	@Override
 	protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials, List<NameValuePair> parameters) throws HttpAuthenticationException {
-		parameters.add(new BasicNameValuePair("client_id", session.getClientId()));
-		parameters.add(new BasicNameValuePair("client_secret", session.getClientSecret()));
+		parameters.add(new BasicNameValuePair("client_id", clientId));
+		parameters.add(new BasicNameValuePair("client_secret", clientSecret));
 
 		return super.createRequest(credentials, parameters);
 	}

@@ -36,9 +36,9 @@ public class ResourceOwnerPasswordCredentialsBasicAuth extends AbstractResourceO
 	}
 
 	private String createAuthorizationHeaderValue() {
-		String value = URLEncoder.encode(session.getClientId(), UTF8_CHARSET) +
+		String value = URLEncoder.encode(clientId, UTF8_CHARSET) +
 				':' +
-				URLEncoder.encode(session.getClientSecret(), UTF8_CHARSET);
+				URLEncoder.encode(clientSecret, UTF8_CHARSET);
 
 		return "Basic " + Base64.encode(value.getBytes(UTF8_CHARSET));
 	}
