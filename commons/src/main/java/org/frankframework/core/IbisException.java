@@ -176,7 +176,7 @@ public class IbisException extends Exception {
 	@Nullable
 	private static Throwable getCause(Throwable t) {
 		Throwable cause = ExceptionUtils.getCause(t);
-		if (cause == null && t != null && t.getSuppressed().length > 0) {
+		if ((cause == null || cause == t) && t != null && t.getSuppressed().length > 0) {
 			return t.getSuppressed()[0];
 		}
 		return cause;
@@ -185,7 +185,7 @@ public class IbisException extends Exception {
 	public static LinkedList<String> getMessages(Throwable t, String message) {
 		Throwable cause = getCause(t);
 		LinkedList<String> result;
-		if (cause != null) {
+		if (cause != null && cause != t) {
 			String causeMessage = cause.getMessage();
 			String causeToString = cause.toString();
 
