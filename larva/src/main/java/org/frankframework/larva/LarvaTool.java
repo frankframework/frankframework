@@ -312,10 +312,6 @@ public class LarvaTool {
 				fileContent = readFile(stepDataFileAbsolutePath);
 			}
 		}
-		if (fileContent == null) {
-			errorMessage("Could not read file '" + fileName + "'");
-			return RESULT_ERROR;
-		}
 
 		try (Message ignored = fileContent) {
 			actionName = step.substring(i + 1, step.lastIndexOf("."));
