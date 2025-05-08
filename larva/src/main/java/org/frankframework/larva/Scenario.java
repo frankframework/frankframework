@@ -44,6 +44,14 @@ public class Scenario {
 		this.properties = properties;
 	}
 
+	@Override
+	public String toString() {
+		return "Scenario{" +
+				"name='" + name + '\'' +
+				", description='" + description + '\'' +
+				'}';
+	}
+
 	public String getLongName() {
 		return scenarioFile.getAbsolutePath();
 	}

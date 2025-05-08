@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
+import jakarta.servlet.ServletContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -26,14 +27,17 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import org.springframework.boot.SpringApplication;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import org.frankframework.configuration.IbisContext;
 import org.frankframework.larva.LarvaConfig;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.Scenario;
 import org.frankframework.larva.ScenarioRunner;
 import org.frankframework.larva.TestRunStatus;
+import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.util.CloseUtils;
 
 /**
@@ -114,7 +118,13 @@ public class RunLarvaTests {
 	@BeforeAll
 	static void setup() throws IOException {
 		SpringApplication springApplication = IafTestInitializer.configureApplication();
-		applicationContext = springApplication.run();
+		// This ApplicationContext doesn't have the database so we cannot use it for the Larva Tests...
+		ApplicationContext ctx = springApplication.run();
+		ServletContext servletContext = ctx.getBean(ServletContext.class);
+
+		// We need to get the IbisContext from the ServletContext, since from this one we can get the ApplicationContext that has the database.
+		IbisContext ibisContext = FrankApplicationInitializer.getIbisContext(servletContext);
+		applicationContext = ibisContext.getApplicationContext();
 		larvaTool = LarvaTool.createInstance(applicationContext, System.out);
 
 		LarvaConfig larvaConfig = larvaTool.getLarvaConfig();
