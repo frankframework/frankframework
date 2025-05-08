@@ -204,8 +204,6 @@ public class RunLarvaTests {
 		long end = System.currentTimeMillis();
 		System.err.printf("Scenarios executed; duration: %dms%n", end - start);
 
-		assertFalse(result.getScenariosFailedCount() < 0, () -> "Error in LarvaTool execution, result is [%d] instead of 0".formatted(result));
-
 		if (result.getScenariosFailedCount() > 0) {
 			System.err.printf("%d Larva tests failed, duration: %dms; %n%n", result.getScenariosFailedCount(), end - start);
 		} else {

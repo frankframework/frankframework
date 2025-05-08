@@ -31,6 +31,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Forward;
 import org.frankframework.larva.LarvaConfig;
+import org.frankframework.larva.LarvaException;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.TestRunStatus;
@@ -92,9 +93,14 @@ public class LarvaPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getExecute())) {
 			paramExecute = paramExecute + getExecute();
 		}
-		TestRunStatus testRunStatus = larvaTool.runScenarios(paramExecute);
-		int numScenariosFailed = testRunStatus != null ? testRunStatus.getScenariosFailedCount() : -1;
-		PipeForward forward = numScenariosFailed==0 ? getSuccessForward() : failureForward;
+		PipeForward forward;
+		try {
+			TestRunStatus testRunStatus = larvaTool.runScenarios(paramExecute);
+			int numScenariosFailed = testRunStatus.getScenariosFailedCount();
+			forward = numScenariosFailed==0 ? getSuccessForward() : failureForward;
+		} catch (LarvaException e) {
+			forward = failureForward;
+		}
 		return new PipeRunResult(forward, out.toString());
 	}
 

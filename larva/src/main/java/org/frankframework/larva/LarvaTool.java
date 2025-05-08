@@ -177,8 +177,7 @@ public class LarvaTool {
 
 		if (testRunStatus.getScenarioDirectories().isEmpty()) {
 			errorMessage("No scenarios root directories found");
-//			return ERROR_NO_SCENARIO_DIRECTORIES_FOUND;
-			return null; // TODO: Should better throw
+			throw new LarvaException("No scenarios root directories found");
 		}
 		debugMessage("Read scenarios from directory '" + StringEscapeUtils.escapeJava(currentScenariosRootDirectory) + "'");
 		testRunStatus.readScenarioFiles(scenarioLoader);

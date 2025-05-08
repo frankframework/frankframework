@@ -142,7 +142,11 @@ public class LarvaServlet extends AbstractHttpServlet {
 		resp.setContentType("text/html");
 		writer.append(getTemplate("Larva Test Tool"));
 
-		LarvaTool.runScenarios(getServletContext(), req, writer);
+		try {
+			LarvaTool.runScenarios(getServletContext(), req, writer);
+		} catch (Exception e) {
+			log.warn("error running scenarios", e);
+		}
 
 		writer.append("</body></html>");
 		resp.flushBuffer();
