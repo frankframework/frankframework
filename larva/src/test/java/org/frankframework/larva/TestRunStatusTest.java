@@ -140,9 +140,9 @@ class TestRunStatusTest {
 		List<Scenario> scenariosToRun = testRunStatus.getScenariosToRun(config.getActiveScenariosDirectory());
 
 		// Assert
-		assertEquals(2, scenariosToRun.size());
-		assertEquals(2, testRunStatus.getScenarioExecuteCount());
-		assertEquals(2, testRunStatus.getAllScenarios().size());
+		assertEquals(3, scenariosToRun.size());
+		assertEquals(3, testRunStatus.getScenarioExecuteCount());
+		assertEquals(3, testRunStatus.getAllScenarios().size());
 	}
 
 	@Test
@@ -159,7 +159,7 @@ class TestRunStatusTest {
 		// Assert
 		assertEquals(1, scenariosToRun.size());
 		assertEquals(1, testRunStatus.getScenarioExecuteCount());
-		assertEquals(2, testRunStatus.getAllScenarios().size());
+		assertEquals(3, testRunStatus.getAllScenarios().size());
 	}
 
 	@Test
@@ -176,6 +176,6 @@ class TestRunStatusTest {
 		// Assert
 		assertEquals(1, scenariosToRun.size());
 		assertEquals(1, testRunStatus.getScenarioExecuteCount());
-		assertEquals(2, testRunStatus.getAllScenarios().size());
+		assertEquals(3, testRunStatus.getAllScenarios().size());
 	}
 }

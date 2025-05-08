@@ -63,7 +63,7 @@ public class ScenarioLoaderTest {
 
 		Map<Scenario.ID, Scenario> scenarioMap = scenarioLoader.readScenarioFiles(scenarioDirectory);
 
-		assertEquals(2, scenarioMap.size());
+		assertEquals(3, scenarioMap.size());
 		File scenarioFile1 = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios/scenariodir1/active-scenario.properties");
 		Scenario.ID scenarioId1 = new Scenario.ID(scenarioFile1);
 		assertTrue(scenarioMap.containsKey(scenarioId1));

@@ -11,7 +11,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.ApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
 
@@ -28,16 +27,14 @@ import org.frankframework.util.AppConstants;
 class LarvaToolTest {
 
 	private static TestConfiguration configuration;
-	private static ApplicationContext applicationContext;
 
-	private AppConstants appConstants;
-	private File scenarioRoot;
-	private IbisContext ibisContext;
+	private static AppConstants appConstants;
+	private static File scenarioRoot;
+	private static IbisContext ibisContext;
 
 	@BeforeAll
 	public static void beforeAll() throws Exception {
 		configuration = TransactionManagerType.DATASOURCE.create(true);
-		applicationContext = configuration.getApplicationContext();
 
 		try {
 			configuration.refresh();
@@ -45,16 +42,11 @@ class LarvaToolTest {
 		} catch (Exception e) {
 			log.error("Error starting configuration", e);
 		}
-	}
 
-	@BeforeEach
-	public void setUp() {
 		ibisContext = configuration.getIbisManager().getIbisContext();
 		appConstants = AppConstants.getInstance();
 
 		scenarioRoot = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios");
-		appConstants.setProperty("scenariosroot1.directory", scenarioRoot.getAbsolutePath());
-		appConstants.setProperty("scenariosroot1.description", "Test Scenarios Root Directory");
 
 		// Whacky Workaround for failing to create the 1st LarvaApplicationContext
 		try (LarvaApplicationContext ignore = new LarvaApplicationContext(ibisContext, scenarioRoot.getAbsolutePath())) {
@@ -65,18 +57,22 @@ class LarvaToolTest {
 		}
 	}
 
+	@BeforeEach
+	public void setUp() {
+		appConstants.setProperty("scenariosroot1.directory", scenarioRoot.getAbsolutePath());
+		appConstants.setProperty("scenariosroot1.description", "Test Scenarios Root Directory");
+	}
+
 	@AfterEach
 	public void tearDown() {
 		appConstants.remove("scenariosroot1.directory");
 		appConstants.remove("scenariosroot1.description");
-
 	}
 
 	@Test
 	void testRunScenariosFromServletRequest () {
 		// Arrange
 
-		// TODO: Set up more meaningful tests
 		ServletContext servletContext = new MockServletContext();
 		servletContext.setAttribute(FrankApplicationInitializer.CONTEXT_KEY, ibisContext);
 		MockHttpServletRequest mockRequest = new MockHttpServletRequest(servletContext);
@@ -88,13 +84,12 @@ class LarvaToolTest {
 		TestRunStatus result = LarvaTool.runScenarios(servletContext, mockRequest, output);
 
 		// Assert
-		assertEquals(0, result.getScenariosFailedCount(), output.toString());
+		verifyTestRunResults(result, output);
 	}
 
 	@Test
 	void testRunScenariosFromPlainConfig () {
 		// Arrange
-		IbisContext ibisContext = configuration.getIbisManager().getIbisContext();
 		StringWriter output = new StringWriter();
 		LarvaTool larvaTool = LarvaTool.createInstance(ibisContext, output);
 
@@ -102,7 +97,12 @@ class LarvaToolTest {
 		TestRunStatus result = larvaTool.runScenarios(scenarioRoot.getAbsolutePath());
 
 		// Assert
-		assertEquals(0, result.getScenariosFailedCount(), output.toString());
-		assertEquals(2, result.getScenarioExecuteCount());
+		verifyTestRunResults(result, output);
+	}
+
+	private static void verifyTestRunResults(TestRunStatus result, StringWriter output) {
+		assertEquals(1, result.getScenariosFailedCount(), output.toString());
+		assertEquals(2, result.getScenariosPassedCount());
+		assertEquals(3, result.getScenarioExecuteCount());
 	}
 }
