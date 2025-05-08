@@ -15,6 +15,7 @@
 */
 package org.frankframework.http.authentication;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.NameValuePair;
@@ -26,19 +27,32 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.http.AbstractHttpSession;
 
 public abstract class AbstractResourceOwnerPasswordCredentials extends AbstractOauthAuthenticator {
-
 	AbstractResourceOwnerPasswordCredentials(AbstractHttpSession session) throws HttpAuthenticationException {
 		super(session);
 	}
 
 	@Override
 	public final void configure() throws ConfigurationException {
-		if (session.getClientId() == null) {
-			throw new ConfigurationException("clientId is required");
+		List<String> missingFields = new ArrayList<>();
+
+		if (username == null) {
+			missingFields.add("Username");
 		}
 
-		if (session.getClientSecret() == null) {
-			throw new ConfigurationException("clientSecret is required");
+		if (password == null) {
+			missingFields.add("Password");
+		}
+
+		if (clientId == null) {
+			missingFields.add("ClientId");
+		}
+
+		if (clientSecret == null) {
+			missingFields.add("clientSecret");
+		}
+
+		if (!missingFields.isEmpty()) {
+			throw new ConfigurationException("Missing required fields: " + String.join(", ", missingFields));
 		}
 	}
 
