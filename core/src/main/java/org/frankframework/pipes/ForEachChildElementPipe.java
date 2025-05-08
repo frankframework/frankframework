@@ -300,7 +300,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		if (getXmlDebugger()!=null && (StringUtils.isNotEmpty(getContainerElement()) || StringUtils.isNotEmpty(getTargetElement()) || getExtractElementsTp()!=null)) {
 			String containerElementString = StringUtils.isNotEmpty(getContainerElement()) ? "filter to containerElement '"+getContainerElement()+"'" : null;
 			String targetElementString = StringUtils.isNotEmpty(getTargetElement()) ? "filter to targetElement '"+getTargetElement()+"'" :null;
-			String xpathString = getExtractElementsTp()!=null ? "filter XPath (with silent root element)'"+getElementXPathExpression()+"'": null;
+			String xpathString = getExtractElementsTp()!=null ? "filter XPath (with temporary root element)'"+getElementXPathExpression()+"'": null;
 			String label = "XML after preprocessing: " + StringUtil.concat(", ",containerElementString, targetElementString, xpathString);
 			result.inputHandler=getXmlDebugger().inspectXml(session, label, result.inputHandler);
 		}
