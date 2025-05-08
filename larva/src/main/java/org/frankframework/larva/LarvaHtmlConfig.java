@@ -38,6 +38,10 @@ public class LarvaHtmlConfig extends LarvaConfig {
 	private @Getter @Setter boolean useLogBuffer = true;
 	private @Getter @Setter String execute;
 
+	public LarvaHtmlConfig() {
+		// No-op default constructor
+	}
+
 	public LarvaHtmlConfig(HttpServletRequest request) {
 		String paramLogLevel = request.getParameter(REQUEST_PARAM_LOG_LEVEL);
 		String paramAutoScroll = request.getParameter(REQUEST_PARAM_AUTO_SCROLL);
