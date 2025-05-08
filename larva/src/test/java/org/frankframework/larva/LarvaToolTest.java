@@ -85,10 +85,10 @@ class LarvaToolTest {
 		StringWriter output = new StringWriter();
 
 		// Act
-		int result = LarvaTool.runScenarios(servletContext, mockRequest, output);
+		TestRunStatus result = LarvaTool.runScenarios(servletContext, mockRequest, output);
 
 		// Assert
-		assertEquals(0, result, output.toString());
+		assertEquals(0, result.getScenariosFailedCount(), output.toString());
 	}
 
 	@Test
@@ -99,10 +99,10 @@ class LarvaToolTest {
 		LarvaTool larvaTool = LarvaTool.createInstance(ibisContext, output);
 
 		// Act
-		int result = larvaTool.runScenarios(scenarioRoot.getAbsolutePath());
+		TestRunStatus result = larvaTool.runScenarios(scenarioRoot.getAbsolutePath());
 
 		// Assert
-		assertEquals(0, result, output.toString());
-		assertEquals(2, larvaTool.getTestRunStatus().getScenarioExecuteCount());
+		assertEquals(0, result.getScenariosFailedCount(), output.toString());
+		assertEquals(2, result.getScenarioExecuteCount());
 	}
 }

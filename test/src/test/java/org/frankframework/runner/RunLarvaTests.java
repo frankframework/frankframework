@@ -35,6 +35,7 @@ import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.Scenario;
 import org.frankframework.larva.ScenarioRunner;
+import org.frankframework.larva.TestRunStatus;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.util.CloseUtils;
 
@@ -199,16 +200,16 @@ public class RunLarvaTests {
 		larvaConfig.setLogLevel(LarvaLogLevel.SCENARIO_FAILED);
 
 		long start = System.currentTimeMillis();
-		int result = larvaTool.runScenarios(scenarioRootDir);
+		TestRunStatus result = larvaTool.runScenarios(scenarioRootDir);
 		long end = System.currentTimeMillis();
 		System.err.printf("Scenarios executed; duration: %dms%n", end - start);
 
-		assertFalse(result < 0, () -> "Error in LarvaTool execution, result is [%d] instead of 0".formatted(result));
+		assertFalse(result.getScenariosFailedCount() < 0, () -> "Error in LarvaTool execution, result is [%d] instead of 0".formatted(result));
 
-		if (result > 0) {
-			System.err.printf("%d Larva tests failed, duration: %dms; %n%n", result, end - start);
+		if (result.getScenariosFailedCount() > 0) {
+			System.err.printf("%d Larva tests failed, duration: %dms; %n%n", result.getScenariosFailedCount(), end - start);
 		} else {
-			System.err.printf("All Larva tests succeeded in %dms%n", end - start);
+			System.err.printf("All %d Larva tests succeeded in %dms%n", result.getScenarioExecuteCount(), end - start);
 		}
 
 		// About 15 to 18 scenarios will fail because the environment is not set up entirely correct. Do not fail the build because of that, still get the extra coverage.

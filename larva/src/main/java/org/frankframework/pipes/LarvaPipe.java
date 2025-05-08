@@ -33,6 +33,7 @@ import org.frankframework.doc.Forward;
 import org.frankframework.larva.LarvaConfig;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
+import org.frankframework.larva.TestRunStatus;
 import org.frankframework.stream.Message;
 
 /**
@@ -91,7 +92,8 @@ public class LarvaPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getExecute())) {
 			paramExecute = paramExecute + getExecute();
 		}
-		int numScenariosFailed = larvaTool.runScenarios(paramExecute);
+		TestRunStatus testRunStatus = larvaTool.runScenarios(paramExecute);
+		int numScenariosFailed = testRunStatus != null ? testRunStatus.getScenariosFailedCount() : -1;
 		PipeForward forward = numScenariosFailed==0 ? getSuccessForward() : failureForward;
 		return new PipeRunResult(forward, out.toString());
 	}

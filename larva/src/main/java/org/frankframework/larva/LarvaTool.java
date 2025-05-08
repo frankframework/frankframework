@@ -156,12 +156,12 @@ public class LarvaTool {
 	}
 
 	// Invoked by LarvaServlet
-	public static int runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
+	public static TestRunStatus runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
 		LarvaTool larvaTool = createInstance(application, request, out);
 		return larvaTool.runScenarios(request.getParameter(LarvaHtmlConfig.REQUEST_PARAM_EXECUTE));
 	}
 
-	public static int runScenarios(IbisContext ibisContext, LarvaConfig config, LarvaWriter out, TestExecutionObserver testExecutionObserver, String execute) {
+	public static TestRunStatus runScenarios(IbisContext ibisContext, LarvaConfig config, LarvaWriter out, TestExecutionObserver testExecutionObserver, String execute) {
 		LarvaTool larvaTool = new LarvaTool(ibisContext, config, out, testExecutionObserver);
 		return larvaTool.runScenarios(execute);
 	}
@@ -171,13 +171,14 @@ public class LarvaTool {
 	 * 		   0: all scenarios passed
 	 * 		   positive: number of scenarios that failed
 	 */
-	public int runScenarios(String execute) {
+	public TestRunStatus runScenarios(String execute) {
 		debugMessage("Initialize scenarios root directories");
 		String currentScenariosRootDirectory = testRunStatus.initScenarioDirectories();
 
 		if (testRunStatus.getScenarioDirectories().isEmpty()) {
 			errorMessage("No scenarios root directories found");
-			return ERROR_NO_SCENARIO_DIRECTORIES_FOUND;
+//			return ERROR_NO_SCENARIO_DIRECTORIES_FOUND;
+			return null; // TODO: Should better throw
 		}
 		debugMessage("Read scenarios from directory '" + StringEscapeUtils.escapeJava(currentScenariosRootDirectory) + "'");
 		testRunStatus.readScenarioFiles(scenarioLoader);
@@ -185,7 +186,7 @@ public class LarvaTool {
 		testExecutionObserver.startTestSuiteExecution(testRunStatus);
 
 		if (execute == null) {
-			return 0;
+			return testRunStatus;
 		}
 
 		List<Scenario> scenarioFiles = testRunStatus.getScenariosToRun(execute);
@@ -210,7 +211,7 @@ public class LarvaTool {
 		testExecutionObserver.endTestSuiteExecution(testRunStatus);
 		CleanerProvider.logLeakStatistics();
 
-		return testRunStatus.getScenariosFailedCount();
+		return testRunStatus;
 	}
 
 	public ScenarioRunner createScenarioRunner() {
