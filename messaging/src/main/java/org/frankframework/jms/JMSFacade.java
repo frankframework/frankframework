@@ -89,7 +89,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	public static final String JMS_MESSAGECLASS_KEY = "jms.messageClass.default";
 
 	private final @Getter String domain = "JMS";
-	private final boolean createDestination = AppConstants.getInstance().getBoolean("jms.createDestination", false);
+	private final boolean createDestination = AppConstants.getInstance().getBoolean("jms.createDestination", true);
 	private final MessageClass messageClassDefault = AppConstants.getInstance().getOrDefault(JMS_MESSAGECLASS_KEY, MessageClass.AUTO);
 	private @Getter MessageClass messageClass = messageClassDefault;
 
