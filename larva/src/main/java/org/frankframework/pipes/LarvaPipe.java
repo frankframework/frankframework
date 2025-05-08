@@ -19,13 +19,13 @@ import java.io.StringWriter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
@@ -77,7 +77,7 @@ public class LarvaPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) {
-		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
+		ApplicationContext applicationContext = getAdapter().getConfiguration().getApplicationContext();
 		LogWriter out = new LogWriter(log, isWriteToLog(), isWriteToSystemOut());
 		LarvaConfig larvaConfig = new LarvaConfig();
 		larvaConfig.setLogLevel(getLogLevel());
@@ -88,7 +88,7 @@ public class LarvaPipe extends FixedForwardPipe {
 			larvaConfig.setTimeout(getTimeout());
 		}
 
-		LarvaTool larvaTool = LarvaTool.createInstance(ibisContext, out);
+		LarvaTool larvaTool = LarvaTool.createInstance(applicationContext, out);
 		String paramExecute = larvaTool.getTestRunStatus().initScenarioDirectories();
 		if (StringUtils.isNotEmpty(getExecute())) {
 			paramExecute = paramExecute + getExecute();

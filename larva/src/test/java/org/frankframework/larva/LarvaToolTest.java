@@ -1,6 +1,8 @@
 package org.frankframework.larva;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.StringWriter;
@@ -11,31 +13,31 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
 
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.IbisContext;
-import org.frankframework.larva.actions.LarvaApplicationContext;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.util.AppConstants;
 
 @Log4j2
 class LarvaToolTest {
 
 	private static TestConfiguration configuration;
+	private static ApplicationContext applicationContext;
 
 	private static AppConstants appConstants;
 	private static File scenarioRoot;
-	private static IbisContext ibisContext;
 
 	@BeforeAll
 	public static void beforeAll() throws Exception {
-		configuration = TransactionManagerType.DATASOURCE.create(true);
-
+		configuration = new TestConfiguration();
+		applicationContext = configuration.getApplicationContext();
 		try {
 			configuration.refresh();
 			configuration.start();
@@ -43,18 +45,8 @@ class LarvaToolTest {
 			log.error("Error starting configuration", e);
 		}
 
-		ibisContext = configuration.getIbisManager().getIbisContext();
 		appConstants = AppConstants.getInstance();
-
 		scenarioRoot = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios");
-
-		// Whacky Workaround for failing to create the 1st LarvaApplicationContext
-		try (LarvaApplicationContext ignore = new LarvaApplicationContext(ibisContext, scenarioRoot.getAbsolutePath())) {
-			// No-op
-		} catch (Exception e) {
-			// Ignore the error
-			log.warn("Error setting up application context, ignoring", e);
-		}
 	}
 
 	@BeforeEach
@@ -72,9 +64,10 @@ class LarvaToolTest {
 	@Test
 	void testRunScenariosFromServletRequest () {
 		// Arrange
-
+		IbisContext mockIbisContext = mock();
+		when(mockIbisContext.getApplicationContext()).thenReturn((AbstractApplicationContext) applicationContext);
 		ServletContext servletContext = new MockServletContext();
-		servletContext.setAttribute(FrankApplicationInitializer.CONTEXT_KEY, ibisContext);
+		servletContext.setAttribute(FrankApplicationInitializer.CONTEXT_KEY, mockIbisContext);
 		MockHttpServletRequest mockRequest = new MockHttpServletRequest(servletContext);
 		mockRequest.addParameter(LarvaHtmlConfig.REQUEST_PARAM_EXECUTE, scenarioRoot.getAbsolutePath());
 
@@ -91,7 +84,7 @@ class LarvaToolTest {
 	void testRunScenariosFromPlainConfig () {
 		// Arrange
 		StringWriter output = new StringWriter();
-		LarvaTool larvaTool = LarvaTool.createInstance(ibisContext, output);
+		LarvaTool larvaTool = LarvaTool.createInstance(applicationContext, output);
 
 		// Act
 		TestRunStatus result = larvaTool.runScenarios(scenarioRoot.getAbsolutePath());

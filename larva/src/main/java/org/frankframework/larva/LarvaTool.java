@@ -64,11 +64,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.larva.actions.LarvaActionFactory;
@@ -101,12 +101,11 @@ import org.frankframework.util.XmlUtils;
  */
 @Log4j2
 public class LarvaTool {
-	public static final int ERROR_NO_SCENARIO_DIRECTORIES_FOUND = -1;
 	public static final int RESULT_ERROR = 0;
 	public static final int RESULT_OK = 1;
 	public static final int RESULT_AUTOSAVED = 2;
 
-	private final @Getter IbisContext ibisContext;
+	private final @Getter ApplicationContext applicationContext;
 	private final @Getter LarvaConfig larvaConfig;
 	private final @Getter LarvaWriter writer;
 	private final @Getter TestExecutionObserver testExecutionObserver;
@@ -115,14 +114,14 @@ public class LarvaTool {
 
 	protected static int globalTimeoutMillis = AppConstants.getInstance().getInt("larva.timeout", 10_000);
 
-	public static LarvaTool createInstance(IbisContext ibisContext, OutputStream out) {
+	public static LarvaTool createInstance(ApplicationContext applicationContext, OutputStream out) {
 		LarvaConfig larvaConfig = new LarvaConfig();
 		LarvaWriter larvaWriter = new LarvaWriter(larvaConfig, out);
 		TestExecutionObserver testExecutionObserver = new PlainTextScenarioOutputRenderer(larvaWriter);
-		return new LarvaTool(ibisContext, larvaConfig, larvaWriter, testExecutionObserver);
+		return new LarvaTool(applicationContext, larvaConfig, larvaWriter, testExecutionObserver);
 	}
 
-	public static LarvaTool createInstance(IbisContext ibisContext, Writer out) {
+	public static LarvaTool createInstance(ApplicationContext ibisContext, Writer out) {
 		LarvaConfig larvaConfig = new LarvaConfig();
 		LarvaWriter larvaWriter = new LarvaWriter(larvaConfig, out);
 		TestExecutionObserver testExecutionObserver = new PlainTextScenarioOutputRenderer(larvaWriter);
@@ -133,11 +132,11 @@ public class LarvaTool {
 		LarvaHtmlConfig larvaHtmlConfig = new LarvaHtmlConfig(request);
 		LarvaHtmlWriter larvaHtmlWriter = new LarvaHtmlWriter(larvaHtmlConfig, out);
 		TestExecutionObserver testExecutionObserver = new HtmlScenarioOutputRenderer(larvaHtmlConfig, larvaHtmlWriter);
-		return new LarvaTool(getIbisContext(servletContext), larvaHtmlConfig, larvaHtmlWriter, testExecutionObserver);
+		return new LarvaTool(getApplicationContext(servletContext), larvaHtmlConfig, larvaHtmlWriter, testExecutionObserver);
 	}
 
-	public LarvaTool(IbisContext ibisContext, LarvaConfig larvaConfig, LarvaWriter writer, TestExecutionObserver testExecutionObserver) {
-		this.ibisContext = ibisContext;
+	public LarvaTool(ApplicationContext applicationContext, LarvaConfig larvaConfig, LarvaWriter writer, TestExecutionObserver testExecutionObserver) {
+		this.applicationContext = applicationContext;
 		this.larvaConfig = larvaConfig;
 		this.writer = writer;
 		this.testExecutionObserver = testExecutionObserver;
@@ -151,8 +150,8 @@ public class LarvaTool {
 		globalTimeoutMillis = newTimeout;
 	}
 
-	private static IbisContext getIbisContext(ServletContext application) {
-		return FrankApplicationInitializer.getIbisContext(application);
+	private static ApplicationContext getApplicationContext(ServletContext application) {
+		return FrankApplicationInitializer.getIbisContext(application).getApplicationContext();
 	}
 
 	// Invoked by LarvaServlet
@@ -161,8 +160,8 @@ public class LarvaTool {
 		return larvaTool.runScenarios(request.getParameter(LarvaHtmlConfig.REQUEST_PARAM_EXECUTE));
 	}
 
-	public static TestRunStatus runScenarios(IbisContext ibisContext, LarvaConfig config, LarvaWriter out, TestExecutionObserver testExecutionObserver, String execute) {
-		LarvaTool larvaTool = new LarvaTool(ibisContext, config, out, testExecutionObserver);
+	public static TestRunStatus runScenarios(ApplicationContext applicationContext, LarvaConfig config, LarvaWriter out, TestExecutionObserver testExecutionObserver, String execute) {
+		LarvaTool larvaTool = new LarvaTool(applicationContext, config, out, testExecutionObserver);
 		return larvaTool.runScenarios(execute);
 	}
 

@@ -98,7 +98,7 @@ public class IbisTester {
 			Writer writer = new StringWriter();
 			LarvaWriter larvaWriter = new LarvaWriter(larvaConfig, writer);
 			TestExecutionObserver testExecutionObserver = new PlainTextScenarioOutputRenderer(larvaWriter);
-			LarvaTool.runScenarios(ibisContext, larvaConfig, larvaWriter, testExecutionObserver, scenario);
+			LarvaTool.runScenarios(ibisContext.getApplicationContext(), larvaConfig, larvaWriter, testExecutionObserver, scenario);
 			if (scenario == null) {
 				String htmlString = "<html><head/><body>" + writer + "</body></html>";
 				try (Message message = new Message(htmlString)) {

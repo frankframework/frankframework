@@ -29,11 +29,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.CloseableThreadContext;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.IbisContext;
 import org.frankframework.larva.actions.LarvaActionFactory;
 import org.frankframework.larva.actions.LarvaApplicationContext;
 import org.frankframework.larva.actions.LarvaScenarioAction;
@@ -50,7 +50,7 @@ public class ScenarioRunner {
 	public final List<String> parallelBlacklistDirs;
 
 	private final LarvaTool larvaTool;
-	private final IbisContext ibisContext;
+	private final ApplicationContext applicationContext;
 	private final AppConstants appConstants;
 	private final TestRunStatus testRunStatus;
 	private final int waitBeforeCleanUp;
@@ -64,7 +64,7 @@ public class ScenarioRunner {
 
 	public ScenarioRunner(LarvaTool larvaTool) {
 		this.larvaTool = larvaTool;
-		this.ibisContext = larvaTool.getIbisContext();
+		this.applicationContext = larvaTool.getApplicationContext();
 		this.larvaConfig = larvaTool.getLarvaConfig();
 		this.testExecutionObserver = larvaTool.getTestExecutionObserver();
 		this.testRunStatus = larvaTool.getTestRunStatus();
@@ -173,7 +173,7 @@ public class ScenarioRunner {
 		testExecutionObserver.startScenario(testRunStatus, scenario);
 		try (CloseableThreadContext.Instance ignored = CloseableThreadContext.put("scenario", scenario.getName());
 			 // This is far from optimal, but without refactoring the whole LarvaTool, this is the quick and dirty way to do it
-			 LarvaApplicationContext applicationContext = new LarvaApplicationContext(ibisContext, scenarioDirectory)
+			 LarvaApplicationContext applicationContext = new LarvaApplicationContext(this.applicationContext, scenarioDirectory)
 		) {
 			larvaTool.debugMessage("Read property file " + scenarioConfigurationFile.getName());
 			Properties properties = larvaTool.getScenarioLoader().readScenarioProperties(scenarioConfigurationFile, appConstants);
