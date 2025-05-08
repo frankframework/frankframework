@@ -1,11 +1,13 @@
 package org.frankframework.larva;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.StringWriter;
+import java.util.List;
 
 import jakarta.servlet.ServletContext;
 
@@ -94,8 +96,11 @@ class LarvaToolTest {
 	}
 
 	private static void verifyTestRunResults(TestRunStatus result, StringWriter output) {
-		assertEquals(1, result.getScenariosFailedCount(), output.toString());
-		assertEquals(2, result.getScenariosPassedCount());
-		assertEquals(3, result.getScenarioExecuteCount());
+		List<String> expectedFailed = List.of("scenariodir1/active-failing-scenario");
+		List<String> expectedPassed = List.of("scenariodir1/active-scenario", "scenariodir1/subdir/scenario01");
+
+		assertEquals(3, result.getScenarioExecuteCount(), () -> "Expected 3 scenarios to be executed, but was " + result.getScenarioExecuteCount() + "\n" + output.toString());
+		assertIterableEquals(expectedFailed, result.getFailedScenarios().stream().map(Scenario::getName).toList(), () -> "Expected " + expectedFailed.size() + " scenarios to fail, but was " + result.getFailedScenarios().size() + "\n" + output.toString());
+		assertIterableEquals(expectedPassed, result.getPassedScenarios().stream().map(Scenario::getName).toList(), () -> "Expected " + expectedPassed.size() + " scenarios to pass, but was " + result.getPassedScenarios().size() + "\n" + output.toString());
 	}
 }
