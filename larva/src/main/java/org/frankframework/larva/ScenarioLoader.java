@@ -34,7 +34,7 @@ import org.frankframework.configuration.ClassNameRewriter;
 import org.frankframework.larva.actions.LarvaActionFactory;
 import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.StringResolver;
+import org.frankframework.util.PropertyLoader;
 
 /**
  * Load scenario data for a given scenario file.
@@ -49,7 +49,7 @@ public class ScenarioLoader {
 	private static final String CURRENT_PACKAGE_NAME_LARVA = "org.frankframework.larva.";
 	public static final int SCENARIO_CACHE_SIZE = 20;
 
-	private final Map<File, Properties> scenarioFileCache = new LRUMap<>(SCENARIO_CACHE_SIZE);
+	private final Map<File, PropertyLoader> scenarioFileCache = new LRUMap<>(SCENARIO_CACHE_SIZE);
 
 	private final LarvaWriter out;
 
@@ -116,30 +116,41 @@ public class ScenarioLoader {
 	 * @param appConstants {@link AppConstants} to be used for resolving propertes in scenarios
 	 * @return The properties read from the scenario file.
 	 */
-	public @Nullable Properties readScenarioProperties(@Nonnull File scenarioFile, @Nonnull AppConstants appConstants) {
-		return readScenarioProperties(scenarioFile, appConstants, true);
+	public @Nullable PropertyLoader readScenarioProperties(@Nonnull File scenarioFile, @Nonnull AppConstants appConstants) {
+
+		PropertyLoader scenarioProperties = readScenarioProperties(scenarioFile, appConstants, true);
+		String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath();
+//		PropertyLoader scenarioProperties = new PropertyLoader(scenarioFile, appConstants);
+//
+//		Properties fixedClassnames = fixLegacyClassnames(scenarioProperties);
+//		scenarioProperties.putAll(fixedClassnames);
+//
+//		Properties loadedProperties = getIncludedProperties(scenarioProperties, scenarioDirectory);
+//		scenarioProperties.putAll(loadedProperties);
+////		scenarioProperties.putAll(appConstants);
+////		applyStringSubstitutions(scenarioProperties, appConstants);
+		addAbsolutePathProperties(scenarioDirectory, scenarioProperties);
+		return scenarioProperties;
 	}
 
-	private @Nullable Properties readScenarioProperties(@Nonnull File scenarioFile, @Nullable AppConstants appConstants, boolean root) {
-		if (scenarioFileCache.containsKey(scenarioFile)) {
+	private @Nullable PropertyLoader readScenarioProperties(@Nonnull File scenarioFile, @Nullable AppConstants appConstants, boolean root) {
+		// Only cache included files since they are most likely to be frequently read. Root files would just pollute the cache.
+		if (!root && scenarioFileCache.containsKey(scenarioFile)) {
 			return scenarioFileCache.get(scenarioFile);
 		}
-		String directory = scenarioFile.getParentFile().getAbsolutePath();
+		String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath();
 		try {
-			Properties properties = LarvaUtil.readProperties(out, scenarioFile);
-			Properties includedProperties = getIncludedProperties(appConstants, properties, directory);
+			PropertyLoader properties = new PropertyLoader(scenarioFile, appConstants);
+			fixLegacyClassnames(properties);
+
+			Properties includedProperties = getIncludedProperties(properties, scenarioDirectory);
 			properties.putAll(includedProperties);
 			out.debugMessage(properties.size() + " properties found");
-			if (root) {
-				properties.putAll(appConstants);
-				applyStringSubstitutions(properties, appConstants);
-				addAbsolutePathProperties(directory, properties);
-				return fixLegacyClassnames(properties);
-			} else {
+			if (!root) {
 				// Only cache included files since they are most likely to be frequently read. Root files would just pollute the cache.
 				scenarioFileCache.put(scenarioFile, properties);
-				return properties;
 			}
+			return properties;
 		} catch(Exception e) {
 			out.errorMessage("Could not read properties file: " + e.getMessage(), e);
 			return null;
@@ -147,7 +158,7 @@ public class ScenarioLoader {
 	}
 
 	@Nonnull
-	private Properties getIncludedProperties(@Nullable AppConstants appConstants, Properties properties, String directory) {
+	private Properties getIncludedProperties(Properties properties, String directory) {
 		Properties includedProperties = new Properties();
 		int i = 0;
 		String includeFilename = properties.getProperty("include");
@@ -158,7 +169,7 @@ public class ScenarioLoader {
 		while (includeFilename != null) {
 			out.debugMessage("Load include file: " + includeFilename);
 			File includeFile = new File(LarvaUtil.getAbsolutePath(directory, includeFilename));
-			Properties includeProperties = readScenarioProperties(includeFile, appConstants, false);
+			Properties includeProperties = readScenarioProperties(includeFile, null, false);
 			if (includeProperties != null) {
 				includedProperties.putAll(includeProperties);
 			}
@@ -166,12 +177,6 @@ public class ScenarioLoader {
 			includeFilename = properties.getProperty("include" + i);
 		}
 		return includedProperties;
-	}
-
-	private static void applyStringSubstitutions(Properties properties, AppConstants appConstants) {
-		for (Map.Entry<Object, Object> entry: properties.entrySet()) {
-			properties.put(entry.getKey(), StringResolver.substVars((String)entry.getValue(), properties, appConstants));
-		}
 	}
 
 	private static void addAbsolutePathProperties(@Nonnull String propertiesDirectory, @Nonnull Properties properties) {
@@ -194,13 +199,11 @@ public class ScenarioLoader {
 		}
 	}
 
-	private static @Nonnull Properties fixLegacyClassnames(@Nonnull Properties properties) {
+	private static void fixLegacyClassnames(@Nonnull Properties properties) {
 		Map<Object, Object> collected = properties.entrySet().stream()
 				.map(ScenarioLoader::rewriteClassName)
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-		Properties result = new Properties();
-		result.putAll(collected);
-		return result;
+		properties.putAll(collected);
 	}
 
 

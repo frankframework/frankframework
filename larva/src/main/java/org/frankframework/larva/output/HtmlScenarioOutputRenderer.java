@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.io.FilenameUtils;
+
 import org.frankframework.larva.LarvaHtmlConfig;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
@@ -285,7 +287,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 					String longName = scenarioDirectory.substring(0, i + 1);
 					writer.debugMessage("longName: '" + longName + "'");
 					if (!addedDirectories.contains(longName)) {
-						String shortName = scenarioDirectory.substring(scenariosRootDirectory.length() - 1, i + 1);
+						String shortName = FilenameUtils.normalize(scenarioDirectory.substring(scenariosRootDirectory.length() - 1, i + 1), true);
 						String option = "<option value=\"" + XmlEncodingUtils.encodeChars(longName) + "\"";
 						writer.debugMessage("paramExecute: '" + paramExecute + "'");
 						if (paramExecute != null && paramExecute.equals(longName)) {
