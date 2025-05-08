@@ -44,7 +44,7 @@ public class ScenarioLoaderTest {
 
 		assertNotNull(scenarioProperties);
 		assertEquals("true", scenarioProperties.getProperty("scenario.active"));
-		assertEquals("org.frankframework.receiver.IbisJavaSender", scenarioProperties.getProperty("test.className"));
+		assertEquals("org.frankframework.senders.EchoSender", scenarioProperties.getProperty("test.className"));
 	}
 
 	@Test

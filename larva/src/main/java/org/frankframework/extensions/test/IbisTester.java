@@ -85,15 +85,12 @@ public class IbisTester {
 			LarvaConfig larvaConfig = new LarvaConfig();
 			MockHttpServletRequest request = new MockHttpServletRequest();
 			request.setServletPath("/iaf/larva/index.jsp");
-			boolean silent;
 			if (scenario == null) {
 				application = new MockServletContext("file:" + webAppPath, null);
 				application.setAttribute(FrankApplicationInitializer.CONTEXT_KEY, ibisContext);
-				silent = false;
 			} else {
 				request.setParameter("loglevel", "scenario passed/failed");
 				request.setParameter("execute", scenario);
-				silent = true;
 			}
 			if (scenariosRootDir != null) {
 				request.setParameter("scenariosrootdirectory", scenariosRootDir);

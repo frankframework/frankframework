@@ -288,7 +288,7 @@ public class LarvaTool {
 		return RESULT_ERROR;
 	}
 
-	// Ideally, this should be moved to its own class. But for now it's a bridge too far because of `stepOutputFilename`.
+	// Ideally, this should be moved to its own class.
 	protected int executeStep(Scenario scenario, String step, Properties properties, String stepDisplayName, Map<String, LarvaScenarioAction> actions, String correlationId) {
 		String fileName = properties.getProperty(step);
 		String stepDataFileAbsolutePath = properties.getProperty(step + ".absolutepath");

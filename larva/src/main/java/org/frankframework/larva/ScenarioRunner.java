@@ -254,9 +254,10 @@ public class ScenarioRunner {
 			}
 			long scenarioDurationMs = System.currentTimeMillis() - scenarioStart;
 			testExecutionObserver.finishScenario(testRunStatus, scenario, scenarioResult, buildScenarioFinishedMessage(scenario, scenarioResult, scenarioDurationMs));
+			log.info("Finished scenario [{}], result: {}", scenario.getName(), scenarioResult == LarvaTool.RESULT_OK ? "OK" : "FAILED");
 			return scenarioResult;
 		} catch (Exception e) {
-			log.warn("Error occurred while creating Larva Scenario Actions", e);
+			log.warn("Error occurred while creating Larva Scenario Actions for scenario [{}]", scenario.getName(), e);
 			testRunStatus.scenarioFailed(scenario);
 			testExecutionObserver.finishScenario(testRunStatus, scenario, LarvaTool.RESULT_ERROR, "Error occurred while executing Larva Scenario: " + e.getMessage());
 			larvaTool.errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e);
