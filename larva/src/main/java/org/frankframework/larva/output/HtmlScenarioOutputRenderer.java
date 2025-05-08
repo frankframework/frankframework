@@ -357,7 +357,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>");
 		writeHtml("<table style=\"float:left;height:50px\">");
 		writeHtml(TR_STARTING_TAG);
-		writeHtml("TD_STARTING_TAG" + description + TD_CLOSING_TAG);
+		writeHtml(TD_STARTING_TAG + description + TD_CLOSING_TAG);
 		writeHtml(TR_CLOSING_TAG);
 		writeHtml(TR_STARTING_TAG);
 		writeHtml(TD_STARTING_TAG);
