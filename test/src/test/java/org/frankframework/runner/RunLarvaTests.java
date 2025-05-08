@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import org.springframework.boot.SpringApplication;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import org.frankframework.configuration.IbisContext;
@@ -107,7 +106,9 @@ public class RunLarvaTests {
 			"Zip/ZipWriter/scenario 02"
 	);
 
+	private static ConfigurableApplicationContext parentContext;
 	private static ConfigurableApplicationContext applicationContext;
+	private static IbisContext ibisContext;
 	private static LarvaTool larvaTool;
 	private static ScenarioRunner scenarioRunner;
 	private static String scenarioRootDir;
@@ -119,11 +120,11 @@ public class RunLarvaTests {
 	static void setup() throws IOException {
 		SpringApplication springApplication = IafTestInitializer.configureApplication();
 		// This ApplicationContext doesn't have the database so we cannot use it for the Larva Tests...
-		ApplicationContext ctx = springApplication.run();
-		ServletContext servletContext = ctx.getBean(ServletContext.class);
+		parentContext = springApplication.run();
+		ServletContext servletContext = parentContext.getBean(ServletContext.class);
 
 		// We need to get the IbisContext from the ServletContext, since from this one we can get the ApplicationContext that has the database.
-		IbisContext ibisContext = FrankApplicationInitializer.getIbisContext(servletContext);
+		ibisContext = FrankApplicationInitializer.getIbisContext(servletContext);
 		applicationContext = ibisContext.getApplicationContext();
 		larvaTool = LarvaTool.createInstance(applicationContext, System.out);
 
@@ -138,7 +139,7 @@ public class RunLarvaTests {
 
 	@AfterAll
 	static void tearDown() {
-		CloseUtils.closeSilently(applicationContext);
+		CloseUtils.closeSilently(ibisContext, parentContext);
 	}
 
 	/**
