@@ -220,31 +220,11 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 		writeHtml(TR_CLOSING_TAG);
 		writeHtml(TABLE_CLOSING_TAG);
 
-		// Use a span to make IE put table on next line with a smaller window width
-		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>");
-		writeHtml("<table style=\"float:left;height:50px\">");
-		writeHtml(TR_STARTING_TAG);
-		writeHtml("<td>Wait before clean up (ms)</td>");
-		writeHtml(TR_CLOSING_TAG);
-		writeHtml(TR_STARTING_TAG);
-		writeHtml(TD_STARTING_TAG);
-		writeHtml("<input type=\"text\" name=\"waitbeforecleanup\" value=\"" + config.getWaitBeforeCleanup() + "\"/>");
-		writeHtml(TD_CLOSING_TAG);
-		writeHtml(TR_CLOSING_TAG);
-		writeHtml(TABLE_CLOSING_TAG);
+		// wait before cleanup timeout box
+		writeIntOptionBox("Wait before clean up (ms)", "waitbeforecleanup", "Time to wait before scenario cleanup", config.getWaitBeforeCleanup());
 
-		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>");
 		// timeout box
-		writeHtml("<table style=\"float:left;height:50px\">");
-		writeHtml(TR_STARTING_TAG);
-		writeHtml("<td>Default timeout (ms)</td>");
-		writeHtml(TR_CLOSING_TAG);
-		writeHtml(TR_STARTING_TAG);
-		writeHtml(TD_STARTING_TAG);
-		writeHtml("<input type=\"text\" name=\"timeout\" value=\"" + config.getTimeout() + "\" title=\"Global timeout for larva scenarios.\"/>");
-		writeHtml(TD_CLOSING_TAG);
-		writeHtml(TR_CLOSING_TAG);
-		writeHtml(TABLE_CLOSING_TAG);
+		writeIntOptionBox("Default timeout (ms)", "timeout", "Global timeout for larva scenarios.", config.getTimeout());
 
 		// log level dropdown
 		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>");
@@ -269,38 +249,10 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 		writeHtml(TABLE_CLOSING_TAG);
 
 		// Auto scroll checkbox
-		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>");
-		writeHtml("<table style=\"float:left;height:50px\">");
-		writeHtml(TR_STARTING_TAG);
-		writeHtml("<td>Auto scroll</td>");
-		writeHtml(TR_CLOSING_TAG);
-		writeHtml(TR_STARTING_TAG);
-		writeHtml(TD_STARTING_TAG);
-		writeHtml("<input type=\"checkbox\" name=\"autoscroll\" value=\"true\"");
-		if (config.isAutoScroll()) {
-			writeHtml(" checked");
-		}
-		writeHtml("/>");
-		writeHtml(TD_CLOSING_TAG);
-		writeHtml(TR_CLOSING_TAG);
-		writeHtml(TABLE_CLOSING_TAG);
+		writeCheckboxOptionBox("Auto scroll", "autoscroll", config.isAutoScroll());
 
 		// Multithreaded checkbox
-		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>");
-		writeHtml("<table style=\"float:left;height:50px\">");
-		writeHtml(TR_STARTING_TAG);
-		writeHtml("<td>Multi Threaded (experimental)</td>");
-		writeHtml(TR_CLOSING_TAG);
-		writeHtml(TR_STARTING_TAG);
-		writeHtml(TD_STARTING_TAG);
-		writeHtml("<input type=\"checkbox\" name=\"multithreaded\" value=\"true\"");
-		if (config.isMultiThreaded()) {
-			writeHtml(" checked");
-		}
-		writeHtml("/>");
-		writeHtml(TD_CLOSING_TAG);
-		writeHtml(TR_CLOSING_TAG);
-		writeHtml(TABLE_CLOSING_TAG);
+		writeCheckboxOptionBox("Multi Threaded (experimental)", "multithreaded", config.isMultiThreaded());
 
 		// Scenario(s)
 		writeHtml("<table style=\"clear:both;float:left;height:50px\">");
@@ -380,5 +332,38 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 		writer.setBufferOutputMessages(false);
 		writer.setBufferLogMessages(false);
 		writer.flush();
+	}
+
+	private void writeCheckboxOptionBox(String description, String fieldName, boolean isChecked) {
+		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>");
+		writeHtml("<table style=\"float:left;height:50px\">");
+		writeHtml(TR_STARTING_TAG);
+		writeHtml(TD_STARTING_TAG + description + TD_CLOSING_TAG);
+		writeHtml(TR_CLOSING_TAG);
+		writeHtml(TR_STARTING_TAG);
+		writeHtml(TD_STARTING_TAG);
+		writeHtml("<input type=\"checkbox\" name=\"" + fieldName + "\" value=\"true\"");
+		if (isChecked) {
+			writeHtml(" checked");
+		}
+		writeHtml("/>");
+		writeHtml(TD_CLOSING_TAG);
+		writeHtml(TR_CLOSING_TAG);
+		writeHtml(TABLE_CLOSING_TAG);
+	}
+
+	private void writeIntOptionBox(String description, String fieldName, String title, int value) {
+		// Use a span to make IE put table on next line with a smaller window width
+		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>");
+		writeHtml("<table style=\"float:left;height:50px\">");
+		writeHtml(TR_STARTING_TAG);
+		writeHtml("TD_STARTING_TAG" + description + TD_CLOSING_TAG);
+		writeHtml(TR_CLOSING_TAG);
+		writeHtml(TR_STARTING_TAG);
+		writeHtml(TD_STARTING_TAG);
+		writeHtml("<input type=\"text\" name=\"" + fieldName + "\" value=\"" + value + "\" title=\"" + title + "\"/>");
+		writeHtml(TD_CLOSING_TAG);
+		writeHtml(TR_CLOSING_TAG);
+		writeHtml(TABLE_CLOSING_TAG);
 	}
 }
