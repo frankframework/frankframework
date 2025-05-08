@@ -35,6 +35,7 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.ListenerMessage;
 import org.frankframework.larva.ListenerMessageHandler;
+import org.frankframework.larva.Scenario;
 import org.frankframework.larva.SenderThread;
 import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.larva.output.TestExecutionObserver;
@@ -60,11 +61,12 @@ public class LarvaActionFactory {
 		this.defaultTimeout = testTool.getLarvaConfig().getTimeout();
 	}
 
-	public Map<String, LarvaScenarioAction> createLarvaActions(Properties properties, ApplicationContext applicationContext, String correlationId) {
+	public Map<String, LarvaScenarioAction> createLarvaActions(Scenario scenario, ApplicationContext applicationContext, String correlationId) {
 		Map<String, LarvaScenarioAction> larvaActions = new HashMap<>();
 		debugMessage("Get all action names");
 
 		try {
+			Properties properties = scenario.getProperties();
 			Set<String> actionNames = properties.keySet()
 					.stream()
 					.map(String.class::cast)

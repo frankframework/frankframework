@@ -17,7 +17,6 @@ package org.frankframework.larva;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -176,7 +175,7 @@ public class ScenarioRunner {
 			 LarvaApplicationContext applicationContext = new LarvaApplicationContext(this.applicationContext, scenarioDirectory)
 		) {
 			larvaTool.debugMessage("Read property file " + scenarioConfigurationFile.getName());
-			Properties properties = larvaTool.getScenarioLoader().readScenarioProperties(scenarioConfigurationFile, appConstants);
+			Properties properties = scenario.getProperties();
 
 			larvaTool.debugMessage("Open actions");
 
@@ -184,7 +183,7 @@ public class ScenarioRunner {
 
 			// increment suffix for each scenario
 			String correlationId = TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
-			Map<String, LarvaScenarioAction> larvaActions = actionFactory.createLarvaActions(properties, applicationContext, correlationId);
+			Map<String, LarvaScenarioAction> larvaActions = actionFactory.createLarvaActions(scenario, applicationContext, correlationId);
 			if (larvaActions == null || larvaActions.isEmpty()) {
 				testRunStatus.scenarioFailed(scenario);
 				testExecutionObserver.finishScenario(testRunStatus, scenario, LarvaTool.RESULT_ERROR, "Could not create LarvaActions");
@@ -196,7 +195,7 @@ public class ScenarioRunner {
 			// Start the scenario
 			// TODO: The buffering is now not threadsafe yet.
 			larvaTool.debugMessage("Read steps from property file");
-			List<String> stepList = getSteps(properties);
+			List<String> stepList = getSteps(scenario);
 			if (stepList.isEmpty()) {
 				testRunStatus.scenarioFailed(scenario);
 				testExecutionObserver.finishScenario(testRunStatus, scenario, LarvaTool.RESULT_ERROR, "No steps found");
@@ -265,30 +264,8 @@ public class ScenarioRunner {
 		}
 	}
 
-	private List<String> getSteps(Properties properties) {
-		List<String> steps = new ArrayList<>();
-		int i = 1;
-		boolean lastStepFound = false;
-		while (!lastStepFound) {
-			boolean stepFound = false;
-			Enumeration<?> enumeration = properties.propertyNames();
-			while (enumeration.hasMoreElements()) {
-				String key = (String) enumeration.nextElement();
-				if (key.startsWith("step" + i + ".") && (key.endsWith(".read") || key.endsWith(".write") || (larvaConfig.isAllowReadlineSteps() && key.endsWith(".readline")) || key.endsWith(".writeline"))) {
-					if (!stepFound) {
-						steps.add(key);
-						stepFound = true;
-						larvaTool.debugMessage("Added step '" + key + "'");
-					} else {
-						larvaTool.errorMessage("More than one step" + i + " properties found, already found '" + steps.get(steps.size() - 1) + "' before finding '" + key + "'");
-					}
-				}
-			}
-			if (!stepFound) {
-				lastStepFound = true;
-			}
-			i++;
-		}
+	private List<String> getSteps(Scenario scenario) {
+		List<String> steps = scenario.getSteps(larvaConfig);
 		larvaTool.debugMessage(steps.size() + " steps found");
 		return steps;
 	}

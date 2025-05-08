@@ -16,32 +16,64 @@
 package org.frankframework.larva;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.Objects;
+import java.util.Properties;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Data class to hold scenario data.
- *
- * TODO: Decide if ScenarioProperties should also be loaded as part of this already, or not
- * because of memory consumption reasons.
- * Keeping them in memory here would save some time but not much.
  */
+@Log4j2
 public class Scenario {
 	private final @Getter ID id;
 	private final @Getter File scenarioFile;
 	private final @Getter String name;
 	private final @Getter String description;
+	private final @Getter Properties properties;
 
-	public Scenario(File scenarioFile, String name, String description) {
+	public Scenario(File scenarioFile, String name, String description, Properties properties) {
 		this.id = new ID(scenarioFile);
 		this.scenarioFile = scenarioFile;
 		this.name = name;
 		this.description = description;
+		this.properties = properties;
 	}
 
 	public String getLongName() {
 		return scenarioFile.getAbsolutePath();
+	}
+
+	public List<String> getSteps(LarvaConfig larvaConfig) {
+		// TODO: This code can really do with some improvements and better test coverage. Now that it is part of Scenario class that will be easier.
+		List<String> steps = new ArrayList<>();
+		int i = 1;
+		boolean lastStepFound = false;
+		while (!lastStepFound) {
+			boolean stepFound = false;
+			Enumeration<?> enumeration = properties.propertyNames();
+			while (enumeration.hasMoreElements()) {
+				String key = (String) enumeration.nextElement();
+				if (key.startsWith("step" + i + ".") && (key.endsWith(".read") || key.endsWith(".write") || (larvaConfig.isAllowReadlineSteps() && key.endsWith(".readline")) || key.endsWith(".writeline"))) {
+					if (!stepFound) {
+						steps.add(key);
+						stepFound = true;
+						log.debug("Added step '{}'", key);
+					} else {
+						throw new LarvaException("More than one step" + i + " properties found, already found '" + steps.get(steps.size() - 1) + "' before finding '" + key + "'");
+					}
+				}
+			}
+			if (!stepFound) {
+				lastStepFound = true;
+			}
+			i++;
+		}
+		return steps;
 	}
 
 	public static class ID {
