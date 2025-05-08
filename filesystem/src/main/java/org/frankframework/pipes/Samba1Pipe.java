@@ -17,6 +17,7 @@ package org.frankframework.pipes;
 
 import jcifs.smb.SmbFile;
 
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.filesystem.AbstractFileSystemPipe;
 import org.frankframework.filesystem.smb.Samba1FileSystem;
 import org.frankframework.filesystem.smb.Samba1FileSystemDelegator;
@@ -26,6 +27,8 @@ import org.frankframework.filesystem.smb.Samba1FileSystemDelegator;
  * <br/>
  * Only supports NTLM authentication.
  */
+@Deprecated
+@ConfigurationWarning("NTLM authentication is insecured, if possible upgrade to SMB3 asap.")
 public class Samba1Pipe extends AbstractFileSystemPipe<SmbFile, Samba1FileSystem> implements Samba1FileSystemDelegator {
 
 	public Samba1Pipe() {
