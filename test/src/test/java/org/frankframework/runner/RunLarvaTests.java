@@ -14,7 +14,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
-import jakarta.servlet.ServletContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -29,14 +28,12 @@ import org.junit.jupiter.api.TestFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import org.frankframework.configuration.IbisContext;
 import org.frankframework.larva.LarvaConfig;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.Scenario;
 import org.frankframework.larva.ScenarioRunner;
 import org.frankframework.larva.TestRunStatus;
-import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.util.CloseUtils;
 
 /**
@@ -118,10 +115,7 @@ public class RunLarvaTests {
 	static void setup() throws IOException {
 		SpringApplication springApplication = IafTestInitializer.configureApplication();
 		applicationContext = springApplication.run();
-		ServletContext servletContext = applicationContext.getBean(ServletContext.class);
-		IbisContext ibisContext = FrankApplicationInitializer.getIbisContext(servletContext);
-
-		larvaTool = LarvaTool.createInstance(ibisContext, System.out);
+		larvaTool = LarvaTool.createInstance(applicationContext, System.out);
 
 		LarvaConfig larvaConfig = larvaTool.getLarvaConfig();
 		larvaConfig.setTimeout(10_000);
