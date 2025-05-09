@@ -120,6 +120,49 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	}
 
 	@Test
+	void testBasicClientAuthentication() throws Exception {
+		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.basicPath);
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setClientId(MockTokenServer.CLIENT_ID);
+		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
+
+		sender.configure();
+		sender.start();
+
+		result = sendMessage();
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
+		assertNotNull(result.asString());
+	}
+
+	@Test
+	void testBasicAuthenticationUsingClientAlias() throws Exception {
+		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.basicPath);
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setClientAlias("oauth.credentials");
+
+		sender.configure();
+		sender.start();
+
+		result = sendMessage();
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
+		assertNotNull(result.asString());
+	}
+
+	@Test
+	void testBasicAuthenticationUsingAuthAlias() throws Exception {
+		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.basicPath);
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setAuthAlias("oauth.credentials");
+
+		sender.configure();
+		sender.start();
+
+		result = sendMessage();
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
+		assertNotNull(result.asString());
+	}
+
+	@Test
 	void testBasicAuthenticationUnchallenged() throws Exception {
 		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.basicPathUnchallenged);
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
@@ -173,6 +216,23 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
 		sender.setOauthAuthenticationMethod(AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH);
+
+		sender.configure();
+		sender.start();
+
+		result = sendMessage();
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
+		assertNotNull(result.asString());
+	}
+
+	@Test
+	void testOAuthAuthenticatedTokenRequestUsingClientAlias() throws Exception {
+		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH);
+		sender.setClientAlias("oauth.credentials");
+
+		sender.setAuthenticatedTokenRequest(true);
 
 		sender.configure();
 		sender.start();
@@ -241,7 +301,8 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH);
 
 		ConfigurationException exception = assertThrows(ConfigurationException.class, ()->sender.configure());
-		assertThat(exception.getMessage(), containsString("clientId is required"));
+		assertThat(exception.getMessage().toLowerCase(), containsString("clientsecret"));
+		assertThat(exception.getMessage().toLowerCase(), containsString("clientid"));
 	}
 
 	@Test

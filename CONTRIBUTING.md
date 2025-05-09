@@ -263,8 +263,9 @@ This guide assumes that you are using IntelliJ Ultimate, because application ser
       - Set the context to `/iaf-test`.
 		__NB__: This is very important, otherwise a lot of tests will fail!
       - Set the following VM options:
-        `-Ddtap.stage=LOC -DauthAliases.expansion.allowed=testalias -Dweb.port=8080 -DcredentialFactory.class=org.frankframework.credentialprovider.FileSystemCredentialFactory -DcredentialFactory.filesystem.root=/<path to source>/frankframework/test/src/main/secrets`
-      - In the "On Update" section, select "Update Classes and Resources", so classes can be automatically updated and reloaded after project build (providing this is supported by your JDK)
+        `-Ddtap.stage=LOC -DauthAliases.expansion.allowed=testalias -Dweb.port=8080 
+      -DcredentialFactory.class=org.frankframework.credentialprovider.PropertyFileCredentialFactory -DcredentialFactory.map.properties=/<path to source>/test/src/main/secrets/credentials.properties`
+	  - In the "On Update" section, select "Update Classes and Resources", so classes can be automatically updated and reloaded after project build (providing this is supported by your JDK)
       - Under the section "Before launch", add a build step to build the console-frontend project via Maven. Add a Maven Goal action, running command `install` in the project "frankframework-console-frontend". These build steps should be in the following order:
           1. Build console-frontend
           2. Build the war exploded artifact.

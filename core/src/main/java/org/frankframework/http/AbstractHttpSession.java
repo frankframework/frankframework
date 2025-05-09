@@ -305,7 +305,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 	private boolean disableCookies = false;
 
-	private CredentialFactory credentials;
+	private @Getter CredentialFactory credentials;
 
 	/**
 	 * Makes sure only http(s) requests can be performed.
@@ -348,6 +348,8 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 			oauthAuthenticationMethod = OauthAuthenticationMethod.determineOauthAuthenticationMethod(this);
 		}
 
+		credentials = getCredentialFactory(oauthAuthenticationMethod);
+
 		if (oauthAuthenticationMethod != null) {
 			try {
 				authenticator = oauthAuthenticationMethod.newAuthenticator(this);
@@ -361,11 +363,10 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
 
-		if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(getClientAuthAlias()) && StringUtils.isEmpty(getClientId())) {
-			throw new ConfigurationException("To obtain accessToken at tokenEndpoint ["+getTokenEndpoint()+"] a clientAuthAlias or ClientId and ClientSecret must be specified");
+		if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(credentials.getUsername()) && StringUtils.isEmpty(credentials.getPassword())) {
+			// Should be unreachable since an exception would have been thrown at: authenticator.configure()
+			throw new ConfigurationException("To obtain an accessToken at tokenEndpoint ["+getTokenEndpoint()+"] a clientAuthAlias or ClientId and ClientSecret must be specified");
 		}
-
-		credentials = getCredentialFactory();
 
 		RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
 		requestConfigBuilder.setConnectTimeout(getTimeout());
@@ -431,12 +432,46 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		}
 	}
 
-	private CredentialFactory getCredentialFactory() {
-		if (StringUtils.isNotEmpty(getAuthAlias()) || StringUtils.isNotEmpty(getUsername())) {
-			return new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-		}
+	/**
+	 * Determines and returns the appropriate {@link CredentialFactory} based on the provided
+	 * {@link OauthAuthenticationMethod}.
+	 * <p>
+	 * This method selects either user credentials (username/password or resolved via alias) or client credentials
+	 * (client ID/secret or resolved via alias) based on the specified OAuth flow.
+	 * <p>
+	 * Supported behavior:
+	 * <ul>
+	 *     <li><b>Client Credentials Flow</b>: If {@code oauthAuthenticationMethod} is
+	 *     {@code CLIENT_CREDENTIALS_QUERY_PARAMETERS} or {@code CLIENT_CREDENTIALS_BASIC_AUTH},
+	 *     client credentials are preferred. If unavailable, user credentials are used as a fallback.</li>
+	 *     <li><b>Other OAuth Flows</b>: If the OAuth method is one of {@code RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH}
+	 *     or {@code RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS}, user credentials are preferred.</li>
+	 *     <li><b>No OAuth (null method)</b>: Treated as a fallback scenario — user credentials are preferred.
+	 *     This typically occurs when the request is authenticated using basic auth directly, not an OAuth token.</li>
+	 * </ul>
+	 * <p>
+	 * Credential presence is determined based on resolved values from {@link CredentialFactory#getUsername()}
+	 * and {@link CredentialFactory#getPassword()}, which may extract credentials from aliases if set.
+	 *
+	 * @param oauthAuthenticationMethod the OAuth authentication method determining credential preference;
+	 *                                  may be {@code null} if no OAuth is required
+	 * @return a {@link CredentialFactory} containing either the user or client credentials, based on availability and flow type
+	 */
+	private CredentialFactory getCredentialFactory(OauthAuthenticationMethod oauthAuthenticationMethod) {
+		boolean clientCredentialsRequired = oauthAuthenticationMethod == OauthAuthenticationMethod.CLIENT_CREDENTIALS_QUERY_PARAMETERS
+			|| oauthAuthenticationMethod == OauthAuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH;
 
-		return new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
+		CredentialFactory clientCredentials = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
+		CredentialFactory userCredentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+
+		boolean hasUserCredentials = StringUtils.isNotEmpty(userCredentials.getUsername()) || StringUtils.isNotEmpty(userCredentials.getPassword());
+		boolean hasClientCredentials = StringUtils.isNotEmpty(clientCredentials.getUsername()) || StringUtils.isNotEmpty(clientCredentials.getPassword());
+
+		if (clientCredentialsRequired) {
+			return hasClientCredentials ? clientCredentials : userCredentials;
+		} else {
+			return hasUserCredentials ? userCredentials : clientCredentials;
+		}
 	}
 
 	/** The redirect strategy used to only redirect GET, DELETE and HEAD. */
@@ -550,7 +585,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 		if (StringUtils.isNotEmpty(credentials.getUsername()) || StringUtils.isNotEmpty(getTokenEndpoint())) {
 
-			credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), getCredentials());
+			credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), getDomainAwareCredentials());
 
 			AuthenticationScheme preferredAuthenticationScheme = getPreferredAuthenticationScheme();
 			requestConfigBuilder.setTargetPreferredAuthSchemes(Collections.singletonList(preferredAuthenticationScheme.getSchemeName()));
@@ -598,11 +633,11 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 				clientContext.setAttribute(HttpClientContext.TARGET_AUTH_STATE, authState);
 			}
 			authState.setState(AuthProtocolState.CHALLENGED);
-			authState.update(getPreferredAuthenticationScheme().createScheme(), getCredentials());
+			authState.update(getPreferredAuthenticationScheme().createScheme(), getDomainAwareCredentials());
 		}
 	}
 
-	public Credentials getCredentials() {
+	public Credentials getDomainAwareCredentials() {
 		String uname;
 		if (StringUtils.isNotEmpty(getAuthDomain())) {
 			uname = getAuthDomain() + "\\" + credentials.getUsername();

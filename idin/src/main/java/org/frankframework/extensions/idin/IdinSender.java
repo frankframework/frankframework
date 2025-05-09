@@ -213,23 +213,23 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 			}
 		} else {
 			config = new Configuration(getMerchantID(),
-										getMerchantSubID(),
-										getMerchantReturnUrl(),
-										getKeyStoreLocation(),
-										getKeyStorePassword(),
-										getMerchantCertificateAlias(),
-										getMerchantCertificatePassword(),
-										getAcquirerCertificateAlias(),
-										getAcquirerAlternativeCertificateAlias(),
-										getAcquirerDirectoryUrl(),
-										getAcquirerTransactionUrl(),
-										getAcquirerStatusUrl(),
-										isLogsEnabled(),
-										isServiceLogsEnabled(),
-										getServiceLogsLocation(),
-										getServiceLogsPattern(),
-										isTls12Enabled(),
-										null);
+					getMerchantSubID(),
+					getMerchantReturnUrl(),
+					getKeyStoreLocation(),
+					getKeyStorePassword(),
+					getMerchantCertificateAlias(),
+					getMerchantCertificatePassword(),
+					getAcquirerCertificateAlias(),
+					getAcquirerAlternativeCertificateAlias(),
+					getAcquirerDirectoryUrl(),
+					getAcquirerTransactionUrl(),
+					getAcquirerStatusUrl(),
+					isLogsEnabled(),
+					isServiceLogsEnabled(),
+					getServiceLogsLocation(),
+					getServiceLogsPattern(),
+					isTls12Enabled(),
+					null);
 		}
 		return config;
 	}

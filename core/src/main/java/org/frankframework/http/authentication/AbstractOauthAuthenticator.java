@@ -41,6 +41,7 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.task.TimeoutGuard;
+import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.JacksonUtils;
 
@@ -51,6 +52,11 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 
 	protected final URI authorizationEndpoint;
 	protected final int overwriteExpiryMs;
+
+	protected final String username;
+	protected final String password;
+	protected final String clientId;
+	protected final String clientSecret;
 
 	private String accessToken;
 	private long accessTokenRefreshTime;
@@ -63,6 +69,14 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 			throw new HttpAuthenticationException(e);
 		}
 		this.overwriteExpiryMs = session.getTokenExpiry() * 1000;
+
+		CredentialFactory userCredentials = session.getCredentials();
+		this.username = userCredentials.getUsername();
+		this.password = userCredentials.getPassword();
+
+		CredentialFactory clientCredentials = new CredentialFactory(session.getClientAuthAlias(), session.getClientId(), session.getClientSecret());
+		this.clientId = clientCredentials.getUsername();
+		this.clientSecret = clientCredentials.getPassword();
 	}
 
 	@Nullable
