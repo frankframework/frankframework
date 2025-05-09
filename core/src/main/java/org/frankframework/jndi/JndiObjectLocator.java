@@ -44,6 +44,11 @@ public class JndiObjectLocator implements IObjectLocator, ApplicationContextAwar
 
 	private @Setter String jndiContextPrefix = null;
 
+	// For tests!
+	protected JndiTemplate getJndiTemplate(Properties jndiEnvironment) {
+		return new JndiTemplate(jndiEnvironment);
+	}
+
 	/**
 	 * Attempt to lookup the Object in the JNDI. If it cannot find the object, attempt to try again (without a JNDI-prefix).
 	 * @param <O> Object class used by clients
@@ -51,7 +56,7 @@ public class JndiObjectLocator implements IObjectLocator, ApplicationContextAwar
 	@Override
 	public <O> O lookup(String jndiName, Properties jndiEnvironment, Class<O> lookupClass) throws NamingException {
 		String prefixedJndiName = getPrefixedJndiName(jndiName);
-		JndiTemplate locator = new JndiTemplate(jndiEnvironment);
+		JndiTemplate locator = getJndiTemplate(jndiEnvironment);
 		try {
 			return locator.lookup(prefixedJndiName, lookupClass);
 		} catch (NameNotFoundException e) { // Fallback and search again but this time without prefix
