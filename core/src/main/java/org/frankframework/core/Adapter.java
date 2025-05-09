@@ -425,7 +425,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	public Message formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, String messageID, HasName objectInError, long receivedTime) {
 		if (errorMessageFormatter == null) {
-			errorMessageFormatter = new ErrorMessageFormatter();
+			errorMessageFormatter = SpringUtils.createBean(this, ErrorMessageFormatter.class);
 		}
 		try {
 			return errorMessageFormatter.format(errorMessage, t, objectInError, originalMessage, messageID, receivedTime);

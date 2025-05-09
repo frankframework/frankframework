@@ -64,7 +64,6 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Forward;
-import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
@@ -379,7 +378,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 					if (StringUtils.isNotEmpty(getResultOnTimeOut())) {
 						resultMessage =new Message(getResultOnTimeOut());
 					} else {
-						resultMessage = new ErrorMessageFormatter().format(null,toe,this,input,session.getMessageId(),0);
+						resultMessage = getAdapter().formatErrorMessage(null,toe,input,session.getMessageId(), this, session.getTsReceived().toEpochMilli());
 					}
 					return new PipeRunResult(timeoutForward,resultMessage);
 				}

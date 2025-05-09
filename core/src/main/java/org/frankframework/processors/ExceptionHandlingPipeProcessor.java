@@ -29,7 +29,6 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.pipes.ExceptionPipe;
 import org.frankframework.stream.Message;
@@ -52,13 +51,11 @@ public class ExceptionHandlingPipeProcessor extends AbstractPipeProcessor {
 				}
 
 				final Message errorMessage;
-				ErrorMessageFormatter emf = new ErrorMessageFormatter();
-
 				if(e instanceof PipeRunException exception) {
 					HasName location = exception.getPipeInError();
-					errorMessage = emf.format(null, e.getCause(), location, message, pipeLineSession.getMessageId(), tsReceivedLong);
+					errorMessage = pipeLine.getAdapter().formatErrorMessage(null, e.getCause(), message, pipeLineSession.getMessageId(), location, tsReceivedLong);
 				} else {
-					errorMessage = emf.format(null, e, pipeLine.getAdapter(), message, pipeLineSession.getMessageId(), tsReceivedLong);
+					errorMessage = pipeLine.getAdapter().formatErrorMessage(null, e, message, pipeLineSession.getMessageId(), pipeLine.getAdapter(), tsReceivedLong);
 				}
 
 				log.info("exception occurred, forwarding to exception-forward [{}]", PipeForward.EXCEPTION_FORWARD_NAME, e);
