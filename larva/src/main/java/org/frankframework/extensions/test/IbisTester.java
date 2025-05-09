@@ -38,8 +38,6 @@ import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockServletContext;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -47,8 +45,12 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.Adapter;
+import org.frankframework.larva.LarvaHtmlConfig;
+import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
-import org.frankframework.lifecycle.FrankApplicationInitializer;
+import org.frankframework.larva.output.HtmlScenarioOutputRenderer;
+import org.frankframework.larva.output.LarvaHtmlWriter;
+import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
@@ -62,7 +64,6 @@ import org.frankframework.util.XmlUtils;
 public class IbisTester {
 	String webAppPath;
 	@Getter IbisContext ibisContext;
-	MockServletContext application;
 
 	private record Result(String resultString, long duration) {
 	}
@@ -78,23 +79,16 @@ public class IbisTester {
 
 		@Override
 		public String call() throws Exception {
-			MockHttpServletRequest request = new MockHttpServletRequest();
-			request.setServletPath("/iaf/larva/index.jsp");
-			boolean silent;
-			if (scenario == null) {
-				application = new MockServletContext("file:" + webAppPath, null);
-				application.setAttribute(FrankApplicationInitializer.CONTEXT_KEY, ibisContext);
-				silent = false;
-			} else {
-				request.setParameter("loglevel", "scenario passed/failed");
-				request.setParameter("execute", scenario);
-				silent = true;
-			}
+			LarvaHtmlConfig larvaConfig = new LarvaHtmlConfig();
+			larvaConfig.setLogLevel(LarvaLogLevel.SCENARIO_PASSED_FAILED);
+			larvaConfig.setExecute(scenario);
 			if (scenariosRootDir != null) {
-				request.setParameter("scenariosrootdirectory", scenariosRootDir);
+				larvaConfig.setActiveScenariosDirectory(scenariosRootDir);
 			}
 			Writer writer = new StringWriter();
-			LarvaTool.runScenarios(ibisContext, request, writer, silent);
+			LarvaHtmlWriter larvaWriter = new LarvaHtmlWriter(larvaConfig, writer);
+			TestExecutionObserver testExecutionObserver = new HtmlScenarioOutputRenderer(larvaConfig, larvaWriter);
+			LarvaTool.runScenarios(ibisContext.getApplicationContext(), larvaConfig, larvaWriter, testExecutionObserver, scenario);
 			if (scenario == null) {
 				String htmlString = "<html><head/><body>" + writer + "</body></html>";
 				try (Message message = new Message(htmlString)) {

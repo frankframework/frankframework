@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 
@@ -14,11 +15,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 
 import org.frankframework.configuration.ClassLoaderException;
+import org.frankframework.larva.LarvaConfig;
 import org.frankframework.larva.LarvaTool;
+import org.frankframework.larva.Scenario;
 import org.frankframework.larva.actions.LarvaActionFactory;
 import org.frankframework.larva.actions.LarvaApplicationContext;
 import org.frankframework.larva.actions.LarvaScenarioAction;
 import org.frankframework.larva.actions.SenderAction;
+import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.stream.Message;
 
 class LarvaActionFactoryTest {
@@ -29,7 +33,7 @@ class LarvaActionFactoryTest {
 
 	@BeforeEach
 	void setUp() throws ClassLoaderException {
-		larvaTool = new LarvaTool();
+		larvaTool = new LarvaTool(null, new LarvaConfig(), new LarvaWriter(new LarvaConfig(), System.out), null);
 		actionFactory = new LarvaActionFactory(larvaTool);
 		applicationContext = new LarvaApplicationContext(null, "/");
 	}
@@ -39,9 +43,9 @@ class LarvaActionFactoryTest {
 		// Arrange
 		Properties props = new Properties();
 		props.load(this.getClass().getResourceAsStream("/queueCreatorTest.properties"));
-
+		Scenario scenario = new Scenario(new File("/queueCreatorTest.properties"), "test", "test", props);
 		// Act
-		Map<String, LarvaScenarioAction> queues = actionFactory.createLarvaActions(props, applicationContext, "cid");
+		Map<String, LarvaScenarioAction> queues = actionFactory.createLarvaActions(scenario, applicationContext, "cid");
 
 		// Assert
 		assertNotNull(queues);

@@ -70,7 +70,7 @@ public class FileSender implements IConfigurable, FrankElement {
 		} catch (URISyntaxException e) {
 			throw new ConfigurationException("Could not find scenario root directory", e);
 		}
-		String absPath = LarvaTool.getAbsolutePath(scenarioDirectory, filename);
+		String absPath = LarvaUtil.getAbsolutePath(scenarioDirectory, filename);
 		file = new File(absPath);
 	}
 

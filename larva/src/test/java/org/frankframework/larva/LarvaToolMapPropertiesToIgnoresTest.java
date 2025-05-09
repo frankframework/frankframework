@@ -3,7 +3,7 @@ package org.frankframework.larva;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.junit.jupiter.api.Test;
@@ -21,15 +21,15 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		scenario.setProperty(propertyName + ".identifier.key2", key2);
 		scenario.setProperty(propertyName + ".identifier.replaceNewlines", replaceNewlines);
 
-		HashMap<String, HashMap<String, HashMap<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
+		Map<String, Map<String, Map<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
 		assertNotNull(result);
 		assertEquals(1, result.size());
 
-		HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+		Map<String, Map<String, String>> ignore = result.get(propertyName);
 		assertNotNull(ignore);
 		assertEquals(1, ignore.size());
 
-		HashMap<String, String> identifier = ignore.get("identifier");
+		Map<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
 		assertEquals(key1, identifier.get("key1"));
@@ -47,15 +47,15 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		scenario.setProperty(propertyName + ".identifier.key1", key1);
 		scenario.setProperty(propertyName + ".identifier.key2", key2);
 
-		HashMap<String, HashMap<String, HashMap<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
+		Map<String, Map<String, Map<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
 		assertNotNull(result);
 		assertEquals(1, result.size());
 
-		HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+		Map<String, Map<String, String>> ignore = result.get(propertyName);
 		assertNotNull(ignore);
 		assertEquals(1, ignore.size());
 
-		HashMap<String, String> identifier = ignore.get("identifier");
+		Map<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
 		assertEquals(key1, identifier.get("key1"));
@@ -72,15 +72,15 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		scenario.setProperty(propertyName + ".identifier.key1", key1);
 		scenario.setProperty(propertyName + ".identifier.key2", key2);
 
-		HashMap<String, HashMap<String, HashMap<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
+		Map<String, Map<String, Map<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
 		assertNotNull(result);
 		assertEquals(1, result.size());
 
-		HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+		Map<String, Map<String, String>> ignore = result.get(propertyName);
 		assertNotNull(ignore);
 		assertEquals(1, ignore.size());
 
-		HashMap<String, String> identifier = ignore.get("identifier");
+		Map<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
 		assertEquals(key1, identifier.get("key1"));
@@ -97,15 +97,15 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		scenario.setProperty(propertyName + ".identifier.key1", key1);
 		scenario.setProperty(propertyName + ".identifier.key2", key2);
 
-		HashMap<String, HashMap<String, HashMap<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
+		Map<String, Map<String, Map<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
 		assertNotNull(result);
 		assertEquals(1, result.size());
 
-		HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+		Map<String, Map<String, String>> ignore = result.get(propertyName);
 		assertNotNull(ignore);
 		assertEquals(1, ignore.size());
 
-		HashMap<String, String> identifier = ignore.get("identifier");
+		Map<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
 		assertEquals(key1, identifier.get("key1"));
@@ -122,15 +122,15 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		scenario.setProperty(propertyName + ".identifier.key1", key1);
 		scenario.setProperty(propertyName + ".identifier.key2", key2);
 
-		HashMap<String, HashMap<String, HashMap<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
+		Map<String, Map<String, Map<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
 		assertNotNull(result);
 		assertEquals(1, result.size());
 
-		HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+		Map<String, Map<String, String>> ignore = result.get(propertyName);
 		assertNotNull(ignore);
 		assertEquals(1, ignore.size());
 
-		HashMap<String, String> identifier = ignore.get("identifier");
+		Map<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
 		assertEquals(key1, identifier.get("key1"));
@@ -147,15 +147,15 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		scenario.setProperty(propertyName + ".identifier.key1", key1);
 		scenario.setProperty(propertyName + ".identifier.key2", key2);
 
-		HashMap<String, HashMap<String, HashMap<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
+		Map<String, Map<String, Map<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
 		assertNotNull(result);
 		assertEquals(1, result.size());
 
-		HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+		Map<String, Map<String, String>> ignore = result.get(propertyName);
 		assertNotNull(ignore);
 		assertEquals(1, ignore.size());
 
-		HashMap<String, String> identifier = ignore.get("identifier");
+		Map<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
 		assertEquals(key1, identifier.get("key1"));
@@ -172,15 +172,15 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		scenario.setProperty(propertyName + ".identifier.key1", key1);
 		scenario.setProperty(propertyName + ".identifier.key2", key2);
 
-		HashMap<String, HashMap<String, HashMap<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
+		Map<String, Map<String, Map<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
 		assertNotNull(result);
 		assertEquals(1, result.size());
 
-		HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+		Map<String, Map<String, String>> ignore = result.get(propertyName);
 		assertNotNull(ignore);
 		assertEquals(1, ignore.size());
 
-		HashMap<String, String> identifier = ignore.get("identifier");
+		Map<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
 		assertEquals(key1, identifier.get("key1"));
@@ -197,15 +197,15 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		scenario.setProperty(propertyName + ".identifier.key1", key1);
 		scenario.setProperty(propertyName + ".identifier.key2", key2);
 
-		HashMap<String, HashMap<String, HashMap<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
+		Map<String, Map<String, Map<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
 		assertNotNull(result);
 		assertEquals(1, result.size());
 
-		HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+		Map<String, Map<String, String>> ignore = result.get(propertyName);
 		assertNotNull(ignore);
 		assertEquals(1, ignore.size());
 
-		HashMap<String, String> identifier = ignore.get("identifier");
+		Map<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
 		assertEquals(key1, identifier.get("key1"));
@@ -222,15 +222,15 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		scenario.setProperty(propertyName + ".identifier.key1", key1);
 		scenario.setProperty(propertyName + ".identifier.key2", key2);
 
-		HashMap<String, HashMap<String, HashMap<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
+		Map<String, Map<String, Map<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
 		assertNotNull(result);
 		assertEquals(1, result.size());
 
-		HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+		Map<String, Map<String, String>> ignore = result.get(propertyName);
 		assertNotNull(ignore);
 		assertEquals(1, ignore.size());
 
-		HashMap<String, String> identifier = ignore.get("identifier");
+		Map<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
 		assertEquals(key1, identifier.get("key1"));
@@ -245,15 +245,15 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		String key = "abc*";
 		scenario.setProperty(propertyName + ".identifier.key", key);
 
-		HashMap<String, HashMap<String, HashMap<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
+		Map<String, Map<String, Map<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
 		assertNotNull(result);
 		assertEquals(1, result.size());
 
-		HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+		Map<String, Map<String, String>> ignore = result.get(propertyName);
 		assertNotNull(ignore);
 		assertEquals(1, ignore.size());
 
-		HashMap<String, String> identifier = ignore.get("identifier");
+		Map<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
 		assertEquals(key, identifier.get("key"));
@@ -267,15 +267,15 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		String key = "abc*";
 		scenario.setProperty(propertyName + ".identifier.key", key);
 
-		HashMap<String, HashMap<String, HashMap<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
+		Map<String, Map<String, Map<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
 		assertNotNull(result);
 		assertEquals(1, result.size());
 
-		HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+		Map<String, Map<String, String>> ignore = result.get(propertyName);
 		assertNotNull(ignore);
 		assertEquals(1, ignore.size());
 
-		HashMap<String, String> identifier = ignore.get("identifier");
+		Map<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
 		assertEquals(key, identifier.get("key"));
@@ -289,15 +289,15 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		String key = "abc*";
 		scenario.setProperty(propertyName + ".identifier.key", key);
 
-		HashMap<String, HashMap<String, HashMap<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
+		Map<String, Map<String, Map<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
 		assertNotNull(result);
 		assertEquals(1, result.size());
 
-		HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+		Map<String, Map<String, String>> ignore = result.get(propertyName);
 		assertNotNull(ignore);
 		assertEquals(1, ignore.size());
 
-		HashMap<String, String> identifier = ignore.get("identifier");
+		Map<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
 		assertEquals(key, identifier.get("key"));
@@ -311,15 +311,15 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		String key = "abc*";
 		scenario.setProperty(propertyName + ".identifier.key", key);
 
-		HashMap<String, HashMap<String, HashMap<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
+		Map<String, Map<String, Map<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
 		assertNotNull(result);
 		assertEquals(1, result.size());
 
-		HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+		Map<String, Map<String, String>> ignore = result.get(propertyName);
 		assertNotNull(ignore);
 		assertEquals(1, ignore.size());
 
-		HashMap<String, String> identifier = ignore.get("identifier");
+		Map<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
 		assertEquals(key, identifier.get("key"));
@@ -341,15 +341,15 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		scenario.setProperty(propertyName + ".identifier.margin", margin);
 		scenario.setProperty(propertyName + ".identifier.errorMessageOnRemainingString", errorMessageOnRemainingString);
 
-		HashMap<String, HashMap<String, HashMap<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
+		Map<String, Map<String, Map<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
 		assertNotNull(result);
 		assertEquals(1, result.size());
 
-		HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+		Map<String, Map<String, String>> ignore = result.get(propertyName);
 		assertNotNull(ignore);
 		assertEquals(1, ignore.size());
 
-		HashMap<String, String> identifier = ignore.get("identifier");
+		Map<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
 		assertEquals(key1, identifier.get("key1"));
@@ -367,15 +367,15 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		String key = "<field name='zip'>";
 		scenario.setProperty(propertyName + ".identifier.key", key);
 
-		HashMap<String, HashMap<String, HashMap<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
+		Map<String, Map<String, Map<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
 		assertNotNull(result);
 		assertEquals(1, result.size());
 
-		HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+		Map<String, Map<String, String>> ignore = result.get(propertyName);
 		assertNotNull(ignore);
 		assertEquals(1, ignore.size());
 
-		HashMap<String, String> identifier = ignore.get("identifier");
+		Map<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
 		assertEquals(key, identifier.get("key"));
@@ -389,15 +389,15 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		String value = "<field name='zip'>";
 		scenario.setProperty(propertyName + ".identifier", value);
 
-		HashMap<String, HashMap<String, HashMap<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
+		Map<String, Map<String, Map<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
 		assertNotNull(result);
 		assertEquals(1, result.size());
 
-		HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+		Map<String, Map<String, String>> ignore = result.get(propertyName);
 		assertNotNull(ignore);
 		assertEquals(1, ignore.size());
 
-		HashMap<String, String> identifier = ignore.get("identifier");
+		Map<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
 		assertEquals(value, identifier.get("value"));
@@ -411,15 +411,15 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		String key = "<field name='zip'>";
 		scenario.setProperty(propertyName + ".identifier.key", key);
 
-		HashMap<String, HashMap<String, HashMap<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
+		Map<String, Map<String, Map<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
 		assertNotNull(result);
 		assertEquals(1, result.size());
 
-		HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+		Map<String, Map<String, String>> ignore = result.get(propertyName);
 		assertNotNull(ignore);
 		assertEquals(1, ignore.size());
 
-		HashMap<String, String> identifier = ignore.get("identifier");
+		Map<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
 		assertEquals(key, identifier.get("key"));
@@ -433,15 +433,15 @@ class LarvaToolMapPropertiesToIgnoresTest {
 		String value = "<field name='zip'>";
 		scenario.setProperty(propertyName + ".identifier", value);
 
-		HashMap<String, HashMap<String, HashMap<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
+		Map<String, Map<String, Map<String, String>>> result = LarvaTool.mapPropertiesToIgnores(scenario);
 		assertNotNull(result);
 		assertEquals(1, result.size());
 
-		HashMap<String, HashMap<String, String>> ignore = result.get(propertyName);
+		Map<String, Map<String, String>> ignore = result.get(propertyName);
 		assertNotNull(ignore);
 		assertEquals(1, ignore.size());
 
-		HashMap<String, String> identifier = ignore.get("identifier");
+		Map<String, String> identifier = ignore.get("identifier");
 		assertNotNull(identifier);
 
 		assertEquals(value, identifier.get("value"));

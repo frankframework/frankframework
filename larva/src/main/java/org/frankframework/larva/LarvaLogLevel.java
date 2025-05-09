@@ -15,6 +15,8 @@
 */
 package org.frankframework.larva;
 
+import jakarta.annotation.Nullable;
+
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
@@ -49,7 +51,7 @@ public enum LarvaLogLevel {
 		return defaultValue;
 	}
 
-	public boolean shouldLog(LarvaLogLevel other) {
-		return this.index <= other.index;
+	public boolean shouldLog(@Nullable LarvaLogLevel other) {
+		return other == null || this.index <= other.index;
 	}
 }

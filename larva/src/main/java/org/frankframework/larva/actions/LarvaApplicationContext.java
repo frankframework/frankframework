@@ -20,9 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.ApplicationContext;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ClassLoaderException;
-import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.core.NameAware;
 import org.frankframework.encryption.HasTruststore;
@@ -32,9 +34,11 @@ import org.frankframework.lifecycle.ConfigurableApplicationContext;
  * Custom Larva SpringContext, used to load the Larva scenario actions.
  * Not a fan of the IbisContext being passed/used here, but for now it is the only way to get the `Application` SpringContext.
  */
+@Log4j2
 public class LarvaApplicationContext extends ConfigurableApplicationContext {
 
-	public LarvaApplicationContext(IbisContext ibisContext, String scenarioDirectory) throws ClassLoaderException {
+	public LarvaApplicationContext(ApplicationContext applicationContext, String scenarioDirectory) throws ClassLoaderException {
+		log.debug("Creating LarvaApplicationContext for scenarioDirectory [{}]", scenarioDirectory);
 		// Use DirectoryClassLoader to make it possible to retrieve resources (such as styleSheetName) relative to the scenarioDirectory.
 		DirectoryClassLoader directoryClassLoader = new RelativePathDirectoryClassLoader();
 		directoryClassLoader.setDirectory(scenarioDirectory);
@@ -44,11 +48,13 @@ public class LarvaApplicationContext extends ConfigurableApplicationContext {
 
 		setId("LarvaScenario");
 
-		if (ibisContext != null) {
-			setParent(ibisContext.getApplicationContext());
+		if (applicationContext != null) {
+			setParent(applicationContext);
 		}
 
+		log.debug("Refreshing LarvaApplicationContext for scenarioDirectory [{}]", scenarioDirectory);
 		refresh();
+		log.debug("LarvaApplicationContext for scenarioDirectory [{}] has been created", scenarioDirectory);
 	}
 
 	/**
