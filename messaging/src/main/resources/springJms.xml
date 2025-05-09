@@ -11,14 +11,6 @@
 
 	<import resource="springJmsDestinationNames.xml"/>
 
-	<bean
-		class="org.frankframework.configuration.OverwritePropertySourcePostProcessor"
-		autowire="byName"
-		>
-		<property name="propertyName" value="jms.createDestination"/>
-		<property name="propertyValue" value="true"/>
-	</bean>
-
 	<bean name="jmsConnector" class="org.frankframework.unmanaged.SpringJmsConnector" autowire="byName" scope="prototype" />
 
 	<!--

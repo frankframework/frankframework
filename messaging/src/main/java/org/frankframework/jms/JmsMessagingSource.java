@@ -46,6 +46,10 @@ public class JmsMessagingSource extends MessagingSource {
 		this.proxiedDestinationNames = proxiedDestinationNames;
 	}
 
+	/**
+	 * Misleading name, it attempts to lookup the destination in the JNDI, but falls back to
+	 * {@link #createDestination(String)} if {@link #createDestination()} ({@code jms.createDestination}) is {@code true}.
+	 */
 	public Destination lookupDestination(String destinationName) throws JmsException, NamingException {
 		Destination dest=null;
 		if (createDestination()) {
@@ -72,10 +76,16 @@ public class JmsMessagingSource extends MessagingSource {
 	}
 
 	/**
-	 * Make it so you can fetch these dynamically through an {@link IObjectLocator}.
-	 * In our tests we always 'assume' the client can create destinations.
-	 * This may not always be the case.
+	 * We could make it so you can fetch these dynamically through an {@link IObjectLocator}.
+	 * In our tests we always 'assume' the client can create destinations, or already know the destination.
+	 * In practice this 'used' to be nice because it allowed system administrators to dictate which queues should be used.
+	 * 
+	 * See issue 8851.
+	 * 
+	 * @deprecated Now that most deployments are containerized as well as the fact that the same result can be achieved
+	 * with a simple environment variable, the need for this has become obsolete.
 	 */
+	@Deprecated
 	private Destination lookupDestinationInJndi(String destinationName) throws NamingException {
 		String prefixedDestinationName = getJndiContextPrefix() + destinationName;
 		log.debug("{}looking up destination [{}]", getLogPrefix(), prefixedDestinationName);
@@ -85,6 +95,9 @@ public class JmsMessagingSource extends MessagingSource {
 		return (Destination)getContext().lookup(prefixedDestinationName);
 	}
 
+	/**
+	 * Get or create the JMS destination.
+	 */
 	public Destination createDestination(String destinationName) throws JmsException {
 		Destination dest;
 		Session session = null;
