@@ -112,6 +112,9 @@ public class ConsoleWarInitializer extends SpringBootServletInitializer {
 		application.setEnvironment(environment);
 		application.setSources(set);
 
+		// This will be exposed on the <context-path>/api/openapi/v3 url
+		System.setProperty("springdoc.api-docs.path", "/openapi/v3");
+
 		// When running the console in a traditional WAR environment this needs to be called.
 		SecuritySettings.setupDefaultSecuritySettings(environment);
 
