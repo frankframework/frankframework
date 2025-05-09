@@ -18,6 +18,8 @@ package org.frankframework.errormessageformatters;
 import java.io.IOException;
 import java.util.Date;
 
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
@@ -92,7 +94,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 			errorXml.addSubElement(locationXml);
 		}
 
-		if (details != null && !"".equals(details)) {
+		if (StringUtils.isNotEmpty(details)) {
 			XmlBuilder detailsXml = new XmlBuilder("details");
 			// detailsXml.setCdataValue(details);
 			detailsXml.setValue(XmlEncodingUtils.replaceNonValidXmlCharacters(details), true);
@@ -116,14 +118,14 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		return errorXml.asMessage();
 	}
 
-	protected String getErrorMessage(String message, Throwable t) {
-		if (t != null) {
-			if (message == null || "".equals(message)) {
-				message = t.getMessage();
-			} else {
-				message += ": "+t.getMessage();
-			}
+	protected @Nullable String getErrorMessage(@Nullable String message, @Nullable Throwable t) {
+		if (t == null) {
+			return message;
 		}
-		return message;
+		if (StringUtils.isEmpty(message)) {
+			return t.getMessage();
+		} else {
+			return  message + ": "+t.getMessage();
+		}
 	}
 }
