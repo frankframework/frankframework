@@ -18,10 +18,8 @@ package org.frankframework.larva;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
@@ -48,11 +46,6 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.zip.ZipInputStream;
 
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
-import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.json.JsonException;
 import jakarta.servlet.ServletContext;
@@ -70,10 +63,6 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.SenderException;
-import org.frankframework.core.TimeoutException;
-import org.frankframework.larva.actions.LarvaActionFactory;
-import org.frankframework.larva.actions.LarvaActionUtils;
-import org.frankframework.larva.actions.LarvaScenarioAction;
 import org.frankframework.larva.output.HtmlScenarioOutputRenderer;
 import org.frankframework.larva.output.LarvaHtmlWriter;
 import org.frankframework.larva.output.LarvaWriter;
@@ -90,7 +79,6 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.ProcessUtil;
-import org.frankframework.util.StringResolver;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TemporaryDirectoryUtils;
 import org.frankframework.util.XmlEncodingUtils;
@@ -238,146 +226,6 @@ public class LarvaTool {
 
 	public void errorMessage(String message, Exception exception) {
 		writer.errorMessage(message, exception);
-	}
-
-	private int executeActionWriteStep(Scenario scenario, String stepDisplayName, Map<String, LarvaScenarioAction> actions, String actionName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
-		LarvaScenarioAction scenarioAction = actions.get(actionName);
-		if (scenarioAction == null) {
-			errorMessage("Property '" + actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
-			return RESULT_ERROR;
-		}
-		try {
-			scenarioAction.executeWrite(fileContent, correlationId, xsltParameters);
-			testExecutionObserver.stepMessage(scenario, stepDisplayName, "Successfully wrote message to '" + actionName + "':", messageToString(fileContent));
-			log.debug("Successfully wrote message to '{}'", actionName);
-			return RESULT_OK;
-		} catch(TimeoutException e) {
-			errorMessage("Timeout sending message to '" + actionName + "': " + e.getMessage(), e);
-		} catch(Exception e) {
-			errorMessage("Could not send message to '" + actionName + "' ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e);
-		}
-		return RESULT_ERROR;
-	}
-
-	private int executeActionReadStep(Scenario scenario, String step, String stepDisplayName, Properties properties, Map<String, LarvaScenarioAction> actions, String actionName, String fileName, String stepSaveFileName, Message expected) {
-		LarvaScenarioAction scenarioAction = actions.get(actionName);
-		if (scenarioAction == null) {
-			errorMessage("Property '" + actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
-			return RESULT_ERROR;
-		}
-		try {
-			Message message = scenarioAction.executeRead(properties); // cannot close this message because of FrankSender (JSON scenario02)
-			if (message == null) {
-				if ("".equals(fileName)) {
-					return RESULT_OK;
-				} else {
-					errorMessage("Could not read from ["+actionName+"] (null returned)");
-				}
-			} else {
-				if ("".equals(fileName)) {
-					testExecutionObserver.stepMessage(scenario, stepDisplayName, "Unexpected message read from '" + actionName + "':", messageToString(message));
-				} else {
-					return compareResult(scenario, step, stepDisplayName, fileName, stepSaveFileName, expected, message, properties);
-				}
-			}
-		} catch (Exception e) {
-			errorMessage("Could not read from ["+actionName+"] ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e);
-		}
-
-		return RESULT_ERROR;
-	}
-
-	// Ideally, this should be moved to its own class.
-	protected int executeStep(Scenario scenario, String step, Properties properties, String stepDisplayName, Map<String, LarvaScenarioAction> actions, String correlationId) {
-		String fileName = properties.getProperty(step);
-		String stepDataFileAbsolutePath = properties.getProperty(step + ".absolutepath");
-		int i = step.indexOf('.');
-		String actionName;
-		Message fileContent;
-
-		// Read the scenario file for this step
-		if (StringUtils.isBlank(fileName)) {
-			errorMessage("No file specified for step '" + step + "'");
-			return RESULT_ERROR;
-		}
-		if (step.endsWith("readline") || step.endsWith("writeline")) {
-			fileContent = new Message(fileName);
-		} else {
-			if (fileName.endsWith("ignore")) {
-				debugMessage("creating dummy expected file for filename '" + fileName + "'");
-				fileContent = new Message("ignore");
-			} else {
-				debugMessage("Read file " + fileName);
-				fileContent = readFile(stepDataFileAbsolutePath);
-			}
-		}
-
-		try (Message ignored = fileContent) {
-			actionName = step.substring(i + 1, step.lastIndexOf("."));
-			Object actionFactoryClassname = properties.get(actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX);
-			if (step.endsWith(".read") || (larvaConfig.isAllowReadlineSteps() && step.endsWith(".readline"))) {
-				if ("org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname)) {
-					Properties scenarioStepProperties = LarvaActionUtils.getSubProperties(properties, step);
-					Map<String, Object> xsltParameters = createParametersMapFromParamProperties(scenarioStepProperties);
-					return executeActionWriteStep(scenario, stepDisplayName, actions, actionName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
-				} else {
-					return executeActionReadStep(scenario, step, stepDisplayName, properties, actions, actionName, fileName, stepDataFileAbsolutePath, fileContent);
-				}
-			} else {
-				// TODO: Try if anything breaks when this block is moved to `readFile()` method.
-				String resolveProperties = properties.getProperty("scenario.resolveProperties");
-				if(!"false".equalsIgnoreCase(resolveProperties)){
-					String fileData = messageToString(fileContent);
-					if (fileData == null) {
-						errorMessage("Failed to resolve properties in inputfile");
-						return RESULT_ERROR;
-					}
-					AppConstants appConstants = AppConstants.getInstance();
-					fileContent = new Message(StringResolver.substVars(fileData, appConstants), fileContent.copyContext());
-				}
-				if ("org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname)) {
-					return executeActionReadStep(scenario, step, stepDisplayName, properties, actions, actionName, fileName, stepDataFileAbsolutePath, fileContent);  // XsltProviderListener has .read and .write reversed
-				} else {
-					return executeActionWriteStep(scenario, stepDisplayName, actions, actionName, fileContent, correlationId, null);
-				}
-			}
-		}
-	}
-
-	private Message readFile(@Nonnull String fileName) {
-		String encoding;
-		if (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")) {
-			encoding = parseEncodingFromXml(fileName);
-		} else if (fileName.endsWith(".utf8") || fileName.endsWith(".json")) {
-			encoding = "UTF-8";
-		} else if (fileName.endsWith(".ISO-8859-1")) {
-			encoding = "ISO-8859-1";
-		} else {
-			encoding = null;
-		}
-		return new FileMessage(new File(fileName), encoding);
-	}
-
-	private @Nullable String parseEncodingFromXml(@Nonnull String fileName) {
-		// Determine the encoding the XML way but don't use an XML parser to
-		// read the file and transform it to a string to prevent changes in
-		// formatting and prevent adding a xml declaration where this is
-		// not present in the file. For example, when using a
-		// WebServiceSender to send a message to a WebServiceListener the
-		// xml message must not contain a xml declaration.
-		try (InputStream in = new FileInputStream(fileName)) {
-			XMLInputFactory factory = XMLInputFactory.newInstance();
-			factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
-			factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
-
-			XMLStreamReader parser = factory.createXMLStreamReader(in);
-			String encoding = parser.getEncoding();
-			parser.close();
-			return encoding;
-		} catch (IOException | XMLStreamException e) {
-			errorMessage("Could not determine encoding for file '" + fileName + "': " + e.getMessage(), e);
-			return null;
-		}
 	}
 
 	// Used by saveResultToFile.jsp
