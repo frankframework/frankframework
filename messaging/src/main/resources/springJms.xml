@@ -25,7 +25,7 @@
 		<property name="autoStartup" value="false"/>
 	</bean>
 
-	<bean id="connectionFactoryFactory" class="org.frankframework.jndi.JndiConnectionFactoryFactory" />
+	<bean id="connectionFactoryFactory" class="org.frankframework.jndi.JmsConnectionFactoryFactory" />
 	<bean id="mqttClientFactory" class="org.frankframework.extensions.mqtt.MqttClientFactory" />
 
 </beans>

@@ -25,10 +25,13 @@ import org.frankframework.jms.IConnectionFactoryFactory;
 import org.frankframework.jms.TransactionalMetadataAwareConnectionFactoryProxy;
 import org.frankframework.util.StringUtil;
 
-public class JndiConnectionFactoryFactory extends ObjectFactory<ConnectionFactory, ConnectionFactory> implements IConnectionFactoryFactory {
+/**
+ * A factory for creating JMS ConnectionFactory objects.
+ */
+public class JmsConnectionFactoryFactory extends ObjectFactory<ConnectionFactory, ConnectionFactory> implements IConnectionFactoryFactory {
 	public static final String CLOSE = "], ";
 
-	public JndiConnectionFactoryFactory() {
+	public JmsConnectionFactoryFactory() {
 		super(ConnectionFactory.class, "jms", "Connection Factories");
 	}
 

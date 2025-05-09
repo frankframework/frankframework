@@ -28,11 +28,11 @@ import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.jndi.JndiConnectionFactoryFactory;
+import org.frankframework.jndi.JmsConnectionFactoryFactory;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 
-public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFactory {
+public class NarayanaConnectionFactoryFactory extends JmsConnectionFactoryFactory {
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
 
