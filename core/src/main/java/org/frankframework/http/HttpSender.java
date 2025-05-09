@@ -36,6 +36,9 @@ import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
+
+import org.frankframework.parameters.IParameter;
+
 import org.springframework.util.MimeType;
 import org.w3c.dom.Element;
 
@@ -43,6 +46,7 @@ import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.eureka.EurekaProxy;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.http.mime.HttpEntityFactory;
@@ -69,6 +73,19 @@ public class HttpSender extends AbstractHttpSender {
 	private @Getter HttpEntityType postType = HttpEntityType.RAW;
 
 	private HttpEntityFactory entityBuilder;
+	private final EurekaProxy eurekaProxy = new EurekaProxy();
+
+	// Check parameters service and endpoint in httpsender pipe and translate them to a url	
+	private void checkEurekaParameters(){
+		IParameter service = paramList.findParameter("service");
+		if (service != null) {  
+			IParameter endpoint = paramList.findParameter("endpoint");
+			String endPoint = endpoint.getValue();
+			String serviceValue = service.getValue();
+			String newUrl = eurekaProxy.getElement(serviceValue, "homePageUrl") + endPoint;
+			setUrl(newUrl);
+		}
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -77,6 +94,8 @@ public class HttpSender extends AbstractHttpSender {
 				&& (getHttpMethod() == HttpMethod.POST || getHttpMethod() == HttpMethod.PUT || getHttpMethod() == HttpMethod.PATCH)) {
 			setContentType("text/html");
 		}
+
+		checkEurekaParameters();
 
 		super.configure();
 
