@@ -32,6 +32,10 @@ public class FileMessage extends Message {
 
 	/**
 	 * Convenience method which leverages the file attributes to fill the {@link MessageContext}.
+	 * <p>
+	 * Ensures that whatever was written, will be read in an identical way.
+	 * Potential conversions to other types should be delegated to Message.
+	 * </p>
 	 */
 	public FileMessage(@Nonnull File file, @Nullable Charset charset) {
 		super(new SerializableFileReference(file.toPath(), false), new MessageContext().withCharset(charset).withModificationTime(file.lastModified())
