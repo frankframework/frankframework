@@ -46,10 +46,10 @@ public class Scenario {
 
 	@Override
 	public String toString() {
-		return "Scenario{" +
+		return "Scenario[" +
 				"name='" + name + '\'' +
 				", description='" + description + '\'' +
-				'}';
+				'[';
 	}
 
 	public String getLongName() {
@@ -57,7 +57,7 @@ public class Scenario {
 	}
 
 	public List<String> getSteps(LarvaConfig larvaConfig) {
-		// TODO: This code can really do with some improvements and better test coverage. Now that it is part of Scenario class that will be easier.
+		// TODO: This code can really do with some improvements. Now that it is part of Scenario class that will be easier.
 		List<String> steps = new ArrayList<>();
 		int i = 1;
 		boolean lastStepFound = false;

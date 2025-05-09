@@ -48,7 +48,7 @@ import org.frankframework.util.PropertyLoader;
 public class ScenarioLoader {
 	private static final String LEGACY_PACKAGE_NAME_LARVA = "org.frankframework.testtool.";
 	private static final String CURRENT_PACKAGE_NAME_LARVA = "org.frankframework.larva.";
-	public static final int SCENARIO_CACHE_SIZE = 20;
+	public static final int SCENARIO_CACHE_SIZE = 5;
 
 	private final Map<File, PropertyLoader> scenarioFileCache = new LRUMap<>(SCENARIO_CACHE_SIZE);
 

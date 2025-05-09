@@ -207,7 +207,7 @@ public class ScenarioRunner {
 			Iterator<String> steps = stepList.iterator();
 			while (allStepsPassed && steps.hasNext()) {
 				String step = steps.next();
-				String stepDisplayName = scenario + " - " + step + " - " + properties.get(step);
+				String stepDisplayName = scenario.getName() + " - " + step + " - " + properties.get(step);
 				testExecutionObserver.startStep(testRunStatus, scenario, stepDisplayName);
 				long stepStart = System.currentTimeMillis();
 				int stepResult = larvaTool.executeStep(scenario, step, properties, stepDisplayName, larvaActions, correlationId);
