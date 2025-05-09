@@ -214,10 +214,13 @@ public class ScenarioRunner {
 			while (allStepsPassed && steps.hasNext()) {
 				String step = steps.next();
 				String stepDisplayName = scenario.getName() + " - " + step + " - " + properties.get(step);
+
 				testExecutionObserver.startStep(testRunStatus, scenario, stepDisplayName);
+
 				long stepStart = System.currentTimeMillis();
 				int stepResult = executeStep(scenario, step, properties, stepDisplayName, larvaActions, correlationId);
 				long stepEnd = System.currentTimeMillis();
+
 				testExecutionObserver.finishStep(testRunStatus, scenario, stepDisplayName, stepResult, buildStepFinishedMessage(stepDisplayName, stepResult, (stepEnd - stepStart)));
 				if (stepResult == LarvaTool.RESULT_ERROR) {
 					allStepsPassed = false;
@@ -303,13 +306,19 @@ public class ScenarioRunner {
 		try (Message ignored = fileContent) {
 			actionName = step.substring(i + 1, step.lastIndexOf("."));
 			Object actionFactoryClassname = properties.get(actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX);
+			LarvaScenarioAction scenarioAction = actions.get(actionName);
+			if (scenarioAction == null) {
+				larvaTool.errorMessage("Property '" + actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
+				return LarvaTool.RESULT_ERROR;
+			}
+
 			if (step.endsWith(".read") || (larvaConfig.isAllowReadlineSteps() && step.endsWith(".readline"))) {
 				if ("org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname)) {
 					Properties scenarioStepProperties = LarvaActionUtils.getSubProperties(properties, step);
 					Map<String, Object> xsltParameters = larvaTool.createParametersMapFromParamProperties(scenarioStepProperties);
-					return executeActionWriteStep(scenario, stepDisplayName, actions, actionName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
+					return executeActionWriteStep(scenario, stepDisplayName, scenarioAction, actionName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
 				} else {
-					return executeActionReadStep(scenario, step, stepDisplayName, properties, actions, actionName, fileName, stepDataFileAbsolutePath, fileContent);
+					return executeActionReadStep(scenario, step, stepDisplayName, properties, scenarioAction, actionName, fileName, stepDataFileAbsolutePath, fileContent);
 				}
 			} else {
 				// TODO: Try if anything breaks when this block is moved to `readFile()` method.
@@ -324,20 +333,15 @@ public class ScenarioRunner {
 					fileContent = new Message(StringResolver.substVars(fileData, appConstants), fileContent.copyContext());
 				}
 				if ("org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname)) {
-					return executeActionReadStep(scenario, step, stepDisplayName, properties, actions, actionName, fileName, stepDataFileAbsolutePath, fileContent);  // XsltProviderListener has .read and .write reversed
+					return executeActionReadStep(scenario, step, stepDisplayName, properties, scenarioAction, actionName, fileName, stepDataFileAbsolutePath, fileContent);  // XsltProviderListener has .read and .write reversed
 				} else {
-					return executeActionWriteStep(scenario, stepDisplayName, actions, actionName, fileContent, correlationId, null);
+					return executeActionWriteStep(scenario, stepDisplayName, scenarioAction, actionName, fileContent, correlationId, null);
 				}
 			}
 		}
 	}
 
-	private int executeActionWriteStep(Scenario scenario, String stepDisplayName, Map<String, LarvaScenarioAction> actions, String actionName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
-		LarvaScenarioAction scenarioAction = actions.get(actionName);
-		if (scenarioAction == null) {
-			larvaTool.errorMessage("Property '" + actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
-			return LarvaTool.RESULT_ERROR;
-		}
+	private int executeActionWriteStep(Scenario scenario, String stepDisplayName, LarvaScenarioAction scenarioAction, String actionName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
 		try {
 			scenarioAction.executeWrite(fileContent, correlationId, xsltParameters);
 			testExecutionObserver.stepMessage(scenario, stepDisplayName, "Successfully wrote message to '" + actionName + "':", larvaTool.messageToString(fileContent));
@@ -351,12 +355,7 @@ public class ScenarioRunner {
 		return LarvaTool.RESULT_ERROR;
 	}
 
-	private int executeActionReadStep(Scenario scenario, String step, String stepDisplayName, Properties properties, Map<String, LarvaScenarioAction> actions, String actionName, String fileName, String stepSaveFileName, Message expected) {
-		LarvaScenarioAction scenarioAction = actions.get(actionName);
-		if (scenarioAction == null) {
-			larvaTool.errorMessage("Property '" + actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
-			return LarvaTool.RESULT_ERROR;
-		}
+	private int executeActionReadStep(Scenario scenario, String step, String stepDisplayName, Properties properties, LarvaScenarioAction scenarioAction, String actionName, String fileName, String stepSaveFileName, Message expected) {
 		try {
 			Message message = scenarioAction.executeRead(properties); // cannot close this message because of FrankSender (JSON scenario02)
 			if (message == null) {
