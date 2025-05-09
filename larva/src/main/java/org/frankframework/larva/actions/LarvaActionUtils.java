@@ -115,10 +115,7 @@ public class LarvaActionUtils {
 					if (filename != null) {
 						value = new FileMessage(new File(filename));
 					} else {
-						String inputStreamFilename = properties.getProperty(_param + i + ".valuefileinputstream.absolutepath");
-						if (inputStreamFilename != null) {
-							throw new IllegalStateException("valuefileinputstream is no longer supported use valuefile instead");
-						}
+						throw new IllegalStateException("use either value or valuefile");
 					}
 				}
 				if ("node".equals(type)) {
