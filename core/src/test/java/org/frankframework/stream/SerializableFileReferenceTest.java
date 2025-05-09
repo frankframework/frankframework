@@ -45,6 +45,7 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.testutil.SerializationTester;
+import org.frankframework.util.StreamUtil;
 
 @Log4j2
 public class SerializableFileReferenceTest {
@@ -198,6 +199,35 @@ public class SerializableFileReferenceTest {
 	}
 
 	@Test
+	public void copyMessageWithAutoDetectCharset(@TempDir File tempDir) throws IOException {
+		File tempFile = File.createTempFile("file", null, tempDir);
+		MessageTest.writeContentsToFile(tempFile, testDataEnriched);
+
+		Message message = new FileMessage(tempFile);
+		// Since anything can happen assume 'I want to use my own Charset'.
+		message.getContext().withCharset(StreamUtil.AUTO_DETECT_CHARSET);
+
+		// Act
+		Message copy = message.copyMessage();
+
+		// Assert
+		assertFalse(message.isClosed());
+		assertEquals(StreamUtil.AUTO_DETECT_CHARSET, copy.getContext().get(MessageContext.METADATA_CHARSET));
+		assertEquals(StreamUtil.AUTO_DETECT_CHARSET, message.getContext().get(MessageContext.METADATA_CHARSET));
+
+		message.asString(); // Computes the Charset
+		try (message) {
+			assertEquals("UTF-8", message.getContext().get(MessageContext.METADATA_CHARSET));
+			assertEquals(StreamUtil.AUTO_DETECT_CHARSET, copy.getContext().get(MessageContext.METADATA_CHARSET));
+		}
+
+		copy.asString(); // Computes the Charset
+		try (copy) {
+			assertEquals("UTF-8", copy.getContext().get(MessageContext.METADATA_CHARSET));
+		}
+	}
+
+	@Test
 	public void ofString() throws Exception {
 		// Act
 		reference = SerializableFileReference.of(testDataEnriched, StandardCharsets.UTF_8.name());
@@ -284,14 +314,14 @@ public class SerializableFileReferenceTest {
 		MessageTest.writeContentsToFile(tempFile, testDataEnriched);
 
 		// Act
-		Message message = new FileMessage(tempFile, "UTF-8");
+		Message message = new FileMessage(tempFile, StandardCharsets.UTF_8);
 
 		// Assert
 		assertTrue(message.isRequestOfType(SerializableFileReference.class), "Message request should be instance of SerializableFileReference");
-		assertFalse(message.isBinary(), "Should not be binary");
+		assertTrue(message.isBinary(), "Should be binary");
 
 		reference = (SerializableFileReference) message.asObject();
-		assertFalse(reference.isBinary(), "Should not be binary");
+		assertTrue(reference.isBinary(), "Should be binary");
 		Path path = reference.getPath();
 		assertEquals(tempFile.toPath(), path);
 
@@ -353,7 +383,7 @@ public class SerializableFileReferenceTest {
 		// Arrange
 		File tempFile = File.createTempFile("file", null, tempDir);
 		MessageTest.writeContentsToFile(tempFile, testDataEnriched);
-		Message message = new FileMessage(tempFile, "UTF-8");
+		Message message = new FileMessage(tempFile, StandardCharsets.UTF_8);
 
 		SerializationTester<Message> serializationTester = new SerializationTester<>();
 
