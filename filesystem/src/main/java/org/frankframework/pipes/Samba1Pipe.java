@@ -28,7 +28,7 @@ import org.frankframework.filesystem.smb.Samba1FileSystemDelegator;
  * Only supports NTLM authentication.
  */
 @Deprecated
-@ConfigurationWarning("NTLM authentication is insecured, if possible upgrade to SMB3 asap.")
+@ConfigurationWarning("NTLM authentication is unsecure, if possible upgrade to SMB3 asap.")
 public class Samba1Pipe extends AbstractFileSystemPipe<SmbFile, Samba1FileSystem> implements Samba1FileSystemDelegator {
 
 	public Samba1Pipe() {
