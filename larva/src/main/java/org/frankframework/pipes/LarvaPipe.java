@@ -79,7 +79,8 @@ public class LarvaPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) {
 		ApplicationContext applicationContext = getAdapter().getConfiguration().getApplicationContext();
 		LogWriter out = new LogWriter(log, isWriteToLog(), isWriteToSystemOut());
-		LarvaConfig larvaConfig = new LarvaConfig();
+		LarvaTool larvaTool = LarvaTool.createInstance(applicationContext, out);
+		LarvaConfig larvaConfig = larvaTool.getLarvaConfig();
 		larvaConfig.setLogLevel(getLogLevel());
 		if (StringUtils.isNotBlank(getWaitBeforeCleanup())) {
 			larvaConfig.setWaitBeforeCleanup(Integer.parseInt(getWaitBeforeCleanup()));
@@ -88,7 +89,6 @@ public class LarvaPipe extends FixedForwardPipe {
 			larvaConfig.setTimeout(getTimeout());
 		}
 
-		LarvaTool larvaTool = LarvaTool.createInstance(applicationContext, out);
 		String paramExecute = larvaTool.getTestRunStatus().initScenarioDirectories();
 		if (StringUtils.isNotEmpty(getExecute())) {
 			paramExecute = paramExecute + getExecute();

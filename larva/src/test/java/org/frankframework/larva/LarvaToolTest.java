@@ -11,6 +11,7 @@ import java.util.List;
 
 import jakarta.servlet.ServletContext;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +27,7 @@ import org.frankframework.configuration.IbisContext;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.CloseUtils;
 
 @Log4j2
 class LarvaToolTest {
@@ -37,16 +39,9 @@ class LarvaToolTest {
 	private static File scenarioRoot;
 
 	@BeforeAll
-	public static void beforeAll() throws Exception {
+	public static void beforeAll() {
 		configuration = new TestConfiguration();
 		applicationContext = configuration.getApplicationContext();
-		try {
-			configuration.refresh();
-			configuration.start();
-		} catch (Exception e) {
-			log.error("Error starting configuration", e);
-		}
-
 		appConstants = AppConstants.getInstance();
 		scenarioRoot = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios");
 	}
@@ -61,6 +56,11 @@ class LarvaToolTest {
 	public void tearDown() {
 		appConstants.remove("scenariosroot1.directory");
 		appConstants.remove("scenariosroot1.description");
+	}
+
+	@AfterAll
+	public static void afterAll() {
+		CloseUtils.closeSilently(configuration);
 	}
 
 	@Test

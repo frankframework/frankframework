@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.Serial;
 import java.net.URL;
-import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
@@ -46,7 +45,8 @@ public class PropertyLoader extends Properties {
 	public PropertyLoader(File propertiesFile, Properties defaults) throws IOException {
 		super(defaults);
 		rootPropertyFile = propertiesFile.getAbsolutePath();
-		loadFile(propertiesFile);
+		loadResource(propertiesFile.toURI().toURL());
+//		loadFile(propertiesFile);
 	}
 
 	public PropertyLoader(String propertiesFile) {
@@ -321,22 +321,9 @@ public class PropertyLoader extends Properties {
 	/**
 	 * Loads the property based on it's extension
 	 */
-	private synchronized void loadFile(File file) throws IOException {
-		String extension = FilenameUtils.getExtension(file.getAbsolutePath());
-		try (InputStream in = Files.newInputStream(file.toPath())) {
-			loadStream(in, extension);
-		}
-	}
-
 	private synchronized void loadResource(URL url) throws IOException {
 		String extension = FilenameUtils.getExtension(url.getPath());
-		try (InputStream is = url.openStream()) {
-			loadStream(is, extension);
-		}
-	}
-
-	private synchronized void loadStream(InputStream is, String extension) throws IOException {
-		try (Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
+		try (InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
 			switch (extension) {
 				case "properties":
 					load(reader);

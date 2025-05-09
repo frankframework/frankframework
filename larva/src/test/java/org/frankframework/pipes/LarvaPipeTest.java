@@ -33,7 +33,7 @@ class LarvaPipeTest extends PipeTestBase<LarvaPipe> {
 	@Test
 	public void testDoPipeWithoutScenarios() throws Exception {
 		// Arrange
-		pipe.setLogLevel(LarvaLogLevel.DEBUG);
+		pipe.setLogLevel(LarvaLogLevel.ERROR);
 		configureAndStartPipe();
 
 		// Act

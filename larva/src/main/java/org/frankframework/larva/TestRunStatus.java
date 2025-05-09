@@ -164,11 +164,11 @@ public class TestRunStatus {
 
 		List<Scenario> scenarios;
 		if (execute.endsWith(".properties")) {
-			out.debugMessage("Read one scenario");
+			log.debug("Executing single scenario [{}]", execute);
 			Scenario scenario = allScenarios.get(new Scenario.ID(execute));
 			scenarios = List.of(scenario);
 		} else if (execute.equals(larvaConfig.getActiveScenariosDirectory())) {
-			out.debugMessage("Executing all scenario files from root directory '" + larvaConfig.getActiveScenariosDirectory() + "'");
+			log.debug("Executing all scenario files from root directory '{}'",larvaConfig.getActiveScenariosDirectory());
 			scenarios = List.copyOf(allScenarios.values());
 		} else {
 			scenarios = allScenarios.values().stream()
