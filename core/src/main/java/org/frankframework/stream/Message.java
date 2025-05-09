@@ -450,6 +450,7 @@ public class Message implements Serializable, Closeable {
 		}
 		if (request instanceof SerializableFileReference reference && !reference.isBinary()) {
 			LOG.debug("returning SerializableFileReference {} as Reader", this::getObjectId);
+			// The Message was saved with a Charset (see PreserveToDisk), so read it with the Charset
 			return reference.getReader();
 		}
 		if (isBinary()) {
