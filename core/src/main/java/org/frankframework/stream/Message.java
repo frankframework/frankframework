@@ -217,18 +217,23 @@ public class Message implements Serializable, Closeable {
 	}
 
 	/**
-	 * If no charset was provided and the requested charset is <code>auto</auto>, try to parse the charset.
-	 * If unsuccessful return the default; <code>UTF-8</code>.
+	 * If no Charset was provided when the Message object was created and
+	 * the requested Charset is <code>auto</auto>, try to parse the Charset using
+	 * {@link MessageUtils#computeDecodingCharset(Message)}.
+	 * 
+	 * If unsuccessful return the default Charset: {@link StreamUtil#DEFAULT_INPUT_STREAM_ENCODING UTF_8}.
+	 * 
+	 * @param defaultDecodingCharset The 'I know better' Charset, only used when no Charset is provided when the Message was created.
 	 */
 	@Nonnull
 	protected String computeDecodingCharset(String defaultDecodingCharset) throws IOException {
-		String decodingCharset = getCharset();
+		String providedCharset = getCharset();
 
-		if (StringUtils.isEmpty(decodingCharset)) {
-			decodingCharset = StringUtils.isNotEmpty(defaultDecodingCharset) ? defaultDecodingCharset : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+		if (StringUtils.isEmpty(providedCharset)) {
+			providedCharset = StringUtils.isNotEmpty(defaultDecodingCharset) ? defaultDecodingCharset : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		}
 
-		if (StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(decodingCharset)) {
+		if (StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(providedCharset)) {
 			Charset charset = null;
 			if (!failedToDetermineCharset) {
 				charset = MessageUtils.computeDecodingCharset(this);
@@ -247,7 +252,7 @@ public class Message implements Serializable, Closeable {
 			return charset.name();
 		}
 
-		return decodingCharset;
+		return providedCharset;
 	}
 
 	@Nonnull
@@ -326,12 +331,12 @@ public class Message implements Serializable, Closeable {
 		}
 		if (request instanceof Reader reader) {
 			LOG.debug("preserving Reader {} as SerializableFileReference", this::getObjectId);
-			request = SerializableFileReference.of(reader, computeDecodingCharset(getCharset()));
+			request = SerializableFileReference.of(reader, computeDecodingCharset(null));
 		} else if (request instanceof InputStream stream) {
 			LOG.debug("preserving InputStream {} as SerializableFileReference", this::getObjectId);
 			request = SerializableFileReference.of(stream);
 		} else if (request instanceof String string) {
-			request = SerializableFileReference.of(string, computeDecodingCharset(getCharset()));
+			request = SerializableFileReference.of(string, computeDecodingCharset(null));
 		} else if (request instanceof byte[] bytes) {
 			request = SerializableFileReference.of(bytes);
 		} else if (deepPreserve) {
@@ -340,7 +345,7 @@ public class Message implements Serializable, Closeable {
 				request = SerializableFileReference.of(asInputStream());
 			} else {
 				LOG.debug("preserving {} as SerializableFileReference", this::getObjectId);
-				request = SerializableFileReference.of(asReader(), computeDecodingCharset(getCharset()));
+				request = SerializableFileReference.of(asReader(), computeDecodingCharset(null));
 			}
 		}
 	}
@@ -454,7 +459,7 @@ public class Message implements Serializable, Closeable {
 			return reference.getReader();
 		}
 		if (isBinary()) {
-			String readerCharset = computeDecodingCharset(defaultDecodingCharset); //Don't overwrite the Message's charset unless it's set to AUTO
+			String readerCharset = computeDecodingCharset(defaultDecodingCharset); // Don't overwrite the Message's charset unless it's set to AUTO
 
 			LOG.debug("returning InputStream {} as Reader", this::getObjectId);
 			InputStream inputStream = asInputStream();

@@ -16,20 +16,13 @@
 package org.frankframework.larva;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.util.Properties;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -111,37 +104,8 @@ public class LarvaUtil {
 	}
 
 	public static Message readFile(@Nonnull String fileName) throws IOException {
-		Charset encoding;
-		if (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")) {
-			encoding = parseEncodingFromXml(fileName);
-		} else if (fileName.endsWith(".utf8") || fileName.endsWith(".json")) {
-			encoding = StandardCharsets.UTF_8;
-		} else if (fileName.endsWith(".ISO-8859-1")) {
-			encoding = StandardCharsets.ISO_8859_1;
-		} else {
-			encoding = null;
-		}
-		return new FileMessage(new File(fileName), encoding);
-	}
-
-	private static @Nullable Charset parseEncodingFromXml(@Nonnull String fileName) throws IOException {
-		// Determine the encoding the XML way but don't use an XML parser to
-		// read the file and transform it to a string to prevent changes in
-		// formatting and prevent adding a xml declaration where this is
-		// not present in the file. For example, when using a
-		// WebServiceSender to send a message to a WebServiceListener the
-		// xml message must not contain a xml declaration.
-		try (InputStream in = new FileInputStream(fileName)) {
-			XMLInputFactory factory = XMLInputFactory.newInstance();
-			factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
-			factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
-
-			XMLStreamReader parser = factory.createXMLStreamReader(in);
-			String encoding = parser.getEncoding();
-			parser.close();
-			return Charset.forName(encoding);
-		} catch (XMLStreamException e) {
-			throw new IOException("Could not determine encoding for file [" + fileName + "]", e);
-		}
+		Message message = new FileMessage(new File(fileName));
+		message.getContext().withCharset("auto");
+		return message;
 	}
 }
