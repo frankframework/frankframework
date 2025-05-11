@@ -29,14 +29,11 @@ import jakarta.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
 
-import lombok.extern.log4j.Log4j2;
-
 import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
 
-@Log4j2
 public class LarvaUtil {
 
 	private LarvaUtil() {
@@ -105,7 +102,15 @@ public class LarvaUtil {
 
 	public static Message readFile(@Nonnull String fileName) throws IOException {
 		Message message = new FileMessage(new File(fileName));
-		message.getContext().withCharset("auto");
+		final String encoding;
+		if (fileName.endsWith(".utf8") || fileName.endsWith(".json")) {
+			encoding = "UTF-8";
+		} else if (fileName.endsWith(".ISO-8859-1")) {
+			encoding = "ISO-8859-1";
+		} else {
+			encoding = "auto";
+		}
+		message.getContext().withCharset(encoding);
 		return message;
 	}
 }
