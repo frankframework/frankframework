@@ -124,8 +124,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		}
 		if (StringUtils.isEmpty(message)) {
 			return t.getMessage();
-		} else {
-			return  message + ": "+t.getMessage();
 		}
+		return  message + ": "+t.getMessage();
 	}
 }
