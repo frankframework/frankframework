@@ -149,7 +149,7 @@ public class MessageUtilsTest {
 	public void testComputeMimeTypeWithISO8559CharsetUTF8() {
 		URL url = ClassLoaderUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
 		Message message = new UrlMessage(url);
-		message.getContext().put(MessageContext.METADATA_CHARSET, "utf-8"); //Is wrong, but it's been set, to must be used...
+		message.getContext().put(MessageContext.METADATA_CHARSET, "utf-8"); // Is wrong, but it's been set, so it must be used...
 
 		MimeType mimeType = MessageUtils.computeMimeType(message);
 		assertTrue(mimeType.toString().contains("text/plain"), "Content-Type header ["+mimeType.toString()+"] does not contain [text/plain]");

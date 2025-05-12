@@ -137,19 +137,6 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 		this(true, null, deleteOnClose, path);
 	}
 
-	/**
-	 * Create a character-data {@code SerializableFileReference} for the file at given path.
-	 * <p>
-	 * The file will be not deleted on calling {@link SerializableFileReference#close()}.
-	 * </p>
-	 *
-	 * @param charset Character set to be used when reading the file.
-	 * @param path {@link Path} to the file being referenced.
-	 */
-	public SerializableFileReference(String charset, Path path) {
-		this(charset == null, charset, false, path);
-	}
-
 	private SerializableFileReference(boolean binary, String charset, boolean isFileOwner, Path path) {
 		this.binary = binary;
 		this.charset = charset;

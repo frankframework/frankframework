@@ -273,11 +273,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>frankframework-test-integration</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.frankframework</groupId>
 				<artifactId>frankframework-idin</artifactId>
 				<version>${project.version}</version>
 			</dependency>

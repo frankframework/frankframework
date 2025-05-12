@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.frankframework.stream;
 
 import java.io.File;
 import java.io.Serial;
+import java.nio.charset.Charset;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -29,8 +30,15 @@ public class FileMessage extends Message {
 		this(file, null);
 	}
 
-	public FileMessage(@Nonnull File file, @Nullable String charset) {
-		super(new SerializableFileReference(charset, file.toPath()), new MessageContext(charset).withModificationTime(file.lastModified())
+	/**
+	 * Convenience method which leverages the file attributes to fill the {@link MessageContext}.
+	 * <p>
+	 * Ensures that whatever was written, will be read in an identical way.
+	 * Potential conversions to other types should be delegated to Message.
+	 * </p>
+	 */
+	public FileMessage(@Nonnull File file, @Nullable Charset charset) {
+		super(new SerializableFileReference(file.toPath(), false), new MessageContext().withCharset(charset).withModificationTime(file.lastModified())
 				.withSize(file.length())
 				.withName(file.getName())
 				.withLocation(file.getAbsolutePath())
