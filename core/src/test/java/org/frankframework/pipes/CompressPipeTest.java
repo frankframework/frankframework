@@ -1,5 +1,7 @@
 package org.frankframework.pipes;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -29,6 +31,8 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.CompressPipe.FileFormat;
+import org.frankframework.processors.CorePipeProcessor;
+import org.frankframework.processors.ExceptionHandlingPipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MessageTestUtils;
@@ -135,10 +139,15 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setResultIsContent(true);
 		pipe.addForward(new PipeForward(PipeForward.EXCEPTION_FORWARD_NAME, "dummy"));
 
-		configureAndStartPipe();
-		PipeRunResult prr = doPipe(pipe, DUMMY_STRING_SEMI_COLON, session);
+		// Verify that behaviour does not change when using the ExceptionHandlingPipeProcessor for exception forwarding instead of handling it in the CompressPipe
+		ExceptionHandlingPipeProcessor ehpp = new ExceptionHandlingPipeProcessor();
+		CorePipeProcessor cpp = new CorePipeProcessor();
+		ehpp.setPipeProcessor(cpp);
 
+		configureAndStartPipe();
+		PipeRunResult prr = ehpp.processPipe(pipeline, pipe, new Message(DUMMY_STRING), session);
 		assertEquals(PipeForward.EXCEPTION_FORWARD_NAME, prr.getPipeForward().getName());
+		assertThat(prr.getResult().asString(), containsString("message=\"CompressPipe [CompressPipe under test]: Not in GZIP format\""));
 	}
 
 	@Test

@@ -153,7 +153,7 @@
         at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:72)
         at org.frankframework.http.AbstractHttpSender.sendMessage(HttpSenderBase.java:641)
         ... 111 more</details>
-    <originalMessage messageId="Test Tool correlation id">&lt;request action="send2ws_multiple_with_forwards"&gt;
+    <originalMessage messageId="Test Tool correlation id" receivedTime="IGNORE">&lt;request action="send2ws_multiple_with_forwards"&gt;
 	&lt;req1 /&gt;
 	&lt;req2 /&gt;
 	&lt;req3 /&gt;

@@ -135,6 +135,6 @@
         at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:72)
         at org.frankframework.http.AbstractHttpSender.sendMessage(HttpSenderBase.java:641)
         ... 94 more</details>
-    <originalMessage messageId="Test Tool correlation id">&lt;request action="send2ws_forward_timeout" /&gt;</originalMessage>
+    <originalMessage messageId="Test Tool correlation id" receivedTime="IGNORE">&lt;request action="send2ws_forward_timeout" /&gt;</originalMessage>
   </errorMessage>
 </TIMEOUT>
