@@ -204,7 +204,7 @@
         at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:72)
         at org.frankframework.http.AbstractHttpSender.sendMessageAndProvideForwardName(HttpSenderBase.java:746)
         ... 157 more</details>
-    <originalMessage messageId="0a722fe4-75c7044f_183eb329d12_-7603">&lt;request action="send2ws_multiple_with_forwards"&gt;
+    <originalMessage messageId="0a722fe4-75c7044f_183eb329d12_-7603" receivedTime="IGNORE">&lt;request action="send2ws_multiple_with_forwards"&gt;
 	&lt;req1 /&gt;
 	&lt;req2 /&gt;
 	&lt;req3 /&gt;
