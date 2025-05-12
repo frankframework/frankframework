@@ -1,1 +1,11 @@
-*.* @frankframework/maintainers
+# Default for all files. Maintainers is the whole team
+*	@frankframework/maintainers
+
+# Lifecycle management for pom.xml, package.json and docker compose yaml files
+pom.xml		 @frankframework/maintainers-backend
+docker/* 	 @frankframework/maintainers-backend @philipsens
+package.json @frankframework/maintainers-frontend
+
+# console
+console/backend/*	@frankframework/maintainers-backend @Matthbo
+console/frontend/*	@frankframework/maintainers-frontend
