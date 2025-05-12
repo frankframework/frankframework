@@ -35,11 +35,9 @@ import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
-import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
@@ -133,11 +131,6 @@ public class CompressPipe extends FixedForwardPipe {
 
 			return new PipeRunResult(getSuccessForward(), result);
 		} catch (Exception e) {
-			PipeForward exceptionForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
-			if (exceptionForward != null) {
-				log.warn("exception occurred, forwarded to [{}]", exceptionForward.getPath(), e);
-				return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(null, e, this, message, session));
-			}
 			throw new PipeRunException(this, "Unexpected exception during compression", e);
 		} finally {
 			if(in != null) {

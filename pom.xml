@@ -273,11 +273,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>frankframework-test-integration</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.frankframework</groupId>
 				<artifactId>frankframework-idin</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -1469,17 +1464,6 @@
 					</snapshots>
 				</repository>
 			</repositories>
-		</profile>
-		<profile>
-			<id>test-integration</id>
-			<activation>
-				<property>
-					<name>test-integration</name>
-				</property>
-			</activation>
-			<modules>
-				<module>test-integration</module>
-			</modules>
 		</profile>
 		<profile>
 			<id>javadoc</id>
