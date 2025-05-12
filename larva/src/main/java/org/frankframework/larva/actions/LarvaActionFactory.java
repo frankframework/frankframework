@@ -37,7 +37,6 @@ import org.frankframework.larva.ListenerMessage;
 import org.frankframework.larva.ListenerMessageHandler;
 import org.frankframework.larva.Scenario;
 import org.frankframework.larva.SenderThread;
-import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
@@ -51,12 +50,10 @@ public class LarvaActionFactory {
 	public static final String CLASS_NAME_PROPERTY_SUFFIX = ".className";
 	private final int defaultTimeout;
 	private final LarvaTool testTool;
-	private final LarvaWriter larvaWriter;
 	private final TestExecutionObserver testExecutionObserver;
 
 	public LarvaActionFactory(LarvaTool testTool) {
 		this.testTool = testTool;
-		this.larvaWriter = testTool.getWriter();
 		this.testExecutionObserver = testTool.getTestExecutionObserver();
 		this.defaultTimeout = testTool.getLarvaConfig().getTimeout();
 	}
@@ -203,14 +200,14 @@ public class LarvaActionFactory {
 	}
 
 	private void debugMessage(String message) {
-		larvaWriter.debugMessage(message);
+		testTool.debugMessage(message);
 	}
 
 	private void warningMessage(String message) {
-		larvaWriter.warningMessage(message);
+		testTool.warningMessage(message);
 	}
 
 	private void errorMessage(String message, Exception e) {
-		larvaWriter.errorMessage(message, e);
+		testTool.errorMessage(message, e);
 	}
 }

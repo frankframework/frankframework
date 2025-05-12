@@ -143,8 +143,7 @@ public class LarvaWriter {
 	}
 
 	public void infoMessage(String message) {
-		// TODO: Add loglevel INFO, for now too much a change.
-		doWriteMessage(LarvaLogLevel.ERROR, true, "INFO: " + message);
+		doWriteMessage(LarvaLogLevel.INFO, true, "INFO: " + message);
 	}
 
 	public void errorMessage(String message) {
@@ -152,8 +151,7 @@ public class LarvaWriter {
 	}
 
 	public void warningMessage(String message) {
-		// TODO: Add loglevel WARNING, for now too much a change
-		doWriteMessage(LarvaLogLevel.ERROR, true, "WARNING: " + message);
+		doWriteMessage(LarvaLogLevel.WARNING, true, "WARNING: " + message);
 	}
 
 	public void errorMessage(String message, Throwable t) {

@@ -25,8 +25,9 @@ public class ScenarioLoaderTest {
 	public void setUp() {
 		LarvaConfig config = new LarvaConfig();
 		LarvaWriter out = new LarvaWriter(config, System.out);
+		LarvaTool larvaTool = new LarvaTool(null, config, out, null);
 
-		scenarioLoader = new ScenarioLoader(out);
+		scenarioLoader = new ScenarioLoader(larvaTool);
 		appConstants = AppConstants.getInstance();
 		appConstants.setProperty("active.via.appconstants", "true");
 	}

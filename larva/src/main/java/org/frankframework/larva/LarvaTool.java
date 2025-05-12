@@ -33,6 +33,7 @@ import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -95,6 +96,11 @@ public class LarvaTool {
 
 	private final @Getter ApplicationContext applicationContext;
 	private final @Getter LarvaConfig larvaConfig;
+	/**
+	 * Larva API calls that do not provide an output-writer can collect relevant log messages for the
+	 * user to be returned via the API from the message list.
+	 */
+	private final @Getter List<LarvaMessage> messages = new ArrayList<>();
 	private final @Getter LarvaWriter writer;
 	private final @Getter TestExecutionObserver testExecutionObserver;
 	private final @Getter TestRunStatus testRunStatus;
@@ -128,8 +134,8 @@ public class LarvaTool {
 		this.larvaConfig = larvaConfig;
 		this.writer = writer;
 		this.testExecutionObserver = testExecutionObserver;
-		this.testRunStatus = new TestRunStatus(larvaConfig, writer);
-		this.scenarioLoader = new ScenarioLoader(writer);
+		this.testRunStatus = new TestRunStatus(larvaConfig, this);
+		this.scenarioLoader = new ScenarioLoader(this);
 
 		XMLUnit.setIgnoreWhitespace(true);
 	}
@@ -189,7 +195,7 @@ public class LarvaTool {
 			scenarioRunner.setMultipleThreads(false);
 		}
 		scenarioRunner.runScenarios(scenarioFiles, currentScenariosRootDirectory);
-		writer.flush();
+		flushOutput();
 
 		long executionTime = System.currentTimeMillis() - startTime;
 		printScenarioExecutionStatistics(executionTime);
@@ -211,21 +217,47 @@ public class LarvaTool {
 
 	public void debugMessage(String message) {
 		log.debug(message);
+		messages.add(new LarvaMessage(LarvaLogLevel.DEBUG, message));
 		writer.debugMessage(message);
+	}
+
+	public void infoMessage(String message) {
+		log.info(message);
+		messages.add(new LarvaMessage(LarvaLogLevel.INFO, message));
+		writer.infoMessage(message);
 	}
 
 	public void errorMessage(String message) {
 		log.error(message);
+		messages.add(new LarvaMessage(LarvaLogLevel.ERROR, message));
 		writer.errorMessage(message);
 	}
 
 	public void warningMessage(String message) {
 		log.warn(message);
+		messages.add(new LarvaMessage(LarvaLogLevel.WARNING, message));
 		writer.warningMessage(message);
 	}
 
 	public void errorMessage(String message, Exception exception) {
 		writer.errorMessage(message, exception);
+	}
+
+	/**
+	 * Larva API calls that do not provide an output-writer can collect relevant log messages for the
+	 * user to be returned via the API from the message list.
+	 *
+	 * @param level Minimum level to be returned
+	 * @return List of LarvaMessages
+	 */
+	public List<LarvaMessage> getMessagesAtLevel(LarvaLogLevel level) {
+		return messages.stream()
+				.filter(m -> level.shouldLog(m.getLogLevel()))
+				.toList();
+	}
+
+	public void flushOutput() {
+		writer.flush();
 	}
 
 	// Used by saveResultToFile.jsp

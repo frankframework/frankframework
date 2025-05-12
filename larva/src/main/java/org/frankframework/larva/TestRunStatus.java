@@ -32,7 +32,6 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.util.AppConstants;
 
 /**
@@ -43,13 +42,13 @@ import org.frankframework.util.AppConstants;
  * </p>>
  * <p>
  *     The TestRunStatus uses the {@link LarvaConfig} to find the configured {@link LarvaConfig#getActiveScenariosDirectory()}
- *     and the {@link LarvaWriter} for debug messages.
+ *     and the {@link LarvaTool} for debug messages.
  * </p>
  */
 @Log4j2
 public class TestRunStatus {
 	private final @Getter LarvaConfig larvaConfig;
-	private final @Getter LarvaWriter out;
+	private final @Getter LarvaTool larvaTool;
 
 	private @Getter SortedMap<String, String> scenarioDirectories = new TreeMap<>();
 	private @Getter Map<Scenario.ID, Scenario> allScenarios = Map.of();
@@ -60,9 +59,9 @@ public class TestRunStatus {
 	private final @Getter List<Scenario> passedScenarios = Collections.synchronizedList(new ArrayList<>());
 	private final @Getter List<Scenario> autoSavedScenarios = Collections.synchronizedList(new ArrayList<>());
 
-	public TestRunStatus(LarvaConfig larvaConfig, LarvaWriter out) {
+	public TestRunStatus(LarvaConfig larvaConfig, LarvaTool larvaTool) {
 		this.larvaConfig = larvaConfig;
-		this.out = out;
+		this.larvaTool = larvaTool;
 	}
 
 	/**
@@ -85,7 +84,7 @@ public class TestRunStatus {
 	public String initScenarioDirectories() {
 		String realPath = LarvaUtil.getParentOfWebappRoot();
 		if (realPath == null) {
-			out.errorMessage("Could not read webapp real path");
+			larvaTool.errorMessage("Could not read webapp real path");
 			return null;
 		}
 		AppConstants appConstants = AppConstants.getInstance();
@@ -103,29 +102,29 @@ public class TestRunStatus {
 				break;
 			}
 			if (description == null) {
-				out.errorMessage("Could not find description for directory scenariosroot%d [%s]".formatted(j, directory));
+				larvaTool.errorMessage("Could not find description for directory scenariosroot%d [%s]".formatted(j, directory));
 				continue;
 			}
 			if (scenariosRoots.containsKey(description)) {
-				out.errorMessage("A root directory named [%s] already exists".formatted(description));
+				larvaTool.errorMessage("A root directory named [%s] already exists".formatted(description));
 				continue;
 			}
 			String parent = determineParentPath(realPath, m2eFileName);
 			directory = LarvaUtil.getAbsolutePath(parent, directory, true);
 			if (scenariosRoots.containsValue(directory)) {
-				out.errorMessage("A root directory with path [%s] already exists".formatted(directory));
+				larvaTool.errorMessage("A root directory with path [%s] already exists".formatted(directory));
 				continue;
 			}
 			if (new File(directory).exists()) {
-				out.debugMessage("directory for [" + description + "] exists: " + directory);
+				larvaTool.debugMessage("directory for [" + description + "] exists: " + directory);
 				scenariosRoots.put(description, directory);
 			} else {
-				out.debugMessage("directory [" + directory + "] for [" + description + "] does not exist, parent [" + parent + "]");
+				larvaTool.debugMessage("directory [" + directory + "] for [" + description + "] does not exist, parent [" + parent + "]");
 				scenariosRoots.put("X " + description, directory);
 			}
 		}
-		out.debugMessage("Read scenariosrootdirectory parameter");
-		out.debugMessage("Get current scenarios root directory");
+		larvaTool.debugMessage("Read scenariosrootdirectory parameter");
+		larvaTool.debugMessage("Get current scenarios root directory");
 		if (StringUtils.isEmpty(larvaConfig.getActiveScenariosDirectory())) {
 			String currentScenariosRootDirectory;
 			String scenariosRootDefault = appConstants.getProperty("scenariosroot.default");
@@ -147,10 +146,10 @@ public class TestRunStatus {
 		if (m2eFileName != null) {
 			File m2eFile = new File(realPath, m2eFileName);
 			if (m2eFile.exists()) {
-				out.debugMessage("Read m2e pom.properties: " + m2eFileName);
-				Properties m2eProperties = LarvaUtil.readProperties(out, m2eFile);
+				larvaTool.debugMessage("Read m2e pom.properties: " + m2eFileName);
+				Properties m2eProperties = LarvaUtil.readProperties(larvaTool, m2eFile);
 				parent = m2eProperties.getProperty("m2e.projectLocation");
-				out.debugMessage("Use m2e parent: " + parent);
+				larvaTool.debugMessage("Use m2e parent: " + parent);
 			}
 		}
 		return parent;

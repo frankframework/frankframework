@@ -40,7 +40,6 @@ import org.frankframework.larva.actions.LarvaActionFactory;
 import org.frankframework.larva.actions.LarvaActionUtils;
 import org.frankframework.larva.actions.LarvaApplicationContext;
 import org.frankframework.larva.actions.LarvaScenarioAction;
-import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
@@ -63,7 +62,6 @@ public class ScenarioRunner {
 	private @Setter boolean multipleThreads;
 	private final int threads;
 
-	private final LarvaWriter out;
 	private final LarvaConfig larvaConfig;
 	private final TestExecutionObserver testExecutionObserver;
 
@@ -73,7 +71,6 @@ public class ScenarioRunner {
 		this.larvaConfig = larvaTool.getLarvaConfig();
 		this.testExecutionObserver = larvaTool.getTestExecutionObserver();
 		this.testRunStatus = larvaTool.getTestRunStatus();
-		this.out = larvaTool.getWriter();
 
 		this.logLevel = larvaConfig.getLogLevel();
 		this.waitBeforeCleanUp = larvaConfig.getWaitBeforeCleanup();
@@ -136,7 +133,7 @@ public class ScenarioRunner {
 		if (singleThreadedScenarios.isEmpty()) {
 			return;
 		}
-		out.infoMessage("Starting " + singleThreadedScenarios.size() + " Single threaded Scenarios");
+		larvaTool.infoMessage("Starting " + singleThreadedScenarios.size() + " Single threaded Scenarios");
 		singleThreadedScenarios.forEach(scenario -> runOneFile(scenario, true));
 	}
 
@@ -228,7 +225,7 @@ public class ScenarioRunner {
 					autoSaved = true;
 				}
 				if (flushLogsForEveryScenarioStep) {
-					out.flush();
+					larvaTool.flushOutput();
 				}
 			}
 			if (allStepsPassed) {

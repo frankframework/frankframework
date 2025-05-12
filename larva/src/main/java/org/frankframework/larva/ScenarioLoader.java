@@ -33,7 +33,6 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ClassNameRewriter;
 import org.frankframework.larva.actions.LarvaActionFactory;
-import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.PropertyLoader;
 
@@ -52,10 +51,10 @@ public class ScenarioLoader {
 
 	private final Map<File, PropertyLoader> scenarioFileCache = new LRUMap<>(SCENARIO_CACHE_SIZE);
 
-	private final LarvaWriter out;
+	private final LarvaTool larvaTool;
 
-	public ScenarioLoader(LarvaWriter out) {
-		this.out = out;
+	public ScenarioLoader(LarvaTool larvaTool) {
+		this.larvaTool = larvaTool;
 	}
 
 
@@ -70,23 +69,23 @@ public class ScenarioLoader {
 			long end = System.currentTimeMillis();
 			String duration = LarvaUtil.formatDuration(end - start);
 			log.debug("Reading scenario files took {}", duration);
-			out.debugMessage("Reading scenario files took " + duration);
+			larvaTool.debugMessage("Reading scenario files took " + duration);
 		}
 	}
 
 	private Map<Scenario.ID, Scenario> readScenarioFiles(String baseDirectory, String scenariosDirectory, AppConstants appConstants) {
 		Map<Scenario.ID, Scenario> scenarioFiles = new LinkedHashMap<>();
-		out.debugMessage("List all files in directory '" + scenariosDirectory + "'");
+		larvaTool.debugMessage("List all files in directory '" + scenariosDirectory + "'");
 
 		File directory = new File(scenariosDirectory);
 		File[] files = directory.listFiles();
 		if (files == null) {
-			out.debugMessage("Could not read files from directory '" + scenariosDirectory + "'");
+			larvaTool.debugMessage("Could not read files from directory '" + scenariosDirectory + "'");
 			return scenarioFiles;
 		}
-		out.debugMessage("Sort files");
+		larvaTool.debugMessage("Sort files");
 		Arrays.sort(files);
-		out.debugMessage("Filter out property files containing a 'scenario.description' property");
+		larvaTool.debugMessage("Filter out property files containing a 'scenario.description' property");
 		for (File scenarioFile : files) {
 			if (scenarioFile.isFile() && scenarioFile.getName().endsWith(".properties") && !scenarioFile.getName().equalsIgnoreCase("common.properties")) {
 				Properties properties = readScenarioProperties(scenarioFile, appConstants);
@@ -107,7 +106,7 @@ public class ScenarioLoader {
 				scenarioFiles.putAll(readScenarioFiles(baseDirectory, scenarioFile.getAbsolutePath(), appConstants));
 			}
 		}
-		out.debugMessage(scenarioFiles.size() + " scenario files found");
+		larvaTool.debugMessage(scenarioFiles.size() + " scenario files found");
 		return scenarioFiles;
 	}
 
@@ -125,7 +124,7 @@ public class ScenarioLoader {
 		try {
 			scenarioProperties = readScenarioProperties(scenarioFile, appConstants, true);
 		} catch (Exception e) {
-			out.errorMessage("Could not read properties file: " + e.getMessage(), e);
+			larvaTool.errorMessage("Could not read properties file: " + e.getMessage(), e);
 			return null;
 		}
 		String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath();
@@ -144,7 +143,7 @@ public class ScenarioLoader {
 
 		Properties includedProperties = getIncludedProperties(properties, scenarioDirectory);
 		properties.putAll(includedProperties);
-		out.debugMessage(properties.size() + " properties found");
+		larvaTool.debugMessage(properties.size() + " properties found");
 		if (!root) {
 			// Only cache included files since they are most likely to be frequently read. Root files would just pollute the cache.
 			scenarioFileCache.put(scenarioFile, properties);
@@ -161,7 +160,7 @@ public class ScenarioLoader {
 			includeFilename = properties.getProperty("include" + i);
 		}
 		while (includeFilename != null) {
-			out.debugMessage("Load include file: " + includeFilename);
+			larvaTool.debugMessage("Load include file: " + includeFilename);
 			File includeFile = new File(LarvaUtil.getAbsolutePath(directory, includeFilename));
 			Properties includeProperties = readScenarioProperties(includeFile, null, false);
 			includedProperties.putAll(includeProperties);
