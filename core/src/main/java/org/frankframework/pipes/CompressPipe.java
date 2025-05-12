@@ -136,7 +136,7 @@ public class CompressPipe extends FixedForwardPipe {
 			PipeForward exceptionForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 			if (exceptionForward != null) {
 				log.warn("exception occurred, forwarded to [{}]", exceptionForward.getPath(), e);
-				return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(null, e, this, message, session.getMessageId(), 0));
+				return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(null, e, this, message, session));
 			}
 			throw new PipeRunException(this, "Unexpected exception during compression", e);
 		} finally {

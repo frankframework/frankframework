@@ -16,6 +16,7 @@
 package org.frankframework.errormessageformatters;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
@@ -65,16 +66,21 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 	 * Override this method in descender-classes to obtain the required behaviour.
 	 */
 	@Override
-	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, String messageId, long receivedTime) {
+	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, PipeLineSession session) {
 
 		String details = null;
 		errorMessage = getErrorMessage(errorMessage, t);
 		if (t != null) {
 			details = ExceptionUtils.getStackTrace(t);
 		}
-		String prefix=location!=null ? ClassUtils.nameOf(location) : null;
+		String prefix = location != null ? ClassUtils.nameOf(location) : null;
+		String messageId = session.getMessageId();
+		String correlationId = session.getCorrelationId();
 		if (StringUtils.isNotEmpty(messageId)) {
 			prefix = StringUtil.concatStrings(prefix, " ", "msgId ["+messageId+"]");
+		}
+		if (StringUtils.isNotEmpty(correlationId)) {
+			prefix = StringUtil.concatStrings(prefix, " ", "correlationId ["+correlationId+"]");
 		}
 		errorMessage = StringUtil.concatStrings(prefix, ": ", errorMessage);
 
@@ -92,7 +98,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 			errorXml.addSubElement(locationXml);
 		}
 
-		if (details != null && !"".equals(details)) {
+		if (StringUtils.isNotEmpty(details)) {
 			XmlBuilder detailsXml = new XmlBuilder("details");
 			// detailsXml.setCdataValue(details);
 			detailsXml.setValue(XmlEncodingUtils.replaceNonValidXmlCharacters(details), true);
@@ -101,14 +107,17 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 
 		XmlBuilder originalMessageXml = new XmlBuilder(PipeLineSession.ORIGINAL_MESSAGE_KEY);
 		originalMessageXml.addAttribute("messageId", messageId);
-		if (receivedTime != 0) {
-			originalMessageXml.addAttribute("receivedTime", new Date(receivedTime).toString());
+		originalMessageXml.addAttribute("correlationId", correlationId);
+		Instant tsReceived = session.getTsReceived();
+		if (tsReceived != null && tsReceived.toEpochMilli() != 0) {
+			originalMessageXml.addAttribute("receivedTime", Date.from(tsReceived).toString());
+
 		}
 		// originalMessageXml.setCdataValue(originalMessage);
 		try {
 			originalMessageXml.setValue(originalMessage!=null ? originalMessage.asString(): null, true);
 		} catch (IOException e) {
-			log.warn("Could not convert originalMessage for messageId [{}]", messageId, e);
+			log.warn("Could not convert originalMessage for messageId [{}], correlationID [{}]", messageId, correlationId, e);
 			originalMessageXml.setValue(originalMessage.toString(), true);
 		}
 		errorXml.addSubElement(originalMessageXml);

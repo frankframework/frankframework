@@ -110,8 +110,7 @@ public class PushingListenerAdapter implements IPushingListener<Message>, Servic
 				throw e;
 			}
 			log.debug("PushingListenerAdapter.processRequest() formats ListenerException to errormessage");
-			String correlationId = session.getCorrelationId();
-			return handler.formatException(null,correlationId, message, e);
+			return handler.formatException(null, session, message, e);
 		} finally {
 			ThreadContext.clearAll();
 		}

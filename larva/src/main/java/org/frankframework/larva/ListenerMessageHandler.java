@@ -136,7 +136,7 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 
 
 	@Override
-	public Message formatException(String extraInfo, String arg1, Message arg2, Throwable arg3) {
+	public Message formatException(String extraInfo, PipeLineSession arg1, Message arg2, Throwable arg3) {
 		NotImplementedException e = new NotImplementedException();
 		log.error("formatException not implemented", e);
 		return null;
